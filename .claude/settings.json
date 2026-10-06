@@ -1,0 +1,18 @@
+{
+  "extraKnownMarketplaces": {
+    "kedrzu-skills": {
+      "source": { "source": "github", "repo": "kedrzu/skills" },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "dev@kedrzu-skills": true,
+    "design-doc@kedrzu-skills": true,
+    "git@kedrzu-skills": true,
+    "playwright@kedrzu-skills": true,
+    "web-search@kedrzu-skills": true,
+    "skill-improve@kedrzu-skills": true,
+    "skill-creator@claude-plugins-official": true,
+    "secrets@kedrzu-skills": true
+  }
+}
