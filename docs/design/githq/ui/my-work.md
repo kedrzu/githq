@@ -3,83 +3,88 @@
 Read `README.md` in this folder first. This is the main path. It is the reason the app exists and what a
 user does several times a day.
 
+**Status:** designed in Direction D (screens D1–D3, E1–E4, PR view F1–F4, states K1–K5).
+
 ## Purpose
 
 The user opens githq in the morning, or between two other things, to answer "what needs me right now?"
-across all their repositories, and then to deal with some of it without leaving the keyboard. Today on
-GitHub this means hopping between repositories and saved filters, and that is what the owner finds
-uncomfortable.
+across all their repositories, and then to deal with some of it without leaving the keyboard.
 
 ## The user's task
 
 "Show me everything that's mine or waiting on me, let me open any of it instantly, and let me do the small
 things (reassign, relabel, close, reply, move in a project) in a keystroke or two."
 
+## What "my work" contains
+
+These rules are settled. The screens must agree with them, including every count.
+
+- **Contents.** Open issues and open pull requests from anywhere on GitHub, in four groups:
+  1. **Review requested**: PRs where my review is requested.
+  2. **My pull requests**: open PRs I opened.
+  3. **Assigned to me**: issues assigned to me.
+  4. **Mentioned**: issues and PRs that mention me.
+- **Each item appears once,** in the first of these groups that applies.
+- **A PR of mine that closes an issue in "Assigned to me"** is shown nested under that issue, and nowhere
+  else. If the issue it closes isn't in my work, the PR is an ordinary row in "My pull requests".
+- **Counts are top-level rows.** Nested PRs don't count. The count next to each group in the sidebar
+  equals the count in the list, and "My work" in the sidebar is the sum of the four.
+- **Filters:**
+  - **Needs me**: review requested from me, plus my PRs with failing checks, changes requested or
+    conflicts, plus issues assigned to me.
+  - **Waiting on others**: my PRs waiting for review or with checks still running.
+  - **All**.
+- **Project status in a row.** Every project has one "row field", by default its single-choice field named
+  "Status". If an item is in several projects, the row shows the row field of the first of them in the
+  sidebar order, plus "+1", "+2" and so on for the others. The item view shows every project with all its
+  fields. In the current D1, issue portal#1187 is in Platform Q4 and Bug triage, so its row should read
+  "In progress +1".
+
 ## What happens, in order
 
-1. **My work.** One view that gathers, from every repository:
-   - issues assigned to me;
-   - my open pull requests, with their status;
-   - pull requests waiting for my review;
-   - possibly also issues and PRs where I'm mentioned, or that I wrote.
-
-   These come from anywhere on GitHub, including repositories the user doesn't track.
-2. **Moving through it.** The user moves up and down with the keyboard, filters ("only this repo", "only
-   failing PRs"), and sorts or groups. Everything responds instantly.
-3. **Opening an item.** One key opens the selected issue or PR. It shows:
-   - the title and body;
-   - all its GitHub properties;
-   - the projects it belongs to, with that project's fields (e.g. its Status in project A and a different
-     Status in project B);
-   - comments, linked PRs or issues, and sub-issues.
+1. **My work**, as defined above.
+2. **Moving through it**: keyboard up and down, the filters, grouping and sorting.
+3. **Opening an item.** The issue view exists in Direction D. **The pull request view is still to
+   design.** It shows the same sections as an issue (title, body, properties, projects, comments), plus:
+   - **Checks**: overall state, and the list of checks with each one passing, failing or running. A failing
+     check links to its log on github.com.
+   - **Reviews**: who is requested, who approved, and who requested changes. For each reviewer, the latest
+     state.
+   - **Branches**: source into target. Whether it is a draft.
+   - **Mergeability**: ready, blocked by failing checks, blocked by missing reviews, or has conflicts.
+     githq does not merge. "Open on GitHub" is the action here, and it is the most prominent action of a
+     PR that is ready.
+   - **Size**: lines added and removed, files changed.
+   - **Issues this PR closes.**
+   - **Code review** happens on github.com. One key opens the PR's "Files changed" there.
 4. **Acting on it**, from the list or from the opened item:
    - change assignees, labels or milestone;
-   - close or reopen;
-   - set a project field (e.g. Status, Iteration);
-   - write a comment;
-   - for a PR, open it on github.com to review code.
+   - close or reopen (completed or not planned);
+   - set a project field;
+   - comment;
+   - add the item to a project.
 
-   Each change shows at once.
-5. **Back to the list**, with the selection and scroll position preserved, and on to the next item.
-6. **Jumping anywhere.** A command palette finds any item by title or number, any repository or project, and
-   any action.
+   For a PR, the user can additionally request reviewers and mark a draft as ready for review.
+5. **Back to the list**, with the selection preserved, and on to the next item.
+6. **Jumping anywhere** with the command menu (designed in E1–E4).
 
-## What matters
+## States to design
 
-- **The list.** The question is: "which of these needs me, and which can wait?" In order of importance:
-  - what kind of thing it is and why it's here (assigned, my PR, review requested);
-  - the title;
-  - for PRs, the status (checks failing, changes requested, approved and mergeable, conflicts), because
-    that decides whether the user has to act;
-  - the repository;
-  - how recently it changed;
-  - then everything else (labels, assignees, comment count, project fields).
-- **An opened item.** The question is: "what is this, and what's its state?" The body and the latest
-  activity matter more than the full history.
-- **A PR's status** is the most decision-relevant thing in this path. "Checks failing" and "approved, ready
-  to merge" mean opposite things for the user's next minute.
+Only the first of these is new content. The others can be small, but must exist.
 
-## States
+- **An edit rejected by GitHub** (e.g. no permission to label in someone else's repository). The change
+  is undone and the user sees which edit failed and why. **Must be visible.** Show it once for a single
+  item and once for a multi-item action where 1 of 3 failed.
+- **Refresh paused** because the hourly API allowance ran out: when it resumes. Data and edits still
+  work. Calm, but visible.
+- **Nothing on my plate**, overall and for "Needs me". It's a good state, not an error.
+- **Still downloading** on the first sign-in: the groups that already arrived are usable.
+- **An item from an untracked repository** (already marked "not tracked" in D1): what "track this
+  repository" from here looks like.
 
-- **Nothing on my plate.** It's a good state, not an error.
-- **Still downloading** on the first sign-in: the parts that already arrived are usable.
-- **An edit was rejected by GitHub,** e.g. no permission to label in someone else's repository. The change
-  is undone and the user sees why. **This must be visible**, because otherwise the user believes the edit
-  went through.
-- **Refresh paused** because the hourly API allowance ran out. Data and edits still work, and other people's
-  changes are delayed. It should be visible but calm.
-- **Read-only items.** In someone else's open-source repository the user can comment but often can't change
-  labels or assignees. The available actions differ per item.
-- **An item from an untracked repository.** It appears here because it concerns me, but its repository isn't
-  copied in full, so jumping to "the rest of this repo" isn't available until it's tracked.
+## Inconsistencies to fix in the existing screens
 
-## Questions this design should settle
-
-- **A PR that closes an issue.** If I'm assigned issue #12 and opened PR #15 that closes it, is that one row
-  or two? Two rows are faithful to GitHub but show the same work twice. One row (the PR under the issue,
-  Linear-style) is quieter, but then the issue row carries the PR's status, and a PR closing three issues
-  appears three times. This is deliberately left open. The owner wants to decide after seeing it drawn.
-- Is "my work" one list with groups, several lists, or something else? Which groups earn a place by default?
-- Does an opened item replace the list, sit beside it, or float over it? What does that mean for moving to
-  the next item without closing?
-- How does the user discover single-key actions without a cluttered screen?
+- The counts in D1 and D2 don't follow the rules above. The sidebar says My work 11, My pull requests 4,
+  Mentioned 3, but the list shows 2 / 3 / 5 and has no Mentioned group.
+- The row of portal#1187 shows one status although the issue is in two projects (see "Project status in a
+  row" above).

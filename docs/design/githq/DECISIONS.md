@@ -28,8 +28,8 @@ project, so the UI cannot assume a field called Status exists.
 
 ### D3
 
-githq registers as a GitHub **OAuth App**, requesting `repo` and `project` scopes (more only when a feature
-needs one). Answers [Q3](#q3) (user, 2026-10-12). Why: the dashboard needs the user's whole footprint —
+githq registers as a GitHub **OAuth App**, requesting `repo`, `project` and `read:org` scopes (more only when a
+feature needs one; `read:org` added by [D14](#d14)). Answers [Q3](#q3) (user, 2026-10-12). Why: the dashboard needs the user's whole footprint —
 user-owned Projects, private repos across several orgs, writes (comments, edits) in other people's public
 repos — and a GitHub App user token reaches only the intersection with its installations, has no REST access
 to user-owned Projects and none to notifications (evidence under Q3).
@@ -115,6 +115,184 @@ Edit failures and conflicts are handled best effort in the first version: an edi
 rejects it, the change is rolled back and an error is shown; if someone changed the same thing on github.com
 meanwhile, the last write wins. No merge, no conflict UI. User, 2026-10-12: "na początek możemy rozwiązać je
 w zasadzie w dowolny sposób". Revisit if real use shows lost edits.
+
+### D9
+
+UI direction: "Direction D — Synthesis" in `design.pen` (frame `I7akNj`), chosen by user 2026-10-12. One app
+with three independent switches: sidebar expanded or collapsed to a rail; every list (my work, a project, a
+repository) shown as List or Board with the same toolbar; an item opened in a panel, modal or full page, all
+rendering the same item view. As drawn, it settles two questions left to the visuals, pending the user's
+objection: a PR that closes an assigned issue is shown nested under that issue in "my work" (closes
+[Q5](#q5)), and projects get a Board in the first version ([Q6](#q6)).
+
+> **Checked 2026-10-12 (live GraphQL introspection):** GitHub's saved project views are readable —
+> `ProjectV2View` has `name`, `layout`, `filter: String`, `groupByFields`, `verticalGroupByFields`,
+> `sortByFields`, `fields`; mutations `createProjectV2View`, `updateProjectV2View`, `deleteProjectV2View`
+> exist. The filter is GitHub's project query string, so showing a saved view instantly from the local copy
+> means evaluating that query language locally.
+> Field values (e.g. `ProjectV2ItemFieldSingleSelectValue`) carry `creator: Actor` and `updatedAt`;
+> `ProjectV2Item` has `isArchived`. Whether `creator` is the last person to set the value (needed for
+> "moved by olam") is untested.
+
+### D10
+
+First-version additions and exclusions after the Direction D review. Agent's recommendations, adopted when the
+user asked to apply all corrections (2026-10-12):
+- **Creating an issue is in the first version** (repo, title, body, assignees, labels, milestone, type,
+  projects and their fields, parent). Was missing from the agent's first-version list.
+  > **Checked 2026-10-12 (live):** GraphQL `Repository.issueTemplates` returns markdown templates only
+  > (`IssueTemplate`: about, assignees, body, filename, labels, name, title, type). Issue **forms** (YAML) are
+  > not included: `vitejs/vite` has `bug_report.yml`, `feature_request.yml`, `docs.yml` in
+  > `.github/ISSUE_TEMPLATE/` and `issueTemplates` returns `[]`. Forms must be read through the contents
+  > API and parsed by githq; the first version may render a form as a pre-filled markdown body.
+- **Merging a PR is not**: like code review ([D6](#d6)), it happens on github.com. githq shows mergeability.
+- **No actor on project field changes** ("moved by olam") until it's verified that the field value's
+  `creator` is the last person to set it ([D9](#d9) evidence). Show when it changed, not who.
+
+### D11
+
+What "my work" contains (agent's proposal, adopted 2026-10-12). Open issues and PRs from anywhere on GitHub in
+four groups, each item **once**, in the first group that applies: review requested from me → my open PRs →
+assigned to me → mentioning me. A PR of mine that closes an issue in "assigned to me" appears nested under that
+issue and nowhere else. Counts are of top-level rows; sidebar counts equal the list's group counts and the
+total is their sum.
+Filters on top: **Needs me** = review requested from me + my PRs with failing checks, changes requested or
+conflicts + issues assigned to me; **Waiting on others** = my PRs waiting for review or with checks running;
+**All**. These are views computed from GitHub data, not stored anywhere — no conflict with [D2](#d2).
+
+### D12
+
+Which project field appears in a row outside the project (e.g. in "my work"). Agent's proposal, adopted
+2026-10-12. Each project has one **row field**: by default its single-select field named "Status", otherwise
+its first single-select field, otherwise none; the user can change it per project. An item in several projects
+shows the row field of the first of them in the user's sidebar order, plus "+N" for the others; the item
+view shows all of them.
+
+### D13
+
+Saved project views shown as tabs are GitHub's own views (`ProjectV2View`, see [D9](#d9) evidence). githq
+evaluates their filter locally, so they stay instant; a filter githq can't evaluate yet falls back to asking
+GitHub and says so. Changing grouping, sorting or layout in githq is local to the device and marks the view
+as locally modified with a reset; githq does not write views back to GitHub in the first version
+(`updateProjectV2View` exists; rejected for now — editing a shared view would change it for the whole team).
+Archived project items (`isArchived`) are hidden.
+
+### D14
+
+Second design round (Direction D, `design.pen` frame `I7akNj`, reviewed 2026-10-12) covers every screen the
+round-2 prompt asked for: PR view (F1–F4), first sign-in, tracking and account (G1–G10), creating an issue
+(H1–H9), repository (J1–J3), states (K1–K9); fixes in D1/D2/D4 applied (counts 2+3+5+3=13 with a Mentioned
+group, "In progress +1", no "moved by", locally modified view with reset, "Open on GitHub" instead of merge).
+Consequences the agent drew from it — agent's analysis, confirmed by user 2026-10-30:
+- **`read:org` joins `repo` and `project`** ([D3](#d3)): listing the user's organisations (owner filter in
+  G2/G4, "member of 3 organisations" in G9, detecting the org that hides private data in G5) needs it.
+- **Edits are gated by the user's permission on the repository** (`viewerPermission`), as E4 already does
+  ("2 of 3 editable"), instead of failing after the fact. K1's example (adding a label in vitejs/vite as a
+  contributor) should not be offered at all; K1 stays for failures githq can't predict.
+- **Writes are checked against what GitHub returns**: for users without push access GitHub silently drops
+  labels, assignees, milestone and type on issue creation, so a missing value in the response is a rejection.
+- **Issue forms in repositories where the user can't push are handed off to GitHub's own form**, opened with
+  the title (and form fields) pre-filled through URL query parameters. Reason: githq can't apply the form's
+  labels for such users (silently dropped) and GitHub does not validate form fields on API creation, so H8's
+  "its default labels already set" and "GitHub checks them again" are not true for outside contributors.
+  H8's pre-filled body remains for repositories where the user has push access.
+- **"1 of 2 approvals"** (F1, F3): the PR exposes `reviewDecision` and the reviews, not the required count;
+  that lives in branch protection or rulesets, which may not be readable without admin rights. Show approvals
+  without "of N" unless the required count is known.
+- **Organisation owner names and approval-request status** (G5, G8, G9: "ewa-k or mbrandt", "requested 2 days
+  ago, waiting") are not known to be available through the API for a restricted org — unverified. Until
+  verified: show that the org hides data, link to GitHub's page for requesting approval, and remember locally
+  when the user clicked it.
+
+> **Checked 2026-10-12:** REST "Create an issue": "NOTE: Only users with push access can set labels for new
+> issues. Labels are silently dropped otherwise." Same wording for milestone, assignees, type and field
+> values — [Issues](https://docs.github.com/en/rest/issues/issues).
+
+> **Checked 2026-10-12:** `GET /user/orgs` "requires at least user or read:org scope for OAuth app tokens and
+> personal access tokens (classic). Requests with insufficient scope will receive a 403 Forbidden response." —
+> [Organizations](https://docs.github.com/en/rest/orgs/orgs).
+
+> **Checked 2026-10-12:** new-issue URLs accept `template=` and, for issue forms, values for the form's
+> fields: "You can also use URL query parameters to fill custom text fields that you have defined in issue
+> form templates." Using a parameter for an action (e.g. `labels`) requires permission for that action —
+> [Creating an issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue).
+
+> **Checked 2026-10-12 (live GraphQL introspection):** `PullRequest` has `reviewDecision`
+> (`CHANGES_REQUESTED | APPROVED | REVIEW_REQUIRED`), `mergeStateStatus` (`DIRTY | UNKNOWN | BLOCKED | BEHIND |
+> UNSTABLE | HAS_HOOKS | CLEAN`), `mergeable`, `statusCheckRollup`, `latestOpinionatedReviews`,
+> `reviewRequests`, `isInMergeQueue`, `autoMergeRequest`; no field for the number of required approvals.
+
+### D15
+
+Every large surface shows how fresh what it displays is: a whole list (my work, a project view, a repository),
+and an opened item — not each row. User requirement, 2026-10-30 ("potrzebujemy wiedzieć, czy wersja jest
+aktualna"). What a surface can be, from the sync model ([D7](#d7)):
+- **fresh**: the poll covering this surface succeeded within its interval (~30 s);
+- **checking** right now;
+- **stale**: last successful check is older than expected — offline, a failing request, or refresh paused by
+  the API allowance (K3);
+- **partial**: still downloading (first download, newly tracked repository);
+- **answered by GitHub**: a saved view githq can't evaluate locally (K6), refreshed more slowly;
+- **own edits on the way**: the user's changes are shown but not yet confirmed by GitHub; or one failed.
+An opened item may also have parts fetched separately (see [Q8](#q8)), so its freshness can differ from its
+list's. Visual form: three directions requested from the design agent; user picks.
+
+### D16
+
+Stack and setup replicate the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, the author's
+framework nzyme as a git submodule (`workspace:*` deps), Nuxt 4 with `ssr: false` built statically, no
+auto-imports, routes declared in `router.options.ts`, state in nzyme IoC services (`defineService` with
+`shallowRef`/`computed`), `@nzyme/i18n` with `.loc.yaml`, reka-ui, oxlint/oxfmt, `bun test` + Vitest browser +
+Storybook + Playwright e2e, `setup.sh`/`setup.build.sh`, `paseo.json`, `.claude/skills/nzyme` symlink. One
+Cloudflare Worker serves the static SPA (`not_found_handling: single-page-application`) and runs first only for
+the OAuth token exchange ([D1](#d1)). User, 2026-10-30. Dropped from Cookery: Supabase, database/backend/mcp
+packages, RLS, Realtime, RPC commands.
+
+> **Checked 2026-10-30 (codebase survey of `~/Dev/cook-app` and `~/Dev/nzyme`):** layout `packages/{app,api,
+> backend,core,database,mcp,e2e}`, nzyme submodule via `.gitmodules`; `packages/api/wrangler.jsonc` serves
+> assets with `run_worker_first` for `/api/*` etc.; app state via `@nzyme/vue-ioc`
+> (`packages/app/auth/AuthStore.ts`, `plugins/iocPlugin.ts`); architecture rules in
+> `docs/design/architektura/DECISIONS.md` (D2, D13–D14, D18, D21 no CI, D28 static SPA + Worker).
+> nzyme has **no** IndexedDB, local-first, query/cache or GraphQL layer, and no Cloudflare package; it has
+> `@nzyme/fetch-utils` (typed `defineEndpoint`/`defineFetchClient`) and `@nzyme/openapi`.
+
+### D17
+
+The local working set lives in memory; IndexedDB is persistence only. At start githq loads issues, PRs and
+project items (without bodies, comments, check lists and reviews) from IndexedDB into reactive in-memory maps;
+every list, filter, count, grouping and saved-view evaluation is computed from memory; sync results are applied
+to memory and written behind to IndexedDB. Answers [Q9](#q9) (user, 2026-10-30). Why: navigation in single
+milliseconds, and saved-view filters must be evaluated in code anyway ([D13](#d13)), which IndexedDB indexes
+can't express. Rejected: querying IndexedDB per view (e.g. Dexie live queries) — every navigation becomes a
+database read. Would win if a user tracked repositories with tens of thousands of items and loading them at
+start became noticeable; the fallback then is to keep closed items out of memory and fetch them on demand.
+
+### D18
+
+What the copy holds per item. Always: list data and fields, and a PR's status summary (check rollup, review
+decision, mergeability) — what rows need. Fetched when an item is opened, then kept: body, comments, the full
+check list, reviews. Prefetched for everything in "my work", so the "comments still loading" state appears only
+for items outside the user's work opened for the first time. Answers [Q8](#q8) (user, 2026-10-30).
+
+### D19
+
+GitHub GraphQL client follows the pattern of the author's `healedcare/healed` repo (`packages/healthie`):
+graphql-codegen with `typescript`, `typescript-operations` and `typescript-generic-sdk` (`documentMode:
+'string'`), one `.gql` file per operation under `src/operations/`, a committed SDL schema file, a committed
+`generated.gen.ts`, and a small hand-written requester that the generated SDK calls. Answers the typing part of
+[Q11](#q11) (user, 2026-10-30). REST with ETags stays for change detection ([D7](#d7)) and goes through
+`@nzyme/fetch-utils`.
+
+> **Checked 2026-10-30 (codebase, `~/Dev/sigma`, remote `healedcare/healed`):** `packages/healthie/codegen.yml`
+> — `schema: 'src/schema.graphql'`, `documents: 'src/operations/**/*.gql'`, plugins `add` (TypedDocumentString
+> header), `typescript`, `typescript-operations`, `typescript-generic-sdk`, `documentMode: 'string'`, hook
+> `oxfmt`; `src/createHealthieRequester.ts` posts `{query: String(doc), variables}` with `fetch`, throws on HTTP
+> error and on a non-empty `errors` array; `scripts/fetchSchema.ts` introspects and writes SDL; scripts
+> `schema`, `codegen`; `generated.gen.ts` is committed.
+
+> **Checked 2026-10-30:** GitHub publishes its GraphQL schema as SDL at
+> `https://docs.github.com/public/fpt/schema.docs.graphql` (HTTP 200, ~75k lines, last-modified 2026-10-30) —
+> usable as the schema source without introspection.
 
 ## Open questions
 
@@ -248,7 +426,7 @@ User doesn't know typical scale (2026-10-12: "trudno powiedzieć"), so the answe
 
 ### Q5
 
-On the dashboard, is a PR that closes an issue (GitHub's `closingIssuesReferences`) its own row, or shown under
+Closed by [D9](#d9) (nested, as drawn). Original question: on the dashboard, is a PR that closes an issue (GitHub's `closingIssuesReferences`) its own row, or shown under
 that issue? Open — user (2026-10-12) wants to decide after seeing UI designs. Agent's recommendation: separate
 rows, with the issue row carrying a small marker of the linked PR and its status. Trade-off: separate rows are
 faithful but show the same work twice; nesting is quieter but the issue row must carry PR status, and a PR
@@ -264,3 +442,47 @@ detail with comments and edits (assignees, labels, open/close, comment); tracked
 the project's own fields editable in place; command palette and full keyboard navigation. Out: code review
 (diff, line comments) — one key opens the PR on github.com; creating PRs; notifications inbox; project board
 view if the list is enough to start.
+
+### Q7
+
+Mostly answered by [D10](#d10)–[D13](#d13); missing screens handed to the design agent (prompt in
+`ui/design-agent-prompt.md`). Original: review of Direction D against the UI brief (2026-10-12). Gaps and inconsistencies raised with the user:
+- Not drawn: the whole first-sign-in path (tracking choice, first download, org that hides private repos);
+  PR item view (checks, reviewers, branches, mergeability, hand-off to github.com for review); creating an
+  issue; repository view; "track repositories" / settings / account; states (edit rejected, refresh paused,
+  empty "my work").
+- Scope gap from the agent's own first-version list: creating a new issue was never in it.
+- Is merging a PR from githq in scope? The design shows "Approved · ready to merge" but no merge action.
+- Counts disagree (sidebar "My work 11", "My pull requests 4", "Mentioned 3" vs the list's groups 2/3/5 and
+  no Mentioned group): needs a rule for what "my work" contains and whether a nested PR counts.
+- An issue in two projects (Platform Q4: In progress; Bug triage: Confirmed) shows one status in the "my
+  work" row: needs a rule for which project's field a cross-project list shows.
+- "Needs me / Waiting on others" is githq's own classification: must be defined from GitHub data.
+- Saved views as tabs ("from GitHub") imply a local evaluator for GitHub's project filter language.
+
+### Q8
+
+Answered by [D18](#d18). Original: what the local copy holds per item, beyond the list data. The designs assume tracked repositories are copied
+including closed items (G6: "Closed issues arrive last"), and the item view shows comments, checks and reviews
+at once. Open: are comments, the PR check list and reviews part of the copy for every item, or fetched when an
+item is opened (and prefetched for "my work")? Decides IndexedDB size, first-download cost, and whether the item
+view needs a "comments still loading" state. To settle with the local data model.
+
+### Q9
+
+Answered by [D17](#d17). Original: local store: nzyme has none. Agent's proposal: the working set (issues, PRs, project items without bodies and
+comments) lives in memory as reactive maps and every list is computed from memory; IndexedDB is only the
+persistence underneath, loaded at start and written behind. Alternative: query IndexedDB per view (e.g. Dexie
+live queries). Open, raised with user 2026-10-30.
+
+### Q10
+
+Several tabs open at once would each run the sync loop and multiply API use. Agent's proposal: one tab holds a
+Web Lock and syncs, others receive changes over BroadcastChannel. Proposed to user 2026-10-30, not objected to; treated as the
+default for the first version unless they say otherwise.
+
+### Q11
+
+Typing answered by [D19](#d19). Original: GitHub client shape: REST with ETags for change detection (free 304s, [D7](#d7)), GraphQL for bulk reads and
+writes (one request for an item with its project fields). How GraphQL queries are typed (codegen vs. a typed
+document library) — not chosen. Open.

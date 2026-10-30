@@ -3,16 +3,20 @@
 Hand this whole `ui/` folder to the design agent. This file is the shared context, and each other file is
 one thing a user does in the app. Nothing outside this folder is needed.
 
-## What we want from you
+## Where the design stands
 
-We want **several distinct design directions**, not one polished answer. Explore them freely. Invent things,
-try layouts we didn't think of, push one direction to an extreme. The owner will look at them side by side
-and pick what they like, so the most useful result is a set of directions that differ in ways that matter.
-Three or four variations of the same layout are much less useful.
+The exploration round is done. The owner chose **"Direction D — Synthesis"** in `design.pen` (frame
+`I7akNj`). It is one app with three independent switches:
+- the sidebar is expanded, or collapsed to a rail;
+- every list (my work, a project, a repository) can be shown as List or Board, with the same toolbar;
+- an item opens in a panel, a modal or a full page, and all three show the same item view.
 
-Nothing in these files prescribes layout, components, navigation structure or visual style. Where a file
-lists what a screen must show, that is content and priority, not placement. If a path reads better as one
-screen than as two, or a "screen" works better as an overlay or a panel, do that.
+Work from here builds on Direction D. Keep its components and its feel. Within it you are still free to
+explore. Where a new screen has more than one reasonable shape, show two or three variants side by side,
+and the owner will pick.
+
+Nothing in these files prescribes layout or visual style. Where a file lists what a screen must show, that
+is content and priority, not placement.
 
 ## The product
 
@@ -34,6 +38,8 @@ githq is a client for GitHub, not a new tracker:
 - **An issue outside any project is just a GitHub issue.** It is open or closed, with labels, assignees, a
   milestone and so on.
 - **Every edit is a normal GitHub edit,** visible on github.com right away.
+- **githq may compute views from GitHub data,** such as "needs me" or counts, as long as nothing new is
+  stored. Each such view has a precise definition, given in the path that uses it.
 
 ## Principles the design should serve
 
@@ -75,7 +81,15 @@ The things in the app, and what GitHub gives us about each.
   - iteration (a time-boxed cycle with a start date and length).
 
   Each item in a project is an issue, a pull request or a **draft issue**. A draft issue is a title and body
-  that lives only in the project and belongs to no repository.
+  that lives only in the project and belongs to no repository. Archived items are hidden.
+
+  A project may also have **saved views**, defined by its maintainers on GitHub. Each has a name, a filter, a
+  grouping, a sort and a layout (table or board). githq shows them as they are.
+- **Permissions are known up front.** githq knows the user's role in each repository, so it offers only the
+  edits the user is allowed to make. In someone else's open-source repository a contributor can comment and
+  create issues, but not set labels, assignees or milestones.
+- **What a project field change tells us:** what the new value is and when it was set. It does **not**
+  reliably tell us who set it, so don't show "moved by someone".
 - **The user**: login, avatar, the organisations they belong to.
 
 ## Where the data comes from, and what that means for the screens
@@ -93,16 +107,25 @@ The things in the app, and what GitHub gives us about each.
 - **Other people's changes arrive with a delay.** Changes made on github.com, or by others, show up within
   tens of seconds to about a minute. The app refreshes in the background, and the user may want a quiet hint
   of how fresh the data is.
+- **How fresh is what I see?** Because almost everything comes from the local copy, every large surface — a
+  whole list (my work, a project view, a repository) and an opened item — shows whether what it displays is
+  current. Not every row. A surface can be: fresh (checked in the last ~30 seconds); being checked right now;
+  stale (offline, a failing request, or refresh paused by the API allowance); partial (still downloading);
+  answered by GitHub rather than locally (slower); or carrying the user's own edits that GitHub hasn't
+  confirmed yet, or one that failed. Most of the time it's fresh, so the marker must be quiet then and
+  noticeable only when something is off.
 - **Your own edits are instant.** If GitHub rejects one (no permission, an item deleted meanwhile), the edit
   is undone and an error is shown. If two people edit the same thing, the last write wins.
 - **GitHub has an hourly API allowance.** If it runs out, background refresh pauses until the allowance
   resets. Everything already loaded still works, and so do edits. The user should be able to tell that
   refresh is paused.
-- **Code review is not in the app.** Diffs and line comments stay on github.com. One key opens the PR there.
+- **Code review and merging are not in the app.** Diffs, line comments and the merge button stay on
+  github.com. githq shows whether a PR can be merged, and one key opens the PR there.
 - **There is no notifications inbox** in the first version.
 
 ## The paths
 
 - [First sign-in and choosing what to track](first-sign-in.md)
 - [Checking what's on my plate and acting on it](my-work.md)
-- [Working inside a project](project.md)
+- [Working inside a project or a repository](project.md)
+- [Creating an issue](new-issue.md)

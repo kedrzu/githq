@@ -2,6 +2,8 @@
 
 Read `README.md` in this folder first.
 
+**Status:** designed in Direction D (screens G1–G10).
+
 ## Purpose
 
 Someone arrives at githq for the first time, probably from a link or a recommendation, and has never used
@@ -51,6 +53,14 @@ projects githq should copy in full.
 - **Sign-in cancelled or failed** on GitHub's side: the user returns to the start with a short explanation.
 - **Signing in again later.** Data from before is still in the browser, so the user lands straight on their
   work, with no download step.
+
+## Also part of this path
+
+- **Changing what I track, later.** The same choice as on first sign-in, reached from the sidebar ("Track
+  repositories…") or the command menu. It also covers untracking, and tracking projects as well as
+  repositories.
+- **Account.** Who I'm signed in as, signing out (which also clears the copy kept in this browser), and the
+  organisations whose private data is hidden, each with a way to request approval.
 
 ## Questions this design should settle
 
