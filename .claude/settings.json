@@ -1,10 +1,4 @@
 {
-  "extraKnownMarketplaces": {
-    "kedrzu-skills": {
-      "source": { "source": "github", "repo": "kedrzu/skills" },
-      "autoUpdate": true
-    }
-  },
   "enabledPlugins": {
     "dev@kedrzu-skills": true,
     "design-doc@kedrzu-skills": true,
@@ -13,6 +7,18 @@
     "web-search@kedrzu-skills": true,
     "skill-improve@kedrzu-skills": true,
     "skill-creator@claude-plugins-official": true,
-    "secrets@kedrzu-skills": true
+    "secrets@kedrzu-skills": true,
+    "naming@kedrzu-skills": true,
+    "guardrails@kedrzu-skills": true,
+    "claude-md-management@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "kedrzu-skills": {
+      "source": {
+        "source": "github",
+        "repo": "kedrzu/skills"
+      },
+      "autoUpdate": true
+    }
   }
 }

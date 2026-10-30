@@ -118,7 +118,7 @@ w zasadzie w dowolny sposób". Revisit if real use shows lost edits.
 
 ### D9
 
-UI direction: "Direction D — Synthesis" in `design.pen` (frame `I7akNj`), chosen by user 2026-10-12. One app
+UI direction: "Direction D — Synthesis" in `githq.pen` (frame `I7akNj`), chosen by user 2026-10-12. One app
 with three independent switches: sidebar expanded or collapsed to a rail; every list (my work, a project, a
 repository) shown as List or Board with the same toolbar; an item opened in a panel, modal or full page, all
 rendering the same item view. As drawn, it settles two questions left to the visuals, pending the user's
@@ -179,7 +179,7 @@ Archived project items (`isArchived`) are hidden.
 
 ### D14
 
-Second design round (Direction D, `design.pen` frame `I7akNj`, reviewed 2026-10-12) covers every screen the
+Second design round (Direction D, `githq.pen` frame `I7akNj`, reviewed 2026-10-12) covers every screen the
 round-2 prompt asked for: PR view (F1–F4), first sign-in, tracking and account (G1–G10), creating an issue
 (H1–H9), repository (J1–J3), states (K1–K9); fixes in D1/D2/D4 applied (counts 2+3+5+3=13 with a Mentioned
 group, "In progress +1", no "moved by", locally modified view with reset, "Open on GitHub" instead of merge).

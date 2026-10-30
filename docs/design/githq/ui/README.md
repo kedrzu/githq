@@ -5,7 +5,7 @@ one thing a user does in the app. Nothing outside this folder is needed.
 
 ## Where the design stands
 
-The exploration round is done. The owner chose **"Direction D — Synthesis"** in `design.pen` (frame
+The exploration round is done. The owner chose **"Direction D — Synthesis"** in `githq.pen` (frame
 `I7akNj`). It is one app with three independent switches:
 - the sidebar is expanded, or collapsed to a rail;
 - every list (my work, a project, a repository) can be shown as List or Board, with the same toolbar;

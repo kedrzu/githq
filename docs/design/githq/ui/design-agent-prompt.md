@@ -4,7 +4,7 @@ Copy everything below the line into the design agent.
 
 ---
 
-We're continuing work on **githq** in `/Users/kedrzu/Dev/githq/design.pen`, Direction D (frame `I7akNj`). The
+We're continuing work on **githq** in `/Users/kedrzu/Dev/githq/githq.pen`, Direction D (frame `I7akNj`). The
 brief in `/Users/kedrzu/Dev/githq/docs/design/githq/ui/` has been updated. Re-read `README.md` there,
 especially "Where the data comes from": it has two new points, **how fresh is what I see** and
 **permissions are known up front**.
