@@ -48,14 +48,6 @@
       },
       "conflicts": [
         {
-          "who": "Git trademark policy (Software Freedom Conservancy)",
-          "space": "Git itself",
-          "severity": "notable",
-          "url": "https://git-scm.com/about/trademark",
-          "checked_at": "2026-10-30",
-          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
-        },
-        {
           "who": "chobie/githq — PHP git project tracker (githq.org)",
           "space": "git project tracker",
           "severity": "noise",
@@ -69,10 +61,27 @@
           "severity": "noise",
           "url": "https://seo.lmcjl.com/www.githq.cn",
           "checked_at": "2026-10-30"
+        },
+        {
+          "who": "GitHub handle \"Githq\" — dormant user, 0 repos, since 2016",
+          "space": "GitHub handle",
+          "severity": "notable",
+          "url": "https://github.com/Githq",
+          "checked_at": "2026-10-30",
+          "note": "github.com/githq not available; githq-app, githqapp, githq-dev, githqdev, usegithq, getgithq are free"
         }
       ],
       "phonetics": "\"git aitch-queue\" — spelled right once heard; \"HQ\" may be heard as \"headquarters\" → githeadquarters; .com taken",
-      "verdict": "candidate"
+      "verdict": "liked",
+      "trademarks": {
+        "USPTO": "no results for githq or \"git hq\" (live or dead)",
+        "TMview (EU + national)": "no results for githq",
+        "checked_at": "2026-10-30"
+      },
+      "checked_places": "Exa web, GitHub repos/users, npm (githq unclaimed), App Store (no app), USPTO, TMview",
+      "feedback": [
+        "owner: ignore the Git trademark policy (after round 1)"
+      ]
     },
     "GitHive": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -110,14 +119,6 @@
         }
       },
       "conflicts": [
-        {
-          "who": "Git trademark policy (Software Freedom Conservancy)",
-          "space": "Git itself",
-          "severity": "notable",
-          "url": "https://git-scm.com/about/trademark",
-          "checked_at": "2026-10-30",
-          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
-        },
         {
           "who": "GitHive — AI GitHub companion (Product Hunt 2025)",
           "space": "GitHub tooling",
@@ -250,7 +251,18 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "debba/gitdeck — GitHub/GitLab issues+PR dashboard, gitdeck.dev",
+          "space": "GitHub client",
+          "severity": "blocking",
+          "url": "https://github.com/debba/gitdeck",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "gitdeck: OSS GitHub issues/PR/kanban dashboard, 426 stars"
     },
     "GitCamp": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -288,14 +300,6 @@
         }
       },
       "conflicts": [
-        {
-          "who": "Git trademark policy (Software Freedom Conservancy)",
-          "space": "Git itself",
-          "severity": "notable",
-          "url": "https://git-scm.com/about/trademark",
-          "checked_at": "2026-10-30",
-          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
-        },
         {
           "who": "GitCamp — open-source git forge with issues and PRs (gitcamp.net)",
           "space": "git hosting / issue tracking",
@@ -377,7 +381,23 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "githarbor PyPI — unified GitHub/GitLab API client + MCP",
+          "space": "GitHub tooling",
+          "severity": "notable",
+          "url": "https://pypi.org/project/githarbor/",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "who": "stacksjs/GitHarbor — git desktop client",
+          "space": "git client",
+          "severity": "notable",
+          "url": "https://github.com/stacksjs/GitHarbor",
+          "checked_at": "2026-10-30"
+        }
+      ]
     },
     "GitNest": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -416,18 +436,17 @@
       },
       "conflicts": [
         {
-          "who": "Git trademark policy (Software Freedom Conservancy)",
-          "space": "Git itself",
+          "who": "Ankita15k/GitNest — GitHub-clone with issues/PRs, GSSoC 2026",
+          "space": "git hosting",
           "severity": "notable",
-          "url": "https://git-scm.com/about/trademark",
-          "checked_at": "2026-10-30",
-          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
+          "url": "https://github.com/Ankita15k/GitNest",
+          "checked_at": "2026-10-30"
         },
         {
-          "who": "GitNest GitHub user (1 repo)",
-          "space": "none",
-          "severity": "noise",
-          "url": "https://github.com/gitnest",
+          "who": "npm gitnest CLI; Paksonite/gitnest TUI",
+          "space": "git tooling",
+          "severity": "notable",
+          "url": "https://www.npmjs.com/package/gitnest",
           "checked_at": "2026-10-30"
         }
       ],
@@ -540,7 +559,16 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitHall App — publishes GitHub Issues as support page (likely dead)",
+          "space": "GitHub Issues tooling",
+          "severity": "notable",
+          "url": "https://axolo.co/integrations/githall-app",
+          "checked_at": "2026-10-30"
+        }
+      ]
     },
     "GitHome": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -1044,7 +1072,16 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "githelm.com — web app monitoring GitHub PRs/Actions across repos (small, active)",
+          "space": "GitHub client",
+          "severity": "notable",
+          "url": "https://githelm.com",
+          "checked_at": "2026-10-30"
+        }
+      ]
     },
     "GitCabin": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -1087,23 +1124,27 @@
       "round": 1,
       "domains": {
         "gitattic.com": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "standard (.com+.net bundle $21.07)",
           "checked_at": "2026-10-30"
         },
         "gitattic.dev": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitattic.app": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitattic.io": {
-          "status": "likely-free",
-          "method": "whois",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$51.80/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitattic.sh": {
@@ -1116,7 +1157,9 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [],
+      "phonetics": "clear; attic = storage, slightly dusty connotation"
     },
     "GitLoft": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -1164,18 +1207,21 @@
           "checked_at": "2026-10-30"
         },
         "gitshed.dev": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitshed.app": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitshed.io": {
-          "status": "likely-free",
-          "method": "whois",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$51.80/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitshed.sh": {
@@ -1188,7 +1234,24 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "npm gitshed — schedule git pushes",
+          "space": "git tooling",
+          "severity": "noise",
+          "url": "https://www.npmjs.com/package/gitshed",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "who": "gitshed.com — guitar community",
+          "space": "unrelated",
+          "severity": "noise",
+          "url": "https://gitshed.com",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "clear; shed = small workplace, humble; also \"shed\" as in drop"
     },
     "GitBarn": {
       "direction": "git + a place word (the HQ idea: one home base)",
@@ -1260,7 +1323,25 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitTasks — task manager stored in your GitHub repo",
+          "space": "GitHub task manager",
+          "severity": "blocking",
+          "url": "https://gittasks.com",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "who": "git-task Rust crate syncing GitHub issues",
+          "space": "dev task tracker",
+          "severity": "notable",
+          "url": "https://github.com/jhspetersson/git-task",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "sound-alike GitTasks task manager on GitHub + several small git-task tools"
     },
     "GitTrack": {
       "direction": "git + a work/planning word",
@@ -1296,7 +1377,16 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitTrack Discord bot for GitHub notifications (40 stars) + several dead dashboards",
+          "space": "GitHub tooling",
+          "severity": "notable",
+          "url": "https://github.com/luuccaaaa/gittrack-discord-bot",
+          "checked_at": "2026-10-30"
+        }
+      ]
     },
     "GitDone": {
       "direction": "git + a work/planning word",
@@ -1548,7 +1638,18 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitQueue — PR merge-queue SaaS, GitHub Marketplace",
+          "space": "GitHub tooling",
+          "severity": "blocking",
+          "url": "https://gitqueue.com",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "GitQueue merge-queue SaaS on GitHub Marketplace"
     },
     "GitPace": {
       "direction": "git + a work/planning word",
@@ -1620,7 +1721,18 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitSprint — GitHub-synced sprint/issue manager",
+          "space": "dev task tracking",
+          "severity": "blocking",
+          "url": "https://github.com/leocodeio/gitsprint-opensource",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "GitSprint GitHub-synced sprint manager launched Feb 2026 (domain lapsed)"
     },
     "GitCycle": {
       "direction": "git + a work/planning word",
@@ -1872,7 +1984,16 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "hekmekk/git-team — commit co-author CLI, 51 stars",
+          "space": "git tooling",
+          "severity": "notable",
+          "url": "https://github.com/hekmekk/git-team",
+          "checked_at": "2026-10-30"
+        }
+      ]
     },
     "GitDaily": {
       "direction": "git + a work/planning word",
@@ -1908,30 +2029,45 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitDailies — GitHub PR metrics and daily digests",
+          "space": "GitHub tooling",
+          "severity": "blocking",
+          "url": "https://gitdailies.com",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "sound-alike GitDailies on GitHub Marketplace"
     },
     "GitAgenda": {
       "direction": "git + a work/planning word",
       "round": 1,
       "domains": {
         "gitagenda.com": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "standard (.com+.net bundle $21.07)",
           "checked_at": "2026-10-30"
         },
         "gitagenda.dev": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitagenda.app": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitagenda.io": {
-          "status": "unknown",
-          "method": "whois",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$51.80/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitagenda.sh": {
@@ -1944,7 +2080,17 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "student contact-book repos",
+          "space": "unrelated",
+          "severity": "noise",
+          "url": "https://github.com/DavidSSouza050/gitAgenda",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "clear; \"agenda\" fits a my-work view"
     },
     "GitLedger": {
       "direction": "git + a work/planning word",
@@ -2016,7 +2162,18 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "GitDocket — git-native tasks/docs tracker for coding agents",
+          "space": "dev task tracking",
+          "severity": "blocking",
+          "url": "https://gitdocket.com",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "GitDocket git-native task tracker, active 2026"
     },
     "GitRoster": {
       "direction": "git + a work/planning word",
@@ -2352,13 +2509,15 @@
           "checked_at": "2026-10-30"
         },
         "gitkeys.dev": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitkeys.app": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitkeys.io": {
@@ -2376,7 +2535,17 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [
+        {
+          "who": "small SSH-key utilities named gitkeys",
+          "space": "git/ssh utils",
+          "severity": "noise",
+          "url": "https://github.com/paepckehh/gitkeys",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "clear; nods to keyboard-first, but reads as SSH keys"
     },
     "GitZoom": {
       "direction": "git + speed or calm",
@@ -2419,23 +2588,27 @@
       "round": 1,
       "domains": {
         "gitbrisk.com": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "standard (.com+.net bundle $21.07)",
           "checked_at": "2026-10-30"
         },
         "gitbrisk.dev": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitbrisk.app": {
-          "status": "likely-free",
-          "method": "rdap",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitbrisk.io": {
-          "status": "unknown",
-          "method": "whois",
+          "status": "free",
+          "method": "porkbun",
+          "price": "$51.80/yr renewal",
           "checked_at": "2026-10-30"
         },
         "gitbrisk.sh": {
@@ -2448,7 +2621,9 @@
           "method": "whois",
           "checked_at": "2026-10-30"
         }
-      }
+      },
+      "conflicts": [],
+      "phonetics": "clear; brisk = fast, matches \"snappy above all\""
     },
     "GitNimble": {
       "direction": "git + speed or calm",

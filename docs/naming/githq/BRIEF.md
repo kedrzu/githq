@@ -13,6 +13,7 @@ acceptable if nothing technical is open (owner, round 1).
 - Strongly prefers names starting with "git" — instantly says what the product is (round 1).
 - Open to other names, but "git" names come first (round 1).
 - Considered GitHive himself (round 1).
+- Git trademark policy is not a concern — "nie przejmujemy się licencjami na nazwę Git" (after round 1).
 
 ## Rejected directions
 - (none yet)
@@ -21,4 +22,4 @@ acceptable if nothing technical is open (owner, round 1).
 - Git trademark policy (git-scm.com/about/trademark §2.3) forbids "Git" as a syllable or part of a
   portmanteau in a third-party mark; GitHub and GitLab are licensed exceptions. Many products ignore it
   (GitKraken, Gitpod, GitBook, GitButler, Gitea). The policy's sanctioned form is "<Name> for Git".
-  Owner has not yet decided how much this matters (round 1).
+  Owner decided to ignore it (after round 1).

@@ -24,3 +24,25 @@ GitBarn, GitTeam, GitDaily, GitKeys, GitZoom (conflicts not yet checked beyond G
 **Proposed next.** Owner decides on the trademark question. If he keeps githq: confirm on TMview/USPTO and
 done. If he wants alternatives: conflict-check the runner-ups, and open a "<word> for GitHub"-free direction
 of two-word compounds without git (e.g. verb+noun) as a hedge.
+
+## Round 2 — 2026-10-30
+
+**Owner on round 1.** Ignore the Git trademark policy ("nie przejmujemy się licencjami na nazwę Git");
+keep going with git names. Recorded as a standing preference.
+**Directions.** No new generation; deepened round 1: trademark and handle checks for GitHQ, conflict
+checks for 17 runner-ups (subagent: Exa, GitHub repos/users, npm, App Store, Product Hunt via Exa),
+Porkbun confirmation for the clean ones.
+**What came out.**
+- GitHQ: no marks at USPTO (githq, "git hq") or TMview; no app, npm name unclaimed. Only catch:
+  github.com/githq is a dormant user from 2016 (0 repos), so the org needs a variant (githq-app, githqdev,
+  usegithq… all free).
+- The git+work-word space is crowded with GitHub tools: GitQueue, GitDocket, GitDeck, GitDaily (GitDailies),
+  GitTask (GitTasks), GitSprint are all live or recent products in our space — dropped.
+- Notable (small same-space projects): GitHelm (githelm.com is a GitHub PR monitor), GitTrack, GitNest,
+  GitHarbor, GitHall, GitTeam.
+- Clean: GitAgenda, GitBrisk, GitAttic (all with .com free at standard price, plus .dev/.app/.io), GitKeys
+  and GitShed (.dev/.app). Confirmed at Porkbun.
+- .dev/.app lookups via whois are rate-limited (many `unknown`); Porkbun is the reliable check for them.
+**Best.** GitHQ (strongest overall). Alternatives with a free .com: GitBrisk (speed), GitAgenda (my-work view).
+**Proposed next.** If GitHQ is the pick: register githq.dev (+ .app), create a GitHub org variant. If the
+owner wants more alternatives: a new round of git + a short positive word about speed/clarity (Brisk did well).
