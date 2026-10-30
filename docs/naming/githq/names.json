@@ -1,0 +1,3786 @@
+{
+  "tlds": [
+    "com",
+    "dev",
+    "app",
+    "io",
+    "sh",
+    "so"
+  ],
+  "names": {
+    "GitHQ": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githq.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githq.dev": {
+          "status": "free",
+          "method": "porkbun",
+          "price": "$12.87/yr renewal",
+          "checked_at": "2026-10-30"
+        },
+        "githq.app": {
+          "status": "free",
+          "method": "porkbun",
+          "price": "$14.93/yr renewal",
+          "checked_at": "2026-10-30"
+        },
+        "githq.io": {
+          "status": "free",
+          "method": "porkbun",
+          "price": "$51.80/yr renewal",
+          "checked_at": "2026-10-30"
+        },
+        "githq.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githq.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      },
+      "conflicts": [
+        {
+          "who": "Git trademark policy (Software Freedom Conservancy)",
+          "space": "Git itself",
+          "severity": "notable",
+          "url": "https://git-scm.com/about/trademark",
+          "checked_at": "2026-10-30",
+          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
+        },
+        {
+          "who": "chobie/githq — PHP git project tracker (githq.org)",
+          "space": "git project tracker",
+          "severity": "noise",
+          "url": "https://github.com/chobie/githq",
+          "checked_at": "2026-10-30",
+          "note": "4 stars, 2011, dead"
+        },
+        {
+          "who": "githq.cn — Beijing company site",
+          "space": "unknown",
+          "severity": "noise",
+          "url": "https://seo.lmcjl.com/www.githq.cn",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "\"git aitch-queue\" — spelled right once heard; \"HQ\" may be heard as \"headquarters\" → githeadquarters; .com taken",
+      "verdict": "candidate"
+    },
+    "GitHive": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githive.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githive.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githive.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githive.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githive.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githive.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      },
+      "conflicts": [
+        {
+          "who": "Git trademark policy (Software Freedom Conservancy)",
+          "space": "Git itself",
+          "severity": "notable",
+          "url": "https://git-scm.com/about/trademark",
+          "checked_at": "2026-10-30",
+          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
+        },
+        {
+          "who": "GitHive — AI GitHub companion (Product Hunt 2025)",
+          "space": "GitHub tooling",
+          "severity": "notable",
+          "url": "https://www.toptool.app/en/product/githive",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "who": "githive.dev — git over DHT prototype",
+          "space": "git hosting",
+          "severity": "notable",
+          "url": "https://www.githive.dev/",
+          "checked_at": "2026-10-30"
+        },
+        {
+          "who": "several student GitHub-API projects named GitHive",
+          "space": "GitHub tooling",
+          "severity": "noise",
+          "url": "https://github.com/bharathguntreddi3/GitHive",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "clear; \"hive\" carries team/collaboration warmth",
+      "verdict": "dropped",
+      "reason": "githive.dev and .app taken; crowded root among small GitHub tools"
+    },
+    "GitBase": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitbase.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbase.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbase.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbase.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbase.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbase.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDesk": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitdesk.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdesk.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdesk.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdesk.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdesk.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdesk.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDeck": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitdeck.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdeck.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdeck.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdeck.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdeck.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdeck.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCamp": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitcamp.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcamp.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcamp.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcamp.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcamp.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcamp.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      },
+      "conflicts": [
+        {
+          "who": "Git trademark policy (Software Freedom Conservancy)",
+          "space": "Git itself",
+          "severity": "notable",
+          "url": "https://git-scm.com/about/trademark",
+          "checked_at": "2026-10-30",
+          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
+        },
+        {
+          "who": "GitCamp — open-source git forge with issues and PRs (gitcamp.net)",
+          "space": "git hosting / issue tracking",
+          "severity": "blocking",
+          "url": "https://www.gitcamp.net/",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "verdict": "dropped",
+      "reason": "active git forge with issues under the same name; also echoes Basecamp"
+    },
+    "GitDock": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitdock.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdock.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdock.app": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdock.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdock.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdock.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitHarbor": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githarbor.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githarbor.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githarbor.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githarbor.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githarbor.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githarbor.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitNest": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitnest.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitnest.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitnest.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitnest.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitnest.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitnest.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      },
+      "conflicts": [
+        {
+          "who": "Git trademark policy (Software Freedom Conservancy)",
+          "space": "Git itself",
+          "severity": "notable",
+          "url": "https://git-scm.com/about/trademark",
+          "checked_at": "2026-10-30",
+          "note": "Policy forbids \"Git\" as a syllable or portmanteau part of a third-party mark; GitHub/GitLab are licensed exceptions. Widely ignored in practice (GitKraken, Gitpod, GitBook, GitButler) but applies to every Git* name."
+        },
+        {
+          "who": "GitNest GitHub user (1 repo)",
+          "space": "none",
+          "severity": "noise",
+          "url": "https://github.com/gitnest",
+          "checked_at": "2026-10-30"
+        }
+      ],
+      "phonetics": "clear",
+      "verdict": "candidate"
+    },
+    "GitYard": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gityard.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gityard.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gityard.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gityard.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gityard.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gityard.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDen": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitden.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitden.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitden.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitden.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitden.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitden.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitHall": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githall.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githall.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githall.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githall.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githall.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githall.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitHome": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githome.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githome.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githome.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githome.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githome.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githome.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitPort": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitport.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitport.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitport.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitport.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitport.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitport.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitPier": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitpier.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitpier.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitpier.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitpier.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitpier.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitpier.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitLodge": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitlodge.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlodge.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitlodge.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitlodge.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitlodge.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitlodge.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDepot": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitdepot.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdepot.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdepot.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdepot.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdepot.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdepot.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitPost": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitpost.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitpost.dev": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitpost.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitpost.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitpost.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitpost.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBench": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitbench.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbench.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbench.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbench.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbench.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbench.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitStation": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitstation.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitstation.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitstation.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitstation.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitstation.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitstation.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCourt": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitcourt.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcourt.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcourt.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcourt.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcourt.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcourt.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitFort": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitfort.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitfort.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitfort.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitfort.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitfort.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitfort.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitKeep": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitkeep.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeep.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeep.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeep.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeep.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeep.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCastle": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitcastle.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcastle.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcastle.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcastle.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcastle.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcastle.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBridge": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitbridge.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbridge.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbridge.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbridge.io": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbridge.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbridge.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitHelm": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "githelm.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "githelm.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githelm.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "githelm.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githelm.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "githelm.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCabin": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitcabin.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcabin.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcabin.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcabin.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcabin.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcabin.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitAttic": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitattic.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitattic.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitattic.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitattic.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitattic.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitattic.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitLoft": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitloft.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitloft.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitloft.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitloft.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitloft.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitloft.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitShed": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitshed.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitshed.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitshed.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitshed.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitshed.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitshed.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBarn": {
+      "direction": "git + a place word (the HQ idea: one home base)",
+      "round": 1,
+      "domains": {
+        "gitbarn.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbarn.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbarn.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbarn.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbarn.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbarn.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTask": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gittask.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittask.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittask.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittask.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittask.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittask.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTrack": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gittrack.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittrack.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittrack.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittrack.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittrack.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittrack.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDone": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitdone.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdone.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdone.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdone.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdone.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdone.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitShip": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitship.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitship.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitship.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitship.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitship.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitship.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBoard": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitboard.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitboard.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitboard.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitboard.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitboard.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitboard.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitPlan": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitplan.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitplan.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitplan.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitplan.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitplan.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitplan.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitList": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitlist.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlist.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlist.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitlist.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlist.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlist.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTodo": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gittodo.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittodo.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittodo.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittodo.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittodo.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittodo.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitQueue": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitqueue.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitqueue.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitqueue.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitqueue.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitqueue.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitqueue.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitPace": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitpace.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitpace.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitpace.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitpace.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitpace.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitpace.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitSprint": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitsprint.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitsprint.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitsprint.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitsprint.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitsprint.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitsprint.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCycle": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitcycle.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcycle.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcycle.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcycle.io": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcycle.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcycle.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitFocus": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitfocus.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitfocus.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitfocus.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitfocus.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitfocus.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitfocus.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTriage": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gittriage.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittriage.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittriage.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittriage.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittriage.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittriage.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitLane": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitlane.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlane.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlane.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlane.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitlane.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitlane.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitMap": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitmap.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitmap.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitmap.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitmap.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitmap.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitmap.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCrew": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitcrew.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcrew.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcrew.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcrew.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcrew.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcrew.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTeam": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitteam.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitteam.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitteam.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitteam.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitteam.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitteam.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDaily": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitdaily.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdaily.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdaily.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdaily.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdaily.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdaily.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitAgenda": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitagenda.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitagenda.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitagenda.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitagenda.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitagenda.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitagenda.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitLedger": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitledger.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitledger.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitledger.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitledger.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitledger.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitledger.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDocket": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitdocket.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdocket.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdocket.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdocket.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdocket.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdocket.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitRoster": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitroster.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitroster.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitroster.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitroster.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitroster.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitroster.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTally": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gittally.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittally.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittally.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gittally.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittally.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittally.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitChores": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitchores.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitchores.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitchores.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitchores.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitchores.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitchores.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitMinder": {
+      "direction": "git + a work/planning word",
+      "round": 1,
+      "domains": {
+        "gitminder.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitminder.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitminder.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitminder.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitminder.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitminder.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitSnap": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitsnap.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitsnap.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitsnap.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitsnap.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitsnap.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitsnap.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitDash": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitdash.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdash.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdash.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitdash.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitdash.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitdash.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitSwift": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitswift.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitswift.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitswift.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitswift.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitswift.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitswift.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBolt": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitbolt.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbolt.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbolt.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbolt.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitbolt.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbolt.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitRush": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitrush.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitrush.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitrush.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitrush.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitrush.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitrush.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitKeys": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitkeys.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeys.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeys.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeys.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeys.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitkeys.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitZoom": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitzoom.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitzoom.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitzoom.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitzoom.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitzoom.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitzoom.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitBrisk": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitbrisk.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbrisk.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbrisk.app": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitbrisk.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbrisk.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitbrisk.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitNimble": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitnimble.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitnimble.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitnimble.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitnimble.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitnimble.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitnimble.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitQuick": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitquick.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitquick.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitquick.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitquick.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitquick.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitquick.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitZen": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitzen.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitzen.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitzen.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitzen.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitzen.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitzen.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitCalm": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitcalm.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitcalm.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcalm.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitcalm.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcalm.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitcalm.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitTidy": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gittidy.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittidy.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittidy.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gittidy.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittidy.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gittidy.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitNeat": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitneat.com": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitneat.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitneat.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitneat.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitneat.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitneat.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "GitClear": {
+      "direction": "git + speed or calm",
+      "round": 1,
+      "domains": {
+        "gitclear.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "gitclear.dev": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitclear.app": {
+          "status": "unknown",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "gitclear.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitclear.sh": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "gitclear.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Helm": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "helm.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "helm.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "helm.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "helm.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "helm.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "helm.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Bridge": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "bridge.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "bridge.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "bridge.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "bridge.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "bridge.sh": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "bridge.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Hangar": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "hangar.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hangar.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hangar.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hangar.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hangar.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hangar.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Basecamp": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "basecamp.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "basecamp.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "basecamp.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "basecamp.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "basecamp.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "basecamp.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Outpost": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "outpost.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "outpost.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "outpost.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "outpost.io": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "outpost.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "outpost.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Homebase": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "homebase.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "homebase.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "homebase.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "homebase.io": {
+          "status": "unknown",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "homebase.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "homebase.so": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Docket": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "docket.com": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "docket.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "docket.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "docket.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "docket.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "docket.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Ledger": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "ledger.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "ledger.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "ledger.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "ledger.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "ledger.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "ledger.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Roster": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "roster.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "roster.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "roster.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "roster.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "roster.sh": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "roster.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Tally": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "tally.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "tally.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "tally.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "tally.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "tally.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "tally.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Triage": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "triage.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "triage.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "triage.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "triage.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "triage.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "triage.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Burrow": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "burrow.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "burrow.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "burrow.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "burrow.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "burrow.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "burrow.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Hive": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "hive.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hive.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hive.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hive.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hive.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "hive.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Den": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "den.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "den.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "den.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "den.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "den.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "den.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Nook": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "nook.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "nook.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "nook.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "nook.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "nook.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "nook.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Perch": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "perch.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "perch.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "perch.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "perch.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "perch.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "perch.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Lookout": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "lookout.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lookout.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lookout.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lookout.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lookout.sh": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "lookout.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Beacon": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "beacon.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "beacon.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "beacon.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "beacon.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "beacon.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "beacon.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Compass": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "compass.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "compass.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "compass.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "compass.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "compass.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "compass.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Deckhand": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "deckhand.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "deckhand.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "deckhand.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "deckhand.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "deckhand.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "deckhand.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Quarters": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "quarters.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "quarters.dev": {
+          "status": "likely-free",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "quarters.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "quarters.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "quarters.sh": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "quarters.so": {
+          "status": "likely-free",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Lodge": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "lodge.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lodge.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lodge.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lodge.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lodge.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "lodge.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Porch": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "porch.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "porch.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "porch.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "porch.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "porch.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "porch.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Atrium": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "atrium.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "atrium.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "atrium.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "atrium.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "atrium.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "atrium.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Foyer": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "foyer.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "foyer.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "foyer.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "foyer.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "foyer.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "foyer.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Switchyard": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "switchyard.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "switchyard.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "switchyard.app": {
+          "status": "taken",
+          "method": "rdap",
+          "checked_at": "2026-10-30"
+        },
+        "switchyard.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "switchyard.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "switchyard.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Harbor": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "harbor.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "harbor.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "harbor.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "harbor.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "harbor.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "harbor.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Cove": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "cove.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "cove.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "cove.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "cove.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "cove.sh": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "cove.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Kiln": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "kiln.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "kiln.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "kiln.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "kiln.io": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "kiln.sh": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "kiln.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    },
+    "Anvil": {
+      "direction": "everyday word, no git: home base / command post",
+      "round": 1,
+      "domains": {
+        "anvil.com": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "anvil.dev": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "anvil.app": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "anvil.io": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        },
+        "anvil.sh": {
+          "status": "taken",
+          "method": "whois",
+          "checked_at": "2026-10-30"
+        },
+        "anvil.so": {
+          "status": "taken",
+          "method": "dns",
+          "checked_at": "2026-10-30"
+        }
+      }
+    }
+  }
+}
