@@ -1,0 +1,16 @@
+{
+    "worktree": {
+        "setup": "zsh setup.sh"
+    },
+    "metadataGeneration": {
+        "branchName": {
+            "instructions": "Use `<type>/<short-kebab-slug>`, type one of feat, fix, chore, design, docs; with a GitHub issue `<type>/<issue>-<slug>`, e.g. `feat/12-my-work-list`."
+        },
+        "commitMessage": {
+            "instructions": "English, imperative, no prefix, no trailing period; the subject says what changes for the user or the code, e.g. `Show review requests first in My work`."
+        },
+        "pullRequest": {
+            "instructions": "The title becomes the squash commit on main, so it follows the commit message style: English, imperative, no prefix. The body is in Polish: what changed and why; keep `Closes #<issue>` when the branch has an issue."
+        }
+    }
+}
