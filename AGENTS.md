@@ -24,9 +24,32 @@ Designed, not yet built. The design is `docs/design/githq/` (start at its `READM
 
 Chosen, replicating the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, nzyme as a git submodule (`nzyme/`, deps as `workspace:*`), Nuxt 4 SPA (`ssr: false`, static build), one Cloudflare Worker serving the SPA and the OAuth token exchange, IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen (pattern of `healedcare/healed` `packages/healthie`). Details: `docs/design/githq/DECISIONS.md` D16–D19.
 
-Commands: TODO — the first build step creates the workspace; then run `/dev:setup` to write the project's `verify` and `git-workflow` skills and fill this section.
+Commands: TODO — the first build step creates the workspace; then run `/dev:setup` to write the project's `verify` skill and fill this section (`git-workflow` already exists).
 
-`zsh setup.sh` prepares a checkout or worktree (Paseo runs it via `paseo.json`); today it only initialises the nzyme submodule.
+`zsh setup.sh` prepares a checkout or worktree (Paseo runs it via `paseo.json`); until the first package exists it does no build.
+
+## How we work
+
+- Talk to the owner in **Polish**, plainly. Code, names in code, commit messages and PR titles in English; PR
+  descriptions and issue comments in Polish. Design documents in `docs/design/` are in English.
+
+## Worktrees and pull requests
+
+Work happens in Paseo worktrees, several at once: one task = one worktree = one branch = one PR. When Paseo
+creates a worktree it runs `setup.sh` (`paseo.json`): it merges `origin/main` into the new branch,
+fast-forwards the local `main`, copies files that live outside git from the main checkout (`CLAUDE.local.md`,
+`.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
+
+**Without asking** (standing permission): name the branch and the workspace once the task is known; at the
+end of every turn that changed files — commit, catch up with `main`, push, then open the PR (ready for review,
+not a draft) or update its description when the scope grew. Keep the branch current with `main` by merging,
+never rebase or force-push; resolve conflicts yourself. End with the PR link.
+
+**Only on the owner's word** ("mergujemy", "merge it"): the squash merge. Never push to `main` — the `git`
+plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an
+explicit throwaway experiment.
+
+The commands for every step are in the `git-workflow` skill (`.claude/skills/git-workflow/`).
 
 ## Agent skills
 
