@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) and the state (open by default, closed, both) beside the title; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that, and offers to track the repository, after which the rest arrives in place. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) and the state (open by default, closed, both) beside the title; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -320,6 +320,12 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           />
           {{ t(l.notTracked) }}
         </span>
+        <SegmentedTabs
+          v-model="kind"
+          :class="css.repositoryView_kinds"
+          :label="t(l.kinds)"
+          :options="kindOptions"
+        />
         <span :class="css.repositoryView_spacer" />
         <Button
           variant="ghost"

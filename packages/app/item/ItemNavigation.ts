@@ -2,14 +2,13 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { shallowRef } from 'vue';
 
-import { Browser } from '@/services/Browser.js';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 
-import { ITEM_ARRANGEMENTS } from './itemRoutes.js';
 import type { ItemArrangement } from './itemRoutes.js';
 
 /** The list items are opened from: where it is, and its items top to bottom as it shows them. */
 export interface ItemList {
-    /** The list's address, query included (`/my/assigned?…`): where closing an item goes back to. */
+    /** The list's address, query included (`/issues/assigned?…`): where closing an item goes back to. */
     readonly path: string;
     /** The ids of the items it shows, in its order: what `K`/`J` step through. */
     readonly ids: readonly string[];
@@ -19,8 +18,6 @@ export interface ItemList {
 export interface ItemSelectionRequest {
     readonly ids: readonly string[];
 }
-
-const ARRANGEMENT_KEY = 'githq.itemArrangement';
 
 /**
  * What opening items carries from one moment to the next, shared by the lists and the item view: the
@@ -32,13 +29,9 @@ export type ItemNavigation = Resolved<typeof ItemNavigation>;
 export const ItemNavigation = defineService({
     name: 'ItemNavigation',
     deps: {
-        browser: Browser,
+        preferences: LocalPreferences,
     },
-    setup({ browser }) {
-        const kept = browser.localStorage.getItem(ARRANGEMENT_KEY);
-        const arrangementRef = shallowRef<ItemArrangement>(
-            ITEM_ARRANGEMENTS.find(candidate => candidate === kept) ?? 'panel',
-        );
+    setup({ preferences }) {
         const listRef = shallowRef<ItemList | null>(null);
         const lastOpenedRef = shallowRef<string | null>(null);
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
@@ -46,7 +39,14 @@ export const ItemNavigation = defineService({
         return {
             /** The arrangement an item opens in; reactive. */
             get arrangement() {
-                return arrangementRef.value;
+                return preferences.itemArrangement.value;
+            },
+            /**
+             * How an item opened over a list shows: in the modal when that is the arrangement remembered, else in
+             * the panel — a remembered `page` too, for the address opens it over the list. Reactive.
+             */
+            get listArrangement(): Exclude<ItemArrangement, 'page'> {
+                return preferences.itemArrangement.value === 'modal' ? 'modal' : 'panel';
             },
             /** The list shown last; `null` before any (an item's page opened by its address). Reactive. */
             get list() {
@@ -67,8 +67,7 @@ export const ItemNavigation = defineService({
         };
 
         function setArrangement(arrangement: ItemArrangement) {
-            arrangementRef.value = arrangement;
-            browser.localStorage.setItem(ARRANGEMENT_KEY, arrangement);
+            preferences.itemArrangement.value = arrangement;
         }
 
         function setList(list: ItemList) {

@@ -194,6 +194,7 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
             crypto.getRandomValues(bytes);
         },
         navigate: () => {},
+        replaceLocation: () => {},
         openInNewTab: () => {},
         onLocalStorageChange: listener => {
             storageListeners.push(listener);

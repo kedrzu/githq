@@ -511,6 +511,7 @@ async function setup(github: FakeGitHub, login: string) {
             crypto.getRandomValues(bytes);
         },
         navigate: () => {},
+        replaceLocation: () => {},
         openInNewTab: () => {},
         onLocalStorageChange: listener => {
             storageListeners.push(listener);

@@ -11,7 +11,7 @@ test('signing out goes back to sign-in and forgets the token', async ({ page, gi
     await shell.signOut(SAMPLE_VIEWER.viewer.login);
 
     const signInScreen = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/sign-in?next=/');
+    await expect(page).toHaveURL('/login?next=/');
     await expect(signInScreen.signInButton).toBeVisible();
     await expect(signInScreen.notice).toBeHidden();
     expect(await readStoredToken(page)).toBeNull();
@@ -25,7 +25,7 @@ test('signing out in one tab signs out the others too', async ({ page, context, 
 
     await shell.signOut(SAMPLE_VIEWER.viewer.login);
 
-    await expect(otherTab).toHaveURL('/sign-in?next=/');
+    await expect(otherTab).toHaveURL('/login?next=/');
     await expect(new SignInScreenHarness(otherTab).signInButton).toBeVisible();
 });
 
@@ -36,7 +36,7 @@ test('a stored token GitHub no longer accepts signs out, saying why', async ({ p
     await page.reload();
 
     const signInScreen = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/sign-in?next=/&failed=tokenRejected');
+    await expect(page).toHaveURL('/login?next=/&failed=tokenRejected');
     await expect(signInScreen.notice).toContainText('You were signed out');
     expect(await readStoredToken(page)).toBeNull();
 });

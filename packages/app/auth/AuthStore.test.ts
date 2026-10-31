@@ -315,6 +315,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         navigate: url => {
             navigatedTo.push(url);
         },
+        replaceLocation: () => {},
         openInNewTab: () => {},
         onLocalStorageChange: listener => {
             storageListeners.push(listener);

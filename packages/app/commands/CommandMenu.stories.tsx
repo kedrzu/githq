@@ -54,7 +54,7 @@ const NAVIGATION: NavigationData = {
             title: 'sigma-clinic/portal',
             path: '/sigma-clinic/portal',
         },
-        { id: 'tracking', group: 'goTo', kind: 'tracking', title: 'Track repositories…', path: '/tracking' },
+        { id: 'tracking', group: 'goTo', kind: 'tracking', title: 'Track repositories…', path: '/settings/tracking' },
     ],
     trackedRepositories: ['sigma-clinic/portal'],
     items: D1_ITEMS,

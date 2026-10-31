@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for the tracking page (`TrackingView.vue`, on `/tracking` — G8): what is tracked, each row with
+ * Playwright harness for the tracking page (`TrackingView.vue`, on `/settings/tracking` — G8): what is tracked, each row with
  * "Untrack" while it is hovered or focused.
  */
 export class TrackingScreenHarness {

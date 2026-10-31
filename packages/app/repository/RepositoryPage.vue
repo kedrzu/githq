@@ -1,10 +1,10 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
@@ -18,7 +18,7 @@ import { ProjectStore } from '@/projects/ProjectStore.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { getProjectPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, getRepositoryKind, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 
@@ -36,17 +36,27 @@ const tracking = useService(TrackingStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 const route = useRoute();
+const router = useRouter();
 const t = useTranslate();
 const list = useItemList();
 
 const state = ref<RepositoryState>('open');
-const kind = ref<RepositoryKind>('all');
 const notFound = ref(false);
 const trackBusy = ref(false);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
 const nameWithOwner = computed(() => `${owner.value}/${name.value}`);
+/**
+ * The kind of items listed is the address's (`/owner/name/issues`); a tab replaces it, keeping the query (an item
+ * opened over the list) — the same page stays, with its selection and view options.
+ */
+const kind = computed({
+  get: () => getRepositoryKind(route.params.kind),
+  set: (value: RepositoryKind) => {
+    void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
+  },
+});
 const view = useListViewOptions({
   list: () => `repository:${nameWithOwner.value}`,
   defaults: REPOSITORY_VIEW_DEFAULTS,
@@ -77,7 +87,7 @@ const repositoryList = computed(() =>
     items: repositoryItems.value,
     // Not tracked, the copy holds what concerns the user — open items of my work; nothing else is offered.
     state: tracked.value ? state.value : 'open',
-    kind: tracked.value ? kind.value : 'all',
+    kind: kind.value,
     grouping: tracked.value ? view.options.grouping : 'none',
     sort: view.options.sort,
     texts: texts.value,

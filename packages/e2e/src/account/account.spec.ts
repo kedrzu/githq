@@ -36,7 +36,7 @@ test('the account page shows an organisation hiding its private data, and rememb
 
     await shell.openAccount(LOGIN);
     const account = new AccountScreenHarness(page);
-    await expect(page).toHaveURL('/account');
+    await expect(page).toHaveURL('/settings');
     await expect(account.heading).toBeVisible();
     await expect(account.root).toContainText(/member of\s2 organisations/);
     await expect(account.organization('acme')).toContainText('No restrictions');
@@ -62,7 +62,7 @@ test('⌘K finds the account page', async ({ page, github }) => {
     await page.keyboard.type('account');
     await page.keyboard.press('Enter');
 
-    await expect(page).toHaveURL('/account');
+    await expect(page).toHaveURL('/settings');
     await expect(new AccountScreenHarness(page).root).toContainText('member of no organisations');
 });
 
@@ -93,7 +93,7 @@ test("signing out on the account page deletes this browser's copy and signs out 
     await account.signOutButton.click();
 
     for (const tab of [page, otherTab]) {
-        await expect(tab).toHaveURL(/^[^?]*\/sign-in\?next=/);
+        await expect(tab).toHaveURL(/^[^?]*\/login\?next=/);
         await expect(new SignInScreenHarness(tab).signInButton).toBeVisible();
         expect(await readStoredToken(tab)).toBeNull();
         await expect.poll(() => readLocalDatabases(tab)).not.toContain(`githq-${LOGIN}`);

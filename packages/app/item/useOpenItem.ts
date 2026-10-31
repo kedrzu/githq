@@ -17,9 +17,9 @@ export interface OpenItemOptions {
 }
 
 /**
- * Opening an item as lists and the command menu do: over the screen in the arrangement of the one opened, else
- * the one used last (`ItemNavigation`), or on its own page. An issue being created has no number to open it by
- * yet: it is not opened.
+ * Opening an item as lists and the command menu do: where the one opened is shown — its own page, or over the
+ * screen's list — else where the arrangement remembered in this browser says (`ItemNavigation`). Over a list it
+ * shows in the panel or the modal the browser remembers, which the address does not say. An issue being created has no number to open it by yet: it is not opened.
  */
 export function useOpenItem() {
     const navigation = useService(ItemNavigation);
@@ -35,13 +35,13 @@ export function useOpenItem() {
 
         const reference = getItemReference(item);
         const opened = getOpenedItemRoute(route);
-        const arrangement = opened?.arrangement ?? navigation.arrangement;
-        if (arrangement === 'page') {
+        // An item opened already keeps where it is shown; else the remembered arrangement decides.
+        if (opened ? opened.onPage : navigation.arrangement === 'page') {
             void router.push(getItemPagePath(reference, item.kind));
             return;
         }
 
-        const location = { path: route.path, query: getOpenedItemQuery(route.query, reference, arrangement) };
+        const location = { path: route.path, query: getOpenedItemQuery(route.query, reference) };
         void (opened && options.replaceOpened ? router.replace(location) : router.push(location));
     }
 }

@@ -1,4 +1,4 @@
-<!-- `/account` (G9): the account page, with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, how it refreshes, and signing out. -->
+<!-- `/settings` (G9): the account page, with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, how it refreshes, and signing out. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted, shallowRef } from 'vue';

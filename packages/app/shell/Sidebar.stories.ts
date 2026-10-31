@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 import { defineComponent, h } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
@@ -65,6 +66,21 @@ export const Downloading: Story = {
 
 /** Nothing tracked yet: the sections offer to track some. */
 export const NothingTracked: Story = { args: { tracked: { projects: [], repositories: [] } } };
+
+/** On a tracked repository's list of issues (`/kedrzu/githq/issues`): its row is still the current one. */
+export const OnRepositoryIssues: Story = {
+    decorators: [
+        story => {
+            const Story = story();
+            return defineComponent({
+                setup: () => {
+                    void useRouter().replace('/kedrzu/githq/issues');
+                    return () => h(Story);
+                },
+            });
+        },
+    ],
+};
 
 /** Collapsed to the rail of icons. */
 export const Collapsed: Story = { args: { collapsed: true } };

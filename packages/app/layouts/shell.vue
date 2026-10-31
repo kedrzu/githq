@@ -1,7 +1,7 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser. An item the address opens over the screen (`?open=…`) shows here — in the panel beside it, or in a modal — so any list can open one; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser. An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
@@ -10,13 +10,14 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { EditQueue } from '@/edits/EditQueue.js';
 import EditToasts from '@/edits/EditToasts.vue';
 import { useEditTexts } from '@/edits/useEditTexts.js';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
-import { Browser } from '@/services/Browser.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
 import type { SegmentEdits } from '@/shell/FreshnessSegment.vue';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
@@ -34,12 +35,9 @@ defineSlots<{
   default(): unknown;
 }>();
 
-const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
-
 const auth = useService(AuthStore);
 const rateLimits = useService(GitHubRateLimitStore);
 const sync = useService(SyncEngine);
-const browser = useService(Browser);
 const items = useService(ItemStore);
 const details = useService(ItemDetailStore);
 const resolver = useService(ItemResolver);
@@ -49,9 +47,11 @@ const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
 const editTexts = useEditTexts();
 const registry = useService(CommandRegistry);
+const preferences = useService(LocalPreferences);
+const navigation = useService(ItemNavigation);
 const route = useRoute();
 
-const collapsed = ref(browser.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true');
+const collapsed = preferences.sidebarCollapsed;
 
 // The sidebar counts what the list of "my work" shows unfiltered (D11); nothing before the first download.
 const myWorkCounts = computed(() =>
@@ -108,6 +108,8 @@ const screenFreshness = computed((): Freshness => {
 });
 
 const opened = computed(() => getOpenedItemRoute(route));
+/** How the item opened over the screen's list shows; `null` with none, or on the item's own page. */
+const overList = computed(() => (opened.value && !opened.value.onPage ? navigation.listArrangement : null));
 const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
@@ -168,10 +170,6 @@ function showLastFailure() {
     queue.setToast(lastFailure.value.id, true);
   }
 }
-
-watch(collapsed, value => {
-  browser.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(value));
-});
 </script>
 
 <template>
@@ -183,19 +181,19 @@ watch(collapsed, value => {
     :rate-limit="rateLimits.get('graphql')"
     :notice="sync.notice"
     :last-refreshed-at="items.getSyncState('myWork').lastSuccessAt"
-    :freshness="opened?.arrangement === 'page' ? (itemFreshness ?? screenFreshness) : screenFreshness"
-    :item-freshness="opened?.arrangement === 'page' ? null : itemFreshness"
+    :freshness="opened?.onPage ? (itemFreshness ?? screenFreshness) : screenFreshness"
+    :item-freshness="opened?.onPage ? null : itemFreshness"
     :my-work-counts="myWorkCounts"
     :tracked="tracked"
-    :edits="opened?.arrangement === 'page' ? (itemEdits ?? listEdits) : listEdits"
-    :item-edits="opened?.arrangement === 'page' ? null : itemEdits"
+    :edits="opened?.onPage ? (itemEdits ?? listEdits) : listEdits"
+    :item-edits="opened?.onPage ? null : itemEdits"
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"
   >
     <slot />
     <template
-      v-if="opened?.arrangement === 'panel'"
+      v-if="opened && overList === 'panel'"
       #panel
     >
       <OpenedItem
@@ -205,7 +203,7 @@ watch(collapsed, value => {
     </template>
   </AppShell>
   <OpenedItem
-    v-if="auth.viewer && opened?.arrangement === 'modal'"
+    v-if="auth.viewer && opened && overList === 'modal'"
     :reference="opened.reference"
     arrangement="modal"
   />

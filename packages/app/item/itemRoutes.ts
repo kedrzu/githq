@@ -1,4 +1,4 @@
-import type { LocationQuery, RouteLocationNormalizedLoaded } from 'vue-router';
+import type { LocationQuery, RouteLocation } from 'vue-router';
 
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -19,67 +19,73 @@ export interface ItemReference extends RepositoryName {
     readonly number: number;
 }
 
-/** What a route opens: an item, and how. */
+/** What a route opens: an item, on its own page or over a list. */
 export interface OpenedItemRoute {
     readonly reference: ItemReference;
-    readonly arrangement: ItemArrangement;
+    /**
+     * The item's own page (`/owner/name/issues/12`); else it is opened over a list, in the panel or the modal the
+     * browser remembers (`ItemNavigation.listArrangement`), which the address does not say.
+     */
+    readonly onPage: boolean;
 }
 
 /**
  * The route paths of an item's own page, shaped like GitHub's: a github.com path pasted after the app's host
- * opens the same item. Issue or pull request, the item is found by its number; the segment only mirrors GitHub.
+ * opens the same item. Issue or pull request, the item is found by its number; the segment only mirrors GitHub,
+ * and settles on the item's kind once it is known.
  */
 export const ITEM_PAGE_PATHS = ['/:owner/:name/issues/:number(\\d+)', '/:owner/:name/pull/:number(\\d+)'] as const;
 
-/** The query parameter naming the item opened over a list: `owner/name/number`. */
-const OPEN_PARAM = 'open';
-/** The query parameter saying how it is opened over the list: `panel` (when missing) or `modal`. */
-const ARRANGEMENT_PARAM = 'as';
+/** The query parameter of GitHub's project pane: `issue` when the pane shows an issue or a pull request. */
+const PANE_PARAM = 'pane';
+/** What {@link PANE_PARAM} says for an item. */
+const PANE_ISSUE = 'issue';
+/** The query parameter naming the item in GitHub's project pane: `owner|name|number`. */
+const ISSUE_PARAM = 'issue';
+/**
+ * GitHub's own parameter naming the pane's item by its project item id, which githq does not have: a link that
+ * carries only it opens the list, and opening an item drops it.
+ */
+const ITEM_ID_PARAM = 'itemId';
+/** What separates the owner, the name and the number in {@link ISSUE_PARAM}. */
+const ISSUE_SEPARATOR = '|';
 
 /**
  * The item a route opens, or `null`: the item's own page (`/owner/name/issues/12`), or a list with one opened over
- * it (`?open=owner/name/12&as=modal`).
+ * it in GitHub's project-pane format (`?pane=issue&issue=owner%7Cname%7C12`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getOpenedItemRoute(route: RouteLocationNormalizedLoaded): OpenedItemRoute | null {
+export function getOpenedItemRoute(route: Pick<RouteLocation, 'meta' | 'params' | 'query'>): OpenedItemRoute | null {
     if (route.meta.itemPage) {
         const { owner, name, number } = route.params;
         const reference =
             typeof owner === 'string' && typeof name === 'string' ? toReference(owner, name, number) : null;
-        return reference ? { reference, arrangement: 'page' } : null;
+        return reference ? { reference, onPage: true } : null;
     }
 
-    const open = route.query[OPEN_PARAM];
-    const reference = typeof open === 'string' ? parseItemReference(open) : null;
-    if (!reference) {
-        return null;
-    }
-
-    return { reference, arrangement: route.query[ARRANGEMENT_PARAM] === 'modal' ? 'modal' : 'panel' };
+    const issue = route.query[ISSUE_PARAM];
+    const reference =
+        route.query[PANE_PARAM] === PANE_ISSUE && typeof issue === 'string' ? parsePaneReference(issue) : null;
+    return reference ? { reference, onPage: false } : null;
 }
 
 /**
- * The query of a list with `item` opened over it in `arrangement` — or with nothing opened, for `null` — keeping
- * the rest of `query`.
+ * The query of a list with `item` opened over it — or with nothing opened, for `null` — keeping the rest of
+ * `query`. Written as GitHub's project pane: `pane=issue&issue=owner|name|number`.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getOpenedItemQuery(
-    query: LocationQuery,
-    item: ItemReference | null,
-    arrangement: Exclude<ItemArrangement, 'page'> = 'panel',
-): LocationQuery {
+export function getOpenedItemQuery(query: LocationQuery, item: ItemReference | null): LocationQuery {
     const rest: LocationQuery = { ...query };
-    delete rest[OPEN_PARAM];
-    delete rest[ARRANGEMENT_PARAM];
+    delete rest[PANE_PARAM];
+    delete rest[ISSUE_PARAM];
+    delete rest[ITEM_ID_PARAM];
     if (!item) {
         return rest;
     }
 
-    return arrangement === 'panel'
-        ? { ...rest, [OPEN_PARAM]: formatItemReference(item) }
-        : { ...rest, [OPEN_PARAM]: formatItemReference(item), [ARRANGEMENT_PARAM]: arrangement };
+    return { ...rest, [PANE_PARAM]: PANE_ISSUE, [ISSUE_PARAM]: formatPaneReference(item) };
 }
 
 /**
@@ -113,7 +119,7 @@ export function formatShortReference(item: Item) {
 }
 
 /**
- * `owner/name/number`, as the `open` parameter carries it.
+ * `owner/name/number`: an item's reference as one string, the same for the same item (the resolver's key).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -121,13 +127,13 @@ export function formatItemReference(reference: ItemReference) {
     return `${reference.owner}/${reference.name}/${reference.number}`;
 }
 
-/**
- * The reference an `open` parameter carries, or `null` when it is not `owner/name/number`.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function parseItemReference(value: string): ItemReference | null {
-    const [owner, name, number, ...rest] = value.split('/');
+function formatPaneReference(reference: ItemReference) {
+    return [reference.owner, reference.name, reference.number].join(ISSUE_SEPARATOR);
+}
+
+/** The reference an `issue` parameter carries, or `null` when it is not `owner|name|number`. */
+function parsePaneReference(value: string): ItemReference | null {
+    const [owner, name, number, ...rest] = value.split(ISSUE_SEPARATOR);
     return owner && name && rest.length === 0 ? toReference(owner, name, number) : null;
 }
 

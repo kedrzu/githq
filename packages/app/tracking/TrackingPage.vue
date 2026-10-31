@@ -1,4 +1,4 @@
-<!-- `/tracking` (`?tab=projects` for the projects): changing what is tracked, later (G8). Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the page opens, once a session) and anyone's by name, and keeps the organisations hiding their data in view. -->
+<!-- `/settings/tracking` (`?tab=projects` for the projects): changing what is tracked, later (G8). Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the page opens, once a session) and anyone's by name, and keeps the organisations hiding their data in view. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted } from 'vue';

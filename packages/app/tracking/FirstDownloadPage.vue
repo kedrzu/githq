@@ -1,4 +1,4 @@
-<!-- `/welcome/download`: the first download (G6, D20) of what the user chose — "Open My work" as soon as their own work is in, then on to where they were heading (`next`). The download is the sync engine's: leaving this page, or closing the tab, stops nothing (it resumes in the next session). -->
+<!-- `/settings/tracking/download`: the first download (G6, D20) of what the user chose — "Open My work" as soon as their own work is in, then on to where they were heading (`next`). The download is the sync engine's: leaving this page, or closing the tab, stops nothing (it resumes in the next session). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';

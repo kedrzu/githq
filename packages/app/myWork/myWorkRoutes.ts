@@ -1,16 +1,22 @@
-import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 
-/** The address segment of each "my work" group's own list, `/my/<segment>`. */
-const SEGMENTS: Readonly<Record<MyWorkGroup, string>> = {
-    reviewRequested: 'review-requested',
-    authored: 'pull-requests',
-    assigned: 'assigned',
-    mentioned: 'mentioned',
+/**
+ * The address of each "my work" group's own list: GitHub's dashboard list of the same work, so the address opens
+ * the matching list on github.com too.
+ */
+export const MY_WORK_GROUP_PATHS: Readonly<Record<MyWorkGroup, string>> = {
+    reviewRequested: '/pulls/review-requested',
+    authored: '/pulls',
+    assigned: '/issues/assigned',
+    mentioned: '/issues/mentioned',
 };
 
-/** The route path of "my work" narrowed to one group; the router accepts only these segments. */
-export const MY_WORK_GROUP_PATH = `/my/:group(${Object.values(SEGMENTS).join('|')})`;
+declare module 'vue-router' {
+    interface RouteMeta {
+        /** The "my work" group the route narrows the page to (`MY_WORK_GROUP_PATHS`). */
+        myWorkGroup?: MyWorkGroup;
+    }
+}
 
 /**
  * The address of "my work" narrowed to `group`.
@@ -18,20 +24,5 @@ export const MY_WORK_GROUP_PATH = `/my/:group(${Object.values(SEGMENTS).join('|'
  * @__NO_SIDE_EFFECTS__
  */
 export function getMyWorkGroupPath(group: MyWorkGroup) {
-    return `/my/${SEGMENTS[group]}`;
-}
-
-/**
- * The group a `/my/<segment>` address names, or `null`.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function parseMyWorkGroupSegment(segment: unknown): MyWorkGroup | null {
-    for (const group of MY_WORK_GROUPS) {
-        if (SEGMENTS[group] === segment) {
-            return group;
-        }
-    }
-
-    return null;
+    return MY_WORK_GROUP_PATHS[group];
 }

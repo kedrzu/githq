@@ -15,7 +15,7 @@ import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
 export async function openTrackedWork(page: Page, github: GitHubMock, world: GitHubWorld): Promise<AppShellHarness> {
     world.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
 
     const firstSignIn = new FirstSignInHarness(page);
