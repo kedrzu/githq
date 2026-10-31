@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import Sidebar from './Sidebar.vue';
 import type { SidebarTrackedEntry, SidebarTrackedStatus } from './Sidebar.vue';
@@ -84,13 +85,13 @@ export const OnRepositoryIssues: Story = {
     ],
 };
 
-/** A tracked repository right-clicked: its menu, which the app fills with the repository's actions. */
-export const RepositoryMenu: Story = {
+/** A tracked project or repository right-clicked: its menu, which the app fills with its actions. */
+export const TrackedMenu: Story = {
     render: args => ({
         setup: () => () =>
             h(Sidebar, args, {
-                repositoryMenu: ({ nameWithOwner }: { nameWithOwner: string }) => [
-                    h(MenuLabel, () => nameWithOwner),
+                trackedMenu: ({ target }: { target: TrackedTarget }) => [
+                    h(MenuLabel, () => (target.kind === 'repository' ? target.nameWithOwner : target.id)),
                     h(MenuItem, () => 'Open on GitHub'),
                 ],
             }),
@@ -101,9 +102,21 @@ export const RepositoryMenu: Story = {
 export const Collapsed: Story = { args: { collapsed: true } };
 
 function project(title: string, owner: string, number: number, status: SidebarTrackedStatus): SidebarTrackedEntry {
-    return { key: `project:${number}`, label: title, to: `/orgs/${owner}/projects/${number}`, status };
+    return {
+        key: `project:${number}`,
+        label: title,
+        to: `/orgs/${owner}/projects/${number}`,
+        target: { kind: 'project', id: `PVT_${number}` },
+        status,
+    };
 }
 
 function repository(nameWithOwner: string, status: SidebarTrackedStatus): SidebarTrackedEntry {
-    return { key: `repository:${nameWithOwner}`, label: nameWithOwner, to: `/${nameWithOwner}`, status };
+    return {
+        key: `repository:${nameWithOwner}`,
+        label: nameWithOwner,
+        to: `/${nameWithOwner}`,
+        target: { kind: 'repository', nameWithOwner },
+        status,
+    };
 }
