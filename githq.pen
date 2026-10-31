@@ -33974,7 +33974,7 @@
                           "name": "Icon fitloop/webapp",
                           "width": 15,
                           "height": 15,
-                          "icon": "book-marked",
+                          "icon": "lock",
                           "library": "lucide",
                           "fill": "$fg-2"
                         },
@@ -34026,7 +34026,7 @@
                           "name": "Icon fitloop/api",
                           "width": 15,
                           "height": 15,
-                          "icon": "book-marked",
+                          "icon": "lock",
                           "library": "lucide",
                           "fill": "$fg-2"
                         },
