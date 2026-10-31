@@ -34,6 +34,11 @@ export default defineNuxtConfig({
             title: 'githq',
             htmlAttrs: { lang: 'en' },
             meta: [{ name: 'theme-color', content: '#0e1013' }],
+            // Written by `scripts/generateIcons.ts`.
+            link: [
+                { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+                { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+            ],
         },
     },
     typescript: {

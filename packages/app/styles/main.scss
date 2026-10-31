@@ -1,6 +1,8 @@
 // Global styles, loaded once by `app.vue` (and by Storybook's `preview.ts`).
 
 // Self-hosted fonts, only the weights the design uses; no font CDN.
+// Geist 700 is the logo's typeface only (`components/Wordmark.vue`).
+@import '@fontsource/geist/700.css';
 @import '@fontsource/inter/400.css';
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';

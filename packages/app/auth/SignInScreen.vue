@@ -67,12 +67,13 @@ onWindowEvent('keydown', event => {
 
 <template>
   <div :class="css.signInScreen">
-    <header :class="css.signInScreen_top">
-      <Wordmark />
-    </header>
-
     <main :class="css.signInScreen_body">
       <div :class="css.signInScreen_column">
+        <Wordmark
+          size="lg"
+          :class="css.signInScreen_logo"
+        />
+
         <div
           v-if="notice"
           :class="css.signInScreen_notice"
@@ -179,14 +180,6 @@ onWindowEvent('keydown', event => {
   background: $color-bg;
 }
 
-.signInScreen_top {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 $spacing-24;
-  border-bottom: 1px solid $color-border;
-}
-
 .signInScreen_body {
   display: flex;
   flex: 1;
@@ -201,6 +194,12 @@ onWindowEvent('keydown', event => {
   gap: 22px;
   width: 440px;
   max-width: 100%;
+}
+
+// The design's 26px under the logo, on top of the column's gap.
+.signInScreen_logo {
+  align-self: flex-start;
+  margin-bottom: 26px;
 }
 
 .signInScreen_notice {

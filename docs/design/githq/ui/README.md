@@ -16,6 +16,12 @@ Work from here builds on Direction D. Keep its components and its feel. Within i
 explore. Where a new screen has more than one reasonable shape, show two or three variants side by side,
 and the owner will pick.
 
+The logo is settled. The brandbook is the frame **"Logo — git/hq"** in `githq.pen` (frame `S5J7kt`): the
+wordmark `git/hq` and the sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the
+slash alone. Use one of them in a given place, never both side by side. Place them through the components
+`Brand / Wordmark` and `Brand / Sygnet`. The frame "Logo — exploration archive (DO NOT USE)" holds rejected
+directions: never take a symbol, typeface or colour from it.
+
 Nothing in these files prescribes layout or visual style. Where a file lists what a screen must show, that
 is content and priority, not placement.
 
