@@ -11,19 +11,19 @@ test("a repository's menu in the sidebar goes to its pull requests, starts an is
     const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
     github.web(`/${SAMPLE_REPOSITORY}`, () => ({ status: 200, body: '<title>Repository</title>' }));
 
-    let menu = await shell.openRepositoryMenu(SAMPLE_REPOSITORY);
+    let menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
     await expect(menu).toContainText(SAMPLE_REPOSITORY);
     await menu.getByRole('menuitem', { name: 'Pull requests' }).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
 
-    menu = await shell.openRepositoryMenu(SAMPLE_REPOSITORY);
+    menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
     await menu.getByRole('menuitem', { name: 'New issue' }).click();
     const capture = new NewIssueHarness(page);
     await expect(capture.root).toContainText(SAMPLE_REPOSITORY);
     await page.keyboard.press('Escape');
     await expect(capture.root).toBeHidden();
 
-    menu = await shell.openRepositoryMenu(SAMPLE_REPOSITORY);
+    menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
     const popup = page.waitForEvent('popup');
     await menu.getByRole('menuitem', { name: 'Open on GitHub' }).click();
     expect((await popup).url()).toBe(`https://github.com/${SAMPLE_REPOSITORY}`);

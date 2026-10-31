@@ -1,5 +1,7 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a repository opens its menu (`repositoryMenu`); without one, the browser's own. -->
+<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
 <script lang="ts">
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+
 /** What a tracked project or repository shows beside its name. */
 export type SidebarTrackedStatus =
   /** Its open issues, pull requests and draft issues. */
@@ -16,6 +18,8 @@ export interface SidebarTrackedEntry {
   readonly label: string;
   /** Where its view is. */
   readonly to: string;
+  /** What it is, for its context menu. */
+  readonly target: TrackedTarget;
   readonly status: SidebarTrackedStatus;
 }
 
@@ -68,8 +72,8 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
-  /** The entries of a tracked repository's context menu. */
-  repositoryMenu?(props: { nameWithOwner: string }): unknown;
+  /** The entries of a tracked project's or repository's context menu. */
+  trackedMenu?(props: { target: TrackedTarget }): unknown;
 }>();
 
 const t = useTranslate();
@@ -184,18 +188,26 @@ function statusText(status: SidebarTrackedStatus) {
           v-for="project in tracked.projects"
           :key="project.key"
         >
-          <RouterLink
-            :to="project.to"
-            :class="css.sidebar_item"
-            :active-class="css.sidebar_item_active"
-          >
-            <SquareKanban
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
-            <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
-          </RouterLink>
+          <ContextMenu :disabled="!$slots.trackedMenu">
+            <RouterLink
+              :to="project.to"
+              :class="css.sidebar_item"
+              :active-class="css.sidebar_item_active"
+            >
+              <SquareKanban
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
+              <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
+            </RouterLink>
+            <template #content>
+              <slot
+                name="trackedMenu"
+                :target="project.target"
+              />
+            </template>
+          </ContextMenu>
         </li>
       </ul>
 
@@ -215,7 +227,7 @@ function statusText(status: SidebarTrackedStatus) {
           v-for="repository in tracked.repositories"
           :key="repository.key"
         >
-          <ContextMenu :disabled="!$slots.repositoryMenu">
+          <ContextMenu :disabled="!$slots.trackedMenu">
             <RouterLink
               :to="repository.to"
               :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
@@ -230,8 +242,8 @@ function statusText(status: SidebarTrackedStatus) {
             </RouterLink>
             <template #content>
               <slot
-                name="repositoryMenu"
-                :name-with-owner="repository.label"
+                name="trackedMenu"
+                :target="repository.target"
               />
             </template>
           </ContextMenu>
