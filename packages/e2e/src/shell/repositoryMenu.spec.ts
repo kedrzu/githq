@@ -1,6 +1,7 @@
 import { expect, test } from '../fixtures.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { NewIssueHarness } from '../harnesses/NewIssue.harness.js';
+import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -41,4 +42,15 @@ test("⌘K on a repository's view opens it on GitHub", async ({ page, github }) 
     const popup = page.waitForEvent('popup');
     await page.keyboard.press('Enter');
     expect((await popup).url()).toBe(`https://github.com/${SAMPLE_REPOSITORY}`);
+});
+
+test("a repository view's title opens the same menu: its pull requests", async ({ page, github }) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+
+    const repository = new RepositoryScreenHarness(page);
+    const menu = await repository.openTitleMenu(SAMPLE_REPOSITORY);
+    await expect(menu).toContainText(SAMPLE_REPOSITORY);
+    await menu.getByRole('menuitem', { name: 'Pull requests' }).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
 });

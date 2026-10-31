@@ -39,6 +39,7 @@ import * as l from './ProjectPage.loc.js';
 import ProjectDraftDialog from './ProjectDraftDialog.vue';
 import { ProjectStore } from './ProjectStore.js';
 import type { Project, ProjectEntry, ProjectView as SavedView } from './ProjectTypes.js';
+import ProjectContextMenu from './ProjectContextMenu.vue';
 import ProjectView from './ProjectView.vue';
 import type { ProjectTab } from './ProjectView.vue';
 import { ProjectViewAnswers } from './ProjectViewAnswers.js';
@@ -528,6 +529,12 @@ async function track() {
     @add-items="registry.openMenu(ADD_ITEMS_COMMAND)"
     @clear-filter="options.set({ filter: '' })"
   >
+    <template #menu>
+      <ProjectContextMenu
+        :project-id="project.id"
+        :new-issue-key="NEW_ISSUE_KEY"
+      />
+    </template>
     <template #selection="{ ids }">
       <SelectionActions
         :ids="ids"
