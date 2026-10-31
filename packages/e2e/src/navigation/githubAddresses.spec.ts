@@ -176,6 +176,8 @@ test('switching the kind of a repository with an item opened changes its address
     const repository = new RepositoryScreenHarness(page);
     const item = new ItemViewHarness(page);
     const pane = `pane=issue&issue=${SAMPLE_REPOSITORY.replace('/', '%7C')}%7C4`;
+    // Wide enough that the layout toggle stays on the toolbar beside the item's panel, not in Display.
+    await page.setViewportSize({ width: 1920, height: 1080 });
 
     await page.goto(`/${SAMPLE_REPOSITORY}?${pane}`);
     await expect(item.title).toHaveText('Fix the crash on start');
