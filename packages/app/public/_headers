@@ -1,0 +1,19 @@
+# Response headers for the static assets the githq Worker serves (`packages/worker/wrangler.jsonc`); Cloudflare
+# parses this file and does not serve it. https://developers.cloudflare.com/workers/static-assets/headers/
+#
+# Everything the build writes to `/_nuxt/` has a content hash in its name, so a browser keeps it for a year
+# and never asks again: by default Cloudflare sends `max-age=0, must-revalidate`, a round trip (a 304) per
+# file on every load. Matched by extension, not `/_nuxt/*`: `/_nuxt/builds/latest.json` keeps its name
+# across deploys (Nuxt polls it for a new build), so it stays on the default and is always revalidated.
+
+/_nuxt/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/_nuxt/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/_nuxt/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+/_nuxt/*.woff
+  Cache-Control: public, max-age=31536000, immutable
