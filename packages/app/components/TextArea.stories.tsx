@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage } from '@/.storybook/StoryLayout.jsx';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 
 import TextArea from './TextArea.vue';
 
@@ -56,8 +57,8 @@ export const CommentBox: Story = {
                                 labelHidden
                                 placeholder="Leave a comment…"
                                 compact
-                                kbd={comment.value ? '⌘↵' : 'R'}
-                                aria-keyshortcuts="R Meta+Enter"
+                                kbd={comment.value ? 'Mod+Enter' : 'R'}
+                                aria-keyshortcuts={`R ${formatAriaKeyShortcuts('Mod+Enter')}`}
                             />
                         </div>
                     </StoryPage>

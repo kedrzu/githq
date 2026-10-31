@@ -105,7 +105,7 @@ function onOpenChange(value: boolean) {
         <Button
           variant="secondary"
           size="sm"
-          kbd="Esc"
+          kbd="Escape"
           aria-keyshortcuts="Escape"
           @click="dismiss"
         >
