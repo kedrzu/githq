@@ -1,7 +1,16 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title, then what the list puts beside it (filters, tabs, the actions of the items selected together), and on the right its own actions and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar; the rest move into the display options, which also say that the options are kept on this device only and can reset them. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title, then what the list puts beside it (filters, tabs, the actions of the items selected together), and on the right its own actions and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowDownUp, Columns3, List, ListChecks, RotateCcw, Rows3, SlidersHorizontal } from 'lucide-vue-next';
+import {
+  ArrowDownUp,
+  Columns3,
+  LayoutGrid,
+  List,
+  ListChecks,
+  RotateCcw,
+  Rows3,
+  SlidersHorizontal,
+} from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
@@ -98,6 +107,7 @@ const viewOptions = computed((): ListToolbarOption[] => [
     kind: 'tabs',
     key: 'layout',
     label: t(l.layout),
+    icon: LayoutGrid,
     options: [
       { value: 'list', label: t(l.list), icon: List, iconOnly: true },
       { value: 'board', label: t(l.board), icon: Columns3, iconOnly: true, disabled: props.boardDisabled },
@@ -273,6 +283,7 @@ function change(changes: Partial<ListViewOptions>) {
     <Popover
       :label="t(l.display)"
       align="end"
+      flush
     >
       <template #trigger>
         <Button
@@ -364,20 +375,18 @@ function change(changes: Partial<ListViewOptions>) {
 .listToolbar_display {
   display: flex;
   flex-direction: column;
-  gap: $spacing-12;
-  width: 300px;
-  padding: $spacing-4;
+  width: 340px;
 }
 
+/* Under the sections, each closed by its own border. */
 .listToolbar_footer {
   display: flex;
   gap: $spacing-8;
   align-items: center;
   justify-content: space-between;
-  min-height: 24px;
-  padding-top: $spacing-8;
+  min-height: 36px;
+  padding: $spacing-6 $spacing-8 $spacing-6 14px;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
-  border-top: 1px solid $color-border;
 }
 </style>
