@@ -1,37 +1,38 @@
-<!-- githq's name with its mark, at the top left of the screens outside the app's shell (sign-in, the first sign-in's steps). -->
+<!-- githq's logo, the wordmark "git/hq" (brandbook "Logo — git/hq" in `githq.pen`): Geist 700, violet on the slash alone. `md` heads the first sign-in's steps, `lg` the sign-in page. -->
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    size?: 'md' | 'lg';
+  }>(),
+  { size: 'md' },
+);
+</script>
+
 <template>
-  <span :class="css.wordmark">
-    <span
-      :class="css.wordmark_mark"
-      aria-hidden="true"
-      >hq</span
-    >
-    githq
-  </span>
+  <span
+    :class="[css.wordmark, size === 'lg' && css.wordmark_lg]"
+    role="img"
+    aria-label="githq"
+    >git<span :class="css.wordmark_slash">/</span>hq</span
+  >
 </template>
 
 <style lang="scss" module="css">
 .wordmark {
-  display: inline-flex;
-  gap: $spacing-8;
-  align-items: center;
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  letter-spacing: -0.2px;
+  font-family: $font-family-brand;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.045em;
   color: $color-fg;
+  white-space: nowrap;
 }
 
-.wordmark_mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  font-family: $font-family-mono;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: $color-on-light;
-  background: $color-accent;
-  border-radius: $radius-md;
+.wordmark_lg {
+  font-size: 34px;
+}
+
+.wordmark_slash {
+  color: $color-accent;
 }
 </style>
