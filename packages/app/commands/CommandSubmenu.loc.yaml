@@ -1,0 +1,10 @@
+filter:
+  en: Filter…
+filterLabel:
+  en: 'Filter: {action}'
+loading:
+  en: Reading the options…
+noMatch:
+  en: Nothing matches
+nothing:
+  en: Nothing to pick

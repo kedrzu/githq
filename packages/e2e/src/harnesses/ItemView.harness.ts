@@ -8,7 +8,7 @@ export type ItemPropertyName = 'Assignees' | 'Labels' | 'Milestone';
 
 /**
  * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel, the modal or on its
- * own page): its header with the way through the list, the arrangement switch and the state menu; its
+ * own page): its header with the item menu, the way through the list and the arrangement switch; its
  * properties, projects and reviewers; its comments and the comment box.
  */
 export class ItemViewHarness {
@@ -40,9 +40,9 @@ export class ItemViewHarness {
         return this.page.getByRole('dialog').filter({ has: this.root });
     }
 
-    /** The menu closing, reopening or turning a pull request into a draft and back (`⇧X`). */
-    get stateMenu(): Locator {
-        return this.root.getByRole('button', { name: 'Close or reopen' });
+    /** The item's reference in its header, opening the item menu (M1–M2, `⌘.`). */
+    get menuButton(): Locator {
+        return this.root.getByRole('button', { name: /^Actions of / });
     }
 
     /** The line saying why the user can't set labels, assignees and milestone here (K1b). */

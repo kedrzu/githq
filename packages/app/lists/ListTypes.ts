@@ -22,6 +22,14 @@ export interface ListEntry<T> {
     readonly value: T;
 }
 
+/** What a list's context menu is drawn for (`ListView`'s `contextMenu`). */
+export interface ListContextMenuProps {
+    /** The items it acts on: those edited together, or the one right-clicked. */
+    readonly ids: readonly string[];
+    /** Opens the one item it acts on, as Enter would. */
+    readonly open: () => void;
+}
+
 /** A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. */
 export interface ListRow<T> extends ListEntry<T> {
     readonly nested: readonly ListEntry<T>[];

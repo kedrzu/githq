@@ -19,6 +19,7 @@ import { formatShortReference } from '@/item/itemRoutes.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
+import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
@@ -517,6 +518,12 @@ async function track() {
       <SelectionActions
         :ids="ids"
         @clear="list.checkedIds = []"
+      />
+    </template>
+    <template #contextMenu="menu">
+      <ItemContextMenu
+        :ids="menu.ids"
+        @open="menu.open"
       />
     </template>
   </ProjectView>

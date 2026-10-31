@@ -1,8 +1,8 @@
 {
     "name": "@githq/e2e",
     "private": true,
-    "license": "AGPL-3.0-only",
     "description": "Playwright end-to-end tests of the built app served by the Worker in the local Workers runtime (`wrangler dev`)",
+    "license": "AGPL-3.0-only",
     "type": "module",
     "scripts": {
         "test": "playwright test",

@@ -5,7 +5,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { SearchX } from 'lucide-vue-next';
-import { computed, watch } from 'vue';
+import { computed, nextTick, useTemplateRef, watch } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -49,6 +49,7 @@ const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
+const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 const now = useNow(TICK_MS);
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
@@ -98,6 +99,19 @@ watch(
   repository => {
     if (repository) {
       void repositories.ensure(repository);
+    }
+  },
+  { immediate: true },
+);
+
+// "Comment" in a list's context menu: the cursor goes into the comment box once the item is shown.
+watch(
+  () => [navigation.commentRequest, opened.id, viewRef.value] as const,
+  async ([requested, id, view]) => {
+    if (requested !== null && requested === id && view) {
+      navigation.requestComment(null);
+      await nextTick();
+      view.focusComposer();
     }
   },
   { immediate: true },
@@ -205,6 +219,7 @@ async function loadAllComments() {
   >
     <ItemView
       v-if="opened.item"
+      ref="view"
       v-model:comment-draft="commentDraft"
       :item="opened.item"
       :detail="opened.detail"
@@ -231,6 +246,7 @@ async function loadAllComments() {
   </Dialog>
   <ItemView
     v-else-if="opened.item"
+    ref="view"
     v-model:comment-draft="commentDraft"
     :item="opened.item"
     :detail="opened.detail"
