@@ -1,0 +1,8 @@
+opening:
+  en: Opening {reference}…
+missing:
+  en: No such issue or pull request
+missingDetail:
+  en: '{reference} does not exist on GitHub, or your account may not see it.'
+backToList:
+  en: Back to the list

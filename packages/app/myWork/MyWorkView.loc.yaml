@@ -1,0 +1,14 @@
+title:
+  en: My work
+filters:
+  en: Filters
+all:
+  en: All
+needsMe:
+  en: Needs me
+waitingOnOthers:
+  en: Waiting on others
+reason:
+  en: Reason
+showFilter:
+  en: 'Filter: {filter}'

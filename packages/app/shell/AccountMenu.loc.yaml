@@ -1,0 +1,8 @@
+accountMenu:
+  en: 'Account: {login}'
+signedInAs:
+  en: Signed in as {login}
+account:
+  en: Account
+signOut:
+  en: Sign out

@@ -1,0 +1,45 @@
+actions:
+  en: Selected items
+selected:
+  plural: count
+  en:
+    one: 1 selected
+    many: '{count} selected'
+assign:
+  en: Assign
+assignees:
+  en: Assignees
+label:
+  en: Label
+labels:
+  en: Labels
+milestone:
+  en: Milestone
+noMilestone:
+  en: No milestone
+close:
+  en: Close
+closeCompleted:
+  en: Close as completed
+closeNotPlanned:
+  en: Close as not planned
+clear:
+  en: Clear selection
+filterAssignees:
+  en: Assign to…
+filterLabels:
+  en: Filter labels…
+editable:
+  en: '{editable} of {total} editable — the others are left as they are'
+loading:
+  en: Reading the repositories' options…
+items:
+  plural: count
+  en:
+    one: 1 item
+    many: '{count} items'
+closeCommand:
+  plural: count
+  en:
+    one: Close 1 item…
+    many: 'Close {count} items…'

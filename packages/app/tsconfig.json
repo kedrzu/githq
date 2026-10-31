@@ -1,0 +1,12 @@
+{
+    // https://nuxt.com/docs/guide/concepts/typescript
+    "extends": "./.nuxt/tsconfig.json",
+    "compilerOptions": {
+        "noUncheckedIndexedAccess": true
+    },
+    // `./**/*` skips dot-folders, so Storybook's config is listed on its own.
+    "include": ["./.nuxt/nuxt.d.ts", "./**/*", "./.storybook/**/*"],
+    // Replaces the list from `.nuxt/tsconfig.json`; of its entries only `dist` exists here. Build output is
+    // JavaScript that `allowJs` would otherwise pull in.
+    "exclude": ["./dist", "./storybook-static"]
+}

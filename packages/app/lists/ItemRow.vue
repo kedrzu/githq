@@ -1,0 +1,346 @@
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter. -->
+<script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { ArrowUpRight, Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+import Avatar from '@/components/Avatar.vue';
+import Button from '@/components/Button.vue';
+import LabelPill from '@/components/LabelPill.vue';
+import type { Item } from '@/store/ItemTypes.js';
+
+import type { ItemProperty } from './ItemProperty.js';
+import * as l from './ItemRow.loc.js';
+import { useItemFacts } from './useItemFacts.js';
+
+const props = withDefaults(
+  defineProps<{
+    item: Item;
+    /** What the row shows besides its kind, title and number. */
+    properties: readonly ItemProperty[];
+    /** The signed-in user: their own items show no author. */
+    viewerLogin: string;
+    /** Epoch ms the ages are counted to. */
+    now: number;
+    /** Who the row shows: who opened it (my work) or who it is assigned to. */
+    people?: 'assignees' | 'author';
+    /** Listed because the user's review is asked: an open pull request with nothing else to say says so. */
+    reviewRequested?: boolean;
+    /** The repository the whole list is of (`owner/name`): its items are named by number alone. */
+    repository?: string | null;
+    /** The issue this pull request is nested under; its number alone names it when they share a repository. */
+    parent?: Item | null;
+    /** In the selection several items are edited together in (`x`). */
+    checked?: boolean;
+    /** An edit of it GitHub just refused, said for a moment ("“regression” label undone"). */
+    undone?: string | null;
+  }>(),
+  { people: 'author', reviewRequested: false, repository: null, parent: null, undone: null },
+);
+
+defineSlots<{
+  /** Before the labels: a project's field values, in a project's view. */
+  fields?(): unknown;
+}>();
+
+const t = useTranslate();
+const facts = useItemFacts({
+  item: () => props.item,
+  parent: () => props.parent,
+  repository: () => props.repository,
+  viewerLogin: () => props.viewerLogin,
+  now: () => props.now,
+  reviewRequested: () => props.reviewRequested,
+  people: () => props.people,
+});
+const shown = computed(() => new Set(props.properties));
+</script>
+
+<template>
+  <div :class="[css.itemRow, parent && css.itemRow_nested]">
+    <Check
+      v-if="checked"
+      :class="css.itemRow_check"
+      role="img"
+      :aria-label="t(l.inSelection)"
+    />
+    <component
+      :is="facts.kind.icon"
+      v-else
+      :class="[css.itemRow_kind, css[`itemRow_kind_${facts.kind.tone}`]]"
+      role="img"
+      :aria-label="facts.kind.label"
+    />
+    <div :class="css.itemRow_content">
+      <div :class="css.itemRow_line">
+        <span :class="css.itemRow_title">{{ item.title }}</span>
+        <template v-if="shown.has('people')">
+          <Avatar
+            v-for="person in facts.people"
+            :key="person.login"
+            :name="person.login"
+            :src="person.avatarUrl"
+            size="xs"
+          />
+        </template>
+        <time
+          v-if="shown.has('updated')"
+          :class="css.itemRow_age"
+          :datetime="item.updatedAt"
+          >{{ facts.age }}</time
+        >
+      </div>
+      <div :class="css.itemRow_line">
+        <span :class="css.itemRow_reference">{{ facts.reference }}</span>
+        <span
+          v-if="facts.status && shown.has('status')"
+          :class="[css.itemRow_status, css[`itemRow_status_${facts.status.tone}`]]"
+        >
+          <component
+            :is="facts.status.icon"
+            :class="css.itemRow_statusIcon"
+            aria-hidden="true"
+          />
+          <span :class="css.itemRow_statusText">{{ facts.status.text }}</span>
+        </span>
+        <!-- Opening it is not selecting the row. -->
+        <Button
+          v-if="facts.status?.openOnGitHub && shown.has('status')"
+          variant="link"
+          size="sm"
+          :link="item.url"
+          :icon="ArrowUpRight"
+          kbd="O"
+          target="_blank"
+          aria-keyshortcuts="O"
+          @click.stop
+        >
+          {{ t(l.openOnGitHub) }}
+        </Button>
+        <span
+          v-if="facts.size && shown.has('size')"
+          :class="css.itemRow_size"
+          >{{ facts.size }}</span
+        >
+        <span
+          v-if="facts.projectField && shown.has('projectField')"
+          :class="css.itemRow_field"
+          :title="facts.projectField.title"
+        >
+          <SquareKanban
+            :class="css.itemRow_fieldIcon"
+            aria-hidden="true"
+          />
+          {{ facts.projectField.value }}
+          <span
+            v-if="facts.projectField.more"
+            :class="css.itemRow_fieldMore"
+            >{{ facts.projectField.more }}</span
+          >
+        </span>
+        <span
+          v-if="item.milestone && shown.has('milestone')"
+          :class="css.itemRow_field"
+        >
+          <Milestone
+            :class="css.itemRow_fieldIcon"
+            aria-hidden="true"
+          />
+          {{ item.milestone.title }}
+        </span>
+        <slot name="fields" />
+        <LabelPill
+          v-for="label in shown.has('labels') ? item.labels : []"
+          :key="label.name"
+          :name="label.name"
+          :color="label.color"
+        />
+        <span
+          v-if="undone"
+          :class="css.itemRow_undone"
+          role="status"
+        >
+          <Undo2
+            :class="css.itemRow_statusIcon"
+            aria-hidden="true"
+          />
+          {{ undone }}
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" module="css">
+.itemRow {
+  display: flex;
+  gap: $spacing-10;
+  padding: 7px $spacing-16;
+}
+
+.itemRow_nested {
+  padding-left: 42px;
+}
+
+.itemRow_check {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  padding: 2px;
+  margin-top: 2px;
+  color: $color-on-light;
+  background: $color-accent;
+  border-radius: $radius-sm;
+}
+
+.itemRow_undone {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+  align-items: center;
+  padding: 1px 7px;
+  color: $color-red;
+  background: rgba($color-red, 0.1);
+  border-radius: 9px;
+}
+
+.itemRow_kind {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+
+  .itemRow_nested & {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.itemRow_kind_open {
+  color: $color-green;
+}
+
+.itemRow_kind_done {
+  color: $color-purple;
+}
+
+.itemRow_kind_closed {
+  color: $color-red;
+}
+
+.itemRow_kind_draft {
+  color: $color-fg-dim;
+}
+
+.itemRow_content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.itemRow_line {
+  display: flex;
+  gap: $spacing-10;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  font-size: $font-size-2xs;
+  line-height: 16px;
+  white-space: nowrap;
+
+  &:first-child {
+    gap: $spacing-8;
+  }
+}
+
+.itemRow_title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13.5px;
+  font-weight: $font-weight-medium;
+  line-height: 18px;
+  color: $color-fg;
+
+  .itemRow_nested & {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    color: $color-fg-2;
+  }
+}
+
+.itemRow_age {
+  flex: none;
+  color: $color-fg-dim;
+}
+
+.itemRow_reference,
+.itemRow_size {
+  flex: none;
+  font-family: $font-family-mono;
+  color: $color-fg-dim;
+}
+
+.itemRow_status {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+  align-items: center;
+}
+
+.itemRow_statusText {
+  display: inline-block;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+.itemRow_status_danger {
+  color: $color-red;
+}
+
+.itemRow_status_warning {
+  color: $color-amber;
+}
+
+.itemRow_status_success {
+  color: $color-green;
+}
+
+.itemRow_status_muted {
+  color: $color-fg-2;
+}
+
+.itemRow_status_dim {
+  color: $color-fg-dim;
+}
+
+.itemRow_statusIcon {
+  width: 12.5px;
+  height: 12.5px;
+}
+
+.itemRow_field {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+  align-items: center;
+  color: $color-fg-2;
+}
+
+.itemRow_fieldIcon {
+  width: 12px;
+  height: 12px;
+  color: $color-fg-3;
+}
+
+.itemRow_fieldMore {
+  font-family: $font-family-mono;
+  font-size: 11px;
+  color: $color-fg-dim;
+}
+</style>

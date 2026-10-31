@@ -1,0 +1,170 @@
+failedLabelAdded:
+  en: Label “{label}” wasn't added to {reference}
+failedLabelRemoved:
+  en: Label “{label}” wasn't removed from {reference}
+failedAssigneeAdded:
+  en: "{login} wasn't assigned to {reference}"
+failedAssigneeRemoved:
+  en: "{login} wasn't unassigned from {reference}"
+failedMilestone:
+  en: The milestone of {reference} wasn't changed
+failedIssueType:
+  en: The type of {reference} wasn't changed
+failedClosed:
+  en: "{reference} wasn't closed"
+failedReopened:
+  en: "{reference} wasn't reopened"
+failedComment:
+  en: Your comment on {reference} wasn't posted
+failedProjectField:
+  en: "{field} of {reference} wasn't set"
+failedAddedToProject:
+  en: "{reference} wasn't added to {project}"
+failedDraftAdded:
+  en: Draft “{title}” wasn't added to {project}
+failedIssueCreated:
+  en: Issue “{title}” wasn't created in {repository}
+failedSubIssueOf:
+  en: "{reference} wasn't made a sub-issue of {parent}"
+failedReviewRequested:
+  en: A review from {login} wasn't requested on {reference}
+failedDraft:
+  en: "{reference} wasn't turned into a draft"
+failedReady:
+  en: "{reference} wasn't marked ready for review"
+
+partlyLabelAdded:
+  en: “{label}” added to {done} of {total} items
+partly:
+  en: '{change}: {done} of {total} items done'
+
+changeLabelAdded:
+  en: label “{label}” added
+changeLabelRemoved:
+  en: label “{label}” removed
+changeAssigneeAdded:
+  en: '{login} assigned'
+changeAssigneeRemoved:
+  en: '{login} unassigned'
+changeMilestone:
+  en: milestone
+changeIssueType:
+  en: type
+changeClosed:
+  en: closed
+changeReopened:
+  en: reopened
+changeComment:
+  en: comment
+changeAddedToProject:
+  en: added to {project}
+changeDraftAdded:
+  en: draft “{title}” added
+changeIssueCreated:
+  en: issue “{title}”
+changeSubIssueOf:
+  en: sub-issue of {parent}
+changeReviewRequested:
+  en: review from {login}
+changeDraft:
+  en: draft
+changeReady:
+  en: ready for review
+
+undoneLabel:
+  en: “{label}” label undone
+undone:
+  en: '{change} undone'
+
+reasonDropped:
+  en: GitHub didn't keep it — in {repository} your role doesn't allow this change. It was undone.
+reasonNotAllowed:
+  en: You can read {repository} but not make this change there, so it wasn't sent.
+reasonMissing:
+  en: GitHub refused it — what it names no longer exists in {repository}. It was undone, and the repository's lists are read again.
+reasonOffline:
+  en: githq couldn't reach GitHub, so it was undone. Try again once you're online.
+reasonRefused:
+  en: 'GitHub refused it: {message}. It was undone.'
+reasonOfItem:
+  en: '{reference} failed: {reason}'
+moreFailed:
+  plural: count
+  en:
+    one: and one more change failed.
+    many: and {count} more changes failed.
+
+shortDropped:
+  en: no permission
+shortNotAllowed:
+  en: no permission
+shortMissing:
+  en: no longer exists
+shortOffline:
+  en: GitHub unreachable
+shortRefused:
+  en: refused by GitHub
+
+sendingTo:
+  plural: count
+  en:
+    one: Sending 1 change · {target}
+    many: Sending {count} changes · {target}
+sendingFields:
+  plural: count
+  en:
+    one: 'Sending 1 change: {fields}'
+    many: 'Sending {count} changes: {fields}'
+itemCount:
+  plural: count
+  en:
+    one: 1 item
+    many: '{count} items'
+failedOne:
+  en: 1 change failed · {subject} {reason}
+failedSome:
+  en: '{failed} of {total} changes failed · {target}'
+
+fieldLabels:
+  en: Labels
+fieldAssignees:
+  en: Assignees
+fieldMilestone:
+  en: Milestone
+fieldIssueType:
+  en: Type
+fieldState:
+  en: State
+fieldComment:
+  en: Comment
+fieldProjects:
+  en: Projects
+fieldNewIssue:
+  en: New issue
+fieldParent:
+  en: Parent
+fieldReviewers:
+  en: Reviewers
+fieldDraft:
+  en: Draft
+
+openLabels:
+  en: Open labels on GitHub
+openMilestones:
+  en: Open milestones on GitHub
+openOnGitHub:
+  en: Open on GitHub
+restoreComment:
+  en: Restore comment
+selectFailed:
+  plural: count
+  en:
+    one: Select the failed item
+    many: Select the failed items
+notifications:
+  en: Notifications
+
+subjectLabel:
+  en: label “{label}”
+selectFailedCommand:
+  en: Select the items that failed

@@ -1,0 +1,26 @@
+arriving:
+  en: Still arriving. The search on GitHub takes a few seconds more.
+countArriving:
+  en: …
+groupEmpty:
+  en: Nothing here.
+next:
+  en: Next item
+previous:
+  en: Previous item
+open:
+  en: Open the selected item
+openOnGitHub:
+  en: Open on GitHub
+check:
+  en: Select for editing together
+checkNext:
+  en: Select the next one too
+checkPrevious:
+  en: Select the previous one too
+uncheck:
+  en: Clear the selection
+nextColumn:
+  en: Next or previous column
+moveToColumn:
+  en: Move to the next or previous column

@@ -1,0 +1,32 @@
+assignToMe:
+  en: Assign to me
+assignedToMe:
+  en: Assigned to me
+assignees:
+  en: Assignees
+labels:
+  en: Labels
+milestone:
+  en: Milestone
+noMilestone:
+  en: No milestone
+type:
+  en: Type
+noType:
+  en: No type
+parent:
+  en: Parent
+subIssueOf:
+  en: 'Sub-issue of {parent}'
+removeParent:
+  en: Not a sub-issue of {parent}
+project:
+  en: Project
+anotherProject:
+  en: Another project
+removeChip:
+  en: '{chip} (remove)'
+noPush:
+  en: You can't push to {repository}, so GitHub won't take labels, assignees, a milestone or a type from you.
+notInRepository:
+  en: 'Not in {repository}, so left out: {values}.'

@@ -1,0 +1,26 @@
+navigation:
+  en: Sidebar
+collapse:
+  en: Collapse sidebar
+expand:
+  en: Expand sidebar
+search:
+  en: Search or jump to…
+myWork:
+  en: My work
+countArriving:
+  en: …
+projects:
+  en: Projects
+repositories:
+  en: Repositories
+trackRepositories:
+  en: Track repositories…
+trackProjects:
+  en: Add a project to track
+trackRepository:
+  en: Add a repository to track
+waiting:
+  en: waiting
+hidden:
+  en: hidden

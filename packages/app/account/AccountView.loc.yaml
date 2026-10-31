@@ -1,0 +1,78 @@
+title:
+  en: Account
+signedInWith:
+  en: Signed in with GitHub
+memberOf:
+  plural: count
+  en:
+    zero: member of no organisations
+    one: member of 1 organisation
+    many: member of {count} organisations
+openProfile:
+  en: Open profile on GitHub
+organizations:
+  en: Organisations
+organizationsLoading:
+  en: Asking GitHub for your organisations…
+organizationsFailed:
+  en: GitHub couldn't be asked for your organisations.
+tryAgain:
+  en: Try again
+noOrganizations:
+  en: You aren't a member of any organisation. Everything of yours that GitHub shows you, githq sees too.
+hidden:
+  en: Private repositories and projects hidden
+hiddenDetail:
+  en: Hides its private data from githq until an owner approves it.
+requestedOn:
+  en: You requested approval on {date}.
+requestApproval:
+  en: Request approval
+approved:
+  en: Approved
+noRestrictions:
+  en: No restrictions
+thisBrowser:
+  en: This browser
+copy:
+  en: Copy kept here
+copyRepositories:
+  plural: count
+  en:
+    zero: no repositories
+    one: 1 repository
+    many: '{count} repositories'
+copyProjects:
+  plural: count
+  en:
+    zero: no projects
+    one: 1 project
+    many: '{count} projects'
+copyItems:
+  plural: count
+  en:
+    zero: no items
+    one: 1 item
+    many: '{formatted} items'
+refresh:
+  en: Refresh
+refreshRunning:
+  en: In the background, about every 30 seconds · last {age} ago
+refreshNotYet:
+  en: In the background, about every 30 seconds · nothing downloaded yet
+refreshPaused:
+  en: Paused until {time}, when the API allowance resets · then by itself
+refreshOffline:
+  en: Waiting for a connection · offline since {time}
+allowance:
+  en: GitHub API allowance
+allowanceLeft:
+  en: '{remaining} of {limit} left this hour · resets at {time}'
+allowanceUnknown:
+  en: Known with GitHub's next answer
+signOut:
+  en: Sign out
+signOutDetail:
+  en: Deletes the copy kept in this browser and signs you out. Nothing changes on GitHub. Signing in again downloads everything anew.
+signOutAndClear:
+  en: Sign out and clear

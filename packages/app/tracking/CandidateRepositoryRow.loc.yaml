@@ -1,0 +1,12 @@
+public:
+  en: public
+private:
+  en: private
+archived:
+  en: archived · read-only
+open:
+  en: '{count} open'
+active:
+  en: active {age} ago
+neverPushed:
+  en: empty

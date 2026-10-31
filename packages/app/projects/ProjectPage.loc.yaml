@@ -1,0 +1,48 @@
+allItems:
+  en: All items
+noValue:
+  en: No {field}
+unassigned:
+  en: Unassigned
+noMilestone:
+  en: No milestone
+drafts:
+  en: Drafts
+iterationRange:
+  en: '{start} – {end}'
+iterationCurrent:
+  en: '{range} · current'
+manual:
+  en: GitHub's order
+ascending:
+  en: '{key} ↑'
+descending:
+  en: '{key} ↓'
+sortTitle:
+  en: Title
+sortRepository:
+  en: Repository
+sortMilestone:
+  en: Milestone
+sortAssignees:
+  en: Assignees
+arrivingTitle:
+  en: '{name} is still arriving'
+arrivingDetail:
+  plural: count
+  en:
+    zero: githq is copying its items; they show here as soon as they have arrived.
+    one: githq is copying its items; 1 open item has arrived so far.
+    many: githq is copying its items; {count} open items have arrived so far.
+notTrackedTitle:
+  en: '{name} is not tracked'
+notTrackedDetail:
+  en: Track it to keep all its items in this browser.
+track:
+  en: Track
+notFound:
+  en: GitHub shows you no such project.
+newIssueInProject:
+  en: New issue in {project}
+addItemsToProject:
+  en: Add existing issues to {project}…

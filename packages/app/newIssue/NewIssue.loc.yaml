@@ -1,0 +1,45 @@
+inProject:
+  en: in {project}
+inProjectColumn:
+  en: in {project} · {value}
+fromIssue:
+  en: from {reference}
+lastUsed:
+  en: last used repository
+inProjectSection:
+  en: Repositories in {project}
+tracked:
+  en: Tracked
+yourWork:
+  en: From your work
+others:
+  en: Other repositories you can create issues in
+unavailable:
+  en: Won't take an issue
+private:
+  en: private
+public:
+  en: public
+archived:
+  en: Archived repositories are read-only
+issuesDisabled:
+  en: Issues are disabled in its settings
+openCount:
+  plural: count
+  en:
+    one: 1 open
+    many: '{count} open'
+rejectedRefused:
+  en: 'GitHub said: {message}.'
+rejectedOffline:
+  en: githq couldn't reach GitHub.
+rejectedMissing:
+  en: GitHub doesn't show you {repository} (any more).
+rejectedNotAllowed:
+  en: You can't create issues in {repository}.
+untitled:
+  en: Untitled
+waitingUnconfirmed:
+  en: githq closed before GitHub answered. Check it wasn't created before sending it again.
+waitingSetAside:
+  en: Set aside for another one.

@@ -1,0 +1,73 @@
+{
+    "name": "@githq/app",
+    "private": true,
+    "description": "githq web app (Nuxt SPA, built to static files)",
+    "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        "./*.js": "./*.ts",
+        "./*.vue": "./*.vue"
+    },
+    "scripts": {
+        "dev": "nuxt dev --bun",
+        "build": "GITHQ_TARGET=production nuxt generate --bun && bun scripts/checkProductionBuild.ts",
+        "build:local": "GITHQ_TARGET=local nuxt generate --bun && bun scripts/checkLocalBuild.ts",
+        "typecheck": "nuxi typecheck",
+        "prep": "nuxt prepare",
+        "storybook": "storybook dev --port 6006 --no-open",
+        "build-storybook": "storybook build",
+        "test:stories": "vitest run --project=storybook --reporter=dot",
+        "playwright:install": "playwright install chromium"
+    },
+    "dependencies": {
+        "@fontsource/inter": "5.3.0",
+        "@fontsource/jetbrains-mono": "5.3.0",
+        "@githq/github": "workspace:*",
+        "@nzyme/i18n": "workspace:*",
+        "@nzyme/i18n-core": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/logging": "workspace:*",
+        "@nzyme/types": "workspace:*",
+        "@nzyme/utils": "workspace:*",
+        "@nzyme/vue-forms": "workspace:*",
+        "@nzyme/vue-i18n": "workspace:*",
+        "@nzyme/vue-ioc": "workspace:*",
+        "@nzyme/vue-utils": "workspace:*",
+        "idb": "8.0.4",
+        "lucide-vue-next": "1.0.0",
+        "nuxt": "4.4.8",
+        "reka-ui": "2.10.5",
+        "vue": "3.5.44",
+        "vue-router": "5.4.0"
+    },
+    "devDependencies": {
+        "@nzyme/ioc-testing": "workspace:*",
+        "@playwright/test": "1.64.0",
+        "@storybook/addon-a11y": "10.6.1",
+        "@storybook/addon-docs": "10.6.1",
+        "@storybook/addon-vitest": "10.6.1",
+        "@storybook/vue3": "10.6.1",
+        "@storybook/vue3-vite": "10.6.1",
+        "@vitejs/plugin-vue": "6.0.10",
+        "@vitejs/plugin-vue-jsx": "5.1.6",
+        "@vitest/browser": "4.1.10",
+        "@vitest/browser-playwright": "4.1.10",
+        "fake-indexeddb": "6.2.6",
+        "sass": "1.105.1",
+        "storybook": "10.6.1",
+        "typescript": "6.0.3",
+        "vite": "7.3.6",
+        "vitest": "4.1.10",
+        "vue-tsc": "3.3.13"
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "dependsOn": [
+                    "^build",
+                    "typecheck"
+                ]
+            }
+        }
+    }
+}

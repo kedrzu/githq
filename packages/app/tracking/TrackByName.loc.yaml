@@ -1,0 +1,12 @@
+label:
+  en: Repository or project to track
+placeholder:
+  en: owner/repository, or a project URL
+track:
+  en: Track
+examples:
+  en: e.g.
+notAReference:
+  en: Type a repository as owner/name, or paste a project's address.
+notFound:
+  en: GitHub shows you no repository or project there.

@@ -1,0 +1,8 @@
+you:
+  en: you
+due:
+  en: due {date}
+previousIteration:
+  en: previous · {range}
+currentIteration:
+  en: current · {range}

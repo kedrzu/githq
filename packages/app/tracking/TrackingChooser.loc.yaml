@@ -1,0 +1,119 @@
+title:
+  en: Which of these do you work on?
+subtitle:
+  en: githq copies what you pick in full, including other people's issues. Issues and pull requests that concern you come along anyway, from any repository. You can change this any time.
+owners:
+  en: Owners
+allOwners:
+  en: All owners
+ownerCount:
+  en: '{selected} / {total}'
+ownerCountLabel:
+  en: '{selected} of {total} selected'
+filterLabel:
+  en: Filter repositories
+filterPlaceholder:
+  en: Filter {count} repositories…
+recentActivity:
+  en: Recent activity
+repositories:
+  en: Repositories
+yourRepositories:
+  en: your repositories · {selected} of {total} selected
+organisation:
+  en: organisation · {selected} of {total} selected
+organisationHidden:
+  en: organisation · private repositories hidden
+matching:
+  en: '{matching} of {total} match “{filter}”'
+selectNone:
+  en: Select none
+selectAll:
+  en: Select all {count}
+showAll:
+  en: Show all {count}
+moreOfYours:
+  plural: count
+  en:
+    one: 1 more of yours, {selection}
+    many: '{count} more of yours, {selection}'
+moreOfTheirs:
+  plural: count
+  en:
+    one: 1 more
+    many: '{count} more'
+allSelected:
+  en: all selected
+noneSelected:
+  en: none selected
+someSelected:
+  en: '{count} selected'
+noMatch:
+  en: No repository matches “{filter}”.
+loading:
+  en: Reading more from GitHub…
+visibleMeanwhile:
+  en: Visible meanwhile
+publicRepositories:
+  plural: count
+  en:
+    zero: GitHub lists none of its repositories to githq
+    one: 1 public repository
+    many: '{count} public repositories'
+projects:
+  en: Projects
+projectsSelected:
+  en: '{selected} of {total} selected'
+projectMeta:
+  plural: count
+  en:
+    one: '{owner} · 1 item'
+    many: '{owner} · {count} items'
+projectClosed:
+  en: closed
+showMore:
+  en: Show more of the {count} others
+showAllProjects:
+  en: Show all {count} projects
+noProjects:
+  en: No projects.
+projectHint:
+  en: A tracked project brings its items with it, even from repositories you don't track.
+hintMove:
+  en: Move
+hintSelect:
+  en: Select
+hintSelectAll:
+  en: Select all matching
+hintClear:
+  en: Clear filter
+summary:
+  en: '{repositories} and {projects}'
+summaryRepositories:
+  plural: count
+  en:
+    one: 1 repository
+    many: '{count} repositories'
+summaryProjects:
+  plural: count
+  en:
+    one: 1 project
+    many: '{count} projects'
+summaryDetail:
+  plural: count
+  en:
+    zero: nothing to copy but what concerns you
+    one: 1 open issue or pull request first, closed ones after
+    many: '{count} open issues and pull requests first, closed ones after'
+onlyMine:
+  en: Only my repositories
+track:
+  en: Track these
+emptyTitle:
+  en: You don't have any repositories yet
+emptyDetail:
+  en: That's fine. My work still shows the issues and pull requests that concern you anywhere on GitHub. You can also follow someone else's repository or project.
+continue:
+  en: Continue to My work
+chosen:
+  en: To track

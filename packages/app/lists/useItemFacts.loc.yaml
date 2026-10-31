@@ -1,0 +1,43 @@
+openIssue:
+  en: Open issue
+closedIssue:
+  en: Closed issue
+notPlannedIssue:
+  en: Closed issue, not planned
+openPullRequest:
+  en: Open pull request
+draftPullRequest:
+  en: Draft pull request
+mergedPullRequest:
+  en: Merged pull request
+closedPullRequest:
+  en: Closed pull request
+checksFailing:
+  plural: count
+  en:
+    one: '{count} check failing'
+    many: '{count} checks failing'
+checksFailingUncounted:
+  en: checks failing
+changesRequested:
+  en: changes requested
+conflicts:
+  en: conflicts
+checksRunning:
+  en: checks running
+approvedReadyToMerge:
+  en: approved · ready to merge
+approved:
+  en: approved
+yourReviewRequested:
+  en: your review requested
+draft:
+  en: draft
+waitingForReview:
+  en: waiting for review
+size:
+  en: '+{additions} −{deletions}'
+projectField:
+  en: '{project}: {value}'
+moreProjects:
+  en: '+{count}'

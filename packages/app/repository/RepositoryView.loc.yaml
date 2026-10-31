@@ -1,0 +1,90 @@
+private:
+  en: private
+public:
+  en: public
+openCount:
+  plural: count
+  en:
+    zero: nothing open
+    one: 1 open
+    many: '{count} open'
+kinds:
+  en: Kinds
+all:
+  en: All
+issues:
+  en: Issues
+pullRequests:
+  en: Pull requests
+stateOpen:
+  en: Open
+stateClosed:
+  en: Closed
+stateAll:
+  en: Open and closed
+state:
+  en: State
+groupNone:
+  en: None
+groupMilestone:
+  en: Milestone
+groupAssignee:
+  en: Assignee
+groupLabel:
+  en: Label
+groupLabelDetail:
+  en: one column per label
+groupIssueType:
+  en: Issue type
+groupKind:
+  en: Issue or pull request
+fromGitHub:
+  en: From GitHub
+allItems:
+  en: All
+noMilestone:
+  en: No milestone
+noLabel:
+  en: No label
+unassigned:
+  en: Unassigned
+noType:
+  en: No type
+milestoneProgress:
+  plural: total
+  en:
+    one: '{closed} of {total} closed'
+    many: '{closed} of {total} closed'
+milestoneDue:
+  en: '{progress} · due {date}'
+liveIn:
+  en: Its items live in
+inNoProject:
+  plural: count
+  en:
+    one: 1 in no project
+    many: '{count} in no project'
+nothingTitle:
+  en: Nothing here
+nothingDetail:
+  en: No issue or pull request of this repository matches. Try another state or kind.
+notTracked:
+  en: not tracked
+openOnGitHub:
+  en: Open on GitHub
+notTrackedTitle:
+  en: You're not tracking {name}
+notTrackedDetail:
+  plural: count
+  en:
+    zero: githq has nothing of it that concerns you. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.
+    one: 'githq only has what concerns you here: 1 item. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.'
+    many: 'githq only has what concerns you here: {count} items. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.'
+track:
+  en: Track {name}
+notFound:
+  en: GitHub shows you no such repository.
+concernsYou:
+  en: Concerns you
+othersAfterTracking:
+  en: The rest of {name}'s open issues and pull requests appear here once it is tracked. Until then, search only finds what's above.
