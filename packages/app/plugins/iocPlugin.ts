@@ -2,6 +2,7 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { defineNuxtPlugin } from 'nuxt/app';
 
+import { installDesktop } from '@/desktop/installDesktop.js';
 import { AppLanguageContext } from '@/i18n/AppLanguageContext.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
@@ -20,6 +21,11 @@ export default defineNuxtPlugin({
     setup(nuxtApp) {
         const container = createContainer();
         nuxtApp.vueApp.use(IocPlugin, { container });
+
+        // The desktop app's code, in the desktop build only (`__DESKTOP__`); the web builds drop it.
+        if (__DESKTOP__) {
+            installDesktop();
+        }
 
         container.register(AppLanguageContext);
         // One local copy per user, its parts kept through one connection.

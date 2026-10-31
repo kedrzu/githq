@@ -10,12 +10,16 @@ import { cssOptions } from './viteShared.js';
  * - `local` (`build:local`, for the e2e tests): the same app plus the development sign-in with a pasted
  *   token (`auth/DevTokenForm.vue`), into its own `.output-local/public`, which nothing deploys;
  *   `scripts/checkLocalBuild.ts` checks it.
+ * - `desktop` (`build:desktop`, and `dev:desktop` for `nuxt dev` under `tauri dev`): the app the desktop app
+ *   (`packages/desktop`) bundles, with its desktop code (`desktop/`), into its own `.output-desktop/public`;
+ *   `scripts/checkDesktopBuild.ts` checks it.
  *
  * Unset (`nuxt dev`, `nuxi typecheck`) it is `production`; `nuxt dev` has the development sign-in on its own
  * (`import.meta.dev`). Any other value fails the build.
  */
 const TARGET = readTarget(process.env.GITHQ_TARGET);
 const LOCAL_BUILD = TARGET === 'local';
+const DESKTOP = TARGET === 'desktop';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -64,9 +68,10 @@ export default defineNuxtConfig({
             }
         },
     },
-    // The local build goes to folders of its own: its output, so a production deploy can never pick it up, and
-    // its build files, so it can run while `nuxt dev` (which uses `.nuxt`) is up.
+    // The local and desktop builds go to folders of their own: their output, so a production deploy can never
+    // pick it up, and their build files, so each can run while `nuxt dev` (which uses `.nuxt`) is up.
     ...(LOCAL_BUILD ? { buildDir: '.nuxt-local', nitro: { output: { dir: '.output-local' } } } : {}),
+    ...(DESKTOP ? { buildDir: '.nuxt-desktop', nitro: { output: { dir: '.output-desktop' } } } : {}),
     // The app builds to static files only (`nuxt generate` → `.output/public`), which Cloudflare serves as the
     // assets of the githq Worker (`packages/worker/wrangler.jsonc`) without running any code. The API is that
     // Worker, on the same domain: the app calls `/api/...`, and under `nuxt dev` those calls go to the Worker in
@@ -88,14 +93,15 @@ export default defineNuxtConfig({
         define: {
             // `shims.d.ts`: a literal in the built code, so the production build drops what it guards.
             __LOCAL_BUILD__: JSON.stringify(LOCAL_BUILD),
+            __DESKTOP__: JSON.stringify(DESKTOP),
         },
     },
 });
 
-function readTarget(value: string | undefined): 'local' | 'production' {
-    if (value === undefined || value === 'production' || value === 'local') {
+function readTarget(value: string | undefined): 'desktop' | 'local' | 'production' {
+    if (value === undefined || value === 'production' || value === 'local' || value === 'desktop') {
         return value ?? 'production';
     }
 
-    throw new Error(`GITHQ_TARGET must be "production" or "local", not "${value}"`);
+    throw new Error(`GITHQ_TARGET must be "production", "local" or "desktop", not "${value}"`);
 }
