@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import Sidebar from './Sidebar.vue';
 import type { SidebarTrackedEntry, SidebarTrackedStatus } from './Sidebar.vue';
@@ -25,8 +26,8 @@ const meta = {
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
                 repository('kedrzu/skills', { kind: 'count', count: 7 }),
-                repository('sigma-clinic/portal', { kind: 'count', count: 142 }),
-                repository('sigma-clinic/api', { kind: 'count', count: 96 }),
+                repository('sigma-clinic/portal', { kind: 'count', count: 142 }, true),
+                repository('sigma-clinic/api', { kind: 'count', count: 96 }, true),
             ],
         },
         onToggle: fn(),
@@ -45,7 +46,10 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** The sidebar expanded: account, search, "My work" and its groups with their counts, projects and repositories. */
+/**
+ * The sidebar expanded: account, search, "My work" and its groups with their counts, projects and repositories —
+ * the private ones with a lock.
+ */
 export const Expanded: Story = {};
 
 /** Before the first download of "my work": its counts are still arriving. */
@@ -58,8 +62,8 @@ export const Downloading: Story = {
             projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('sigma-clinic/portal', { kind: 'downloading', percent: 62 }),
-                repository('sigma-clinic/api', { kind: 'downloading', percent: null }),
+                repository('sigma-clinic/portal', { kind: 'downloading', percent: 62 }, true),
+                repository('sigma-clinic/api', { kind: 'downloading', percent: null }, true),
                 repository('acme-health/vault', { kind: 'hidden' }),
             ],
         },
@@ -84,13 +88,13 @@ export const OnRepositoryIssues: Story = {
     ],
 };
 
-/** A tracked repository right-clicked: its menu, which the app fills with the repository's actions. */
-export const RepositoryMenu: Story = {
+/** A tracked project or repository right-clicked: its menu, which the app fills with its actions. */
+export const TrackedMenu: Story = {
     render: args => ({
         setup: () => () =>
             h(Sidebar, args, {
-                repositoryMenu: ({ nameWithOwner }: { nameWithOwner: string }) => [
-                    h(MenuLabel, () => nameWithOwner),
+                trackedMenu: ({ target }: { target: TrackedTarget }) => [
+                    h(MenuLabel, () => (target.kind === 'repository' ? target.nameWithOwner : target.id)),
                     h(MenuItem, () => 'Open on GitHub'),
                 ],
             }),
@@ -101,9 +105,22 @@ export const RepositoryMenu: Story = {
 export const Collapsed: Story = { args: { collapsed: true } };
 
 function project(title: string, owner: string, number: number, status: SidebarTrackedStatus): SidebarTrackedEntry {
-    return { key: `project:${number}`, label: title, to: `/orgs/${owner}/projects/${number}`, status };
+    return {
+        key: `project:${number}`,
+        label: title,
+        to: `/orgs/${owner}/projects/${number}`,
+        target: { kind: 'project', id: `PVT_${number}` },
+        status,
+    };
 }
 
-function repository(nameWithOwner: string, status: SidebarTrackedStatus): SidebarTrackedEntry {
-    return { key: `repository:${nameWithOwner}`, label: nameWithOwner, to: `/${nameWithOwner}`, status };
+function repository(nameWithOwner: string, status: SidebarTrackedStatus, isPrivate = false): SidebarTrackedEntry {
+    return {
+        key: `repository:${nameWithOwner}`,
+        label: nameWithOwner,
+        to: `/${nameWithOwner}`,
+        target: { kind: 'repository', nameWithOwner },
+        status,
+        isPrivate,
+    };
 }

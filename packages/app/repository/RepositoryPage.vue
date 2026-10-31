@@ -26,6 +26,7 @@ import { formatShortDate } from '@/utils/formatShortDate.js';
 
 import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
+import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
 import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
@@ -247,6 +248,9 @@ async function track() {
     @move="move"
     @track="track"
   >
+    <template #menu>
+      <RepositoryContextMenu :name-with-owner="nameWithOwner" />
+    </template>
     <template #selection="{ ids }">
       <SelectionActions
         :ids="ids"

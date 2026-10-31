@@ -18,6 +18,7 @@ import { TrackingStore } from './TrackingStore.js';
 import type { CandidateProject, CandidateRepository, TrackedTarget } from './TrackingTypes.js';
 import TrackingView from './TrackingView.vue';
 import type { SuggestedRepository, TrackedRow, TrackedRowState, TrackingTab } from './TrackingView.vue';
+import { TrackedItems } from './TrackedItems.js';
 import { haveOpenItemsArrived } from './utils/haveOpenItemsArrived.js';
 
 /** How often the rows' "14s ago" move on. */
@@ -28,6 +29,7 @@ const SUGGESTED = 8;
 const tracking = useService(TrackingStore);
 const approvals = useService(ApprovalRequests);
 const items = useService(ItemStore);
+const trackedItems = useService(TrackedItems);
 const sync = useService(SyncEngine);
 const route = useRoute();
 const router = useRouter();
@@ -39,17 +41,6 @@ const tab = computed({
   set: value => void router.replace({ query: value === 'projects' ? { tab: 'projects' } : {} }),
 });
 
-const privateRepositories = computed(() => {
-  const names = new Set<string>();
-  for (const item of items.all) {
-    if (item.repository.isPrivate) {
-      names.add(item.repository.nameWithOwner);
-    }
-  }
-
-  return names;
-});
-
 const tracked = computed(() => ({
   repositories: tracking.repositories.map((repository): TrackedRow => {
     const target: TrackedTarget = { kind: 'repository', nameWithOwner: repository.nameWithOwner };
@@ -58,7 +49,7 @@ const tracked = computed(() => ({
       target,
       name: repository.nameWithOwner,
       to: getRepositoryPath(repository.nameWithOwner),
-      isPrivate: privateRepositories.value.has(repository.nameWithOwner),
+      isPrivate: trackedItems.isPrivate(repository.nameWithOwner),
       items: progress.total === null ? null : progress.done,
       state: getState(target, sync.getRepositoryFreshness(repository.nameWithOwner).kind),
     };
