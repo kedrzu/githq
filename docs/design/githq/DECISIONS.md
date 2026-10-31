@@ -21,8 +21,8 @@ The app shows and edits only what GitHub itself has. It invents no conventions: 
 priority scale, no fixed Todo/In Progress/Done workflow. Where a GitHub Project defines fields (Status,
 Priority, Iteration, or anything else), the app displays and edits those fields as the project defines them.
 Without a project, an issue is what GitHub says it is: open/closed, labels, assignees, milestone, type,
-parent/sub-issues, dependencies. Source: user, 2026-10-12 ("nie próbujemy tutaj narzucić jakiejś własnej
-konwencji"). Rejected: label conventions for status/priority (a second source of truth github.com doesn't
+parent/sub-issues, dependencies. Source: user, 2026-10-12 ("we are not trying to impose some convention of
+our own here"). Rejected: label conventions for status/priority (a second source of truth github.com doesn't
 understand). Note: this is broader than "workflow lives in Projects" — project fields are arbitrary per
 project, so the UI cannot assume a field called Status exists.
 
@@ -80,8 +80,8 @@ are still a proposal ([Q6](#q6)).
 
 ### D7
 
-How the local copy learns about changes (agent's call, delegated by user 2026-10-12: "zrób research i
-rozstrzygnij"). Polling only, in two independent loops:
+How the local copy learns about changes (agent's call, delegated by user 2026-10-12: "do the research and
+decide"). Polling only, in two independent loops:
 
 - **Issues and PRs** in tracked repos: `GET /repos/{o}/{r}/issues?state=all&since=<last sync>` with
   `If-None-Match`; a 304 costs nothing. "About me" goes through search (two queries, issues and PRs).
@@ -122,8 +122,8 @@ rozstrzygnij"). Polling only, in two independent loops:
 
 Edit failures and conflicts are handled best effort in the first version: an edit shows at once; if GitHub
 rejects it, the change is rolled back and an error is shown; if someone changed the same thing on github.com
-meanwhile, the last write wins. No merge, no conflict UI. User, 2026-10-12: "na początek możemy rozwiązać je
-w zasadzie w dowolny sposób". Revisit if real use shows lost edits.
+meanwhile, the last write wins. No merge, no conflict UI. User, 2026-10-12: "for a start we can resolve them
+in basically any way". Revisit if real use shows lost edits.
 
 ### D9
 
@@ -236,8 +236,8 @@ Consequences the agent drew from it — agent's analysis, confirmed by user 2026
 ### D15
 
 Every large surface shows how fresh what it displays is: a whole list (my work, a project view, a repository),
-and an opened item — not each row. User requirement, 2026-10-30 ("potrzebujemy wiedzieć, czy wersja jest
-aktualna"). What a surface can be, from the sync model ([D7](#d7)):
+and an opened item — not each row. User requirement, 2026-10-30 ("we need to know whether the version is
+current"). What a surface can be, from the sync model ([D7](#d7)):
 
 - **fresh**: the poll covering this surface succeeded within its interval (~30 s);
 - **checking** right now;
@@ -445,7 +445,7 @@ GitHub App or OAuth App? Answered by [D3](#d3). Evidence below.
 ### Q4
 
 What does the local cache mirror — everything the user can see, or a chosen set plus "involves me"? Answered by [D4](#d4).
-User doesn't know typical scale (2026-10-12: "trudno powiedzieć"), so the answer must not depend on it.
+User doesn't know typical scale (2026-10-12: "hard to say"), so the answer must not depend on it.
 
 ### Q5
 
