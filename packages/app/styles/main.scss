@@ -18,6 +18,16 @@ html {
     text-size-adjust: 100%;
 }
 
+// Thin, dim scrollbars everywhere. `scrollbar-width` does not inherit, so it goes on every element.
+* {
+    scrollbar-width: thin;
+    scrollbar-color: $color-scrollbar-thumb transparent;
+
+    &:hover {
+        scrollbar-color: $color-scrollbar-thumb-hover transparent;
+    }
+}
+
 html,
 body {
     height: 100%;
