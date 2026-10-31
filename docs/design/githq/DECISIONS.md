@@ -332,6 +332,18 @@ says what githq is, so a screen between it and GitHub only adds a click). What G
 The desktop app keeps its own screen before signing in (S1): it has no landing page in front of the Device
 Flow.
 
+### D22
+
+"My work" can also be grouped by **repository** (user, 2026-10-31), next to the default grouping by reason
+([D11](#d11)). The groups are the tracked repositories in the sidebar's order, each holding the items of
+that repository; a row then drops the repository from its reference (`#482`, not `fitloop/api#482`). Items
+from repositories the user doesn't track (a PR of theirs in an open-source project, a mention elsewhere)
+fall into one last group, **Other repositories**, marked "not tracked", whose rows keep the full
+`owner/repo#number`. Inside a group the rows keep the reason order (review requested → my PRs → assigned →
+mentioned); the row's status line still says why the item is there. The nesting rule and the counts of
+[D11](#d11) hold: a PR that closes an assigned issue stays nested under it, and the group counts sum to the
+"My work" total. The sidebar's per-reason counts don't change with the grouping. Screen D6.
+
 ## Open questions
 
 ### Q1

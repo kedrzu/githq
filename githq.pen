@@ -43396,6 +43396,2809 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DRaG2",
+                  "name": "D6 · Sidebar expanded · My work grouped by repository · Item in panel",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CeuQN",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "v1vPf",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "b49czV": {
+                              "fill": "$bg-3"
+                            },
+                            "uONNn": {
+                              "fill": "$fg"
+                            },
+                            "AC0j9": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P14dIi",
+                          "name": "List pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "mzofQ",
+                              "name": "List header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "k3D8qX",
+                                  "name": "My work",
+                                  "fill": "$fg",
+                                  "content": "My work",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PHOYS",
+                                  "name": "Quick filters",
+                                  "gap": 4,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "y72yu",
+                                      "name": "Filter All",
+                                      "fill": "$bg-3",
+                                      "cornerRadius": 6,
+                                      "stroke": "$border-2",
+                                      "strokeWidth": 1,
+                                      "padding": [
+                                        4,
+                                        9
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "LpNFd",
+                                          "name": "All",
+                                          "fill": "$fg",
+                                          "content": "All",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "YBl7P",
+                                      "name": "Filter Needs me",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        4,
+                                        9
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "jrRVu",
+                                          "name": "Needs me",
+                                          "fill": "$fg-2",
+                                          "content": "Needs me",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Qzxom",
+                                      "name": "Filter Waiting on others",
+                                      "cornerRadius": 6,
+                                      "padding": [
+                                        4,
+                                        9
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Y2ug5U",
+                                          "name": "Waiting on others",
+                                          "fill": "$fg-2",
+                                          "content": "Waiting on others",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "D2Xqak",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cvcRL",
+                                  "name": "Display",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "bJAZP",
+                                      "name": "icon list-filter",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "list-filter",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ApJ6a",
+                                      "name": "Filter",
+                                      "fill": "$fg-2",
+                                      "content": "Filter",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "k16U9a",
+                                  "name": "Group",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "T2KgjF",
+                                      "name": "icon rows-3",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "rows-3",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "cTjoJ",
+                                      "name": "Group: Repository",
+                                      "fill": "$fg-2",
+                                      "content": "Group: Repository",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tb1ci",
+                                  "name": "Layout switch",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "F1g46",
+                                      "name": "Layout List",
+                                      "fill": "$bg-3",
+                                      "cornerRadius": 4,
+                                      "gap": 5,
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "y8am9",
+                                          "name": "icon list",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "list",
+                                          "library": "lucide",
+                                          "fill": "$fg"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Z81mE",
+                                      "name": "Layout Board",
+                                      "cornerRadius": 4,
+                                      "gap": 5,
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ElpNj",
+                                          "name": "icon columns-3",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "columns-3",
+                                          "library": "lucide",
+                                          "fill": "$fg-3"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "LaBjd",
+                              "name": "Rows",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "padding": [
+                                4,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Fu2fD",
+                                  "name": "Group mlaine/tasklet",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16,
+                                    6,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "lL70R",
+                                      "name": "icon chevron-down",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ALbXN",
+                                      "name": "mlaine/tasklet",
+                                      "fill": "$fg-2",
+                                      "content": "mlaine/tasklet",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "S2klO",
+                                      "name": "Count",
+                                      "fill": "$fg-3",
+                                      "content": "3",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gwvLN",
+                                  "name": "Row mlaine/tasklet#15",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "o3K7y",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "CL1rs",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "UmPUy",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "Gfy1U",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "O6PNvr",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "IndexedDB store for issues and pull requests",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "igV0L",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "g9RYf",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "12m",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "RZYD0",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "c6iEfg",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#15",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "QTqDQ",
+                                              "name": "Status fail",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "CTLcW",
+                                                  "name": "icon circle-x",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "circle-x",
+                                                  "library": "lucide",
+                                                  "fill": "$red"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "vVAaU",
+                                                  "name": "Status label",
+                                                  "fill": "$red",
+                                                  "content": "2 checks failing · changes requested",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "kosMs",
+                                              "name": "Size",
+                                              "fill": "$fg-3",
+                                              "content": "+486 −12",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "byW9S",
+                                  "name": "Row mlaine/tasklet#12",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "v3APDy",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "w144Cc",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Z9NDc",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "W3Yrb",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "SqSC9",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Background sync with conditional requests",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "wmRhp",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "wl2xJ",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "1d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Hj37x",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "zdMDc",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#12",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "MpzoU",
+                                              "name": "Project field",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "NyT9M",
+                                                  "name": "icon square-kanban",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "square-kanban",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "NvZG5",
+                                                  "name": "Todo",
+                                                  "fill": "$fg-2",
+                                                  "content": "Todo",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "pgRvX",
+                                              "name": "Label perf",
+                                              "cornerRadius": 10,
+                                              "stroke": "$border-2",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                2,
+                                                7
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "yHNOZ",
+                                                  "name": "dot",
+                                                  "fill": "#D6A23A",
+                                                  "width": 7,
+                                                  "height": 7
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "uGL10",
+                                                  "name": "Label text",
+                                                  "fill": "$fg-2",
+                                                  "content": "perf",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kIIAB",
+                                  "name": "Row mlaine/tasklet#9",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "y5bTW",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "LkpET",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "wIJWa",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "BqJQn",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "gNXUt",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Command palette: jump to issue by number",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "z6oT5",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "VG3vX",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "2d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kQsQ9",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Yc5O2",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#9",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "HrnZT",
+                                              "name": "Label feature",
+                                              "cornerRadius": 10,
+                                              "stroke": "$border-2",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                2,
+                                                7
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "mBDCR",
+                                                  "name": "dot",
+                                                  "fill": "#57AB5A",
+                                                  "width": 7,
+                                                  "height": 7
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "dNrgJ",
+                                                  "name": "Label text",
+                                                  "fill": "$fg-2",
+                                                  "content": "feature",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "i74FJ",
+                                  "name": "Group mlaine/mdlint",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16,
+                                    6,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "mbmGu",
+                                      "name": "icon chevron-down",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "TDBsa",
+                                      "name": "mlaine/mdlint",
+                                      "fill": "$fg-2",
+                                      "content": "mlaine/mdlint",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xjc8t",
+                                      "name": "Count",
+                                      "fill": "$fg-3",
+                                      "content": "1",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "YhlDb",
+                                  "name": "Row mlaine/mdlint#31",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "QUwby",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "kgwkr",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "BdyH5",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "V9Bii",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Taw8g",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "cli: support glob patterns in --ignore",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "I120f0",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "M3YIb",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "1w",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "R6xN1",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "I5Ect",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#31",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "K9cIyp",
+                                  "name": "Group fitloop/webapp",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16,
+                                    6,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "o0wIK",
+                                      "name": "icon chevron-down",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "G9kXXE",
+                                      "name": "fitloop/webapp",
+                                      "fill": "$fg-2",
+                                      "content": "fitloop/webapp",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "AkMHz",
+                                      "name": "Count",
+                                      "fill": "$fg-3",
+                                      "content": "2",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S6Roh",
+                                  "name": "Row fitloop/webapp#1203",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "M1yRMb",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "TehhK",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "OgHHI",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "elxJk",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "wFbwX",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Migrate class calendar to new date picker",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "fySnr",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "F8nXu",
+                                              "name": "Avatar RH",
+                                              "width": 16,
+                                              "height": 16,
+                                              "fill": "#B39DDB",
+                                              "cornerRadius": 8,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "xPO9D",
+                                                  "name": "Initials",
+                                                  "fill": "#0E1013",
+                                                  "content": "RH",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 7,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "kPBYj",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "5h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "shkHY",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "AiTBI",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#1203",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "hgWqQ",
+                                              "name": "Status running",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "M6vQ8U",
+                                                  "name": "icon loader",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "loader",
+                                                  "library": "lucide",
+                                                  "fill": "$amber"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "hsja7",
+                                                  "name": "Status label",
+                                                  "fill": "$amber",
+                                                  "content": "Checks running",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "RFpd2",
+                                              "name": "Size",
+                                              "fill": "$fg-3",
+                                              "content": "+1,092 −640",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qI3Cl",
+                                  "name": "Row fitloop/webapp#1187",
+                                  "width": "fill_container",
+                                  "fill": "$sel",
+                                  "stroke": "$accent",
+                                  "strokeWidth": {
+                                    "left": 2
+                                  },
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "e2d0L",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "oOkHd",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "prYhr",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "MAuh4",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "tTidg",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Calendar shows wrong timezone for recurring classes",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "aKoOo",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ZmFJr",
+                                              "name": "Avatar DK",
+                                              "width": 16,
+                                              "height": 16,
+                                              "fill": "#81C995",
+                                              "cornerRadius": 8,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "FtOdG",
+                                                  "name": "Initials",
+                                                  "fill": "#0E1013",
+                                                  "content": "DK",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 7,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "C10sb1",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "20m",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "RSRu8",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "wu7BI",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#1187",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "Gljy1",
+                                              "name": "Project field",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "cfFxH",
+                                                  "name": "icon square-kanban",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "square-kanban",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "Z1EXBB",
+                                                  "name": "In progress",
+                                                  "fill": "$fg-2",
+                                                  "content": "In progress",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "p45L8",
+                                                  "name": "More projects",
+                                                  "fill": "$fg-3",
+                                                  "content": "+1",
+                                                  "fontFamily": "$mono",
+                                                  "fontSize": 11,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "EdSeb",
+                                              "name": "Label bug",
+                                              "cornerRadius": 10,
+                                              "stroke": "$border-2",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                2,
+                                                7
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "bQf0P",
+                                                  "name": "dot",
+                                                  "fill": "#E5534B",
+                                                  "width": 7,
+                                                  "height": 7
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "P95DC",
+                                                  "name": "Label text",
+                                                  "fill": "$fg-2",
+                                                  "content": "bug",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fOgal",
+                                  "name": "Row #1205",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16,
+                                    7,
+                                    42
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "HbntI",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "k2oaph",
+                                          "name": "icon git-pull-request",
+                                          "width": 13,
+                                          "height": 13,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "y8Bfb",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "z4kTa",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "tKTha",
+                                              "name": "Title",
+                                              "fill": "$fg-2",
+                                              "content": "Fix timezone offset for recurring classes",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "JoXNY",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Y6rkl",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "20m",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kCWTg",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "h9MjId",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#1205",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "vnIQe",
+                                              "name": "Status running",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "JY3NF",
+                                                  "name": "icon loader",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "loader",
+                                                  "library": "lucide",
+                                                  "fill": "$amber"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "CgxZb",
+                                                  "name": "Status label",
+                                                  "fill": "$amber",
+                                                  "content": "Checks running",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qZoAF",
+                                  "name": "Group fitloop/api",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16,
+                                    6,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "NETCj",
+                                      "name": "icon chevron-down",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "u6N4CX",
+                                      "name": "fitloop/api",
+                                      "fill": "$fg-2",
+                                      "content": "fitloop/api",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "fCLYg",
+                                      "name": "Count",
+                                      "fill": "$fg-3",
+                                      "content": "4",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "c3hAT",
+                                  "name": "Row fitloop/api#482",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "gdl3X",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "tIR8K",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "wcjQ0",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "dKUMQ",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "vnSOo",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Add rate-limit backoff to webhook worker",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "xEcT3",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "CK9u6",
+                                              "name": "Avatar SB",
+                                              "width": 16,
+                                              "height": 16,
+                                              "fill": "#7FB3D5",
+                                              "cornerRadius": 8,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "QkBKf",
+                                                  "name": "Initials",
+                                                  "fill": "#0E1013",
+                                                  "content": "SB",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 7,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "KVhXG",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "2h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "M1Gxrc",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "P9S6P",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#482",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ze2wG",
+                                              "name": "Status review",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "mRF9k",
+                                                  "name": "icon eye",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "eye",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-2"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "JiUv6",
+                                                  "name": "Status label",
+                                                  "fill": "$fg-2",
+                                                  "content": "Your review requested",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "eNtzp",
+                                              "name": "Size",
+                                              "fill": "$fg-3",
+                                              "content": "+214 −38",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Br73H",
+                                  "name": "Row fitloop/api#477",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "GFLLH",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ztWHo",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "HfkKE",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "hWibr",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "M7VF9G",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Retry Stripe webhook delivery on 5xx",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "PrFKl",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "D6Lnb4",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "3h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "v5SCFe",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "u3l2oR",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#477",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "m9B9vC",
+                                              "name": "Status approved",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Rp1ic",
+                                                  "name": "icon circle-check",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "circle-check",
+                                                  "library": "lucide",
+                                                  "fill": "$green"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "zsuzo",
+                                                  "name": "Status label",
+                                                  "fill": "$green",
+                                                  "content": "Approved · ready to merge",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "QxPBF",
+                                              "name": "Follow-up Open on GitHub",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "SpTT1",
+                                                  "name": "icon arrow-up-right",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "arrow-up-right",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-2"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "G3bSM",
+                                                  "name": "Label",
+                                                  "fill": "$fg-2",
+                                                  "content": "Open on GitHub",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "bI5Ex",
+                                                  "name": "Kbd O",
+                                                  "fill": "$bg-3",
+                                                  "cornerRadius": 4,
+                                                  "stroke": "$border-2",
+                                                  "strokeWidth": 1,
+                                                  "padding": [
+                                                    0,
+                                                    4
+                                                  ],
+                                                  "justifyContent": "center",
+                                                  "alignItems": "center",
+                                                  "children": [
+                                                    {
+                                                      "type": "text",
+                                                      "id": "DbION",
+                                                      "name": "Key",
+                                                      "fill": "$fg-2",
+                                                      "content": "O",
+                                                      "fontFamily": "$mono",
+                                                      "fontSize": 10,
+                                                      "fontWeight": "normal"
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "c4dpS0",
+                                              "name": "Size",
+                                              "fill": "$fg-3",
+                                              "content": "+58 −9",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "esRQj",
+                                  "name": "Row fitloop/api#455",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "qaZb3",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "NK6xC",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "YTxhL",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "WpLe9",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "z8Bv4",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Document webhook retry policy",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "f8OkV",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "S50slJ",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "4d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kg9xy",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "s3pPja",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#455",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "OsNIj",
+                                              "name": "Label docs",
+                                              "cornerRadius": 10,
+                                              "stroke": "$border-2",
+                                              "strokeWidth": 1,
+                                              "gap": 5,
+                                              "padding": [
+                                                2,
+                                                7
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "ellipse",
+                                                  "id": "Hswxa",
+                                                  "name": "dot",
+                                                  "fill": "#4C9AFF",
+                                                  "width": 7,
+                                                  "height": 7
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "w4gw5",
+                                                  "name": "Label text",
+                                                  "fill": "$fg-2",
+                                                  "content": "docs",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iO4VW",
+                                  "name": "Row fitloop/api#463",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "kbBMX",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "AFiqp",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "LCOOm",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "QjjnU",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "M4DN5",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Webhook signatures fail behind the new proxy",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "K9OiHY",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "aacss",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "3h",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "i20GSX",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "X9XKrJ",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "#463",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "H2w49",
+                                              "name": "Project field",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Bpm4G",
+                                                  "name": "icon square-kanban",
+                                                  "width": 12,
+                                                  "height": 12,
+                                                  "icon": "square-kanban",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "rh1Lf",
+                                                  "name": "Todo",
+                                                  "fill": "$fg-2",
+                                                  "content": "Todo",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "lL6eM",
+                                              "name": "Mention",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "BOjWK",
+                                                  "name": "icon at-sign",
+                                                  "width": 11,
+                                                  "height": 11,
+                                                  "icon": "at-sign",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "S9XVE",
+                                                  "name": "Mention text",
+                                                  "fill": "$fg-3",
+                                                  "content": "sofiab",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G76Zwj",
+                                  "name": "Group Other repositories",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16,
+                                    6,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "jHq7l",
+                                      "name": "icon chevron-down",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "S4BqF",
+                                      "name": "Other repositories",
+                                      "fill": "$fg-2",
+                                      "content": "Other repositories",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "latfq",
+                                      "name": "Count",
+                                      "fill": "$fg-3",
+                                      "content": "3",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "O1DiC",
+                                      "name": "Untracked",
+                                      "gap": 4,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "m2HJBM",
+                                          "name": "icon cloud-off",
+                                          "width": 11,
+                                          "height": 11,
+                                          "icon": "cloud-off",
+                                          "library": "lucide",
+                                          "fill": "$fg-3"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "X0FxNK",
+                                          "name": "not tracked",
+                                          "fill": "$fg-3",
+                                          "content": "not tracked",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "J0fkx3",
+                                  "name": "Row fitloop/mobile#94",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "rdOwm",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "SsyRX",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ZmHLg",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "vBjtL",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "msWQ6",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Offline queue for booking edits",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "oj0BW",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "w1mXtS",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "1d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "FCxYT",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "EJCXZ",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "fitloop/mobile#94",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "byHZF",
+                                              "name": "Status waiting",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "AhwjD",
+                                                  "name": "icon loader",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "hourglass",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "CCMu6",
+                                                  "name": "Status label",
+                                                  "fill": "$fg-3",
+                                                  "content": "Waiting for review",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "qQvKD",
+                                              "name": "Size",
+                                              "fill": "$fg-3",
+                                              "content": "+731 −88",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "f1P22v",
+                                              "name": "Mention",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "h11XpD",
+                                                  "name": "icon at-sign",
+                                                  "width": 11,
+                                                  "height": 11,
+                                                  "icon": "at-sign",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "AFobv",
+                                                  "name": "Mention text",
+                                                  "fill": "$fg-3",
+                                                  "content": "rhowe",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tXUcC",
+                                  "name": "Row vitejs/vite#18842",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "d8vdT",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "H6jeEc",
+                                          "name": "icon git-pull-request",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "git-pull-request",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ad6fp",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "ZdtH3",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "FfjrN",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "fix(css): preserve source maps for nested @import",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "vdmZc",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "HFzg8",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "1d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "ij0Yf",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "DN3jA",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "vitejs/vite#18842",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ABgyr",
+                                              "name": "Status changes",
+                                              "gap": 5,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "h112ed",
+                                                  "name": "icon file-diff",
+                                                  "width": 12.5,
+                                                  "height": 12.5,
+                                                  "icon": "file-diff",
+                                                  "library": "lucide",
+                                                  "fill": "$red"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "ACfVV",
+                                                  "name": "Status label",
+                                                  "fill": "$red",
+                                                  "content": "Changes requested by SR",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vOWSc",
+                                  "name": "Row tanstack/query#8120",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "padding": [
+                                    7,
+                                    16
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "S9CyW",
+                                      "name": "Type",
+                                      "padding": [
+                                        1,
+                                        0,
+                                        0,
+                                        0
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "k8M6nZ",
+                                          "name": "icon circle-dot",
+                                          "width": 15,
+                                          "height": 15,
+                                          "icon": "circle-dot",
+                                          "library": "lucide",
+                                          "fill": "$green"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "SJLVz",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 5,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "xoxfX",
+                                          "name": "Line 1",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "sZdaG",
+                                              "name": "Title",
+                                              "fill": "$fg",
+                                              "content": "Stale data after window refocus with a persisted cache",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13.5,
+                                              "fontWeight": "500"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "TCUFo",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "rlXqc",
+                                              "name": "Updated",
+                                              "fill": "$fg-3",
+                                              "content": "2d",
+                                              "fontFamily": "$font",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "suK1r",
+                                          "name": "Line 2",
+                                          "width": "fill_container",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "q2IUX",
+                                              "name": "Ref",
+                                              "fill": "$fg-3",
+                                              "content": "tanstack/query#8120",
+                                              "fontFamily": "$mono",
+                                              "fontSize": 11.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "cVwR2",
+                                              "name": "Mention",
+                                              "gap": 4,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "u8yL4",
+                                                  "name": "icon at-sign",
+                                                  "width": 11,
+                                                  "height": 11,
+                                                  "icon": "at-sign",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "GBYYP",
+                                                  "name": "Mention text",
+                                                  "fill": "$fg-3",
+                                                  "content": "tmaier",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 11.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "zWCzl",
+                          "type": "ref",
+                          "ref": "jOPlc",
+                          "name": "Item view",
+                          "height": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "left": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yiXii",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "height": 26,
+                      "fill": "$bg-2",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "children": [
+                        {
+                          "id": "t66iOk",
+                          "type": "ref",
+                          "ref": "xhZTU",
+                          "name": "Segment · Sidebar",
+                          "width": 236,
+                          "height": "fill_container",
+                          "strokeWidth": 0,
+                          "descendants": {
+                            "zYDcH": {
+                              "enabled": false
+                            },
+                            "unZbw": {
+                              "content": "4,812 of 5,000 left this hour",
+                              "fill": "$fg-3"
+                            }
+                          }
+                        },
+                        {
+                          "id": "vMSUH",
+                          "type": "ref",
+                          "ref": "xhZTU",
+                          "name": "Segment · List pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "zYDcH": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "unZbw": {
+                              "content": "Up to date",
+                              "fill": "$fg-3"
+                            }
+                          }
+                        },
+                        {
+                          "id": "yqQ5L",
+                          "type": "ref",
+                          "ref": "xhZTU",
+                          "name": "Segment · Item view",
+                          "width": 560,
+                          "height": "fill_container",
+                          "descendants": {
+                            "zYDcH": {
+                              "icon": "check",
+                              "fill": "$fg-3"
+                            },
+                            "unZbw": {
+                              "content": "Up to date",
+                              "fill": "$fg-3"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
@@ -220177,14 +222980,33 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "j2p24",
+                              "type": "frame",
+                              "id": "Tidhb",
                               "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Properties",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "tFafn",
+                                  "name": "icon list-checks",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "HXhrL",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Properties",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -220337,58 +223159,132 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "HeRc5",
-                              "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Platform Q4 in other lists",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
-                            },
-                            {
                               "type": "frame",
-                              "id": "mSLvr",
-                              "name": "Row field: Status",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
+                              "id": "UQFSL",
+                              "name": "Heading",
                               "gap": 6,
-                              "padding": [
-                                5,
-                                9
-                              ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "dXN8T",
+                                  "id": "dW72Y",
                                   "name": "icon square-kanban",
-                                  "width": 14,
-                                  "height": 14,
+                                  "width": 12,
+                                  "height": 12,
                                   "icon": "square-kanban",
                                   "library": "lucide",
-                                  "fill": "$fg-2"
+                                  "fill": "$fg-3"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "nEQmp",
-                                  "name": "Row field: Status",
-                                  "fill": "$fg",
-                                  "content": "Row field: Status",
+                                  "id": "XLzoN",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Platform Q4 in other lists",
                                   "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EPIzm",
+                              "name": "Row field",
+                              "cornerRadius": 6,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "dgCwM",
+                                  "name": "Option Status",
+                                  "fill": "$bg-3",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UIeIo",
+                                      "name": "Status",
+                                      "fill": "$fg",
+                                      "content": "Status",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 },
                                 {
-                                  "type": "icon",
-                                  "id": "kdDqt",
-                                  "name": "icon chevrons-up-down",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "chevrons-up-down",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
+                                  "type": "frame",
+                                  "id": "x9uAe",
+                                  "name": "Option Priority",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "in566",
+                                      "name": "Priority",
+                                      "fill": "$fg-2",
+                                      "content": "Priority",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "lN2X0",
+                                  "name": "Option Iteration",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "QY5hJ",
+                                      "name": "Iteration",
+                                      "fill": "$fg-2",
+                                      "content": "Iteration",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "i2dS7m",
+                                  "name": "Option None",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "XTEMg",
+                                      "name": "None",
+                                      "fill": "$fg-2",
+                                      "content": "None",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 }
                               ]
                             },
@@ -221105,58 +224001,154 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "H2y93Z",
-                              "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Group",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
-                            },
-                            {
                               "type": "frame",
-                              "id": "b5SoTG",
-                              "name": "Group: Status",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
+                              "id": "HeGRt",
+                              "name": "Heading",
                               "gap": 6,
-                              "padding": [
-                                5,
-                                9
-                              ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "Bfu3F",
+                                  "id": "Q5MfkM",
                                   "name": "icon rows-3",
-                                  "width": 14,
-                                  "height": 14,
+                                  "width": 12,
+                                  "height": 12,
                                   "icon": "rows-3",
                                   "library": "lucide",
-                                  "fill": "$fg-2"
+                                  "fill": "$fg-3"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "VfZp2",
-                                  "name": "Group: Status",
-                                  "fill": "$fg",
-                                  "content": "Group: Status",
+                                  "id": "IaIcH",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Group",
                                   "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hkP4z",
+                              "name": "Group by",
+                              "cornerRadius": 6,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "p5JFV0",
+                                  "name": "Option Status",
+                                  "fill": "$bg-3",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "HiIja",
+                                      "name": "Status",
+                                      "fill": "$fg",
+                                      "content": "Status",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 },
                                 {
-                                  "type": "icon",
-                                  "id": "dIuWK",
-                                  "name": "icon chevrons-up-down",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "chevrons-up-down",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
+                                  "type": "frame",
+                                  "id": "yuThA",
+                                  "name": "Option Priority",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "s0KyR",
+                                      "name": "Priority",
+                                      "fill": "$fg-2",
+                                      "content": "Priority",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "c7MK1D",
+                                  "name": "Option Assignee",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "pY9X0",
+                                      "name": "Assignee",
+                                      "fill": "$fg-2",
+                                      "content": "Assignee",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xX3J4",
+                                  "name": "Option Iteration",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "tZCuw",
+                                      "name": "Iteration",
+                                      "fill": "$fg-2",
+                                      "content": "Iteration",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "g4XKo",
+                                  "name": "Option None",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "aKtX1",
+                                      "name": "None",
+                                      "fill": "$fg-2",
+                                      "content": "None",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -221179,58 +224171,167 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "A2Wqr",
-                              "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Order",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
-                            },
-                            {
                               "type": "frame",
-                              "id": "iSA67",
-                              "name": "Order: Priority",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
+                              "id": "BESPh",
+                              "name": "Heading",
                               "gap": 6,
-                              "padding": [
-                                5,
-                                9
-                              ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "Ej1xm",
+                                  "id": "OAr1f",
                                   "name": "icon arrow-down-up",
-                                  "width": 14,
-                                  "height": 14,
+                                  "width": 12,
+                                  "height": 12,
                                   "icon": "arrow-down-up",
                                   "library": "lucide",
-                                  "fill": "$fg-2"
+                                  "fill": "$fg-3"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "vq0QO",
-                                  "name": "Order: Priority",
-                                  "fill": "$fg",
-                                  "content": "Order: Priority",
+                                  "id": "BDlES",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Order",
                                   "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Ci2hR",
+                              "name": "Order row",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "PsKfd",
+                                  "name": "Order by",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "i0u7wy",
+                                      "name": "Option Priority",
+                                      "fill": "$bg-3",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        3,
+                                        8
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "iDT9g",
+                                          "name": "Priority",
+                                          "fill": "$fg",
+                                          "content": "Priority",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "gqS8D",
+                                      "name": "Option Updated",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        3,
+                                        8
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "dQZbu",
+                                          "name": "Updated",
+                                          "fill": "$fg-2",
+                                          "content": "Updated",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "iIQa7",
+                                      "name": "Option Created",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        3,
+                                        8
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "jz14s",
+                                          "name": "Created",
+                                          "fill": "$fg-2",
+                                          "content": "Created",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "mam4p",
+                                      "name": "Option Number",
+                                      "cornerRadius": 4,
+                                      "padding": [
+                                        3,
+                                        8
+                                      ],
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "cm2MC",
+                                          "name": "Number",
+                                          "fill": "$fg-2",
+                                          "content": "Number",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 },
                                 {
-                                  "type": "icon",
-                                  "id": "HqNSO",
-                                  "name": "icon chevrons-up-down",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "chevrons-up-down",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
+                                  "type": "frame",
+                                  "id": "X5FTfq",
+                                  "name": "Direction: high first",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 5,
+                                  "padding": [
+                                    4,
+                                    6
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "o0fdU",
+                                      "name": "icon arrow-down-wide-narrow",
+                                      "width": 13,
+                                      "height": 13,
+                                      "icon": "arrow-down-wide-narrow",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -221253,14 +224354,33 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "DWwbH",
+                              "type": "frame",
+                              "id": "MiwJv",
                               "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Properties",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "x6T0UG",
+                                  "name": "icon list-checks",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "sfcqQ",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Properties",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
                             },
                             {
                               "type": "frame",
@@ -221413,58 +224533,132 @@
                           ],
                           "children": [
                             {
-                              "type": "text",
-                              "id": "XqEip",
-                              "name": "Heading",
-                              "fill": "$fg-3",
-                              "content": "Platform Q4 in other lists",
-                              "fontFamily": "$font",
-                              "fontSize": 11.5,
-                              "fontWeight": "500"
-                            },
-                            {
                               "type": "frame",
-                              "id": "jlKWP",
-                              "name": "Row field: Status",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
+                              "id": "iFnTJ",
+                              "name": "Heading",
                               "gap": 6,
-                              "padding": [
-                                5,
-                                9
-                              ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "qgnWI",
+                                  "id": "H4PsWg",
                                   "name": "icon square-kanban",
-                                  "width": 14,
-                                  "height": 14,
+                                  "width": 12,
+                                  "height": 12,
                                   "icon": "square-kanban",
                                   "library": "lucide",
-                                  "fill": "$fg-2"
+                                  "fill": "$fg-3"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "ks3jO",
-                                  "name": "Row field: Status",
-                                  "fill": "$fg",
-                                  "content": "Row field: Status",
+                                  "id": "lT85L",
+                                  "name": "Label",
+                                  "fill": "$fg-3",
+                                  "content": "Platform Q4 in other lists",
                                   "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
+                                  "fontSize": 11.5,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "noD65",
+                              "name": "Row field",
+                              "cornerRadius": 6,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "gap": 2,
+                              "padding": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "gMRLV",
+                                  "name": "Option Status",
+                                  "fill": "$bg-3",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "drdfl",
+                                      "name": "Status",
+                                      "fill": "$fg",
+                                      "content": "Status",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 },
                                 {
-                                  "type": "icon",
-                                  "id": "KVXlT",
-                                  "name": "icon chevrons-up-down",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "chevrons-up-down",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
+                                  "type": "frame",
+                                  "id": "YkbcA",
+                                  "name": "Option Priority",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "e4rNT",
+                                      "name": "Priority",
+                                      "fill": "$fg-2",
+                                      "content": "Priority",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kO25y",
+                                  "name": "Option Iteration",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "KhXRb",
+                                      "name": "Iteration",
+                                      "fill": "$fg-2",
+                                      "content": "Iteration",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Hla2v",
+                                  "name": "Option None",
+                                  "cornerRadius": 4,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "S49w1",
+                                      "name": "None",
+                                      "fill": "$fg-2",
+                                      "content": "None",
+                                      "fontFamily": "$font",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
                                 }
                               ]
                             },

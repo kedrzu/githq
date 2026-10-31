@@ -3,7 +3,7 @@
 Read `README.md` in this folder first. This is the main path. It is the reason the app exists and what a
 user does several times a day.
 
-**Status:** designed in Direction D (screens D1–D3, E1–E4, PR view F1–F4, states K1–K5).
+**Status:** designed in Direction D (screens D1–D3 and D6, E1–E4, PR view F1–F4, states K1–K5).
 
 ## Purpose
 
@@ -29,6 +29,9 @@ These rules are settled. The screens must agree with them, including every count
   else. If the issue it closes isn't in my work, the PR is an ordinary row in "My pull requests".
 - **Counts are top-level rows.** Nested PRs don't count. The count next to each group in the sidebar
   equals the count in the list, and "My work" in the sidebar is the sum of the four.
+- **Grouping.** By reason (the four groups above, the default) or by repository ([D22](../DECISIONS.md#d22),
+  screen D6): one group per tracked repository in the sidebar's order, rows showing just `#number`, and a
+  last group "Other repositories" (not tracked) for everything else, whose rows keep `owner/repo#number`.
 - **Filters:**
   - **Needs me**: review requested from me, plus my PRs with failing checks, changes requested or
     conflicts, plus issues assigned to me.
