@@ -26,7 +26,7 @@ triage and move things quickly, and don't make me wait."
 - **Some filters may not be understood yet.** githq evaluates a view's filter locally. A filter it can't
   evaluate yet is answered by GitHub instead, which takes a moment. The user should see that this view is
   slower and why. This is rare.
-- **No "moved by someone".** D4 shows "moved by olam · just now". GitHub doesn't reliably tell us who
+- **No "moved by someone".** D4 shows "moved by sofiab · just now". GitHub doesn't reliably tell us who
   changed a field, so use "just now" alone, or another way of showing recent movement.
 - **Row field.** Each project has one field that represents it in rows outside the project (see
   [my work](my-work.md)). By default it is the single-choice field named "Status". The user can change it in
@@ -62,4 +62,4 @@ triage and move things quickly, and don't make me wait."
 
 ## Fix in the existing screens
 
-- Remove "moved by olam" from D4 (see above).
+- Remove "moved by sofiab" from D4 (see above).

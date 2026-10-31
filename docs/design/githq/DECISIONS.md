@@ -141,7 +141,7 @@ objection: a PR that closes an assigned issue is shown nested under that issue i
 > means evaluating that query language locally.
 > Field values (e.g. `ProjectV2ItemFieldSingleSelectValue`) carry `creator: Actor` and `updatedAt`;
 > `ProjectV2Item` has `isArchived`. Whether `creator` is the last person to set the value (needed for
-> "moved by olam") is untested.
+> "moved by sofiab") is untested.
 
 ### D10
 
@@ -156,7 +156,7 @@ user asked to apply all corrections (2026-10-12):
   > `.github/ISSUE_TEMPLATE/` and `issueTemplates` returns `[]`. Forms must be read through the contents
   > API and parsed by githq; the first version may render a form as a pre-filled markdown body.
 - **Merging a PR is not**: like code review ([D6](#d6)), it happens on github.com. githq shows mergeability.
-- **No actor on project field changes** ("moved by olam") until it's verified that the field value's
+- **No actor on project field changes** ("moved by sofiab") until it's verified that the field value's
   `creator` is the last person to set it ([D9](#d9) evidence). Show when it changed, not who.
 
 ### D11
@@ -316,6 +316,21 @@ Variants picked among the round-2 screens drawn side by side (user, 2026-10-30, 
 **H1** — creating an issue starts as a quick capture (repository, title, optional chips), which expands into
 the full form (H3). Rejected: G1a (permission explained only on demand), G3 (no tracking step, suggestions
 later), G7 (straight into the app while downloading), H4 (one full form).
+The G1b part is superseded by [D21](#d21).
+
+### D21
+
+There is no sign-in screen of our own on the web: "Sign in with GitHub" on the landing page (githq.dev) goes
+straight to GitHub's consent screen. Supersedes G1b in [D20](#d20) (user, 2026-10-31: the landing page now
+says what githq is, so a screen between it and GitHub only adds a click). What G1b explained moves:
+- one line under each "Sign in with GitHub" on the landing page warns that GitHub will ask for full
+  repository access and that githq only touches issues, pull requests and projects, linking to a "Why?"
+  that lives on the Privacy page (scopes, why nothing narrower exists, where the data goes);
+- coming back from GitHub with the sign-in cancelled or failed lands on the landing page with a one-line,
+  dismissible banner and "Try again" (screen G1, formerly G1c);
+- a visitor who already holds a token goes from githq.dev straight into the app.
+The desktop app keeps its own screen before signing in (S1): it has no landing page in front of the Device
+Flow.
 
 ## Open questions
 

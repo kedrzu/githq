@@ -37,7 +37,7 @@ These rules are settled. The screens must agree with them, including every count
 - **Project status in a row.** Every project has one "row field", by default its single-choice field named
   "Status". If an item is in several projects, the row shows the row field of the first of them in the
   sidebar order, plus "+1", "+2" and so on for the others. The item view shows every project with all its
-  fields. In the current D1, issue portal#1187 is in Platform Q4 and Bug triage, so its row should read
+  fields. In the current D1, issue webapp#1187 is in Platform Q4 and Bug triage, so its row should read
   "In progress +1".
 
 ## What happens, in order
@@ -73,7 +73,7 @@ These rules are settled. The screens must agree with them, including every count
    name and close, never merge. The menu offers only what the user may do in that repository and says in
    one line what is missing and why. For a selection it offers only what applies to every selected item.
    Every entry shows its single-key shortcut, so the menu also teaches the keyboard.
-   An opened item offers the same menu from its reference in the toolbar (`sigma-clinic/portal #1187 ▾`
+   An opened item offers the same menu from its reference in the toolbar (`fitloop/webapp #1187 ▾`
    is the trigger, designed in M1–M2), minus the entries that only make sense from a list ("Open", "Open as full page").
    ⌘. opens it from the keyboard. In both menus a submenu's chevron sits right after its title, not at the
    far edge, so the shortcut column needs no empty space on the right.
@@ -98,5 +98,5 @@ Only the first of these is new content. The others can be small, but must exist.
 
 - The counts in D1 and D2 don't follow the rules above. The sidebar says My work 11, My pull requests 4,
   Mentioned 3, but the list shows 2 / 3 / 5 and has no Mentioned group.
-- The row of portal#1187 shows one status although the issue is in two projects (see "Project status in a
+- The row of webapp#1187 shows one status although the issue is in two projects (see "Project status in a
   row" above).

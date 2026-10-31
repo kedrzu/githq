@@ -16,11 +16,12 @@ projects githq should copy in full.
 
 ## What happens, in order
 
-1. **Before signing in.** The user sees what githq is and a "Sign in with GitHub" action.
+1. **Before signing in.** The landing page (githq.dev) says what githq is. Its "Sign in with GitHub" goes
+   straight to GitHub; there is no sign-in screen of our own in between (D21).
 2. **GitHub's consent screen.** This one is not ours. It will say githq wants "full access to
-   repositories" and access to projects. The wording is broad because GitHub has nothing narrower. Our
-   screen before it may want to say, briefly, why githq asks for this and that it only touches issues,
-   pull requests and projects.
+   repositories" and access to projects. The wording is broad because GitHub has nothing narrower. One
+   line under each "Sign in with GitHub" on the landing page warns about it and says that githq only touches
+   issues, pull requests and projects; its "Why?" leads to the full explanation on the Privacy page.
 3. **Back in githq: choosing what to track.** githq lists the user's repositories and projects. Their own
    repositories are pre-selected, and organisation repositories are not. The user adjusts the selection and
    continues. This choice can be changed later from anywhere in the app.
@@ -50,7 +51,8 @@ projects githq should copy in full.
   failure must be visible.**
 - **No repositories at all.** A brand-new GitHub account has none. The user can still use "what concerns
   me" and track other people's projects.
-- **Sign-in cancelled or failed** on GitHub's side: the user returns to the start with a short explanation.
+- **Sign-in cancelled or failed** on GitHub's side: the user returns to the landing page with a one-line
+  banner saying what happened and "Try again" (G1).
 - **Signing in again later.** Data from before is still in the browser, so the user lands straight on their
   work, with no download step.
 
@@ -67,4 +69,5 @@ projects githq should copy in full.
 - How much should the tracking step ask at all? One option is a deliberate step. The other is to skip it,
   track only the user's own repositories, and offer "track more" later.
 - Where does "change what I track" live once the user is inside the app?
-- How much explanation does the broad permission request deserve before GitHub's consent screen?
+- How much explanation does the broad permission request deserve before GitHub's consent screen? Settled
+  by D21: one line on the landing page, the rest on the Privacy page.
