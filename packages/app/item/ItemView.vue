@@ -25,6 +25,7 @@ import {
   PanelRight,
   X,
 } from 'lucide-vue-next';
+import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, ref, useTemplateRef } from 'vue';
 
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
@@ -38,10 +39,12 @@ import Kbd from '@/components/Kbd.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import Menu from '@/components/Menu.vue';
 import MenuItem from '@/components/MenuItem.vue';
+import ResizeHandle from '@/components/ResizeHandle.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
+import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -116,6 +119,20 @@ const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('revi
 const stateMenuOpen = ref(false);
 
 const split = computed(() => props.arrangement !== 'panel');
+// The side column's width, resized by dragging its edge: one for the modal, one for the page.
+const sideWidths = {
+  modal: usePanelWidth({ key: 'itemSide.modal', default: 320, min: 260, max: 560 }),
+  page: usePanelWidth({ key: 'itemSide.page', default: 360, min: 260, max: 560 }),
+};
+const sideWidth = computed(() => (props.arrangement === 'page' ? sideWidths.page : sideWidths.modal));
+
+// `[main, side?]`: the main column's in percent, the side's in pixels.
+function onColumnsLayout(sizes: number[]) {
+  const side = sizes[1];
+  if (side !== undefined) {
+    sideWidth.value.current = side;
+  }
+}
 const arrangementOptions = computed((): SegmentedTabsOption<ItemArrangement>[] => [
   { value: 'panel', label: t(l.panel), icon: ARRANGEMENT_ICONS.panel, iconOnly: true },
   { value: 'modal', label: t(l.modal), icon: ARRANGEMENT_ICONS.modal, iconOnly: true },
@@ -530,8 +547,17 @@ function openTab(url: string) {
       />
     </header>
 
-    <div :class="css.itemView_columns">
-      <div :class="css.itemView_main">
+    <SplitterGroup
+      direction="horizontal"
+      :class="css.itemView_columns"
+      @layout="onColumnsLayout"
+    >
+      <SplitterPanel
+        id="item-main"
+        :order="0"
+        :min-size="40"
+        :class="css.itemView_main"
+      >
         <div :class="css.itemView_scroll">
           <div :class="css.itemView_heading">
             <h1 :class="css.itemView_title">{{ item.title }}</h1>
@@ -647,41 +673,56 @@ function openTab(url: string) {
             @submit="emit('edit', { kind: 'comment', body: $event })"
           />
         </footer>
-      </div>
+      </SplitterPanel>
 
-      <aside
-        v-if="split"
-        :class="css.itemView_side"
-      >
-        <PullRequestReviews
-          v-if="prDetail"
-          ref="reviews"
-          :detail="prDetail"
-          :now="now"
-          :reviewer-options="reviewerOptions"
-          @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+      <template v-if="split">
+        <ResizeHandle
+          :label="t(l.resizeSide)"
+          @resized="sideWidth.save()"
         />
-        <ItemProperties
-          ref="properties"
-          :item="item"
-          :detail="issueDetail"
-          :editing="editing"
-          @open="emit('open', $event)"
-          @edit="emit('edit', $event)"
-        />
-        <ItemProjects
-          ref="projects"
-          :projects="item.projects"
-          :detail-projects="detail?.projects"
-          :now="now"
-          :editable="editing != null"
-          :can-add-to-project="permissions?.addToProject"
-          :viewer-projects="editing?.viewerProjects"
-          @edit="emit('edit', $event)"
-          @need-projects="emit('needProjects')"
-        />
-      </aside>
-    </div>
+        <SplitterPanel
+          id="item-side"
+          :key="arrangement"
+          as="aside"
+          :order="1"
+          size-unit="px"
+          :default-size="sideWidth.stored"
+          :min-size="sideWidth.min"
+          :max-size="sideWidth.max"
+          :style="sideWidth.style"
+        >
+          <div :class="css.itemView_side">
+            <PullRequestReviews
+              v-if="prDetail"
+              ref="reviews"
+              :detail="prDetail"
+              :now="now"
+              :reviewer-options="reviewerOptions"
+              @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+            />
+            <ItemProperties
+              ref="properties"
+              :item="item"
+              :detail="issueDetail"
+              :editing="editing"
+              @open="emit('open', $event)"
+              @edit="emit('edit', $event)"
+            />
+            <ItemProjects
+              ref="projects"
+              :projects="item.projects"
+              :detail-projects="detail?.projects"
+              :now="now"
+              :editable="editing != null"
+              :can-add-to-project="permissions?.addToProject"
+              :viewer-projects="editing?.viewerProjects"
+              @edit="emit('edit', $event)"
+              @need-projects="emit('needProjects')"
+            />
+          </div>
+        </SplitterPanel>
+      </template>
+    </SplitterGroup>
   </article>
 </template>
 
@@ -762,14 +803,12 @@ function openTab(url: string) {
 }
 
 .itemView_columns {
-  display: flex;
   flex: 1;
   min-height: 0;
 }
 
 .itemView_main {
   display: flex;
-  flex: 1;
   flex-direction: column;
   min-width: 0;
 }
@@ -837,20 +876,15 @@ function openTab(url: string) {
 
 .itemView_side {
   display: flex;
-  flex: none;
   flex-direction: column;
   gap: 20px;
-  width: 320px;
+  height: 100%;
   padding: 28px $spacing-24;
   overflow-y: auto;
   border-left: 1px solid $color-border;
 
   > * {
     flex: none;
-  }
-
-  .itemView_page & {
-    width: 360px;
   }
 }
 </style>

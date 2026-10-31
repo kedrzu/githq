@@ -2,3 +2,7 @@ collapseSidebar:
   en: Collapse sidebar
 expandSidebar:
   en: Expand sidebar
+resizeSidebar:
+  en: Resize sidebar
+resizePanel:
+  en: Resize item panel
