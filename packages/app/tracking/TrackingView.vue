@@ -270,7 +270,7 @@ function keyOf(target: TrackedTarget) {
                 :class="css.trackingView_untrack"
                 size="sm"
                 variant="outline"
-                kbd="⌫"
+                kbd="Backspace"
                 @click="emit('untrack', row.target)"
               >
                 {{ t(l.untrack) }}

@@ -1,4 +1,4 @@
-<!-- A keyboard hint chip ("⌘K", "↵", "A"). Key glyphs (⌘ ⇧ ⌥ ⌃ ↵ ⌫ ⇥ and arrows) are drawn as Lucide icons, since the mono font draws them poorly; letters and words ("Esc", "O") stay text. Hidden from screen readers: the control it sits on names its shortcut in `aria-keyshortcuts` instead. -->
+<!-- A keyboard hint chip for a key in the app's notation (`Mod+K`, `Enter`, `A`), as this platform writes it (`formatCommandKey`: "⌘K" on a Mac, "Ctrl+K" elsewhere). Key glyphs (⌘ ⇧ ⌥ ⌃ ↵ ⌫ ⇥ and arrows) are drawn as Lucide icons, since the mono font draws them poorly; letters and words ("Esc", "O") stay text. Hidden from screen readers: the control it sits on names its shortcut in `aria-keyshortcuts` instead. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -16,9 +16,11 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { formatCommandKey } from '@/commands/formatCommandKey.js';
+
 const props = withDefaults(
   defineProps<{
-    /** The keys, as the design writes them ("⌘↵", "⇧O", "Esc"). */
+    /** The key in the app's notation (`Mod+Enter`, `Shift+O`, `Escape`); keys apart by spaces share the chip. */
     keys: string;
     /** `onFill`: on a filled button (primary, light) — dark text on a translucent chip. */
     tone?: 'default' | 'onFill';
@@ -46,7 +48,7 @@ const KEY_ICONS: Record<string, LucideIcon> = {
 const parts = computed(() => {
   const result: ({ icon: LucideIcon } | { text: string })[] = [];
   let text = '';
-  for (const char of props.keys) {
+  for (const char of formatCommandKey(props.keys)) {
     const icon = KEY_ICONS[char];
     if (!icon) {
       text += char;

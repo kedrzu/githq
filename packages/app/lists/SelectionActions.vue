@@ -7,7 +7,6 @@ import { CircleCheckBig, CircleSlash, Milestone, Tag, UserPlus, X } from 'lucide
 import { computed, ref, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
@@ -276,7 +275,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           variant="ghost"
           size="sm"
           :icon="CircleCheckBig"
-          :kbd="formatCommandKey(EDIT_KEYS.state).join('')"
+          :kbd="EDIT_KEYS.state"
           :aria-keyshortcuts="EDIT_KEYS.state"
         >
           {{ t(l.close) }}
@@ -298,7 +297,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
     <IconButton
       :icon="X"
       :label="t(l.clear)"
-      kbd="Esc"
+      kbd="Escape"
       size="sm"
       @click="emit('clear')"
     />

@@ -107,7 +107,7 @@ function applyChange(values: readonly string[], change: PickerChange) {
         variant="outline"
         size="sm"
         :icon="User"
-        kbd="⌥A"
+        kbd="Alt+A"
         :aria-pressed="assignedToMe"
         aria-keyshortcuts="Alt+A"
         :class="{ [css.newIssueFields_missingChip]: assignedToMe && missing.assignees.includes(viewerLogin) }"

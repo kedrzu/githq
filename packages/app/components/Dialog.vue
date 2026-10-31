@@ -112,7 +112,7 @@ const t = useTranslate();
           :class="css.dialog_close"
           :icon="X"
           :label="t(l.close)"
-          kbd="Esc"
+          kbd="Escape"
           @click="open = false"
         />
       </DialogContent>

@@ -87,8 +87,8 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
     :filter-label="t(l.label)"
     :message="message"
     :hints="[
-      { keys: '↵', label: t(l.choose) },
-      { keys: 'Esc', label: t(l.back) },
+      { keys: 'Enter', label: t(l.choose) },
+      { keys: 'Escape', label: t(l.back) },
     ]"
     back-on-escape
     @update:model-value="choose"
@@ -120,7 +120,7 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
       >
       <Kbd
         v-else-if="highlighted"
-        keys="↵"
+        keys="Enter"
       />
     </template>
   </FilterList>

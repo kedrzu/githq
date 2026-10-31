@@ -93,8 +93,8 @@ function pick(value: AcceptableValue | AcceptableValue[]) {
     :groups="groups"
     :filterable="false"
     :hints="[
-      { keys: '↵', label: t(l.useTemplate) },
-      { keys: 'Esc', label: t(l.back) },
+      { keys: 'Enter', label: t(l.useTemplate) },
+      { keys: 'Escape', label: t(l.back) },
     ]"
     back-on-escape
     @update:model-value="pick"
@@ -136,7 +136,7 @@ function pick(value: AcceptableValue | AcceptableValue[]) {
           :class="css.templateChooser_about"
           >{{ t(l.continueOnGitHub) }}</span
         >
-        <Kbd keys="↵" />
+        <Kbd keys="Enter" />
       </template>
     </template>
     <template #footerEnd>
