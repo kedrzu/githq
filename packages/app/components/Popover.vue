@@ -10,8 +10,10 @@ withDefaults(
     align?: 'center' | 'end' | 'start';
     /** Where it opens; `bottom` when not given. */
     side?: 'bottom' | 'left' | 'right' | 'top';
+    /** No padding of its own: the panel's sections run to its edges (the display options). */
+    flush?: boolean;
   }>(),
-  { align: 'start', side: 'bottom' },
+  { align: 'start', side: 'bottom', flush: false },
 );
 
 defineSlots<{
@@ -31,7 +33,7 @@ const open = defineModel<boolean>('open', { default: false });
     </PopoverTrigger>
     <PopoverPortal>
       <PopoverContent
-        :class="css.popover"
+        :class="[css.popover, flush && css.popover_flush]"
         :aria-label="label"
         :align="align"
         :side="side"
@@ -57,5 +59,10 @@ const open = defineModel<boolean>('open', { default: false });
   border-radius: $radius-lg;
   outline: none;
   box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+}
+
+.popover_flush {
+  padding: 0;
+  overflow: hidden;
 }
 </style>

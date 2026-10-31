@@ -687,10 +687,11 @@ function addDraft(title: string, group: string | null) {
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
-  padding-bottom: $spacing-8;
+  padding: $spacing-12 14px;
   font-size: $font-size-2xs;
   line-height: $line-height-normal;
   color: $color-fg-dim;
+  background: $color-bg-3;
   border-bottom: 1px solid $color-border;
 }
 
@@ -705,6 +706,7 @@ function addDraft(title: string, group: string | null) {
 
 .projectView_note {
   padding: $spacing-8 $spacing-10;
+  margin: $spacing-12 14px 0;
   font-size: $font-size-2xs;
   line-height: $line-height-normal;
   color: $color-fg-2;
