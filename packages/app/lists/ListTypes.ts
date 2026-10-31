@@ -51,6 +51,10 @@ export interface ListGroup<T> {
     readonly marker?: ListGroupMarker | null;
     /** Dim text after the count ("7 of 11 closed · due Nov 15"). */
     readonly detail?: string | null;
+    /** Drawn before `detail` (my work's "not tracked" repositories). */
+    readonly detailIcon?: LucideIcon | null;
+    /** The label is a name from code, set in the monospaced font (a repository's `owner/name`). */
+    readonly monospace?: boolean;
     /** `false` while its rows are still on their way (my work's first download, G7): it has none yet. */
     readonly arrived: boolean;
     readonly rows: readonly ListRow<T>[];

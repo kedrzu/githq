@@ -1,7 +1,7 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason alone (D11); the order and the properties shown are the user's (`options`). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the four groups, and nothing is moved between them — a reason is not a value to set. -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ListFilter } from 'lucide-vue-next';
+import { CloudOff, ListFilter } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
@@ -13,14 +13,15 @@ import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
-import type { ListChoice, ListContextMenuProps, ListGroup, ListViewOptions } from '@/lists/ListTypes.js';
+import type { ListChoice, ListContextMenuProps, ListGroup, ListRow, ListViewOptions } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 
-import type { MyWork, MyWorkFilter } from './buildMyWork.js';
+import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
+import { groupMyWorkByRepository } from './groupMyWorkByRepository.js';
 import MyWorkEmpty from './MyWorkEmpty.vue';
 import * as groupLabels from './MyWorkGroupLabel.loc.js';
 import * as l from './MyWorkView.loc.js';
@@ -39,8 +40,8 @@ const props = withDefaults(
     now: number;
     /** How many of the user's pull requests wait on others, for the empty "Needs me". */
     waitingCount: number;
-    /** How many repositories the user tracks, for the empty "my work" (K4). */
-    trackedCount?: number;
+    /** The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, and the empty "my work" (K4). */
+    trackedRepositories?: readonly string[];
     /** The item opened over the list (panel or modal): moving the selection opens the next one in its place. */
     openedId?: string | null;
     /** What was just undone of an item's edits, by its id ("“regression” label undone"). */
@@ -48,7 +49,7 @@ const props = withDefaults(
     /** The view options differ from the defaults: the display options offer a reset. */
     modified?: boolean;
   }>(),
-  { group: null, openedId: null, undone: () => new Map(), modified: false, trackedCount: 0 },
+  { group: null, openedId: null, undone: () => new Map(), modified: false, trackedRepositories: () => [] },
 );
 
 const emit = defineEmits<{
@@ -80,6 +81,8 @@ defineSlots<{
 const t = useTranslate();
 const choices = useItemListChoices();
 
+/** The key of the group of repositories the user doesn't track; no repository's `owner/name` can take it. */
+const OTHER_REPOSITORIES = 'otherRepositories';
 const FILTER_KEYS: Readonly<Record<MyWorkFilter, string>> = { all: '1', needsMe: '2', waitingOnOthers: '3' };
 
 const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
@@ -89,40 +92,51 @@ const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
     keyshortcuts: FILTER_KEYS[candidate],
   })),
 );
-const groupings = computed((): ListChoice[] => [{ value: 'reason', label: t(l.reason) }]);
+const groupings = computed((): ListChoice[] => [
+  { value: 'reason', label: t(l.reason) },
+  { value: 'repository', label: t(l.repository) },
+]);
 const title = computed(() => (props.group ? t(groupLabels[props.group]) : t(l.title)));
 const properties = computed(() => {
   const shown = options.value.properties;
   return ITEM_PROPERTIES.filter((property): property is ItemProperty => shown.includes(property));
 });
 
-/** Every group as the engine lists it, a pull request under the issue it closes. */
-const allGroups = computed((): ListGroup<Item>[] =>
-  props.work.groups.map(entry => ({
+/** The rows there because the user's review is asked: they say so whatever group they are drawn in. */
+const reviewRequestedIds = computed(
+  () =>
+    new Set(
+      props.work.groups.flatMap(entry => (entry.group === 'reviewRequested' ? entry.rows.map(row => row.item.id) : [])),
+    ),
+);
+/** The reason groups shown: the narrowed one alone, or all four. */
+const reasons = computed(() => props.work.groups.filter(entry => !props.group || entry.group === props.group));
+/** The reason groups as the engine lists them. */
+const reasonGroups = computed((): ListGroup<Item>[] =>
+  reasons.value.map(entry => ({
     key: entry.group,
     label: t(groupLabels[entry.group]),
     arrived: entry.arrived,
     droppable: false,
-    rows: entry.rows.map(row => ({
-      key: row.item.id,
-      id: row.item.id,
-      value: row.item,
-      nested: row.nested.map(nested => ({ key: nested.id, id: nested.id, value: nested })),
-    })),
+    rows: entry.rows.map(toListRow),
   })),
 );
 /**
- * The groups drawn: the narrowed one even when empty; else, in the list, those still arriving (G7) and those
- * with rows — on the board every column, unless none has anything (the empty state says so instead).
+ * The groups drawn. By reason: the narrowed one even when empty; else, in the list, those still arriving (G7)
+ * and those with rows — on the board every column, unless none has anything (the empty state says so instead).
+ * By repository: those with rows, then the reasons still arriving.
  */
-const groups = computed(() => {
-  const { group } = props;
-  if (group) {
-    return allGroups.value.filter(entry => entry.key === group);
+const groups = computed((): ListGroup<Item>[] => {
+  if (options.value.grouping === 'repository') {
+    return [...repositoryGroups(), ...reasonGroups.value.filter(entry => !entry.arrived)];
   }
 
-  const shown = allGroups.value.filter(entry => !entry.arrived || entry.rows.length > 0);
-  return options.value.layout === 'board' && shown.length > 0 ? allGroups.value : shown;
+  if (props.group) {
+    return reasonGroups.value;
+  }
+
+  const shown = reasonGroups.value.filter(entry => !entry.arrived || entry.rows.length > 0);
+  return options.value.layout === 'board' && shown.length > 0 ? reasonGroups.value : shown;
 });
 
 // `1`–`3` switch the filters; the command menu offers them too.
@@ -139,6 +153,33 @@ useCommands(() =>
     },
   })),
 );
+
+function repositoryGroups(): ListGroup<Item>[] {
+  return groupMyWorkByRepository(reasons.value, props.trackedRepositories).map(({ repository, rows }) => ({
+    key: repository ?? OTHER_REPOSITORIES,
+    label: repository ?? t(l.otherRepositories),
+    monospace: repository !== null,
+    detail: repository === null ? t(l.notTracked) : null,
+    detailIcon: repository === null ? CloudOff : null,
+    arrived: true,
+    droppable: false,
+    rows: rows.map(toListRow),
+  }));
+}
+
+/** The repository a group of the list is of: its rows are named by number alone. */
+function repositoryOf(group: ListGroup<Item>) {
+  return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
+}
+
+function toListRow(row: MyWorkRow): ListRow<Item> {
+  return {
+    key: row.item.id,
+    id: row.item.id,
+    value: row.item,
+    nested: row.nested.map(nested => ({ key: nested.id, id: nested.id, value: nested })),
+  };
+}
 </script>
 
 <template>
@@ -180,7 +221,8 @@ useCommands(() =>
           :item="entry.value"
           :parent="parent?.value"
           :properties="properties"
-          :review-requested="listGroup.key === 'reviewRequested'"
+          :repository="repositoryOf(listGroup)"
+          :review-requested="reviewRequestedIds.has(entry.id)"
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
@@ -192,7 +234,8 @@ useCommands(() =>
           :item="entry.value"
           :parent="parent?.value"
           :properties="properties"
-          :review-requested="listGroup.key === 'reviewRequested'"
+          :repository="repositoryOf(listGroup)"
+          :review-requested="reviewRequestedIds.has(entry.id)"
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
@@ -204,7 +247,7 @@ useCommands(() =>
           :filter="filter"
           :waiting-count="waitingCount"
           :waiting-key="FILTER_KEYS.waitingOnOthers"
-          :tracked-count="trackedCount"
+          :tracked-count="trackedRepositories.length"
           @show-waiting="filter = 'waitingOnOthers'"
         />
       </template>

@@ -47,7 +47,10 @@ export const OneGroup: Story = { args: { group: 'authored' } };
 
 /** K4: nothing on the user's plate, across the repositories they track — a good state. */
 export const NothingOnYourPlate: Story = {
-    args: { work: sampleMyWork([], sampleMembership({}), 'all'), trackedCount: 4 },
+    args: {
+        work: sampleMyWork([], sampleMembership({}), 'all'),
+        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/api', 'sigma-clinic/portal'],
+    },
 };
 
 /** K5: nothing needs the user, but two of their pull requests wait on others; the empty state points there. */
@@ -86,4 +89,13 @@ export const Selection: Story = {
 /** D9: my work as a board — a column per group, the pull request closing an assigned issue a smaller card under it. */
 export const Board: Story = {
     args: { selectedId: 'I_1187', options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' } },
+};
+
+/** D6: grouped by repository — the tracked ones in the sidebar's order, rows named by number, then the others. */
+export const ByRepository: Story = {
+    args: {
+        selectedId: 'I_1187',
+        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/portal', 'sigma-clinic/api'],
+        options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'repository' },
+    },
 };
