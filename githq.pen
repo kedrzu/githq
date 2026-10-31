@@ -179496,6 +179496,1856 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "nCTdq",
+      "x": 1720,
+      "y": -2456,
+      "name": "App icons — generated (review)",
+      "width": 1600,
+      "fill": "#0B0C0F",
+      "layout": "vertical",
+      "gap": 72,
+      "padding": 80,
+      "children": [
+        {
+          "type": "frame",
+          "id": "MgEoc",
+          "name": "Header",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "v5PCW",
+              "name": "Eyebrow",
+              "fill": "#646B75",
+              "content": "BRAND · APP ICONS · GENERATED",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 12,
+              "fontWeight": "normal",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "text",
+              "id": "O0L76Q",
+              "name": "Title",
+              "fill": "#E4E6EA",
+              "content": "/hq — the icons as shipped",
+              "fontFamily": "Inter",
+              "fontSize": 44,
+              "fontWeight": "600",
+              "letterSpacing": -1.2
+            },
+            {
+              "type": "text",
+              "id": "hoxe6",
+              "name": "Lede",
+              "fill": "#9AA0A9",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "The real files from packages/app/public, written by scripts/generateIcons.ts, shown at the sizes people see them (favicon.svg is drawn here from its own paths: the canvas does not show SVG images). The smaller the icon, the larger “/hq” on its tile: 54 % of the side for the favicon, 44 % at home-screen size (180, 192 px), the brandbook’s 38 % at 512 px.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "KuspN",
+          "name": "Favicon & Paseo",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "SmYKW",
+              "name": "Section header",
+              "gap": 16,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "lGCMu",
+                  "name": "No",
+                  "fill": "#7B87F7",
+                  "content": "01",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "hX6XP",
+                  "name": "Title",
+                  "fill": "#E4E6EA",
+                  "content": "Favicon & Paseo",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "L8s6y8",
+                  "name": "Sub",
+                  "fill": "#646B75",
+                  "content": "favicon.svg — one file for the browser tab and the Paseo sidebar",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JteZd",
+              "name": "Content",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EbK6R",
+                  "name": "On dark",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "sokYn",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 240,
+                      "fill": "#0E1013",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "hxxHp",
+                          "name": "64 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "OWgyf",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 64,
+                              "height": 64,
+                              "fill": "#0e1013",
+                              "cornerRadius": 14.72,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 2,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "c6eeF",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 64,
+                                  "height": 64
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "PmVCS",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 64,
+                                  "height": 64
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "qDsjp",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 64,
+                                  "height": 64
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "BoivV",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "64 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "RgiiB",
+                          "name": "32 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uNmDD",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 32,
+                              "height": 32,
+                              "fill": "#0e1013",
+                              "cornerRadius": 7.36,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 1,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "GuuPU",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "S9QWa2",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "CkdiV",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 32,
+                                  "height": 32
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "lp1DE",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "32 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WtcK0",
+                          "name": "20 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fYUk3",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 20,
+                              "height": 20,
+                              "fill": "#0e1013",
+                              "cornerRadius": 4.6000000000000005,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.625,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "e4fNl",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 20,
+                                  "height": 20
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "Zq6ih",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 20,
+                                  "height": 20
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "luhga",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 20,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "XTsJP",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "20 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Mf2sU",
+                          "name": "16 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "AOlWL",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 16,
+                              "height": 16,
+                              "fill": "#0e1013",
+                              "cornerRadius": 3.68,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.5,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "g98IY",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "HS6Pa",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "lkeWS",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "mOc8s",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "16 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dOjd8",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WJGdH",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "On dark",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CNQ8h",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "The tab strip and Paseo’s sidebar in dark mode. 64 px is only for judging the drawing; people see 32, 20 and 16.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Y4R2L",
+                  "name": "On light",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Pmb7R",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 240,
+                      "fill": "#F2F2EF",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fb66C",
+                          "name": "64 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GqNfl",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 64,
+                              "height": 64,
+                              "fill": "#0e1013",
+                              "cornerRadius": 14.72,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 2,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "xplQu",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 64,
+                                  "height": 64
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "hh1vP",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 64,
+                                  "height": 64
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "hskCa",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 64,
+                                  "height": 64
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "kyG9Q",
+                              "name": "Size",
+                              "fill": "#8A8F97",
+                              "content": "64 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QTCqJ",
+                          "name": "32 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "sQJwQ",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 32,
+                              "height": 32,
+                              "fill": "#0e1013",
+                              "cornerRadius": 7.36,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 1,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "w8QIR",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "wS9c1",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 32,
+                                  "height": 32
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "iQ8p9",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 32,
+                                  "height": 32
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "U5NT0",
+                              "name": "Size",
+                              "fill": "#8A8F97",
+                              "content": "32 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "z7qptJ",
+                          "name": "20 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "u7XMlu",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 20,
+                              "height": 20,
+                              "fill": "#0e1013",
+                              "cornerRadius": 4.6000000000000005,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.625,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "YMUDC",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 20,
+                                  "height": 20
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "J4znw",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 20,
+                                  "height": 20
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "DDfXB",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 20,
+                                  "height": 20
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "T1hehn",
+                              "name": "Size",
+                              "fill": "#8A8F97",
+                              "content": "20 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "s02s28",
+                          "name": "16 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Tnef8",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 16,
+                              "height": 16,
+                              "fill": "#0e1013",
+                              "cornerRadius": 3.68,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.5,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "BDkNN",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "H6Fuok",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "owsmH",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "MNQT3",
+                              "name": "Size",
+                              "fill": "#8A8F97",
+                              "content": "16 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wP2gI",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "g2J7Cg",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "On light",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "l8fJpv",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Light browser chrome. The black tile holds with no light variant.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "R1jVn",
+                  "name": "In context",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "mxjJN",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 240,
+                      "fill": "#0E1013",
+                      "layout": "vertical",
+                      "gap": 18,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vAMDR",
+                          "name": "Paseo row",
+                          "width": 220,
+                          "fill": "#16181C",
+                          "cornerRadius": 8,
+                          "gap": 8,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "aWMxg",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 16,
+                              "height": 16,
+                              "fill": "#0e1013",
+                              "cornerRadius": 3.68,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.5,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "TPyHt",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "Jahkp",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "mhVms",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "CtwJL",
+                              "name": "Name",
+                              "fill": "#E4E6EA",
+                              "content": "githq",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "E4Fkl",
+                          "name": "Browser tab",
+                          "width": 220,
+                          "fill": "#F2F2EF",
+                          "cornerRadius": [
+                            8,
+                            8,
+                            0,
+                            0
+                          ],
+                          "gap": 8,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "LxYug",
+                              "name": "favicon.svg",
+                              "clip": true,
+                              "width": 16,
+                              "height": 16,
+                              "fill": "#0e1013",
+                              "cornerRadius": 3.68,
+                              "stroke": "#2e333b",
+                              "strokeWidth": 0.5,
+                              "strokeAlignment": "inner",
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "path",
+                                  "id": "R8ZutE",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "/",
+                                  "geometry": "M5.14 24.04l-2.56 0 5.12-14.87 2.55 0-5.11 14.87z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#7b87f7",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "MwrOs",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "h",
+                                  "geometry": "M13.92 22.13l-2.59 0 0-12.26 2.59 0 0 4.13q0.08-0.16 0.21-0.3l0 0q0.39-0.52 1.01-0.78 0.61-0.26 1.34-0.26l0 0q1.03 0 1.72 0.45 0.69 0.45 1.05 1.25 0.35 0.79 0.35 1.81l0 0 0 5.96-2.59 0 0-5.34q0-1.03-0.32-1.55-0.32-0.52-1.08-0.52l0 0q-0.79 0-1.24 0.54-0.45 0.53-0.45 1.6l0 0 0 5.27z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                },
+                                {
+                                  "type": "path",
+                                  "id": "q4dR9v",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "q",
+                                  "geometry": "M29.69 12.87l0 11.86-2.59 0 0-3.87q-0.15 0.29-0.38 0.53l0 0q-0.43 0.45-1.02 0.7-0.58 0.25-1.26 0.25l0 0q-1.29 0-2.17-0.64-0.87-0.64-1.31-1.74-0.44-1.11-0.44-2.46l0 0q0-1.36 0.44-2.46 0.44-1.1 1.3-1.74 0.87-0.64 2.16-0.64l0 0q1.06 0 1.84 0.54l0 0q0.58 0.4 0.91 1.07l0 0 0.04-1.4 2.48 0z m-4.54 7.48l0 0q0.62 0 1.05-0.32 0.44-0.31 0.67-0.95 0.23-0.64 0.23-1.58 0-0.93-0.23-1.57-0.23-0.64-0.67-0.96-0.45-0.32-1.05-0.32l0 0q-0.92 0-1.44 0.76-0.53 0.76-0.53 2.09 0 1.33 0.53 2.09 0.52 0.76 1.44 0.76z",
+                                  "viewBox": [
+                                    0,
+                                    0,
+                                    32,
+                                    32
+                                  ],
+                                  "fill": "#e4e6ea",
+                                  "width": 16,
+                                  "height": 16
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "GfJfX",
+                              "name": "Title",
+                              "fill": "#2A2D33",
+                              "content": "My work · githq",
+                              "fontFamily": "Inter",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JBl2E",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fHMzh",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "In context",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Ii7ft",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "As it sits next to a name: a Paseo project row and a browser tab, at 16 px.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Z41xKn",
+          "name": "Home screen",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "qcq1X",
+              "name": "Section header",
+              "gap": 16,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fMe8H",
+                  "name": "No",
+                  "fill": "#7B87F7",
+                  "content": "02",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Hz8ZZ",
+                  "name": "Title",
+                  "fill": "#E4E6EA",
+                  "content": "Home screen",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "lwXcC",
+                  "name": "Sub",
+                  "fill": "#646B75",
+                  "content": "apple-touch-icon.png (iOS rounds it) and icon-192.png (Android, as drawn)",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Fws36",
+              "name": "Content",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ogr0c",
+                  "name": "iOS — apple-touch-icon.png",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Fr1iu",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 300,
+                      "fill": "#2B3038",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "wfBbr",
+                          "name": "180 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SV5Cu",
+                              "name": "apple-touch-icon.png",
+                              "width": 180,
+                              "height": 180,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/apple-touch-icon.png",
+                                "mode": "stretch"
+                              },
+                              "cornerRadius": 40
+                            },
+                            {
+                              "type": "text",
+                              "id": "RVT0I",
+                              "name": "Size",
+                              "fill": "#9AA0A9",
+                              "content": "180 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PJnl6",
+                          "name": "60 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bEY2W",
+                              "name": "apple-touch-icon.png",
+                              "width": 60,
+                              "height": 60,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/apple-touch-icon.png",
+                                "mode": "stretch"
+                              },
+                              "cornerRadius": 13.4
+                            },
+                            {
+                              "type": "text",
+                              "id": "gQPRL",
+                              "name": "Size",
+                              "fill": "#9AA0A9",
+                              "content": "60 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "idKZJ",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iMLcy",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "iOS — apple-touch-icon.png",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "d9Aop",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Square file; iOS cuts its own corners. Shown masked at 180 and at the home-screen 60 px.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DLxMB",
+                  "name": "Android / desktop — icon-192.png",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cNQWX",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 300,
+                      "fill": "#2B3038",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eiKdb",
+                          "name": "192 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WV0AR",
+                              "name": "icon-192.png",
+                              "width": 192,
+                              "height": 192,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-192.png",
+                                "mode": "stretch"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "sZXUM",
+                              "name": "Size",
+                              "fill": "#9AA0A9",
+                              "content": "192 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g85od",
+                          "name": "96 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gUkgW",
+                              "name": "icon-192.png",
+                              "width": 96,
+                              "height": 96,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-192.png",
+                                "mode": "stretch"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "hyFs7",
+                              "name": "Size",
+                              "fill": "#9AA0A9",
+                              "content": "96 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "u9kiqC",
+                          "name": "48 px",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bmQ7H",
+                              "name": "icon-192.png",
+                              "width": 48,
+                              "height": 48,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-192.png",
+                                "mode": "stretch"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "JkrsM",
+                              "name": "Size",
+                              "fill": "#9AA0A9",
+                              "content": "48 px",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "l66gub",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "aa4Cv",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "Android / desktop — icon-192.png",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "L8AR7",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "The installed app’s icon where the launcher keeps the shape we drew.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "n4f1o",
+          "name": "Install, 512 px",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "rrD9Q",
+              "name": "Section header",
+              "gap": 16,
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "S4GI7n",
+                  "name": "No",
+                  "fill": "#7B87F7",
+                  "content": "03",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "OP2UN",
+                  "name": "Title",
+                  "fill": "#E4E6EA",
+                  "content": "Install, 512 px",
+                  "fontFamily": "Inter",
+                  "fontSize": 22,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "szCOJ",
+                  "name": "Sub",
+                  "fill": "#646B75",
+                  "content": "icon-512.png and icon-maskable-512.png — the brandbook’s 38 %",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KaAoQ",
+              "name": "Content",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ijH6B",
+                  "name": "icon-512.png",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uT1Ru",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 330,
+                      "fill": "#0E1013",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Tscj2",
+                          "name": "512 px (at ½)",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "D2fPJ",
+                              "name": "icon-512.png",
+                              "width": 256,
+                              "height": 256,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-512.png",
+                                "mode": "stretch"
+                              }
+                            },
+                            {
+                              "type": "text",
+                              "id": "owUYM",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "512 px (at ½)",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zaX07",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MmND4",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "icon-512.png",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pJ6dX",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Splash screens and app stores’ large previews; shown at half size.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MeXft",
+                  "name": "icon-maskable-512.png",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "#131519",
+                  "cornerRadius": 14,
+                  "stroke": "#22262D",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "J7zRS",
+                      "name": "Stage",
+                      "width": "fill_container",
+                      "height": 330,
+                      "fill": "#0E1013",
+                      "gap": 28,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F6VHCm",
+                          "name": "circle",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "jQ59r",
+                              "name": "icon-maskable-512.png",
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-maskable-512.png",
+                                "mode": "stretch"
+                              },
+                              "width": 200,
+                              "height": 200
+                            },
+                            {
+                              "type": "text",
+                              "id": "ebmTq",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "circle",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kAhwi",
+                          "name": "squircle",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "EZD3S",
+                              "name": "icon-maskable-512.png",
+                              "width": 200,
+                              "height": 200,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "packages/app/public/icon-maskable-512.png",
+                                "mode": "stretch"
+                              },
+                              "cornerRadius": 60
+                            },
+                            {
+                              "type": "text",
+                              "id": "TRFaP",
+                              "name": "Size",
+                              "fill": "#646B75",
+                              "content": "squircle",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "o8kFa",
+                      "name": "Info",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        18,
+                        22,
+                        22,
+                        22
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iiriR",
+                          "name": "Label",
+                          "fill": "#E4E6EA",
+                          "content": "icon-maskable-512.png",
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qeE3T",
+                          "name": "Note",
+                          "fill": "#9AA0A9",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Full-bleed for launchers that cut their own shape: a circle and a squircle. “/hq” stays inside the safe circle.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {
