@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a tracked project's view (`ProjectView.vue`, on `/users|orgs/<owner>/projects/<n>`): its
- * saved views as tabs, the shown view's filter, the toolbar's grouping and layout, "Changed here · Reset", its groups
+ * Playwright harness for a tracked project's view (`ProjectView.vue`, on `/users|orgs/<owner>/projects/<n>`): the
+ * title opening its menu, its saved views as tabs, the shown view's filter, the toolbar's grouping and layout, "Changed here · Reset", its groups
  * — named sections, or a board's columns — with their rows or cards, and "New draft in …" at the end of each.
  */
 export class ProjectScreenHarness {
@@ -12,6 +12,17 @@ export class ProjectScreenHarness {
     constructor(page: Page) {
         this.page = page;
         this.root = page.getByRole('main');
+    }
+
+    /** The title of the project's view, a button opening its menu (R2). */
+    titleMenuButton(title: string): Locator {
+        return this.root.getByRole('heading').getByRole('button', { name: `Actions of ${title}` });
+    }
+
+    /** Opens the project's menu from its view's title; returns the menu. */
+    async openTitleMenu(title: string): Promise<Locator> {
+        await this.titleMenuButton(title).click();
+        return this.page.getByRole('menu');
     }
 
     /** The tabs of the saved views, in GitHub's order. */

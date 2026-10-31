@@ -1,4 +1,4 @@
-<!-- The context menu of a repository in the sidebar: under its name, going to its view or to its issues or pull requests; a new issue in it; its page on GitHub and copying the link to it; no longer tracking it. -->
+<!-- The menu of a repository — its context menu in the sidebar, and what its view's title opens (R1): under its name, going to its view or to its issues or pull requests; a new issue in it; its page on GitHub and copying the link to it; no longer tracking it. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 

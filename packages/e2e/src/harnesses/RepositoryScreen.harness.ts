@@ -2,14 +2,27 @@ import type { Locator, Page } from '@playwright/test';
 
 /**
  * Playwright harness for a repository's view (`RepositoryView.vue`, on `/owner/name` and its lists
- * `/owner/name/issues` and `/owner/name/pulls`): the kind tabs, the toolbar's grouping and layout, its groups —
+ * `/owner/name/issues` and `/owner/name/pulls`): the title opening its menu, the kind tabs, the toolbar's grouping and layout, its groups —
  * named sections, or a board's columns — and their rows; untracked, the callout offering to track it (J3).
  */
 export class RepositoryScreenHarness {
+    readonly page: Page;
     readonly root: Locator;
 
     constructor(page: Page) {
+        this.page = page;
         this.root = page.getByRole('main');
+    }
+
+    /** The title of a tracked repository's view (`owner/name`), a button opening its menu (R1). */
+    titleMenuButton(nameWithOwner: string): Locator {
+        return this.root.getByRole('heading').getByRole('button', { name: `Actions of ${nameWithOwner}` });
+    }
+
+    /** Opens the repository's menu from its view's title; returns the menu. */
+    async openTitleMenu(nameWithOwner: string): Promise<Locator> {
+        await this.titleMenuButton(nameWithOwner).click();
+        return this.page.getByRole('menu');
     }
 
     /** The groups shown, top to bottom. */

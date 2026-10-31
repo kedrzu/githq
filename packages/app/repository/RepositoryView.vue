@@ -124,6 +124,8 @@ const options = defineModel<ListViewOptions<RepositoryGrouping, ItemSort>>('opti
 });
 
 defineSlots<{
+  /** The entries of the menu the title opens (`ListToolbar`'s `titleMenu`). */
+  menu?(): unknown;
   /** The actions of the items edited together, while there are any. */
   selection?(props: { ids: readonly string[] }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
@@ -200,6 +202,12 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
         :modified="modified"
         @reset="emit('reset')"
       >
+        <template
+          v-if="$slots.menu"
+          #titleMenu
+        >
+          <slot name="menu" />
+        </template>
         <template #title>
           <span :class="css.repositoryView_meta">
             <Lock

@@ -1,8 +1,9 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title, then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowDownUp,
+  ChevronDown,
   Columns3,
   LayoutGrid,
   List,
@@ -16,6 +17,7 @@ import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import Menu from '@/components/Menu.vue';
 import Popover from '@/components/Popover.vue';
 
 import * as l from './ListToolbar.loc.js';
@@ -50,6 +52,8 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
+  /** The entries of the menu the title opens (a repository's or a project's); without it the title is plain text. */
+  titleMenu?(): unknown;
   /** Beside the title: what it is, how many ("private · 142 open"). */
   title?(): unknown;
   /** After the title: tabs, the actions of a selection. */
@@ -244,7 +248,28 @@ function change(changes: Partial<ListViewOptions>) {
 
 <template>
   <header :class="css.listToolbar">
-    <h1 :class="css.listToolbar_title">{{ title }}</h1>
+    <h1 :class="css.listToolbar_title">
+      <Menu
+        v-if="$slots.titleMenu"
+        align="start"
+      >
+        <template #trigger>
+          <button
+            type="button"
+            :class="css.listToolbar_titleButton"
+            :aria-label="t(l.titleMenuLabel, { title })"
+          >
+            {{ title }}
+            <ChevronDown
+              :class="css.listToolbar_titleChevron"
+              aria-hidden="true"
+            />
+          </button>
+        </template>
+        <slot name="titleMenu" />
+      </Menu>
+      <template v-else>{{ title }}</template>
+    </h1>
     <slot name="title" />
     <slot />
     <div
@@ -333,6 +358,34 @@ function change(changes: Partial<ListViewOptions>) {
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   white-space: nowrap;
+}
+
+/* As the opened item's reference opens its menu (M1). */
+.listToolbar_titleButton {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+  height: 26px;
+  padding: 0 $spacing-6;
+  margin-left: -$spacing-6;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: $radius-md;
+
+  &:hover,
+  &[data-state='open'] {
+    background: $color-bg-3;
+  }
+}
+
+.listToolbar_titleChevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: $color-fg-dim;
 }
 
 /* Takes the room the rest leaves, whatever its options need: `fit` keeps in it only those that fit. */
