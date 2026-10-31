@@ -19,8 +19,15 @@ test('in a repository the user may only read, the edits it does not allow are no
     await expect(item.property('Labels')).toHaveCount(0);
     await expect(item.property('Assignees')).toHaveCount(0);
     await expect(item.property('Milestone')).toHaveCount(0);
-    await expect(item.stateMenu).toHaveCount(0);
     await expect(item.commentBox).toBeEditable();
+
+    // Its menu offers what the user may do — comment, copy it — and none of the edits.
+    await item.menuButton.click();
+    await expect(page.getByRole('menuitem', { name: 'Comment' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /^Add or remove labels/ })).toHaveCount(0);
+    await expect(page.getByRole('menuitem', { name: /^Close issue/ })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
 
     await page.keyboard.press('l');
     await expect(page.getByRole('dialog')).toHaveCount(0);

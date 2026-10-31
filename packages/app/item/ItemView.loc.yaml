@@ -72,11 +72,15 @@ openAsModal:
   en: Open as a modal
 openAsPage:
   en: Open as full page
-reopenCommand:
-  en: Reopen…
 closeIssueCommand:
-  en: Close issue…
-closePullRequestCommand:
-  en: Close pull request…
+  en: Close issue
 resizeSide:
   en: Resize side column
+itemMenu:
+  en: Item actions
+itemMenuLabel:
+  en: 'Actions of {reference}'
+copyReference:
+  en: Copy reference
+copyBranch:
+  en: Copy branch name

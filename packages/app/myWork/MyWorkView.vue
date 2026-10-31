@@ -13,7 +13,7 @@ import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
-import type { ListChoice, ListGroup, ListViewOptions } from '@/lists/ListTypes.js';
+import type { ListChoice, ListContextMenuProps, ListGroup, ListViewOptions } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
@@ -73,6 +73,8 @@ const options = defineModel<ListViewOptions<MyWorkGrouping, ItemSort>>('options'
 defineSlots<{
   /** The actions of the items edited together, while there are any. */
   selection?(props: { ids: readonly string[] }): unknown;
+  /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
+  contextMenu?(props: ListContextMenuProps): unknown;
 }>();
 
 const t = useTranslate();
@@ -204,6 +206,15 @@ useCommands(() =>
           :waiting-key="FILTER_KEYS.waitingOnOthers"
           :tracked-count="trackedCount"
           @show-waiting="filter = 'waitingOnOthers'"
+        />
+      </template>
+      <template
+        v-if="$slots.contextMenu"
+        #contextMenu="menu"
+      >
+        <slot
+          name="contextMenu"
+          v-bind="menu"
         />
       </template>
     </ListView>

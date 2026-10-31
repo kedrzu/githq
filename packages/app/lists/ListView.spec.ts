@@ -3,11 +3,12 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { DropdownMenuItem } from 'reka-ui';
 import { createApp, h, ref, shallowRef } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
-import type { ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
+import type { ListContextMenuProps, ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
 import ListView from './ListView.vue';
 
 // Mounted by hand rather than from a story: these tests change the groups under the list, as a sync or an edit does.
@@ -147,7 +148,37 @@ function drag(card: Element | null, column: Element) {
 
 interface MountOptions {
     readonly canMove?: (entry: ListEntry<string>, from: string, to: string) => boolean;
+    /** Gives the list a context menu naming the ids it is drawn for, with an "Open" button. */
+    readonly contextMenu?: boolean;
 }
+
+test('a right-click on a row opens the context menu for it alone and selects it; on one of the items edited together, for all of them', async () => {
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { contextMenu: true });
+
+    await userEvent.click(page.getByText('a2'), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Open a2' })).toBeVisible();
+    await expect.poll(selectedCard).toBe('a2');
+    await userEvent.click(page.getByRole('menuitem', { name: 'Open a2' }));
+    expect(view.opened).toEqual(['a2']);
+
+    view.checkedIds.value = ['a1', 'a3'];
+    await userEvent.click(page.getByText('a3'), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Open a1,a3' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    // Kept: Escape closed the menu, not the items edited together.
+    expect(view.checkedIds.value).toEqual(['a1', 'a3']);
+
+    // Outside them, for the one right-clicked.
+    await userEvent.click(page.getByText('a2'), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Open a2' })).toBeVisible();
+});
+
+test('without a context menu, or off the rows, a right-click leaves the browser its own menu', async () => {
+    mount([['todo', ['a1']]], 'list', { contextMenu: true });
+
+    await userEvent.click(page.getByRole('button', { name: /todo/ }), { button: 'right' });
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
 
 /** Mounts the list over `initial`, holding its selection like a page does; every group takes moves. */
 function mount(initial: Columns, layout: ListLayout, options: MountOptions = {}) {
@@ -190,6 +221,10 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 {
                     row: ({ entry }: { entry: ListEntry<string> }) => h('span', entry.value),
                     card: ({ entry }: { entry: ListEntry<string> }) => h('span', entry.value),
+                    ...(options.contextMenu && {
+                        contextMenu: ({ ids, open }: ListContextMenuProps) =>
+                            h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),
+                    }),
                 },
             ),
     });

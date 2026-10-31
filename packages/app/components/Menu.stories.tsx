@@ -1,5 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ChevronDown, Copy, ExternalLink, LogOut, Milestone, Rows3, Tag, User } from 'lucide-vue-next';
+import {
+    ChevronDown,
+    CircleCheckBig,
+    CircleSlash,
+    Copy,
+    ExternalLink,
+    LogOut,
+    Milestone,
+    Rows3,
+    Tag,
+    User,
+} from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow } from '@/.storybook/StoryLayout.jsx';
@@ -10,6 +21,8 @@ import MenuItem from './MenuItem.vue';
 import MenuLabel from './MenuLabel.vue';
 import MenuRadioGroup from './MenuRadioGroup.vue';
 import MenuRadioItem from './MenuRadioItem.vue';
+import MenuSeparator from './MenuSeparator.vue';
+import MenuSub from './MenuSub.vue';
 
 const meta = {
     component: Menu,
@@ -121,6 +134,68 @@ export const Choice: Story = {
                                     ],
                                 }}
                             </Menu>
+                        </StoryRow>
+                    </StoryPage>
+                );
+            },
+        }),
+};
+
+/** Groups between lines, a detail after an item, keys as one chip per key, and a submenu beside its entry. */
+export const Submenu: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const picked = ref('nothing');
+
+                return () => (
+                    <StoryPage>
+                        <StoryRow>
+                            <Menu>
+                                {{
+                                    trigger: () => (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                        >
+                                            Issue <ChevronDown aria-hidden="true" />
+                                        </Button>
+                                    ),
+                                    default: () => [
+                                        <MenuItem
+                                            icon={Copy}
+                                            detail="portal#1187"
+                                            onSelect={() => (picked.value = 'copy')}
+                                        >
+                                            Copy reference
+                                        </MenuItem>,
+                                        <MenuSeparator />,
+                                        <MenuSub
+                                            icon={CircleCheckBig}
+                                            shortcut="Shift+X"
+                                        >
+                                            {{
+                                                default: () => 'Close issue',
+                                                content: () => [
+                                                    <MenuItem
+                                                        icon={CircleCheckBig}
+                                                        onSelect={() => (picked.value = 'completed')}
+                                                    >
+                                                        Close as completed
+                                                    </MenuItem>,
+                                                    <MenuItem
+                                                        icon={CircleSlash}
+                                                        onSelect={() => (picked.value = 'notPlanned')}
+                                                    >
+                                                        Close as not planned
+                                                    </MenuItem>,
+                                                ],
+                                            }}
+                                        </MenuSub>,
+                                    ],
+                                }}
+                            </Menu>
+                            <span tid="picked">Picked: {picked.value}</span>
                         </StoryRow>
                     </StoryPage>
                 );

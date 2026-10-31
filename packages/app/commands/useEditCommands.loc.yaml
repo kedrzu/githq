@@ -18,3 +18,27 @@ setIteration:
   en: Set iteration…
 editable:
   en: '{editable} of {total} editable'
+setIssueType:
+  en: Set issue type…
+noIssueType:
+  en: No type
+requestReview:
+  en: Request review…
+reviewers:
+  en: reviewers
+convertToDraft:
+  en: Convert to draft
+readyForReview:
+  en: Ready for review
+reviewApproved:
+  en: approved
+reviewChangesRequested:
+  en: requested changes
+reviewCommented:
+  en: commented
+reviewPending:
+  en: pending
+reRequest:
+  en: re-request
+together:
+  en: '{count} of {total}'

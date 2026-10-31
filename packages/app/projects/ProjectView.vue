@@ -32,7 +32,7 @@ import ItemCard from '@/lists/ItemCard.vue';
 import ItemRow from '@/lists/ItemRow.vue';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
-import type { ListChoice, ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
+import type { ListChoice, ListContextMenuProps, ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
 
@@ -131,6 +131,8 @@ const options = defineModel<ProjectViewOptions>('options', { required: true });
 defineSlots<{
   /** The actions of the items edited together, while there are any. */
   selection?(props: { ids: readonly string[] }): unknown;
+  /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
+  contextMenu?(props: ListContextMenuProps): unknown;
 }>();
 
 /** The row field's value when the project has none. */
@@ -584,6 +586,15 @@ function addDraft(title: string, group: string | null) {
               </Button>
             </div>
           </template>
+        </template>
+        <template
+          v-if="$slots.contextMenu"
+          #contextMenu="menu"
+        >
+          <slot
+            name="contextMenu"
+            v-bind="menu"
+          />
         </template>
       </ListView>
     </template>
