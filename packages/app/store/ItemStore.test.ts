@@ -203,6 +203,7 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
         onVisibilityChange: () => {},
         isOnline: () => true,
         onOnlineChange: () => {},
+        writeCookie: () => {},
         estimateStorage: () => Promise.resolve(null),
         ...tab,
     };

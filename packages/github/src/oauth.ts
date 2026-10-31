@@ -24,6 +24,19 @@ export const OAUTH_CALLBACK_PATH = '/auth/callback';
  */
 export const OAUTH_STATE_PATTERN = /^[\w-]{16,128}$/;
 
+/**
+ * The cookie that tells the Worker a visitor has signed in to githq, so `/` serves the app instead of the
+ * landing page. A UI hint only: it holds no token and nothing that identifies anyone, and it authorizes nothing
+ * (the token stays in the browser's `localStorage`). The app sets it while a token is stored and clears it
+ * otherwise; the Worker only checks that `name=value` is there.
+ */
+export const SIGNED_IN_HINT_COOKIE = {
+    name: 'githq_signed_in',
+    value: '1',
+    /** A year, in seconds. */
+    maxAgeSeconds: 31_536_000,
+} as const;
+
 /** The scopes githq asks GitHub for (D3): `repo` for issues, `project` for Projects v2, `read:org` for the user's organisations. */
 export const OAUTH_SCOPES = ['repo', 'project', 'read:org'] as const;
 

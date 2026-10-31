@@ -41,6 +41,8 @@ export interface BrowserShape {
     navigate(url: string): void;
     /** Leaves the app for `url` in place of the current page in history, so going back skips it. */
     replaceLocation(url: string): void;
+    /** Writes a cookie (`document.cookie = cookie`): one `name=value` with its attributes, as the header carries it. */
+    writeCookie(cookie: string): void;
     /** Opens `url` in a new tab, the app staying where it is. */
     openInNewTab(url: string): void;
     /**
@@ -89,6 +91,9 @@ export const Browser = defineInterface<BrowserShape>({
         },
         replaceLocation: url => {
             window.location.replace(url);
+        },
+        writeCookie: cookie => {
+            document.cookie = cookie;
         },
         openInNewTab: url => {
             window.open(url, '_blank', 'noopener,noreferrer');
