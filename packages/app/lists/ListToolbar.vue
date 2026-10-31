@@ -1,39 +1,36 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title, then what the list puts beside it (filters, tabs, the actions of the items selected together), and on the right its own actions, the grouping menu ("Group: Milestone"), the List / Board toggle (Board can be unavailable, K7) and the display options — the order (a menu when there are many) and the properties rows show, and what the list adds (a project's row field) — which are kept on this device only and can be reset. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title, then what the list puts beside it (filters, tabs, the actions of the items selected together), and on the right its own actions and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar; the rest move into the display options, which also say that the options are kept on this device only and can reset them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowDownUp, Columns3, List, RotateCcw, Rows3, SlidersHorizontal } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { ArrowDownUp, Columns3, List, ListChecks, RotateCcw, Rows3, SlidersHorizontal } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
-import Menu from '@/components/Menu.vue';
-import MenuLabel from '@/components/MenuLabel.vue';
-import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
-import MenuRadioItem from '@/components/MenuRadioItem.vue';
 import Popover from '@/components/Popover.vue';
-import SegmentedTabs from '@/components/SegmentedTabs.vue';
-import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
-import ToggleChips from '@/components/ToggleChips.vue';
 
 import * as l from './ListToolbar.loc.js';
-import type { ListChoice, ListLayout, ListViewOptions } from './ListTypes.js';
+import ListToolbarControl from './ListToolbarControl.vue';
+import type { ListToolbarOption } from './ListToolbarControl.vue';
+import type { ListChoice, ListViewOptions } from './ListTypes.js';
 
 const props = withDefaults(
   defineProps<{
     title: string;
     /** What the list can be grouped by; the menu's headings come from their `section`. */
     groupings: readonly ListChoice[];
-    /** The orders the display options offer. */
+    /** The orders the list offers. */
     sorts: readonly ListChoice[];
     /** The properties rows may show. */
     properties: readonly ListChoice[];
+    /** The list's own view options, after the list's common ones (a project's row field). */
+    extraOptions?: readonly ListToolbarOption[];
     /** The options differ from the list's defaults: the display options offer to reset them. */
     modified?: boolean;
     /** The board can't be chosen (a project with nothing to make columns of, K7); the display options say why. */
     boardDisabled?: boolean;
   }>(),
-  { modified: false, boardDisabled: false },
+  { extraOptions: () => [], modified: false, boardDisabled: false },
 );
 
 const emit = defineEmits<{
@@ -46,9 +43,9 @@ defineSlots<{
   title?(): unknown;
   /** After the title: filters, tabs, the actions of a selection. */
   default?(): unknown;
-  /** On the right, before the grouping. */
+  /** On the right, before the view options. */
   actions?(): unknown;
-  /** More display options, after the order and the properties (a project's row field). */
+  /** More in the display options, after the options that didn't fit the toolbar (why the board is unavailable). */
   display?(): unknown;
   /** At the top of the display options: what they are changed from (a project's saved view). */
   displayHeader?(): unknown;
@@ -58,50 +55,129 @@ const options = defineModel<ListViewOptions>('options', { required: true });
 
 const t = useTranslate();
 
-const MAX_SORT_TABS = 4;
-
-const layoutOptions = computed((): SegmentedTabsOption<ListLayout>[] => [
-  { value: 'list', label: t(l.list), icon: List, iconOnly: true },
-  { value: 'board', label: t(l.board), icon: Columns3, iconOnly: true, disabled: props.boardDisabled },
-]);
-/** Few orders sit side by side; many (a project's fields, both ways) are a menu. */
-const sortAsMenu = computed(() => props.sorts.length > MAX_SORT_TABS);
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
-/** The grouping menu's choices under their headings, in order. */
-const groupingSections = computed(() => {
-  const sections: { label: string | undefined; choices: ListChoice[] }[] = [];
-  for (const choice of props.groupings) {
-    const last = sections.at(-1);
-    if (last && last.label === choice.section) {
-      last.choices.push(choice);
-    } else {
-      sections.push({ label: choice.section, choices: [choice] });
+
+/** Every view option, in the toolbar's order. */
+const viewOptions = computed((): ListToolbarOption[] => [
+  {
+    kind: 'menu',
+    key: 'grouping',
+    label: t(l.group),
+    icon: Rows3,
+    title: t(l.groupBy, { grouping: grouping.value?.label ?? '' }),
+    choices: props.groupings,
+    value: options.value.grouping,
+    choose: value => change({ grouping: value }),
+  },
+  ...(props.sorts.length > 1
+    ? [
+        {
+          kind: 'menu',
+          key: 'sort',
+          label: t(l.order),
+          icon: ArrowDownUp,
+          title: t(l.orderBy, { order: sortChoice.value?.label ?? '' }),
+          choices: props.sorts,
+          value: options.value.sort,
+          choose: value => change({ sort: value }),
+        } satisfies ListToolbarOption,
+      ]
+    : []),
+  {
+    kind: 'chips',
+    key: 'properties',
+    label: t(l.properties),
+    icon: ListChecks,
+    choices: props.properties,
+    value: options.value.properties,
+    choose: value => change({ properties: value }),
+  },
+  ...props.extraOptions,
+  {
+    kind: 'tabs',
+    key: 'layout',
+    label: t(l.layout),
+    options: [
+      { value: 'list', label: t(l.list), icon: List, iconOnly: true },
+      { value: 'board', label: t(l.board), icon: Columns3, iconOnly: true, disabled: props.boardDisabled },
+    ],
+    value: options.value.layout,
+    choose: value => change({ layout: value === 'board' ? 'board' : 'list' }),
+  },
+]);
+
+/**
+ * Which options stay on the toolbar when there isn't room for all: the layout, then the grouping, the order,
+ * the properties and the list's own, in that order — the rest move into the display options.
+ */
+const PRIORITY = ['layout', 'grouping', 'sort', 'properties'];
+
+/** The keys of the options that fit the toolbar; all of them until it has been measured. */
+const fitting = ref<ReadonlySet<string> | null>(null);
+const onToolbar = computed(() => viewOptions.value.filter(option => !fitting.value || fitting.value.has(option.key)));
+const inDisplay = computed(() => viewOptions.value.filter(option => fitting.value && !fitting.value.has(option.key)));
+
+const controls = useTemplateRef<HTMLElement>('controls');
+const actions = useTemplateRef<HTMLElement>('actions');
+const measure = useTemplateRef<HTMLElement>('measure');
+let observer: ResizeObserver | undefined;
+let frame = 0;
+
+onMounted(() => {
+  // A frame later: what `fit` moves resizes what is observed, which must not happen within the observer's turn.
+  observer = new ResizeObserver(() => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(fit);
+  });
+  for (const element of [controls.value, actions.value, measure.value]) {
+    if (element) {
+      observer.observe(element);
+    }
+  }
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  cancelAnimationFrame(frame);
+});
+
+/** Keeps on the toolbar as many options as its free space holds, by priority, each at its full width. */
+function fit() {
+  if (!controls.value || !measure.value) {
+    return;
+  }
+
+  const gap = Number.parseFloat(getComputedStyle(measure.value).columnGap) || 0;
+  const available = controls.value.clientWidth - (actions.value ? actions.value.offsetWidth + gap : 0);
+  const widths = new Map<string, number>();
+  for (const element of measure.value.children) {
+    if (element instanceof HTMLElement && element.dataset.key) {
+      widths.set(element.dataset.key, element.getBoundingClientRect().width);
     }
   }
 
-  return sections;
-});
-const sortOptions = computed((): SegmentedTabsOption<string>[] =>
-  props.sorts.map(choice => ({ value: choice.value, label: choice.label })),
-);
+  const ranked = viewOptions.value.map(option => option.key).toSorted((a, b) => rank(a) - rank(b));
+  const fits = new Set<string>();
+  let used = 0;
+  for (const key of ranked) {
+    used += (widths.get(key) ?? 0) + (fits.size > 0 ? gap : 0);
+    if (used > available) {
+      break;
+    }
 
-const layout = computed({
-  get: () => options.value.layout,
-  set: value => change({ layout: value }),
-});
-const groupingValue = computed({
-  get: () => options.value.grouping,
-  set: value => change({ grouping: value }),
-});
-const sort = computed({
-  get: () => options.value.sort,
-  set: value => change({ sort: value }),
-});
-const shown = computed({
-  get: () => options.value.properties,
-  set: value => change({ properties: value }),
-});
+    fits.add(key);
+  }
+
+  if (!fitting.value || fitting.value.size !== fits.size || [...fits].some(key => !fitting.value?.has(key))) {
+    fitting.value = fits;
+  }
+}
+
+function rank(key: string) {
+  const index = PRIORITY.indexOf(key);
+  return index === -1 ? PRIORITY.length : index;
+}
 
 // E1: the view's options in the command menu too — the layout by its key.
 useCommands(
@@ -157,42 +233,43 @@ function change(changes: Partial<ListViewOptions>) {
     <h1 :class="css.listToolbar_title">{{ title }}</h1>
     <slot name="title" />
     <slot />
-    <span :class="css.listToolbar_spacer" />
-    <slot name="actions" />
-    <Menu align="end">
-      <template #trigger>
-        <Button
-          variant="outline"
-          size="sm"
-          :icon="Rows3"
-        >
-          {{ t(l.groupBy, { grouping: grouping?.label ?? '' }) }}
-        </Button>
-      </template>
-      <MenuRadioGroup v-model="groupingValue">
-        <template
-          v-for="section in groupingSections"
-          :key="section.label ?? ''"
-        >
-          <MenuLabel v-if="section.label">{{ section.label }}</MenuLabel>
-          <MenuRadioItem
-            v-for="choice in section.choices"
-            :key="choice.value"
-            :value="choice.value"
-            :icon="choice.icon"
-            :detail="choice.detail"
-          >
-            {{ choice.label }}
-          </MenuRadioItem>
-        </template>
-      </MenuRadioGroup>
-    </Menu>
-    <SegmentedTabs
-      v-model="layout"
-      variant="boxed"
-      :label="t(l.layout)"
-      :options="layoutOptions"
-    />
+    <div
+      ref="controls"
+      :class="css.listToolbar_controls"
+    >
+      <div
+        v-if="$slots.actions"
+        ref="actions"
+        :class="css.listToolbar_actions"
+      >
+        <slot name="actions" />
+      </div>
+      <ListToolbarControl
+        v-for="option in onToolbar"
+        :key="option.key"
+        :option="option"
+        place="toolbar"
+      />
+    </div>
+    <!-- Every option as the toolbar would draw it, unseen: the widths `fit` compares with the room there is. -->
+    <div
+      :class="css.listToolbar_measure"
+      aria-hidden="true"
+      inert
+    >
+      <div
+        ref="measure"
+        :class="css.listToolbar_measureRow"
+      >
+        <ListToolbarControl
+          v-for="option in viewOptions"
+          :key="option.key"
+          :data-key="option.key"
+          :option="option"
+          place="toolbar"
+        />
+      </div>
+    </div>
     <Popover
       :label="t(l.display)"
       align="end"
@@ -208,49 +285,12 @@ function change(changes: Partial<ListViewOptions>) {
       </template>
       <div :class="css.listToolbar_display">
         <slot name="displayHeader" />
-        <div
-          v-if="sorts.length > 1"
-          :class="css.listToolbar_option"
-        >
-          <span :class="css.listToolbar_optionLabel">{{ t(l.order) }}</span>
-          <Menu
-            v-if="sortAsMenu"
-            align="start"
-          >
-            <template #trigger>
-              <Button
-                variant="outline"
-                size="sm"
-                :icon="ArrowDownUp"
-              >
-                {{ t(l.orderBy, { order: sortChoice?.label ?? '' }) }}
-              </Button>
-            </template>
-            <MenuRadioGroup v-model="sort">
-              <MenuRadioItem
-                v-for="choice in sorts"
-                :key="choice.value"
-                :value="choice.value"
-              >
-                {{ choice.label }}
-              </MenuRadioItem>
-            </MenuRadioGroup>
-          </Menu>
-          <SegmentedTabs
-            v-else
-            v-model="sort"
-            :label="t(l.order)"
-            :options="sortOptions"
-          />
-        </div>
-        <div :class="css.listToolbar_option">
-          <span :class="css.listToolbar_optionLabel">{{ t(l.properties) }}</span>
-          <ToggleChips
-            v-model="shown"
-            :label="t(l.properties)"
-            :options="properties"
-          />
-        </div>
+        <ListToolbarControl
+          v-for="option in inDisplay"
+          :key="option.key"
+          :option="option"
+          place="display"
+        />
         <slot name="display" />
         <div :class="css.listToolbar_footer">
           <span>{{ t(l.deviceOnly) }}</span>
@@ -271,6 +311,7 @@ function change(changes: Partial<ListViewOptions>) {
 
 <style lang="scss" module="css">
 .listToolbar {
+  position: relative;
   display: flex;
   flex: none;
   gap: $spacing-10;
@@ -286,8 +327,38 @@ function change(changes: Partial<ListViewOptions>) {
   white-space: nowrap;
 }
 
-.listToolbar_spacer {
-  flex: 1;
+/* Takes the room the rest leaves, whatever its options need: `fit` keeps in it only those that fit. */
+.listToolbar_controls {
+  display: flex;
+  flex: 1 1 0;
+  gap: $spacing-10;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.listToolbar_actions {
+  display: flex;
+  flex: none;
+  gap: $spacing-10;
+  align-items: center;
+}
+
+.listToolbar_measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.listToolbar_measureRow {
+  display: flex;
+  gap: $spacing-10;
+  align-items: center;
+  width: max-content;
 }
 
 .listToolbar_display {
@@ -296,17 +367,6 @@ function change(changes: Partial<ListViewOptions>) {
   gap: $spacing-12;
   width: 300px;
   padding: $spacing-4;
-}
-
-.listToolbar_option {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-6;
-}
-
-.listToolbar_optionLabel {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
 }
 
 .listToolbar_footer {

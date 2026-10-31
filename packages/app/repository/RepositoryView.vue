@@ -402,6 +402,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
   display: flex;
   flex: 1;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
 }
 
