@@ -45,8 +45,10 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 
 ## How we work
 
-- Talk to the owner in **Polish**, plainly. Code, names in code, commit messages and PR titles in English; PR
-  descriptions and issue comments in Polish. Design documents in `docs/design/` are in English.
+- Talk to the owner in **Polish**, plainly — but only in the conversation with the agent. Everything that
+  lands in the repo or on GitHub is in **English**: code, names in code, comments, docs and design documents,
+  commit messages, branch names, PR titles and descriptions, issues and their comments, review comments.
+  When a document quotes the owner, translate the quote.
 
 ## Worktrees and pull requests
 

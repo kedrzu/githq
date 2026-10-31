@@ -20,6 +20,9 @@ $color-sel: #1c2030;
 $color-border: #22262d;
 // Stronger outlines: keyboard hints, a notice.
 $color-border-2: #2e333b;
+// Scrollbars: a thumb that sits back from the content on a track that isn't drawn.
+$color-scrollbar-thumb: #2a2e35;
+$color-scrollbar-thumb-hover: #3a3f48;
 
 // ---------------------------------------------------------------------------------------------------
 // Colors — text and icons
@@ -95,7 +98,9 @@ $radius-md: 6px;
 $radius-lg: 8px;
 $radius-xl: 10px;
 
-// Widths of the surfaces; the status bar's segments follow them.
+// Widths of the surfaces; the status bar's segments follow them. The sidebar and the item panel are resized by the
+// user: these are the widths until they are (`AppShell` keeps the current ones in `--sidebar-width` and
+// `--item-panel-width`).
 $sidebar-width: 236px;
 $sidebar-rail-width: 56px;
 $status-bar-height: 26px;

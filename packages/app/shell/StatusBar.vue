@@ -235,7 +235,7 @@ const text = computed(() => {
   flex: none;
   gap: $spacing-6;
   align-items: center;
-  width: $sidebar-width;
+  width: var(--sidebar-width, $sidebar-width);
   padding: 0 $spacing-12;
   overflow: hidden;
   white-space: nowrap;

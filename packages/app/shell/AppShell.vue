@@ -1,12 +1,16 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right, and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge, their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
+import { SplitterGroup, SplitterPanel } from 'reka-ui';
+import { nextTick, useTemplateRef, watch } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import { useCommands } from '@/commands/useCommands.js';
+import ResizeHandle from '@/components/ResizeHandle.vue';
+import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
@@ -58,7 +62,16 @@ defineSlots<{
 /** The sidebar collapsed to the rail. */
 const collapsed = defineModel<boolean>('collapsed', { default: false });
 
+/** `$sidebar-rail-width`: the rail is not resized. */
+const SIDEBAR_RAIL_WIDTH = 56;
+/** What is left to the screen, at least, in percent of the window. */
+const SCREEN_MIN_SIZE = 25;
+
 const t = useTranslate();
+const sidebarWidth = usePanelWidth({ key: 'sidebar', default: 236, min: 180, max: 400 });
+const panelWidth = usePanelWidth({ key: 'itemPanel', default: 560, min: 400, max: 960 });
+const sidebarPanel = useTemplateRef<InstanceType<typeof SplitterPanel>>('sidebarPanel');
+const itemPanel = useTemplateRef<InstanceType<typeof SplitterPanel>>('itemPanel');
 
 // `[` collapses or expands the sidebar, unless the key is being typed into something.
 useCommands(() => [
@@ -75,30 +88,103 @@ useCommands(() => [
 function toggle() {
   collapsed.value = !collapsed.value;
 }
+
+// Reka lays the panels out anew whenever one comes or goes or the rail toggles — from the `default-size` each had
+// when it mounted, not the one it has now: once it has, the widths the user chose since are put back.
+async function restoreWidths() {
+  await nextTick();
+  if (!collapsed.value) {
+    sidebarPanel.value?.resize(sidebarWidth.stored);
+  }
+
+  itemPanel.value?.resize(panelWidth.stored);
+}
+
+watch(collapsed, restoreWidths);
+
+// The panels' widths now, in pixels but the screen's: `[sidebar, screen, panel?]`. The rail's is not the sidebar's.
+function onLayout(sizes: number[]) {
+  const [sidebar, , panel] = sizes;
+  if (sidebar !== undefined && !collapsed.value) {
+    sidebarWidth.current = sidebar;
+  }
+
+  if (panel !== undefined) {
+    panelWidth.current = panel;
+  }
+}
 </script>
 
 <template>
-  <div :class="css.appShell">
-    <div :class="css.appShell_surfaces">
-      <Sidebar
-        :viewer="viewer"
-        :collapsed="collapsed"
-        :counts="myWorkCounts"
-        :tracked="tracked"
-        @toggle="toggle"
-        @search="emit('search')"
-        @sign-out="emit('signOut')"
-      />
-      <main :class="css.appShell_screen">
-        <slot />
-      </main>
-      <div
-        v-if="$slots.panel"
-        :class="css.appShell_panel"
+  <div
+    :class="css.appShell"
+    :style="{
+      '--sidebar-width': `${sidebarWidth.current}px`,
+      '--item-panel-width': `${panelWidth.current}px`,
+    }"
+  >
+    <!-- Ids and orders keep the panels apart as the item panel comes and goes. -->
+    <SplitterGroup
+      direction="horizontal"
+      :class="css.appShell_surfaces"
+      @layout="onLayout"
+    >
+      <SplitterPanel
+        id="app-sidebar"
+        ref="sidebarPanel"
+        :order="0"
+        size-unit="px"
+        :default-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored"
+        :min-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.min"
+        :max-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.max"
+        :style="collapsed ? undefined : sidebarWidth.style"
       >
-        <slot name="panel" />
-      </div>
-    </div>
+        <Sidebar
+          :viewer="viewer"
+          :collapsed="collapsed"
+          :counts="myWorkCounts"
+          :tracked="tracked"
+          @toggle="toggle"
+          @search="emit('search')"
+          @sign-out="emit('signOut')"
+        />
+      </SplitterPanel>
+      <ResizeHandle
+        v-if="!collapsed"
+        :label="t(l.resizeSidebar)"
+        @resized="sidebarWidth.save()"
+      />
+      <SplitterPanel
+        id="app-screen"
+        as="main"
+        :order="1"
+        :min-size="SCREEN_MIN_SIZE"
+        :class="css.appShell_screen"
+      >
+        <slot />
+      </SplitterPanel>
+      <template v-if="$slots.panel">
+        <ResizeHandle
+          :label="t(l.resizePanel)"
+          @resized="panelWidth.save()"
+        />
+        <SplitterPanel
+          id="app-panel"
+          ref="itemPanel"
+          :order="2"
+          size-unit="px"
+          :default-size="panelWidth.stored"
+          :min-size="panelWidth.min"
+          :max-size="panelWidth.max"
+          :style="panelWidth.style"
+          :class="css.appShell_panel"
+          @vue:mounted="restoreWidths"
+          @vue:unmounted="restoreWidths"
+        >
+          <slot name="panel" />
+        </SplitterPanel>
+      </template>
+    </SplitterGroup>
     <StatusBar
       :rate-limit="rateLimit"
       :notice="notice"
@@ -135,16 +221,13 @@ function toggle() {
 }
 
 .appShell_surfaces {
-  display: flex;
   flex: 1;
   min-height: 0;
 }
 
 .appShell_panel {
   display: flex;
-  flex: none;
   flex-direction: column;
-  width: $item-panel-width;
   min-height: 0;
   border-left: 1px solid $color-border;
 }
@@ -153,12 +236,11 @@ function toggle() {
 .appShell_itemSegment {
   display: flex;
   flex: none;
-  width: $item-panel-width;
+  width: var(--item-panel-width, $item-panel-width);
 }
 
 .appShell_screen {
   display: flex;
-  flex: 1;
   flex-direction: column;
   min-width: 0;
   overflow: hidden;

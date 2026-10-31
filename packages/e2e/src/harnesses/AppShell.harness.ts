@@ -55,6 +55,31 @@ export class AppShellHarness {
         return this.sidebar.getByRole('button', { name: 'Expand sidebar' });
     }
 
+    /** The handle on the expanded sidebar's edge, dragged to resize it. */
+    get sidebarHandle(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize sidebar' });
+    }
+
+    /** The handle on the edge of an item opened in the panel, dragged to resize the panel. */
+    get panelHandle(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize item panel' });
+    }
+
+    /** Drags `handle` sideways by `by` pixels — right when positive. */
+    async drag(handle: Locator, by: number): Promise<void> {
+        const box = await handle.boundingBox();
+        if (!box) {
+            throw new Error('The handle is not on screen');
+        }
+
+        const x = box.x + box.width / 2;
+        const y = box.y + box.height / 2;
+        await this.page.mouse.move(x, y);
+        await this.page.mouse.down();
+        await this.page.mouse.move(x + by, y, { steps: 5 });
+        await this.page.mouse.up();
+    }
+
     /** The status bar along the bottom; its first segment holds GitHub's allowance. */
     get statusBar(): Locator {
         return this.page.getByRole('contentinfo', { name: 'Status' });
