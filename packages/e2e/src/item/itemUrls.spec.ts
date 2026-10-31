@@ -6,7 +6,7 @@ import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 // The sample's list, top to bottom: #52, #48, #17, #7, then #12 with #15 nested under it, #9, and #3 — 8 items.
 const ISSUE = 'Sign-in loops after the token expires';
 
-test('an item opened from the list in the panel is at its address: a reload opens it again, Back returns to the list with it selected', async ({
+test("an item opened from the list in the panel is at GitHub's project-pane address: a reload opens it again, Back returns to the list with it selected", async ({
     page,
     github,
 }) => {
@@ -14,7 +14,7 @@ test('an item opened from the list in the panel is at its address: a reload open
     const item = new ItemViewHarness(page);
 
     await myWork.row(ISSUE).click();
-    await expect(page).toHaveURL('/?open=acme/web/12');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
     await expect(item.title).toHaveText(ISSUE);
     await expect(item.position).toHaveText('5 / 8');
 
@@ -28,7 +28,7 @@ test('an item opened from the list in the panel is at its address: a reload open
     await expect(myWork.selectedRow).toContainText(ISSUE);
 });
 
-test('switched to a modal, the item stays at its address across a reload, Back returns to the list, and the next item opens in a modal too', async ({
+test('switched to a modal and back, the address stays the same; a reload reopens the item in the arrangement remembered, Back returns to the list, and the next item opens in a modal too', async ({
     page,
     github,
 }) => {
@@ -36,9 +36,18 @@ test('switched to a modal, the item stays at its address across a reload, Back r
     const item = new ItemViewHarness(page);
 
     await myWork.row(ISSUE).click();
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
     await item.arrangement('Modal').click();
-    await expect(page).toHaveURL('/?open=acme/web/12&as=modal');
     await expect(item.modal).toHaveAccessibleName(ISSUE);
+    // The address does not say panel or modal: this browser remembers which.
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
+    await item.arrangement('Panel').click();
+    await expect(item.modal).toBeHidden();
+    await expect(item.title).toHaveText(ISSUE);
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
+    await item.arrangement('Modal').click();
+    await expect(item.modal).toHaveAccessibleName(ISSUE);
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
 
     await page.reload();
     await expect(item.modal).toHaveAccessibleName(ISSUE);
@@ -52,7 +61,7 @@ test('switched to a modal, the item stays at its address across a reload, Back r
     // The arrangement used last is the one items open in.
     await page.keyboard.press('j');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL('/?open=acme/web/15&as=modal');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C15');
     await expect(item.modal).toHaveAccessibleName('Redirect once after sign-in');
 });
 
@@ -89,14 +98,14 @@ test('J and K step through the list the item was opened from, beside it and on i
     await expect(item.position).toHaveText('2 / 8');
 
     await page.keyboard.press('j');
-    await expect(page).toHaveURL('/?open=acme/web/17');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C17');
     await expect(item.title).toHaveText('Move the sidebar state to the store');
     await expect(item.position).toHaveText('3 / 8');
     await expect(myWork.selectedRow).toContainText('Move the sidebar state to the store');
 
     await page.keyboard.press('k');
     await page.keyboard.press('k');
-    await expect(page).toHaveURL('/?open=acme/api/52');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Capi%7C52');
     await expect(item.title).toHaveText('Add rate limit headers to the API');
     await expect(item.position).toHaveText('1 / 8');
     await expect(item.previousButton).toBeDisabled();

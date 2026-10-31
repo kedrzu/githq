@@ -23,7 +23,7 @@ export async function readStoredToken(page: Page): Promise<string | null> {
 export async function signIn(page: Page, github: GitHubMock): Promise<AppShellHarness> {
     github.graphql('Viewer', SAMPLE_VIEWER);
     answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
     await new FirstSignInHarness(page).continueButton.click();
 

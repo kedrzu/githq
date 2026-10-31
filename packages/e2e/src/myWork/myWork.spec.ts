@@ -57,7 +57,7 @@ test('the sidebar counts what the list shows, and "My work" their sum', async ({
 
     // A group of its own keeps the count, and the list narrowed to it shows the same rows.
     await shell.myWorkLink('My pull requests').click();
-    await expect(page).toHaveURL('/my/pull-requests');
+    await expect(page).toHaveURL('/pulls');
     await expect(myWork.groups).toHaveCount(1);
     await expect(myWork.groupCount('My pull requests')).toHaveText('3');
     await expect(shell.myWorkCount('My pull requests')).toHaveText('3');
@@ -202,12 +202,12 @@ test('o opens the selected item on GitHub in a new tab', async ({ page, context,
     // A click selects the row and opens it in the panel beside the list.
     await myWork.row('Redirect once after sign-in').click();
     await expect(myWork.selectedRow).toContainText('Redirect once after sign-in');
-    await expect(page).toHaveURL('/?open=acme/web/15');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C15');
     const opened = context.waitForEvent('page');
     await page.keyboard.press('o');
 
     const tab = await opened;
     await expect(tab).toHaveURL(url.href);
-    await expect(page).toHaveURL('/?open=acme/web/15');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C15');
     expect(context.pages()).toHaveLength(2);
 });

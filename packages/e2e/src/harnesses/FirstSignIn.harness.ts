@@ -3,8 +3,8 @@ import type { Locator, Page } from '@playwright/test';
 import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 /**
- * Playwright harness for the first sign-in's steps: choosing what to track (`/welcome`, `TrackingChooser.vue` —
- * G2, G5, G10) and the first download (`/welcome/download`, `FirstDownloadView.vue` — G6).
+ * Playwright harness for the first sign-in's steps: choosing what to track (`/settings/tracking/new`, `TrackingChooser.vue` —
+ * G2, G5, G10) and the first download (`/settings/tracking/download`, `FirstDownloadView.vue` — G6).
  */
 export class FirstSignInHarness {
     readonly page: Page;

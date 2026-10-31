@@ -10,9 +10,9 @@ export const MY_WORK_GROUP_NAMES = ['Review requested', 'My pull requests', 'Ass
 export type MyWorkGroupName = (typeof MY_WORK_GROUP_NAMES)[number];
 
 /**
- * Playwright harness for "my work" (`MyWorkView.vue`, on `/` and `/my/<group>`): the filter tabs, the groups
- * — named sections, each a header with its count over a list of rows; on the board, a column with its cards —
- * the selected row and the List / Board toggle.
+ * Playwright harness for "my work" (`MyWorkView.vue`, on `/` and its groups' dashboard lists, `/pulls`, …): the
+ * filter tabs, the groups — named sections, each a header with its count over a list of rows; on the board, a
+ * column with its cards — the selected row and the List / Board toggle.
  */
 export class MyWorkScreenHarness {
     readonly root: Locator;

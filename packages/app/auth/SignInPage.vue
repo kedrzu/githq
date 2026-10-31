@@ -1,11 +1,11 @@
-<!-- `/sign-in`: GitHub's sign-in, then on to `next`; after a failure (`failed`, see `readSignInFailure`) it says what went wrong. Under `nuxt dev` and in the local build also the sign-in with a pasted token. -->
+<!-- `/login`: GitHub's sign-in, then on to `next` (or GitHub's `return_to`, see `readSignInReturnPath`); after a failure (`failed`, see `readSignInFailure`) it says what went wrong. Under `nuxt dev` and in the local build also the sign-in with a pasted token. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from './AuthStore.js';
-import { readSignInFailure, safeNextPath } from './routeAccess.js';
+import { readSignInFailure, readSignInReturnPath } from './routeAccess.js';
 import SignInScreen from './SignInScreen.vue';
 
 // The development sign-in exists under `nuxt dev` and in the local build (`__LOCAL_BUILD__`) only. The
@@ -18,7 +18,7 @@ const auth = useService(AuthStore);
 const route = useRoute();
 
 function next() {
-  return safeNextPath(route.query.next) ?? '/';
+  return readSignInReturnPath(route.query) ?? '/';
 }
 
 function signIn() {

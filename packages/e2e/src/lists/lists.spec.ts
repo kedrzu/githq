@@ -29,7 +29,7 @@ test('my work as a board: a column per group, ←/→ between them, Enter opens;
     await page.keyboard.press('ArrowDown');
     await expect(myWork.selectedRow).toContainText('Move the sidebar state to the store');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\?open=acme\/web\/\d+/);
+    await expect(page).toHaveURL(/\?pane=issue&issue=acme%7Cweb%7C\d+$/);
 
     await page.goto('/');
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');

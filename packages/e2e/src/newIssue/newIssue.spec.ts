@@ -188,7 +188,7 @@ test('the capture keeps the keys to itself: on its buttons `j` moves nothing beh
 
     // Behind the capture the screen is hidden from the keys and from assistive technology alike: checked once it closed.
     await expect(capture.root).toBeHidden();
-    await expect(page).toHaveURL('/?open=acme/web/12');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
     await expect(item.title).toHaveText('Sign-in loops after the token expires');
     await expect(myWork.selectedRow).toContainText('Sign-in loops after the token expires');
 });

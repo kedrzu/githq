@@ -1,11 +1,11 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, reactive, ref } from 'vue';
 
-import { Browser } from '@/services/Browser.js';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 
 /** What {@link usePanelWidth} keeps: a panel's width in pixels and the range the user may drag it in. */
 export interface PanelWidthOptions {
-    /** The panel's name in `localStorage`: `githq.panelWidth.<key>`. */
+    /** The panel's name among the widths {@link LocalPreferences} keeps. */
     readonly key: string;
     readonly default: number;
     readonly min: number;
@@ -14,8 +14,9 @@ export interface PanelWidthOptions {
 
 /**
  * The width of a panel the user resizes (a `SplitterPanel` sized in pixels), remembered in this browser for every
- * user. `stored` is what the user chose — the panel's `default-size`, which the splitter falls back to whenever its
- * panels change (one opens, the sidebar collapses), so it must always be the user's choice; `current` is the width
+ * user ({@link LocalPreferences}) and kept within the range given here. `stored` is what the user chose — the panel's
+ * `default-size`, which the splitter falls back to whenever its panels change (one opens, the sidebar collapses), so
+ * it must always be the user's choice; `current` is the width
  * shown now — while dragging, or squeezed by a narrow window — for what follows the panel (the status bar's
  * segments). `save` keeps `current` once the user lets go of the handle, so a squeezed width is never remembered.
  *
@@ -24,10 +25,9 @@ export interface PanelWidthOptions {
  * were a share. Reactive, for a template to read as it is.
  */
 export function usePanelWidth(options: PanelWidthOptions) {
-    const browser = useService(Browser);
-    const storageKey = `githq.panelWidth.${options.key}`;
+    const kept = useService(LocalPreferences).getPanelWidth(options.key);
 
-    const stored = ref(read());
+    const stored = computed(() => (kept.value === null ? options.default : clamp(kept.value)));
     const current = ref(stored.value);
     const style = computed(() => ({ flexGrow: 0, flexShrink: 0, flexBasis: `${current.value}px` }));
 
@@ -43,15 +43,9 @@ export function usePanelWidth(options: PanelWidthOptions) {
                 return;
             }
 
-            stored.value = width;
-            browser.localStorage.setItem(storageKey, String(width));
+            kept.value = width;
         },
     });
-
-    function read() {
-        const width = Number(browser.localStorage.getItem(storageKey) ?? Number.NaN);
-        return Number.isFinite(width) ? clamp(width) : options.default;
-    }
 
     function clamp(width: number) {
         return Math.min(options.max, Math.max(options.min, width));

@@ -8,6 +8,7 @@ import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
+import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { E2E_BASE_URL, E2E_CLIENT_ID } from '../localApp.js';
 import { readStoredToken } from '../session.js';
 import { answerTrackingCandidates } from '../tracking/answerTracking.js';
@@ -17,7 +18,7 @@ const LOGIN = SAMPLE_VIEWER.viewer.login;
 test('signed out, the app opens on sign-in, saying what GitHub will ask for', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveURL('/sign-in?next=/');
+    await expect(page).toHaveURL('/login?next=/');
     const signIn = new SignInScreenHarness(page);
     await expect(signIn.permissions).toBeVisible();
     await expect(signIn.signInButton).toBeVisible();
@@ -29,7 +30,7 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
     github,
 }) => {
     const authorize = answerAuthorize(github, state => ({ error: 'access_denied', state }));
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInButton.click();
 
     const query = (await authorize).searchParams;
@@ -39,7 +40,7 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
     expect(query.get('state')).toMatch(/^[\w-]{43}$/);
 
     const signIn = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/sign-in?failed=cancelled');
+    await expect(page).toHaveURL('/login?failed=cancelled');
     await expect(signIn.notice).toContainText("Sign-in didn't finish");
     await expect(signIn.notice).toContainText("Access was cancelled on GitHub's screen");
     expect(await readStoredToken(page)).toBeNull();
@@ -52,12 +53,12 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
 test('a return from GitHub with a state this tab did not issue fails without signing in', async ({ page, github }) => {
     // The code is never exchanged: the token exchange is not mocked, so a call to it would fail the test.
     const authorize = answerAuthorize(github, () => ({ code: 'e2e-code', state: 'not-the-state-this-tab-sent' }));
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInButton.click();
     await authorize;
 
     const signIn = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/sign-in?failed=failed');
+    await expect(page).toHaveURL('/login?failed=failed');
     await expect(signIn.notice).toContainText('Something went wrong on the way back from GitHub');
     expect(await readStoredToken(page)).toBeNull();
 });
@@ -68,16 +69,17 @@ test('signing in with GitHub ends in the app, where the user was heading', async
     github.graphql('Viewer', SAMPLE_VIEWER);
     answerTrackingCandidates(github, { login: LOGIN });
 
-    await page.goto('/sign-in?next=/somewhere');
+    await page.goto('/login?next=/pulls');
     await new SignInScreenHarness(page).signInButton.click();
     await authorize;
 
-    // The first sign-in chooses what to track first (here nothing: the user has no repositories). `/somewhere` is
-    // no screen of the app, so it then opens "My work".
-    await expect(page).toHaveURL('/welcome');
+    // The first sign-in chooses what to track first (here nothing: the user has no repositories), then goes on to
+    // where the user was heading: "My pull requests".
+    await expect(page).toHaveURL('/settings/tracking/new?next=/pulls');
     await new FirstSignInHarness(page).continueButton.click();
     await expect(new AppShellHarness(page).account(LOGIN)).toBeVisible();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/pulls');
+    await expect(new MyWorkScreenHarness(page).groups).toHaveCount(1);
     expect(await readStoredToken(page)).toBe(SAMPLE_TOKEN);
 });
 
@@ -89,7 +91,7 @@ test('signed in with a token, the shell shows the user and the allowance, and op
         token === SAMPLE_TOKEN ? SAMPLE_VIEWER : new GitHubHttpError(401, 'Bad credentials'),
     );
     answerTrackingCandidates(github, { login: LOGIN });
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
     await new FirstSignInHarness(page).continueButton.click();
 

@@ -1,5 +1,7 @@
 import type { LocationQuery, RouteLocationRaw } from 'vue-router';
 
+import { GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
+
 import type { SignInFailure } from './AuthStore.js';
 
 /**
@@ -26,14 +28,14 @@ declare module 'vue-router' {
     }
 }
 
-/** Where signing in is. */
-export const SIGN_IN_PATH = '/sign-in';
+/** Where signing in is: GitHub's own sign-in address, so no owner's address (`/owner`) is ever taken for it. */
+export const SIGN_IN_PATH = '/login';
 
-/** Where a user who has not chosen what to track yet goes first (G2). */
-export const TRACKING_CHOICE_PATH = '/welcome';
+/** Where a user who has not chosen what to track yet goes first (G2), under GitHub's reserved `/settings`. */
+export const TRACKING_CHOICE_PATH = '/settings/tracking/new';
 
-/** Where changing what is tracked is, once chosen (G8). */
-export const TRACKING_PATH = '/tracking';
+/** Where changing what is tracked is, once chosen (G8), under GitHub's reserved `/settings`. */
+export const TRACKING_PATH = '/settings/tracking';
 
 /** The session, as far as the guard looks at it (`AuthStore`). */
 export interface GuardedSession {
@@ -59,7 +61,7 @@ export interface GuardedRoute {
  *
  * - signed out, to a route for signed-in users → sign-in, with `next` to come back to and `failed` when the
  *   session ended for a reason (a token GitHub rejected);
- * - signed in, to sign-in → `next` (or "My work");
+ * - signed in, to sign-in → `next` or GitHub's `return_to` (or "My work"), see {@link readSignInReturnPath};
  * - signed in without having chosen what to track, to the app → choosing it (G2), with `next` to go on to after
  *   (none for "My work", where it goes anyway);
  * - signed in having chosen, to choosing (G2) → changing what is tracked (G8).
@@ -67,7 +69,7 @@ export interface GuardedRoute {
 export function resolveRouteAccess(to: GuardedRoute, session: GuardedSession): RouteLocationRaw | undefined {
     switch (to.meta.auth) {
         case 'signedOut':
-            return session.signedIn ? (safeNextPath(to.query.next) ?? '/') : undefined;
+            return session.signedIn ? (readSignInReturnPath(to.query) ?? '/') : undefined;
         case 'signedIn': {
             if (!session.signedIn) {
                 const next = to.fullPath;
@@ -90,7 +92,7 @@ export function resolveRouteAccess(to: GuardedRoute, session: GuardedSession): R
 }
 
 /**
- * The `failed` of a sign-in link (`/sign-in?failed=…`) when it is a reason the sign-in page explains; anything
+ * The `failed` of a sign-in link (`/login?failed=…`) when it is a reason the sign-in page explains; anything
  * else — a hand-edited link — shows no notice.
  * @__NO_SIDE_EFFECTS__
  */
@@ -105,6 +107,28 @@ export function readSignInFailure(failed: LocationQuery[string] | undefined): Si
         default:
             return null;
     }
+}
+
+/**
+ * Where a sign-in link (`/login?next=…`) goes once signed in: its `next`, or else GitHub's `return_to` — which
+ * GitHub's own sign-in links carry, as a path or a full `https://github.com/…` address, whose path, query and
+ * fragment are taken, as the same address opens the same thing here. Never another site; `undefined` when
+ * neither says where to go.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readSignInReturnPath(query: LocationQuery): string | undefined {
+    return safeNextPath(query.next) ?? safeReturnToPath(query.return_to);
+}
+
+function safeReturnToPath(returnTo: LocationQuery[string] | undefined): string | undefined {
+    const value = Array.isArray(returnTo) ? returnTo[0] : returnTo;
+    // Up to the slash after the host nothing else can name a host (`https://github.com@evil.example`,
+    // `https://github.com.evil.example` do not start so); what follows goes through the same check as `next`.
+    if (typeof value === 'string' && value.startsWith(`${GITHUB_ORIGIN}/`)) {
+        return safeNextPath(value.slice(GITHUB_ORIGIN.length));
+    }
+
+    return safeNextPath(value);
 }
 
 /**

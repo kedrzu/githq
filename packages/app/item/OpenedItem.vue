@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from, the switch moves it to another arrangement (remembered as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item or arrangement replaces the address; opening a linked item or closing adds one, so Back returns. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from, the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -103,6 +103,23 @@ watch(
   { immediate: true },
 );
 
+// On its page, `/issues/15` of a pull request settles on `/pull/15` and the other way round, as GitHub redirects —
+// in place, keeping the query and the fragment; both pages are one instance (`meta.key`), so nothing remounts.
+watch(
+  () => [opened.item, route.path] as const,
+  ([item, path]) => {
+    if (props.arrangement !== 'page' || item?.number !== props.reference.number) {
+      return;
+    }
+
+    const settled = getItemPagePath(props.reference, item.kind);
+    if (path !== settled) {
+      void router.replace({ path: settled, query: route.query, hash: route.hash });
+    }
+  },
+  { immediate: true },
+);
+
 function step(delta: 1 | -1) {
   const ids = navigation.list?.ids ?? [];
   const index = opened.id === null ? -1 : ids.indexOf(opened.id);
@@ -115,7 +132,10 @@ function step(delta: 1 | -1) {
 
 function arrange(arrangement: ItemArrangement) {
   navigation.setArrangement(arrangement);
-  void router.replace(locate(props.reference, arrangement, opened.item?.kind));
+  // Between the panel and the modal the address stays: the shell shows the remembered one.
+  if (arrangement === 'page' || props.arrangement === 'page') {
+    void router.replace(locate(props.reference, arrangement, opened.item?.kind));
+  }
 }
 
 function open(reference: ItemReference) {
@@ -136,7 +156,7 @@ function locate(reference: ItemReference, arrangement: ItemArrangement, kind?: I
 
   // From the item's page, back over the list it came from.
   const list = props.arrangement === 'page' ? router.resolve(listPath()) : route;
-  return { path: list.path, query: getOpenedItemQuery(list.query, reference, arrangement) };
+  return { path: list.path, query: getOpenedItemQuery(list.query, reference) };
 }
 
 function listPath() {

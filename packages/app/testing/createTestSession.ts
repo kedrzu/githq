@@ -105,6 +105,7 @@ export function createTestSession(params: CreateTestSessionParams) {
             crypto.getRandomValues(bytes);
         },
         navigate: () => {},
+        replaceLocation: () => {},
         openInNewTab: url => {
             openedTabs.push(url);
         },
@@ -140,6 +141,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         operations: () => github.requests.map(request => request.operation),
         setVisible,
         fromAnotherTab,
+        clearFromAnotherTab,
         signInFromAnotherTab: (login: string) =>
             fromAnotherTab({ [TOKEN_KEY]: `gho_${login}`, [VIEWER_KEY]: JSON.stringify(viewerOf(login)) }),
         signOutFromAnotherTab: () => fromAnotherTab({ [TOKEN_KEY]: null, [VIEWER_KEY]: null }),
@@ -226,6 +228,14 @@ export function createTestSession(params: CreateTestSessionParams) {
             for (const listener of storageListeners) {
                 listener(key);
             }
+        }
+    }
+
+    /** Another tab clears the whole `localStorage`, and this tab gets a `storage` event without a key. */
+    function clearFromAnotherTab() {
+        local.clear();
+        for (const listener of storageListeners) {
+            listener(null);
         }
     }
 }

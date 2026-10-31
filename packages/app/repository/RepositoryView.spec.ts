@@ -66,6 +66,14 @@ test('J3: not tracked, it lists what concerns the user and asks to be tracked', 
         .toHaveTextContent(/only has what concerns you here: 6 items/);
     await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
 
+    // The kind tabs narrow it as they do a tracked one's (`/owner/name/pulls`).
+    await userEvent.click(page.getByRole('button', { name: /Pull requests/ }));
+    expect(view.kind.value).toBe('pullRequests');
+    await expect.element(page.getByRole('listitem').filter({ hasText: '#1203' })).toBeVisible();
+    await expect
+        .element(page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' }))
+        .not.toBeInTheDocument();
+
     await userEvent.click(page.getByRole('button', { name: `Track ${SAMPLE_REPOSITORY}` }));
     expect(view.tracks).toBe(1);
 });
@@ -78,7 +86,7 @@ interface MountOptions {
 function mount({ tracked = true }: MountOptions = {}) {
     const options = shallowRef<ListViewOptions<RepositoryGrouping, ItemSort>>(REPOSITORY_VIEW_DEFAULTS);
     const kind = ref<RepositoryKind>('all');
-    const view = { options, tracks: 0 };
+    const view = { options, kind, tracks: 0 };
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);

@@ -33,11 +33,11 @@ test('a first sign-in chooses what to track: the own repositories chosen, not th
         body: "githq's OAuth App on GitHub",
     }));
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
 
     const choice = new FirstSignInHarness(page);
-    await expect(page).toHaveURL('/welcome');
+    await expect(page).toHaveURL('/settings/tracking/new');
     await expect(choice.repository(`${LOGIN}/app`)).toBeChecked();
     // Archived: read-only, not chosen for the user.
     await expect(choice.repository(`${LOGIN}/old`)).not.toBeChecked();
@@ -76,13 +76,13 @@ test('"Track these" goes on to the first download: My work opens as soon as it i
         organizations: [{ login: 'acme', repositories: [{ nameWithOwner: 'acme/api' }] }],
     });
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.repository(`${LOGIN}/app`)).toBeChecked();
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    await expect(page).toHaveURL('/welcome/download');
+    await expect(page).toHaveURL('/settings/tracking/download');
     await expect(firstSignIn.openMyWorkButton).toBeDisabled();
     myWorkIn.resolve();
     await expect(firstSignIn.openMyWorkButton).toBeEnabled();
@@ -115,7 +115,7 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     sample.world.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.repository(SAMPLE_REPOSITORY)).toBeChecked();
@@ -126,7 +126,7 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     );
 
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/welcome/download');
+    await expect(page).toHaveURL('/settings/tracking/download');
     // Every item of the repository — the closed one too — and of the project, archived ones left out.
     await expect(firstSignIn.progress(SAMPLE_REPOSITORY)).toContainText('5 items');
     await expect(firstSignIn.progress(SAMPLE_REPOSITORY)).toContainText('Done');

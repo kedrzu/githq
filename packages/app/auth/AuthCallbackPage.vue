@@ -1,4 +1,4 @@
-<!-- `/auth/callback`: where GitHub sends the browser back. Finishes the sign-in (`AuthStore.completeSignIn`) and goes on to where the user was heading, or back to sign-in with the reason in its address (`/sign-in?failed=…`), which it explains — after a reload too. -->
+<!-- `/auth/callback`: where GitHub sends the browser back. Finishes the sign-in (`AuthStore.completeSignIn`) and goes on to where the user was heading, or back to sign-in with the reason in its address (`/login?failed=…`), which it explains — after a reload too. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';

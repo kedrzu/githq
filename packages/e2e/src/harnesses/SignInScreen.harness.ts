@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for the sign-in page (`/sign-in`, `SignInScreen.vue` — G1b, and G1c after a failure),
+ * Playwright harness for the sign-in page (`/login`, `SignInScreen.vue` — G1b, and G1c after a failure),
  * with the development sign-in (`DevTokenForm.vue`), which only the local build has.
  */
 export class SignInScreenHarness {

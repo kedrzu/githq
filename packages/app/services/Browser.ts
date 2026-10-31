@@ -23,7 +23,7 @@ export type PageLifecycleEvent = 'pagehide' | 'freeze' | 'resume';
 
 /**
  * What the app's services take from the browser: the network and whether there is one, the two storages and
- * how much the app keeps, the app's origin, whether the tab is shown, leaving for another page or opening one beside it, and what the app's
+ * how much the app keeps, the app's origin, whether the tab is shown, leaving for another page (or replacing this one with it) or opening one beside it, and what the app's
  * tabs share — a Web Lock and a broadcast channel. Behind an interface so the services
  * can run under `bun test` with stand-ins.
  */
@@ -39,6 +39,8 @@ export interface BrowserShape {
     getRandomValues(bytes: Uint8Array<ArrayBuffer>): void;
     /** Leaves the app for `url` (a full page load). */
     navigate(url: string): void;
+    /** Leaves the app for `url` in place of the current page in history, so going back skips it. */
+    replaceLocation(url: string): void;
     /** Opens `url` in a new tab, the app staying where it is. */
     openInNewTab(url: string): void;
     /**
@@ -84,6 +86,9 @@ export const Browser = defineInterface<BrowserShape>({
         },
         navigate: url => {
             window.location.assign(url);
+        },
+        replaceLocation: url => {
+            window.location.replace(url);
         },
         openInNewTab: url => {
             window.open(url, '_blank', 'noopener,noreferrer');

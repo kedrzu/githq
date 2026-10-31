@@ -30,7 +30,7 @@ export interface SidebarTracked {
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { AtSign, BookMarked, Inbox, PanelLeftClose, PanelLeftOpen, Plus, Search, SquareKanban } from 'lucide-vue-next';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
@@ -43,6 +43,7 @@ import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
+import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
@@ -66,6 +67,15 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const route = useRoute();
+
+/** A repository's row is the current page on its view whichever list of it the address names (`/owner/name/issues`). */
+function isCurrentRepository(repository: SidebarTrackedEntry) {
+  return (
+    route.path === repository.to ||
+    Object.values(REPOSITORY_KIND_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
+  );
+}
 
 function countText(group: MyWorkGroup | 'total') {
   return props.counts ? String(props.counts[group]) : t(l.countArriving);
@@ -201,8 +211,8 @@ function statusText(status: SidebarTrackedStatus) {
         >
           <RouterLink
             :to="repository.to"
-            :class="css.sidebar_item"
-            :active-class="css.sidebar_item_active"
+            :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
+            :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
           >
             <BookMarked
               :class="css.sidebar_itemIcon"

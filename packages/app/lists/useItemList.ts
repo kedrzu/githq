@@ -36,8 +36,8 @@ export interface ItemListViewModel {
 
 /**
  * What every list page does with items (my work, a repository, a project): an item opens in the arrangement
- * used last (`ItemNavigation`); one opened over the list (`?open=…`) is the selected row, and the selection
- * moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
+ * used last (`ItemNavigation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
+ * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
  * request to select the items that failed (K2) selects those the list shows.
  */
 export function useItemList(): ItemListViewModel {
@@ -58,7 +58,7 @@ export function useItemList(): ItemListViewModel {
 
     const opened = computed(() => {
         const found = getOpenedItemRoute(route);
-        return found && found.arrangement !== 'page' ? found : null;
+        return found && !found.onPage ? found : null;
     });
     const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
     const undone = computed(() => {

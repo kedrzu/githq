@@ -1,4 +1,4 @@
-<!-- `/welcome`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). -->
+<!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
