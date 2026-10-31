@@ -291,7 +291,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        :variant="mergeable && open ? 'primary' : 'secondary'"
+        :variant="mergeable && open ? 'light' : 'secondary'"
         size="sm"
         :icon="Github"
         :link="pr.url"
