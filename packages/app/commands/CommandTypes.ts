@@ -34,8 +34,9 @@ export interface Command {
     /** Other words it is found by ("close" for "Done"). */
     readonly keywords?: readonly string[];
     /**
-     * Its key, as `aria-keyshortcuts` writes it: `A`, `Shift+X`, `[`, `?`, `Meta+K` (⌘ or Ctrl). A single key runs
-     * only outside fields; one with ⌘ also in a one-line field.
+     * Its key, as `aria-keyshortcuts` writes it with `Mod` for the platform's primary modifier: `A`, `Shift+X`, `[`,
+     * `?`, `Mod+K` (⌘ on a Mac, Ctrl elsewhere). A single key runs only outside fields; one with `Mod` also in a
+     * one-line field.
      */
     readonly key?: string;
     /** Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. */

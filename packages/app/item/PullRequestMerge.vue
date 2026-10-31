@@ -307,7 +307,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         size="sm"
         :icon="FileDiff"
         :link="filesUrl"
-        kbd="⇧O"
+        kbd="Shift+O"
         target="_blank"
         rel="noopener noreferrer"
         aria-keyshortcuts="Shift+O"

@@ -110,7 +110,7 @@ function getLink(failure: EditFailure) {
             v-if="getFailedIds(failure).length > 0"
             variant="secondary"
             size="sm"
-            kbd="⇧F"
+            kbd="Shift+F"
             aria-keyshortcuts="Shift+F"
             @click="selectFailed(failure)"
           >

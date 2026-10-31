@@ -23,7 +23,7 @@ import { RouterLink } from 'vue-router';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
@@ -401,8 +401,8 @@ function addDraft(title: string, group: string | null) {
             <Button
               variant="secondary"
               :icon="Plus"
-              :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-              :aria-keyshortcuts="APP_KEYS.commandMenu"
+              :kbd="APP_KEYS.commandMenu"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
               @click="emit('addItems')"
             >
               {{ t(l.addExistingIssues) }}

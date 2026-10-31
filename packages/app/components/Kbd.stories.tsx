@@ -6,28 +6,43 @@ import Kbd from './Kbd.vue';
 
 const meta = {
     component: Kbd,
-    args: { keys: '⌘K' },
+    args: { keys: 'Mod+K' },
 } satisfies Meta<typeof Kbd>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** The hints of the mockups: on the window, every glyph drawn as an icon, on a filled button, and the small one of a row. */
+/**
+ * The hints of the mockups: on the window, every key as this platform writes it (⌘ ⌥ ⇧ on a Mac, Ctrl Alt Shift
+ * elsewhere — Storybook shows the machine's), on a filled button, and the small one of a row.
+ */
 export const Gallery: Story = {
     render: () => (
         <StoryPage>
             <StorySection title="Default">
                 <StoryRow>
-                    <Kbd keys="⌘K" />
+                    <Kbd keys="Mod+K" />
                     <Kbd keys="A" />
-                    <Kbd keys="⌥L" />
-                    <Kbd keys="⌘↵" />
+                    <Kbd keys="Alt+L" />
+                    <Kbd keys="Mod+Enter" />
                 </StoryRow>
             </StorySection>
-            <StorySection title="Every key drawn as an icon">
+            <StorySection title="Every key">
                 <StoryRow>
-                    {['⌘', '⇧', '⌥', '⌃', '↵', '⌫', '⇥', '↑', '↓', '←', '→'].map(keys => (
+                    {[
+                        'Mod',
+                        'Shift',
+                        'Alt',
+                        'Control',
+                        'Enter',
+                        'Backspace',
+                        'Tab',
+                        'ArrowUp',
+                        'ArrowDown',
+                        'ArrowLeft',
+                        'ArrowRight',
+                    ].map(keys => (
                         <Kbd
                             key={keys}
                             keys={keys}
@@ -35,10 +50,10 @@ export const Gallery: Story = {
                     ))}
                 </StoryRow>
                 <StoryRow>
-                    <Kbd keys="⇧O" />
-                    <Kbd keys="⌃⌥⇧⌘K" />
-                    <Kbd keys="↑↓" />
-                    <Kbd keys="Esc" />
+                    <Kbd keys="Shift+O" />
+                    <Kbd keys="Control+Alt+Shift+Mod+K" />
+                    <Kbd keys="ArrowUp ArrowDown" />
+                    <Kbd keys="Escape" />
                     <Kbd keys="Space" />
                 </StoryRow>
             </StorySection>
@@ -47,13 +62,13 @@ export const Gallery: Story = {
                     <span style={{ padding: '6px 12px', background: '#7b87f7', borderRadius: '7px' }}>
                         <Kbd
                             tone="onFill"
-                            keys="⌘↵"
+                            keys="Mod+Enter"
                         />
                     </span>
                     <span style={{ padding: '6px 12px', background: '#e4e6ea', borderRadius: '7px' }}>
                         <Kbd
                             tone="onFill"
-                            keys="↵"
+                            keys="Enter"
                         />
                     </span>
                 </StoryRow>
@@ -66,7 +81,7 @@ export const Gallery: Story = {
                     />
                     <Kbd
                         size="sm"
-                        keys="⌘↵"
+                        keys="Mod+Enter"
                     />
                 </StoryRow>
             </StorySection>

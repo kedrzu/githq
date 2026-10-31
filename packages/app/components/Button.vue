@@ -28,7 +28,7 @@ export const ButtonProps = {
   size: defineProp<ButtonSize>(),
   /** Leading icon, a lucide component. */
   icon: defineProp<LucideIcon>(),
-  /** Keyboard hint after the label ("⌘↵"). Only drawn: give the shortcut to `aria-keyshortcuts` too. */
+  /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `aria-keyshortcuts` too. */
   kbd: defineProp<string>(),
   /** Fills its container's width, the content at the start and the hint at the end — a sidebar entry, a field. */
   block: defineProp<boolean>({ type: Boolean, default: false }),

@@ -9,7 +9,7 @@ import Kbd from '@/components/Kbd.vue';
 
 import type { Command } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
-import { formatCommandKey } from './formatCommandKey.js';
+import { formatAriaKeyShortcuts } from './formatAriaKeyShortcuts.js';
 import * as l from './KeyHelp.loc.js';
 
 const props = defineProps<{
@@ -72,9 +72,9 @@ const sections = computed(() =>
                   aria-hidden="true"
                   >/</span
                 >
-                <VisuallyHidden>{{ key }}</VisuallyHidden>
+                <VisuallyHidden>{{ formatAriaKeyShortcuts(key) }}</VisuallyHidden>
                 <Kbd
-                  v-for="(part, index) in formatCommandKey(key)"
+                  v-for="(part, index) in key.split('+')"
                   :key="index"
                   :keys="part"
                 />

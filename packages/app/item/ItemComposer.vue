@@ -1,8 +1,10 @@
-<!-- The comment box along the bottom of an opened item (D1); `R` puts the cursor in it and ⌘↵ (Ctrl+↵) posts what is typed: the box empties and the comment shows at once among the others, on its way to GitHub. What is typed is the item's draft (`text`), kept while the user moves between items. Without the right to comment it is read-only. -->
+<!-- The comment box along the bottom of an opened item (D1); `R` puts the cursor in it and `Mod+Enter` (⌘↵ on a Mac, Ctrl+↵ elsewhere) posts what is typed: the box empties and the comment shows at once among the others, on its way to GitHub. What is typed is the item's draft (`text`), kept while the user moves between items. Without the right to comment it is read-only. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useTemplateRef } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import TextArea from '@/components/TextArea.vue';
 
@@ -14,12 +16,14 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** ⌘↵ with something typed. */
+  /** `Mod+Enter` with something typed. */
   submit: [body: string];
 }>();
 
 /** What is typed. */
 const text = defineModel<string>('text', { default: '' });
+
+const SUBMIT_KEY = 'Mod+Enter';
 const t = useTranslate();
 const fieldRef = useTemplateRef<InstanceType<typeof TextArea>>('field');
 
@@ -29,7 +33,7 @@ defineExpose({
 });
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key !== 'Enter' || !(event.metaKey || event.ctrlKey)) {
+  if (!matchesCommandKey(event, SUBMIT_KEY)) {
     return;
   }
 
@@ -51,8 +55,8 @@ function onKeydown(event: KeyboardEvent) {
     :placeholder="t(l.placeholder)"
     :readonly="disabled"
     compact
-    :kbd="text ? '⌘↵' : EDIT_KEYS.comment"
-    :aria-keyshortcuts="`${EDIT_KEYS.comment} Meta+Enter`"
+    :kbd="text ? SUBMIT_KEY : EDIT_KEYS.comment"
+    :aria-keyshortcuts="`${EDIT_KEYS.comment} ${formatAriaKeyShortcuts(SUBMIT_KEY)}`"
     @keydown="onKeydown"
   />
 </template>

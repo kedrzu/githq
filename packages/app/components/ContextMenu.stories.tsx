@@ -41,7 +41,7 @@ export const Row: Story = {
                                     <MenuSeparator />,
                                     <MenuItem
                                         icon={Copy}
-                                        shortcut="Meta+Shift+C"
+                                        shortcut="Shift+Mod+C"
                                         onSelect={() => (picked.value = 'copy')}
                                     >
                                         Copy link

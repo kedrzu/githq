@@ -50,7 +50,7 @@ export const NewIssue: Story = {
                                     />,
                                     <Button
                                         variant="primary"
-                                        kbd="⌘↵"
+                                        kbd="Mod+Enter"
                                         onClick={() => (open.value = false)}
                                     >
                                         Create issue

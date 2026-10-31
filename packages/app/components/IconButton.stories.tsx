@@ -35,7 +35,7 @@ export const Gallery: Story = {
                     <IconButton
                         icon={X}
                         label="Close"
-                        kbd="Esc"
+                        kbd="Escape"
                     />
                 </StoryRow>
             </StorySection>

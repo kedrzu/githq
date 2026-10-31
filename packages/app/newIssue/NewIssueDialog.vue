@@ -4,6 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { AlertTriangle, BookMarked, ChevronDown, ExternalLink, FileText, Lock, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -221,12 +222,12 @@ function create(another: boolean) {
 
 function onTitleKeydown(event: KeyboardEvent) {
   if (event.key === 'Enter' && !event.isComposing) {
-    const meta = event.metaKey || event.ctrlKey;
+    const another = matchesCommandKey(event, 'Mod+Enter');
     if (!expanded.value) {
       event.preventDefault();
-      create(meta);
-    } else if (!meta) {
-      // Expanded, ⌘Enter is the whole form's (`onKeydown`); Enter goes on to the body.
+      create(another);
+    } else if (!another && !matchesCommandKey(event, 'Alt+Mod+Enter')) {
+      // Expanded, Mod+Enter is the whole form's (`onKeydown`); Enter goes on to the body.
       event.preventDefault();
       bodyRef.value?.focus();
     }
@@ -241,20 +242,19 @@ function onTitleKeydown(event: KeyboardEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  // ⌥A: on a Mac the key types "å", so it is told by its code.
-  if (event.altKey && !event.metaKey && event.code === 'KeyA' && canPush.value) {
+  if (matchesCommandKey(event, 'Alt+A') && canPush.value) {
     event.preventDefault();
     emit('update', { assignees: toggleAssignee(props.draft.assignees, props.viewerLogin) });
     return;
   }
 
-  if (event.altKey && !event.metaKey && event.code === 'KeyR') {
+  if (matchesCommandKey(event, 'Alt+R')) {
     event.preventDefault();
     choosingRepository.value = true;
     return;
   }
 
-  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && expanded.value) {
+  if (expanded.value && (matchesCommandKey(event, 'Mod+Enter') || matchesCommandKey(event, 'Alt+Mod+Enter'))) {
     event.preventDefault();
     create(event.altKey);
   }
@@ -369,7 +369,7 @@ function onEscape(event: KeyboardEvent) {
           <Button
             variant="outline"
             size="sm"
-            kbd="⌥R"
+            kbd="Alt+R"
             @click="choosingRepository = true"
             >{{ t(l.anotherRepository) }}</Button
           >
@@ -441,7 +441,7 @@ function onEscape(event: KeyboardEvent) {
           <Button
             variant="outline"
             size="sm"
-            kbd="⌥R"
+            kbd="Alt+R"
             @click="choosingRepository = true"
             >{{ t(l.anotherRepository) }}</Button
           >
@@ -507,7 +507,7 @@ function onEscape(event: KeyboardEvent) {
           <Button
             variant="ghost"
             size="sm"
-            :kbd="expanded ? '⌘↵' : '↵'"
+            :kbd="expanded ? 'Mod+Enter' : 'Enter'"
             :disabled="!canCreate"
             @click="create(false)"
             >{{ t(l.create) }}</Button
@@ -515,7 +515,7 @@ function onEscape(event: KeyboardEvent) {
           <Button
             variant="ghost"
             size="sm"
-            :kbd="expanded ? '⌥⌘↵' : '⌘↵'"
+            :kbd="expanded ? 'Alt+Mod+Enter' : 'Mod+Enter'"
             :disabled="!canCreate"
             @click="create(true)"
             >{{ t(l.createAnother) }}</Button
@@ -524,7 +524,7 @@ function onEscape(event: KeyboardEvent) {
             v-if="!expanded"
             variant="ghost"
             size="sm"
-            kbd="⇥"
+            kbd="Tab"
             @click="expand()"
             >{{ t(l.details) }}</Button
           >
@@ -532,7 +532,7 @@ function onEscape(event: KeyboardEvent) {
             v-else
             :class="css.newIssueDialog_hint"
             aria-hidden="true"
-            ><Kbd keys="Esc" /> {{ t(l.collapse) }}</span
+            ><Kbd keys="Escape" /> {{ t(l.collapse) }}</span
           >
           <Button
             v-if="templateCount > 0 && !choosingTemplate"

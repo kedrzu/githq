@@ -4,13 +4,15 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { ChevronRight } from 'lucide-vue-next';
 import { DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from 'reka-ui';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+
 import MenuShortcut from './MenuShortcut.vue';
 
 defineProps<{
   icon?: LucideIcon;
   /** Dim text after the chevron: the current value. */
   detail?: string;
-  /** Its key as `aria-keyshortcuts` writes it (`Shift+X`); the caller handles the key itself. */
+  /** Its key in the app's notation (`Mod+K`, `Shift+X`); the caller handles the key itself. */
   shortcut?: string;
   disabled?: boolean;
 }>();
@@ -30,7 +32,7 @@ const open = defineModel<boolean>('open', { default: false });
     <DropdownMenuSubTrigger
       :class="css.menuSub"
       :disabled="disabled"
-      :aria-keyshortcuts="shortcut"
+      :aria-keyshortcuts="shortcut && formatAriaKeyShortcuts(shortcut)"
     >
       <component
         :is="icon"

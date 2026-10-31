@@ -31,7 +31,6 @@ import { buildCommandMenu, filterCommandOptions } from './buildCommandMenu.js';
 import type { CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
 import * as l from './CommandMenu.loc.js';
 import type { Command, CommandOption, CommandSubject } from './CommandTypes.js';
-import { formatCommandKey } from './formatCommandKey.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 
 const props = withDefaults(
@@ -125,19 +124,19 @@ const message = computed(() => {
 const hints = computed((): FilterListHint[] => {
   if (submenu.value) {
     return [
-      { keys: '↵', label: t(l.set) },
-      { keys: '⌫', label: t(l.back) },
-      { keys: 'Esc', label: t(l.close) },
+      { keys: 'Enter', label: t(l.set) },
+      { keys: 'Backspace', label: t(l.back) },
+      { keys: 'Escape', label: t(l.close) },
     ];
   }
 
   const shown: FilterListHint[] = [
-    { keys: '↵', label: t(l.run) },
-    { keys: '→', label: t(l.openSubmenu) },
+    { keys: 'Enter', label: t(l.run) },
+    { keys: 'ArrowRight', label: t(l.openSubmenu) },
     { keys: '>', label: t(l.commandsOnly) },
   ];
   if (subject.value) {
-    shown.push({ keys: '⌫', label: t(l.removeContext) });
+    shown.push({ keys: 'Backspace', label: t(l.removeContext) });
   }
 
   return shown;
@@ -188,7 +187,7 @@ function toRow(entry: CommandMenuEntry): Row {
         icon: command.icon ?? Zap,
         title: command.title,
         detail: command.detail,
-        keys: command.key ? formatCommandKey(command.key) : undefined,
+        keys: command.key?.split('+'),
         submenu: command.options !== undefined,
         activate: () => runCommand(command),
       };
