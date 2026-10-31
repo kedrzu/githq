@@ -28,6 +28,7 @@ const list = useItemList();
 const view = useListViewOptions({ list: 'myWork', defaults: MY_WORK_VIEW_DEFAULTS, choices: MY_WORK_VIEW_CHOICES });
 
 const filter = ref<MyWorkFilter>('all');
+const trackedRepositories = computed(() => tracking.repositories.map(repository => repository.nameWithOwner));
 
 const group = computed(() => route.meta.myWorkGroup ?? null);
 // D12: each row's projects as lists outside them show them — the tracked ones first, with their row field.
@@ -73,7 +74,7 @@ const waitingCount = computed(() => {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :waiting-count="waitingCount"
-    :tracked-count="tracking.repositories.length"
+    :tracked-repositories="trackedRepositories"
     :opened-id="list.openedId"
     :undone="list.undone"
     @update:options="view.set($event)"
