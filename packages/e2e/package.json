@@ -1,0 +1,19 @@
+{
+    "name": "@githq/e2e",
+    "private": true,
+    "description": "Playwright end-to-end tests of the built app served by the Worker in the local Workers runtime (`wrangler dev`)",
+    "type": "module",
+    "scripts": {
+        "test": "playwright test",
+        "report": "playwright show-report"
+    },
+    "dependencies": {
+        "@githq/github": "workspace:*",
+        "@nzyme/utils": "workspace:*",
+        "@playwright/test": "1.64.0"
+    },
+    "devDependencies": {
+        "@nzyme/tsconfig": "workspace:*",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2"
+    }
+}

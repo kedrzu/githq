@@ -1,0 +1,11 @@
+{
+    "extends": "@nzyme/tsconfig/esm.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "./dist",
+        // Playwright runs the tests in Node; `dom` types the code they run inside the page.
+        "lib": ["esnext", "dom", "dom.iterable"],
+        "types": ["node"]
+    },
+    "include": ["src", "playwright.config.ts"]
+}
