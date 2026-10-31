@@ -57,6 +57,8 @@ defineSlots<{
   default?(): unknown;
   /** An item opened beside the screen (`ItemView` in its panel arrangement). */
   panel?(): unknown;
+  /** The entries of a tracked repository's context menu in the sidebar. */
+  repositoryMenu?(props: { nameWithOwner: string }): unknown;
 }>();
 
 /** The sidebar collapsed to the rail. */
@@ -147,7 +149,17 @@ function onLayout(sizes: number[]) {
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"
-        />
+        >
+          <template
+            v-if="$slots.repositoryMenu"
+            #repositoryMenu="menu"
+          >
+            <slot
+              name="repositoryMenu"
+              v-bind="menu"
+            />
+          </template>
+        </Sidebar>
       </SplitterPanel>
       <ResizeHandle
         v-if="!collapsed"
