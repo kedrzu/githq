@@ -1,6 +1,7 @@
 {
     "name": "@githq/github",
     "private": true,
+    "license": "AGPL-3.0-only",
     "description": "The GitHub client: GraphQL for reading and writing, REST conditional requests for change detection",
     "type": "module",
     "sideEffects": false,
