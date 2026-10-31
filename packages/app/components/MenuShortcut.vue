@@ -30,8 +30,8 @@ const keys = computed(() => {
     <Kbd
       v-for="(key, index) in keys"
       :key="index"
-      >{{ key }}</Kbd
-    >
+      :keys="key"
+    />
   </span>
 </template>
 

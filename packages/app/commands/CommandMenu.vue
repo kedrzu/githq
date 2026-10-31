@@ -432,8 +432,8 @@ function onEscape(event: KeyboardEvent) {
         <Kbd
           v-for="(key, index) in row.keys ?? []"
           :key="index"
-          >{{ key }}</Kbd
-        >
+          :keys="key"
+        />
         <ChevronRight
           v-if="row.submenu"
           :class="css.commandMenu_more"

@@ -228,13 +228,12 @@ function onKeydown(event: KeyboardEvent) {
       :class="css.filterList_footer"
       aria-hidden="true"
     >
-      <span :class="css.filterList_hint"><Kbd>↑↓</Kbd>{{ t(l.move) }}</span>
+      <span :class="css.filterList_hint"><Kbd keys="↑↓" />{{ t(l.move) }}</span>
       <span
         v-for="hint in hints"
         :key="hint.keys"
         :class="css.filterList_hint"
-        ><Kbd>{{ hint.keys }}</Kbd
-        >{{ hint.label }}</span
+        ><Kbd :keys="hint.keys" />{{ hint.label }}</span
       >
       <span :class="css.filterList_spacer" />
       <slot name="footerEnd" />

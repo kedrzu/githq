@@ -34,8 +34,8 @@ defineExpose({
         <Kbd
           v-if="kbd"
           :class="css.textArea_kbd"
-          >{{ kbd }}</Kbd
-        >
+          :keys="kbd"
+        />
       </div>
     </template>
   </FormField>

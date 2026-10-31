@@ -541,10 +541,10 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                 v-if="needle !== ''"
                 :class="css.trackingChooser_hints"
               >
-                <span><Kbd>↑↓</Kbd> {{ t(l.hintMove) }}</span>
-                <span><Kbd>Space</Kbd> {{ t(l.hintSelect) }}</span>
-                <span><Kbd>⌘A</Kbd> {{ t(l.hintSelectAll) }}</span>
-                <span><Kbd>Esc</Kbd> {{ t(l.hintClear) }}</span>
+                <span><Kbd keys="↑↓" /> {{ t(l.hintMove) }}</span>
+                <span><Kbd keys="Space" /> {{ t(l.hintSelect) }}</span>
+                <span><Kbd keys="⌘A" /> {{ t(l.hintSelectAll) }}</span>
+                <span><Kbd keys="Esc" /> {{ t(l.hintClear) }}</span>
               </p>
             </section>
 

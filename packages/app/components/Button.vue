@@ -81,8 +81,8 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
         :class="css.button_kbd"
         :tone="kbdTone"
         :size="size === 'sm' ? 'sm' : 'md'"
-        >{{ kbd }}</Kbd
-      >
+        :keys="kbd"
+      />
     </span>
     <span
       v-if="busy"

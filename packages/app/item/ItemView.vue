@@ -526,7 +526,7 @@ function openTab(url: string) {
           :disabled="position.index <= 1"
           @click="emit('previous')"
         >
-          <Kbd>K</Kbd>
+          <Kbd keys="K" />
         </IconButton>
         <IconButton
           :label="t(l.next)"
@@ -535,7 +535,7 @@ function openTab(url: string) {
           :disabled="position.index >= position.count"
           @click="emit('next')"
         >
-          <Kbd>J</Kbd>
+          <Kbd keys="J" />
         </IconButton>
         <span :class="css.itemView_position">{{
           t(l.position, { index: position.index, count: position.count })
