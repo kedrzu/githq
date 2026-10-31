@@ -13,7 +13,7 @@ acceptable if nothing technical is open (owner, round 1).
 - Strongly prefers names starting with "git" — instantly says what the product is (round 1).
 - Open to other names, but "git" names come first (round 1).
 - Considered GitHive himself (round 1).
-- Git trademark policy is not a concern — "nie przejmujemy się licencjami na nazwę Git" (after round 1).
+- Git trademark policy is not a concern — "we don't worry about licensing the Git name" (after round 1).
 
 ## Rejected directions
 - (none yet)

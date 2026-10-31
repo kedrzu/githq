@@ -27,7 +27,7 @@ of two-word compounds without git (e.g. verb+noun) as a hedge.
 
 ## Round 2 — 2026-10-30
 
-**Owner on round 1.** Ignore the Git trademark policy ("nie przejmujemy się licencjami na nazwę Git");
+**Owner on round 1.** Ignore the Git trademark policy ("we don't worry about licensing the Git name");
 keep going with git names. Recorded as a standing preference.
 **Directions.** No new generation; deepened round 1: trademark and handle checks for GitHQ, conflict
 checks for 17 runner-ups (subagent: Exa, GitHub repos/users, npm, App Store, Product Hunt via Exa),
