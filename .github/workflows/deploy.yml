@@ -1,0 +1,80 @@
+# Deploys githq to https://githq.dev on every push to main, once the checks of the full verify protocol
+# (`.claude/skills/verify/SKILL.md`, all but the Storybook build) have passed on that commit.
+# The Cloudflare API token is a secret of the `production` environment; the account is in `wrangler.jsonc`.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time, in push order: a later push waits instead of cancelling one already deploying.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: production
+      url: https://githq.dev
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Build
+        run: bash setup.build.sh
+
+      # The system libraries Chromium needs, for the component tests and e2e.
+      - name: Install Chromium dependencies
+        run: bunx playwright install-deps chromium
+
+      - name: Codegen is up to date
+        run: |
+          bun run codegen
+          git diff --exit-code
+
+      - name: TypeScript
+        run: bun nx run-many -t typecheck --exclude='@nzyme/*' --skip-nx-cache
+
+      - name: Lint
+        run: bun run lint:check
+
+      - name: Format
+        run: bun run format:check
+
+      - name: Tests
+        run: bun run tests
+
+      - name: Component tests
+        run: bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
+
+      - name: E2E
+        run: bun run e2e
+
+      - name: Upload e2e results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: packages/e2e/test-results/
+          if-no-files-found: ignore
+
+      # The production build last: e2e builds the local one into its own directory, this one is what ships.
+      - name: Build the app
+        run: bun --cwd packages/app build
+
+      - name: Deploy
+        run: bun --cwd packages/worker deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
