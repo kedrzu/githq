@@ -1,8 +1,14 @@
 //! The githq desktop app: the app's desktop build (`bun --cwd packages/app build:desktop`) in one native window.
 
+mod credentials;
+mod device_flow;
+mod external;
+
 use tauri::webview::NewWindowResponse;
 use tauri::{AppHandle, Url, WebviewUrl, WebviewWindowBuilder};
-use tauri_plugin_opener::OpenerExt;
+
+use credentials::Credentials;
+use device_flow::DeviceFlow;
 
 /// The address `nuxt dev` serves the app on, which `tauri dev` loads (`build.devUrl` in `tauri.conf.json`).
 const DEV_SERVER_PORT: u16 = 8787;
@@ -11,6 +17,17 @@ const DEV_SERVER_PORT: u16 = 8787;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .manage(Credentials::os())
+        .manage(DeviceFlow::github())
+        // Each one is also listed in `build.rs` and allowed for the window in `capabilities/default.json`.
+        .invoke_handler(tauri::generate_handler![
+            credentials::token_load,
+            credentials::token_save,
+            credentials::token_delete,
+            device_flow::device_start,
+            device_flow::device_finish,
+            external::open_external,
+        ])
         .setup(|app| {
             open_main_window(app.handle())?;
             Ok(())
@@ -35,12 +52,13 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
                 return true;
             }
 
-            open_in_browser(&navigation_app, url);
+            // Refused or failed, the webview stays where it is; `external::open` logs a failure.
+            let _ = external::open(&navigation_app, url);
             false
         })
         // Also a backstop: WebView2 does not report every `target="_blank"` link here.
         .on_new_window(move |url, _features| {
-            open_in_browser(&new_window_app, &url);
+            let _ = external::open(&new_window_app, &url);
             NewWindowResponse::Deny
         })
         .build()?;
@@ -56,17 +74,5 @@ fn is_app_url(url: &Url) -> bool {
         ("http", Some("tauri.localhost")) => cfg!(windows),
         ("http", Some("localhost")) => cfg!(dev) && url.port() == Some(DEV_SERVER_PORT),
         _ => false,
-    }
-}
-
-/// Opens a web page in the system browser; any other kind of address (`file:`, a custom scheme) is dropped, so a
-/// page can never make the app launch a program.
-fn open_in_browser(app: &AppHandle, url: &Url) {
-    if !matches!(url.scheme(), "http" | "https") {
-        return;
-    }
-
-    if let Err(error) = app.opener().open_url(url.as_str(), None::<&str>) {
-        eprintln!("Could not open {url} in the browser: {error}");
     }
 }

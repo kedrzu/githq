@@ -1,7 +1,15 @@
 {
     "$schema": "../gen/schemas/desktop-schema.json",
     "identifier": "default",
-    "description": "What the app's window may call in the shell: Tauri's core only",
+    "description": "What the app's window may call in the shell: Tauri's core and the app's own commands",
     "windows": ["main"],
-    "permissions": ["core:default"]
+    "permissions": [
+        "core:default",
+        "allow-token-load",
+        "allow-token-save",
+        "allow-token-delete",
+        "allow-device-start",
+        "allow-device-finish",
+        "allow-open-external"
+    ]
 }
