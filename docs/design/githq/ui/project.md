@@ -31,6 +31,12 @@ triage and move things quickly, and don't make me wait."
 - **Row field.** Each project has one field that represents it in rows outside the project (see
   [my work](my-work.md)). By default it is the single-choice field named "Status". The user can change it in
   the project's display options.
+- **One menu per project or repository, wherever it is named** (designed in R1–R3). Right-clicking a
+  tracked repository in the sidebar opens its menu: open it, its issues or pull requests, a new issue in it,
+  open it on GitHub, copy its link, stop tracking it. A tracked project gets the same in the sidebar: open
+  it, a new issue in it (where the user may update the project), open it on GitHub, copy its link, stop
+  tracking it. The title of a repository's or a project's view is a button that opens that same menu, as
+  the item reference opens the item menu (M1).
 
 ## What happens, in order
 
