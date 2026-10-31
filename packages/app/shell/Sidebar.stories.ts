@@ -26,8 +26,8 @@ const meta = {
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
                 repository('kedrzu/skills', { kind: 'count', count: 7 }),
-                repository('sigma-clinic/portal', { kind: 'count', count: 142 }),
-                repository('sigma-clinic/api', { kind: 'count', count: 96 }),
+                repository('sigma-clinic/portal', { kind: 'count', count: 142 }, true),
+                repository('sigma-clinic/api', { kind: 'count', count: 96 }, true),
             ],
         },
         onToggle: fn(),
@@ -46,7 +46,10 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** The sidebar expanded: account, search, "My work" and its groups with their counts, projects and repositories. */
+/**
+ * The sidebar expanded: account, search, "My work" and its groups with their counts, projects and repositories —
+ * the private ones with a lock.
+ */
 export const Expanded: Story = {};
 
 /** Before the first download of "my work": its counts are still arriving. */
@@ -59,8 +62,8 @@ export const Downloading: Story = {
             projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('sigma-clinic/portal', { kind: 'downloading', percent: 62 }),
-                repository('sigma-clinic/api', { kind: 'downloading', percent: null }),
+                repository('sigma-clinic/portal', { kind: 'downloading', percent: 62 }, true),
+                repository('sigma-clinic/api', { kind: 'downloading', percent: null }, true),
                 repository('acme-health/vault', { kind: 'hidden' }),
             ],
         },
@@ -111,12 +114,13 @@ function project(title: string, owner: string, number: number, status: SidebarTr
     };
 }
 
-function repository(nameWithOwner: string, status: SidebarTrackedStatus): SidebarTrackedEntry {
+function repository(nameWithOwner: string, status: SidebarTrackedStatus, isPrivate = false): SidebarTrackedEntry {
     return {
         key: `repository:${nameWithOwner}`,
         label: nameWithOwner,
         to: `/${nameWithOwner}`,
         target: { kind: 'repository', nameWithOwner },
         status,
+        isPrivate,
     };
 }
