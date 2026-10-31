@@ -7,7 +7,7 @@ import './styles/main.scss';
 
 <template>
   <ConfigProvider dir="ltr">
-    <!-- The app's screens sit in the shell (`layouts/shell.vue`, `meta.layout`); sign-in has none. -->
+    <!-- The app's screens sit in the shell (`layouts/shell.vue`, `meta.layout`); the landing page and the first sign-in have none. -->
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

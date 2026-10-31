@@ -27,7 +27,7 @@ export interface Viewer {
 }
 
 /**
- * Why the user is on the sign-in page again, which it explains:
+ * Why the user is on the landing page again, which its banner explains:
  *
  * - `cancelled`: they declined on GitHub's consent screen;
  * - `failed`: anything else on the way back — a `state` that is not ours, a code GitHub refused, the network;
@@ -121,7 +121,7 @@ export const AuthStore = defineService({
             get token() {
                 return tokenRef.value;
             },
-            /** Why the last sign-in failed or the session ended, for the sign-in page; reactive. */
+            /** Why the last sign-in failed or the session ended, for the landing page's banner; reactive. */
             get failure() {
                 return failureRef.value;
             },
@@ -131,6 +131,7 @@ export const AuthStore = defineService({
             completeSignIn,
             signInWithToken,
             signOut,
+            dismissFailure,
             refreshViewer,
         };
 
@@ -186,13 +187,18 @@ export const AuthStore = defineService({
             return await acceptToken(token, '/');
         }
 
-        /** Forgets the token and the user. With a `failure`, the sign-in page explains it. */
+        /** Forgets the token and the user. With a `failure`, the landing page explains it. */
         function signOut(failure: SignInFailure | null = null) {
             browser.localStorage.removeItem(TOKEN_KEY);
             browser.localStorage.removeItem(VIEWER_KEY);
             tokenRef.value = null;
             viewerRef.value = null;
             failureRef.value = failure;
+        }
+
+        /** The user dismissed the explanation of `failure`: the route guard no longer brings it back. */
+        function dismissFailure() {
+            failureRef.value = null;
         }
 
         /**
@@ -282,7 +288,7 @@ export const AuthStore = defineService({
             }
 
             // The other tab kept the user right after the token, so it is normally there already; until GitHub
-            // answers, the user shown so far stays rather than flashing the sign-in page.
+            // answers, the user shown so far stays rather than flashing the landing page.
             viewerRef.value = readStoredViewer() ?? viewerRef.value;
             void refreshViewer();
         }

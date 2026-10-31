@@ -4,7 +4,7 @@ import { readBuiltFiles } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
 // what the Worker will serve has nothing of local development in it. The sign-in with a pasted token is in
-// `nuxt dev` and the local build only — the sign-in page imports it under `import.meta.dev || __LOCAL_BUILD__`,
+// `nuxt dev` and the local build only — the landing page imports it under `import.meta.dev || __LOCAL_BUILD__`,
 // which the production build turns into `false`.
 
 const OUTPUT = path.join(import.meta.dirname, '../.output/public');

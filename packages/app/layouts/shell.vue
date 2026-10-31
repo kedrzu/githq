@@ -173,7 +173,7 @@ function showLastFailure() {
 </script>
 
 <template>
-  <!-- Signed out (the route guard is about to move on to sign-in), nothing of the shell is drawn. -->
+  <!-- Signed out (the route guard is about to move on to the landing page), nothing of the shell is drawn. -->
   <AppShell
     v-if="auth.viewer"
     v-model:collapsed="collapsed"

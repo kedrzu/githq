@@ -4,7 +4,7 @@ import type { RouteLocation } from 'vue-router';
 import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 
 import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
-import { SIGN_IN_PATH, TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
+import { TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
 import { getItemPagePath } from '@/item/itemRoutes.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -45,8 +45,6 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3', 'project-org'],
     ['/orgs/acme/projects/3/views/2', 'project-org'],
     ['/users/kedrzu/projects/7', 'project-user'],
-    ['/login', 'sign-in'],
-    ['/login?return_to=https%3A%2F%2Fgithub.com%2Facme', 'sign-in'],
     ['/settings', 'account'],
     ['/settings/tracking', 'tracking'],
     ['/settings/tracking/new', 'tracking-choice'],
@@ -95,6 +93,33 @@ test("an item's sub-addresses settle on the item's own, keeping the query and th
     expect(settle('/my-org/web.js/issues/12/a/b/c')).toBe('/my-org/web.js/issues/12');
 });
 
+test("GitHub's sign-in address leads home, keeping where to go after signing in and why it last failed", () => {
+    expect(settle('/login')).toBe('/');
+    expect(settle('/login?next=/pulls')).toBe('/?next=/pulls');
+    expect(settle('/login?return_to=https%3A%2F%2Fgithub.com%2Facme')).toBe('/?return_to=https://github.com/acme');
+    expect(settle('/login?failed=cancelled&other=1')).toBe('/?failed=cancelled');
+    expect(settle('/login?next=/pulls&return_to=/acme&failed=failed')).toBe(
+        '/?next=/pulls&return_to=/acme&failed=failed',
+    );
+});
+
+test('home and every group of "my work" are one page instance', () => {
+    const home = routes.filter(route => route.meta?.key === 'my-work');
+    expect(home.map(route => route.path)).toEqual([
+        '/',
+        '/pulls/review-requested',
+        '/pulls',
+        '/issues/assigned',
+        '/issues/mentioned',
+    ]);
+    for (const route of home) {
+        expect(route.component, route.path).toBe(home[0]?.component);
+        expect(route.meta?.auth, route.path).toBe('home');
+    }
+
+    expect(router.resolve('/pulls/mentioned').meta.key).toBe('my-work');
+});
+
 test('the repository page is one instance for the repository and its lists', () => {
     const keyOf = (address: string) => {
         const resolved = router.resolve(address);
@@ -141,7 +166,6 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
-        [SIGN_IN_PATH, 'sign-in'],
         [ACCOUNT_PATH, 'account'],
         [TRACKING_PATH, 'tracking'],
         [TRACKING_CHOICE_PATH, 'tracking-choice'],
