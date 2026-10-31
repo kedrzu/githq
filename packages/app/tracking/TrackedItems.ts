@@ -37,10 +37,20 @@ export const TrackedItems = defineService({
 
             return counts;
         });
+        const privateRepositories = computed(() => {
+            const names = new Set<string>();
+            for (const item of items.all) {
+                if (item.repository.isPrivate) {
+                    names.add(item.repository.nameWithOwner);
+                }
+            }
+
+            return names;
+        });
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, evict, getOpenCount };
+        return { keeps, evict, getOpenCount, isPrivate };
 
         /** Whether the local copy keeps the item: "my work" has it, or a tracked repository or project; reactive. */
         function keeps(item: Item) {
@@ -91,6 +101,11 @@ export const TrackedItems = defineService({
             }
 
             return count;
+        }
+
+        /** Whether the repository is private, as its kept items tell; `false` while none are kept. Reactive. */
+        function isPrivate(nameWithOwner: string) {
+            return privateRepositories.value.has(nameWithOwner);
         }
 
         function dropUntracked(target: TrackedTarget) {

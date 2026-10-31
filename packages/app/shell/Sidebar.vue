@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
+<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -21,6 +21,8 @@ export interface SidebarTrackedEntry {
   /** What it is, for its context menu. */
   readonly target: TrackedTarget;
   readonly status: SidebarTrackedStatus;
+  /** A private repository: a lock instead of the repository icon. */
+  readonly isPrivate?: boolean;
 }
 
 /** The tracked projects and repositories, in the user's order. */
@@ -33,7 +35,17 @@ export interface SidebarTracked {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { AtSign, BookMarked, Inbox, PanelLeftClose, PanelLeftOpen, Plus, Search, SquareKanban } from 'lucide-vue-next';
+import {
+  AtSign,
+  BookMarked,
+  Inbox,
+  Lock,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Search,
+  SquareKanban,
+} from 'lucide-vue-next';
 import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -233,7 +245,8 @@ function statusText(status: SidebarTrackedStatus) {
               :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
               :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
             >
-              <BookMarked
+              <component
+                :is="repository.isPrivate ? Lock : BookMarked"
                 :class="css.sidebar_itemIcon"
                 aria-hidden="true"
               />
