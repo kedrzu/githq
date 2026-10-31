@@ -3,6 +3,8 @@ import { fn } from 'storybook/test';
 import { defineComponent, h } from 'vue';
 import { useRouter } from 'vue-router';
 
+import MenuItem from '@/components/MenuItem.vue';
+import MenuLabel from '@/components/MenuLabel.vue';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import Sidebar from './Sidebar.vue';
@@ -80,6 +82,19 @@ export const OnRepositoryIssues: Story = {
             });
         },
     ],
+};
+
+/** A tracked repository right-clicked: its menu, which the app fills with the repository's actions. */
+export const RepositoryMenu: Story = {
+    render: args => ({
+        setup: () => () =>
+            h(Sidebar, args, {
+                repositoryMenu: ({ nameWithOwner }: { nameWithOwner: string }) => [
+                    h(MenuLabel, () => nameWithOwner),
+                    h(MenuItem, () => 'Open on GitHub'),
+                ],
+            }),
+    }),
 };
 
 /** Collapsed to the rail of icons. */
