@@ -18,6 +18,8 @@ asksData:
   en: Where your data goes
 asksDataDetail:
   en: Into this browser, and nowhere else. githq has no server that stores your issues.
+asksDataDetailComputer:
+  en: On this computer, and nowhere else. githq has no server that stores your issues.
 asksShort:
   en: GitHub will ask for access to your repositories.
 why:

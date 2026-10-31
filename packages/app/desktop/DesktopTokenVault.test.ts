@@ -177,6 +177,8 @@ function createFakeNative(): FakeNative {
                 return Promise.resolve();
             },
             openExternal: () => Promise.reject(new Error('Not expected')),
+            startDeviceSignIn: () => Promise.reject(new Error('Not expected')),
+            finishDeviceSignIn: () => Promise.reject(new Error('Not expected')),
         },
         kept: null,
         calls: [],

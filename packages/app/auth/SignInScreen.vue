@@ -1,4 +1,4 @@
-<!-- The sign-in page (G1b, and G1c with a `failure`): what githq is, "Sign in with GitHub" (also on Enter), and what GitHub's consent screen will ask for. After a failure, one calm line on what happened, with the explanation behind "Why?". -->
+<!-- The sign-in page (G1b, and G1c with a `failure`): what githq is, "Sign in with GitHub" (also on Enter), and what GitHub's consent screen will ask for. After a failure, one calm line on what happened, with the explanation behind "Why?". The desktop app's sign-in (`desktop/DesktopSignIn.vue`) puts its own notice, action, note and body in. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -17,6 +17,10 @@ import * as l from './SignInScreen.loc.js';
 const props = defineProps<{
   /** Why the user is back here; `null` on a first visit. */
   failure?: SignInFailure | null;
+  /** One line on what went wrong, in place of the `failure`'s notice — the desktop app's (S3). */
+  notice?: string | null;
+  /** Where the user's data is kept: `browser` (the web app, when not given) or this `computer` (the desktop app). */
+  dataLocation?: 'browser' | 'computer';
 }>();
 
 const emit = defineEmits<{
@@ -27,11 +31,21 @@ const emit = defineEmits<{
 defineSlots<{
   /** The development sign-in (`DevTokenForm`), under `nuxt dev` and in the local build only. */
   dev?(): unknown;
+  /** The main action in place of "Sign in with GitHub" — the desktop app's "Get a new code" (S3). */
+  action?(): unknown;
+  /** One quiet line under the main action — the desktop app's note on the keychain (S4). */
+  note?(): unknown;
+  /** Everything under the logo in place of the sign-in's explanation — the desktop app's code (S2). */
+  body?(): unknown;
 }>();
 
 const t = useTranslate();
 const explainerId = useId();
 const notice = computed(() => {
+  if (props.notice != null) {
+    return { title: props.notice, detail: null };
+  }
+
   const failure = props.failure;
   if (failure == null) {
     return null;
@@ -74,92 +88,105 @@ onWindowEvent('keydown', event => {
           :class="css.signInScreen_logo"
         />
 
-        <div
-          v-if="notice"
-          :class="css.signInScreen_notice"
-          role="status"
-        >
-          <CircleAlert
-            :class="css.signInScreen_noticeIcon"
-            aria-hidden="true"
-          />
-          <div :class="css.signInScreen_noticeText">
-            <p :class="css.signInScreen_noticeTitle">{{ notice.title }}</p>
-            <p :class="css.signInScreen_noticeDetail">{{ notice.detail }}</p>
-          </div>
-        </div>
-
-        <h1 :class="css.signInScreen_headline">{{ t(l.headline) }}</h1>
-        <p :class="css.signInScreen_lead">{{ t(l.lead) }}</p>
-
-        <div :class="css.signInScreen_actions">
-          <Button
-            variant="light"
-            size="lg"
-            :icon="Github"
-            kbd="↵"
-            aria-keyshortcuts="Enter"
-            @click="emit('signIn')"
-          >
-            {{ t(l.signIn) }}
-          </Button>
-
-          <p
+        <slot name="body">
+          <div
             v-if="notice"
-            :class="css.signInScreen_asksShort"
+            :class="css.signInScreen_notice"
+            role="status"
           >
-            {{ t(l.asksShort) }}
-            <Button
-              variant="link"
-              :class="css.signInScreen_why"
-              :aria-expanded="explainerOpen"
-              :aria-controls="explainerId"
-              @click="explainerOpen = !explainerOpen"
-            >
-              {{ t(l.why) }}
-            </Button>
-          </p>
-        </div>
+            <CircleAlert
+              :class="css.signInScreen_noticeIcon"
+              aria-hidden="true"
+            />
+            <div :class="css.signInScreen_noticeText">
+              <p :class="css.signInScreen_noticeTitle">{{ notice.title }}</p>
+              <p
+                v-if="notice.detail"
+                :class="css.signInScreen_noticeDetail"
+              >
+                {{ notice.detail }}
+              </p>
+            </div>
+          </div>
 
-        <section
-          v-if="showExplainer"
-          :id="explainerId"
-          :class="css.signInScreen_explainer"
-        >
-          <h2 :class="css.signInScreen_explainerTitle">{{ t(l.asksTitle) }}</h2>
-          <ul :class="css.signInScreen_asks">
-            <li :class="css.signInScreen_ask">
-              <BookLock
-                :class="css.signInScreen_askIcon"
-                aria-hidden="true"
-              />
-              <div :class="css.signInScreen_askText">
-                <h3 :class="css.signInScreen_askTitle">{{ t(l.asksRepositories) }}</h3>
-                <p :class="css.signInScreen_askDetail">{{ t(l.asksRepositoriesDetail) }}</p>
-              </div>
-            </li>
-            <li :class="css.signInScreen_ask">
-              <SquareKanban
-                :class="css.signInScreen_askIcon"
-                aria-hidden="true"
-              />
-              <div :class="css.signInScreen_askText">
-                <h3 :class="css.signInScreen_askTitle">{{ t(l.asksProjects) }}</h3>
-                <p :class="css.signInScreen_askDetail">{{ t(l.asksProjectsDetail) }}</p>
-              </div>
-            </li>
-            <li :class="css.signInScreen_ask">
-              <HardDrive
-                :class="css.signInScreen_askIcon"
-                aria-hidden="true"
-              />
-              <div :class="css.signInScreen_askText">
-                <h3 :class="css.signInScreen_askTitle">{{ t(l.asksData) }}</h3>
-                <p :class="css.signInScreen_askDetail">{{ t(l.asksDataDetail) }}</p>
-              </div>
-            </li>
-          </ul>
-        </section>
+          <h1 :class="css.signInScreen_headline">{{ t(l.headline) }}</h1>
+          <p :class="css.signInScreen_lead">{{ t(l.lead) }}</p>
+
+          <div :class="css.signInScreen_actions">
+            <slot name="action">
+              <Button
+                variant="light"
+                size="lg"
+                :icon="Github"
+                kbd="↵"
+                aria-keyshortcuts="Enter"
+                @click="emit('signIn')"
+              >
+                {{ t(l.signIn) }}
+              </Button>
+            </slot>
+
+            <slot name="note" />
+
+            <p
+              v-if="notice"
+              :class="css.signInScreen_asksShort"
+            >
+              {{ t(l.asksShort) }}
+              <Button
+                variant="link"
+                :class="css.signInScreen_why"
+                :aria-expanded="explainerOpen"
+                :aria-controls="explainerId"
+                @click="explainerOpen = !explainerOpen"
+              >
+                {{ t(l.why) }}
+              </Button>
+            </p>
+          </div>
+
+          <section
+            v-if="showExplainer"
+            :id="explainerId"
+            :class="css.signInScreen_explainer"
+          >
+            <h2 :class="css.signInScreen_explainerTitle">{{ t(l.asksTitle) }}</h2>
+            <ul :class="css.signInScreen_asks">
+              <li :class="css.signInScreen_ask">
+                <BookLock
+                  :class="css.signInScreen_askIcon"
+                  aria-hidden="true"
+                />
+                <div :class="css.signInScreen_askText">
+                  <h3 :class="css.signInScreen_askTitle">{{ t(l.asksRepositories) }}</h3>
+                  <p :class="css.signInScreen_askDetail">{{ t(l.asksRepositoriesDetail) }}</p>
+                </div>
+              </li>
+              <li :class="css.signInScreen_ask">
+                <SquareKanban
+                  :class="css.signInScreen_askIcon"
+                  aria-hidden="true"
+                />
+                <div :class="css.signInScreen_askText">
+                  <h3 :class="css.signInScreen_askTitle">{{ t(l.asksProjects) }}</h3>
+                  <p :class="css.signInScreen_askDetail">{{ t(l.asksProjectsDetail) }}</p>
+                </div>
+              </li>
+              <li :class="css.signInScreen_ask">
+                <HardDrive
+                  :class="css.signInScreen_askIcon"
+                  aria-hidden="true"
+                />
+                <div :class="css.signInScreen_askText">
+                  <h3 :class="css.signInScreen_askTitle">{{ t(l.asksData) }}</h3>
+                  <p :class="css.signInScreen_askDetail">
+                    {{ t(dataLocation === 'computer' ? l.asksDataDetailComputer : l.asksDataDetail) }}
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </slot>
 
         <slot name="dev" />
       </div>

@@ -159,11 +159,12 @@ export const AuthStore = defineService({
         }
 
         /**
-         * Signs in with a token from elsewhere (`gh auth token`) — the development sign-in only
-         * (`DevTokenForm`). Kept once GitHub has said whose it is.
+         * Signs in with a token from elsewhere — the development sign-in's pasted one (`DevTokenForm`), or the one
+         * the desktop app's device sign-in got (`DeviceSignIn`). Kept once GitHub has said whose it is, unless
+         * `signal` aborted meanwhile: then it rejects with the abort reason and keeps nothing.
          */
-        async function signInWithToken(token: string): Promise<SignInResult> {
-            return await acceptToken(token, '/');
+        async function signInWithToken(token: string, signal?: AbortSignal): Promise<SignInResult> {
+            return await acceptToken(token, '/', signal);
         }
 
         /** Forgets the token and the user. With a `failure`, the sign-in page explains it. */
@@ -204,15 +205,17 @@ export const AuthStore = defineService({
             }
         }
 
-        async function acceptToken(token: string, returnTo: string): Promise<SignInResult> {
+        async function acceptToken(token: string, returnTo: string, signal?: AbortSignal): Promise<SignInResult> {
             let viewer: Viewer;
             try {
                 viewer = await fetchViewer(token);
             } catch (error) {
+                signal?.throwIfAborted();
                 logger.warn('GitHub did not accept the new token', { error });
                 return fail(isTokenRejected(error) ? 'tokenRejected' : 'failed');
             }
 
+            signal?.throwIfAborted();
             vault.write(token);
             tokenRef.value = token;
             storeViewer(token, viewer);

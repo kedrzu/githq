@@ -13,6 +13,30 @@ export interface StoredToken {
  */
 export type OpenExternalError = 'notWebPage' | 'failed';
 
+/** What `device_start` answers: the code to show and where the user types it. */
+export interface DeviceCode {
+    /** The code the user types on GitHub (`WDJB-MJHT`). */
+    readonly userCode: string;
+    /** The page they type it on (`https://github.com/login/device`). */
+    readonly verificationUri: string;
+    /** How many seconds the code is valid for, as GitHub said. */
+    readonly expiresIn: number;
+}
+
+/** What `device_finish` answers once the user approved githq on GitHub. */
+export interface DeviceGrant {
+    readonly token: string;
+    /** The scopes GitHub granted, comma-separated as GitHub sends them (`repo,project,read:org`). */
+    readonly scope: string;
+}
+
+/**
+ * Why a device sign-in command did not answer: `expired` — the code ran out before the user approved it; `denied` —
+ * the user declined on GitHub; `offline` — GitHub could not be reached; `superseded` — a newer `device_start`
+ * replaced the attempt; `failed` — anything else.
+ */
+export type DeviceSignInError = 'expired' | 'denied' | 'offline' | 'superseded' | 'failed';
+
 /**
  * The desktop app's native commands (`packages/desktop/src-tauri/src/lib.rs`), one method each. A command that fails
  * rejects with its error code, a bare string.
@@ -26,6 +50,16 @@ export interface NativeBridgeShape {
     deleteToken(): Promise<void>;
     /** `open_external`: opens a web page in the system browser; rejects with an {@link OpenExternalError}. */
     openExternal(url: string): Promise<void>;
+    /**
+     * `device_start`: asks GitHub for a device code, superseding any sign-in already started; rejects with a
+     * {@link DeviceSignInError} (`offline`, `superseded`, `failed`).
+     */
+    startDeviceSignIn(): Promise<DeviceCode>;
+    /**
+     * `device_finish`: waits until the user approved the started sign-in on GitHub; rejects with a
+     * {@link DeviceSignInError}.
+     */
+    finishDeviceSignIn(): Promise<DeviceGrant>;
 }
 
 /**
@@ -57,6 +91,8 @@ function createTauriBridge(): NativeBridgeShape {
         openExternal: async url => {
             await tauri.invoke<null>('open_external', { url });
         },
+        startDeviceSignIn: () => tauri.invoke<DeviceCode>('device_start'),
+        finishDeviceSignIn: () => tauri.invoke<DeviceGrant>('device_finish'),
     };
 }
 

@@ -1,7 +1,7 @@
-<!-- `/login`: GitHub's sign-in, then on to `next` (or GitHub's `return_to`, see `readSignInReturnPath`); after a failure (`failed`, see `readSignInFailure`) it says what went wrong. Under `nuxt dev` and in the local build also the sign-in with a pasted token. -->
+<!-- `/login`: GitHub's sign-in, then on to `next` (or GitHub's `return_to`, see `readSignInReturnPath`); after a failure (`failed`, see `readSignInFailure`) it says what went wrong. Under `nuxt dev` and in the local build also the sign-in with a pasted token. The desktop app signs in with a device code instead (`desktop/DesktopSignInPage.vue`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from './AuthStore.js';
@@ -14,8 +14,12 @@ import SignInScreen from './SignInScreen.vue';
 const DevTokenForm =
   import.meta.dev || __LOCAL_BUILD__ ? defineAsyncComponent(() => import('./DevTokenForm.vue')) : null;
 
+// The desktop app's sign-in, in the desktop build only (`__DESKTOP__`); the web builds drop it with the native side.
+const DesktopSignInPage = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/DesktopSignInPage.vue')) : null;
+
 const auth = useService(AuthStore);
 const route = useRoute();
+const failure = computed(() => readSignInFailure(route.query.failed));
 
 function next() {
   return readSignInReturnPath(route.query) ?? '/';
@@ -36,8 +40,14 @@ async function signInWithToken(token: string) {
 </script>
 
 <template>
+  <component
+    :is="DesktopSignInPage"
+    v-if="DesktopSignInPage"
+    :signed-out="failure === 'tokenRejected'"
+  />
   <SignInScreen
-    :failure="readSignInFailure(route.query.failed)"
+    v-else
+    :failure="failure"
     @sign-in="signIn"
   >
     <template
