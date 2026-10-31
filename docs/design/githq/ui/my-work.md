@@ -73,6 +73,10 @@ These rules are settled. The screens must agree with them, including every count
    name and close, never merge. The menu offers only what the user may do in that repository and says in
    one line what is missing and why. For a selection it offers only what applies to every selected item.
    Every entry shows its single-key shortcut, so the menu also teaches the keyboard.
+   An opened item offers the same menu from a "⋯" button in its toolbar, next to "Open on GitHub"
+   (designed in M1–M2), minus the entries that only make sense from a list ("Open", "Open as full page").
+   ⌘. opens it from the keyboard. In both menus a submenu's chevron sits right after its title, not at the
+   far edge, so the shortcut column needs no empty space on the right.
 5. **Back to the list**, with the selection preserved, and on to the next item.
 6. **Jumping anywhere** with the command menu (designed in E1–E4).
 
