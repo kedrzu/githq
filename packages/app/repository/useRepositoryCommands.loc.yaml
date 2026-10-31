@@ -1,0 +1,14 @@
+open:
+  en: Open
+issues:
+  en: Issues
+pullRequests:
+  en: Pull requests
+newIssue:
+  en: New issue
+openOnGitHub:
+  en: Open on GitHub
+copyLink:
+  en: Copy link
+untrack:
+  en: Stop tracking

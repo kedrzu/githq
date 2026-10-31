@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). -->
+<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a repository opens its menu (`repositoryMenu`); without one, the browser's own. -->
 <script lang="ts">
 /** What a tracked project or repository shows beside its name. */
 export type SidebarTrackedStatus =
@@ -37,6 +37,7 @@ import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { TRACKING_PATH } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
+import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
@@ -64,6 +65,11 @@ const emit = defineEmits<{
   /** "Search or jump to…": the command menu. */
   search: [];
   signOut: [];
+}>();
+
+defineSlots<{
+  /** The entries of a tracked repository's context menu. */
+  repositoryMenu?(props: { nameWithOwner: string }): unknown;
 }>();
 
 const t = useTranslate();
@@ -209,18 +215,26 @@ function statusText(status: SidebarTrackedStatus) {
           v-for="repository in tracked.repositories"
           :key="repository.key"
         >
-          <RouterLink
-            :to="repository.to"
-            :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
-            :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
-          >
-            <BookMarked
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
-            <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
-          </RouterLink>
+          <ContextMenu :disabled="!$slots.repositoryMenu">
+            <RouterLink
+              :to="repository.to"
+              :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
+              :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
+            >
+              <BookMarked
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
+              <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
+            </RouterLink>
+            <template #content>
+              <slot
+                name="repositoryMenu"
+                :name-with-owner="repository.label"
+              />
+            </template>
+          </ContextMenu>
         </li>
       </ul>
       <Button
