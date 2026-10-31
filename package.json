@@ -1,0 +1,64 @@
+{
+    "name": "githq",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "nzyme/packages/*"
+    ],
+    "type": "module",
+    "scripts": {
+        "setup": "zsh setup.sh",
+        "build": "tsgo --build",
+        "typecheck": "bun run build && nx run-many -t typecheck --exclude='@nzyme/*'",
+        "monorepo": "nzyme monorepo",
+        "localise": "nzyme localise",
+        "codegen": "nx run-many -t codegen,localise,monorepo",
+        "prep": "nx run-many -t prep",
+        "watch": "nx run-many -t watch,watch:localise,watch:monorepo,watch:tsc --parallel=100",
+        "dev": "nx run-many -t dev,watch:localise --exclude='@nzyme/*' --parallel=100",
+        "preview": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker preview --port 8787",
+        "storybook": "bun --cwd packages/app storybook",
+        "lint": "oxlint --type-aware --quiet --disable-nested-config --fix . && eslint --fix .",
+        "lint:check": "oxlint --type-aware --quiet --disable-nested-config . && eslint .",
+        "lint:warnings": "oxlint --type-aware --disable-nested-config .",
+        "format": "oxfmt --disable-nested-config . > /dev/null && bun run format:md",
+        "format:check": "oxfmt --check --disable-nested-config . && bun run format:md:check",
+        "format:md": "nzyme format-markdown . --exclude .context --exclude nzyme",
+        "format:md:check": "nzyme format-markdown --check . --exclude .context --exclude nzyme",
+        "lint:nzyme": "bun run --cwd nzyme lint:check && bun run --cwd nzyme format:check",
+        "tests": "TZ=UTC bun test --timeout 10000 --pass-with-no-tests --path-ignore-patterns='**/*.spec.ts' --path-ignore-patterns='**/dist/**' ./packages",
+        "test:stories": "nx run-many -t test:stories --exclude='@nzyme/*'",
+        "e2e": "bun --cwd packages/e2e test",
+        "clean": "del \"**/dist\" \"**/.output\" \"**/.nuxt\" \"**/.nx\" \"**/.nzyme\" \"**/*.tsbuildinfo\" \"**/storybook-static\" \"**/test-results\" \"**/playwright-report\" \"!**/node_modules/**\"",
+        "clean:npm": "del \"**/node_modules\"",
+        "reinstall": "bun run clean && bun run clean:npm && bun install"
+    },
+    "devDependencies": {
+        "@nzyme/cli": "workspace:*",
+        "@nzyme/eslint": "workspace:*",
+        "@nzyme/tsconfig": "workspace:*",
+        "@types/bun": "1.4.2",
+        "@types/node": "^26.6.5",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+        "del-cli": "8.0.1",
+        "eslint": "10.12.0",
+        "nx": "^23.1.0",
+        "oxfmt": "0.72.0",
+        "oxlint": "1.86.0",
+        "oxlint-tsgolint": "7.0.2003"
+    },
+    "overrides": {
+        "@types/bun": "1.4.2",
+        "playwright": "1.64.0",
+        "playwright-core": "1.64.0",
+        "vue": "3.5.44",
+        "vue-router": "5.4.0"
+    },
+    "packageManager": "bun@1.4.2",
+    "nx": {
+        "includedScripts": []
+    },
+    "patchedDependencies": {
+        "bun-types@1.4.2": "patches/bun-types@1.4.2.patch"
+    }
+}

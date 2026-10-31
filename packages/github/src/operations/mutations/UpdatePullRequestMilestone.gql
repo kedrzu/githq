@@ -1,0 +1,12 @@
+# Sets (or, with `null`, clears) a pull request's milestone; answers with the milestone GitHub kept (D14).
+mutation UpdatePullRequestMilestone($pullRequestId: ID!, $milestoneId: ID) {
+    updatePullRequest(input: { pullRequestId: $pullRequestId, milestoneId: $milestoneId }) {
+        pullRequest {
+            id
+            updatedAt
+            milestone {
+                ...MilestoneResultFields
+            }
+        }
+    }
+}

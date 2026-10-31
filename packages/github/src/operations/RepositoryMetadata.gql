@@ -1,0 +1,48 @@
+# What the pickers of a repository offer, and what the viewer may edit there (D14), read when a picker or an item
+# of the repository opens. Labels and assignable users beyond the first 100 are read with `RepositoryLabels` and
+# `RepositoryAssignableUsers`.
+query RepositoryMetadata($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+        id
+        nameWithOwner
+        viewerPermission
+        isArchived
+        hasIssuesEnabled
+        labels(first: 100, orderBy: { field: NAME, direction: ASC }) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...RepositoryLabelFields
+            }
+        }
+        milestones(first: 50, states: OPEN, orderBy: { field: DUE_DATE, direction: ASC }) {
+            totalCount
+            nodes {
+                id
+                title
+                dueOn
+            }
+        }
+        assignableUsers(first: 100) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...RepositoryUserFields
+            }
+        }
+        # Null or empty where the owner has no issue types (a user, or an organization without them).
+        issueTypes(first: 20) {
+            nodes {
+                id
+                name
+                color
+                description
+                isEnabled
+            }
+        }
+    }
+}

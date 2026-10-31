@@ -1,0 +1,20 @@
+# The projects "Add to project" offers: the viewer's own and their organizations' that the viewer can write to.
+query ViewerProjects {
+    viewer {
+        projectsV2(first: 50, minPermissionLevel: WRITE, orderBy: { field: UPDATED_AT, direction: DESC }) {
+            nodes {
+                ...ViewerProjectFields
+            }
+        }
+        organizations(first: 20) {
+            nodes {
+                login
+                projectsV2(first: 50, minPermissionLevel: WRITE, orderBy: { field: UPDATED_AT, direction: DESC }) {
+                    nodes {
+                        ...ViewerProjectFields
+                    }
+                }
+            }
+        }
+    }
+}

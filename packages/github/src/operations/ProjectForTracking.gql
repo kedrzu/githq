@@ -1,0 +1,12 @@
+# One project by its owner's login and its number — from its address (`github.com/orgs/<login>/projects/<n>`,
+# `github.com/users/<login>/projects/<n>`) — as the tracking screens list it (G10, G8). `null` when GitHub shows
+# the viewer no such project.
+query ProjectForTracking($login: String!, $number: Int!) {
+    repositoryOwner(login: $login) {
+        ... on ProjectV2Owner {
+            projectV2(number: $number) {
+                ...TrackingProjectFields
+            }
+        }
+    }
+}

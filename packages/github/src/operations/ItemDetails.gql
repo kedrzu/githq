@@ -1,0 +1,11 @@
+# The details of several items at once, prefetched for "my work" in the background (D18); at most 10 ids per call.
+query ItemDetails($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on Issue {
+            ...IssueDetailFields
+        }
+        ... on PullRequest {
+            ...PullRequestDetailFields
+        }
+    }
+}

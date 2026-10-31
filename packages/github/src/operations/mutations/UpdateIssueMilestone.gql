@@ -1,0 +1,12 @@
+# Sets (or, with `null`, clears) an issue's milestone; answers with the milestone GitHub kept (D14).
+mutation UpdateIssueMilestone($id: ID!, $milestoneId: ID) {
+    updateIssue(input: { id: $id, milestoneId: $milestoneId }) {
+        issue {
+            id
+            updatedAt
+            milestone {
+                ...MilestoneResultFields
+            }
+        }
+    }
+}

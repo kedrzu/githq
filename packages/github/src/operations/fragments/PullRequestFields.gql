@@ -1,0 +1,50 @@
+# What a row of a pull request needs (D18): the list fields and the status summary.
+fragment PullRequestFields on PullRequest {
+    ...PullRequestStatusFields
+    url
+    number
+    title
+    createdAt
+    closedAt
+    author {
+        login
+        avatarUrl
+    }
+    assignees(first: 10) {
+        nodes {
+            login
+            avatarUrl
+        }
+    }
+    labels(first: 20) {
+        nodes {
+            name
+            color
+        }
+    }
+    milestone {
+        title
+        dueOn
+    }
+    comments {
+        totalCount
+    }
+    additions
+    deletions
+    changedFiles
+    headRefName
+    baseRefName
+    closingIssuesReferences(first: 10) {
+        nodes {
+            id
+        }
+    }
+    repository {
+        ...ItemRepositoryFields
+    }
+    projectItems(first: 10) {
+        nodes {
+            ...ItemProjectItemFields
+        }
+    }
+}

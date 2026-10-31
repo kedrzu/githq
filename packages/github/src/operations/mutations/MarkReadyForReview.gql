@@ -1,0 +1,7 @@
+mutation MarkReadyForReview($pullRequestId: ID!) {
+    markPullRequestReadyForReview(input: { pullRequestId: $pullRequestId }) {
+        pullRequest {
+            ...PullRequestStateResultFields
+        }
+    }
+}

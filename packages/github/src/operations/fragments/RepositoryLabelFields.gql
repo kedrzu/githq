@@ -1,0 +1,7 @@
+# A label as the pickers offer it and an edit names it.
+fragment RepositoryLabelFields on Label {
+    id
+    name
+    color
+    description
+}

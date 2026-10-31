@@ -1,0 +1,25 @@
+# A tracked project without its items, re-read when its REST ETag moved (D7): its fields may have gained an option
+# or an iteration, its saved views may have changed, and the item count tells whether the narrowed re-read of the
+# items (`ProjectItems` with `updated:>=`) can have missed a removal.
+query ProjectSchema($id: ID!) {
+    node(id: $id) {
+        ... on ProjectV2 {
+            title
+            closed
+            viewerCanUpdate
+            fields(first: 50, orderBy: { field: POSITION, direction: ASC }) {
+                nodes {
+                    ...ProjectFieldFields
+                }
+            }
+            views(first: 20, orderBy: { field: POSITION, direction: ASC }) {
+                nodes {
+                    ...ProjectViewFields
+                }
+            }
+            items {
+                totalCount
+            }
+        }
+    }
+}

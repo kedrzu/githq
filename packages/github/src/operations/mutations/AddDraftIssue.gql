@@ -1,0 +1,8 @@
+# Adds a draft issue to a project; answers with the new item as a tracked project's row reads it.
+mutation AddDraftIssue($projectId: ID!, $title: String!, $body: String, $assigneeIds: [ID!]) {
+    addProjectV2DraftIssue(input: { projectId: $projectId, title: $title, body: $body, assigneeIds: $assigneeIds }) {
+        projectItem {
+            ...ProjectItemRowFields
+        }
+    }
+}

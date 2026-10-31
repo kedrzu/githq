@@ -1,0 +1,22 @@
+# A page of a tracked repository's pull requests as rows (D4, D18), most recently updated first. The first
+# download reads the open ones, then the closed and merged ones (`$states`).
+query RepositoryPullRequests(
+    $owner: String!
+    $name: String!
+    $states: [PullRequestState!]!
+    $first: Int!
+    $after: String
+) {
+    repository(owner: $owner, name: $name) {
+        pullRequests(first: $first, after: $after, states: $states, orderBy: { field: UPDATED_AT, direction: DESC }) {
+            totalCount
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...PullRequestFields
+            }
+        }
+    }
+}

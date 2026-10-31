@@ -1,0 +1,50 @@
+# A project item's value of one field, keyed by the field's id. Values of the fields that mirror the issue itself
+# (labels, assignees, milestone, repository, reviewers, linked pull requests) are read from the issue instead.
+fragment ProjectItemFieldValueFields on ProjectV2ItemFieldValue {
+    __typename
+    ... on ProjectV2ItemFieldSingleSelectValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        optionId
+        name
+        color
+    }
+    ... on ProjectV2ItemFieldMultiSelectValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        options {
+            id
+            name
+            color
+        }
+    }
+    ... on ProjectV2ItemFieldTextValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        text
+    }
+    ... on ProjectV2ItemFieldNumberValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        number
+    }
+    ... on ProjectV2ItemFieldDateValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        date
+    }
+    ... on ProjectV2ItemFieldIterationValue {
+        field {
+            ...ProjectFieldIdFields
+        }
+        iterationId
+        title
+        startDate
+        duration
+    }
+}

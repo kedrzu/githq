@@ -1,0 +1,6 @@
+fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
+    id
+    title
+    startDate
+    duration
+}

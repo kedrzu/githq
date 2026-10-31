@@ -1,0 +1,5 @@
+fragment ProjectFieldIdFields on ProjectV2FieldConfiguration {
+    ... on ProjectV2FieldCommon {
+        id
+    }
+}

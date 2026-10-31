@@ -1,0 +1,7 @@
+mutation RemoveAssignees($assignableId: ID!, $assigneeIds: [ID!]!) {
+    removeAssigneesFromAssignable(input: { assignableId: $assignableId, assigneeIds: $assigneeIds }) {
+        assignable {
+            ...AssignableResultFields
+        }
+    }
+}

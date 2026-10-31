@@ -18,13 +18,26 @@ A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects 
 
 ## Status
 
-Designed, not yet built. The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Build it with `/dev:deliver` on that folder, following the "Order of building" in its README.
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`).
 
 ## Stack & commands
 
 Chosen, replicating the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, nzyme as a git submodule (`nzyme/`, deps as `workspace:*`), Nuxt 4 SPA (`ssr: false`, static build), one Cloudflare Worker serving the SPA and the OAuth token exchange, IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen (pattern of `healedcare/healed` `packages/healthie`). Details: `docs/design/githq/DECISIONS.md` D16–D19.
 
-Commands: TODO — the first build step creates the workspace; then run `/dev:setup` to write the project's `verify` skill and fill this section (`git-workflow` already exists).
+Commands (from the repo root; checks and their order are in the `verify` skill):
+
+- `bun run setup` — install, build nzyme's CLI, generate tsconfigs and translations, build, prepare Nuxt.
+- `bun run dev` — the app on http://localhost:8787 (`nuxt dev`) with the Worker on 8788 behind `/api/**`.
+  Real "Sign in with GitHub" needs the repo root `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` of
+  the OAuth App "githq (dev)", callback `http://localhost:8787/auth/callback`; template `.env.example`). It lives
+  in the main checkout `~/Dev/githq/.env` and `setup.sh` copies it into every worktree;
+  without it, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
+- `bun run preview` — the production shape: the built SPA and the Worker in one `wrangler dev` on 8787.
+- `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`
+  (`bun --cwd packages/github schema` refreshes GitHub's schema).
+- `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
+  against a mocked GitHub.
+- `bun run lint`, `bun run format`.
 
 `zsh setup.sh` prepares a checkout or worktree (Paseo runs it via `paseo.json`); until the first package exists it does no build.
 

@@ -1,0 +1,11 @@
+# Re-reads the issues and pull requests whose `updated_at` the "my work" searches saw move.
+query ItemsByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on Issue {
+            ...IssueFields
+        }
+        ... on PullRequest {
+            ...PullRequestFields
+        }
+    }
+}

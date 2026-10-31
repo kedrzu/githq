@@ -1,0 +1,6 @@
+# One user by login: an edit names a user the pickers' lists do not hold.
+query UserByLogin($login: String!) {
+    user(login: $login) {
+        ...RepositoryUserFields
+    }
+}

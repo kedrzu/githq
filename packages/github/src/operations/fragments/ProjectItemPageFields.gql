@@ -1,0 +1,10 @@
+fragment ProjectItemPageFields on ProjectV2ItemConnection {
+    totalCount
+    pageInfo {
+        hasNextPage
+        endCursor
+    }
+    nodes {
+        ...ProjectItemRowFields
+    }
+}

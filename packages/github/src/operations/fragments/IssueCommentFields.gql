@@ -1,0 +1,12 @@
+# A comment as the item view shows it; `bodyHTML` is GitHub's own rendering, sanitized by GitHub.
+fragment IssueCommentFields on IssueComment {
+    id
+    url
+    createdAt
+    lastEditedAt
+    author {
+        login
+        avatarUrl
+    }
+    bodyHTML
+}

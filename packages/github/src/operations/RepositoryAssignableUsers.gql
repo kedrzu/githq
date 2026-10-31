@@ -1,0 +1,14 @@
+# The next page of a repository's assignable users, after the first 100 `RepositoryMetadata` reads.
+query RepositoryAssignableUsers($owner: String!, $name: String!, $after: String!) {
+    repository(owner: $owner, name: $name) {
+        assignableUsers(first: 100, after: $after) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...RepositoryUserFields
+            }
+        }
+    }
+}

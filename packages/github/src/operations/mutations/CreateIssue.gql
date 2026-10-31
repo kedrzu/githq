@@ -1,0 +1,35 @@
+# Creates an issue (H1, H3). Answers with its row (D18) and what GitHub kept of the values asked for: for a user
+# without push access it silently drops labels, assignees, milestone and type (D14), so each is read back. The
+# projects named in `projectV2Ids` answer with the issue's place in them, for their fields to be set next.
+mutation CreateIssue(
+    $repositoryId: ID!
+    $title: String!
+    $body: String
+    $assigneeIds: [ID!]
+    $labelIds: [ID!]
+    $milestoneId: ID
+    $issueTypeId: ID
+    $parentIssueId: ID
+    $projectV2Ids: [ID!]
+) {
+    createIssue(
+        input: {
+            repositoryId: $repositoryId
+            title: $title
+            body: $body
+            assigneeIds: $assigneeIds
+            labelIds: $labelIds
+            milestoneId: $milestoneId
+            issueTypeId: $issueTypeId
+            parentIssueId: $parentIssueId
+            projectV2Ids: $projectV2Ids
+        }
+    ) {
+        issue {
+            ...IssueFields
+            parent {
+                id
+            }
+        }
+    }
+}

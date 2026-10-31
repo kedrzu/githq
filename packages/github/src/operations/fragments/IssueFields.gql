@@ -1,0 +1,53 @@
+# What a row of an issue needs (D18), read for every item of "my work".
+fragment IssueFields on Issue {
+    __typename
+    id
+    url
+    number
+    title
+    # Aliased: in `ItemsByIds` it sits next to a pull request's `state`, of another enum type.
+    issueState: state
+    stateReason
+    createdAt
+    updatedAt
+    closedAt
+    author {
+        login
+        avatarUrl
+    }
+    assignees(first: 10) {
+        nodes {
+            login
+            avatarUrl
+        }
+    }
+    labels(first: 20) {
+        nodes {
+            name
+            color
+        }
+    }
+    milestone {
+        title
+        dueOn
+    }
+    issueType {
+        name
+        color
+    }
+    comments {
+        totalCount
+    }
+    subIssuesSummary {
+        total
+        completed
+    }
+    repository {
+        ...ItemRepositoryFields
+    }
+    projectItems(first: 10) {
+        nodes {
+            ...ItemProjectItemFields
+        }
+    }
+}

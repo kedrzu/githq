@@ -1,0 +1,22 @@
+# A project as the tracking screens list it (D4, G2): its item count, whether it is closed, and its owner — the
+# owner's kind and login pick the REST path its changes are polled through (D7).
+fragment TrackingProjectFields on ProjectV2 {
+    id
+    title
+    number
+    url
+    closed
+    updatedAt
+    items {
+        totalCount
+    }
+    owner {
+        __typename
+        ... on Organization {
+            login
+        }
+        ... on User {
+            login
+        }
+    }
+}

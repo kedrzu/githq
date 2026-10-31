@@ -1,0 +1,7 @@
+# A user as the assignee and reviewer pickers offer them and an edit names them.
+fragment RepositoryUserFields on User {
+    id
+    login
+    name
+    avatarUrl
+}

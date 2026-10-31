@@ -1,0 +1,11 @@
+# The opened issue or pull request (D18).
+query ItemDetail($id: ID!) {
+    node(id: $id) {
+        ... on Issue {
+            ...IssueDetailFields
+        }
+        ... on PullRequest {
+            ...PullRequestDetailFields
+        }
+    }
+}

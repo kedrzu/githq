@@ -1,0 +1,21 @@
+# The repositories the tracking screens offer (D4, G2): the viewer's own, newest push first, and each
+# organization's first 20 — the rest of an organization's on demand through `OrganizationRepositories` (G4).
+# Read with partial errors: an organization with OAuth App access restrictions answers its part with a FORBIDDEN
+# error instead of failing the whole read (G5, `readTrackingCandidates`).
+query TrackingCandidates {
+    viewer {
+        login
+        repositories(first: 100, ownerAffiliations: OWNER, orderBy: { field: PUSHED_AT, direction: DESC }) {
+            ...TrackingRepositoryPageFields
+        }
+        organizations(first: 50) {
+            nodes {
+                login
+                avatarUrl
+                repositories(first: 20, orderBy: { field: PUSHED_AT, direction: DESC }) {
+                    ...TrackingRepositoryPageFields
+                }
+            }
+        }
+    }
+}

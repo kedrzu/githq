@@ -1,0 +1,13 @@
+# A page of a tracked project's non-archived items. `$query` is GitHub's project filter syntax: empty for every
+# item (the pages after `ProjectFull`'s first), `updated:>=YYYY-MM-DD` for the re-read after the project changed
+# (date granularity, D7), or a saved view's filter githq cannot evaluate locally (K6, D15). `$first` sets the
+# cost: GitHub counts the items asked for, not the ones found — 100 cost 7 points, 20 cost 1.
+query ProjectItems($id: ID!, $query: String!, $first: Int!, $after: String) {
+    node(id: $id) {
+        ... on ProjectV2 {
+            items(first: $first, after: $after, query: $query) {
+                ...ProjectItemPageFields
+            }
+        }
+    }
+}

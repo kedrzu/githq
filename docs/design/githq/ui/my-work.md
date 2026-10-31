@@ -58,6 +58,7 @@ These rules are settled. The screens must agree with them, including every count
    - **Issues this PR closes.**
    - **Code review** happens on github.com. One key opens the PR's "Files changed" there.
 4. **Acting on it**, from the list or from the opened item:
+
    - change assignees, labels or milestone;
    - close or reopen (completed or not planned);
    - set a project field;

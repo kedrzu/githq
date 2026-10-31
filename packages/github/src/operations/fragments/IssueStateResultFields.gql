@@ -1,0 +1,7 @@
+fragment IssueStateResultFields on Issue {
+    id
+    updatedAt
+    state
+    stateReason
+    closedAt
+}

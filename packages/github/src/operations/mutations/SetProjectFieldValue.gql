@@ -1,0 +1,15 @@
+# Sets one field of a project item — `value` holds exactly one of `singleSelectOptionId`, `multiSelectOptionIds`,
+# `text`, `number`, `date`, `iterationId`; answers with the field's value (`$fieldName`: the field's name) (D14).
+mutation SetProjectFieldValue(
+    $projectId: ID!
+    $itemId: ID!
+    $fieldId: ID!
+    $fieldName: String!
+    $value: ProjectV2FieldValue!
+) {
+    updateProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value }) {
+        projectV2Item {
+            ...ProjectItemFieldResultFields
+        }
+    }
+}

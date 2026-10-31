@@ -1,0 +1,7 @@
+fragment ViewerProjectFields on ProjectV2 {
+    id
+    title
+    number
+    url
+    closed
+}

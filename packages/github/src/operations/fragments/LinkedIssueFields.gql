@@ -1,0 +1,12 @@
+# An issue linked to the opened one — parent, sub-issue, blocked by or blocking; may live in another repository.
+fragment LinkedIssueFields on Issue {
+    id
+    url
+    number
+    title
+    state
+    stateReason
+    repository {
+        nameWithOwner
+    }
+}

@@ -1,0 +1,7 @@
+# A field a saved view names — to group, sort or show by — matched to the project's fields by id.
+fragment ProjectFieldRefFields on ProjectV2FieldConfiguration {
+    ... on ProjectV2FieldCommon {
+        id
+        name
+    }
+}

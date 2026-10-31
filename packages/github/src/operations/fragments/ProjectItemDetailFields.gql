@@ -1,0 +1,14 @@
+# An item's place in a project as the item view shows it: every field value and the project's field definitions.
+fragment ProjectItemDetailFields on ProjectV2Item {
+    ...ItemProjectItemFields
+    ...ProjectItemValuesFields
+    project {
+        # Whether the viewer may set the item's fields: a project field is edited only where it is true (D14).
+        viewerCanUpdate
+        fields(first: 50, orderBy: { field: POSITION, direction: ASC }) {
+            nodes {
+                ...ProjectFieldFields
+            }
+        }
+    }
+}

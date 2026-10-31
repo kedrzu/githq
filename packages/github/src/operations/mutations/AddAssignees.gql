@@ -1,0 +1,8 @@
+# Each assignment mutation answers with the assignees GitHub kept: one it silently dropped is a rejection (D14).
+mutation AddAssignees($assignableId: ID!, $assigneeIds: [ID!]!) {
+    addAssigneesToAssignable(input: { assignableId: $assignableId, assigneeIds: $assigneeIds }) {
+        assignable {
+            ...AssignableResultFields
+        }
+    }
+}

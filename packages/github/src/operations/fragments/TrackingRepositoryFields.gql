@@ -1,0 +1,19 @@
+# A repository as the tracking screens list it (D4, G2/G4): its activity, its open-item counts and the viewer's
+# permission on it.
+fragment TrackingRepositoryFields on Repository {
+    id
+    nameWithOwner
+    isPrivate
+    isArchived
+    pushedAt
+    viewerPermission
+    owner {
+        login
+    }
+    issues(states: OPEN) {
+        totalCount
+    }
+    pullRequests(states: OPEN) {
+        totalCount
+    }
+}

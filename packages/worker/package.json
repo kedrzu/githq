@@ -1,0 +1,25 @@
+{
+    "name": "@githq/worker",
+    "private": true,
+    "description": "The githq Cloudflare Worker: serves the static SPA from its assets and runs only for /api/*",
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        "./package.json": "./package.json",
+        "./*.js": "./src/*.ts"
+    },
+    "scripts": {
+        "dev": "mkdir -p ../app/.output/public && touch ../../.env && wrangler dev --port 8788 --env-file ../../.env",
+        "preview": "touch ../../.env && wrangler dev --env-file ../../.env",
+        "bundle": "mkdir -p ../app/.output/public && wrangler deploy --dry-run --outdir .wrangler/dist",
+        "test": "TZ=UTC bun test"
+    },
+    "dependencies": {
+        "@githq/github": "workspace:*"
+    },
+    "devDependencies": {
+        "@nzyme/tsconfig": "workspace:*",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+        "wrangler": "4.151.0"
+    }
+}

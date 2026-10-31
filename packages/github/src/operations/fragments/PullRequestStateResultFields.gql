@@ -1,0 +1,7 @@
+fragment PullRequestStateResultFields on PullRequest {
+    id
+    updatedAt
+    state
+    isDraft
+    closedAt
+}

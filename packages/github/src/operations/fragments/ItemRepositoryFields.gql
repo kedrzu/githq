@@ -1,0 +1,9 @@
+# The repository of an issue or pull request; `viewerPermission` gates edits (D14).
+fragment ItemRepositoryFields on Repository {
+    nameWithOwner
+    isPrivate
+    viewerPermission
+    owner {
+        login
+    }
+}

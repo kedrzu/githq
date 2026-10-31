@@ -36,6 +36,7 @@ to user-owned Projects and none to notifications (evidence under Q3).
 Accepted costs: `repo` also grants code write (no narrower scope exists for private issue/PR writes), so the
 consent screen reads as "full access to repositories"; orgs with OAuth app access restrictions (default for
 new orgs) hide their private resources until an owner approves githq.
+
 > **Checked 2026-10-12 (live, `gh` token with `repo`, `read:org`, `gist`, `workflow`):** `repo` does not
 > reach Projects v2. `viewer { projectsV2 { nodes { id title } } }` → `INSUFFICIENT_SCOPES`: "The 'id' field
 > requires one of the following scopes: ['read:project']". So `project` is a separate, necessary scope.
@@ -52,6 +53,7 @@ project items and fields) so they can be browsed and triaged; at first sign-in t
 offered as tracked. Answers [Q4](#q4) (user, 2026-10-12). Why: works without knowing scale; covers a PR the
 user opened in someone else's repo (not "their" repo, found only by search); avoids mirroring a 300-repo org
 of which the user cares about five.
+
 > **Checked 2026-10-12 (live, author's account):** `GET /issues?filter=all&state=all&per_page=100` — the first
 > 100 results came from 20+ repositories, about 80 of them from one large public org the author is a member
 > of but doesn't work in day to day. Meanwhile `search/issues?q=is:pr author:@me` returned the author's own
@@ -80,22 +82,24 @@ are still a proposal ([Q6](#q6)).
 
 How the local copy learns about changes (agent's call, delegated by user 2026-10-12: "zrób research i
 rozstrzygnij"). Polling only, in two independent loops:
+
 - **Issues and PRs** in tracked repos: `GET /repos/{o}/{r}/issues?state=all&since=<last sync>` with
   `If-None-Match`; a 304 costs nothing. "About me" goes through search (two queries, issues and PRs).
 - **Projects**: one conditional `GET` of each tracked project (`/users/{u}/projectsV2/{n}` or the org
   equivalent) per poll; 304 → nothing to do, free. On 200 the project changed — re-read its items, narrowed
   with `q=updated:>=<yesterday>` (date granularity only, so the window overlaps by a day).
-Why: a project field edit is invisible to the issue feeds (live test below), so projects need their own
-signal; the project's ETag / `updatedAt` is that signal and covers both field edits and edits to the issue
-itself. Rejected: periodic full re-read of every project (≈30 points per 1,000 items per read, see Q2
-arithmetic) and the Events API (30s–6h lag, no project events).
-Untested: whether `updated:` in the items query matches an item whose only change is a field edit on an
-issue last edited on an earlier day (could not separate within one day). If it doesn't, the narrowed re-read
-misses such items and the fallback is a full re-read on every 200 — still bounded by how often the project
-actually changes.
+  Why: a project field edit is invisible to the issue feeds (live test below), so projects need their own
+  signal; the project's ETag / `updatedAt` is that signal and covers both field edits and edits to the issue
+  itself. Rejected: periodic full re-read of every project (≈30 points per 1,000 items per read, see Q2
+  arithmetic) and the Events API (30s–6h lag, no project events).
+  Untested: whether `updated:` in the items query matches an item whose only change is a field edit on an
+  issue last edited on an earlier day (could not separate within one day). If it doesn't, the narrowed re-read
+  misses such items and the fallback is a full re-read on every 200 — still bounded by how often the project
+  actually changes.
 
 > **Checked 2026-10-12 (live, temporary issue in `kedrzu/githq` + temporary user-owned project, both
 > deleted after):**
+>
 > - Adding an issue to a project and changing its Status did **not** change the issue's `updatedAt`
 >   (stayed 15:45:14 while the item went 15:45:21 → 15:45:46). `GET /repos/…/issues?since=T0` and
 >   `GET /issues?filter=all&since=T0` answered 304 / empty after the field edit; GraphQL
@@ -108,6 +112,11 @@ actually changes.
 >   (1 match) and `updated:<2026-10-12` (0). Full timestamps (`updated:>2026-10-12T15:45:30Z`) match
 >   nothing in either direction — date granularity only. `status:"In Progress"` filters work too.
 > - A GraphQL probe of one project's `updatedAt` costs 1 point.
+
+> **Checked 2026-10-30 (live, `gh` token):** REST `GET /search/issues?q=is:open is:pr author:@me&sort=updated`
+> returns **no `ETag`**, so "about me" cannot use free 304s. It draws on the separate `search` bucket (30/min,
+> `x-ratelimit-resource: search`), not the 5,000/hour core or GraphQL budget. Four "my work" queries every
+> 30 s are 8/min; only items whose `updated_at` moved are then re-read through GraphQL.
 
 ### D8
 
@@ -138,6 +147,7 @@ objection: a PR that closes an assigned issue is shown nested under that issue i
 
 First-version additions and exclusions after the Direction D review. Agent's recommendations, adopted when the
 user asked to apply all corrections (2026-10-12):
+
 - **Creating an issue is in the first version** (repo, title, body, assignees, labels, milestone, type,
   projects and their fields, parent). Was missing from the agent's first-version list.
   > **Checked 2026-10-12 (live):** GraphQL `Repository.issueTemplates` returns markdown templates only
@@ -184,6 +194,7 @@ round-2 prompt asked for: PR view (F1–F4), first sign-in, tracking and account
 (H1–H9), repository (J1–J3), states (K1–K9); fixes in D1/D2/D4 applied (counts 2+3+5+3=13 with a Mentioned
 group, "In progress +1", no "moved by", locally modified view with reset, "Open on GitHub" instead of merge).
 Consequences the agent drew from it — agent's analysis, confirmed by user 2026-10-30:
+
 - **`read:org` joins `repo` and `project`** ([D3](#d3)): listing the user's organisations (owner filter in
   G2/G4, "member of 3 organisations" in G9, detecting the org that hides private data in G5) needs it.
 - **Edits are gated by the user's permission on the repository** (`viewerPermission`), as E4 already does
@@ -227,6 +238,7 @@ Consequences the agent drew from it — agent's analysis, confirmed by user 2026
 Every large surface shows how fresh what it displays is: a whole list (my work, a project view, a repository),
 and an opened item — not each row. User requirement, 2026-10-30 ("potrzebujemy wiedzieć, czy wersja jest
 aktualna"). What a surface can be, from the sync model ([D7](#d7)):
+
 - **fresh**: the poll covering this surface succeeded within its interval (~30 s);
 - **checking** right now;
 - **stale**: last successful check is older than expected — offline, a failing request, or refresh paused by
@@ -234,8 +246,9 @@ aktualna"). What a surface can be, from the sync model ([D7](#d7)):
 - **partial**: still downloading (first download, newly tracked repository);
 - **answered by GitHub**: a saved view githq can't evaluate locally (K6), refreshed more slowly;
 - **own edits on the way**: the user's changes are shown but not yet confirmed by GitHub; or one failed.
-An opened item may also have parts fetched separately (see [Q8](#q8)), so its freshness can differ from its
-list's. Visual form: three directions requested from the design agent; user picks.
+  An opened item may also have parts fetched separately (see [Q8](#q8)), so its freshness can differ from its
+  list's. Visual form: a status bar along the bottom of the window, one segment per surface (sidebar, list,
+  item), dim when fresh and coloured when not — chosen in `githq.pen` (Direction D, section Freshness).
 
 ### D16
 
@@ -293,6 +306,16 @@ graphql-codegen with `typescript`, `typescript-operations` and `typescript-gener
 > **Checked 2026-10-30:** GitHub publishes its GraphQL schema as SDL at
 > `https://docs.github.com/public/fpt/schema.docs.graphql` (HTTP 200, ~75k lines, last-modified 2026-10-30) —
 > usable as the schema source without introspection.
+
+### D20
+
+Variants picked among the round-2 screens drawn side by side (user, 2026-10-30, at the start of the build):
+**G1b** — the screen before signing in explains up front what GitHub's consent screen will ask for;
+**G2** — choosing what to track is a deliberate step after the first sign-in (own repositories pre-selected);
+**G6** — the first download is a progress step that can be left as soon as "my work" is in;
+**H1** — creating an issue starts as a quick capture (repository, title, optional chips), which expands into
+the full form (H3). Rejected: G1a (permission explained only on demand), G3 (no tracking step, suggestions
+later), G7 (straight into the app while downloading), H4 (one full form).
 
 ## Open questions
 
@@ -447,6 +470,7 @@ view if the list is enough to start.
 
 Mostly answered by [D10](#d10)–[D13](#d13); missing screens handed to the design agent (prompt in
 `ui/design-agent-prompt.md`). Original: review of Direction D against the UI brief (2026-10-12). Gaps and inconsistencies raised with the user:
+
 - Not drawn: the whole first-sign-in path (tracking choice, first download, org that hides private repos);
   PR item view (checks, reviewers, branches, mergeability, hand-off to github.com for review); creating an
   issue; repository view; "track repositories" / settings / account; states (edit rejected, refresh paused,
@@ -480,6 +504,8 @@ live queries). Open, raised with user 2026-10-30.
 Several tabs open at once would each run the sync loop and multiply API use. Agent's proposal: one tab holds a
 Web Lock and syncs, others receive changes over BroadcastChannel. Proposed to user 2026-10-30, not objected to; treated as the
 default for the first version unless they say otherwise.
+Built that way (2026-10-31): lock `githq-sync-<login>`, the syncing tab sends its store changes over the
+channel, the others apply them to memory only; without Web Locks every tab syncs.
 
 ### Q11
 

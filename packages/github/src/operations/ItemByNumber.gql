@@ -1,0 +1,14 @@
+# The node id of an issue or pull request named by its repository and number — an address of the item's own page
+# (`/owner/name/issues/12`) or of one opened over a list, for an item the local copy does not hold.
+query ItemByNumber($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+        issueOrPullRequest(number: $number) {
+            ... on Issue {
+                id
+            }
+            ... on PullRequest {
+                id
+            }
+        }
+    }
+}

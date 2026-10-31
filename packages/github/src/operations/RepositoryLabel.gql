@@ -1,0 +1,8 @@
+# One label of a repository by name: an edit names a label the pickers' lists do not hold.
+query RepositoryLabel($owner: String!, $name: String!, $label: String!) {
+    repository(owner: $owner, name: $name) {
+        label(name: $label) {
+            ...RepositoryLabelFields
+        }
+    }
+}

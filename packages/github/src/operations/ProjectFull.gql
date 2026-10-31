@@ -1,0 +1,38 @@
+# A tracked project as the first download reads it (D4): the project, its fields (D2), its saved views (D13) and
+# the first page of its non-archived items; the rest of the items through `ProjectItems`. `owner` picks the REST
+# path its changes are polled through (D7). `null` when the project is gone or hidden.
+query ProjectFull($id: ID!) {
+    node(id: $id) {
+        ... on ProjectV2 {
+            id
+            title
+            number
+            url
+            closed
+            updatedAt
+            viewerCanUpdate
+            owner {
+                __typename
+                ... on Organization {
+                    login
+                }
+                ... on User {
+                    login
+                }
+            }
+            fields(first: 50, orderBy: { field: POSITION, direction: ASC }) {
+                nodes {
+                    ...ProjectFieldFields
+                }
+            }
+            views(first: 20, orderBy: { field: POSITION, direction: ASC }) {
+                nodes {
+                    ...ProjectViewFields
+                }
+            }
+            items(first: 100) {
+                ...ProjectItemPageFields
+            }
+        }
+    }
+}

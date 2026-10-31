@@ -1,0 +1,40 @@
+# What the opened issue shows beyond its row (D18); the row fields come along, so opening an issue refreshes its row.
+fragment IssueDetailFields on Issue {
+    ...IssueFields
+    body
+    bodyHTML
+    reactionGroups {
+        ...ReactionGroupFields
+    }
+    # Aliased: the row's `comments` has no arguments. The newest page; older ones through `MoreComments`.
+    commentPage: comments(last: 50) {
+        ...CommentPageFields
+    }
+    parent {
+        ...LinkedIssueFields
+    }
+    subIssues(first: 50) {
+        totalCount
+        nodes {
+            ...LinkedIssueFields
+        }
+    }
+    blockedBy(first: 20) {
+        totalCount
+        nodes {
+            ...LinkedIssueFields
+        }
+    }
+    blocking(first: 20) {
+        totalCount
+        nodes {
+            ...LinkedIssueFields
+        }
+    }
+    # Merges with the row's `projectItems(first: 10)`, archived items included (`isArchived`, hidden per D13).
+    projectItems(first: 10) {
+        nodes {
+            ...ProjectItemDetailFields
+        }
+    }
+}
