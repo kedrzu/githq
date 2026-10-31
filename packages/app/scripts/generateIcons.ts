@@ -17,9 +17,10 @@ import { parse } from 'opentype.js';
 // - `icon-maskable-512.png`: the same, square, for launchers that cut their own shape; "/hq" stays inside
 //   the safe circle (40 % of the side from the centre).
 //
-// It also writes the logo of the README from the wordmark "git/hq" (section "Logo"), into `docs/assets/readme/`:
-// `wordmark-dark.svg` with light letters for GitHub's dark theme, `wordmark-light.svg` with dark letters for
-// its light theme.
+// It also writes the README's logo, `docs/assets/readme/wordmark.svg`: the wordmark "git/hq" (section "Logo")
+// on the app's black tile, its clear space (the height of the "h") on every side. One image that reads on any
+// page, because GitHub's light/dark `<picture>` follows the system, not GitHub's theme, whenever a content
+// blocker stops GitHub's script that switches it.
 
 const PUBLIC = path.join(import.meta.dirname, '../public');
 const README_ASSETS = path.join(import.meta.dirname, '../../../docs/assets/readme');
@@ -28,9 +29,6 @@ const FONT = path.join(import.meta.dirname, '../node_modules/@fontsource/geist/f
 const TILE = '#0e1013';
 const SLASH = '#7b87f7';
 const LETTERS = '#e4e6ea';
-/** The wordmark's letters on a light page. */
-const LETTERS_ON_LIGHT = TILE;
-
 /** The README's wordmark: the brandbook's −3.5 % tracking (the app's `Wordmark.vue` sets its own). */
 const WORDMARK = { fontSize: 64, letterSpacing: -0.035 };
 
@@ -84,8 +82,7 @@ async function generateIcons() {
         await writeFile(path.join(PUBLIC, file), new Resvg(drawIcon(font, size, shape)).render().asPng());
     }
 
-    await writeFile(path.join(README_ASSETS, 'wordmark-dark.svg'), drawWordmark(font, LETTERS));
-    await writeFile(path.join(README_ASSETS, 'wordmark-light.svg'), drawWordmark(font, LETTERS_ON_LIGHT));
+    await writeFile(path.join(README_ASSETS, 'wordmark.svg'), drawWordmark(font));
 
     console.info(`Icons written to ${PUBLIC}, the README's wordmark to ${README_ASSETS}.`);
 }
@@ -119,25 +116,39 @@ function drawIcon(font: Font, size: number, shape: TileShape): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${tile}${paths.join('')}</svg>\n`;
 }
 
-/** The wordmark "git/hq" with `letters` in the given colour, on no background, as an SVG document. */
-function drawWordmark(font: Font, letters: string): string {
+/** The wordmark "git/hq" on the black tile, as an SVG document. */
+function drawWordmark(font: Font): string {
     const { fontSize } = WORDMARK;
     const tracking = WORDMARK.letterSpacing * fontSize;
     const scale = fontSize / font.unitsPerEm;
     const ascender = font.ascender * scale;
-    const height = ascender - font.descender * scale;
 
-    // The line box from ascender to descender, as wide as the run without the tracking after its last glyph.
+    // The run on the line box, then measured by its ink, so the clear space starts at the letters themselves.
     const glyphs = font.stringToGlyphs('git/hq');
     let x = 0;
-    const paths = glyphs.map((glyph, index) => {
-        const outline = glyph.getPath(x, ascender, fontSize).toPathData(2);
-        x += (glyph.advanceWidth ?? 0) * scale + (index < glyphs.length - 1 ? tracking : 0);
-        return `<path fill="${index === 3 ? SLASH : letters}" d="${outline}"/>`;
+    const outlines = glyphs.map(glyph => {
+        const outline = glyph.getPath(x, ascender, fontSize);
+        x += (glyph.advanceWidth ?? 0) * scale + tracking;
+        return outline;
     });
-    const width = round(x);
+    const boxes = outlines.map(outline => outline.getBoundingBox());
+    const left = Math.min(...boxes.map(box => box.x1));
+    const top = Math.min(...boxes.map(box => box.y1));
+    const right = Math.max(...boxes.map(box => box.x2));
+    const bottom = Math.max(...boxes.map(box => box.y2));
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${round(height)}" viewBox="0 0 ${width} ${round(height)}">${paths.join('')}</svg>\n`;
+    const h = boxes[4]!;
+    const space = h.y2 - h.y1;
+    const width = round(right - left + 2 * space);
+    const height = round(bottom - top + 2 * space);
+    const edge = LARGE_TILE.stroke!;
+
+    const tile = `<rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="${round(LARGE_TILE.cornerRadius * height)}" fill="${TILE}" stroke="${edge.color}"/>`;
+    const paths = outlines.map(
+        (outline, index) => `<path fill="${index === 3 ? SLASH : LETTERS}" d="${outline.toPathData(2)}"/>`,
+    );
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${tile}<g transform="translate(${round(space - left)} ${round(space - top)})">${paths.join('')}</g></svg>\n`;
 }
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {
