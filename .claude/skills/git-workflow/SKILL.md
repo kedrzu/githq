@@ -26,7 +26,8 @@ Facts this rests on (checked 2026-10-30):
 - Commit messages and PR titles: English, imperative, no prefix, e.g.
   `Show review requests first in My work`. PRs are squash-merged, so **the PR title
   becomes the commit on `main`** (with ` (#<PR>)`).
-- PR descriptions and issue comments are in Polish (`AGENTS.md`).
+- PR descriptions, issues and issue comments are in English too (`AGENTS.md`): Polish is only for
+  the conversation with the owner.
 - Branch names: `<type>/<slug>`, with an issue `<type>/<N>-<slug>`; types `feat`, `fix`, `chore`,
   `design`, `docs` (`feat/12-my-work-list`).
 - `nzyme` is a git submodule (`https://github.com/kedrzu/nzyme.git`, no `branch =`); the gitlink is
@@ -42,7 +43,7 @@ the pinned nzyme (and, once the workspace exists, built everything).
    `git branch -m <type>/<N>-<slug>`. Find or create the issue first, when the task has one:
    ```bash
    gh issue view <N>
-   gh issue create --title "<tytuł>" --body "<opis>"   # prints the URL with the number
+   gh issue create --title "<title>" --body "<description>"   # prints the URL with the number
    ```
 2. Rename the workspace too: `mcp__paseo__list_workspaces` (match `cwd` with the working directory)
    shows its title; `mcp__paseo__rename_workspace` without `workspaceId` renames the current one. A few
@@ -118,7 +119,7 @@ and its title and description are current. The pipeline supplies the texts.
 - **No PR for the branch** (`gh pr view` fails):
   ```bash
   gh pr create --base main --title "<commit-style title>" --body-file - <<'EOF'
-  <co się zmieniło i dlaczego, po polsku>
+  <what changed and why>
 
   Closes #<N>
 
@@ -151,7 +152,7 @@ Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`)
   # commit the node's changes (Checkpoint), then:
   git push -u origin HEAD
   gh pr create --base <branch of node k> --title "…" --body-file - <<'EOF'
-  Część <k+1> z <n>; poprzednia: #<PR of node k>. Closes #<N> tylko w ostatniej części.
+  Part <k+1> of <n>; previous: #<PR of node k>. Closes #<N> only in the last part.
   EOF
   # the first extra node creates the stack, bottom first; later ones append:
   echo '{"pull_requests":[<pr 1>,<pr 2>]}' | gh api -X POST repos/kedrzu/githq/stacks --input -
