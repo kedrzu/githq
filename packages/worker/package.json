@@ -1,8 +1,8 @@
 {
     "name": "@githq/worker",
     "private": true,
-    "license": "AGPL-3.0-only",
     "description": "The githq Cloudflare Worker: serves the static SPA from its assets and runs only for /api/*",
+    "license": "AGPL-3.0-only",
     "type": "module",
     "sideEffects": false,
     "exports": {
