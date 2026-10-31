@@ -20,3 +20,10 @@ declare const __LOCAL_BUILD__: boolean;
  * the desktop app ships to githq.dev. A literal Vite writes into the code at build time.
  */
 declare const __DESKTOP__: boolean;
+
+/**
+ * The client ID of the OAuth App the desktop app signs in with (`GITHQ_GITHUB_CLIENT_ID` at build time, the one its
+ * native side uses too) — in the desktop build only; `null` in the web builds, which link through the Worker, and in a
+ * desktop build made without it.
+ */
+declare const __GITHUB_CLIENT_ID__: string | null;

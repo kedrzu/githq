@@ -13,7 +13,7 @@ async function checkDesktopBuild() {
     const files = await readBuiltFiles(OUTPUT);
 
     const problems: string[] = [];
-    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, DESKTOP_MARKERS.tauri]) {
+    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...DESKTOP_MARKERS]) {
         if (!files.some(file => file.content.includes(text))) {
             problems.push(`${what} (${text}) is in none of the files`);
         }

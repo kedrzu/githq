@@ -24,11 +24,13 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
- * window. The production build must have none; the desktop build must have it (`checkDesktopBuild.ts`).
+ * window, and the command the token is read with. The production build must have none; the desktop build must have
+ * all (`checkDesktopBuild.ts`).
  */
-export const DESKTOP_MARKERS = {
-    tauri: { text: '__TAURI_INTERNALS__', what: "Tauri's native side" },
-} as const satisfies Record<string, { text: string; what: string }>;
+export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
+    { text: '__TAURI_INTERNALS__', what: "Tauri's native side" },
+    { text: 'token_load', what: "the desktop app's token vault" },
+];
 
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */
 export const APP_MARKER = '/api/auth/authorize';
@@ -38,7 +40,7 @@ async function checkProductionBuild() {
 
     const problems: string[] = [];
     for (const file of files) {
-        for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...Object.values(DESKTOP_MARKERS)]) {
+        for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...DESKTOP_MARKERS]) {
             if (file.content.includes(text)) {
                 problems.push(`${file.path}: ${what} (${text})`);
             }

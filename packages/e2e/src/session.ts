@@ -8,7 +8,7 @@ import { FirstSignInHarness } from './harnesses/FirstSignIn.harness.js';
 import { SignInScreenHarness } from './harnesses/SignInScreen.harness.js';
 import { answerTrackingCandidates } from './tracking/answerTracking.js';
 
-/** Where the app keeps the token (`TOKEN_KEY` in `packages/app/auth/AuthStore.ts`). */
+/** Where the app keeps the token (`TOKEN_KEY` in `packages/app/auth/TokenVault.ts`). */
 const TOKEN_KEY = 'githq.token';
 
 /** The token the app keeps in this browser, or `null` signed out. */

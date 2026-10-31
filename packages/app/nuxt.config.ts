@@ -94,6 +94,7 @@ export default defineNuxtConfig({
             // `shims.d.ts`: a literal in the built code, so the production build drops what it guards.
             __LOCAL_BUILD__: JSON.stringify(LOCAL_BUILD),
             __DESKTOP__: JSON.stringify(DESKTOP),
+            __GITHUB_CLIENT_ID__: JSON.stringify((DESKTOP && process.env.GITHQ_GITHUB_CLIENT_ID) || null),
         },
     },
 });

@@ -18,7 +18,8 @@ import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 
 import type { SignInResult, Viewer } from './AuthStore.js';
-import { AuthStore, PENDING_SIGN_IN_KEY, TOKEN_KEY, VIEWER_KEY } from './AuthStore.js';
+import { AuthStore, PENDING_SIGN_IN_KEY, VIEWER_KEY } from './AuthStore.js';
+import { TOKEN_KEY } from './TokenVault.js';
 
 const ORIGIN = 'https://githq.test';
 const VIEWER: Viewer = { login: 'octocat', name: 'The Octocat', avatarUrl: 'https://avatars.test/octocat' };

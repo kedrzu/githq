@@ -12,6 +12,7 @@ import { Browser } from '@/services/Browser.js';
 import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
 
 import { safeNextPath } from './routeAccess.js';
+import { TokenVault } from './TokenVault.js';
 
 /** The signed-in GitHub user, as the shell shows them. */
 export interface Viewer {
@@ -43,8 +44,6 @@ export type SignInResult =
     | { readonly ok: true; readonly returnTo: string }
     | { readonly ok: false; readonly failure: SignInFailure };
 
-/** Where the token is kept (`localStorage`): githq has no server to hold it (D1). */
-export const TOKEN_KEY = 'githq.token';
 /** The signed-in user, kept so a reload shows the shell at once; refreshed in the background. */
 export const VIEWER_KEY = 'githq.viewer';
 /** The sign-in under way (`sessionStorage`): its `state` and where to return, while the user is on GitHub. */
@@ -59,9 +58,9 @@ interface PendingSignIn {
  * The GitHub session: the OAuth token and who it belongs to, signing in through GitHub's web flow (D1) and
  * signing out.
  *
- * The token and the user are kept in `localStorage`, so a reload opens the shell straight away; the user is
- * then read again from GitHub in the background, and a token GitHub rejects (401) signs the user out with
- * `failure: 'tokenRejected'`. The token is never logged.
+ * The token is kept in the {@link TokenVault} and the user in `localStorage`, so a reload opens the shell straight
+ * away; the user is then read again from GitHub in the background, and a token GitHub rejects (401) signs the user
+ * out with `failure: 'tokenRejected'`. The token is never logged.
  *
  * Every tab of the app shares the session: signing out in one signs out the others, and signing in as someone
  * else in one moves the others to that user.
@@ -73,9 +72,10 @@ export const AuthStore = defineService({
         browser: Browser,
         createSdk: GitHubSdkFactory,
         logger: Logger,
+        vault: TokenVault,
     },
-    setup({ browser, createSdk, logger }) {
-        const tokenRef = shallowRef<string | null>(browser.localStorage.getItem(TOKEN_KEY));
+    setup({ browser, createSdk, logger, vault }) {
+        const tokenRef = shallowRef<string | null>(vault.read());
         const viewerRef = shallowRef<Viewer | null>(tokenRef.value === null ? null : readStoredViewer());
         const failureRef = shallowRef<SignInFailure | null>(null);
 
@@ -86,11 +86,7 @@ export const AuthStore = defineService({
             void refreshViewer();
         }
 
-        browser.onLocalStorageChange(key => {
-            if (key === TOKEN_KEY || key === null) {
-                followStoredToken();
-            }
-        });
+        vault.onChange(followStoredToken);
 
         return {
             /** Whether a user is signed in; reactive. */
@@ -172,7 +168,7 @@ export const AuthStore = defineService({
 
         /** Forgets the token and the user. With a `failure`, the sign-in page explains it. */
         function signOut(failure: SignInFailure | null = null) {
-            browser.localStorage.removeItem(TOKEN_KEY);
+            vault.remove();
             browser.localStorage.removeItem(VIEWER_KEY);
             tokenRef.value = null;
             viewerRef.value = null;
@@ -217,7 +213,7 @@ export const AuthStore = defineService({
                 return fail(isTokenRejected(error) ? 'tokenRejected' : 'failed');
             }
 
-            browser.localStorage.setItem(TOKEN_KEY, token);
+            vault.write(token);
             tokenRef.value = token;
             storeViewer(token, viewer);
             failureRef.value = null;
@@ -242,9 +238,9 @@ export const AuthStore = defineService({
             viewerRef.value = viewer;
         }
 
-        /** Whether `token` is still the session's, in this tab and in the storage every tab shares. */
+        /** Whether `token` is still the session's, in this tab and in the vault every tab shares. */
         function isCurrentToken(token: string) {
-            return tokenRef.value === token && browser.localStorage.getItem(TOKEN_KEY) === token;
+            return tokenRef.value === token && vault.read() === token;
         }
 
         /**
@@ -253,7 +249,7 @@ export const AuthStore = defineService({
          * someone, whom this tab takes over, checking with GitHub in the background.
          */
         function followStoredToken() {
-            const stored = browser.localStorage.getItem(TOKEN_KEY);
+            const stored = vault.read();
             if (stored === tokenRef.value) {
                 return;
             }
