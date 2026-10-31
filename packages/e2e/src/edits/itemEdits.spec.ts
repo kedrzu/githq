@@ -108,15 +108,15 @@ test('⇧R asks for reviews of a pull request', async ({ page, github }) => {
     await expect(item.entry('monalisa')).toContainText('Requested');
 });
 
-test('⇧X marks a draft pull request ready for review', async ({ page, github }) => {
+test('the item menu (⌘.) marks a draft pull request ready for review', async ({ page, github }) => {
     const sample = createSampleEditableWork();
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row('Cache response headers').click();
     await expect(item.statePill('Draft')).toBeVisible();
 
-    await page.keyboard.press('Shift+X');
-    await page.getByRole('menuitem', { name: 'Mark ready for review' }).click();
+    await page.keyboard.press('ControlOrMeta+.');
+    await page.getByRole('menuitem', { name: 'Ready for review' }).click();
 
     await expect.poll(() => sample.world.stateOf(sample.draft).isDraft).toBe(false);
     await expectConfirmed(shell);
@@ -130,3 +130,22 @@ async function expectConfirmed(shell: AppShellHarness) {
     await expect(shell.failedEdits).toHaveCount(0);
     await expect(shell.toasts).toHaveCount(0);
 }
+
+test('right-clicking a row opens its context menu: the issue is closed as not planned from the list', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+
+    await myWork.row(ISSUE).click({ button: 'right' });
+    const menu = page.getByRole('menu');
+    await expect(menu).toContainText('acme/web#');
+    await page.getByRole('menuitem', { name: /^Close issue/ }).click();
+    await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
+    await expectConfirmed(shell);
+});

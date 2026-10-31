@@ -5,6 +5,7 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
@@ -84,6 +85,12 @@ const waitingCount = computed(() => {
       <SelectionActions
         :ids="ids"
         @clear="list.checkedIds = []"
+      />
+    </template>
+    <template #contextMenu="menu">
+      <ItemContextMenu
+        :ids="menu.ids"
+        @open="menu.open"
       />
     </template>
   </MyWorkView>

@@ -23,7 +23,8 @@ export interface ItemSelectionRequest {
  * What opening items carries from one moment to the next, shared by the lists and the item view: the
  * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
  * independent switches) — the list they are opened from, the item opened last, which the list selects
- * when it comes back, and the items a toast asks the list to select.
+ * when it comes back, the items a toast asks the list to select, and the item whose comment box takes the cursor
+ * once it opens ("Comment" in a list's context menu).
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
 export const ItemNavigation = defineService({
@@ -35,6 +36,7 @@ export const ItemNavigation = defineService({
         const listRef = shallowRef<ItemList | null>(null);
         const lastOpenedRef = shallowRef<string | null>(null);
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
+        const commentRequestRef = shallowRef<string | null>(null);
 
         return {
             /** The arrangement an item opens in; reactive. */
@@ -60,10 +62,15 @@ export const ItemNavigation = defineService({
             get selectionRequest() {
                 return selectionRequestRef.value;
             },
+            /** The id of the item whose comment box takes the cursor once it opens; reactive. */
+            get commentRequest() {
+                return commentRequestRef.value;
+            },
             setArrangement,
             setList,
             setLastOpened,
             requestSelection,
+            requestComment,
         };
 
         function setArrangement(arrangement: ItemArrangement) {
@@ -80,6 +87,11 @@ export const ItemNavigation = defineService({
 
         function requestSelection(ids: readonly string[]) {
             selectionRequestRef.value = { ids };
+        }
+
+        /** `null` once the item opened took it. */
+        function requestComment(id: string | null) {
+            commentRequestRef.value = id;
         }
     },
 });

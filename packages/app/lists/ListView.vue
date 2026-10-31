@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
@@ -8,12 +8,13 @@ import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import ContextMenu from '@/components/ContextMenu.vue';
 import { followSelection } from '@/utils/followSelection.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import ListGroupMarker from './ListGroupMarker.vue';
-import type { ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
+import type { ListContextMenuProps, ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
 import * as l from './ListView.loc.js';
 
 const props = withDefaults(
@@ -53,6 +54,8 @@ defineSlots<{
   empty?(): unknown;
   /** After a group's rows, or at the bottom of its column: a project's "New draft" there. */
   groupFooter?(props: { group: ListGroup<T> }): unknown;
+  /** The entries of the menu a right-click on an entry opens; without it the browser's own menu shows. */
+  contextMenu?(props: ListContextMenuProps): unknown;
 }>();
 
 /** What a row or a card is drawn from. */
@@ -87,6 +90,7 @@ const collapsed = ref<ReadonlySet<string>>(new Set());
 const selectedKey = ref<string | null>(null);
 const dragged = shallowRef<Dragged | null>(null);
 const dropTarget = ref<string | null>(null);
+const menuIds = shallowRef<readonly string[]>([]);
 
 /** Every entry the list shows, in its order: the board's column by column, a collapsed group's left out. */
 const placed = computed(() => {
@@ -456,78 +460,185 @@ function endDrag() {
   dropTarget.value = null;
 }
 
+/**
+ * A right-click: on an entry, the menu is for the items edited together when it is one of them, else for it alone,
+ * which is selected. Anywhere else the menu does not open (it never sees the event) and the browser's shows.
+ */
+function prepareContextMenu(event: MouseEvent) {
+  const row = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-entry-key]') : null;
+  const key = row?.dataset.entryKey;
+  const entry = key === undefined ? undefined : placed.value.get(key)?.entry;
+  if (key === undefined || !entry) {
+    event.stopImmediatePropagation();
+    return;
+  }
+
+  if (checkedIds.value.length > 1 && checkedIds.value.includes(entry.id)) {
+    menuIds.value = checkedIds.value;
+    return;
+  }
+
+  menuIds.value = [entry.id];
+  select(key);
+}
+
+function openFromMenu() {
+  const [id] = menuIds.value;
+  if (menuIds.value.length === 1 && id !== undefined) {
+    emit('open', id);
+  }
+}
+
 function findKey(keys: readonly string[], id: string) {
   return keys.find(key => placed.value.get(key)?.entry.id === id) ?? null;
 }
 </script>
 
 <template>
-  <div
-    ref="body"
-    :class="[css.listView, layout === 'board' && css.listView_board]"
-    :tabindex="layout === 'board' ? 0 : undefined"
-  >
-    <slot
-      v-if="groups.length === 0"
-      name="empty"
-    />
+  <ContextMenu :disabled="!$slots.contextMenu">
+    <div
+      ref="body"
+      :class="[css.listView, layout === 'board' && css.listView_board]"
+      :tabindex="layout === 'board' ? 0 : undefined"
+      @contextmenu.capture="prepareContextMenu"
+    >
+      <slot
+        v-if="groups.length === 0"
+        name="empty"
+      />
 
-    <template v-else-if="layout === 'list'">
-      <section
-        v-for="group in groups"
-        :key="group.key"
-        :aria-label="group.label"
-      >
-        <!-- A group on its way (G7) has no rows yet. -->
-        <template v-if="!group.arrived">
-          <h2 :class="css.listView_groupHeader">
-            <span :class="css.listView_groupLabel">
-              <ChevronDown
-                :class="css.listView_chevron"
+      <template v-else-if="layout === 'list'">
+        <section
+          v-for="group in groups"
+          :key="group.key"
+          :aria-label="group.label"
+        >
+          <!-- A group on its way (G7) has no rows yet. -->
+          <template v-if="!group.arrived">
+            <h2 :class="css.listView_groupHeader">
+              <span :class="css.listView_groupLabel">
+                <ChevronDown
+                  :class="css.listView_chevron"
+                  aria-hidden="true"
+                />
+                {{ group.label }}
+                <span :class="css.listView_count">{{ t(l.countArriving) }}</span>
+              </span>
+            </h2>
+            <p :class="css.listView_note">
+              <Loader
+                :class="css.listView_noteIcon"
                 aria-hidden="true"
               />
-              {{ group.label }}
-              <span :class="css.listView_count">{{ t(l.countArriving) }}</span>
-            </span>
+              {{ t(l.arriving) }}
+            </p>
+          </template>
+          <template v-else>
+            <h2 :class="css.listView_groupHeader">
+              <Button
+                variant="link"
+                :icon="collapsed.has(group.key) ? ChevronRight : ChevronDown"
+                :aria-expanded="!collapsed.has(group.key)"
+                @click="toggleGroup(group.key)"
+              >
+                <ListGroupMarker
+                  v-if="group.marker"
+                  :marker="group.marker"
+                />
+                {{ group.label }}
+                <span :class="css.listView_count">{{ group.rows.length }}</span>
+              </Button>
+              <span
+                v-if="group.detail"
+                :class="css.listView_detail"
+                >{{ group.detail }}</span
+              >
+            </h2>
+            <p
+              v-if="group.rows.length === 0"
+              :class="css.listView_note"
+            >
+              {{ t(l.groupEmpty) }}
+            </p>
+            <ul
+              v-else-if="!collapsed.has(group.key)"
+              :class="css.listView_rows"
+            >
+              <template
+                v-for="row in group.rows"
+                :key="row.key"
+              >
+                <li
+                  v-for="{ entry, parent } in [
+                    { entry: row, parent: null },
+                    ...row.nested.map(nested => ({ entry: nested, parent: row })),
+                  ]"
+                  :key="entry.key"
+                  :class="[
+                    css.listView_row,
+                    selectedKey === entry.key && css.listView_row_selected,
+                    checkedIds.includes(entry.id) && css.listView_row_checked,
+                  ]"
+                  :aria-current="selectedKey === entry.key ? 'true' : undefined"
+                  :data-entry-key="entry.key"
+                  @click="openEntry(entry.key)"
+                >
+                  <slot
+                    name="row"
+                    :entry="entry"
+                    :parent="parent"
+                    :group="group"
+                    :checked="checkedIds.includes(entry.id)"
+                  />
+                </li>
+              </template>
+            </ul>
+            <slot
+              v-if="!collapsed.has(group.key)"
+              name="groupFooter"
+              :group="group"
+            />
+          </template>
+        </section>
+      </template>
+
+      <template v-else>
+        <section
+          v-for="group in groups"
+          :key="group.key"
+          :aria-label="group.label"
+          :class="[css.listView_column, dropTarget === group.key && css.listView_column_target]"
+          @dragover="dragOver($event, group)"
+          @dragleave="dropTarget = dropTarget === group.key ? null : dropTarget"
+          @drop="drop($event, group)"
+        >
+          <h2 :class="css.listView_columnHead">
+            <ListGroupMarker
+              v-if="group.marker"
+              :marker="group.marker"
+            />
+            <span :class="css.listView_columnLabel">{{ group.label }}</span>
+            <span :class="css.listView_count">{{ group.arrived ? group.rows.length : t(l.countArriving) }}</span>
           </h2>
-          <p :class="css.listView_note">
+          <p
+            v-if="!group.arrived"
+            :class="css.listView_cardNote"
+          >
             <Loader
               :class="css.listView_noteIcon"
               aria-hidden="true"
             />
             {{ t(l.arriving) }}
           </p>
-        </template>
-        <template v-else>
-          <h2 :class="css.listView_groupHeader">
-            <Button
-              variant="link"
-              :icon="collapsed.has(group.key) ? ChevronRight : ChevronDown"
-              :aria-expanded="!collapsed.has(group.key)"
-              @click="toggleGroup(group.key)"
-            >
-              <ListGroupMarker
-                v-if="group.marker"
-                :marker="group.marker"
-              />
-              {{ group.label }}
-              <span :class="css.listView_count">{{ group.rows.length }}</span>
-            </Button>
-            <span
-              v-if="group.detail"
-              :class="css.listView_detail"
-              >{{ group.detail }}</span
-            >
-          </h2>
           <p
-            v-if="group.rows.length === 0"
-            :class="css.listView_note"
+            v-else-if="group.rows.length === 0"
+            :class="css.listView_cardNote"
           >
             {{ t(l.groupEmpty) }}
           </p>
           <ul
-            v-else-if="!collapsed.has(group.key)"
-            :class="css.listView_rows"
+            v-else
+            :class="css.listView_cards"
           >
             <template
               v-for="row in group.rows"
@@ -540,16 +651,21 @@ function findKey(keys: readonly string[], id: string) {
                 ]"
                 :key="entry.key"
                 :class="[
-                  css.listView_row,
-                  selectedKey === entry.key && css.listView_row_selected,
-                  checkedIds.includes(entry.id) && css.listView_row_checked,
+                  css.listView_card,
+                  parent && css.listView_card_nested,
+                  selectedKey === entry.key && css.listView_card_selected,
+                  checkedIds.includes(entry.id) && css.listView_card_checked,
+                  dragged?.entry.key === entry.key && css.listView_card_dragged,
                 ]"
                 :aria-current="selectedKey === entry.key ? 'true' : undefined"
                 :data-entry-key="entry.key"
+                :draggable="!parent && isDraggable(entry, group) ? 'true' : undefined"
                 @click="openEntry(entry.key)"
+                @dragstart="startDrag($event, entry, group)"
+                @dragend="endDrag"
               >
                 <slot
-                  name="row"
+                  name="card"
                   :entry="entry"
                   :parent="parent"
                   :group="group"
@@ -559,94 +675,21 @@ function findKey(keys: readonly string[], id: string) {
             </template>
           </ul>
           <slot
-            v-if="!collapsed.has(group.key)"
+            v-if="group.arrived"
             name="groupFooter"
             :group="group"
           />
-        </template>
-      </section>
+        </section>
+      </template>
+    </div>
+    <template #content>
+      <slot
+        name="contextMenu"
+        :ids="menuIds"
+        :open="openFromMenu"
+      />
     </template>
-
-    <template v-else>
-      <section
-        v-for="group in groups"
-        :key="group.key"
-        :aria-label="group.label"
-        :class="[css.listView_column, dropTarget === group.key && css.listView_column_target]"
-        @dragover="dragOver($event, group)"
-        @dragleave="dropTarget = dropTarget === group.key ? null : dropTarget"
-        @drop="drop($event, group)"
-      >
-        <h2 :class="css.listView_columnHead">
-          <ListGroupMarker
-            v-if="group.marker"
-            :marker="group.marker"
-          />
-          <span :class="css.listView_columnLabel">{{ group.label }}</span>
-          <span :class="css.listView_count">{{ group.arrived ? group.rows.length : t(l.countArriving) }}</span>
-        </h2>
-        <p
-          v-if="!group.arrived"
-          :class="css.listView_cardNote"
-        >
-          <Loader
-            :class="css.listView_noteIcon"
-            aria-hidden="true"
-          />
-          {{ t(l.arriving) }}
-        </p>
-        <p
-          v-else-if="group.rows.length === 0"
-          :class="css.listView_cardNote"
-        >
-          {{ t(l.groupEmpty) }}
-        </p>
-        <ul
-          v-else
-          :class="css.listView_cards"
-        >
-          <template
-            v-for="row in group.rows"
-            :key="row.key"
-          >
-            <li
-              v-for="{ entry, parent } in [
-                { entry: row, parent: null },
-                ...row.nested.map(nested => ({ entry: nested, parent: row })),
-              ]"
-              :key="entry.key"
-              :class="[
-                css.listView_card,
-                parent && css.listView_card_nested,
-                selectedKey === entry.key && css.listView_card_selected,
-                checkedIds.includes(entry.id) && css.listView_card_checked,
-                dragged?.entry.key === entry.key && css.listView_card_dragged,
-              ]"
-              :aria-current="selectedKey === entry.key ? 'true' : undefined"
-              :data-entry-key="entry.key"
-              :draggable="!parent && isDraggable(entry, group) ? 'true' : undefined"
-              @click="openEntry(entry.key)"
-              @dragstart="startDrag($event, entry, group)"
-              @dragend="endDrag"
-            >
-              <slot
-                name="card"
-                :entry="entry"
-                :parent="parent"
-                :group="group"
-                :checked="checkedIds.includes(entry.id)"
-              />
-            </li>
-          </template>
-        </ul>
-        <slot
-          v-if="group.arrived"
-          name="groupFooter"
-          :group="group"
-        />
-      </section>
-    </template>
-  </div>
+  </ContextMenu>
 </template>
 
 <style lang="scss" module="css">

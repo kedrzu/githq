@@ -2,11 +2,11 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
+import { D1_ISSUE_DETAIL, F1_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 
 import * as stories from './ItemView.stories.js';
 
-const { ContributorView, IssueInPanel, IssueSplit, LoadingComments } = composeStories(stories);
+const { ContributorView, IssueInPanel, IssueSplit, LoadingComments, PullRequestFailing } = composeStories(stories);
 
 test("the body and comments show GitHub's rendering only, never the markdown as HTML; their links leave for a new tab; a comment on its way shows as the text typed", async () => {
     await IssueInPanel.run({
@@ -147,7 +147,54 @@ test("a project's number field is edited in its field: Enter sets what was typed
     expect(onEdit).toHaveBeenLastCalledWith({ ...target, value: null });
 });
 
-test('⇧X opens the state menu: close as not planned', async () => {
+test('M1: the reference opens the item menu — the actions grouped, each with its key; a submenu picks a value; Esc closes the menu, not the item', async () => {
+    await IssueInPanel.run();
+    const { onEdit, onClose } = IssueInPanel.args;
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of sigma-clinic\/portal#/ }));
+    const menu = page.getByRole('menu');
+    await expect.element(menu).toBeVisible();
+    const entries = [...menu.element().querySelectorAll('[role="menuitem"]')].map(entry => entry.textContent);
+    expect(entries.findIndex(text => text?.startsWith('Set status'))).toBeLessThan(
+        entries.findIndex(text => text?.startsWith('Assign to')),
+    );
+    expect(entries.findIndex(text => text?.startsWith('Comment'))).toBeLessThan(
+        entries.findIndex(text => text?.startsWith('Close issue')),
+    );
+    await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).toHaveAttribute('aria-keyshortcuts', 'A');
+    // Not from a list: the item is open already.
+    await expect.element(page.getByRole('menuitem', { name: 'Open', exact: true })).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('menuitem', { name: /^Add or remove labels/ }));
+    await userEvent.click(page.getByRole('menuitemcheckbox', { name: 'perf' }));
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'labels', add: ['perf'], remove: [] });
+
+    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+});
+
+test("M2: a pull request's menu asks for reviews — never of its author, those waiting checked — and turns it into a draft", async () => {
+    await PullRequestFailing.run();
+    const { onEdit } = PullRequestFailing.args;
+
+    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.click(page.getByRole('menuitem', { name: /^Request review/ }));
+    await expect.element(page.getByRole('menuitemcheckbox').first()).toBeVisible();
+    const author = F1_PULL_REQUEST.author?.login ?? '';
+    await expect
+        .element(page.getByRole('menuitemcheckbox', { name: new RegExp(`^${author}`) }))
+        .not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.click(page.getByRole('menuitem', { name: 'Convert to draft' }));
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'draft', draft: true });
+});
+
+test('⇧X opens the item menu at closing it: close as not planned', async () => {
     await IssueInPanel.run();
 
     await userEvent.keyboard('{Shift>}X{/Shift}');
@@ -171,7 +218,10 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
 
     await expect.element(page.getByRole('note')).toHaveTextContent("set by sigma-clinic/portal's maintainers");
     await expect.element(page.getByRole('button', { name: /^Labels:/ })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Close or reopen' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: /^Close issue/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
 
     await userEvent.keyboard('l');
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();

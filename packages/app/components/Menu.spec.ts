@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './Menu.stories.jsx';
 
-const { Actions, Choice } = composeStories(stories);
+const { Actions, Choice, Submenu } = composeStories(stories);
 
 test('works from the keyboard: Enter opens, ↓ moves past what is not available, Enter picks, focus returns', async () => {
     await Actions.run();
@@ -57,4 +57,24 @@ test('a choice: the chosen item is checked, picking another with the keyboard ch
     await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Group: label' })).toBeVisible();
+});
+
+test('a submenu opens with → and picks from it; ← goes back to its entry', async () => {
+    await Submenu.run();
+
+    await userEvent.keyboard('{Tab}{Enter}');
+    await expect.element(page.getByRole('menuitem', { name: /^Copy reference/ })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    const close = page.getByRole('menuitem', { name: 'Close issue' });
+    await expect.element(close).toHaveFocus();
+    await expect.element(close).toHaveAttribute('aria-keyshortcuts', 'Shift+X');
+
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(page.getByRole('menuitem', { name: 'Close as completed' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(close).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowRight}{ArrowDown}{Enter}');
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: notPlanned');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });

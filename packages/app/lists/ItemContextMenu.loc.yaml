@@ -1,0 +1,64 @@
+items:
+  plural: count
+  en:
+    one: 1 item
+    many: '{count} items'
+issues:
+  plural: count
+  en:
+    one: 1 issue
+    many: '{count} issues'
+pulls:
+  plural: count
+  en:
+    one: 1 pull request
+    many: '{count} pull requests'
+repositories:
+  plural: count
+  en:
+    one: 1 repository
+    many: '{count} repositories'
+open:
+  en: Open
+openPage:
+  en: Open as full page
+openOnGitHub:
+  en: Open on GitHub
+tabs:
+  plural: count
+  en:
+    one: 1 tab
+    many: '{count} tabs'
+openFiles:
+  en: Review files on GitHub
+addToProject:
+  en: Add to project…
+comment:
+  en: Comment
+copyLink:
+  en: Copy link
+copyLinks:
+  en: Copy links
+copyReference:
+  en: Copy reference
+copyBranch:
+  en: Copy branch name
+closeIssue:
+  en: Close issue
+closePullRequest:
+  en: Close pull request
+closeItems:
+  plural: count
+  en:
+    one: Close 1 item
+    many: 'Close {count} items'
+closeCompleted:
+  en: Close as completed
+closeNotPlanned:
+  en: Close as not planned
+reopen:
+  en: Reopen
+needsTriage:
+  en: 'Labels, assignees, milestone and reviewers need triage access to {repository}.'
+nothing:
+  en: Nothing to do with this here

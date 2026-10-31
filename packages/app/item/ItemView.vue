@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`). A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, and `⇧X` opens the state menu — close as completed or not planned, reopen, ready for review, back to draft. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`sigma-clinic/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -14,21 +14,23 @@ import {
   GitPullRequest,
   GitPullRequestClosed,
   GitPullRequestDraft,
+  ChevronDown,
   FileDiff,
+  GitBranch,
+  Hash,
   Github,
   Link,
   MessageSquare,
   SquareKanban,
-  UserCheck,
   RotateCcw,
   Maximize2,
   PanelRight,
   X,
 } from 'lucide-vue-next';
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import CommandMenuSections from '@/commands/CommandMenuSections.vue';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
@@ -38,7 +40,9 @@ import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import Menu from '@/components/Menu.vue';
-import MenuItem from '@/components/MenuItem.vue';
+import MenuLabel from '@/components/MenuLabel.vue';
+import MenuSeparator from '@/components/MenuSeparator.vue';
+import MenuShortcut from '@/components/MenuShortcut.vue';
 import ResizeHandle from '@/components/ResizeHandle.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
@@ -56,6 +60,7 @@ import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
+import { getItemMenuSections } from './getItemMenuSections.js';
 import GitHubHtml from './GitHubHtml.vue';
 import ItemActivity from './ItemActivity.vue';
 import ItemComposer from './ItemComposer.vue';
@@ -116,7 +121,15 @@ const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer'
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
-const stateMenuOpen = ref(false);
+const itemMenuOpen = ref(false);
+/** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
+const itemMenuStart = ref<string | null>(null);
+
+watch(itemMenuOpen, isOpen => {
+  if (!isOpen) {
+    itemMenuStart.value = null;
+  }
+});
 
 const split = computed(() => props.arrangement !== 'panel');
 // The side column's width, resized by dragging its edge: one for the modal, one for the page.
@@ -187,7 +200,7 @@ const reviewerOptions = computed(() =>
 /** The state menu's entries the user may use, for the item as it is. */
 const stateActions = computed(() => {
   const { item } = props;
-  const actions: (StateOption & { icon: LucideIcon })[] = [];
+  const actions: StateOption[] = [];
   if (permissions.value?.state) {
     if (item.state === 'OPEN') {
       if (item.kind === 'issue') {
@@ -218,19 +231,6 @@ const stateActions = computed(() => {
     }
   }
 
-  if (permissions.value?.draft && item.kind === 'pullRequest') {
-    actions.push(
-      item.isDraft
-        ? { key: 'ready', text: t(l.readyForReview), icon: GitPullRequest, request: { kind: 'draft', draft: false } }
-        : {
-            key: 'draft',
-            text: t(l.convertToDraft),
-            icon: GitPullRequestDraft,
-            request: { kind: 'draft', draft: true },
-          },
-    );
-  }
-
   return actions;
 });
 
@@ -241,7 +241,25 @@ const opened = computed(() => {
 });
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
-const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O' } as const;
+const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', itemMenu: 'Meta+.' } as const;
+
+/**
+ * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
+ * its button beside it.
+ */
+const itemMenuSections = computed(() =>
+  itemMenuOpen.value
+    ? getItemMenuSections(
+        [...getEditCommands(), ...getItemCommands()].filter(command => command.id !== 'item.openOnGitHub'),
+        props.item.kind,
+      )
+    : [],
+);
+
+defineExpose({
+  /** Puts the cursor in the comment box. */
+  focusComposer: () => composerRef.value?.focus(),
+});
 
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
 // the rest — comment, reviews, GitHub, the link, the arrangement.
@@ -310,13 +328,16 @@ function getEditCommands(): Command[] {
       assignees: () => propertiesRef.value?.openPicker('assignees') ?? false,
       labels: () => propertiesRef.value?.openPicker('labels') ?? false,
       milestone: () => propertiesRef.value?.openPicker('milestone') ?? false,
+      issueType: () => propertiesRef.value?.openPicker('issueType') ?? false,
+      reviewers: () => reviewsRef.value?.openPicker() ?? false,
+      state: () => {
+        itemMenuStart.value = 'item.state';
+        itemMenuOpen.value = true;
+        return true;
+      },
       status: () => projectsRef.value?.openByRole('status') ?? false,
       priority: () => projectsRef.value?.openByRole('priority') ?? false,
       iteration: () => projectsRef.value?.openByRole('iteration') ?? false,
-      state: () => {
-        stateMenuOpen.value = true;
-        return true;
-      },
     },
   });
 }
@@ -334,29 +355,6 @@ function getItemCommands(): Command[] {
       run: () => composerRef.value?.focus(),
     },
   ];
-  if (pr.value) {
-    commands.push({
-      id: 'item.reviewers',
-      title: t(l.requestReviewers),
-      section: 'item',
-      key: EDIT_KEYS.reviewers,
-      icon: UserCheck,
-      menu: permissions.value?.reviewers === true,
-      run: () => reviewsRef.value?.openPicker() === true || !permissions.value?.reviewers,
-      options: () => ({ loading: reviewerOptions.value === null, options: getReviewerOptions() }),
-    });
-  }
-
-  if (pr.value?.isDraft && permissions.value?.draft) {
-    commands.push({
-      id: 'item.ready',
-      title: t(l.readyForReview),
-      section: 'item',
-      icon: GitPullRequest,
-      run: () => emit('edit', { kind: 'draft', draft: false }),
-    });
-  }
-
   if (permissions.value?.addToProject) {
     commands.push({
       id: 'item.addToProject',
@@ -373,6 +371,16 @@ function getItemCommands(): Command[] {
     { id: 'item.next', title: t(l.next), section: 'item', key: 'J', menu: false },
     { id: 'item.previous', title: t(l.previous), section: 'item', key: 'K', menu: false },
     { id: 'item.close', title: t(l.close), section: 'item', key: 'Escape', menu: false },
+    {
+      id: 'item.menu',
+      title: t(l.itemMenu),
+      section: 'item',
+      key: ITEM_KEYS.itemMenu,
+      menu: false,
+      run: () => {
+        itemMenuOpen.value = true;
+      },
+    },
   );
 
   commands.push(
@@ -399,6 +407,23 @@ function getItemCommands(): Command[] {
       section: 'item',
       icon: Link,
       run: () => void navigator.clipboard.writeText(item.url),
+    },
+    {
+      id: 'item.copyReference',
+      title: t(l.copyReference),
+      section: 'item',
+      icon: Hash,
+      detail: formatShortReference(item),
+      run: () => void navigator.clipboard.writeText(`${item.repository.nameWithOwner}#${item.number}`),
+    },
+    {
+      id: 'item.copyBranch',
+      title: t(l.copyBranch),
+      section: 'item',
+      icon: GitBranch,
+      detail: pr.value?.headRefName,
+      when: () => pr.value !== null,
+      run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
     },
     ...ITEM_ARRANGEMENTS.filter(arrangement => arrangement !== props.arrangement).map((arrangement): Command => ({
       id: `item.arrange.${arrangement}`,
@@ -427,20 +452,10 @@ function getArrangementTitle(arrangement: ItemArrangement) {
 function getStateTitle() {
   const { item } = props;
   if (item.state !== 'OPEN') {
-    return t(l.reopenCommand);
+    return t(l.reopen);
   }
 
-  return item.kind === 'issue' ? t(l.closeIssueCommand) : t(l.closePullRequestCommand);
-}
-
-/** Who can still be asked: not the author, not someone asked already. */
-function getReviewerOptions(): CommandOption[] {
-  const asked = new Set(
-    (prDetail.value?.reviewRequests ?? []).flatMap(request => (request.kind === 'user' ? [request.user.login] : [])),
-  );
-  return (reviewerOptions.value ?? [])
-    .filter(option => option.value !== props.item.author?.login && !asked.has(option.value))
-    .map(option => ({ ...option, pick: () => emit('edit', { kind: 'requestReviewers', logins: [option.value] }) }));
+  return item.kind === 'issue' ? t(l.closeIssueCommand) : t(l.closePullRequest);
 }
 
 function getProjectOptions(): CommandOption[] {
@@ -466,13 +481,42 @@ function openTab(url: string) {
     :aria-label="item.title"
   >
     <header :class="css.itemView_toolbar">
-      <component
-        :is="state.icon"
-        :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
-        aria-hidden="true"
-      />
-      <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
-      <span :class="css.itemView_number">#{{ item.number }}</span>
+      <Menu
+        v-model:open="itemMenuOpen"
+        align="start"
+      >
+        <template #trigger>
+          <button
+            type="button"
+            :class="css.itemView_reference"
+            :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
+            :aria-keyshortcuts="ITEM_KEYS.itemMenu"
+          >
+            <component
+              :is="state.icon"
+              :class="[css.itemView_kind, css[`itemView_kind_${state.tone}`]]"
+              aria-hidden="true"
+            />
+            <span :class="css.itemView_repository">{{ item.repository.nameWithOwner }}</span>
+            <span :class="css.itemView_number">#{{ item.number }}</span>
+            <ChevronDown
+              :class="css.itemView_chevron"
+              aria-hidden="true"
+            />
+          </button>
+        </template>
+        <CommandMenuSections
+          :sections="itemMenuSections"
+          :open-id="itemMenuStart"
+        />
+        <MenuSeparator />
+        <MenuLabel>
+          <span :class="css.itemView_menuFooter">
+            {{ t(l.itemMenu) }}
+            <MenuShortcut :shortcut="ITEM_KEYS.itemMenu" />
+          </span>
+        </MenuLabel>
+      </Menu>
       <span :class="css.itemView_spacer" />
       <template v-if="position">
         <IconButton
@@ -507,28 +551,6 @@ function openTab(url: string) {
         :label="t(l.arrangement)"
         :options="arrangementOptions"
       />
-      <Menu
-        v-if="stateActions.length > 0"
-        v-model:open="stateMenuOpen"
-        align="end"
-      >
-        <template #trigger>
-          <IconButton
-            :icon="item.state === 'OPEN' ? CircleCheckBig : RotateCcw"
-            :label="t(l.stateActions)"
-            :kbd="formatCommandKey(EDIT_KEYS.state).join('')"
-            :aria-keyshortcuts="EDIT_KEYS.state"
-          />
-        </template>
-        <MenuItem
-          v-for="action in stateActions"
-          :key="action.key"
-          :icon="action.icon"
-          @select="emit('edit', action.request)"
-        >
-          {{ action.text }}
-        </MenuItem>
-      </Menu>
       <IconButton
         :icon="Github"
         :label="t(l.openOnGitHub)"
@@ -745,6 +767,41 @@ function openTab(url: string) {
   padding: 0 14px 0 $spacing-16;
   font-size: $font-size-sm;
   border-bottom: 1px solid $color-border;
+}
+
+.itemView_reference {
+  display: flex;
+  gap: $spacing-10;
+  align-items: center;
+  min-width: 0;
+  height: 26px;
+  padding: 0 $spacing-6;
+  margin-left: -$spacing-6;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: $radius-md;
+
+  &:hover,
+  &[data-state='open'] {
+    background: $color-bg-3;
+  }
+}
+
+.itemView_chevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-left: -$spacing-4;
+  color: $color-fg-dim;
+}
+
+.itemView_menuFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .itemView_kind {

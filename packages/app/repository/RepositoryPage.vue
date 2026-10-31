@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
+import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import type { ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { useItemList } from '@/lists/useItemList.js';
@@ -244,6 +245,12 @@ async function track() {
       <SelectionActions
         :ids="ids"
         @clear="list.checkedIds = []"
+      />
+    </template>
+    <template #contextMenu="menu">
+      <ItemContextMenu
+        :ids="menu.ids"
+        @open="menu.open"
       />
     </template>
   </RepositoryView>

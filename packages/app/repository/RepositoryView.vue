@@ -32,7 +32,14 @@ import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
-import type { ListChoice, ListEntry, ListGroup, ListMove, ListViewOptions } from '@/lists/ListTypes.js';
+import type {
+  ListChoice,
+  ListContextMenuProps,
+  ListEntry,
+  ListGroup,
+  ListMove,
+  ListViewOptions,
+} from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -122,6 +129,8 @@ const options = defineModel<ListViewOptions<RepositoryGrouping, ItemSort>>('opti
 defineSlots<{
   /** The actions of the items edited together, while there are any. */
   selection?(props: { ids: readonly string[] }): unknown;
+  /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
+  contextMenu?(props: ListContextMenuProps): unknown;
 }>();
 
 const t = useTranslate();
@@ -298,6 +307,15 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :detail="t(l.nothingDetail)"
           />
         </template>
+        <template
+          v-if="$slots.contextMenu"
+          #contextMenu="menu"
+        >
+          <slot
+            name="contextMenu"
+            v-bind="menu"
+          />
+        </template>
       </ListView>
     </template>
 
@@ -388,6 +406,15 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
               :viewer-login="viewerLogin"
               :now="now"
               :checked="checked"
+            />
+          </template>
+          <template
+            v-if="$slots.contextMenu"
+            #contextMenu="menu"
+          >
+            <slot
+              name="contextMenu"
+              v-bind="menu"
             />
           </template>
         </ListView>

@@ -87,5 +87,8 @@ export interface CommandOption {
     readonly group?: string;
     /** It is the value now (a check mark); picking a chosen value of several takes it away. */
     readonly chosen?: boolean;
+    /** Only some of the items edited together have it (a dash); picking it gives it to all of them. */
+    readonly mixed?: boolean;
+    readonly icon?: LucideIcon;
     pick(): void;
 }
