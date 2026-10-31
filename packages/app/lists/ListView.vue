@@ -465,6 +465,7 @@ function findKey(keys: readonly string[], id: string) {
   <div
     ref="body"
     :class="[css.listView, layout === 'board' && css.listView_board]"
+    :tabindex="layout === 'board' ? 0 : undefined"
   >
     <slot
       v-if="groups.length === 0"
@@ -657,6 +658,8 @@ function findKey(keys: readonly string[], id: string) {
 }
 
 .listView_board {
+  @include focus-ring;
+
   display: flex;
   gap: $spacing-12;
   align-items: flex-start;

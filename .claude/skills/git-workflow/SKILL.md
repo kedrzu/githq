@@ -16,10 +16,10 @@ Several tasks run at once, each in its own Paseo worktree on its own branch with
 standing authorization to commit, push and open PRs without asking is in `AGENTS.md` → "Worktrees and
 pull requests"; this skill holds the commands.
 
-Facts this rests on (checked 2026-10-30):
+Facts this rests on (checked 2026-10-31):
 
-- Remote `origin` = `https://github.com/kedrzu/githq.git` (private, no branch protection on this
-  plan), main line `main`; `gh` is logged in as `kedrzu`. The repo deletes a PR's branch on merge.
+- Remote `origin` = `https://github.com/kedrzu/githq.git` (public, no branch protection or
+  rulesets), main line `main`; `gh` is logged in as `kedrzu`. The repo deletes a PR's branch on merge.
 - Agents never push to `main`: `.claude/git.json` lists it in `protectedBranches`, and the `git`
   plugin's hook blocks such a push.
 - Tracker: GitHub Issues in the same repository. A task may have no issue.

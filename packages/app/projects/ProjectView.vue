@@ -26,14 +26,12 @@ import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import Menu from '@/components/Menu.vue';
-import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
-import MenuRadioItem from '@/components/MenuRadioItem.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import * as propertyLabels from '@/lists/ItemProperty.loc.js';
 import ItemCard from '@/lists/ItemCard.vue';
 import ItemRow from '@/lists/ItemRow.vue';
 import ListToolbar from '@/lists/ListToolbar.vue';
+import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import type { ListChoice, ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
@@ -212,9 +210,24 @@ const shownCount = computed(() => {
 
   return ids.size;
 });
-const rowFieldValue = computed({
-  get: () => props.rowFieldId ?? NO_ROW_FIELD,
-  set: value => emit('update:rowFieldId', value === NO_ROW_FIELD ? null : value),
+/** The field this project shows next to its items in other lists, among the list's view options. */
+const rowFieldOption = computed((): ListToolbarOption => {
+  const choices = [
+    ...selectFields.value.map(field => ({ value: field.id, label: field.name })),
+    { value: NO_ROW_FIELD, label: t(l.rowFieldNone) },
+  ];
+  const value = props.rowFieldId ?? NO_ROW_FIELD;
+  return {
+    kind: 'menu',
+    key: 'rowField',
+    label: t(l.inOtherLists, { project: props.project.title }),
+    icon: SquareKanban,
+    title: t(l.rowField, { field: choices.find(choice => choice.value === value)?.label ?? t(l.rowFieldNone) }),
+    choices,
+    value,
+    detail: t(l.rowFieldDetail),
+    choose: chosen => emit('update:rowFieldId', chosen === NO_ROW_FIELD ? null : chosen),
+  };
 });
 const fieldNames = computed(() => props.project.fields.map(field => `${field.name} (${field.kind})`).join(', '));
 const sortSummary = computed(() => {
@@ -239,6 +252,7 @@ function addDraft(title: string, group: string | null) {
       :properties="properties"
       :modified="modified"
       :board-disabled="boardDisabled"
+      :extra-options="[rowFieldOption]"
       @reset="emit('reset')"
     >
       <template #title>
@@ -317,35 +331,6 @@ function addDraft(title: string, group: string | null) {
             >{{ t(l.addFieldOnGitHub) }}</a
           >
         </p>
-        <div :class="css.projectView_option">
-          <span :class="css.projectView_optionLabel">{{ t(l.inOtherLists, { project: project.title }) }}</span>
-          <Menu align="start">
-            <template #trigger>
-              <Button
-                variant="outline"
-                size="sm"
-                :icon="SquareKanban"
-              >
-                {{
-                  t(l.rowField, {
-                    field: selectFields.find(field => field.id === rowFieldId)?.name ?? t(l.rowFieldNone),
-                  })
-                }}
-              </Button>
-            </template>
-            <MenuRadioGroup v-model="rowFieldValue">
-              <MenuRadioItem
-                v-for="field in selectFields"
-                :key="field.id"
-                :value="field.id"
-              >
-                {{ field.name }}
-              </MenuRadioItem>
-              <MenuRadioItem :value="NO_ROW_FIELD">{{ t(l.rowFieldNone) }}</MenuRadioItem>
-            </MenuRadioGroup>
-          </Menu>
-          <span :class="css.projectView_optionDetail">{{ t(l.rowFieldDetail) }}</span>
-        </div>
       </template>
     </ListToolbar>
 
@@ -720,24 +705,6 @@ function addDraft(title: string, group: string | null) {
     margin-top: $spacing-4;
     color: $color-fg;
   }
-}
-
-.projectView_option {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-6;
-  align-items: flex-start;
-}
-
-.projectView_optionLabel {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
-}
-
-.projectView_optionDetail {
-  font-size: $font-size-2xs;
-  line-height: $line-height-normal;
-  color: $color-fg-dim;
 }
 
 .projectView_filter {
