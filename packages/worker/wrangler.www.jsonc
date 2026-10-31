@@ -2,6 +2,8 @@
 // Deployed by `bun run deploy` together with the githq Worker (`wrangler.jsonc`).
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
+    // The Cloudflare account of kedrzu@gmail.com; deploys from CI (`.github/workflows/deploy.yml`) need it named.
+    "account_id": "8626d3c4b429e16b14d1b4e1bb4df29f",
     "name": "githq-www",
     "main": "src/wwwRedirect.ts",
     "minify": true,

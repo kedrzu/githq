@@ -9,6 +9,8 @@
 // `bunx wrangler secret put <name>`; `wrangler dev` reads them from the repo root `.env` (`--env-file`, template `.env.example`).
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
+    // The Cloudflare account of kedrzu@gmail.com; deploys from CI (`.github/workflows/deploy.yml`) need it named.
+    "account_id": "8626d3c4b429e16b14d1b4e1bb4df29f",
     "name": "githq",
     "main": "src/worker.ts",
     // Wrangler bundles `main` with esbuild; minified, the bundle is smaller and the Worker starts faster.
