@@ -1,6 +1,7 @@
 {
     "name": "@githq/github",
     "private": true,
+    "license": "Apache-2.0",
     "description": "The GitHub client: GraphQL for reading and writing, REST conditional requests for change detection",
     "type": "module",
     "sideEffects": false,

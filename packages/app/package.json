@@ -1,6 +1,7 @@
 {
     "name": "@githq/app",
     "private": true,
+    "license": "Apache-2.0",
     "description": "githq web app (Nuxt SPA, built to static files)",
     "type": "module",
     "exports": {
