@@ -2,8 +2,8 @@
 // `packages/app`) straight from its assets, without running any Worker code; the Worker runs only for
 // `/api/*`, where it trades GitHub's OAuth code for a token (D1, `src/githubOAuth.ts`) — GitHub's token
 // endpoint answers no CORS and needs the client secret, so a browser cannot do it alone. The Worker is
-// stateless: no bindings, no storage, no task data. Build the SPA before deploying
-// (`bun --cwd packages/app build`).
+// stateless: no bindings, no storage, no task data. Deploy with `bun run deploy`
+// from the repo root, which builds the SPA first.
 //
 // Secrets: the OAuth App's `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, set once with
 // `bunx wrangler secret put <name>`; `wrangler dev` reads them from the repo root `.env` (`--env-file`, template `.env.example`).
@@ -23,6 +23,12 @@
         // Worker even when typed into the address bar.
         "run_worker_first": ["/api/*"],
     },
+    // Production lives on githq.dev only. A Custom Domain: Cloudflare creates the DNS record and the certificate
+    // on deploy, given the githq.dev zone is in this account. No `*.workers.dev` or preview URLs — the OAuth
+    // callback is built from the request's origin, and the OAuth App knows only https://githq.dev/auth/callback.
+    "routes": [{ "pattern": "githq.dev", "custom_domain": true }],
+    "workers_dev": false,
+    "preview_urls": false,
     // Local only. The Worker builds the OAuth callback from `request.url`'s origin, and the app is opened on
     // `http://localhost:8787` — the OAuth App's registered callback is `http://localhost:8787/auth/callback`.
     // Under `bun run dev` the Worker listens on 8788 behind `nuxt dev`'s proxy, which rewrites `Host` to

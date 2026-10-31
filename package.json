@@ -17,6 +17,7 @@
         "watch": "nx run-many -t watch,watch:localise,watch:monorepo,watch:tsc --parallel=100",
         "dev": "nx run-many -t dev,watch:localise --exclude='@nzyme/*' --parallel=100",
         "preview": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker preview --port 8787",
+        "deploy": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker deploy",
         "storybook": "bun --cwd packages/app storybook",
         "lint": "oxlint --type-aware --quiet --disable-nested-config --fix . && eslint --fix .",
         "lint:check": "oxlint --type-aware --quiet --disable-nested-config . && eslint .",

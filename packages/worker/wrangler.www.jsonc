@@ -1,0 +1,12 @@
+// The `githq-www` Worker: www.githq.dev redirects to githq.dev (`src/wwwRedirect.ts`). No assets, no secrets.
+// Deployed by `bun run deploy` together with the githq Worker (`wrangler.jsonc`).
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "name": "githq-www",
+    "main": "src/wwwRedirect.ts",
+    "minify": true,
+    "compatibility_date": "2026-10-15",
+    "routes": [{ "pattern": "www.githq.dev", "custom_domain": true }],
+    "workers_dev": false,
+    "preview_urls": false,
+}
