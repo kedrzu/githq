@@ -22,6 +22,12 @@ export default defineNuxtPlugin({
         nuxtApp.vueApp.use(IocPlugin, { container });
 
         container.register(AppLanguageContext);
+        // The server only prerenders the landing page, signed out: nothing below — the local copy in IndexedDB,
+        // the sync — has anything to do there, and all of it needs the browser.
+        if (import.meta.server) {
+            return;
+        }
+
         // One local copy per user, its parts kept through one connection.
         const persistence = createIndexedDbPersistence();
         container.set(ItemPersistence, persistence);
