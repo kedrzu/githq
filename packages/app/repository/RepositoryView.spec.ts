@@ -12,7 +12,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
-import type { RepositoryKind, RepositoryListTexts } from './buildRepositoryList.js';
+import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
 import RepositoryView from './RepositoryView.vue';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
@@ -66,6 +66,25 @@ test('the order and the properties sit on the toolbar while they fit; on a narro
     const display = page.getByRole('dialog', { name: 'Display' });
     await userEvent.click(display.getByRole('button', { name: 'Labels' }));
     expect(view.options.value.properties).toContain('labels');
+    await userEvent.keyboard('{Escape}');
+});
+
+test('the state stays on the toolbar longest; when even it does not fit, it is chosen in Display', async () => {
+    const view = mount();
+    await userEvent.click(page.getByRole('button', { name: 'Open', exact: true }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Closed', exact: true }));
+    expect(view.state.value).toBe('closed');
+
+    view.host.style.width = '760px';
+    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
+
+    view.host.style.width = '560px';
+    await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Display' }));
+    const states = page.getByRole('dialog', { name: 'Display' }).getByRole('group', { name: 'State' });
+    await userEvent.click(states.getByRole('button', { name: 'Open and closed' }));
+    expect(view.state.value).toBe('all');
 });
 
 test('J3: not tracked, it lists what concerns the user and asks to be tracked', async () => {
@@ -96,7 +115,8 @@ interface MountOptions {
 function mount({ tracked = true }: MountOptions = {}) {
     const options = shallowRef<ListViewOptions<RepositoryGrouping, ItemSort>>(REPOSITORY_VIEW_DEFAULTS);
     const kind = ref<RepositoryKind>('all');
-    const view = { options, kind, tracks: 0 };
+    const state = ref<RepositoryState>('open');
+    const view = { options, kind, state, tracks: 0 };
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -126,6 +146,10 @@ function mount({ tracked = true }: MountOptions = {}) {
                 options: options.value,
                 'onUpdate:options': (value: ListViewOptions<RepositoryGrouping, ItemSort>) => {
                     options.value = value;
+                },
+                state: state.value,
+                'onUpdate:state': (value: RepositoryState) => {
+                    state.value = value;
                 },
                 kind: kind.value,
                 'onUpdate:kind': (value: RepositoryKind) => {
