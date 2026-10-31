@@ -66,6 +66,13 @@ These rules are settled. The screens must agree with them, including every count
    - add the item to a project.
 
    For a PR, the user can additionally request reviewers and mark a draft as ready for review.
+
+   Right-clicking an item, or a selection, opens a context menu with the actions that fit it (designed in
+   L1–L4): an issue gets its project fields, assignees, labels, milestone, type and close as completed or
+   not planned; a PR gets request review, draft or ready for review, "Review files on GitHub", copy branch
+   name and close, never merge. The menu offers only what the user may do in that repository and says in
+   one line what is missing and why. For a selection it offers only what applies to every selected item.
+   Every entry shows its single-key shortcut, so the menu also teaches the keyboard.
 5. **Back to the list**, with the selection preserved, and on to the next item.
 6. **Jumping anywhere** with the command menu (designed in E1–E4).
 
