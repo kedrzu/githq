@@ -5,7 +5,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main, chore/deploy-workflow]
+    branches: [main]
   workflow_dispatch:
 
 # One deploy at a time, in push order: a later push waits instead of cancelling one already deploying.
@@ -75,7 +75,6 @@ jobs:
         run: bun --cwd packages/app build
 
       - name: Deploy
-        if: github.ref == 'refs/heads/main'
         run: bun --cwd packages/worker deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
