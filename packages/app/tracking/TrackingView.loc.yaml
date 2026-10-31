@@ -1,0 +1,93 @@
+title:
+  en: Tracking
+kinds:
+  en: What is tracked
+repositories:
+  en: Repositories
+projects:
+  en: Projects
+findRepository:
+  en: Find a repository to track…
+findProject:
+  en: Find a project to track…
+findLabel:
+  en: Find something to track
+tracked:
+  en: Tracked
+trackedRepositories:
+  plural: count
+  en:
+    zero: no repositories yet
+    one: 1 repository
+    many: '{count} repositories'
+trackedProjects:
+  plural: count
+  en:
+    zero: no projects yet
+    one: 1 project
+    many: '{count} projects'
+itemsKept:
+  plural: count
+  en:
+    one: 1 item in this browser
+    many: '{formatted} items in this browser'
+untrack:
+  en: Untrack
+untrackNote:
+  en: Untracking deletes its copy from this browser. Items that concern you stay in My work.
+waiting:
+  en: waiting
+downloading:
+  en: downloading {percent}%
+hidden:
+  en: Not shown to githq
+refused:
+  en: GitHub refuses its changes · asking again hourly
+slower:
+  en: '{read} · checked every 5 min: GitHub refuses the free check'
+ago:
+  en: '{age} ago'
+staleNever:
+  en: not read yet
+suggested:
+  en: Suggested
+suggestedDetail:
+  en: your work lives here, and they aren't tracked
+suggestedProjectsDetail:
+  en: yours and your organisations', not tracked
+inMyWork:
+  plural: count
+  en:
+    one: 1 item in My work · active {age} ago
+    many: '{count} items in My work · active {age} ago'
+notTracked:
+  en: Not tracked
+matching:
+  en: 'matching “{filter}”'
+noMatch:
+  en: Nothing you can see matches “{filter}”.
+projectMeta:
+  plural: count
+  en:
+    one: '{owner} · 1 item'
+    many: '{owner} · {count} items'
+track:
+  en: Track
+byName:
+  en: Someone else's
+byNameDetail:
+  en: by its name or address
+organisations:
+  en: Organisations
+privateHidden:
+  en: Private data hidden
+visible:
+  en: Visible to githq
+hiddenDetail:
+  en: Hides its private data from githq. Until an owner approves it, only its public repositories can be tracked.
+hiddenRequested:
+  en: Hides its private data from githq. You requested approval on {date}. Until an owner approves it, only its public repositories can be tracked.
+requestApproval:
+  en: Request approval on GitHub
+readingOrganisations:
+  en: Reading your organisations…

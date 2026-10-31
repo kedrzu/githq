@@ -1,0 +1,20 @@
+assign:
+  en: Assign to…
+assignees:
+  en: assignees
+labels:
+  en: Add or remove labels…
+label:
+  en: label
+setMilestone:
+  en: Set milestone…
+noMilestone:
+  en: No milestone
+setStatus:
+  en: Set status…
+setPriority:
+  en: Set priority…
+setIteration:
+  en: Set iteration…
+editable:
+  en: '{editable} of {total} editable'

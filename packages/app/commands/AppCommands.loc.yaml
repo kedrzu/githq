@@ -1,0 +1,18 @@
+commandMenu:
+  en: Open the command menu
+help:
+  en: Keyboard shortcuts
+newIssue:
+  en: New issue
+createKeyword:
+  en: create
+signOut:
+  en: Sign out
+myWork:
+  en: My work
+savedView:
+  en: saved view
+trackRepositories:
+  en: Track repositories…
+account:
+  en: Account

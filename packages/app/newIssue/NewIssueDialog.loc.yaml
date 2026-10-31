@@ -1,0 +1,63 @@
+title:
+  en: New issue
+repositoryLabel:
+  en: 'Repository: {repository}. Choose another'
+chooseRepository:
+  en: Choose a repository
+titleLabel:
+  en: Title
+titlePlaceholder:
+  en: Issue title
+bodyLabel:
+  en: Description
+bodyPlaceholder:
+  en: Add a description… (Markdown)
+fromForm:
+  en: from {form}
+rejectedTitle:
+  en: GitHub didn't create this issue
+rejectedDetail:
+  en: '{reason} Your title, text and fields are untouched.'
+anotherRepository:
+  en: Another repository
+unavailableTitle:
+  en: "{repository} won't take a new issue"
+archived:
+  en: Archived repositories are read-only.
+issuesDisabled:
+  en: Issues are turned off in its settings.
+notFound:
+  en: GitHub doesn't show it to you — it may be private, renamed or gone.
+create:
+  en: Create
+createAnother:
+  en: Create another
+details:
+  en: Details
+collapse:
+  en: Collapse
+templates:
+  plural: count
+  en:
+    one: Template
+    many: Templates ({count})
+stillRequired:
+  en: 'Still required: {fields}'
+templateRequired:
+  en: This repository asks for a template
+notSent:
+  en: not sent · kept until you close it
+handedOffTitle:
+  en: '{form} continues on GitHub in a new tab'
+handedOffDetail:
+  en: GitHub's forms don't take a description from githq, so what you wrote stays here to copy over.
+waitingLabel:
+  en: Issues waiting to be restored
+waitingTitle:
+  en: '“{title}” · {repository}'
+restore:
+  en: Restore
+restoreLabel:
+  en: Restore “{title}”
+discardLabel:
+  en: Drop “{title}”

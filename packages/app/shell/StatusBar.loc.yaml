@@ -1,0 +1,36 @@
+status:
+  en: Status
+allowance:
+  en: '{remaining} of {limit} left this hour'
+offlineSince:
+  en: Offline since {time}
+pausedUntil:
+  en: Paused until {time}
+pausedUntilLeft:
+  en: Paused until {time} · {remaining} left
+pausedTitle:
+  en: Background refresh is paused
+pausedExplained:
+  en: githq used up this hour's GitHub API allowance, but for what it keeps for your edits. Everything here still works, and your edits still go through. Changes other people make will show up after {time}, in {duration}.
+exhaustedExplained:
+  en: This hour's GitHub API allowance is used up, also by other apps you use. Everything here can still be read, but GitHub may refuse edits until {time}, in {duration}; one it refuses says so. Changes other people make will show up after that.
+searchExplained:
+  en: githq used up this minute's GitHub search allowance. Everything here still works, and your edits still go through. Changes other people make will show up after {time}, in {duration}.
+slowDownExplained:
+  en: GitHub asked githq to slow down. Everything here still works, and your edits still go through. Changes other people make will show up after {time}, in {duration}.
+allowanceLabel:
+  en: Allowance
+allowanceThisHour:
+  en: '{remaining} of {limit} this hour'
+allowanceThisMinute:
+  en: '{remaining} of {limit} this minute'
+resumesLabel:
+  en: Resumes
+atIn:
+  en: '{time} · in {duration}'
+lastRefreshedLabel:
+  en: Last refreshed
+atAgo:
+  en: '{time} · {age} ago'
+never:
+  en: Not yet

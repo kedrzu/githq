@@ -1,0 +1,86 @@
+meta:
+  plural: count
+  en:
+    zero: '{owner} · no items'
+    one: '{owner} · 1 item'
+    many: '{owner} · {count} items'
+savedViews:
+  en: Saved views
+answeredByGitHub:
+  en: answered by GitHub
+modifiedLocally:
+  en: modified locally
+changedHere:
+  en: Changed here
+reset:
+  en: Reset
+deviceOnlyTitle:
+  en: View settings are saved on this device only
+deviceOnlyDetail:
+  en: “{view}” is a shared view on GitHub. githq never writes your changes back, so the team's view stays as it is.
+deviceOnlyNoView:
+  en: githq never writes your changes back to GitHub.
+boardUnavailable:
+  en: 'Board needs a single-choice field for its columns. {project} has none: {fields}.'
+noFields:
+  en: no fields of its own
+addFieldOnGitHub:
+  en: Add one in the project on GitHub ↗
+inOtherLists:
+  en: '{project} in other lists'
+rowField:
+  en: 'Row field: {field}'
+rowFieldNone:
+  en: None
+rowFieldDetail:
+  en: Shown next to this project's items in My work and repositories, e.g. “In progress +1”.
+fromGitHub:
+  en: From GitHub
+projectFields:
+  en: Project fields
+groupNone:
+  en: None
+groupRepository:
+  en: Repository
+groupMilestone:
+  en: Milestone
+groupAssignees:
+  en: Assignees
+filterLabel:
+  en: Filter of “{view}”
+answeredTerm:
+  en: githq can't check this itself, so GitHub answers this view
+roadmap:
+  en: A roadmap on GitHub, shown here as a list
+manual:
+  en: GitHub's order
+sortedBy:
+  en: 'Sort: {order}'
+emptyProjectTitle:
+  en: '{project} has no items yet'
+emptyProjectDetail:
+  en: Add issues and pull requests from any repository, or write a draft issue that lives only in this project. Items added on github.com show up here within a minute.
+newDraft:
+  en: New draft issue
+addExistingIssues:
+  en: Add existing issues
+newIssue:
+  en: New issue
+newDraftIn:
+  en: New draft in {group}
+newIssueIn:
+  en: New issue in {group}
+askingTitle:
+  en: GitHub is answering this view
+askingDetail:
+  en: githq can't check “{term}” itself, so GitHub runs this view's filter. It takes a moment.
+emptyViewTitle:
+  en: Nothing matches “{view}”
+emptyViewDetail:
+  en: '“{view}” is a view defined on GitHub: {filter}. No items match it right now.'
+showAllItems:
+  en: Show all items
+clearFilters:
+  en: Clear filters here
+emptyViewDetailNoFilter:
+  en: “{view}” is a view defined on GitHub. No items match it right now.

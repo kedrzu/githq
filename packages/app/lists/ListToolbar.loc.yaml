@@ -1,0 +1,28 @@
+groupBy:
+  en: 'Group: {grouping}'
+layout:
+  en: Layout
+list:
+  en: List
+board:
+  en: Board
+display:
+  en: Display
+order:
+  en: Order
+properties:
+  en: Properties
+deviceOnly:
+  en: Saved on this device only
+reset:
+  en: Reset
+orderBy:
+  en: 'Order: {order}'
+showAsBoard:
+  en: Show as board
+showAsList:
+  en: Show as list
+groupByCommand:
+  en: Group by…
+orderByCommand:
+  en: Order by…

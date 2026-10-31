@@ -1,0 +1,14 @@
+latestActivity:
+  en: Latest activity
+showAll:
+  en: Show all {count}
+noComments:
+  en: No comments yet.
+loading:
+  en: Loading comments…
+deletedUser:
+  en: ghost
+edited:
+  en: edited
+sending:
+  en: sending…

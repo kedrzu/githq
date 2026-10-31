@@ -1,0 +1,80 @@
+item:
+  en: Item
+previous:
+  en: Previous item
+next:
+  en: Next item
+position:
+  en: '{index} / {count}'
+arrangement:
+  en: Arrangement
+panel:
+  en: Panel
+modal:
+  en: Modal
+page:
+  en: Full page
+openOnGitHub:
+  en: Open on GitHub
+close:
+  en: Close
+open:
+  en: Open
+closedCompleted:
+  en: Closed
+closedNotPlanned:
+  en: Not planned
+closedDuplicate:
+  en: Duplicate
+draft:
+  en: Draft
+merged:
+  en: Merged
+closedUnmerged:
+  en: Closed
+openedBy:
+  en: '{author} · opened {ago}'
+openedAgo:
+  en: opened {ago}
+deletedUser:
+  en: ghost
+closes:
+  en: Closes
+noDescription:
+  en: No description provided.
+stateActions:
+  en: Close or reopen
+closeCompleted:
+  en: Close as completed
+closeNotPlanned:
+  en: Close as not planned
+closePullRequest:
+  en: Close pull request
+reopen:
+  en: Reopen
+readyForReview:
+  en: Mark ready for review
+convertToDraft:
+  en: Convert to draft
+comment:
+  en: Comment
+requestReviewers:
+  en: Request reviewers…
+addToProject:
+  en: Add to project…
+openFiles:
+  en: Open changed files on GitHub
+copyLink:
+  en: Copy link
+openAsPanel:
+  en: Open in the side panel
+openAsModal:
+  en: Open as a modal
+openAsPage:
+  en: Open as full page
+reopenCommand:
+  en: Reopen…
+closeIssueCommand:
+  en: Close issue…
+closePullRequestCommand:
+  en: Close pull request…

@@ -1,0 +1,20 @@
+projects:
+  en: Projects
+status:
+  en: Status
+current:
+  en: '{title} · current'
+empty:
+  en: Empty
+clear:
+  en: Clear
+addToProject:
+  en: Add to project
+filterProjects:
+  en: Add to project…
+loadingProjects:
+  en: Reading your projects…
+emptyClears:
+  en: Empty clears it · Enter sets it
+valueLabel:
+  en: '{field}: {value}'

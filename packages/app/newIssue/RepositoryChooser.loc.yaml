@@ -1,0 +1,12 @@
+label:
+  en: Repository
+placeholder:
+  en: Type part of a repository's name
+searching:
+  en: Searching GitHub…
+noMatch:
+  en: No repository you can create issues in matches
+choose:
+  en: Choose
+back:
+  en: Back to title

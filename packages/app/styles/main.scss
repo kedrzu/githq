@@ -1,0 +1,51 @@
+// Global styles, loaded once by `app.vue` (and by Storybook's `preview.ts`).
+
+// Self-hosted fonts, only the weights the design uses; no font CDN.
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    color-scheme: dark;
+    text-size-adjust: 100%;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: $font-family-sans;
+    font-size: $font-size-md;
+    line-height: $line-height-normal;
+    color: $color-fg;
+    background: $color-bg;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#__nuxt {
+    height: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}

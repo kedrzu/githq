@@ -1,0 +1,84 @@
+import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from '@githq/github/generated.gen.js';
+
+const REPOSITORY: IssueDetailFieldsFragment['repository'] = {
+    nameWithOwner: 'acme/web',
+    isPrivate: false,
+    viewerPermission: 'WRITE',
+    owner: { login: 'acme' },
+};
+
+/** An open issue as `ItemDetail(s)` answers it, for tests: no comments, links or projects. */
+export function sampleIssueDetailNode(id: string, updatedAt: string): IssueDetailFieldsFragment {
+    return {
+        __typename: 'Issue',
+        id,
+        url: `https://github.com/acme/web/issues/${id}`,
+        number: 1,
+        title: `Issue ${id}`,
+        issueState: 'OPEN',
+        stateReason: null,
+        createdAt: '2026-10-01T10:00:00Z',
+        updatedAt,
+        closedAt: null,
+        author: null,
+        assignees: { nodes: [] },
+        labels: { nodes: [] },
+        milestone: null,
+        issueType: null,
+        comments: { totalCount: 0 },
+        subIssuesSummary: { total: 0, completed: 0 },
+        repository: REPOSITORY,
+        body: `Body of ${id}`,
+        bodyHTML: `<p>Body of ${id}</p>`,
+        reactionGroups: [],
+        commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        parent: null,
+        subIssues: { totalCount: 0, nodes: [] },
+        blockedBy: { totalCount: 0, nodes: [] },
+        blocking: { totalCount: 0, nodes: [] },
+        projectItems: { nodes: [] },
+    };
+}
+
+/** An open pull request as `ItemDetail(s)` answers it, for tests: no checks, reviews or projects. */
+export function samplePullRequestDetailNode(id: string, updatedAt: string): PullRequestDetailFieldsFragment {
+    return {
+        __typename: 'PullRequest',
+        id,
+        url: `https://github.com/acme/web/pull/${id}`,
+        number: 2,
+        title: `Pull request ${id}`,
+        state: 'OPEN',
+        isDraft: false,
+        merged: false,
+        reviewDecision: 'REVIEW_REQUIRED',
+        mergeable: 'MERGEABLE',
+        mergeStateStatus: 'BLOCKED',
+        createdAt: '2026-10-01T10:00:00Z',
+        updatedAt,
+        closedAt: null,
+        additions: 1,
+        deletions: 1,
+        changedFiles: 1,
+        headRefName: 'feature',
+        baseRefName: 'main',
+        author: null,
+        assignees: { nodes: [] },
+        labels: { nodes: [] },
+        milestone: null,
+        comments: { totalCount: 0 },
+        closingIssuesReferences: { nodes: [] },
+        repository: REPOSITORY,
+        statusCheckRollup: null,
+        reviewRequests: { nodes: [] },
+        latestOpinionatedReviews: { nodes: [] },
+        body: `Body of ${id}`,
+        bodyHTML: `<p>Body of ${id}</p>`,
+        reactionGroups: [],
+        commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        commits: { totalCount: 1 },
+        headRepository: { nameWithOwner: 'acme/web' },
+        latestReviews: { nodes: [] },
+        projectItems: { nodes: [] },
+    };
+}

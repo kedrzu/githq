@@ -1,0 +1,24 @@
+reviews:
+  en: Reviews
+approved:
+  en: Approved
+changesRequested:
+  en: Changes requested
+commented:
+  en: Commented
+dismissed:
+  en: Dismissed
+pending:
+  en: Pending
+requested:
+  en: Requested
+deletedUser:
+  en: ghost
+none:
+  en: No reviews yet.
+request:
+  en: Request
+requestReview:
+  en: Request a review
+filterReviewers:
+  en: Ask for a review…

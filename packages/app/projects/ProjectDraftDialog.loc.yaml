@@ -1,0 +1,10 @@
+description:
+  en: A draft issue in {project}
+assignees:
+  en: Assignees
+noBody:
+  en: No description.
+readOnly:
+  en: Editing a draft and turning it into an issue happen on GitHub for now.
+openProject:
+  en: Open the project on GitHub

@@ -1,0 +1,28 @@
+nothingTitle:
+  en: Nothing on your plate
+nothingDetail:
+  en: No review requests, open pull requests, assigned issues or mentions, anywhere on GitHub.
+nothingTrackedDetail:
+  plural: count
+  en:
+    one: No review requests, open pull requests, assigned issues or mentions across your tracked repository.
+    many: No review requests, open pull requests, assigned issues or mentions across your {count} tracked repositories.
+nothingNeedsYouTitle:
+  en: Nothing needs you right now
+nothingNeedsYouDetail:
+  en: No review requests, no assigned issues, and none of your pull requests are failing, blocked or asked to change.
+pullRequestsWaiting:
+  plural: count
+  en:
+    one: '{count} of your pull requests is waiting on others'
+    many: '{count} of your pull requests are waiting on others'
+waitingOnOthers:
+  en: Waiting on others
+nothingWaitingTitle:
+  en: Nothing is waiting on others
+nothingWaitingDetail:
+  en: None of your pull requests is waiting for a review or for its checks to finish.
+newIssue:
+  en: New issue
+jumpToProject:
+  en: Jump to a project

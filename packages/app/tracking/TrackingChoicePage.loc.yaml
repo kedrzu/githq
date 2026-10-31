@@ -1,0 +1,8 @@
+reading:
+  en: Reading your repositories and projects from GitHub…
+failed:
+  en: GitHub couldn't be reached, so githq can't list your repositories yet.
+retry:
+  en: Try again
+skip:
+  en: Continue to My work

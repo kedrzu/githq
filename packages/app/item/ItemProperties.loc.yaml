@@ -1,0 +1,42 @@
+properties:
+  en: Properties
+assignees:
+  en: Assignees
+labels:
+  en: Labels
+milestone:
+  en: Milestone
+subIssues:
+  en: Sub-issues
+subIssuesDone:
+  en: '{completed} of {total}'
+parent:
+  en: Parent
+blockedBy:
+  en: Blocked by
+blocking:
+  en: Blocking
+noOne:
+  en: No one
+none:
+  en: None
+more:
+  en: +{count} more
+type:
+  en: Type
+noType:
+  en: No type
+noMilestone:
+  en: No milestone
+filterAssignees:
+  en: Assign to…
+filterLabels:
+  en: Filter labels…
+filterMilestones:
+  en: Set milestone…
+loading:
+  en: Reading the repository's options…
+restricted:
+  en: Labels, assignees, milestone and reviewers are set by {repository}'s maintainers. You can comment, and close or reopen what you opened.
+valueLabel:
+  en: '{property}: {value}'

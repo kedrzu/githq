@@ -1,0 +1,10 @@
+title:
+  en: Use a token (dev only)
+hint:
+  en: 'Only under bun run dev and in the local build. Paste a token with the repo, project and read:org scopes, e.g. from gh auth token.'
+token:
+  en: Token
+signIn:
+  en: Sign in with token
+failed:
+  en: GitHub didn't accept this token.

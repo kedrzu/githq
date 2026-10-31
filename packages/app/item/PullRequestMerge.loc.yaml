@@ -1,0 +1,90 @@
+merged:
+  en: Merged
+closedUnmerged:
+  en: Closed without merging
+draft:
+  en: Draft
+draftDetail:
+  en: not ready for review
+cannotMerge:
+  en: Can't merge yet
+ready:
+  en: Ready to merge
+readyDetail:
+  en: Approved · checks passed · no conflicts
+readyNoReview:
+  en: No review required · no conflicts
+notReady:
+  en: Not ready yet
+checksFailing:
+  plural: count
+  en:
+    one: '{count} check failing'
+    many: '{count} checks failing'
+checksFailingUncounted:
+  en: checks failing
+changesRequested:
+  en: changes requested
+conflicts:
+  en: conflicts
+checksRunning:
+  en: checks running
+waitingForReview:
+  en: waiting for review
+behind:
+  en: behind {base}
+blocked:
+  en: blocked by a rule
+checks:
+  en: Checks
+reviews:
+  en: Reviews
+conflictsLabel:
+  en: Conflicts
+noChecks:
+  en: None run
+allPassed:
+  plural: count
+  en:
+    one: Passed
+    many: All {count} passed
+failingCount:
+  en: '{count} failing'
+runningCount:
+  en: '{count} running'
+passedCount:
+  en: '{count} passed'
+changesRequestedBy:
+  en: Changes requested by {names}
+approvedBy:
+  en: Approved by {names}
+reviewRequired:
+  en: Review required
+waitingFor:
+  en: Waiting for {names}
+noReviewRequired:
+  en: None required
+approvals:
+  plural: count
+  en:
+    one: '{count} approval'
+    many: '{count} approvals'
+noConflicts:
+  en: None with {base}
+conflictsWith:
+  en: Conflicts with {base}
+mergeabilityUnknown:
+  en: GitHub is still checking
+files:
+  plural: count
+  en:
+    one: '{count} file'
+    many: '{count} files'
+branchInto:
+  en: '{head} into {base}'
+openOnGitHub:
+  en: Open on GitHub
+reviewFiles:
+  en: Review files
+noMerge:
+  en: githq doesn't merge

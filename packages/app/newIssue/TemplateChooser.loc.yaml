@@ -1,0 +1,26 @@
+label:
+  en: Issue templates
+asks:
+  en: '{repository} asks for a template'
+offers:
+  en: '{repository} has issue templates'
+formsOnGitHub:
+  en: You can't push here, so forms continue on github.com
+markdown:
+  en: markdown
+form:
+  en: form
+formOnGitHub:
+  en: form on GitHub
+continueOnGitHub:
+  en: Continue on GitHub
+blank:
+  en: Blank issue
+blankOff:
+  en: Turned off by {repository}
+useTemplate:
+  en: Use template
+back:
+  en: Back
+fromGitHub:
+  en: templates come from the repository on GitHub

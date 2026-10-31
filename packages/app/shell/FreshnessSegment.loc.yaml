@@ -1,0 +1,30 @@
+upToDate:
+  en: Up to date
+checking:
+  en: Checking…
+asOf:
+  en: As of {time}
+offline:
+  en: Offline
+failing:
+  en: As of {time} · GitHub isn't answering, retrying
+failingNothingYet:
+  en: GitHub isn't answering, retrying
+refused:
+  en: As of {time} · GitHub refuses to list its changes, asking again hourly
+refusedNothingYet:
+  en: GitHub refuses to list its changes, asking again hourly
+notRefreshedSince:
+  en: Not refreshed since {time}
+pausedUntil:
+  en: Paused until {time}
+downloading:
+  en: Downloading · what's here is usable
+checkedAgo:
+  en: Checked {age} ago
+answered:
+  en: Answered by GitHub · githq can't check “{term}” itself, so this view refreshes about every 2 min
+asking:
+  en: Asking GitHub · githq can't check “{term}” itself
+editsStillGo:
+  en: edits still go through

@@ -1,0 +1,126 @@
+// Design tokens: SCSS variables and mixins only — nothing here may emit CSS, because this partial is
+// injected into every SCSS block of `packages/` (see `viteShared.ts`).
+//
+// The values come from `githq.pen` (Direction D, D9). The app is dark only. Names say what a token is for,
+// not what it looks like.
+
+// ---------------------------------------------------------------------------------------------------
+// Colors — surfaces and lines
+// ---------------------------------------------------------------------------------------------------
+
+// The window: the list, the sign-in page, fields set into the sidebar.
+$color-bg: #0e1013;
+// The sidebar, the status bar, boxes on the sign-in page.
+$color-bg-2: #131519;
+// A hovered or current row in the sidebar, keyboard hints.
+$color-bg-3: #1a1d22;
+// The selected row of a list.
+$color-sel: #1c2030;
+// Lines between surfaces and around boxes.
+$color-border: #22262d;
+// Stronger outlines: keyboard hints, a notice.
+$color-border-2: #2e333b;
+
+// ---------------------------------------------------------------------------------------------------
+// Colors — text and icons
+// ---------------------------------------------------------------------------------------------------
+
+// Main text.
+$color-fg: #e4e6ea;
+// Secondary text, idle navigation, icons.
+$color-fg-2: #9aa0a9;
+// Dim icons and decoration only (a chevron, the "+" of a section). The design also sets dim text in it,
+// but on the window's background it reads 3.5:1, under WCAG AA — dim text is `$color-fg-dim`.
+$color-fg-3: #646b75;
+// Dim text: counts, section headers, the status bar, footers, details. The closest step up from
+// `$color-fg-3` that passes AA (4.5:1) on every surface it sits on, up to `$color-sel` (a selected row).
+$color-fg-dim: #838992;
+// Text on the light button ("Sign in with GitHub") and on the accent.
+$color-on-light: #0e1013;
+
+// ---------------------------------------------------------------------------------------------------
+// Colors — accent and states
+// ---------------------------------------------------------------------------------------------------
+
+$color-accent: #7b87f7;
+$color-green: #3fb950;
+$color-red: #f0545c;
+$color-amber: #d6a23a;
+$color-purple: #a57bf5;
+
+// The light button's fill.
+$color-button-light: #e4e6ea;
+$color-button-light-hover: #ffffff;
+
+// The keyboard focus ring.
+$color-focus: $color-accent;
+
+// ---------------------------------------------------------------------------------------------------
+// Type
+// ---------------------------------------------------------------------------------------------------
+
+$font-family-sans: 'Inter', system-ui, sans-serif;
+$font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+$font-size-2xs: 11.5px;
+$font-size-xs: 12px;
+$font-size-sm: 12.5px;
+$font-size-md: 13px;
+$font-size-lg: 14px;
+$font-size-xl: 15px;
+$font-size-display: 30px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+
+$line-height-tight: 1.2;
+$line-height-normal: 1.5;
+
+// ---------------------------------------------------------------------------------------------------
+// Space and shape
+// ---------------------------------------------------------------------------------------------------
+
+$spacing-2: 2px;
+$spacing-4: 4px;
+$spacing-6: 6px;
+$spacing-8: 8px;
+$spacing-10: 10px;
+$spacing-12: 12px;
+$spacing-16: 16px;
+$spacing-24: 24px;
+
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-xl: 10px;
+
+// Widths of the surfaces; the status bar's segments follow them.
+$sidebar-width: 236px;
+$sidebar-rail-width: 56px;
+$status-bar-height: 26px;
+$list-header-height: 48px;
+// An item opened in the panel beside a list.
+$item-panel-width: 560px;
+
+// ---------------------------------------------------------------------------------------------------
+// Mixins
+// ---------------------------------------------------------------------------------------------------
+
+// The focus ring for keyboard users only.
+@mixin focus-ring {
+    &:focus-visible {
+        outline: 2px solid $color-focus;
+        outline-offset: 1px;
+    }
+}
+
+// Text for screen readers only: out of sight, still in the accessibility tree.
+@mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

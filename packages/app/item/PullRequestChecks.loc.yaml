@@ -1,0 +1,35 @@
+checks:
+  en: Checks
+failingCount:
+  en: '{count} failing'
+runningCount:
+  en: '{count} running'
+passedCount:
+  en: '{count} passed'
+skippedCount:
+  en: '{count} skipped'
+failedAfter:
+  en: failed after {duration}
+failed:
+  en: failed
+runningFor:
+  en: running for {duration}
+queued:
+  en: queued
+passedIn:
+  en: passed in {duration}
+passed:
+  en: passed
+skipped:
+  en: skipped
+log:
+  en: Log
+showPassed:
+  en: Show the checks that passed
+hidePassed:
+  en: Hide the checks that passed
+more:
+  plural: count
+  en:
+    one: '{count} more on GitHub'
+    many: '{count} more on GitHub'

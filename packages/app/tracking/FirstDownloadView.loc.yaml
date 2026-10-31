@@ -1,0 +1,71 @@
+title:
+  en: Copying your work into this browser
+subtitle:
+  en: Your own issues and pull requests come first. The rest keeps arriving in the background, so you can start now.
+ready:
+  en: Your work is ready
+arriving:
+  en: Your work is arriving
+arrivingDetail:
+  en: The issues and pull requests that concern you come first; it takes a few seconds.
+readyDetail:
+  plural: count
+  en:
+    zero: 'Nothing open needs you right now.'
+    one: '1 open item: {groups}'
+    many: '{count} open items: {groups}'
+reviewRequests:
+  plural: count
+  en:
+    one: 1 review request
+    many: '{count} review requests'
+pullRequests:
+  plural: count
+  en:
+    one: 1 pull request
+    many: '{count} pull requests'
+assigned:
+  en: '{count} assigned'
+mentions:
+  plural: count
+  en:
+    one: 1 mention
+    many: '{count} mentions'
+open:
+  en: Open My work
+everything:
+  en: Everything you chose
+overall:
+  en: '{done} of {total} items'
+overallWaiting:
+  en: counting the items…
+soFar:
+  plural: count
+  en:
+    one: 1 item so far
+    many: '{formatted} items so far'
+left:
+  en: about {time} left
+allDone:
+  en: Everything is here.
+progress:
+  en: Download progress
+items:
+  plural: count
+  en:
+    one: 1 item
+    many: '{count} items'
+itemsOf:
+  en: '{done} of {total}'
+waiting:
+  en: waiting
+done:
+  en: Done
+hiddenRepository:
+  en: Not shown to githq
+privateHidden:
+  en: Private repositories hidden
+andMore:
+  en: '{name} and {count} more'
+foot:
+  en: 'Closed issues arrive last; they only matter for search and history. You can close this tab: the copy resumes where it stopped.'

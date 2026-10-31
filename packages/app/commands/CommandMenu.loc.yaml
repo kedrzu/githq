@@ -1,0 +1,40 @@
+title:
+  en: Command menu
+placeholder:
+  en: Type a command or search…
+filterOptions:
+  en: Filter options…
+view:
+  en: This view
+goTo:
+  en: Go to
+projects:
+  en: Projects
+repositories:
+  en: Repositories
+items:
+  en: Issues & pull requests
+app:
+  en: App
+notTracked:
+  en: not tracked · open to track it
+chosen:
+  en: current
+loading:
+  en: Reading what to offer…
+noMatch:
+  en: Nothing matches
+run:
+  en: Run
+set:
+  en: Set
+back:
+  en: Back
+close:
+  en: Close
+openSubmenu:
+  en: Open submenu
+removeContext:
+  en: Remove context
+commandsOnly:
+  en: Commands only

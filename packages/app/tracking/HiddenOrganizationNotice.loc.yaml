@@ -1,0 +1,26 @@
+bannerText:
+  en: "{organization} hasn't approved githq, so its private repositories can't be listed."
+bannerPublic:
+  plural: count
+  en:
+    zero: No public ones are.
+    one: One public one is.
+    many: '{count} public ones are.'
+explain:
+  en: Why, and how to fix
+title:
+  en: '{organization} hides its private data from githq'
+detail:
+  en: "You're a member of {organization}, but the organisation only lets apps it has approved see its private data. GitHub hides its private repositories and projects from githq until an owner of {organization} approves it. Nothing is broken, and nothing is missing on GitHub."
+steps:
+  en: How it gets fixed
+step1:
+  en: "You request approval on GitHub's page for it. It takes one click there."
+step2:
+  en: An owner of {organization} approves githq on GitHub.
+step3:
+  en: githq notices on its next refresh. The repositories then appear here, unselected.
+requestApproval:
+  en: Request approval on GitHub
+requested:
+  en: You opened GitHub's page to request approval on {date}.
