@@ -98,7 +98,9 @@ $radius-md: 6px;
 $radius-lg: 8px;
 $radius-xl: 10px;
 
-// Widths of the surfaces; the status bar's segments follow them.
+// Widths of the surfaces; the status bar's segments follow them. The sidebar and the item panel are resized by the
+// user: these are the widths until they are (`AppShell` keeps the current ones in `--sidebar-width` and
+// `--item-panel-width`).
 $sidebar-width: 236px;
 $sidebar-rail-width: 56px;
 $status-bar-height: 26px;

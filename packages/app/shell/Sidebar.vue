@@ -279,7 +279,7 @@ function statusText(status: SidebarTrackedStatus) {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
-  width: $sidebar-width;
+  width: 100%;
   height: 100%;
   padding: $spacing-12 $spacing-10;
   overflow-y: auto;
@@ -290,7 +290,6 @@ function statusText(status: SidebarTrackedStatus) {
 .sidebar_collapsed {
   gap: $spacing-4;
   align-items: center;
-  width: $sidebar-rail-width;
   padding: $spacing-12 0;
 }
 
