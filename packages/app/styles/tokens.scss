@@ -110,8 +110,48 @@ $list-header-height: 48px;
 $item-panel-width: 560px;
 
 // ---------------------------------------------------------------------------------------------------
+// The landing page (`landing/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The hero's headline is lit from below: a vertical gradient from the top to the bottom of the text.
+$color-landing-headline-top: #8a919b;
+$color-landing-headline-bottom: #f5f6f8;
+// The widest the page's content gets; the design's frame is 1440 wide with 120 on each side.
+$landing-content-width: 1200px;
+// The screenshots of features, as the design sizes them on a wide page (the images are twice that).
+$landing-visual-width: 640px;
+$landing-visual-height: 560px;
+$landing-visual-height-mobile: 400px;
+$radius-landing-visual: 16px;
+// Screenshots lifted off the page, and the boxes laid over them.
+$shadow-landing-visual: 0 30px 80px rgb(0 0 0 / 60%);
+$shadow-landing-overlay: 0 24px 64px rgb(0 0 0 / 75%);
+$shadow-landing-toast: 0 12px 32px rgb(0 0 0 / 67%);
+
+// ---------------------------------------------------------------------------------------------------
 // Mixins
 // ---------------------------------------------------------------------------------------------------
+
+// The landing page's layouts follow the page's width (the `landing` container of `LandingScreen`), so a story
+// of a narrow page shows the phone layout without resizing the browser. `narrow`: the features stack and the
+// navigation folds into a menu; `mobile`: the design's phone frame (390 wide).
+@mixin landing-narrow {
+    @container landing (width < 1080px) {
+        @content;
+    }
+}
+
+@mixin landing-mobile {
+    @container landing (width < 720px) {
+        @content;
+    }
+}
+
+// A full-width band of the landing page with its content in the middle: 120 on each side at the design's 1440,
+// down to 20 on a phone, and never wider than `$landing-content-width`.
+@mixin landing-gutter {
+    padding-inline: max(clamp(20px, 8.33cqi, 120px), calc((100% - #{$landing-content-width}) / 2));
+}
 
 // The focus ring for keyboard users only.
 @mixin focus-ring {

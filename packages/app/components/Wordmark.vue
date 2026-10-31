@@ -1,4 +1,4 @@
-<!-- githq's logo, the wordmark "git/hq" (brandbook "Logo — git/hq" in `githq.pen`): Geist 700, violet on the slash alone. It heads the first sign-in's steps and the landing page. -->
+<!-- githq's logo, the wordmark "git/hq" (brandbook "Logo — git/hq" in `githq.pen`): Geist 700, violet on the slash alone. It heads the first sign-in's steps and the landing page; a caller sizes it with `--wordmark-size`. -->
 <template>
   <span
     :class="css.wordmark"
@@ -11,7 +11,7 @@
 <style lang="scss" module="css">
 .wordmark {
   font-family: $font-family-brand;
-  font-size: 16px;
+  font-size: var(--wordmark-size, 16px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.045em;
