@@ -76,8 +76,8 @@ const sections = computed(() =>
                 <Kbd
                   v-for="(part, index) in formatCommandKey(key)"
                   :key="index"
-                  >{{ part }}</Kbd
-                >
+                  :keys="part"
+                />
               </template>
             </dd>
           </div>

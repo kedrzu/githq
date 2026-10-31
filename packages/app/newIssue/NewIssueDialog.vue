@@ -532,7 +532,7 @@ function onEscape(event: KeyboardEvent) {
             v-else
             :class="css.newIssueDialog_hint"
             aria-hidden="true"
-            ><Kbd>Esc</Kbd> {{ t(l.collapse) }}</span
+            ><Kbd keys="Esc" /> {{ t(l.collapse) }}</span
           >
           <Button
             v-if="templateCount > 0 && !choosingTemplate"

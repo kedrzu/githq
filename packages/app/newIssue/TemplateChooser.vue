@@ -136,7 +136,7 @@ function pick(value: AcceptableValue | AcceptableValue[]) {
           :class="css.templateChooser_about"
           >{{ t(l.continueOnGitHub) }}</span
         >
-        <Kbd>↵</Kbd>
+        <Kbd keys="↵" />
       </template>
     </template>
     <template #footerEnd>

@@ -43,7 +43,10 @@ defineSlots<{
           :collision-padding="8"
         >
           <slot name="content">{{ text }}</slot>
-          <Kbd v-if="kbd">{{ kbd }}</Kbd>
+          <Kbd
+            v-if="kbd"
+            :keys="kbd"
+          />
         </TooltipContent>
       </TooltipPortal>
     </TooltipRoot>

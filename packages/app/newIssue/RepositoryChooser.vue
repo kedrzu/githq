@@ -118,7 +118,10 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
         :class="css.repositoryChooser_detail"
         >{{ row.choice.unavailable }}</span
       >
-      <Kbd v-else-if="highlighted">↵</Kbd>
+      <Kbd
+        v-else-if="highlighted"
+        keys="↵"
+      />
     </template>
   </FilterList>
 </template>

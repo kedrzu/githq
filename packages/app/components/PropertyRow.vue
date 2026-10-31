@@ -27,8 +27,8 @@ defineSlots<{
       <Kbd
         v-if="kbd"
         :class="css.propertyRow_kbd"
-        >{{ kbd }}</Kbd
-      >
+        :keys="kbd"
+      />
     </dd>
   </div>
 </template>
