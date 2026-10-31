@@ -1,6 +1,7 @@
 {
     "name": "@githq/app",
     "private": true,
+    "license": "AGPL-3.0-only",
     "description": "githq web app (Nuxt SPA, built to static files)",
     "type": "module",
     "exports": {
