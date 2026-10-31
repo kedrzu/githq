@@ -1,159 +1,96 @@
 <div align="center">
 
-<a href="https://githq.dev"><img src="packages/app/public/favicon.svg" width="72" height="72" alt="githq"></a>
+<a href="https://githq.dev"><picture>
+<source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/wordmark-dark.svg">
+<img src="docs/assets/readme/wordmark-light.svg" alt="githq" height="56">
+</picture></a>
 
-# githq
+A keyboard-first client for GitHub Issues, pull requests and Projects.
 
-### Your GitHub issues, at the speed of thought.
+[githq.dev](https://githq.dev) · [Design](docs/design/githq/README.md) · [Issues](https://github.com/kedrzu/githq/issues)
 
-A keyboard-first task manager on top of GitHub Issues and Projects.<br>
-Linear’s speed, GitHub’s data — free, open source, and nothing to keep in sync.
-
-[![Open githq.dev](https://img.shields.io/badge/open-githq.dev-7b87f7?style=flat-square)](https://githq.dev)
-[![GitHub stars](https://img.shields.io/github/stars/kedrzu/githq?style=flat-square&logo=github&label=stars&color=7b87f7)](https://github.com/kedrzu/githq/stargazers)
 [![Deploy](https://img.shields.io/github/actions/workflow/status/kedrzu/githq/deploy.yml?branch=main&style=flat-square&label=deploy)](https://github.com/kedrzu/githq/actions/workflows/deploy.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
 
-**[Sign in with GitHub](https://githq.dev)** · [Features](#features) · [Why githq](#why-githq) · [Development](#development)
-
-<sub>No install · No new tracker · Nothing stored outside GitHub</sub>
-
-<br>
+</div>
 
 <img src="docs/assets/readme/my-work.png" alt="githq: My work across every repository, with an issue open in the side panel" width="100%">
 
-</div>
+## Why
 
-<br>
+GitHub is a fine place to keep issues: next to the code, open to contributors, free. It is a slow place to work
+them. Every view is a page load, there is no single list of what concerns you across repositories, and the
+mouse is never optional. The usual answer is a dedicated tracker, which means a second tool, a sync, and seats
+to pay for.
 
-**Built on what your team already uses:** Issues · Pull requests · Projects · Labels · Milestones · Iterations · Assignees
+githq is the other answer: a fast client for the tracker you already have. It shows what GitHub has and
+nothing else, and every change you make is an ordinary GitHub change, visible on github.com at once.
 
-## Not another tracker. A faster way to work the one you already have.
+## What it does
 
-Every issue, label and project field stays on GitHub, where your code and your contributors already are.
-githq doesn’t import, mirror or own any of it — it just makes working it feel instant. Every change you make
-here is an ordinary GitHub change, on github.com the same second.
+- **My work** — issues assigned to you, your pull requests with checks and reviews, reviews waiting on you and
+  mentions, from every repository, including other people's.
+- **Repositories and Projects** — tracked repositories and GitHub Projects as lists or boards, with the
+  fields, views and iterations each project defines.
+- **Keyboard first** — a command menu (<kbd>⌘</kbd> <kbd>K</kbd>) and single-key actions on the selected
+  items.
+- **Instant** — screens open from a copy in your browser; edits show at once and are written to GitHub behind
+  the scenes.
+- **Same addresses** — replace `github.com` with `githq.dev` in a link to an issue, pull request or list.
 
-## Features
+There is more on [githq.dev](https://githq.dev).
 
-### ⚡ Instant isn’t a feature. It’s the whole point.
+## How it works
 
-githq keeps a copy of your GitHub work in the browser and refreshes it in the background. Screens open from
-that copy and edits land before GitHub even answers. There is no spinner between you and the next issue.
+githq is a single-page app that talks to GitHub's GraphQL API straight from your browser. What you work on is
+kept in IndexedDB as a cache that can always be rebuilt from GitHub; tracked repositories and projects are
+refreshed with conditional REST requests, which cost nothing from your rate limit when nothing changed.
 
-- Every screen opens from a local copy
-- Edits show at once, written to GitHub behind the scenes
-- Background refresh on GitHub’s free “not modified” answers
+The app is static files on Cloudflare. The only code that runs on a server is one stateless Worker that trades
+GitHub's OAuth code for a token, because GitHub's token endpoint needs the client secret. It has no database and never sees your
+issues. The design and every decision behind it, with the evidence, are in
+[`docs/design/githq/`](docs/design/githq/README.md) and [`DECISIONS.md`](docs/design/githq/DECISIONS.md).
 
-<p align="center"><img src="docs/assets/readme/instant.png" alt="A project board: the status change shows at once and is saved to GitHub" width="560"></p>
+## Permissions and privacy
 
-### 📥 Everything that’s yours. Every repo. One screen.
+githq is a GitHub OAuth App. It asks for three scopes and needs all of them:
 
-Issues assigned to you, your pull requests with their CI and review state, the reviews waiting on you, the
-projects you track. A pull request that closes your issue sits right under it, so the same work never shows
-up twice.
+- `repo` — read and edit issues and pull requests, private ones included. GitHub has no narrower scope for
+  that, so the consent screen reads as full repository access; githq touches only issues, pull requests and
+  projects.
+- `project` — read and edit GitHub Projects.
+- `read:org` — list your organizations, to filter by owner and to tell which one hides its private data.
 
-- Assigned issues across every repository
-- Your PRs: checks, reviews, draft, mergeable
-- Reviews requested from you, front and center
+Your token stays in your browser's `localStorage`, and your data goes from the browser to `api.github.com`.
+The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
+Cloudflare's own request logs still record that a request happened. The app has no analytics. You can revoke
+access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
+restricts OAuth Apps keeps its private repositories hidden until an owner approves githq.
 
-<p align="center"><img src="docs/assets/readme/my-work-list.png" alt="My work: reviews requested, your pull requests and assigned issues from every repository" width="560"></p>
+## Status
 
-### ⌨️ Your hands never leave the keyboard.
-
-<kbd>⌘</kbd> <kbd>K</kbd> finds any issue, repository or action. A single key sets the status, assignee or
-labels of whatever is selected — one item or twenty. Another opens it on github.com when it’s time to read
-the diff.
-
-|Key|Action|
-|-|-|
-|<kbd>⌘</kbd> <kbd>K</kbd>|Command menu|
-|<kbd>C</kbd>|New issue|
-|<kbd>S</kbd>|Set status|
-|<kbd>A</kbd>|Assignee|
-|<kbd>L</kbd>|Labels|
-|<kbd>O</kbd>|Open on GitHub|
-
-<p align="center"><img src="docs/assets/readme/keyboard.png" alt="The command menu: projects, repositories, issues and actions in one search" width="560"></p>
-
-### 🐙 GitHub’s model. Linear’s feel.
-
-If your project has a Status field, githq shows that Status. Custom fields, iterations, list or board —
-whatever your GitHub Project defines, and nothing githq made up. Change it here and it’s changed on
-github.com. And the other way round.
-
-- Projects (v2) fields, views and iterations
-- Two-way by design — GitHub is the source of truth
-- Every githq address is a GitHub address
-
-<p align="center"><img src="docs/assets/readme/faithful.png" alt="An issue with its assignees, labels, milestone and the fields of every project it belongs to" width="560"></p>
-
-## The details
-
-Small things that add up to a tool you keep open.
-
-- **Swap the host, keep the page.** Change `github.com` to `githq.dev` in any link and the same issue, pull
-  request or list opens in githq. Anything githq doesn’t show hands you straight back to github.com.
-
-  ```diff
-  - https://github.com/acme/web/issues/42
-  + https://githq.dev/acme/web/issues/42
-  ```
-
-- **Free. Actually free.** No seats, no plans, no trial that runs out. GitHub is the backend, so there is
-  nothing for us to charge you for.
-
-- **No server holds your work.** You sign in with GitHub and that’s it. Your work lives on GitHub and in your
-  browser — githq has no database of its own.
-
-- **Gentle on your API limit.** Change checks use GitHub’s conditional requests. When nothing changed, they
-  don’t count against your hourly allowance.
-
-- **Installs like an app.** Add githq to your dock or home screen. It opens straight into your work, in its
-  own window.
-
-- **Anywhere on GitHub.** The pull request you opened on someone else’s open-source project shows up too. If
-  it concerns you, it’s in your work — no matter whose repository.
-
-- **Reviews stay where diffs belong.** githq tells you when a pull request is ready: checks, reviews,
-  mergeable. One key opens it on github.com for the review.
-
-## Why githq
-
-The best of both. Without the second tool.
-
-||github.com|A dedicated tracker|**githq**|
-|-|:-:|:-:|:-:|
-|Your work lives next to your code|✅|❌|✅|
-|Instant — no spinner on navigation|❌|✅|✅|
-|Everything from the keyboard|Partly|✅|✅|
-|All your repositories in one view|Partly|✅|✅|
-|Nothing to import or keep in sync|✅|❌|✅|
-|Price for your team|Free|Per seat|**Free**|
-
-## Built in the open. On GitHub, obviously.
-
-Every line of githq, every design decision and every issue is public. It’s planned in
-[GitHub Issues](https://github.com/kedrzu/githq/issues) — and worked from githq itself. Read the code, open an
-issue, send a pull request. githq is young and moving fast: the design behind it is in
-[`docs/design/githq/`](docs/design/githq/README.md), with every decision and its reasons in
-[`DECISIONS.md`](docs/design/githq/DECISIONS.md).
-
-If githq makes your day on GitHub faster, a ⭐ helps others find it.
+githq is young and moving fast. It is planned in the open in
+[GitHub Issues](https://github.com/kedrzu/githq/issues) and worked from githq itself. Expect rough edges, and
+please report them.
 
 ## Development
 
-A Nuxt 4 single-page app and one Cloudflare Worker, on bun workspaces and Nx; GitHub’s GraphQL API is the
-only backend.
+A Nuxt 4 single-page app and one Cloudflare Worker, on bun workspaces and Nx.
 
 ```sh
 bun run setup   # install, generate, build
 bun run dev     # the app on http://localhost:8787
 ```
 
-Without OAuth credentials in `.env` (template: `.env.example`), the dev sign-in screen takes a personal
-token — `gh auth token` works. The rest of the commands, the checks and how we work are in
+Without OAuth credentials in `.env` (template: `.env.example`), the sign-in screen of a development build
+takes a personal token — `gh auth token` works. The rest of the commands, the checks and how we work are in
 [`AGENTS.md`](AGENTS.md).
+
+## Security
+
+Please report vulnerabilities privately through
+[GitHub's private vulnerability reporting](https://github.com/kedrzu/githq/security/advisories/new), not in
+public issues.
 
 ## License
 
@@ -176,4 +113,4 @@ the copyright to your contribution; the agreement lets githq also offer it under
 
 <br>
 
-<div align="center"><sub>githq · GitHub Issues, at the speed of thought · Not affiliated with GitHub, Inc.</sub></div>
+<div align="center"><sub>githq is not affiliated with GitHub, Inc.</sub></div>
