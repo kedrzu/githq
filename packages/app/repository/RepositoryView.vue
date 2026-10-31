@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) and the state (open by default, closed, both) beside the title; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -20,10 +20,6 @@ import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import Menu from '@/components/Menu.vue';
-import MenuLabel from '@/components/MenuLabel.vue';
-import MenuRadioGroup from '@/components/MenuRadioGroup.vue';
-import MenuRadioItem from '@/components/MenuRadioItem.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import ItemCard from '@/lists/ItemCard.vue';
@@ -32,6 +28,7 @@ import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
+import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import type {
   ListChoice,
   ListContextMenuProps,
@@ -157,11 +154,21 @@ const properties = computed(() => {
   const shown = options.value.properties;
   return ITEM_PROPERTIES.filter((property): property is ItemProperty => shown.includes(property));
 });
-const stateValue = computed({
-  get: (): string => state.value,
-  set: value => {
-    state.value = REPOSITORY_STATES.find(candidate => candidate === value) ?? 'open';
-  },
+/** The state as a filter of the toolbar: on it while it fits, else in the display options. */
+const stateOption = computed((): ListToolbarOption => {
+  const section = t(l.state);
+  return {
+    kind: 'menu',
+    key: 'state',
+    label: section,
+    icon: ListFilter,
+    title: t(STATE_LABELS[state.value]),
+    choices: REPOSITORY_STATES.map(value => ({ value, label: t(STATE_LABELS[value]), section })),
+    value: state.value,
+    choose: value => {
+      state.value = REPOSITORY_STATES.find(candidate => candidate === value) ?? 'open';
+    },
+  };
 });
 const meta = computed(() => {
   const parts = props.isPrivate === null ? [] : [t(props.isPrivate ? l.private : l.public)];
@@ -189,6 +196,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
         :groupings="groupings"
         :sorts="choices.sorts.value"
         :properties="choices.properties.value"
+        :filters="[stateOption]"
         :modified="modified"
         @reset="emit('reset')"
       >
@@ -213,29 +221,6 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           :label="t(l.kinds)"
           :options="kindOptions"
         />
-        <template #actions>
-          <Menu align="end">
-            <template #trigger>
-              <Button
-                variant="ghost"
-                size="sm"
-                :icon="ListFilter"
-              >
-                {{ t(STATE_LABELS[state]) }}
-              </Button>
-            </template>
-            <MenuLabel>{{ t(l.state) }}</MenuLabel>
-            <MenuRadioGroup v-model="stateValue">
-              <MenuRadioItem
-                v-for="value in REPOSITORY_STATES"
-                :key="value"
-                :value="value"
-              >
-                {{ t(STATE_LABELS[value]) }}
-              </MenuRadioItem>
-            </MenuRadioGroup>
-          </Menu>
-        </template>
       </ListToolbar>
 
       <nav
