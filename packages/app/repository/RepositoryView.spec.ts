@@ -45,17 +45,27 @@ test('J1 → J2: grouped by milestone, then by issue type as a board from the to
     await expect.element(page.getByRole('region', { name: 'No type' })).toHaveTextContent(/#1203/);
 });
 
-test('the display options set the order and the properties rows show', async () => {
+test('the order and the properties sit on the toolbar while they fit; on a narrow screen the properties move into Display', async () => {
     const view = mount();
     const row = page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' });
     await expect.element(row.getByText('calendar', { exact: true })).toBeVisible();
 
-    await userEvent.click(page.getByRole('button', { name: 'Display' }));
-    await userEvent.click(page.getByRole('button', { name: 'Labels' }));
-    await userEvent.click(page.getByRole('button', { name: 'Title' }));
+    await userEvent.click(page.getByRole('button', { name: /^Order:/ }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Title' }));
     expect(view.options.value.sort).toBe('title');
+    await userEvent.click(page.getByRole('button', { name: 'Properties' }));
+    await userEvent.click(page.getByRole('dialog', { name: 'Properties' }).getByRole('button', { name: 'Labels' }));
     expect(view.options.value.properties).not.toContain('labels');
     await expect.element(row.getByText('calendar', { exact: true })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    view.host.style.width = '960px';
+    await expect.element(page.getByRole('button', { name: 'Properties' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Display' }));
+    const display = page.getByRole('dialog', { name: 'Display' });
+    await userEvent.click(display.getByRole('button', { name: 'Labels' }));
+    expect(view.options.value.properties).toContain('labels');
 });
 
 test('J3: not tracked, it lists what concerns the user and asks to be tracked', async () => {
@@ -93,6 +103,7 @@ function mount({ tracked = true }: MountOptions = {}) {
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';
+    host.style.width = '1400px';
     document.body.append(host);
 
     const app = createApp({
@@ -130,7 +141,7 @@ function mount({ tracked = true }: MountOptions = {}) {
         host.remove();
     });
 
-    return view;
+    return Object.assign(view, { host });
 }
 
 /** The groups shown, top to bottom or left to right. */
