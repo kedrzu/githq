@@ -13,6 +13,9 @@ import { parse } from 'opentype.js';
 // - `favicon.svg`: the browser tab, and the project icon Paseo finds in `packages/*/public`. In the
 //   proportions of the 32 px tile, because it is shown at 32 px and below, where the letters grow.
 // - `apple-touch-icon.png`: 180 px, in the proportions of the 120 px tile, square — iOS rounds it itself.
+// - `icon-192.png`, `icon-512.png`: the installed app (`manifest.webmanifest`), the 120 px tile as drawn.
+// - `icon-maskable-512.png`: the same, square, for launchers that cut their own shape; "/hq" stays inside
+//   the safe circle (40 % of the side from the centre).
 
 const PUBLIC = path.join(import.meta.dirname, '../public');
 const FONT = path.join(import.meta.dirname, '../node_modules/@fontsource/geist/files/geist-latin-700-normal.woff');
@@ -26,22 +29,50 @@ interface TileShape {
     fontSize: number;
     letterSpacing: number;
     cornerRadius: number;
-    stroke: string | null;
+    /** The edge, if any, and its width. */
+    stroke: { color: string; width: number } | null;
 }
 
-/** "32 · 20 · 16": 16 px type and 7.36 px corners on 32 px, a 1 px #2E333B edge. */
-const SMALL_TILE: TileShape = { fontSize: 16 / 32, letterSpacing: -0.05, cornerRadius: 7.36 / 32, stroke: '#2e333b' };
+// The smaller the icon, the larger "/hq" on its tile, so it stays legible: the brandbook's 16 px type on a
+// 32 px tile is raised to 54 %, and the 120 px tile's 38 % to 44 % for the icons seen at home-screen size
+// (180, 192 px). The 512 px ones keep 38 % — the maskable one needs it to stay inside the safe circle.
 
-/** "Black tile": 46 px type on 120 px; full-bleed, so no corners and no edge. */
-const LARGE_TILE: TileShape = { fontSize: 46 / 120, letterSpacing: -0.035, cornerRadius: 0, stroke: null };
+/** "32 · 20 · 16": 7.36 px corners on 32 px, a 1 px #2E333B edge; the type raised from 16 px. */
+const SMALL_TILE: TileShape = {
+    fontSize: 0.54,
+    letterSpacing: -0.05,
+    cornerRadius: 7.36 / 32,
+    stroke: { color: '#2e333b', width: 1 / 32 },
+};
+
+/** "Black tile": 46 px type and 27.6 px corners on 120 px, a 1 px faint white edge. */
+const LARGE_TILE: TileShape = {
+    fontSize: 46 / 120,
+    letterSpacing: -0.035,
+    cornerRadius: 27.6 / 120,
+    stroke: { color: '#ffffff14', width: 1 / 120 },
+};
+
+/** The black tile full-bleed, for whoever rounds or masks it: no corners and no edge. */
+const SQUARE_TILE: TileShape = { ...LARGE_TILE, cornerRadius: 0, stroke: null };
+
+/** Home-screen size: the large tile with the type raised. */
+const MEDIUM_FONT_SIZE = 0.44;
 
 async function generateIcons() {
     const font = parse(toArrayBuffer(await readFile(FONT)));
 
     await writeFile(path.join(PUBLIC, 'favicon.svg'), drawIcon(font, 32, SMALL_TILE));
 
-    const png = new Resvg(drawIcon(font, 180, LARGE_TILE)).render().asPng();
-    await writeFile(path.join(PUBLIC, 'apple-touch-icon.png'), png);
+    const pngs: [string, number, TileShape][] = [
+        ['apple-touch-icon.png', 180, { ...SQUARE_TILE, fontSize: MEDIUM_FONT_SIZE }],
+        ['icon-192.png', 192, { ...LARGE_TILE, fontSize: MEDIUM_FONT_SIZE }],
+        ['icon-512.png', 512, LARGE_TILE],
+        ['icon-maskable-512.png', 512, SQUARE_TILE],
+    ];
+    for (const [file, size, shape] of pngs) {
+        await writeFile(path.join(PUBLIC, file), new Resvg(drawIcon(font, size, shape)).render().asPng());
+    }
 
     console.info(`Icons written to ${PUBLIC}.`);
 }
@@ -67,10 +98,10 @@ function drawIcon(font: Font, size: number, shape: TileShape): string {
         return `<path fill="${index === 0 ? SLASH : LETTERS}" d="${outline}"/>`;
     });
 
-    const radius = round(shape.cornerRadius * size);
-    const tile = shape.stroke
-        ? `<rect x="0.5" y="0.5" width="${size - 1}" height="${size - 1}" rx="${radius}" fill="${TILE}" stroke="${shape.stroke}"/>`
-        : `<rect width="${size}" height="${size}" fill="${TILE}"/>`;
+    // The edge is drawn inside the tile, so nothing is cut off at its border.
+    const edge = shape.stroke ? shape.stroke.width * size : 0;
+    const stroke = shape.stroke ? ` stroke="${shape.stroke.color}" stroke-width="${round(edge)}"` : '';
+    const tile = `<rect x="${round(edge / 2)}" y="${round(edge / 2)}" width="${round(size - edge)}" height="${round(size - edge)}" rx="${round(shape.cornerRadius * size)}" fill="${TILE}"${stroke}/>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${tile}${paths.join('')}</svg>\n`;
 }
