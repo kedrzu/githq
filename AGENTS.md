@@ -33,7 +33,7 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   in the main checkout `~/Dev/githq/.env` and `setup.sh` copies it into every worktree;
   without it, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
 - `bun run preview` — the production shape: the built SPA and the Worker in one `wrangler dev` on 8787.
-- `bun run deploy` — build the SPA and deploy the Worker to https://githq.dev (Cloudflare account of
+- `bun run deploy` — build the SPA and deploy the Worker to https://githq.dev, plus `githq-www` redirecting www (Cloudflare account of
   kedrzu@gmail.com; the OAuth App "githq" credentials are Worker secrets).
 - `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`
   (`bun --cwd packages/github schema` refreshes GitHub's schema).

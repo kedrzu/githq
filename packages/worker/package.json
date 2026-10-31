@@ -11,7 +11,7 @@
     "scripts": {
         "dev": "mkdir -p ../app/.output/public && touch ../../.env && wrangler dev --port 8788 --env-file ../../.env",
         "preview": "touch ../../.env && wrangler dev --env-file ../../.env",
-        "deploy": "wrangler deploy",
+        "deploy": "wrangler deploy && wrangler deploy --config wrangler.www.jsonc",
         "bundle": "mkdir -p ../app/.output/public && wrangler deploy --dry-run --outdir .wrangler/dist",
         "test": "TZ=UTC bun test"
     },
