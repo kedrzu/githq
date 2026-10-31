@@ -1,4 +1,4 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (filters, tabs, the actions of the items selected together), and on the right its own actions and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -36,12 +36,14 @@ const props = withDefaults(
     properties: readonly ListChoice[];
     /** The list's own view options, after the list's common ones (a project's row field). */
     extraOptions?: readonly ListToolbarOption[];
+    /** What narrows the list (a repository's state): before the view options, the last to leave the toolbar. */
+    filters?: readonly ListToolbarOption[];
     /** The options differ from the list's defaults: the display options offer to reset them. */
     modified?: boolean;
     /** The board can't be chosen (a project with nothing to make columns of, K7); the display options say why. */
     boardDisabled?: boolean;
   }>(),
-  { extraOptions: () => [], modified: false, boardDisabled: false },
+  { extraOptions: () => [], filters: () => [], modified: false, boardDisabled: false },
 );
 
 const emit = defineEmits<{
@@ -54,10 +56,8 @@ defineSlots<{
   titleMenu?(): unknown;
   /** Beside the title: what it is, how many ("private · 142 open"). */
   title?(): unknown;
-  /** After the title: filters, tabs, the actions of a selection. */
+  /** After the title: tabs, the actions of a selection. */
   default?(): unknown;
-  /** On the right, before the view options. */
-  actions?(): unknown;
   /** More in the display options, after the options that didn't fit the toolbar (why the board is unavailable). */
   display?(): unknown;
   /** At the top of the display options: what they are changed from (a project's saved view). */
@@ -71,8 +71,9 @@ const t = useTranslate();
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
 
-/** Every view option, in the toolbar's order. */
+/** Every option, the filters then the view options, in the toolbar's order. */
 const viewOptions = computed((): ListToolbarOption[] => [
+  ...props.filters,
   {
     kind: 'menu',
     key: 'grouping',
@@ -122,8 +123,8 @@ const viewOptions = computed((): ListToolbarOption[] => [
 ]);
 
 /**
- * Which options stay on the toolbar when there isn't room for all: the layout, then the grouping, the order,
- * the properties and the list's own, in that order — the rest move into the display options.
+ * Which options stay on the toolbar when there isn't room for all: the filters, then the layout, the grouping,
+ * the order, the properties and the list's own, in that order — the rest move into the display options.
  */
 const PRIORITY = ['layout', 'grouping', 'sort', 'properties'];
 
@@ -133,7 +134,6 @@ const onToolbar = computed(() => viewOptions.value.filter(option => !fitting.val
 const inDisplay = computed(() => viewOptions.value.filter(option => fitting.value && !fitting.value.has(option.key)));
 
 const controls = useTemplateRef<HTMLElement>('controls');
-const actions = useTemplateRef<HTMLElement>('actions');
 const measure = useTemplateRef<HTMLElement>('measure');
 let observer: ResizeObserver | undefined;
 let frame = 0;
@@ -144,7 +144,7 @@ onMounted(() => {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(fit);
   });
-  for (const element of [controls.value, actions.value, measure.value]) {
+  for (const element of [controls.value, measure.value]) {
     if (element) {
       observer.observe(element);
     }
@@ -163,7 +163,7 @@ function fit() {
   }
 
   const gap = Number.parseFloat(getComputedStyle(measure.value).columnGap) || 0;
-  const available = controls.value.clientWidth - (actions.value ? actions.value.offsetWidth + gap : 0);
+  const available = controls.value.clientWidth;
   const widths = new Map<string, number>();
   for (const element of measure.value.children) {
     if (element instanceof HTMLElement && element.dataset.key) {
@@ -189,6 +189,10 @@ function fit() {
 }
 
 function rank(key: string) {
+  if (props.filters.some(filter => filter.key === key)) {
+    return -1;
+  }
+
   const index = PRIORITY.indexOf(key);
   return index === -1 ? PRIORITY.length : index;
 }
@@ -272,13 +276,6 @@ function change(changes: Partial<ListViewOptions>) {
       ref="controls"
       :class="css.listToolbar_controls"
     >
-      <div
-        v-if="$slots.actions"
-        ref="actions"
-        :class="css.listToolbar_actions"
-      >
-        <slot name="actions" />
-      </div>
       <ListToolbarControl
         v-for="option in onToolbar"
         :key="option.key"
@@ -399,13 +396,6 @@ function change(changes: Partial<ListViewOptions>) {
   align-items: center;
   justify-content: flex-end;
   min-width: 0;
-}
-
-.listToolbar_actions {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
 }
 
 .listToolbar_measure {
