@@ -1,4 +1,4 @@
-<!-- One of a list's view options (D9) — the grouping, the order, the properties, the layout, a project's row field — drawn where the toolbar puts it: on the toolbar as a compact control with its own icon (a menu, a popover of chips, the layout toggle), or, when the toolbar has no room for it, in the display options under its heading. -->
+<!-- One of a list's view options (D9) — the grouping, the order, the properties, the layout, a project's row field — drawn where the toolbar puts it: on the toolbar as a compact control with its own icon (a menu, a popover of chips, the layout toggle), or, when the toolbar has no room for it, as a section of the display options: its icon and heading, then its choices right there — no menu within the menu. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -12,7 +12,7 @@ export type ListToolbarOption =
   | {
       readonly kind: 'menu';
       readonly key: string;
-      /** Its heading in the display options ("Group"). */
+      /** Its heading in the display options ("Group"), the icon beside it and on the button. */
       readonly label: string;
       readonly icon: LucideIcon;
       /** The button's text, the choice in it ("Group: Milestone"). */
@@ -28,6 +28,8 @@ export type ListToolbarOption =
       readonly kind: 'tabs';
       readonly key: string;
       readonly label: string;
+      /** Beside its heading in the display options. */
+      readonly icon: LucideIcon;
       readonly options: readonly SegmentedTabsOption<string>[];
       readonly value: string;
       readonly choose: (value: string) => void;
@@ -62,6 +64,18 @@ const props = defineProps<{
   place: 'display' | 'toolbar';
 }>();
 
+/** The choices side by side in the display options: a menu's by their labels alone, as the design draws them. */
+const inlineOptions = computed((): readonly SegmentedTabsOption<string>[] => {
+  switch (props.option.kind) {
+    case 'menu':
+      return props.option.choices.map(choice => ({ value: choice.value, label: choice.label }));
+    case 'tabs':
+      return props.option.options;
+    default:
+      return [];
+  }
+});
+
 /** A menu's choices under their headings, in order. */
 const sections = computed(() => {
   const result: { label: string | undefined; choices: ListChoice[] }[] = [];
@@ -83,15 +97,47 @@ const sections = computed(() => {
 </script>
 
 <template>
-  <div :class="place === 'display' ? css.listToolbarControl_option : css.listToolbarControl">
+  <section
+    v-if="place === 'display'"
+    :class="css.listToolbarControl_option"
+  >
+    <span :class="css.listToolbarControl_label">
+      <component
+        :is="option.icon"
+        :class="css.listToolbarControl_labelIcon"
+        aria-hidden="true"
+      />
+      {{ option.label }}
+    </span>
+    <ToggleChips
+      v-if="option.kind === 'chips'"
+      :model-value="option.value"
+      :label="option.label"
+      :options="option.choices"
+      @update:model-value="option.choose"
+    />
+    <SegmentedTabs
+      v-else
+      :model-value="option.value"
+      variant="boxed"
+      wrap
+      :label="option.label"
+      :options="inlineOptions"
+      @update:model-value="option.choose"
+    />
     <span
-      v-if="place === 'display'"
-      :class="css.listToolbarControl_label"
-      >{{ option.label }}</span
+      v-if="option.kind === 'menu' && option.detail"
+      :class="css.listToolbarControl_detail"
+      >{{ option.detail }}</span
     >
+  </section>
+  <div
+    v-else
+    :class="css.listToolbarControl"
+  >
     <Menu
       v-if="option.kind === 'menu'"
-      :align="place === 'toolbar' ? 'end' : 'start'"
+      align="end"
     >
       <template #trigger>
         <Button
@@ -131,14 +177,6 @@ const sections = computed(() => {
       :options="option.options"
       @update:model-value="option.choose"
     />
-    <template v-else-if="place === 'display'">
-      <ToggleChips
-        :model-value="option.value"
-        :label="option.label"
-        :options="option.choices"
-        @update:model-value="option.choose"
-      />
-    </template>
     <Popover
       v-else
       :label="option.label"
@@ -162,11 +200,6 @@ const sections = computed(() => {
         />
       </div>
     </Popover>
-    <span
-      v-if="place === 'display' && option.kind === 'menu' && option.detail"
-      :class="css.listToolbarControl_detail"
-      >{{ option.detail }}</span
-    >
   </div>
 </template>
 
@@ -176,16 +209,28 @@ const sections = computed(() => {
   flex: none;
 }
 
+/* A section of the display options: its heading, then its choices right there. */
 .listToolbarControl_option {
   display: flex;
   flex-direction: column;
-  gap: $spacing-6;
+  gap: $spacing-8;
   align-items: flex-start;
+  padding: $spacing-12 14px;
+  border-bottom: 1px solid $color-border;
 }
 
 .listToolbarControl_label {
-  font-size: $font-size-xs;
+  display: inline-flex;
+  gap: $spacing-6;
+  align-items: center;
+  font-size: $font-size-2xs;
+  font-weight: $font-weight-medium;
   color: $color-fg-dim;
+}
+
+.listToolbarControl_labelIcon {
+  width: 12px;
+  height: 12px;
 }
 
 .listToolbarControl_detail {

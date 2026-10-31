@@ -29,8 +29,10 @@ const props = withDefaults(
     label: string;
     /** `plain`: text tabs, the chosen one raised (filters); `boxed`: icons in an outlined box (layout). */
     variant?: 'boxed' | 'plain';
+    /** The options wrap onto more lines when they don't fit (a long choice inline in the display options). */
+    wrap?: boolean;
   }>(),
-  { variant: 'plain' },
+  { variant: 'plain', wrap: false },
 );
 
 const model = defineModel<T>({ required: true });
@@ -49,7 +51,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     type="single"
     :model-value="model"
     :aria-label="label"
-    :class="[css.segmentedTabs, css[`segmentedTabs_${variant}`]]"
+    :class="[css.segmentedTabs, css[`segmentedTabs_${variant}`], wrap && css.segmentedTabs_wrap]"
     @update:model-value="choose"
   >
     <ToggleGroupItem
@@ -82,6 +84,12 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   display: flex;
   flex: none;
   align-items: center;
+}
+
+.segmentedTabs_wrap {
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .segmentedTabs_plain {
