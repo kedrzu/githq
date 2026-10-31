@@ -1,0 +1,10 @@
+# Every field value of a project item: a project has at most 50 fields, built-in ones included.
+fragment ProjectItemValuesFields on ProjectV2Item {
+    id
+    updatedAt
+    fieldValues(first: 50) {
+        nodes {
+            ...ProjectItemFieldValueFields
+        }
+    }
+}

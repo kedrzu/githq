@@ -1,0 +1,9 @@
+# Clears one field of a project item; answers with the field's value (`$fieldName`: the field's name), none once
+# cleared.
+mutation ClearProjectFieldValue($projectId: ID!, $itemId: ID!, $fieldId: ID!, $fieldName: String!) {
+    clearProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId }) {
+        projectV2Item {
+            ...ProjectItemFieldResultFields
+        }
+    }
+}

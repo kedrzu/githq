@@ -1,0 +1,32 @@
+{
+    "name": "@githq/github",
+    "private": true,
+    "description": "The GitHub client: GraphQL for reading and writing, REST conditional requests for change detection",
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        "./package.json": "./package.json",
+        "./*.js": "./src/*.ts"
+    },
+    "scripts": {
+        "schema": "bun run scripts/fetchSchema.ts",
+        "codegen": "graphql-codegen --config codegen.yml",
+        "test": "TZ=UTC bun test"
+    },
+    "dependencies": {
+        "@nzyme/fetch-utils": "workspace:*",
+        "@nzyme/types": "workspace:*",
+        "@nzyme/utils": "workspace:*",
+        "yaml": "2.9.1"
+    },
+    "devDependencies": {
+        "@graphql-codegen/add": "7.1.1",
+        "@graphql-codegen/cli": "7.4.6",
+        "@graphql-codegen/typescript-generic-sdk": "5.0.1",
+        "@graphql-codegen/typescript-operations": "6.1.10",
+        "@nzyme/tsconfig": "workspace:*",
+        "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+        "graphql": "16.14.2",
+        "oxfmt": "0.72.0"
+    }
+}

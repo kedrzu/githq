@@ -1,0 +1,11 @@
+# A page of an item's comments, newest last; `startCursor` asks for the older ones (`MoreComments`).
+fragment CommentPageFields on IssueCommentConnection {
+    totalCount
+    pageInfo {
+        hasPreviousPage
+        startCursor
+    }
+    nodes {
+        ...IssueCommentFields
+    }
+}

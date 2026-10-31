@@ -1,0 +1,42 @@
+# What a repository asks a new issue to start from (H7, H8): its markdown templates, whether a blank issue is
+# allowed, and the files of `.github/ISSUE_TEMPLATE` — issue forms (YAML) are not among `issueTemplates` (D10),
+# so their text is read here, from the default branch, in the same request.
+query RepositoryIssueTemplates($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+        nameWithOwner
+        isBlankIssuesEnabled
+        issueTemplates {
+            name
+            filename
+            about
+            title
+            body
+            labels(first: 20) {
+                nodes {
+                    name
+                }
+            }
+            assignees(first: 10) {
+                nodes {
+                    login
+                }
+            }
+            type {
+                name
+            }
+        }
+        templateFiles: object(expression: "HEAD:.github/ISSUE_TEMPLATE") {
+            ... on Tree {
+                entries {
+                    name
+                    object {
+                        ... on Blob {
+                            text
+                            isTruncated
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+# The fields of a pull request that change without its row being edited — CI, reviews, mergeability (D5) —
+# re-read on their own by `PullRequestStatuses`.
+fragment PullRequestStatusFields on PullRequest {
+    __typename
+    id
+    updatedAt
+    state
+    isDraft
+    merged
+    reviewDecision
+    mergeable
+    mergeStateStatus
+    statusCheckRollup {
+        state
+        contexts {
+            checkRunCountsByState {
+                state
+                count
+            }
+            statusContextCountsByState {
+                state
+                count
+            }
+        }
+    }
+    reviewRequests(first: 10) {
+        nodes {
+            requestedReviewer {
+                ... on User {
+                    login
+                }
+                ... on Team {
+                    slug
+                    name
+                }
+            }
+        }
+    }
+    latestOpinionatedReviews(first: 10) {
+        nodes {
+            author {
+                login
+            }
+            state
+        }
+    }
+}

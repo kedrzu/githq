@@ -1,0 +1,8 @@
+# Re-reads only the volatile status of pull requests: checks and reviews change without bumping a search hit.
+query PullRequestStatuses($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on PullRequest {
+            ...PullRequestStatusFields
+        }
+    }
+}

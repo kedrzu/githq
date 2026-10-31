@@ -1,0 +1,14 @@
+# Sets (or, with `null`, clears) an issue's type; answers with the type GitHub kept (D14).
+mutation UpdateIssueType($issueId: ID!, $issueTypeId: ID) {
+    updateIssueIssueType(input: { issueId: $issueId, issueTypeId: $issueTypeId }) {
+        issue {
+            id
+            updatedAt
+            issueType {
+                id
+                name
+                color
+            }
+        }
+    }
+}

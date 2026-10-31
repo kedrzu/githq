@@ -1,0 +1,16 @@
+# Repositories matching what the user types when choosing where a new issue goes (H2), with what decides whether
+# it takes one: archived, issues turned off, and the user's permission (D14).
+query RepositorySearch($query: String!) {
+    search(query: $query, type: REPOSITORY, first: 10) {
+        nodes {
+            ... on Repository {
+                nameWithOwner
+                isPrivate
+                isArchived
+                hasIssuesEnabled
+                viewerPermission
+                pushedAt
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+fragment TrackingRepositoryPageFields on RepositoryConnection {
+    totalCount
+    pageInfo {
+        hasNextPage
+        endCursor
+    }
+    nodes {
+        ...TrackingRepositoryFields
+    }
+}

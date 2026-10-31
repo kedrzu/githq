@@ -1,0 +1,24 @@
+# The projects the tracking screens offer (D4, G2): the viewer's own and their organizations', most recently
+# updated first, closed ones included (the screen tells them apart). Read with partial errors, like
+# `TrackingCandidates`.
+query TrackingProjects {
+    viewer {
+        projectsV2(first: 50, orderBy: { field: UPDATED_AT, direction: DESC }) {
+            totalCount
+            nodes {
+                ...TrackingProjectFields
+            }
+        }
+        organizations(first: 50) {
+            nodes {
+                login
+                projectsV2(first: 50, orderBy: { field: UPDATED_AT, direction: DESC }) {
+                    totalCount
+                    nodes {
+                        ...TrackingProjectFields
+                    }
+                }
+            }
+        }
+    }
+}

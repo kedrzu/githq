@@ -1,0 +1,18 @@
+# A tracked project's item (D4): its issue, pull request or draft issue as a row, and every field value.
+# `isArchived` is read so a re-read can tell an item that was archived from one still in the project (D13).
+fragment ProjectItemRowFields on ProjectV2Item {
+    ...ProjectItemValuesFields
+    isArchived
+    type
+    content {
+        ... on Issue {
+            ...IssueFields
+        }
+        ... on PullRequest {
+            ...PullRequestFields
+        }
+        ... on DraftIssue {
+            ...DraftIssueFields
+        }
+    }
+}

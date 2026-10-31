@@ -1,0 +1,7 @@
+mutation ConvertToDraft($pullRequestId: ID!) {
+    convertPullRequestToDraft(input: { pullRequestId: $pullRequestId }) {
+        pullRequest {
+            ...PullRequestStateResultFields
+        }
+    }
+}

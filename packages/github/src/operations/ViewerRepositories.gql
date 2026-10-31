@@ -1,0 +1,13 @@
+# The next page of the viewer's own repositories, after the first 100 `TrackingCandidates` reads.
+query ViewerRepositories($after: String!) {
+    viewer {
+        repositories(
+            first: 100
+            after: $after
+            ownerAffiliations: OWNER
+            orderBy: { field: PUSHED_AT, direction: DESC }
+        ) {
+            ...TrackingRepositoryPageFields
+        }
+    }
+}

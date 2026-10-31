@@ -1,0 +1,32 @@
+# A saved view of a project, shown as a tab (D13): its filter is evaluated locally, its layout, grouping, sort
+# and visible fields are the tab's defaults.
+fragment ProjectViewFields on ProjectV2View {
+    id
+    number
+    name
+    layout
+    filter
+    groupByFields(first: 5) {
+        nodes {
+            ...ProjectFieldRefFields
+        }
+    }
+    verticalGroupByFields(first: 5) {
+        nodes {
+            ...ProjectFieldRefFields
+        }
+    }
+    sortByFields(first: 5) {
+        nodes {
+            direction
+            field {
+                ...ProjectFieldRefFields
+            }
+        }
+    }
+    fields(first: 50) {
+        nodes {
+            ...ProjectFieldRefFields
+        }
+    }
+}

@@ -1,0 +1,43 @@
+schema: 'src/schema.graphql'
+documents: 'src/operations/**/*.gql'
+generates:
+  src/generated.gen.ts:
+    plugins:
+      - add:
+          # `@ts-nocheck`: in `string` mode the SDK passes each document as a `TypedDocumentString`
+          # object to a requester it types as taking `string`; the `plainString` mode that would
+          # emit plain strings is not supported by typescript-generic-sdk 5.0.1. Lint skips
+          # `*.gen.ts` through the ignore patterns in `.oxlintrc.json`.
+          content: |-
+            // @ts-nocheck
+            // GENERATED FILE — do not edit. See codegen.yml.
+
+            class TypedDocumentString<TResult, TVariables> extends String {
+                __apiType?: (variables: TVariables) => TResult;
+            }
+      # Standalone since v6: emits only the enums, inputs and scalars our operations use.
+      - typescript-operations
+      - typescript-generic-sdk
+    config:
+      documentMode: 'string'
+      enumType: 'string-literal'
+      # Every custom scalar GitHub declares travels as a JSON string (BigInt too, so it can exceed
+      # 2^53); unmapped, they would type as `unknown`.
+      scalars:
+        ID: string
+        Base64String: string
+        BigInt: string
+        CustomPropertyValue: string | string[]
+        Date: string
+        DateTime: string
+        GitObjectID: string
+        GitRefname: string
+        GitSSHRemote: string
+        GitTimestamp: string
+        HTML: string
+        PreciseDateTime: string
+        URI: string
+        X509Certificate: string
+hooks:
+  afterOneFileWrite:
+    - oxfmt

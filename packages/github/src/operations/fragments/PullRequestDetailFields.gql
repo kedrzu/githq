@@ -1,0 +1,79 @@
+# What the opened pull request shows beyond its row (D18): the full check list, reviews and commits on top of the
+# issue-like details. The row fields come along, so opening a pull request refreshes its row.
+fragment PullRequestDetailFields on PullRequest {
+    ...PullRequestFields
+    body
+    bodyHTML
+    reactionGroups {
+        ...ReactionGroupFields
+    }
+    # Aliased: the row's `comments` has no arguments. The newest page; older ones through `MoreComments`.
+    commentPage: comments(last: 50) {
+        ...CommentPageFields
+    }
+    commits {
+        totalCount
+    }
+    headRepository {
+        nameWithOwner
+    }
+    statusCheckRollup {
+        # Aliased: the row's `contexts` reads only the counts.
+        contextPage: contexts(first: 100) {
+            totalCount
+            nodes {
+                ... on CheckRun {
+                    __typename
+                    id
+                    name
+                    status
+                    conclusion
+                    detailsUrl
+                    startedAt
+                    completedAt
+                    checkSuite {
+                        workflowRun {
+                            workflow {
+                                name
+                            }
+                        }
+                    }
+                }
+                ... on StatusContext {
+                    __typename
+                    id
+                    context
+                    state
+                    targetUrl
+                    createdAt
+                }
+            }
+        }
+    }
+    latestReviews(first: 20) {
+        nodes {
+            author {
+                login
+                avatarUrl
+            }
+            state
+            submittedAt
+        }
+    }
+    # Merges with the row's `reviewRequests(first: 10)`, adding the reviewers' avatars.
+    reviewRequests(first: 10) {
+        nodes {
+            requestedReviewer {
+                ... on User {
+                    avatarUrl
+                }
+            }
+        }
+    }
+    # Merges with the row's `projectItems(first: 10)`, archived items included (`isArchived`, hidden per D13).
+    projectItems(first: 10) {
+        nodes {
+            ...ProjectItemDetailFields
+        }
+    }
+}

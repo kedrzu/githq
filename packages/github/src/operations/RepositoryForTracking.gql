@@ -1,0 +1,7 @@
+# One repository by name, as the tracking screens list it: tracking someone else's repository by its name (G10,
+# G8). `null` when GitHub shows the viewer no such repository.
+query RepositoryForTracking($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+        ...TrackingRepositoryFields
+    }
+}

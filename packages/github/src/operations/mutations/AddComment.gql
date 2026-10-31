@@ -1,0 +1,10 @@
+# Comments on an issue or pull request; answers with the comment as GitHub rendered it.
+mutation AddComment($subjectId: ID!, $body: String!) {
+    addComment(input: { subjectId: $subjectId, body: $body }) {
+        commentEdge {
+            node {
+                ...IssueCommentFields
+            }
+        }
+    }
+}

@@ -7,6 +7,7 @@ one thing a user does in the app. Nothing outside this folder is needed.
 
 The exploration round is done. The owner chose **"Direction D — Synthesis"** in `githq.pen` (frame
 `I7akNj`). It is one app with three independent switches:
+
 - the sidebar is expanded, or collapsed to a rail;
 - every list (my work, a project, a repository) can be shown as List or Board, with the same toolbar;
 - an item opens in a panel, a modal or a full page, and all three show the same item view.
@@ -74,6 +75,7 @@ The things in the app, and what GitHub gives us about each.
   - issues it closes.
 - **Project** (GitHub Projects): a title, owned by a user or an organisation. It holds items from many
   repositories, and its own fields, of these types:
+
   - single choice from a list of options,
   - text,
   - number,
@@ -95,6 +97,7 @@ The things in the app, and what GitHub gives us about each.
 ## Where the data comes from, and what that means for the screens
 
 - **The app keeps two kinds of data:**
+
   - **What concerns me**: issues and PRs anywhere on GitHub that I wrote, am assigned to, am asked to
     review, or am mentioned in. These can come from repositories I don't own, e.g. a PR I opened on
     someone else's open-source project.

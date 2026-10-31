@@ -1,0 +1,17 @@
+# The comments of an issue or pull request older than `$before` (a `CommentPageFields.pageInfo.startCursor`).
+query MoreComments($id: ID!, $before: String!) {
+    node(id: $id) {
+        ... on Issue {
+            id
+            commentPage: comments(last: 100, before: $before) {
+                ...CommentPageFields
+            }
+        }
+        ... on PullRequest {
+            id
+            commentPage: comments(last: 100, before: $before) {
+                ...CommentPageFields
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+# Whether a tracked project changed, when GitHub refuses its REST ETag (a public project of an organisation the
+# user is not in, an organisation restricting OAuth Apps): its `updatedAt` — the field the REST ETag moves with —
+# for 1 point instead of a free 304, so asked less often (D7).
+query ProjectUpdatedAt($id: ID!) {
+    node(id: $id) {
+        ... on ProjectV2 {
+            updatedAt
+        }
+    }
+}

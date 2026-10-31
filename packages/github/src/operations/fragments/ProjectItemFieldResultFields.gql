@@ -1,0 +1,9 @@
+# A project item as a field edit is confirmed against (D14): the edited field's value, read by name — an item's
+# values may be more than a page holds.
+fragment ProjectItemFieldResultFields on ProjectV2Item {
+    id
+    updatedAt
+    fieldValueByName(name: $fieldName) {
+        ...ProjectItemFieldValueFields
+    }
+}

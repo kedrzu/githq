@@ -1,0 +1,19 @@
+# A draft issue: a project item that lives only in its project, without a repository.
+fragment DraftIssueFields on DraftIssue {
+    __typename
+    id
+    title
+    body
+    createdAt
+    updatedAt
+    creator {
+        login
+        avatarUrl
+    }
+    assignees(first: 10) {
+        nodes {
+            login
+            avatarUrl
+        }
+    }
+}

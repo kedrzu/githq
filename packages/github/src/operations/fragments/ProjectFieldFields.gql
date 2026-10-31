@@ -1,0 +1,32 @@
+# A project field's definition: its type, and the options or iterations a value is picked from (D2).
+fragment ProjectFieldFields on ProjectV2FieldConfiguration {
+    ... on ProjectV2FieldCommon {
+        id
+        name
+        dataType
+    }
+    ... on ProjectV2SingleSelectField {
+        options {
+            id
+            name
+            color
+        }
+    }
+    ... on ProjectV2MultiSelectField {
+        multiSelectOptions {
+            id
+            name
+            color
+        }
+    }
+    ... on ProjectV2IterationField {
+        configuration {
+            iterations {
+                ...ProjectIterationFields
+            }
+            completedIterations {
+                ...ProjectIterationFields
+            }
+        }
+    }
+}

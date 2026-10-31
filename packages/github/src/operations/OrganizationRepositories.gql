@@ -1,0 +1,9 @@
+# A page of an organization's repositories, newest push first, read on demand when the tracking screen shows more
+# of an organization than the 20 `TrackingCandidates` reads (G4: an organization may have hundreds).
+query OrganizationRepositories($login: String!, $after: String) {
+    organization(login: $login) {
+        repositories(first: 100, after: $after, orderBy: { field: PUSHED_AT, direction: DESC }) {
+            ...TrackingRepositoryPageFields
+        }
+    }
+}

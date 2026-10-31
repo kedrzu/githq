@@ -1,11 +1,48 @@
 #!/bin/zsh
-# Workspace setup for a fresh clone or worktree: catches a Paseo worktree up with origin/main, copies
-# local-only files from the main checkout, and checks out the pinned nzyme submodule. The build steps
-# (bun floor, install, nzyme build, codegen, typecheck) are added with the first package, mirroring
-# Cookery's setup.sh / setup.build.sh.
+# Full workspace setup for a fresh clone or worktree: checks the toolchain, catches a Paseo worktree up
+# with origin/main, copies local-only files from the main checkout, checks out the pinned nzyme
+# submodule, then builds everything (setup.build.sh).
 set -e
 
 cd "$(dirname "$0")"
+
+# --- bun version floor ---
+#
+# `packageManager` in package.json is the bun version this repo is developed and built against.
+# Nothing at runtime enforces it, so a local runtime older than the pin would silently run every
+# build and test on a version nobody verified. Newer than the pin passes: the pin is a floor.
+#
+# The version is read from package.json, so the pin has exactly one home.
+require_bun_floor() {
+    local want got older
+    want=$(sed -n 's/.*"packageManager": *"bun@\([^"]*\)".*/\1/p' package.json | head -1)
+
+    # No pin declared — nothing to enforce.
+    [ -z "$want" ] && return 0
+
+    if ! command -v bun > /dev/null 2>&1; then
+        echo ""
+        echo "❌ bun is not on PATH, and this repo runs on bun."
+        echo "   Install the pinned version:"
+        echo "   curl -fsSL https://bun.sh/install | bash -s \"bun-v$want\""
+        echo ""
+        exit 1
+    fi
+
+    got=$(bun --version 2> /dev/null)
+    older=$(printf '%s\n%s\n' "$want" "$got" | sort -V | head -1)
+
+    if [ "$got" != "$want" ] && [ "$older" = "$got" ]; then
+        echo ""
+        echo "❌ bun $got is older than the pin (bun@$want) in package.json."
+        echo "   Install the pinned version:"
+        echo "   curl -fsSL https://bun.sh/install | bash -s \"bun-v$want\""
+        echo ""
+        exit 1
+    fi
+}
+
+require_bun_floor
 
 # --- Worktree: catch up with origin/main, copy local files ---
 #
@@ -64,7 +101,7 @@ if [ "$CI" != "true" ] && [ "$repo_root" != "$(pwd -P)" ]; then
     fi
 
     # Gitignored files that live only in the main checkout: personal instructions (CLAUDE.local.md),
-    # personal Claude settings, env files and the Workers' local secrets (`.dev.vars`). Templates
+    # personal Claude settings and env files (the root `.env` holds the dev OAuth App's credentials). Templates
     # (`*.example`) are committed and stay as they are; a file already in the worktree is not
     # overwritten. `(N)` is zsh's nullglob: a pattern matching nothing is skipped, not fatal.
     echo ""
@@ -97,3 +134,7 @@ if [ "$CI" != "true" ]; then
     echo ""
     git submodule update --init --recursive --checkout
 fi
+
+# --- Build ---
+
+bash setup.build.sh

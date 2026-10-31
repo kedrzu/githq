@@ -1,0 +1,16 @@
+# A page of a tracked repository's issues as rows (D4, D18), most recently updated first. The first download
+# reads the open ones, then the closed ones (`$states`).
+query RepositoryIssues($owner: String!, $name: String!, $states: [IssueState!]!, $after: String) {
+    repository(owner: $owner, name: $name) {
+        issues(first: 100, after: $after, states: $states, orderBy: { field: UPDATED_AT, direction: DESC }) {
+            totalCount
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...IssueFields
+            }
+        }
+    }
+}

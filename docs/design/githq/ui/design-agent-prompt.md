@@ -17,11 +17,13 @@ something GitHub doesn't do, and one new element to explore.
 These come from checking GitHub's API documentation. Each is a fact, not a taste.
 
 1. **H8 · issue form in someone else's repository.**
+
    - When someone without write access creates an issue through the API, GitHub silently drops labels,
      assignees, milestone and type. So "pending triage" from vite's form would never be applied.
    - GitHub also does not check a form's required fields for issues created through the API.
 
    So:
+
    - **In a repository where the user can't push and that uses issue forms**, githq hands off to GitHub's
      own form on github.com, with the title (and any text fields) already filled in through the URL. Design
      this hand-off in the template picker (H7): what the row says, and what happens when chosen.
@@ -45,12 +47,14 @@ These come from checking GitHub's API documentation. Each is a fact, not a taste
 
 githq shows almost everything from a copy kept in the browser and refreshes it in the background. The owner
 wants to see at a glance whether what's on screen is current. This applies to **large surfaces**:
+
 - a whole list: my work, a project view, a repository;
 - an opened item: panel, modal or full page.
 
 It does not apply to every row.
 
 The states a surface can be in (details in the brief's README):
+
 - **fresh**: checked in the last ~30 seconds. By far the most common state.
 - **checking** right now.
 - **stale**: the last check is older than expected, because the browser is offline, requests are failing,
@@ -65,12 +69,14 @@ the list of checks, may be fetched when it's opened.
 
 **Draw three distinct directions** for this, side by side, in a new group "Freshness" inside `I7akNj`. Label
 them so the owner can pick one. In each direction, show:
+
 - the list (use D1 "My work") and an opened item (use the panel from D1, or F1);
 - in at least the fresh, stale (offline) and own-edits-on-the-way states;
 - plus one screen where the list and the opened item differ (the list is fresh, the item's comments are
   still loading).
 
 Constraints:
+
 - **Quiet when fresh.** Noticeable only when something is off.
 - **It must not compete with the sidebar's existing sync line** ("Synced 14s ago · 4,812 left"). Decide in
   each direction whether that line stays, moves or is replaced.

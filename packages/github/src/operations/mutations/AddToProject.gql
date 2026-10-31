@@ -1,0 +1,8 @@
+# Adds an issue or pull request to a project; answers with the new item as the item view shows it.
+mutation AddToProject($projectId: ID!, $contentId: ID!) {
+    addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+        item {
+            ...ProjectItemDetailFields
+        }
+    }
+}

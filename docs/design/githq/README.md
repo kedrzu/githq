@@ -33,6 +33,7 @@ assignees, the way GitHub has it. The feel is borrowed from Linear; the data mod
 ## What the first version does
 
 The first version is the daily loop and nothing around it:
+
 - signing in and choosing which repositories and projects to track;
 - a view of your own work across every repository: what's assigned to you, your pull requests with their
   status, and the reviews waiting on you;
@@ -53,32 +54,6 @@ viewable as a list or a board, and any item opening in a side panel, a modal or 
 pull request that closes one of your assigned issues sits under that issue rather than next to it, so the
 same piece of work never appears twice.
 [The brief for the screen designs](ui/README.md).
-
-## Order of building
-
-Each step ends in something you can open and try.
-
-1. **Skeleton and sign-in.** The repository set up like Cookery, and a real "Sign in with GitHub" through the
-   Worker, including the screen before signing in and the one for a failed sign-in. It ends with your login
-   and avatar on screen. After this step the project's check and git-workflow instructions for agents are
-   written (`/dev:setup`).
-2. **"My work" on real data.** What concerns you, fetched through GitHub's search, kept in memory and in the
-   browser's database, refreshed in the background, with the marker showing how fresh it is. Four groups with
-   correct counts, the "needs me" and "waiting on others" filters, keyboard navigation. Reloading the page shows
-   the list at once. This is the step that tests the whole approach: the in-memory copy, background refresh,
-   free "nothing changed" answers and the freshness marker meet here for the first time.
-3. **An opened item and editing.** Issue and pull request views in a panel, a modal and a full page, with
-   comments; editing assignees, labels, state, comments and project fields; only the edits you are allowed to
-   make are offered, and rejected ones are undone.
-4. **Tracked repositories and projects.** Choosing what to track, the first download, repository and project
-   views as a list and a board, saved views from GitHub evaluated locally.
-5. **Command menu and creating issues,** including templates and the hand-off to GitHub's own form in someone
-   else's repository.
-6. **The remaining states:** refresh paused, an organisation hiding its private repositories, the account page
-   and signing out, several tabs open.
-
-The freshness marker's visual form is still being drawn, in three directions to choose from; it is needed
-from step 2.
 
 ## What githq keeps in your browser
 

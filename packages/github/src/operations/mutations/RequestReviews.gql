@@ -1,0 +1,27 @@
+# Requests reviews on top of the ones already requested (`union`); answers with the requests GitHub kept.
+mutation RequestReviews($pullRequestId: ID!, $userIds: [ID!], $teamIds: [ID!]) {
+    requestReviews(input: { pullRequestId: $pullRequestId, userIds: $userIds, teamIds: $teamIds, union: true }) {
+        pullRequest {
+            id
+            updatedAt
+            reviewRequests(first: 10) {
+                nodes {
+                    requestedReviewer {
+                        ... on User {
+                            __typename
+                            id
+                            login
+                            avatarUrl
+                        }
+                        ... on Team {
+                            __typename
+                            id
+                            slug
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

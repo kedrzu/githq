@@ -1,0 +1,20 @@
+# The labels of an issue or pull request after a write; 100, not the row's 20, so that no kept label goes unseen.
+fragment LabelableResultFields on Labelable {
+    ... on Issue {
+        __typename
+        id
+        updatedAt
+    }
+    ... on PullRequest {
+        __typename
+        id
+        updatedAt
+    }
+    labels(first: 100) {
+        nodes {
+            id
+            name
+            color
+        }
+    }
+}

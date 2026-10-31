@@ -1,0 +1,8 @@
+# Each label mutation answers with the labels GitHub kept: one it silently dropped is a rejection (D14).
+mutation AddLabels($labelableId: ID!, $labelIds: [ID!]!) {
+    addLabelsToLabelable(input: { labelableId: $labelableId, labelIds: $labelIds }) {
+        labelable {
+            ...LabelableResultFields
+        }
+    }
+}
