@@ -10,5 +10,11 @@ waitingOnOthers:
   en: Waiting on others
 reason:
   en: Reason
+repository:
+  en: Repository
+otherRepositories:
+  en: Other repositories
+notTracked:
+  en: not tracked
 showFilter:
   en: 'Filter: {filter}'

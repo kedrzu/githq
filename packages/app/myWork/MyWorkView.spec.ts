@@ -6,7 +6,8 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, ref, shallowRef } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { ListLayout } from '@/lists/ListTypes.js';
+import type { ItemSort } from '@/lists/ItemSort.js';
+import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
@@ -14,6 +15,7 @@ import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
 import { MY_WORK_VIEW_DEFAULTS } from './myWorkViewOptions.js';
+import type { MyWorkGrouping } from './myWorkViewOptions.js';
 import MyWorkView from './MyWorkView.vue';
 
 // Mounted by hand rather than from a story: these tests change the list under the component, as a sync does.
@@ -23,7 +25,7 @@ test('K4: nothing on the plate names what was checked: the tracked repositories,
     const detail = page.getByText('No review requests, open pull requests', { exact: false });
     await expect.element(detail).toHaveTextContent(/anywhere on GitHub\.$/);
 
-    view.trackedCount.value = 4;
+    view.trackedRepositories.value = ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/api', 'sigma-clinic/portal'];
     await expect.element(detail).toHaveTextContent(/across your 4 tracked repositories\.$/);
 });
 
@@ -169,7 +171,7 @@ test('x adds the row to the items edited together, ⇧↓ adds the next ones, Es
 });
 
 test('Board: a column per group, the pull request under the issue it closes; ←/→ move between columns, ↓ within', async () => {
-    mount(D1_ITEMS, D1_MEMBERSHIP, 'board');
+    mount(D1_ITEMS, D1_MEMBERSHIP, { layout: 'board' });
 
     const assigned = page.getByRole('region', { name: 'Assigned to me' });
     const cards = assigned.getByRole('listitem');
@@ -187,18 +189,63 @@ test('Board: a column per group, the pull request under the issue it closes; ←
     await expect.poll(selectedText).toContain('Background sync with conditional requests');
 });
 
+test('D22: grouped by repository — the tracked ones in order, rows named by number, then the others, not tracked', async () => {
+    const view = mount(D1_ITEMS, D1_MEMBERSHIP, { grouping: 'repository' });
+    view.trackedRepositories.value = ['kedrzu/githq', 'sigma-clinic/portal', 'sigma-clinic/api'];
+
+    const sections = page.getByRole('region');
+    await expect.element(sections.nth(0)).toHaveAccessibleName('kedrzu/githq');
+    await expect.element(sections.nth(1)).toHaveAccessibleName('sigma-clinic/portal');
+    await expect.element(sections.nth(2)).toHaveAccessibleName('sigma-clinic/api');
+    await expect.element(sections.nth(3)).toHaveAccessibleName('Other repositories');
+    expect(sections.elements()).toHaveLength(4);
+
+    const api = page.getByRole('region', { name: 'sigma-clinic/api' });
+    // Reason order inside the group: the review asked first; it still says so.
+    const review = api.getByRole('listitem').nth(0);
+    await expect.element(review).toHaveTextContent('Add rate-limit backoff to webhook worker');
+    await expect.element(review).toHaveTextContent('#482');
+    await expect.element(review).not.toHaveTextContent('sigma-clinic/api#482');
+    await expect.element(review).toHaveTextContent(/your review requested/i);
+
+    // The pull request closing an assigned issue stays nested under it.
+    const portal = page.getByRole('region', { name: 'sigma-clinic/portal' }).getByRole('listitem');
+    await expect.element(portal.nth(1)).toHaveTextContent('Calendar shows wrong timezone for recurring visits');
+    await expect.element(portal.nth(2)).toHaveTextContent('Fix timezone offset for recurring visits');
+
+    const others = page.getByRole('region', { name: 'Other repositories' });
+    await expect.element(others).toHaveTextContent('not tracked');
+    await expect.element(others).toHaveTextContent('kedrzu/skills#31');
+    await expect.element(others).toHaveTextContent('vitejs/vite#18842');
+});
+
+test('grouped by repository on the first download: what arrived is in its repositories, the reasons still arriving after them', async () => {
+    const view = mount(D1_ITEMS, { reviewRequested: new Set(['PR_482']) }, { grouping: 'repository' });
+    view.trackedRepositories.value = ['sigma-clinic/api'];
+
+    const sections = page.getByRole('region');
+    await expect.element(sections.nth(0)).toHaveAccessibleName('sigma-clinic/api');
+    await expect.element(sections.nth(0)).toHaveTextContent(/Add rate-limit backoff to webhook worker/);
+    await expect.element(page.getByRole('region', { name: 'My pull requests' })).toHaveTextContent(/Still arriving/);
+    await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
+});
+
 /**
  * Mounts the view over `initial` and the groups of `arrived` (all of D1 by default), holding its filter and
  * selection like the page does.
  */
-function mount(initial: readonly Item[], arrived: MyWorkMembership = D1_MEMBERSHIP, layout: ListLayout = 'list') {
+function mount(
+    initial: readonly Item[],
+    arrived: MyWorkMembership = D1_MEMBERSHIP,
+    display: Partial<ListViewOptions<MyWorkGrouping, ItemSort>> = {},
+) {
     const items = shallowRef<readonly Item[]>(initial);
     const membership = shallowRef(arrived);
     const filter = ref<MyWorkFilter>('all');
     const selectedId = ref<string | null>(null);
     const checkedIds = ref<readonly string[]>([]);
     const openedId = ref<string | null>(null);
-    const trackedCount = ref(0);
+    const trackedRepositories = shallowRef<readonly string[]>([]);
     const opened: string[] = [];
 
     const container = createContainer();
@@ -217,7 +264,7 @@ function mount(initial: readonly Item[], arrived: MyWorkMembership = D1_MEMBERSH
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     waitingCount: 0,
-                    trackedCount: trackedCount.value,
+                    trackedRepositories: trackedRepositories.value,
                     filter: filter.value,
                     'onUpdate:filter': (value: MyWorkFilter) => {
                         filter.value = value;
@@ -231,7 +278,7 @@ function mount(initial: readonly Item[], arrived: MyWorkMembership = D1_MEMBERSH
                         checkedIds.value = value;
                     },
                     openedId: openedId.value,
-                    options: { ...MY_WORK_VIEW_DEFAULTS, layout },
+                    options: { ...MY_WORK_VIEW_DEFAULTS, ...display },
                     onOpen: (id: string) => opened.push(id),
                 },
                 {
@@ -252,8 +299,8 @@ function mount(initial: readonly Item[], arrived: MyWorkMembership = D1_MEMBERSH
         checkedIds,
         /** The item opened over the list, as the page passes it. */
         openedId,
-        /** How many repositories the user tracks. */
-        trackedCount,
+        /** The repositories the user tracks, in the sidebar's order. */
+        trackedRepositories,
         /** The ids the view asked to open, in order. */
         opened,
         /** More groups' searches answer. */
