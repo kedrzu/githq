@@ -12,3 +12,7 @@ Append-only; one line per turn that settled something.
   orchestrator (Conductor/Paseo-like); graph per repository, not across repositories (D3); system git on the
   desktop "rather yes" (D2). Proposed D4 (orchestrator out of scope). README: why and scope written.
   Next open: how a GitHub repository, its local clones and their worktrees relate.
+- 2026-11-01 — Owner: adding folders and scanning both fine eventually (D5, add folder first); worktrees as graph
+  markers plus in the branch list, with per-worktree actions such as reveal in Finder (D6); forks as simple as
+  possible (D5: match by origin only). Unanswered: can one repository have two separate clones. README:
+  clones and worktrees section written.

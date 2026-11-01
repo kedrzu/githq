@@ -70,3 +70,28 @@ requests, your reviews) cover the work across repositories.
 proposal after the owner mentioned it as a possibility)
 
 **Why.** It is a product of its own size; this design only has to leave room for it, not shape it.
+
+## D5
+
+**The desktop app knows a local clone because the user added its folder; githq matches it to a tracked GitHub
+repository by its `origin` remote URL, and discovers its worktrees with `git worktree list`.** (2026-11-01,
+owner: both adding and scanning are fine eventually, the simplest first; forks "as simple as possible to start")
+
+**Why.** Adding a folder is one explicit step, needs no disk access beyond the folder, and is the simplest
+thing that works. Matching by `origin` alone is the simplest rule; a fork clone whose `origin` is the user's
+fork matches the fork if that is tracked, and nothing otherwise.
+
+**Rejected.**
+- Only scanning the disk for clones — slower and intrusive as the only way in; may come later next to
+  adding a folder.
+- Matching by any remote (so a fork clone joins the upstream repository and the graph shows both remotes) —
+  more than the start needs; reopen when forks matter.
+
+## D6
+
+**A worktree appears in the graph as a marker at its checked-out commit, with its count of uncommitted
+changes, and in the branch list on its checked-out branch; both are places to act on it, starting with
+revealing its folder in the platform's file manager.** (2026-11-01, owner)
+
+**Why.** With several agents working in worktrees at once, where each one stands is the most useful thing the
+view can show, and the folder is the first thing you want to reach from it.

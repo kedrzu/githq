@@ -43,3 +43,20 @@ contain what is already on GitHub, not your local work.
 On the desktop, githq will work with the local clone by running the user's own `git`, so their SSH keys,
 credential helpers, hooks, configuration and worktrees work exactly as in the terminal.
 [Why the system git and not a library](DECISIONS.md#d2).
+
+## Your clones and their worktrees
+
+A repository on GitHub, a clone of it on your disk and the working copies of that clone are three different
+things. githq's own checkout is a good example: one main checkout plus several worktrees created by Paseo,
+each with its own checked-out branch and its own uncommitted changes, all sharing one `.git`. To githq that is
+one GitHub repository, one clone, and several worktrees.
+
+The desktop app learns about a clone when you add its folder. githq matches the folder to a tracked
+repository by the URL of its `origin` remote and finds the worktrees itself with `git worktree list`. Later it
+may also find clones by scanning the disk. [How a clone is matched to a repository](DECISIONS.md#d5).
+A fork, whose `origin` is your fork and whose `upstream` is the original, gets no special handling yet.
+
+Each worktree shows up in two places: as a marker at the commit it has checked out in the graph, with the
+count of its uncommitted changes, and in the list of branches beside the graph, on the branch it has checked
+out. From either place you can act on the worktree itself, for a start by revealing its folder in Finder (or
+the file manager of the platform). [Worktrees in the graph and the branch list](DECISIONS.md#d6).
