@@ -45,7 +45,7 @@ of scope here.
 ## D2
 
 **The merge methods offered are those allowed by the repository settings, the target branch's rulesets and its
-linear-history rule, all together.** (2026-11-01; following the repository's setup is the owner's, working it out this way is the design agent's)
+linear-history rule (from a ruleset or classic branch protection), all together.** (2026-11-01; following the repository's setup is the owner's, working it out this way is the design agent's)
 
 **Why.** Offering a method one of them forbids gets a rejection from GitHub after the user has already chosen
 and written the message.
@@ -71,8 +71,12 @@ and written the message.
 app stays usable.** (2026-11-01, owner)
 
 **Why.** It cannot be undone, and githq's copy of the pull request can be out of date, so showing it merged at
-once would sometimes claim something that did not happen. The edit pipeline fits: an edit's optimistic layer is
-drawn until GitHub answers (`packages/app/edits/EditTypes.ts:131`), and here it draws "being merged".
+once would sometimes claim something that did not happen. An edit's optimistic layer is drawn until `send` returns
+a verdict (`packages/app/edits/EditTypes.ts:131`), so it draws "being merged" and `send` keeps asking for the result
+of the merge ([why it has to](#d5)), with backoff and a time limit. `merged` and `enqueued` confirm, `failed` refuses,
+and past the limit the regular sync decides. The state lives only in memory: after a reload the pull request reads
+as whatever GitHub last said. The merge is not sent again, because if the earlier one failed that would start a new
+one. In a queue or under auto-merge the state shown is GitHub's own (`mergeQueueEntry`, `autoMergeRequest`).
 
 **Rejected.**
 - Instant like other edits, rolling back on refusal — the user may have moved on before learning nothing merged.
@@ -111,11 +115,11 @@ have to be there, so as not to limit specific workflows"; the list is the design
 ## D5
 
 **Merges go through REST's asynchronous merge endpoint; GraphQL only for what it alone offers, a chosen commit email
-and jumping the queue.** (2026-11-01, proposal of the design agent, not yet confirmed)
+and jumping the queue.** (2026-11-01, owner, on the design agent's proposal)
 
-**Why.** One call covers direct merges, queues, stacks and bypass, and a repeated request is safe: a pending merge
-answers `409` with its UUID, so a reload loses nothing. This is an exception to the product principle of GraphQL
-for writing, on GitHub's own recommendation.
+**Why.** One endpoint covers direct merges, queues, stacks and bypass, and stacks need it anyway, so asking for the
+result has to exist regardless: a `202` only says the request was accepted. It follows the rule the owner set with it, now in
+`AGENTS.md`: GraphQL whenever it can do the job, REST where it cannot.
 
 > **Checked 2026-11-01 ([GitHub's OpenAPI description](https://github.com/github/rest-api-description)):**
 > `PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge-async` takes `commit_title`, `commit_message`, `sha`,
@@ -132,3 +136,41 @@ for writing, on GitHub's own recommendation.
 **Rejected.**
 - `mergePullRequest` for everything — fits the GraphQL principle, but cannot merge a stack.
 - Refusing stacked pull requests in githq — this repository itself works in stacks.
+
+## D6
+
+**A merge may be sent from what githq holds, without waiting for the read the panel starts on opening; the head SHA
+goes with it, and the title and message only if the user edited them.** (2026-11-01, owner, on the design agent's proposal)
+
+**Why.** Waiting adds a pause to every merge, and GitHub enforces the requirements itself, while the SHA cancels the
+merge if the head moved ([evidence](#d5)). Accepted cost: a check that is not required may have just failed, and the
+user merges before seeing it.
+
+To make that possible, the row has to hold the head SHA and the repository's metadata its allowed and default
+methods; no operation reads them today (only `packages/github/src/operations/` was searched). The read on opening
+brings the rulesets, the proposed messages and fresh status. Sent before it arrives, an unedited message is GitHub's
+own default, and a method a ruleset forbids is refused, with the panel and the text kept.
+
+**Rejected.**
+- No read on opening — the panel would have no proposed message to edit and no rulesets to narrow the methods.
+- Waiting for the fresh read before enabling the merge — closes only that gap, and every merge pays for it.
+
+## D7
+
+**One merge panel, opened by one key from the opened pull request, the list and the command palette; it starts on the
+default method and GitHub's proposed message, and ⌘Enter merges.** (2026-11-01, owner, on the design agent's proposal;
+the key is not chosen)
+
+**Why.** Two keys for the usual merge, and the second is a deliberate confirmation of something that cannot be undone.
+
+**Rejected.**
+- A single key that merges at once — cannot be undone.
+
+## D8
+
+**Several selected pull requests can be merged together: one confirmation, each with its own default method and
+message; one failing does not stop the others, and the user sees which failed.** (2026-11-01, owner, on the design
+agent's proposal)
+
+**Why.** The case is a run of small pull requests such as five from Dependabot. Closing several at once already
+exists (`packages/app/lists/ItemContextMenu.vue:241`).

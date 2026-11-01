@@ -41,18 +41,32 @@ conflicts, and re-running checks that do not come from GitHub Actions.
 
 ## How a merge reaches GitHub
 
-GitHub's asynchronous merge endpoint handles direct merges, merge queues, stacks and admin bypass with one
-call, which accepts the request and finishes in the background. GraphQL's merge mutation cannot merge stacks,
-which is how this repository itself works. So [the asynchronous endpoint is the proposed default](DECISIONS.md#d5),
-with GraphQL only for the two things it alone can do: choosing the commit email and jumping the queue.
+githq talks to GitHub through GraphQL whenever GraphQL can do the job, and through REST where it cannot.
+GraphQL's merge mutation cannot merge stacks, so [merges go through GitHub's asynchronous REST
+endpoint](DECISIONS.md#d5). It handles direct merges, merge queues, stacks and admin bypass: GitHub accepts the
+request and finishes in the background, and githq keeps asking for the result. GraphQL stays for the two things that endpoint lacks, choosing
+the commit email and jumping the queue.
+
+## Merging is two keys
+
+[One panel opens with one key](DECISIONS.md#d7) from the opened pull request, the list or the command palette. It
+starts on the repository's default method and GitHub's proposed message, so a usual merge is that key and then
+⌘Enter. There is no single-key merge, because a merge cannot be undone.
+
+[The merge does not wait for githq to re-read the pull request](DECISIONS.md#d6). The panel reads fresh state when
+it opens, but if what githq holds already says ready, ⌘Enter works at once. GitHub enforces the requirements itself,
+and the head commit sent with the request cancels the merge if someone pushed in the meantime. The cost is that a
+check that is not required may have just failed, and you merge before seeing it.
+
+[Several selected pull requests can be merged together](DECISIONS.md#d8), say five from Dependabot: one
+confirmation, each with its own default method and message. One that fails does not stop the others, and you see
+which it was.
 
 ## Still open
 
-- Whether the merge can be sent while githq is still reading the pull request's fresh state, or has to wait.
-- How a merge is started: its key, from the list and the command palette as well as the opened item, and
-  whether several pull requests can be merged at once.
 - Whether merging a pull request that changes `.github/workflows` works with githq's current OAuth scopes.
-  If it needs the `workflow` scope, everyone has to sign in again.
+  If it needs the `workflow` scope, everyone has to sign in again. It takes a test with a token of exactly those
+  scopes.
 
 When this design closes, the statements that githq does not merge have to change with it: the design of githq
 as a whole says so in its decisions, its story and its UI briefs, and so does the note in the pull request's
