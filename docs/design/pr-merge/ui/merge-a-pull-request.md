@@ -138,11 +138,9 @@ state: PM38.
 
 Open with the owner, and not settled by the screens:
 
-- **A stack and `⌘Enter` before the read.** The row holds no `stackEntry`, so a merge sent from PM8 can take pull requests
-  down with it that the panel never showed. The brief says they are shown before the merge.
+- **Stacks** have moved to [their own design](../../stacked-prs/ui/work-through-a-stack.md), which also settles `⌘Enter` before
+  the read and the commit text.
 - **The commit email when bypassing.** It needs GraphQL and bypass needs REST (D5), so PM12 has none. The brief excludes it
   only for a stack.
-- **Commit text in a stack.** GitHub doesn't say what one title does to several squashed pull requests. PM17 assumes it
-  applies to the top one. Needs a live test.
 - **What bypass really skips.** `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what is unmet, and GitHub can
   still refuse a rule the user may not bypass.
