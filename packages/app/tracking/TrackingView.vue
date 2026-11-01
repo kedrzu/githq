@@ -527,6 +527,19 @@ function findOffer(from: EventTarget | null) {
   return offers.value.find(offer => offer.key === key) ?? null;
 }
 
+/** Its approval was requested from here, and it no longer hides anything: approved, as far as githq can tell (D14). */
+function isApproved(organization: { readonly login: string; readonly hiddenPrivate: boolean }) {
+  return !organization.hiddenPrivate && props.approvals[organization.login] != null;
+}
+
+function getOrganizationState(organization: { readonly login: string; readonly hiddenPrivate: boolean }) {
+  if (organization.hiddenPrivate) {
+    return l.privateHidden;
+  }
+
+  return isApproved(organization) ? l.approved : l.noRestrictions;
+}
+
 function keyOf(target: TrackedTarget) {
   return target.kind === 'repository' ? `repository:${target.nameWithOwner}` : `project:${target.id}`;
 }
@@ -783,9 +796,10 @@ function keyOf(target: TrackedTarget) {
               aria-hidden="true"
             />
             <span :class="css.trackingView_orgName">{{ organization.login }}</span>
-            <span :class="css.trackingView_orgState">{{
-              t(organization.hiddenPrivate ? l.privateHidden : l.privateVisible)
-            }}</span>
+            <span
+              :class="[css.trackingView_orgState, isApproved(organization) && css.trackingView_orgState_approved]"
+              >{{ t(getOrganizationState(organization)) }}</span
+            >
           </div>
           <template v-if="organization.hiddenPrivate">
             <p :class="css.trackingView_orgDetail">
@@ -1081,6 +1095,10 @@ function keyOf(target: TrackedTarget) {
   .trackingView_org_hidden & {
     color: $color-amber;
   }
+}
+
+.trackingView_orgState_approved {
+  color: $color-green;
 }
 
 .trackingView_orgDetail {

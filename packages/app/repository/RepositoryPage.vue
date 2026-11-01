@@ -32,6 +32,7 @@ import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
 import { REPOSITORY_VIEW_CHOICES, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import { useRepositoryCommands } from './useRepositoryCommands.js';
+import { LastRepositoryTab } from './LastRepositoryTab.js';
 
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
@@ -44,6 +45,7 @@ const router = useRouter();
 const t = useTranslate();
 const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
+const tabs = useService(LastRepositoryTab);
 
 const state = ref<RepositoryState>('open');
 
@@ -60,6 +62,23 @@ const kind = computed({
     void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
   },
 });
+
+// Coming back to a repository at its own address opens the tab it was left on (D5); an address naming a tab is obeyed.
+const repositoryName = nameWithOwner.value;
+const lastTab = tabs.get(repositoryName);
+if (kind.value === 'all' && lastTab !== null) {
+  kind.value = lastTab;
+} else {
+  tabs.remember(repositoryName, kind.value);
+}
+
+// Leaving, the address already names another repository or none, and this page's tab is not theirs.
+watch(kind, value => {
+  if (nameWithOwner.value === repositoryName) {
+    tabs.remember(repositoryName, value);
+  }
+});
+
 const view = useListViewOptions({
   list: () => `repository:${nameWithOwner.value}`,
   defaults: REPOSITORY_VIEW_DEFAULTS,

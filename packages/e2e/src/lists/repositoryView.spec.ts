@@ -26,6 +26,23 @@ test('a tracked repository is grouped by milestone, and as a board by issue type
     await expect(repository.rows('No type')).toHaveText([/Document the setup/, /Fix the crash on start/]);
 });
 
+test('coming back to a repository opens the tab it was left on, and an address naming a tab is obeyed', async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/pulls`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+
+    await shell.myWorkLink('My work').click();
+    await expect(page).toHaveURL('/');
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/issues`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
+});
+
 test('J3: an untracked repository holds only what concerns the user, and offers no tracking', async ({
     page,
     github,

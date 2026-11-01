@@ -247,7 +247,7 @@ test('T2: tracked projects, those you can see, and what tracking one means', asy
     expect(onTrack).toHaveBeenCalledTimes(1);
 });
 
-test('the hidden organisation explains itself on both sections, the others say one thing', async () => {
+test('the hidden organisation explains itself on both sections, the others say how they stand', async () => {
     for (const story of [Repositories, Projects]) {
         await story.run();
 
@@ -257,7 +257,7 @@ test('the hidden organisation explains itself on both sections, the others say o
             .element(panel)
             .toHaveTextContent('Until an owner approves it, only its 3 public repositories can be tracked.');
         await expect.element(panel.getByRole('link', { name: 'Request approval on GitHub' })).toBeInTheDocument();
-        await expect.element(panel).toHaveTextContent('Private data visible');
+        await expect.element(panel).toHaveTextContent('No restrictions');
     }
 });
 

@@ -97,8 +97,10 @@ organisations:
   en: Organisations
 privateHidden:
   en: Private data hidden
-privateVisible:
-  en: Private data visible
+approved:
+  en: Approved
+noRestrictions:
+  en: No restrictions
 hiddenDetail:
   en: Hides its private data from githq.
 hiddenRequested:
