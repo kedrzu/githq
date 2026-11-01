@@ -78,6 +78,8 @@ Proposed order, each step usable on its own:
 
 Code review in githq and merging several together are not part of this.
 
+How a stack looks in lists and how it merges as a whole is [its own design](../stacked-prs/README.md).
+
 ## Where this stands
 
 The design is closed. The screens come next, from [the brief for merging a pull
