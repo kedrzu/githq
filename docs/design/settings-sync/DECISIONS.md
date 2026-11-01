@@ -181,14 +181,17 @@ proposal)
 
 **Why.** First contact ([D9](#d9)) is this rule with an empty copy. A write refused with 409 is this rule after a re-read. A
 response lost after a successful write merges to no change. A leader tab that closes loses nothing, because the next leader
-finds the same difference on disk, so no queue of changes is needed. No device clock takes part. Any tab may change settings;
-the leader tab writes, about 5 seconds after the last change (a guess, to be tuned), and asks about the file in its own sync
-loop at the usual 60 s visible and 300 s hidden (`packages/app/sync/SyncEngine.ts:54-61`). Signing out tries to write first.
+finds the same difference on disk, so no queue of changes is needed. No device clock takes part. The tab that made a change writes
+it at once, and every tab reads the file when the app starts and when the tab regains focus, with a conditional request, free when
+nothing changed. A write that failed is still the same difference, so the next read retries it.
 
 > **Checked 2026-11-01:** the app has no way to reorder tracked items (`packages/app/tracking/TrackingStore.ts:118-130`), so
 > a reorder cannot conflict with an add today.
 
 **Rejected.**
+- Checking the file in a loop at 60 s visible and 300 s hidden, writing about 5 seconds after a change through the leader tab, and
+  writing at sign-out ([history](history/DECISIONS.md#d11)) — tracking changes rarely, and a stale write is refused anyway. All it
+  buys is an open, unfocused device updating sooner (owner).
 - Recording changes as a list of operations — a second structure that has to survive tab closes, for what the difference
   already gives.
 
@@ -207,8 +210,8 @@ recoverable. Visibility is checked when connecting, not on every poll.
 
 **The file is `settings.json`: formatted JSON with a stable key order, a `version` number at the root, next to `repositories` and
 `projects`, arrays in the user's order. An entry says what it is and whether it is tracked, `tracking: true`; entries are never
-removed, so settings added to an entry later survive untracking, and an untracked item doesn't come back when lists are
-combined. `version` goes up with any new field, and a build that meets a higher number stops syncing ([D12](#d12)) until reloaded.**
+removed, because repositories will have settings of their own later and untracking must not throw them away, and so that an
+untracked item doesn't come back when lists are combined. `version` goes up with any new field, and a build that meets a higher number stops syncing ([D12](#d12)) until reloaded.**
 (2026-11-01, owner for `version`, the root layout and `tracking`; projects the same way as repositories, owner; the rest is the
 design agent's proposal)
 
@@ -231,7 +234,8 @@ order.
 **Rejected.**
 - A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
   owner; view details are local ([D7](#d7)).
-- Removing an entry on untrack — it would forget that the user untracked it (owner).
+- Removing an entry on untrack and keeping only what is tracked — repositories will have settings later, which must survive
+  untracking (owner).
 - Preserving unknown keys so older tabs keep syncing past a new field ([history](history/DECISIONS.md#d13)) — nothing to preserve
   until a second kind of setting exists, and reloading is cheap.
 - Keying repositories by node id — the app identifies them by name throughout

@@ -15,7 +15,7 @@ You set githq up on your laptop. A checkbox on that first screen offers to save 
 account. It starts unticked, and you tick it. A week later you sign in on your desktop. Instead of the list of
 repositories to choose from, githq says it found your settings and offers to load them. You accept, and the sidebar
 looks the way you left it. From then on, a repository you start tracking on one computer appears
-on the other.
+on the other the next time you come back to it.
 
 If you leave the box unticked, nothing leaves the browser, and githq works as it does today. A separate settings
 screen, which githq does not have yet, lets you change your mind later.

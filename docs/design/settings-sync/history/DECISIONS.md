@@ -74,6 +74,29 @@ following `packages/app/auth/createAccountSlot.ts`)
 > the choice. Sign-out also deletes `createAccountSlot` keys (`packages/app/auth/createAccountSlot.ts:46-48`), so with
 > syncing off, signing out still forgets the settings, as it does today.
 
+## D11
+
+Retired 2026-11-01, timing changed in [D11](../DECISIONS.md#d11).
+
+**One merge rule covers every case: the device keeps, next to its settings, the copy of the file it last saw and that copy's
+`sha`, in the same `localStorage` place. What differs between the two is what it has not saved yet. Merging compares the
+device's settings, the file now, and that copy, key by key, matching array entries by identity; when both sides changed the same
+key the file wins. Order is the file's, with new entries at the end. Nothing is ever removed.** (2026-11-01, owner, on the design agent's
+proposal)
+
+**Why.** First contact ([D9](#d9)) is this rule with an empty copy. A write refused with 409 is this rule after a re-read. A
+response lost after a successful write merges to no change. A leader tab that closes loses nothing, because the next leader
+finds the same difference on disk, so no queue of changes is needed. No device clock takes part. Any tab may change settings;
+the leader tab writes, about 5 seconds after the last change (a guess, to be tuned), and asks about the file in its own sync
+loop at the usual 60 s visible and 300 s hidden (`packages/app/sync/SyncEngine.ts:54-61`). Signing out tries to write first.
+
+> **Checked 2026-11-01:** the app has no way to reorder tracked items (`packages/app/tracking/TrackingStore.ts:118-130`), so
+> a reorder cannot conflict with an add today.
+
+**Rejected.**
+- Recording changes as a list of operations — a second structure that has to survive tab closes, for what the difference
+  already gives.
+
 ## D13
 
 Retired 2026-11-01, layout changed in [D13](../DECISIONS.md#d13).
