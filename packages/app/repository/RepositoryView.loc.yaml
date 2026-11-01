@@ -70,8 +70,6 @@ nothingDetail:
   en: No issue or pull request of this repository matches. Try another state or kind.
 onlyWhatConcerns:
   en: 'githq only has what concerns you in {name}: {what}.'
-nothingConcerns:
-  en: Nothing in {name} concerns you, so githq has none of it.
 issueCount:
   plural: count
   en:

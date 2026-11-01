@@ -33,6 +33,7 @@ import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import * as untracked from '@/tracking/UntrackedView.loc.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 
 import type { RepositoryKind, RepositoryList, RepositoryState } from './buildRepositoryList.js';
@@ -186,7 +187,7 @@ const summary = computed(() => {
     return t(l.onlyWhatConcerns, { name, what: t(l.pullRequestCount, { count: pullRequests }) });
   }
 
-  return t(l.nothingConcerns, { name });
+  return t(untracked.nothingConcerns, { name });
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 </script>

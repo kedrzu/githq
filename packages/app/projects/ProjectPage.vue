@@ -33,6 +33,7 @@ import { TrackedItems } from '@/tracking/TrackedItems.js';
 import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
 import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import * as untracked from '@/tracking/UntrackedView.loc.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 
@@ -114,9 +115,8 @@ const concerning = computed(() => {
     return [];
   }
 
-  const url = githubUrl.value.toLowerCase();
   return items.all
-    .filter(item => item.state === 'OPEN' && item.projects.some(place => place.url.toLowerCase() === url))
+    .filter(item => item.state === 'OPEN' && item.projects.some(isThisProject))
     .map(item => projects.withRowFields(item))
     .toSorted(getItemComparator('updated'));
 });
@@ -297,8 +297,7 @@ const openedDraft = computed(() => {
   return id === null ? null : (entries.value.find(entry => entry.item.itemId === id)?.item ?? null);
 });
 const name = computed(() => {
-  const url = githubUrl.value.toLowerCase();
-  const place = concerning.value[0]?.projects.find(candidate => candidate.url.toLowerCase() === url);
+  const place = concerning.value[0]?.projects.find(isThisProject);
   return tracked.value?.title ?? place?.title ?? `${owner.value} #${number.value}`;
 });
 const concerningRows = computed(() =>
@@ -316,6 +315,11 @@ watch(
   },
   { immediate: true },
 );
+
+/** Whether a place an item says it is in is this project, by its address on GitHub. */
+function isThisProject(place: { readonly url: string }) {
+  return place.url.toLowerCase() === githubUrl.value.toLowerCase();
+}
 
 function listKey(projectId: string, viewId: string) {
   return `project:${projectId}:${viewId}`;
@@ -557,7 +561,9 @@ function setRowField(fieldId: string | null) {
     :github-url="githubUrl"
     :rows="concerningRows"
     :summary="
-      concerning.length > 0 ? t(l.onlyWhatConcerns, { name, count: concerning.length }) : t(l.nothingConcerns, { name })
+      concerning.length > 0
+        ? t(l.onlyWhatConcerns, { name, count: concerning.length })
+        : t(untracked.nothingConcerns, { name })
     "
     :others="t(concerning.length > 0 ? l.othersOnGitHub : l.allOnGitHub)"
     :settings-to="getSettingsPath('projects', name)"

@@ -39,8 +39,6 @@ onlyWhatConcerns:
   en:
     one: 'githq only has what concerns you in {name}: 1 item.'
     many: 'githq only has what concerns you in {name}: {count} items.'
-nothingConcerns:
-  en: Nothing in {name} concerns you, so githq has none of it.
 othersOnGitHub:
   en: Its other items are on GitHub. Search and ⌘K only find what's here.
 allOnGitHub:

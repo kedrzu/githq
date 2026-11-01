@@ -10,3 +10,5 @@ youCanTrackIt:
   en: You can track it in
 settings:
   en: Settings
+nothingConcerns:
+  en: Nothing in {name} concerns you, so githq has none of it.
