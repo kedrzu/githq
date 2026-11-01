@@ -31,12 +31,14 @@
         "active": true,
         "targets": "all",
         "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-        "createUpdaterArtifacts": true
+        "macOS": {
+            "signingIdentity": "-"
+        }
     },
     "plugins": {
         "updater": {
             "endpoints": ["https://github.com/kedrzu/githq/releases/latest/download/latest.json"],
-            "pubkey": "not set yet: the updater signing key's public half goes here before the first release"
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI5Njg1MzM1REU4MUI2N0IKUldSN3RvSGVOVk5vdVNYVnRRU1NRSzNrYXEwb1NTalkrMm0zRUVLeFFyMFl1cStqRGgrS2F2elQK"
         }
     }
 }
