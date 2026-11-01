@@ -112,7 +112,7 @@ const t = useTranslate();
           :class="css.dialog_close"
           :icon="X"
           :label="t(l.close)"
-          kbd="Esc"
+          kbd="Escape"
           @click="open = false"
         />
       </DialogContent>
@@ -124,7 +124,7 @@ const t = useTranslate();
 .dialog_overlay {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 10;
   background: rgb(0 0 0 / 55%);
 }
 
@@ -132,7 +132,7 @@ const t = useTranslate();
   position: fixed;
   top: 14vh;
   left: 50%;
-  z-index: 41;
+  z-index: 11;
   display: flex;
   flex-direction: column;
   max-width: calc(100vw - #{$spacing-24 * 2});

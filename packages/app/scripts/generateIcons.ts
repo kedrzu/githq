@@ -16,13 +16,21 @@ import { parse } from 'opentype.js';
 // - `icon-192.png`, `icon-512.png`: the installed app (`manifest.webmanifest`), the 120 px tile as drawn.
 // - `icon-maskable-512.png`: the same, square, for launchers that cut their own shape; "/hq" stays inside
 //   the safe circle (40 % of the side from the centre).
+//
+// It also writes the README's logo, `docs/assets/readme/wordmark.svg`: the wordmark "git/hq" (section "Logo")
+// on the app's black tile, its clear space (the height of the "h") on every side. One image that reads on any
+// page, because GitHub's light/dark `<picture>` follows the system, not GitHub's theme, whenever a content
+// blocker stops GitHub's script that switches it.
 
 const PUBLIC = path.join(import.meta.dirname, '../public');
+const README_ASSETS = path.join(import.meta.dirname, '../../../docs/assets/readme');
 const FONT = path.join(import.meta.dirname, '../node_modules/@fontsource/geist/files/geist-latin-700-normal.woff');
 
 const TILE = '#0e1013';
 const SLASH = '#7b87f7';
 const LETTERS = '#e4e6ea';
+/** The README's wordmark: the brandbook's −3.5 % tracking (the app's `Wordmark.vue` sets its own). */
+const WORDMARK = { fontSize: 64, letterSpacing: -0.035 };
 
 /** One tile of the brandbook, as fractions of its side. */
 interface TileShape {
@@ -74,7 +82,9 @@ async function generateIcons() {
         await writeFile(path.join(PUBLIC, file), new Resvg(drawIcon(font, size, shape)).render().asPng());
     }
 
-    console.info(`Icons written to ${PUBLIC}.`);
+    await writeFile(path.join(README_ASSETS, 'wordmark.svg'), drawWordmark(font));
+
+    console.info(`Icons written to ${PUBLIC}, the README's wordmark to ${README_ASSETS}.`);
 }
 
 /** The sygnet on a `size`-px tile, as an SVG document. */
@@ -104,6 +114,41 @@ function drawIcon(font: Font, size: number, shape: TileShape): string {
     const tile = `<rect x="${round(edge / 2)}" y="${round(edge / 2)}" width="${round(size - edge)}" height="${round(size - edge)}" rx="${round(shape.cornerRadius * size)}" fill="${TILE}"${stroke}/>`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${tile}${paths.join('')}</svg>\n`;
+}
+
+/** The wordmark "git/hq" on the black tile, as an SVG document. */
+function drawWordmark(font: Font): string {
+    const { fontSize } = WORDMARK;
+    const tracking = WORDMARK.letterSpacing * fontSize;
+    const scale = fontSize / font.unitsPerEm;
+    const ascender = font.ascender * scale;
+
+    // The run on the line box, then measured by its ink, so the clear space starts at the letters themselves.
+    const glyphs = font.stringToGlyphs('git/hq');
+    let x = 0;
+    const outlines = glyphs.map(glyph => {
+        const outline = glyph.getPath(x, ascender, fontSize);
+        x += (glyph.advanceWidth ?? 0) * scale + tracking;
+        return outline;
+    });
+    const boxes = outlines.map(outline => outline.getBoundingBox());
+    const left = Math.min(...boxes.map(box => box.x1));
+    const top = Math.min(...boxes.map(box => box.y1));
+    const right = Math.max(...boxes.map(box => box.x2));
+    const bottom = Math.max(...boxes.map(box => box.y2));
+
+    const h = boxes[4]!;
+    const space = h.y2 - h.y1;
+    const width = round(right - left + 2 * space);
+    const height = round(bottom - top + 2 * space);
+    const edge = LARGE_TILE.stroke!;
+
+    const tile = `<rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="${round(LARGE_TILE.cornerRadius * height)}" fill="${TILE}" stroke="${edge.color}"/>`;
+    const paths = outlines.map(
+        (outline, index) => `<path fill="${index === 3 ? SLASH : LETTERS}" d="${outline.toPathData(2)}"/>`,
+    );
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${tile}<g transform="translate(${round(space - left)} ${round(space - top)})">${paths.join('')}</g></svg>\n`;
 }
 
 function toArrayBuffer(buffer: Buffer): ArrayBuffer {

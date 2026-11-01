@@ -32,6 +32,7 @@ import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
@@ -244,7 +245,7 @@ const opened = computed(() => {
 });
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
-const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', itemMenu: 'Meta+.' } as const;
+const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', itemMenu: 'Mod+.' } as const;
 
 /**
  * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
@@ -489,7 +490,7 @@ function getProjectOptions(): CommandOption[] {
             type="button"
             :class="css.itemView_reference"
             :aria-label="t(l.itemMenuLabel, { reference: `${item.repository.nameWithOwner}#${item.number}` })"
-            :aria-keyshortcuts="ITEM_KEYS.itemMenu"
+            :aria-keyshortcuts="formatAriaKeyShortcuts(ITEM_KEYS.itemMenu)"
           >
             <component
               :is="state.icon"
@@ -525,7 +526,7 @@ function getProjectOptions(): CommandOption[] {
           :disabled="position.index <= 1"
           @click="emit('previous')"
         >
-          <Kbd>K</Kbd>
+          <Kbd keys="K" />
         </IconButton>
         <IconButton
           :label="t(l.next)"
@@ -534,7 +535,7 @@ function getProjectOptions(): CommandOption[] {
           :disabled="position.index >= position.count"
           @click="emit('next')"
         >
-          <Kbd>J</Kbd>
+          <Kbd keys="J" />
         </IconButton>
         <span :class="css.itemView_position">{{
           t(l.position, { index: position.index, count: position.count })
@@ -562,7 +563,7 @@ function getProjectOptions(): CommandOption[] {
       <IconButton
         :icon="X"
         :label="t(l.close)"
-        kbd="Esc"
+        kbd="Escape"
         aria-keyshortcuts="Escape"
         @click="emit('close')"
       />

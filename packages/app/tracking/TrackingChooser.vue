@@ -6,6 +6,8 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ArrowDownWideNarrow, Building2, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
 import { computed, ref, useTemplateRef, watchEffect } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import Checkbox from '@/components/Checkbox.vue';
 import ChoiceList from '@/components/ChoiceList.vue';
@@ -202,7 +204,7 @@ onWindowEvent('keydown', event => {
     return;
   }
 
-  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+  if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
     emit('track');
     return;
@@ -215,7 +217,7 @@ onWindowEvent('keydown', event => {
 });
 
 function onFilterKeydown(event: KeyboardEvent) {
-  if (event.key === 'a' && (event.metaKey || event.ctrlKey) && needle.value !== '') {
+  if (matchesCommandKey(event, 'Mod+A') && needle.value !== '') {
     event.preventDefault();
     selectAllMatching();
   } else {
@@ -391,8 +393,8 @@ function ownerCount(group: OwnerGroup): OwnerCount {
       <div>
         <Button
           variant="primary"
-          kbd="⌘↵"
-          aria-keyshortcuts="Meta+Enter"
+          kbd="Mod+Enter"
+          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           @click="emit('track')"
         >
           {{ t(l.continue) }}
@@ -541,10 +543,10 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                 v-if="needle !== ''"
                 :class="css.trackingChooser_hints"
               >
-                <span><Kbd>↑↓</Kbd> {{ t(l.hintMove) }}</span>
-                <span><Kbd>Space</Kbd> {{ t(l.hintSelect) }}</span>
-                <span><Kbd>⌘A</Kbd> {{ t(l.hintSelectAll) }}</span>
-                <span><Kbd>Esc</Kbd> {{ t(l.hintClear) }}</span>
+                <span><Kbd keys="ArrowUp ArrowDown" /> {{ t(l.hintMove) }}</span>
+                <span><Kbd keys="Space" /> {{ t(l.hintSelect) }}</span>
+                <span><Kbd keys="Mod+A" /> {{ t(l.hintSelectAll) }}</span>
+                <span><Kbd keys="Escape" /> {{ t(l.hintClear) }}</span>
               </p>
             </section>
 
@@ -623,8 +625,8 @@ function ownerCount(group: OwnerGroup): OwnerCount {
         </Button>
         <Button
           variant="primary"
-          kbd="⌘↵"
-          aria-keyshortcuts="Meta+Enter"
+          kbd="Mod+Enter"
+          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           @click="emit('track')"
         >
           {{ t(l.track) }}

@@ -118,7 +118,7 @@ onWindowEvent('keydown', event => {
                 variant="light"
                 size="lg"
                 :icon="Github"
-                kbd="↵"
+                kbd="Enter"
                 aria-keyshortcuts="Enter"
                 @click="emit('signIn')"
               >

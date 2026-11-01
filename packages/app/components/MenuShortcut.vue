@@ -1,21 +1,19 @@
-<!-- A menu entry's key at its end: one chip ("O"), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one. -->
+<!-- A menu entry's key at its end: one chip (`O`), or one chip per key of a combination (`Shift+O` → ⇧ O); nothing without one. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
-
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
 
 import Kbd from './Kbd.vue';
 
 const props = defineProps<{
-  /** One chip as written ("Esc"). */
+  /** One chip (`Escape`). */
   kbd?: string;
-  /** As `aria-keyshortcuts` writes it (`Shift+O`). */
+  /** A key in the app's notation (`Shift+O`), one chip per key. */
   shortcut?: string;
 }>();
 
 const keys = computed(() => {
   if (props.shortcut) {
-    return formatCommandKey(props.shortcut);
+    return props.shortcut.split('+');
   }
 
   return props.kbd ? [props.kbd] : [];
@@ -30,8 +28,8 @@ const keys = computed(() => {
     <Kbd
       v-for="(key, index) in keys"
       :key="index"
-      >{{ key }}</Kbd
-    >
+      :keys="key"
+    />
   </span>
 </template>
 

@@ -37,6 +37,12 @@ export class AppShellHarness {
         return this.sidebar.getByRole('link', { name: new RegExp(`^${escapeRegExp(name)} `) });
     }
 
+    /** Right-clicks a tracked repository (`owner/name`) or project (its title) in the sidebar: its context menu. */
+    async openTrackedMenu(name: string): Promise<Locator> {
+        await this.tracked(name).click({ button: 'right' });
+        return this.page.getByRole('menu');
+    }
+
     /**
      * What the sidebar says of a tracked repository or project: its open items, "waiting" or how far its download
      * is ("40%"), or "hidden".

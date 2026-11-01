@@ -39,6 +39,7 @@ import * as l from './ProjectPage.loc.js';
 import ProjectDraftDialog from './ProjectDraftDialog.vue';
 import { ProjectStore } from './ProjectStore.js';
 import type { Project, ProjectEntry, ProjectView as SavedView } from './ProjectTypes.js';
+import ProjectContextMenu from './ProjectContextMenu.vue';
 import ProjectView from './ProjectView.vue';
 import type { ProjectTab } from './ProjectView.vue';
 import { ProjectViewAnswers } from './ProjectViewAnswers.js';
@@ -53,6 +54,7 @@ import {
   parseProjectSort,
 } from './projectViewOptions.js';
 import { selectProjectEntries } from './selectProjectEntries.js';
+import { useProjectCommands } from './useProjectCommands.js';
 
 /** "Add existing issues…": its submenu opens from the empty project too (K8). */
 const ADD_ITEMS_COMMAND = 'project.addItems';
@@ -81,6 +83,7 @@ const registry = useService(CommandRegistry);
 const route = useRoute();
 const t = useTranslate();
 const list = useItemList();
+const projectCommands = useProjectCommands();
 
 const notFound = ref(false);
 const trackBusy = ref(false);
@@ -119,6 +122,18 @@ useCommands(() =>
       ]
     : [],
 );
+// The project's page on GitHub is in the command menu too, named, as the screen is about it.
+useCommands(() => [
+  {
+    ...projectCommands({
+      id: tracked.value?.id ?? null,
+      owner: owner.value,
+      ownerKind: route.path.startsWith('/orgs/') ? 'org' : 'user',
+      number: number.value,
+    }).openOnGitHub,
+    detail: tracked.value?.title ?? `${owner.value}#${number.value}`,
+  },
+]);
 const view = computed((): SavedView | null => {
   const views = project.value?.views ?? [];
   return views.find(candidate => candidate.number === viewNumber.value) ?? views[0] ?? null;
@@ -514,6 +529,12 @@ async function track() {
     @add-items="registry.openMenu(ADD_ITEMS_COMMAND)"
     @clear-filter="options.set({ filter: '' })"
   >
+    <template #menu>
+      <ProjectContextMenu
+        :project-id="project.id"
+        :new-issue-key="NEW_ISSUE_KEY"
+      />
+    </template>
     <template #selection="{ ids }">
       <SelectionActions
         :ids="ids"

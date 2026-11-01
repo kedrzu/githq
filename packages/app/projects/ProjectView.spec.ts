@@ -79,7 +79,7 @@ test('a draft is written at the bottom of a column, with its value', async () =>
     await expect.element(page.getByRole('textbox', { name: 'New draft issue in In review' })).toHaveValue('');
 });
 
-test('the project’s row field sits on the toolbar while it fits, otherwise in Display; kept on this device only', async () => {
+test('the project’s row field sits on the toolbar while it fits, otherwise in Display, chosen right there; kept on this device only', async () => {
     const view = mount(SAMPLE_VIEW_SPRINT);
     await userEvent.click(page.getByRole('button', { name: 'Row field: Status' }));
     await userEvent.click(page.getByRole('menuitemradio', { name: 'Priority' }));
@@ -89,8 +89,10 @@ test('the project’s row field sits on the toolbar while it fits, otherwise in 
     await expect.element(page.getByRole('button', { name: 'Row field: Status' })).not.toBeInTheDocument();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
     await expect.element(page.getByText('View settings are saved on this device only')).toBeVisible();
-    await userEvent.click(page.getByRole('button', { name: 'Row field: Status' }));
-    await userEvent.click(page.getByRole('menuitemradio', { name: 'Priority' }));
+    // Its choices sit in Display itself — no second menu to open.
+    await expect.element(page.getByRole('button', { name: 'Row field: Status' })).not.toBeInTheDocument();
+    const rowField = page.getByRole('dialog', { name: 'Display' }).getByRole('group', { name: /in other lists$/ });
+    await userEvent.click(rowField.getByRole('button', { name: 'Priority' }));
     expect(view.rowFields).toEqual(['F_priority', 'F_priority']);
 });
 

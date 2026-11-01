@@ -169,7 +169,7 @@ test('M1: the reference opens the item menu — the actions grouped, each with i
     await userEvent.click(page.getByRole('menuitemcheckbox', { name: 'perf' }));
     expect(onEdit).toHaveBeenCalledWith({ kind: 'labels', add: ['perf'], remove: [] });
 
-    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await expect.element(page.getByRole('menu')).toBeVisible();
     await userEvent.keyboard('{Escape}');
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
@@ -180,7 +180,7 @@ test("M2: a pull request's menu asks for reviews — never of its author, those 
     await PullRequestFailing.run();
     const { onEdit } = PullRequestFailing.args;
 
-    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await userEvent.click(page.getByRole('menuitem', { name: /^Request review/ }));
     await expect.element(page.getByRole('menuitemcheckbox').first()).toBeVisible();
     const author = F1_PULL_REQUEST.author?.login ?? '';
@@ -189,7 +189,7 @@ test("M2: a pull request's menu asks for reviews — never of its author, those 
         .not.toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
-    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await userEvent.click(page.getByRole('menuitem', { name: 'Convert to draft' }));
     expect(onEdit).toHaveBeenCalledWith({ kind: 'draft', draft: true });
 });
@@ -207,7 +207,7 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
     await IssueInPanel.run();
 
     await userEvent.keyboard('r');
-    await userEvent.keyboard('Looks good{Meta>}{Enter}{/Meta}');
+    await userEvent.keyboard('Looks good{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
     expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good' });
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
@@ -218,7 +218,7 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
 
     await expect.element(page.getByRole('note')).toHaveTextContent("set by sigma-clinic/portal's maintainers");
     await expect.element(page.getByRole('button', { name: /^Labels:/ })).not.toBeInTheDocument();
-    await userEvent.keyboard('{Meta>}.{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: /^Close issue/ })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');

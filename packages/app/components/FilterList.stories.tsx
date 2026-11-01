@@ -52,7 +52,7 @@ export const Filtered: Story = {
                                 groups={groups.value}
                                 placeholder="Filter fruit…"
                                 message={groups.value[0]?.rows.length === 0 ? 'Nothing matches' : null}
-                                hints={[{ keys: '↵', label: 'Pick' }]}
+                                hints={[{ keys: 'Enter', label: 'Pick' }]}
                                 onUpdate:modelValue={value => (picked.value = `Picked: ${String(value)}`)}
                             >
                                 {{

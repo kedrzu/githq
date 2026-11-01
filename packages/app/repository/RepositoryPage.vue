@@ -7,6 +7,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import { useCommands } from '@/commands/useCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
@@ -25,10 +26,12 @@ import { formatShortDate } from '@/utils/formatShortDate.js';
 
 import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
+import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
 import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
 import { REPOSITORY_VIEW_CHOICES, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
+import { useRepositoryCommands } from './useRepositoryCommands.js';
 
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
@@ -40,6 +43,7 @@ const route = useRoute();
 const router = useRouter();
 const t = useTranslate();
 const list = useItemList();
+const repositoryCommands = useRepositoryCommands();
 
 const state = ref<RepositoryState>('open');
 const notFound = ref(false);
@@ -125,6 +129,9 @@ const projectLinks = computed(() => {
 
   return { links: [...links.values()], withoutProject };
 });
+
+// The repository's page on GitHub is in the command menu too, named, as the screen is about it.
+useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
 
 // What the user may set here (labels, milestones, people) is read with the repository's permission.
 watch(
@@ -241,6 +248,9 @@ async function track() {
     @move="move"
     @track="track"
   >
+    <template #menu>
+      <RepositoryContextMenu :name-with-owner="nameWithOwner" />
+    </template>
     <template #selection="{ ids }">
       <SelectionActions
         :ids="ids"

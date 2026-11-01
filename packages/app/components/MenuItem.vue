@@ -3,13 +3,15 @@
 import type { LucideIcon } from 'lucide-vue-next';
 import { DropdownMenuItem } from 'reka-ui';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+
 import MenuShortcut from './MenuShortcut.vue';
 
 defineProps<{
   icon?: LucideIcon;
-  /** The item's key, drawn at the end as one chip ("O"); the caller handles the key itself. */
+  /** The item's key, drawn at the end as one chip (`O`, `Escape`); the caller handles the key itself. */
   kbd?: string;
-  /** The item's key as `aria-keyshortcuts` writes it (`Shift+O`), drawn one chip per key; the caller handles it. */
+  /** The item's key in the app's notation (`Mod+K`, `Shift+O`), drawn one chip per key; the caller handles it. */
   shortcut?: string;
   /** Dim text after the label. */
   detail?: string;
@@ -30,7 +32,7 @@ defineSlots<{ default(): unknown }>();
   <DropdownMenuItem
     :class="css.menuItem"
     :disabled="disabled"
-    :aria-keyshortcuts="shortcut"
+    :aria-keyshortcuts="shortcut && formatAriaKeyShortcuts(shortcut)"
     @select="emit('select', $event)"
   >
     <component
