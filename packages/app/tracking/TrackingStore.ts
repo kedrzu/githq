@@ -3,6 +3,7 @@ import type {
     TrackingRepositoryFieldsFragment,
     TrackingRepositoryPageFieldsFragment,
 } from '@githq/github/generated.gen.js';
+import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
 import { readTrackingCandidates } from '@githq/github/tracking/readTrackingCandidates.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
@@ -446,7 +447,10 @@ export const TrackingStore = defineService({
                         owner: reference.owner,
                         name: reference.name,
                     });
-                    found = repository ? toCandidateRepository(repository) : null;
+                    found =
+                        repository && !isSettingsRepository(repository.nameWithOwner, current.account.login)
+                            ? toCandidateRepository(repository)
+                            : null;
                 } else {
                     const { repositoryOwner } = await current.account.sdk.ProjectForTracking({
                         login: reference.owner,
@@ -478,13 +482,15 @@ export const TrackingStore = defineService({
 
                 const candidates: TrackingCandidates = {
                     login: read.login,
-                    repositories: toCandidateRepositories(read.repositories),
+                    repositories: toCandidateRepositories(read.repositories, current.account.login),
                     projects: read.projects.map(project => toCandidateProject(project)),
                     organizations: read.organizations.map(organization => ({
                         login: organization.login,
                         avatarUrl: organization.avatarUrl,
                         hiddenPrivate: organization.hiddenPrivate,
-                        repositories: organization.repositories && toCandidateRepositories(organization.repositories),
+                        repositories:
+                            organization.repositories &&
+                            toCandidateRepositories(organization.repositories, current.account.login),
                         projects: organization.projects.map(project => toCandidateProject(project)),
                     })),
                 };
@@ -528,7 +534,7 @@ export const TrackingStore = defineService({
                 return;
             }
 
-            const read = toCandidateRepositories(page);
+            const read = toCandidateRepositories(page, current.account.login);
             const more: CandidateRepositories = {
                 repositories: [...list.repositories, ...read.repositories],
                 totalCount: read.totalCount,
@@ -831,12 +837,23 @@ function applyEntries<T extends SettingsRepository | SettingsProject>(
     return next;
 }
 
-function toCandidateRepositories(page: TrackingRepositoryPageFieldsFragment): CandidateRepositories {
+/** A page of repositories as offered: without the user's settings repository, counted without it too. */
+function toCandidateRepositories(page: TrackingRepositoryPageFieldsFragment, login: string): CandidateRepositories {
+    const nodes = filterNotNull(page.nodes ?? []);
+    const offered = nodes.filter(repository => !isSettingsRepository(repository.nameWithOwner, login));
     return {
-        repositories: filterNotNull(page.nodes ?? []).map(toCandidateRepository),
-        totalCount: page.totalCount,
+        repositories: offered.map(toCandidateRepository),
+        totalCount: page.totalCount - (nodes.length - offered.length),
         nextCursor: page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null,
     };
+}
+
+/**
+ * Whether it is the repository githq keeps the user's settings in (settings-sync D6): never offered to track. One of
+ * that name owned by someone else is theirs to track.
+ */
+function isSettingsRepository(nameWithOwner: string, login: string) {
+    return nameWithOwner.toLowerCase() === `${login}/${SETTINGS_REPOSITORY_NAME}`.toLowerCase();
 }
 
 function toCandidateRepository(repository: TrackingRepositoryFieldsFragment): CandidateRepository {

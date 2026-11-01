@@ -44,6 +44,15 @@ test.each([
     expect(await writeSettingsFile(rest, { owner: 'kedrzu', text: '{}\n', sha: null })).toEqual({ kind: 'conflict' });
 });
 
+test("any other 422 is a refusal, with GitHub's own words", async () => {
+    const rest = restAnswering(() => Response.json({ message: 'Repository rule violations found' }, { status: 422 }));
+
+    await expect(writeSettingsFile(rest, { owner: 'kedrzu', text: '{}\n', sha: 'old' })).rejects.toMatchObject({
+        status: 422,
+        githubMessage: 'Repository rule violations found',
+    });
+});
+
 function restAnswering(answer: (init: RequestInit | undefined) => Response) {
     const fetch: Fetch = (_, init) => Promise.resolve(answer(init));
     return createGitHubRestRequester({ getToken: () => 'token', fetch });

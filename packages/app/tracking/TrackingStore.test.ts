@@ -13,6 +13,7 @@ import {
 import { ItemStore } from '@/store/ItemStore.js';
 import type { SettingsDocument } from '@/settings/sync/SettingsDocument.js';
 import { createTestSession } from '@/testing/createTestSession.js';
+import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -162,10 +163,60 @@ test('tabs stay in step: another tab takes the change in, and the document it sa
     expect(second.tracking.repositories).toEqual([API, WEB]);
 });
 
+test('the user’s settings repository is never offered to track; someone else’s of that name is', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    const { tracking } = await open({
+        login,
+        answer: request => {
+            switch (request.operation) {
+                case 'TrackingCandidates':
+                    return {
+                        data: {
+                            viewer: {
+                                login,
+                                repositories: pageOf([`${login.toUpperCase()}/GitHQ-Settings`, `${login}/app`]),
+                                organizations: {
+                                    nodes: [
+                                        { login: 'acme', avatarUrl: '', repositories: pageOf(['acme/githq-settings']) },
+                                    ],
+                                },
+                            },
+                        },
+                    };
+                case 'TrackingProjects':
+                    return {
+                        data: { viewer: { projectsV2: { totalCount: 0, nodes: [] }, organizations: { nodes: [] } } },
+                    };
+                case 'RepositoryForTracking':
+                    return {
+                        data: { repository: repositoryNode(`${String(request.variables.owner)}/githq-settings`) },
+                    };
+                default:
+                    return undefined;
+            }
+        },
+    });
+
+    const candidates = await tracking.loadCandidates();
+    expect(candidates?.repositories).toMatchObject({
+        totalCount: 1,
+        repositories: [{ nameWithOwner: `${login}/app` }],
+    });
+    expect(candidates?.organizations[0]?.repositories?.repositories).toMatchObject([
+        { nameWithOwner: 'acme/githq-settings' },
+    ]);
+
+    expect(await tracking.findCandidate({ kind: 'repository', owner: login, name: 'githq-settings' })).toBeNull();
+    expect(await tracking.findCandidate({ kind: 'repository', owner: 'acme', name: 'githq-settings' })).toMatchObject({
+        nameWithOwner: 'acme/githq-settings',
+    });
+});
+
 interface OpenOptions {
     readonly login?: string;
     readonly localStorage?: Map<string, string>;
     readonly tabs?: TestTabs;
+    readonly answer?: (request: TestGraphQLRequest) => TestGraphQLAnswer | undefined;
 }
 
 /** A tab signed in with its local copy open and the kept choice read. */
@@ -173,7 +224,7 @@ async function open(options: OpenOptions = {}) {
     const login = options.login ?? `user-${crypto.randomUUID()}`;
     const session = createTestSession({
         login,
-        answer: () => undefined,
+        answer: options.answer ?? (() => undefined),
         localStorage: options.localStorage,
         tabs: options.tabs,
     });
@@ -191,4 +242,26 @@ async function keepOlderChoice(login: string, tracking: Tracking) {
     const db = await openDB(getLocalDatabaseName(login), LOCAL_DATABASE_VERSION);
     await db.put('meta', { key: 'tracking', value: tracking });
     db.close();
+}
+
+function pageOf(names: readonly string[]) {
+    return {
+        totalCount: names.length,
+        pageInfo: { hasNextPage: false, endCursor: null },
+        nodes: names.map(repositoryNode),
+    };
+}
+
+function repositoryNode(nameWithOwner: string) {
+    return {
+        id: `R_${nameWithOwner}`,
+        nameWithOwner,
+        isPrivate: true,
+        isArchived: false,
+        pushedAt: '2026-11-01T00:00:00Z',
+        viewerPermission: 'ADMIN',
+        owner: { login: nameWithOwner.split('/')[0] },
+        issues: { totalCount: 0 },
+        pullRequests: { totalCount: 0 },
+    };
 }

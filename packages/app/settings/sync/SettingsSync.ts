@@ -68,8 +68,9 @@ type Failure = { readonly kind: 'transient' } | { readonly kind: 'stop'; readonl
  * Every sync is the three-way merge of D11 between this device's settings, the file now, and the file as this
  * device last saw it (kept in `saving`, the settings' slot, through {@link TrackingStore}): it takes the file's
  * changes in, and writes what is new here. It runs once the user's settings are in memory, when the tab is shown
- * again, and right after the user changes what is tracked in this tab; one at a time, a trigger during one running
- * once after it. GitHub out of reach or the allowance spent leave it on, for the next trigger.
+ * again or its window focused, and right after the user changes what is tracked in this tab; one at a time, a
+ * trigger during one running once after it. GitHub out of reach or the allowance spent leave it on, for the next
+ * trigger.
  *
  * It follows the signed-in user like the tracking store: an answer for a session that ended is dropped.
  */
@@ -91,9 +92,10 @@ export const SettingsSync = defineService({
         tracking.onLocalChange(() => void sync());
         browser.onVisibilityChange(() => {
             if (browser.isVisible()) {
-                void sync();
+                void syncShown();
             }
         });
+        browser.onFocus(() => void syncShown());
 
         return {
             /** Whether and how the settings are synced; reactive. */
@@ -188,7 +190,8 @@ export const SettingsSync = defineService({
         /**
          * Tries again after syncing stopped: checks the repository again and, when it can be used, goes on from the
          * file as this device last saw it — or, having never seen it, as on first contact. A repository gone stays
-         * gone: it is never created again here (T8). Rejects when signed out or when GitHub cannot be reached.
+         * gone: it is never created again here (T8). One this device never saw — GitHub refused creating it — is
+         * created, as turning on would. Rejects when signed out or when GitHub cannot be reached.
          */
         async function retry() {
             const saving = tracking.readSaving();
@@ -204,6 +207,11 @@ export const SettingsSync = defineService({
 
             switch (inspection.kind) {
                 case 'absent':
+                    if (!saving.base) {
+                        await turnOn();
+                        return;
+                    }
+
                     stop({ kind: 'deleted' });
                     return;
                 case 'unusable':
@@ -220,13 +228,21 @@ export const SettingsSync = defineService({
                         base: saving.base,
                         sha: inspection.sha,
                         etag: null,
-                        syncedAt: null,
+                        syncedAt: saving.syncedAt ?? null,
                     });
                     await sync();
                     return;
                 default:
                     assertNever(inspection);
             }
+        }
+
+        /**
+         * Syncs when the user comes back to the tab — shown again, or its window focused. Both usually arrive
+         * together: one joins the sync the other started, rather than reading the file again after it.
+         */
+        function syncShown() {
+            return session?.running ?? sync();
         }
 
         /**
@@ -430,7 +446,14 @@ export const SettingsSync = defineService({
         function stop(reason: StoppedReason, from: SettingsSaving = tracking.readSaving()) {
             switch (from.state) {
                 case 'on':
-                    tracking.saveSaving({ state: 'stopped', reason, base: from.base, sha: from.sha, etag: from.etag });
+                    tracking.saveSaving({
+                        state: 'stopped',
+                        reason,
+                        base: from.base,
+                        sha: from.sha,
+                        etag: from.etag,
+                        syncedAt: from.syncedAt,
+                    });
                     break;
                 case 'stopped':
                     tracking.saveSaving({ ...from, reason });
@@ -501,7 +524,7 @@ function classify(error: unknown): Failure {
         return { kind: 'transient' };
     }
 
-    return { kind: 'stop', reason: { kind: 'refused', message: error.message } };
+    return { kind: 'stop', reason: { kind: 'refused', message: error.githubMessage ?? error.message } };
 }
 
 function isSame(a: SettingsDocument, b: SettingsDocument) {

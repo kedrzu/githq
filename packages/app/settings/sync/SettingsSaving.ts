@@ -46,6 +46,8 @@ export type SettingsSaving =
           readonly base?: SettingsDocument;
           readonly sha?: string | null;
           readonly etag?: string | null;
+          /** When the settings and the file last agreed, before it stopped (epoch ms). */
+          readonly syncedAt?: number | null;
       };
 
 /** Syncing never turned on. */
@@ -84,8 +86,9 @@ export function readSettingsSaving(stored: unknown): SettingsSaving {
 
             const base = readSettingsDocument(stored.base);
             const { sha, etag } = stored;
+            const syncedAt = typeof stored.syncedAt === 'number' ? stored.syncedAt : null;
             return base && (sha === null || typeof sha === 'string') && (etag === null || typeof etag === 'string')
-                ? { state: 'stopped', reason, base, sha, etag }
+                ? { state: 'stopped', reason, base, sha, etag, syncedAt }
                 : { state: 'stopped', reason };
         }
         default:

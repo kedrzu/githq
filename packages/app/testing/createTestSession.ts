@@ -74,6 +74,7 @@ export function createTestSession(params: CreateTestSessionParams) {
 
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
+    const focusListeners: (() => void)[] = [];
     let visible = true;
     /** The pages opened in a new tab, in order. */
     const openedTabs: string[] = [];
@@ -120,6 +121,9 @@ export function createTestSession(params: CreateTestSessionParams) {
         onVisibilityChange: listener => {
             visibilityListeners.push(listener);
         },
+        onFocus: listener => {
+            focusListeners.push(listener);
+        },
         isOnline: () => true,
         onOnlineChange: () => {},
         requestLock: tab.requestLock,
@@ -147,6 +151,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         /** The operations GitHub received, in order. */
         operations: () => github.requests.map(request => request.operation),
         setVisible,
+        focus,
         fromAnotherTab,
         clearFromAnotherTab,
         signInFromAnotherTab: (login: string) =>
@@ -224,6 +229,13 @@ export function createTestSession(params: CreateTestSessionParams) {
     function setVisible(value: boolean) {
         visible = value;
         for (const listener of visibilityListeners) {
+            listener();
+        }
+    }
+
+    /** The window gains focus. */
+    function focus() {
+        for (const listener of focusListeners) {
             listener();
         }
     }

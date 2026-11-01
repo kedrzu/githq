@@ -18,11 +18,14 @@ export type WriteSettingsFileResult =
     | { readonly kind: 'written'; readonly sha: string }
     | { readonly kind: 'conflict' };
 
+/** How GitHub words the 422 for a write naming no `sha` while the file exists. */
+const MISSING_SHA = `"sha" wasn't supplied`;
+
 /**
  * Writes `settings.json` of the user's settings repository as one commit (`PUT …/contents/settings.json`). GitHub
- * refuses a write over another version than `sha` — 409 for a stale sha, 422 for none while the file exists, 409
- * too while a new repository is not ready — which comes back as a conflict: read again, merge, write. Throws
- * `GitHubApiError` on any other refusal.
+ * refuses a write over another version than `sha` — 409 for a stale sha, a 422 saying no `sha` was supplied while
+ * the file exists, 409 too while a new repository is not ready — which comes back as a conflict: read again, merge,
+ * write. Throws `GitHubApiError` on any other refusal, another 422 too.
  */
 export async function writeSettingsFile(
     rest: GitHubRestRequester,
@@ -40,7 +43,7 @@ export async function writeSettingsFile(
             },
         });
     } catch (error) {
-        if (error instanceof GitHubApiError && (error.status === 409 || error.status === 422)) {
+        if (error instanceof GitHubApiError && (error.status === 409 || isMissingSha(error))) {
             return { kind: 'conflict' };
         }
 
@@ -54,6 +57,10 @@ export async function writeSettingsFile(
     }
 
     return { kind: 'written', sha: content.sha };
+}
+
+function isMissingSha(error: GitHubApiError) {
+    return error.status === 422 && error.message.includes(MISSING_SHA);
 }
 
 function encodeBase64Text(text: string) {

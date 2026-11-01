@@ -4,3 +4,5 @@ sections:
   en: Settings sections
 keysTo:
   en: to
+savingStopped:
+  en: Syncing stopped

@@ -521,6 +521,7 @@ async function setup(github: FakeGitHub, login: string) {
         onVisibilityChange: listener => {
             visibilityListeners.push(listener);
         },
+        onFocus: () => {},
         isOnline: () => online,
         onOnlineChange: listener => {
             onlineListeners.push(listener);

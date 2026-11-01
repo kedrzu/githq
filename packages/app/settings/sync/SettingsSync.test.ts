@@ -230,7 +230,7 @@ test('a write GitHub refuses stops syncing with its message', async () => {
 
     expect(sync.state).toMatchObject({
         state: 'stopped',
-        reason: { kind: 'refused', message: expect.stringContaining('Repository access blocked') },
+        reason: { kind: 'refused', message: 'Repository access blocked' },
     });
 });
 
@@ -271,6 +271,56 @@ test('trying again once the file is readable goes on from the version this devic
     expect(tracking.document).toEqual(merged);
     expect(github.file?.text).toBe(serializeSettings(merged));
     expect(sync.state).toMatchObject({ state: 'on', base: merged });
+});
+
+test('coming back to the tab reads the file once, though it is shown and focused both', async () => {
+    const { session, github } = await turnedOn();
+
+    session.setVisible(true);
+    session.focus();
+    await session.clock.advance(0);
+    expect(github.answered.slice(-1)).toEqual([200]);
+    const reads = github.answered.length;
+
+    // Focused alone — a window beside another — it reads too.
+    session.focus();
+    await session.clock.advance(0);
+    expect(github.answered.length).toBe(reads + 1);
+});
+
+test('creating the repository refused, trying again creates it', async () => {
+    const { session, tracking, sync, github } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    github.refuseCreate = 'Repository creation failed.';
+
+    await sync.turnOn();
+    expect(sync.state).toEqual({
+        state: 'stopped',
+        reason: { kind: 'refused', message: 'Repository creation failed.' },
+    });
+    expect(github.created).toBe(false);
+
+    github.refuseCreate = null;
+    await sync.retry();
+    await session.clock.advance(0);
+
+    expect(github.created).toBe(true);
+    expect(github.file && parseSettings(github.file.text)).toEqual({ kind: 'ok', document: tracking.document });
+    expect(sync.state).toMatchObject({ state: 'on', sha: github.file?.sha });
+});
+
+test('a write refused with a 422 that is not about the version stops syncing, and is not tried again', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    github.refuseWritesWith422 = 'Repository rule violations found';
+
+    tracking.track({ repository: API });
+    await session.clock.advance(0);
+
+    expect(sync.state).toMatchObject({
+        state: 'stopped',
+        reason: { kind: 'refused', message: 'Repository rule violations found' },
+    });
+    expect(writes(session.operations())).toEqual([`PUT /repos/${github.login}/githq-settings/contents/settings.json`]);
 });
 
 test('answers for a session that ended are dropped', async () => {
@@ -328,6 +378,11 @@ interface SettingsGitHub {
     down: boolean;
     /** Writes refused with a 403 and this message. */
     refuseWrites: string | null;
+    /** Writes refused with a 422 and this message — not the one for a missing `sha`. */
+    refuseWritesWith422: string | null;
+    /** Creating the repository refused with a 422 and this message. */
+    refuseCreate: string | null;
+    readonly login: string;
     /** Another device (or a hand edit) writes the file. */
     writeFile(content: SettingsDocument | string): void;
 }
@@ -373,6 +428,9 @@ function createSettingsGitHub(login: string) {
         loseNextWriteAnswer: false,
         down: false,
         refuseWrites: null,
+        refuseWritesWith422: null,
+        refuseCreate: null,
+        login,
         writeFile: content => {
             state.file = {
                 text: typeof content === 'string' ? content : serializeSettings(content),
@@ -394,6 +452,10 @@ function createSettingsGitHub(login: string) {
                     ? { status: 200, body: { private: state.repository.private, node_id: 'R_settings' } }
                     : { status: 404, body: { message: 'Not Found' } };
             case 'POST /user/repos':
+                if (state.refuseCreate !== null) {
+                    return { status: 422, body: { message: state.refuseCreate } };
+                }
+
                 state.repository = { private: true };
                 state.created = true;
                 return { status: 201, body: { name: 'githq-settings' } };
@@ -428,6 +490,10 @@ function createSettingsGitHub(login: string) {
 
         if (state.refuseWrites !== null) {
             return { status: 403, body: { message: state.refuseWrites } };
+        }
+
+        if (state.refuseWritesWith422 !== null) {
+            return { status: 422, body: { message: state.refuseWritesWith422 } };
         }
 
         if (state.refuseNextWrites > 0) {
