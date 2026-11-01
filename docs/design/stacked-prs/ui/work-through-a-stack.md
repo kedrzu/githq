@@ -120,3 +120,33 @@ dissolving and linking again.
 - How selection works with entries: what `X` selects, and how `⇧J` runs across a collapsed entry.
 - How the stack that needs rebasing reads in the list, since it is frequent and blocks everything.
 - Where the link, add and dissolve commands surface, and how linking shows the order that will result.
+
+## The screens
+
+In `githq.pen`, frame **"App · Stacked pull requests"** (`LIEPU`). The numbers are the frame's. The owner has picked; the rejected variants
+are gone from the frame and listed in [DECISIONS](../DECISIONS.md), D14 onward.
+
+|Question|Answer in the frame|
+|-|-|
+|An entry against a pull request and an issue|Two lines, stack icon, pips: SP10, SP11|
+|Properties that differ|Union of assignees, shared labels and milestone, +N: SP12|
+|The lone marker and "2 of 4"|SP13, SP26, SP27|
+|The map in a panel|Rows at the top: SP30, ten in a window: SP31; folded to a strip once scrolled: SP32|
+|The map in a modal|Top of the side column: SP33, SP34|
+|The map on a full page|Its own column on the left: SP35, SP36|
+|Choosing how far|A line moved with `↑` and `↓`: SP41, SP42|
+|Selection|`X` and `⇧J`: SP28|
+|Needing a rebase in a list|Amber, the hand-off on `⇧M`: SP15, SP46, SP47|
+|Link, add, dissolve|Palette and menu: SP70–SP72, SP79; order: SP73|
+
+The walk: SP1–SP8, keys SP9. Lists: under an issue SP20–SP22, repository SP23, by label SP24, filtered SP25, board SP26.
+Panel states: whole SP40, one lands SP43, method SP44, held SP45, rebase SP46 and SP47, closed SP48, draft SP49, copy not complete SP50, being
+read SP51, auto-merge SP52, queue SP53 and SP54, bypass SP55, being merged SP56, merged SP57, partly merged SP58. Entry states: SP14.
+Failures: partway SP59, SP60, SP80; refused SP61; someone pushed SP62; an edit refused SP81; linking refused SP74, SP75; dissolving SP77, SP78. Unlinked
+chain: SP38. "No answer in time" and "reloaded" stay as PM29, PM30 and PM36, with the stack's list.
+
+Still open, not settled by the screens:
+
+- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so);
+  whether a stack in a queue has one position (SP53, SP54). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
+- **The merge brief's "Being merged" row (PM37)** is unchanged: a stack needed only the entry's own sentence.
