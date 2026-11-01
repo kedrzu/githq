@@ -1,3 +1,4 @@
+import type { SettingsSection } from '@/settings/settingsRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.js';
@@ -7,15 +8,17 @@ import { scoreText } from './scoreText.js';
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
-/** A screen of the app the menu jumps to: my work and its groups, a tracked project or saved view, a repository. */
+/** A screen of the app the menu jumps to: my work and its groups, a tracked project or saved view, a repository, Settings and its sections. */
 export interface NavigationPlace {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
-    readonly kind: 'myWork' | 'project' | 'view' | 'repository' | 'tracking' | 'account';
+    readonly kind: 'myWork' | 'project' | 'view' | 'repository' | 'settings' | SettingsSection;
     readonly title: string;
     readonly detail?: string;
     /** Other words it is found by (a project's owner). */
     readonly keywords?: readonly string[];
+    /** The key that also goes there, shown on its line (`,` for Settings). */
+    readonly key?: string;
     /** The app's address of it. */
     readonly path: string;
 }

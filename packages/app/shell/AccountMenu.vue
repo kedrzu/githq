@@ -4,7 +4,6 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronUp, LogOut, Settings } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
-import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import Avatar from '@/components/Avatar.vue';
@@ -14,6 +13,7 @@ import Menu from '@/components/Menu.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
+import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 
 import * as l from './AccountMenu.loc.js';
 
@@ -73,7 +73,7 @@ const router = useRouter();
       <MenuItem
         :icon="Settings"
         :shortcut="APP_KEYS.settings"
-        @select="router.push(ACCOUNT_PATH)"
+        @select="router.push(SETTINGS_PATH)"
       >
         {{ t(l.settings) }}
       </MenuItem>

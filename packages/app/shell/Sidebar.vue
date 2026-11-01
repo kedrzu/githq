@@ -49,7 +49,6 @@ import {
 import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
-import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -61,6 +60,7 @@ import Wordmark from '@/components/Wordmark.vue';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
@@ -265,7 +265,7 @@ function getProjectMark(title: string) {
         >
           <p :class="css.sidebar_note">{{ t(l.nothingTracked) }}</p>
           <RouterLink
-            :to="ACCOUNT_PATH"
+            :to="SETTINGS_PATH"
             :class="css.sidebar_item"
             :active-class="css.sidebar_item_active"
           >
@@ -351,7 +351,7 @@ function getProjectMark(title: string) {
         </template>
         <RouterLink
           v-if="nothingTracked"
-          :to="ACCOUNT_PATH"
+          :to="SETTINGS_PATH"
           :class="css.sidebar_railLink"
           :active-class="css.sidebar_railLink_active"
           :aria-label="t(l.settings)"

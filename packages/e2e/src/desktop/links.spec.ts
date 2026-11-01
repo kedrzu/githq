@@ -79,13 +79,13 @@ test("an organisation's \"Request approval\" opens GitHub's page of githq's OAut
     await page.reload();
     await shell.openAccount(LOGIN);
     const account = new AccountScreenHarness(page);
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL('/settings?tab=account');
 
     await account.requestApproval('secretive').click();
     await expect
         .poll(() => native.opened)
         .toEqual([`https://github.com/settings/connections/applications/${E2E_CLIENT_ID}`]);
-    await expect(page).toHaveURL('/settings');
+    await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.organization('secretive')).toContainText('You requested approval on');
     expect(page.context().pages()).toHaveLength(1);
 });

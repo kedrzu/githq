@@ -3,6 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 import type { MyWorkGroupName } from './MyWorkScreen.harness.js';
+import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
@@ -101,10 +102,11 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /changes? failed/ });
     }
 
-    /** Opens the account page (G9), at `/settings`, with "Settings" of the account menu. */
+    /** Opens Settings' Account section (G9), with "Settings" of the account menu and then its tab. */
     async openAccount(login: string): Promise<void> {
         await this.account(login).click();
         await this.page.getByRole('menuitem', { name: 'Settings' }).click();
+        await new SettingsScreenHarness(this.page).section('Account').click();
     }
 
     /**

@@ -13,7 +13,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import AppCommands from './AppCommands.vue';
 
-test('`,` opens Settings, and the command menu offers it with its key', async () => {
+test('`,` opens Settings; the command menu offers it once, under "Go to" with its key, and its sections', async () => {
     const router = mount();
 
     await userEvent.keyboard(',');
@@ -22,7 +22,16 @@ test('`,` opens Settings, and the command menu offers it with its key', async ()
     await router.push('/');
     await userEvent.keyboard('{Meta>}k{/Meta}');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
-    await expect.element(menu.getByRole('option', { name: /^Settings/u })).toBeInTheDocument();
+    const settings = menu.getByRole('option', { name: 'Settings', exact: true });
+    await expect.element(settings).toBeInTheDocument();
+    expect(settings.elements()).toHaveLength(1);
+    await expect.element(settings).toHaveTextContent(',');
+    for (const section of ['Repositories', 'Projects', 'Saving to GitHub', 'Account']) {
+        await expect.element(menu.getByRole('option', { name: `Settings: ${section}` })).toBeInTheDocument();
+    }
+
+    await userEvent.keyboard('settings: saving{Enter}');
+    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=saving');
 });
 
 test('on the web the command menu offers no update', async () => {

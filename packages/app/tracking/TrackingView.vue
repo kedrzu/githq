@@ -1,4 +1,4 @@
-<!-- Changing what is tracked, later (G8), reached from the sidebar's "Track repositories…" and `+`: one page for both directions. What is tracked — how much of it this browser keeps and how fresh it is, with "Untrack" (⌫) — and what could be: the repositories the user's work lives in, what the user and their organisations have (found with `/`), and anyone's by name. The organisations hiding their private data from githq stay listed beside it, with the way to request approval. Repositories and projects each on a tab. -->
+<!-- Changing what is tracked, later (G8), the body of Settings' Repositories and Projects sections: one place for both directions. What is tracked — how much of it this browser keeps and how fresh it is, with "Untrack" (⌫) — and what could be: the repositories the user's work lives in, what the user and their organisations have (found with `/`), and anyone's by name. The organisations hiding their private data from githq stay listed beside it, with the way to request approval. Repositories and projects each in their own section (`tab`). -->
 <script lang="ts">
 import type { TrackedTarget } from './TrackingTypes.js';
 
@@ -35,7 +35,7 @@ export interface SuggestedRepository {
   readonly activeAt: number;
 }
 
-/** The page's tabs. */
+/** Which of the two it shows. */
 export type TrackingTab = 'projects' | 'repositories';
 </script>
 
@@ -50,7 +50,6 @@ import { RouterLink } from 'vue-router';
 
 import Button from '@/components/Button.vue';
 import SearchField from '@/components/SearchField.vue';
-import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { formatAge } from '@/utils/formatAge.js';
@@ -77,13 +76,12 @@ const props = defineProps<{
   approvals: Readonly<Record<string, number>>;
   now: number;
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
+  tab: TrackingTab;
 }>();
-
-const tab = defineModel<TrackingTab>('tab', { required: true });
 
 const emit = defineEmits<{
   untrack: [target: TrackedTarget];
-  /** A repository of "my work", by name: the page finds what it needs to track it. */
+  /** A repository of "my work", by name: the section finds what it needs to track it. */
   trackSuggested: [nameWithOwner: string];
   track: [candidate: CandidateProject | CandidateRepository];
   requestApproval: [organization: string];
@@ -100,7 +98,7 @@ const listKeys = useFilteredListKeys({ container: lists, rows: '[data-row-focus]
 
 const approvalUrl = getApprovalUrl(browser.origin);
 const needle = computed(() => filter.value.trim().toLowerCase());
-const rows = computed(() => (tab.value === 'repositories' ? props.tracked.repositories : props.tracked.projects));
+const rows = computed(() => (props.tab === 'repositories' ? props.tracked.repositories : props.tracked.projects));
 const shownRows = computed(() =>
   needle.value === '' ? rows.value : rows.value.filter(row => row.name.toLowerCase().includes(needle.value)),
 );
@@ -205,15 +203,6 @@ function keyOf(target: TrackedTarget) {
 <template>
   <div :class="css.trackingView">
     <header :class="css.trackingView_header">
-      <h1 :class="css.trackingView_title">{{ t(l.title) }}</h1>
-      <SegmentedTabs
-        v-model="tab"
-        :label="t(l.kinds)"
-        :options="[
-          { value: 'repositories', label: t(l.repositories), count: tracked.repositories.length },
-          { value: 'projects', label: t(l.projects), count: tracked.projects.length },
-        ]"
-      />
       <span :class="css.trackingView_spacer" />
       <SearchField
         ref="searchField"
@@ -488,12 +477,6 @@ function keyOf(target: TrackedTarget) {
   height: $list-header-height;
   padding: 0 20px;
   border-bottom: 1px solid $color-border;
-}
-
-.trackingView_title {
-  padding-right: $spacing-12;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
 }
 
 .trackingView_spacer {
