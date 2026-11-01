@@ -139,8 +139,8 @@ The things in the app, and what GitHub gives us about each.
 - **GitHub has an hourly API allowance.** If it runs out, background refresh pauses until the allowance
   resets. Everything already loaded still works, and so do edits. The user should be able to tell that
   refresh is paused.
-- **Code review and merging are not in the app.** Diffs, line comments and the merge button stay on
-  github.com. githq shows whether a PR can be merged, and one key opens the PR there.
+- **Code review is not in the app yet.** Diffs and line comments stay on github.com, and one key opens the PR there.
+  Merging is in the app: [its brief](../../pr-merge/ui/merge-a-pull-request.md).
 - **There is no notifications inbox** in the first version.
 
 ## The paths
