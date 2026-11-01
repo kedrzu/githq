@@ -20,7 +20,7 @@ and the owner will pick.
 `githq.pen` is laid out top to bottom, one top-level frame per aspect, so a new screen goes into the frame of
 its aspect, and a new aspect gets a new frame:
 
-- **`App · …`**: overview, components, toolbar; My work, project, repository, pull request; the menus; first
+- **`App · …`**: overview, components, toolbar; My work, project, repository, pull request, merging; the menus; first
   sign-in, creating an issue, states, freshness.
 - **`Desktop · …`**: screens only the desktop app has.
 - **`Landing — …`**: the landing page, desktop and mobile, and its motion storyboard.

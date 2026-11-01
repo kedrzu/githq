@@ -207,3 +207,73 @@ design)
 **Rejected.**
 
 - All of them in the panel — gains only seeing them in one place.
+
+## D11
+
+**The panel's form, the commit text and what happens after `⌘Enter` are the owner's pick among the variants in
+`githq.pen`; the design agent's recommendation is its own surface over any screen (PM1a, PM2a), the title with one line
+of the message (PM3a), and the panel leaving once GitHub accepts (PM32a).** (2026-11-01, design agent; open until the
+owner picks)
+
+**Why.** Its own surface is the only form that is the same two keys on a list, a board and an opened item. A title and
+one line show what lands in the history in no extra room, against a 38-line message. Leaving at the `202` keeps an
+immediate refusal in the panel with its text ([D6](#d6)) and costs no key on the usual merge.
+
+**Rejected.** Nothing yet: PM1b, PM1c, PM2b, PM2c, PM3b, PM3c and PM32b stand until the owner picks.
+
+## D12
+
+**`⌘Enter` is always the way forward of the state, and never bypass; bypass answers to `⌥⌘Enter`, jumping the queue to
+`⇧⌘Enter`.** The way forward is merge, enable auto-merge, add to queue, update branch, mark ready, resolve on GitHub or
+turn auto-merge off. When there is none the primary is off. (2026-11-01, design agent; bypass's shape, PM12a or PM12b,
+is the owner's pick)
+
+**Why.** The second key stays one habit across every state, and the only actions with a cost nobody can take back get
+a chord that habit can't hit. Bypass in red, below the usual action, says what it skips.
+
+## D13
+
+**Required checks stay out of sight while green: one line, with "5 required" as a quiet aside. A failed check becomes a
+row; one that blocks carries a "Required" tag, and one that does not is grey and says it does not stop the merge.**
+(2026-11-01, design agent; PM4b is the alternative)
+
+**Why.** The usual merge has nothing to read here. Colour alone can't carry the difference, because both kinds failed.
+
+## D14
+
+**"Being merged" is amber with a loader, as anything running is, and the type icon and the Open pill stay as they are.
+Purple appears only when GitHub confirms.** (2026-11-01, design agent)
+
+**Why.** [D3](#d3): it must not read as merged, and purple is what merged looks like.
+
+## D15
+
+**A refusal after moving on reuses a failed edit's toast and status bar (K1), but stays until dismissed and leads back to
+the panel with the edited text, kept in memory for the session. Its keys are `⌥M` and, on the merged toast, `⌥D`, not
+`⇧M` and `⇧D`.** No answer in time is grey, with no toast. (2026-11-01, design agent)
+
+**Why.** The user has moved on, so `⇧M` and `⇧D` belong to the row selected there, and a toast must not retarget them:
+the next `⌘Enter` would merge something other than what the row shows. Nothing is stored ([D3](#d3)), so a reload loses
+the text, as it loses the state.
+
+## D16
+
+**Ordinary commands surface beside the reason they matter, and keep their own keys: `U` update branch, `⇧U` by rebase,
+`⇧E` re-run failed checks, `⇧D` delete or restore the branch, `⇧Z` revert, `⇧Q` take out of the queue.**
+(2026-11-01, design agent)
+
+**Why.** [D10](#d10) keeps them out of the panel's job, and the brief asks for a place at the right moment.
+
+> **Checked 2026-11-01:** none of these keys is bound in `packages/app` (`EDIT_KEYS` and the commands' `key` and `kbd`
+> values). `Shift+E`, `Shift+D`, `Shift+Z`, `Shift+Q`, `Shift+U` and `U` are free.
+
+> **Checked 2026-11-01 ([GitHub's OpenAPI description](https://github.com/github/rest-api-description)):** re-sending
+> `merge-async` is safe while one runs: "a `409` response returns that request's UUID", and "If the pull request is
+> already merged or already in a merge queue, a `200` response is returned immediately." So PM30 needs no guard of ours.
+> `commit_title`, `commit_message`, `merge_method`: "Only supported for direct merges."
+
+> **Checked 2026-11-01 (`packages/github/src/schema.graphql`):** `MergeQueueEntryState` also has `LOCKED`, which the brief
+> does not list, and `estimatedTimeToMerge` is nullable; PM16 shows both. `Repository.viewerPossibleCommitEmails` and
+> `viewerDefaultCommitEmail` give the addresses, so the email needs no new scope. `viewerCanMergeAsAdmin` is one boolean,
+> with no answer per rule. `PullRequest.stackEntry` gives the position in a stack.
+
