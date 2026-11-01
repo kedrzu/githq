@@ -4,7 +4,7 @@ import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 /**
  * Playwright harness for the first sign-in's steps: choosing what to track (`/settings/tracking/new`, `TrackingChooser.vue` —
- * G2, G5, G10) and the first download (`/settings/tracking/download`, `FirstDownloadView.vue` — G6).
+ * G2, G5, G10, and settings-sync's G11–G14) and the first download (`/settings/tracking/download`, `FirstDownloadView.vue` — G6).
  */
 export class FirstSignInHarness {
     readonly page: Page;
@@ -47,6 +47,11 @@ export class FirstSignInHarness {
     /** "Track these". */
     get trackButton(): Locator {
         return this.root.getByRole('button', { name: 'Track these' });
+    }
+
+    /** The box to save what is tracked to the user's GitHub account (settings-sync G2, G12). */
+    get savingChoice(): Locator {
+        return this.root.getByRole('checkbox', { name: 'Save what I track to my GitHub account' });
     }
 
     /** "Continue to My work", when there was nothing to choose (G10). */

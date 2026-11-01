@@ -1,0 +1,24 @@
+title:
+  en: Load your saved settings?
+detail:
+  en: >-
+    You saved what you track to your GitHub account, in the private repository {repository}. Load it here and githq
+    copies the same things to this device.
+repositories:
+  plural: count
+  en:
+    one: 1 repository
+    many: '{count} repositories'
+projects:
+  plural: count
+  en:
+    one: 1 project
+    many: '{count} projects'
+nothing:
+  en: They track nothing yet.
+note:
+  en: Loading keeps this device in step with the repository from now on. How your views look stays separate on each device.
+load:
+  en: Load these
+decline:
+  en: No, I'll choose here

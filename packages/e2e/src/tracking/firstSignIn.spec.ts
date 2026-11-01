@@ -5,7 +5,9 @@ import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
+import { SavingScreenHarness } from '../harnesses/SavingScreen.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
+import { answerSettingsRepository, getSettingsWrites } from '../settings/answerSettingsRepository.js';
 
 import { answerEmptyRepositories, answerTrackingCandidates } from './answerTracking.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT, SAMPLE_REPOSITORY } from './sampleTrackedWork.js';
@@ -144,4 +146,142 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     await page.reload();
     await expect(page).toHaveURL('/');
     await expect(shell.trackedCount(SAMPLE_REPOSITORY)).toHaveText('4');
+});
+
+/** A settings file tracking `acme/api` and nothing of the user's own. */
+const SAVED_ELSEWHERE = {
+    text: JSON.stringify({
+        version: 1,
+        repositories: [
+            { nameWithOwner: 'acme/api', id: 'R_acme_api', tracking: true },
+            { nameWithOwner: SAMPLE_REPOSITORY, id: 'R_octocat_app', tracking: false },
+        ],
+        projects: [],
+    }),
+    sha: 'saved',
+};
+
+test('settings saved on another device are offered instead of the choice: loaded, they are tracked and downloaded, saving goes on, and the choice is made', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.organization('acme');
+    sample.world.repository('acme/api');
+    sample.world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerSettingsRepository(github, { exists: true, file: SAVED_ELSEWHERE });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await expect(firstSignIn.root.getByRole('heading', { name: 'Load your saved settings?' })).toBeVisible();
+    await expect(firstSignIn.root).toContainText(`in the private repository ${LOGIN}/githq-settings`);
+    await expect(firstSignIn.root).toContainText('1 repository');
+    await expect(firstSignIn.root).toContainText('acme/api');
+    await expect(firstSignIn.root).not.toContainText(SAMPLE_REPOSITORY);
+
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(firstSignIn.progress('acme/api')).toContainText('Done');
+    await firstSignIn.openMyWorkButton.click();
+
+    const shell = new AppShellHarness(page);
+    await expect(page).toHaveURL('/');
+    await expect(shell.tracked('acme/api')).toBeVisible();
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveCount(0);
+    // Loaded as it was: nothing to write back, and nothing created.
+    expect(getSettingsWrites(github)).toEqual([]);
+
+    // The choice is made: the app opens on the work, and the settings stay synced.
+    await page.reload();
+    await expect(page).toHaveURL('/');
+    await expect(shell.tracked('acme/api')).toBeVisible();
+    await page.goto('/settings?tab=saving');
+    await expect(new SavingScreenHarness(page).on).toBeVisible();
+});
+
+test('declining the saved settings leads to the choice, with no saving offered, and nothing is written', async ({
+    page,
+    github,
+}) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerSettingsRepository(github, { exists: true, file: SAVED_ELSEWHERE });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await firstSignIn.root.getByRole('button', { name: "No, I'll choose here" }).click();
+
+    await expect(firstSignIn.repository(SAMPLE_REPOSITORY)).toBeChecked();
+    await expect(firstSignIn.root).toContainText(
+        "Your saved settings weren't loaded, and saving stays off on this device. You can turn it on later in Settings.",
+    );
+    await expect(firstSignIn.savingChoice).toHaveCount(0);
+    await firstSignIn.trackButton.click();
+    await expect(page).toHaveURL('/settings/tracking/download');
+    expect(getSettingsWrites(github)).toEqual([]);
+});
+
+test('a repository named githq-settings that isn’t githq’s says why nothing was loaded, offers no saving, and is never written to', async ({
+    page,
+    github,
+}) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerSettingsRepository(github, { exists: true, file: null, foreign: true });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await expect(firstSignIn.root).toContainText(
+        "You have a repository named githq-settings, but it doesn't hold githq's settings, so nothing was loaded and saving stays off.",
+    );
+    await expect(firstSignIn.savingChoice).toHaveCount(0);
+    await firstSignIn.trackButton.click();
+    await expect(page).toHaveURL('/settings/tracking/download');
+    expect(getSettingsWrites(github)).toEqual([]);
+});
+
+test('saving is offered unticked; ticked, "Track these" creates the private repository and saves the choice in it', async ({
+    page,
+    github,
+}) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    const repository = answerSettingsRepository(github, { exists: false, file: null });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await expect(firstSignIn.savingChoice).not.toBeChecked();
+    await firstSignIn.savingChoice.click();
+    await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
+    // Nothing happens on GitHub until "Track these".
+    expect(getSettingsWrites(github)).toEqual([]);
+
+    await firstSignIn.trackButton.click();
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect.poll(() => repository.file).not.toBeNull();
+    expect(JSON.parse(repository.file?.text ?? 'null')).toMatchObject({
+        version: 1,
+        repositories: [{ nameWithOwner: SAMPLE_REPOSITORY, tracking: true }],
+    });
+    expect(github.restCalls.some(call => call.method === 'POST' && call.url.pathname === '/user/repos')).toBe(true);
+});
+
+test('left unticked, "Track these" creates nothing on GitHub', async ({ page, github }) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerSettingsRepository(github, { exists: false, file: null });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await expect(firstSignIn.savingChoice).not.toBeChecked();
+    await firstSignIn.trackButton.click();
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(firstSignIn.root).toContainText('Everything is here.');
+    expect(getSettingsWrites(github)).toEqual([]);
 });
