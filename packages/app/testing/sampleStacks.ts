@@ -6,7 +6,7 @@ import { getStackPullRequestToOpen } from '@/store/stacks/getStackPullRequestToO
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
-import { samplePullRequest } from './sampleItems.js';
+import { sampleIssue, samplePullRequest } from './sampleItems.js';
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleUser } from './sampleMyWork.js';
 import { SAMPLE_VIEWER } from './sampleViewer.js';
 
@@ -234,6 +234,34 @@ export const SAMPLE_STACKS = {
         ],
     }),
 } as const;
+
+/**
+ * SP24: a repository's stack of four spread over labels — the first two "calendar", the second and third "frontend",
+ * the fourth none — and an issue beside it.
+ */
+export const SPREAD_STACK_ITEMS: readonly Item[] = [
+    ...SAMPLE_STACKS.held.map((pr, index): PullRequestItem => {
+        switch (index) {
+            case 0:
+                return { ...pr, labels: [CALENDAR] };
+            case 1:
+                return { ...pr, labels: [CALENDAR, FRONTEND] };
+            case 2:
+                return { ...pr, title: 'Timezones in the picker', labels: [FRONTEND] };
+            default:
+                return { ...pr, title: 'Remove the old picker', labels: [] };
+        }
+    }),
+    {
+        ...sampleIssue('I_1211'),
+        number: 1211,
+        title: 'Sidebar flickers on resize',
+        repository: WEBAPP,
+        url: 'https://github.com/fitloop/webapp/issues/1211',
+        labels: [FRONTEND],
+        updatedAt: new Date(SAMPLE_NOW - 6 * HOUR).toISOString(),
+    },
+];
 
 /** The user's own stack of four, in "My pull requests"; the third fails its checks. */
 const MY_STACK = SAMPLE_STACKS.held.map(pr => ({ ...pr, author: sampleUser(SAMPLE_VIEWER.login, '#d6a23a') }));

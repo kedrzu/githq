@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-vue-next';
 
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
+import type { StackShare } from '@/store/stacks/describeStackShare.js';
 
 /**
  * How a list is laid out (D9): rows under group headers, or a board with a column per group. Every list —
@@ -42,6 +43,11 @@ export interface ListRow<T> extends ListEntry<T> {
     readonly nested: readonly ListEntry<T>[];
     /** Set on a stack's entry. */
     readonly stack?: ListStack | null;
+    /**
+     * Set on an open pull request of a stack listed as a plain row — alone in its group, or the last open one of its
+     * stack (D3, D16, SP13): the stack, described, for the row's marker.
+     */
+    readonly stackMarker?: StackDescription | null;
 }
 
 /** What a stack's entry stands for: the stack, described, and its pull requests in the entry's group. */
@@ -53,6 +59,8 @@ export interface ListStack {
     readonly open: string;
     /** The entry's pull requests, in the stack's order: the entry's `nested`, as items. */
     readonly pullRequests: readonly PullRequestItem[];
+    /** Set when they are a share of the stack's open pull requests, the others in other groups (D3, D16): "2 of 4". */
+    readonly share?: StackShare | null;
 }
 
 /** What a group's header shows before its name. */

@@ -1,16 +1,18 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter. -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { ArrowUpRight, Check, Layers, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import type { Item } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import * as l from './ItemRow.loc.js';
+import StackPips from './StackPips.vue';
 import { useItemFacts } from './useItemFacts.js';
 
 const props = withDefaults(
@@ -34,8 +36,10 @@ const props = withDefaults(
     checked?: boolean;
     /** An edit of it GitHub just refused, said for a moment ("“regression” label undone"). */
     undone?: string | null;
+    /** The stack this pull request is listed alone out of (`ListRow.stackMarker`), for its marker. */
+    stack?: StackDescription | null;
   }>(),
-  { people: 'author', reviewRequested: false, repository: null, parent: null, undone: null },
+  { people: 'author', reviewRequested: false, repository: null, parent: null, undone: null, stack: null },
 );
 
 defineSlots<{
@@ -54,6 +58,19 @@ const facts = useItemFacts({
   people: () => props.people,
 });
 const shown = computed(() => new Set(props.properties));
+/** The marker's pull request alone in its state, the stack's other open ones hollow (SP24), and its place (SP13). */
+const marker = computed(() => {
+  const { item, stack } = props;
+  if (!stack || item.kind !== 'pullRequest' || !item.stack) {
+    return null;
+  }
+
+  return {
+    pips: stack.pips,
+    filled: new Set([item.id]),
+    place: t(l.stackPlace, { position: item.stack.position, size: stack.size }),
+  };
+});
 </script>
 
 <template>
@@ -92,6 +109,22 @@ const shown = computed(() => new Set(props.properties));
       </div>
       <div :class="css.itemRow_line">
         <span :class="css.itemRow_reference">{{ facts.reference }}</span>
+        <span
+          v-if="marker"
+          :class="css.itemRow_stack"
+        >
+          <Layers
+            :class="css.itemRow_stackIcon"
+            role="img"
+            :aria-label="t(l.inStack)"
+          />
+          <StackPips
+            :pips="marker.pips"
+            :filled="marker.filled"
+            :current="item.id"
+          />
+          <span :class="css.itemRow_stackPlace">{{ marker.place }}</span>
+        </span>
         <span
           v-if="facts.status && shown.has('status')"
           :class="[css.itemRow_status, css[`itemRow_status_${facts.status.tone}`]]"
@@ -280,6 +313,24 @@ const shown = computed(() => new Set(props.properties));
 .itemRow_reference,
 .itemRow_size {
   flex: none;
+  font-family: $font-family-mono;
+  color: $color-fg-dim;
+}
+
+.itemRow_stack {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-5;
+  align-items: center;
+}
+
+.itemRow_stackIcon {
+  width: 12px;
+  height: 12px;
+  color: $color-fg-3;
+}
+
+.itemRow_stackPlace {
   font-family: $font-family-mono;
   color: $color-fg-dim;
 }

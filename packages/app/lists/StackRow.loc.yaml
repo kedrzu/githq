@@ -39,3 +39,15 @@ milestones:
   en:
     one: '{count} milestone'
     many: '{count} milestones'
+share:
+  en: '{count} of {size}'
+bothReady:
+  en: Both ready
+shareHeld:
+  en: '#{number} blocks'
+shareHeldByDraft:
+  en: '#{number} is a draft'
+shareHeldByChecks:
+  en: '#{number} checks running'
+shareHeldByReview:
+  en: '#{number} waiting for review'

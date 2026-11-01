@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -511,7 +511,7 @@ function addDraft(title: string, group: string | null) {
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, stack, nested }">
+        <template #row="{ entry, parent, checked, stack, stackMarker, nested }">
           <StackRow
             v-if="stack"
             :stack="stack"
@@ -536,6 +536,7 @@ function addDraft(title: string, group: string | null) {
             :now="now"
             :checked="checked"
             :undone="undone.get(entry.id)"
+            :stack="stackMarker"
           >
             <template #fields>
               <ProjectEntryFields

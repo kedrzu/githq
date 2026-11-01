@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -26,17 +26,17 @@ import LabelPill from '@/components/LabelPill.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemLabel, ItemUser } from '@/store/ItemTypes.js';
 import type { StackBlocker, StackDescription, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
+import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
+import StackPips from './StackPips.vue';
 import * as l from './StackRow.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
 
 /** The faces shown before "+N" (D15). */
 const MAX_PEOPLE = 3;
-/** Beyond this many pull requests the pips narrow (D14). */
-const MAX_WIDE_PIPS = 12;
 
 const props = withDefaults(
   defineProps<{
@@ -93,8 +93,14 @@ const description = computed(() => props.stack.description);
 const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nameWithOwner ?? null);
 const count = computed(() => {
   const { held, size } = description.value;
+  if (props.stack.share) {
+    return t(l.share, { count: props.stack.share.count, size });
+  }
+
   return description.value.state.kind === 'incomplete' ? t(l.inGithq, { held, size }) : String(size);
 });
+/** A share's own pull requests, drawn in their state; `null` for the whole stack's entry. */
+const filled = computed(() => (props.stack.share ? new Set(props.stack.pullRequests.map(pr => pr.id)) : null));
 const people = computed(() => {
   const byLogin = new Map<string, ItemUser>();
   for (const pr of props.stack.pullRequests) {
@@ -107,7 +113,7 @@ const people = computed(() => {
   return { faces: all.slice(0, MAX_PEOPLE), more: all.length - MAX_PEOPLE };
 });
 const age = computed(() => formatAge(Date.parse(description.value.updatedAt), props.now));
-const stateFact = computed(() => getStateFact(description.value));
+const stateFact = computed(() => getStateFact(description.value, props.stack.share?.state ?? null));
 const size = computed(() => {
   let additions = 0;
   let deletions = 0;
@@ -167,10 +173,9 @@ const projectField = computed((): StackProjectFieldFact | null => {
 
   return { value: null, title: fieldList.format(values.keys()), more: t(l.more, { count: values.size }) };
 });
-const narrow = computed(() => description.value.pips.length > MAX_WIDE_PIPS);
 
-function getStateFact(stack: StackDescription): StackStateFact {
-  const fact = getOpenStateFact(stack);
+function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
+  const fact = share ? getShareStateFact(share) : getOpenStateFact(stack);
   const { state } = stack;
   const open = state.kind !== 'merged' && state.kind !== 'closed' && state.kind !== 'incomplete';
   return open && stack.landed > 0 ? { ...fact, text: t(l.landed, { count: stack.landed, state: fact.text }) } : fact;
@@ -179,7 +184,7 @@ function getStateFact(stack: StackDescription): StackStateFact {
 function getOpenStateFact({ state }: StackDescription): StackStateFact {
   switch (state.kind) {
     case 'ready':
-      return { icon: CircleCheck, tone: 'success', text: t(l.ready, { count: state.openCount }) };
+      return getReadyFact(state.openCount);
     case 'held': {
       const { blocker, readyCount, openCount } = state;
       const params = { ready: readyCount, open: openCount, number: blocker.number };
@@ -211,6 +216,44 @@ function getOpenStateFact({ state }: StackDescription): StackStateFact {
       };
     default:
       return assertNever(state);
+  }
+}
+
+/** A share's sentence (SP24): ready, or what holds it, named without the stack's count. */
+function getShareStateFact(share: StackShareState): StackStateFact {
+  switch (share.kind) {
+    case 'ready':
+      return getReadyFact(share.count);
+    case 'held':
+      return { ...getBlockerLook(share.blocker.kind), text: getShareHeldText(share.blocker) };
+    default:
+      return assertNever(share);
+  }
+}
+
+/** "Both ready" for two (SP24), "All 3 ready" for more. */
+function getReadyFact(readyCount: number): StackStateFact {
+  const text = readyCount === 2 ? t(l.bothReady) : t(l.ready, { count: readyCount });
+  return { icon: CircleCheck, tone: 'success', text };
+}
+
+/** What holds a share, as {@link getHeldText} names it: "#1206 blocks", "#1216 checks running". */
+function getShareHeldText(blocker: StackBlocker): string {
+  const params = { number: blocker.number };
+  switch (blocker.kind) {
+    case 'draft':
+      return t(l.shareHeldByDraft, params);
+    case 'moving':
+      return t(l.shareHeldByChecks, params);
+    case 'waiting':
+      return blocker.waitingForReview ? t(l.shareHeldByReview, params) : t(l.shareHeld, params);
+    case 'broken':
+    case 'ready':
+    case 'merged':
+    case 'closed':
+      return t(l.shareHeld, params);
+    default:
+      return assertNever(blocker.kind);
   }
 }
 
@@ -300,17 +343,10 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
           :class="css.stackRow_repository"
           >{{ nameWithOwner }}</span
         >
-        <!-- The sentence beside them says how the stack stands. -->
-        <span
-          :class="[css.stackRow_pips, narrow && css.stackRow_pips_narrow]"
-          aria-hidden="true"
-        >
-          <span
-            v-for="(pip, index) in description.pips"
-            :key="index"
-            :class="[css.stackRow_pip, css[`stackRow_pip_${pip.kind}`]]"
-          />
-        </span>
+        <StackPips
+          :pips="description.pips"
+          :filled="filled"
+        />
         <span :class="[css.stackRow_state, css[`stackRow_state_${stateFact.tone}`]]">
           <component
             :is="stateFact.icon"
@@ -449,57 +485,6 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 .stackRow_age {
   flex: none;
   color: $color-fg-dim;
-}
-
-.stackRow_pips {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-2;
-  align-items: center;
-}
-
-.stackRow_pip {
-  box-sizing: border-box;
-  width: 8px;
-  height: 4px;
-  border: 1px solid transparent;
-  border-radius: 2px;
-
-  .stackRow_pips_narrow & {
-    width: 4px;
-  }
-}
-
-.stackRow_pip_merged {
-  background: $color-purple;
-}
-
-.stackRow_pip_ready {
-  background: $color-green;
-}
-
-.stackRow_pip_broken {
-  background: $color-red;
-}
-
-.stackRow_pip_moving {
-  background: $color-amber;
-}
-
-.stackRow_pip_waiting {
-  background: $color-fg-3;
-}
-
-.stackRow_pip_draft {
-  border-color: $color-fg-3;
-}
-
-.stackRow_pip_closed {
-  border-color: $color-red;
-}
-
-.stackRow_pip_missing {
-  border-color: $color-border-2;
 }
 
 .stackRow_state {
