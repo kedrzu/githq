@@ -17,11 +17,14 @@ const WEBAPP = repository('fitloop/webapp');
 const TASKLET = repository('mlaine/tasklet');
 const MOBILE = repository('fitloop/mobile');
 const API = repository('fitloop/api');
+const GITHQ = repository('kedrzu/githq');
 
 const ML = sampleUser('mlaine', '#c9a26b');
 const SB = sampleUser('sbrown', '#7fb3d5');
 const RH = sampleUser('rhill', '#b39ddb');
 const DK = sampleUser('dkoval', '#81c995');
+/** The signed-in user, as the author of their own stacks. */
+const ME = sampleUser(SAMPLE_VIEWER.login, '#d6a23a');
 
 const FRONTEND = { name: 'frontend', color: '4493f8' };
 const CALENDAR = { name: 'calendar', color: 'd6a23a' };
@@ -264,7 +267,7 @@ export const SPREAD_STACK_ITEMS: readonly Item[] = [
 ];
 
 /** The user's own stack of four, in "My pull requests"; the third fails its checks. */
-const MY_STACK = SAMPLE_STACKS.held.map(pr => ({ ...pr, author: sampleUser(SAMPLE_VIEWER.login, '#d6a23a') }));
+const MY_STACK = SAMPLE_STACKS.held.map(pr => ({ ...pr, author: ME }));
 
 /**
  * "My work" of the D1 mockup with two stacks (SP1): the user's own, and someone else's asking their review on two of
@@ -278,6 +281,59 @@ export const STACKED_MY_WORK_MEMBERSHIP: MyWorkMembership = sampleMembership({
     authored: [...(D1_MEMBERSHIP.authored ?? []), ...MY_STACK.map(pr => pr.id)],
     assigned: [...(D1_MEMBERSHIP.assigned ?? [])],
     mentioned: [...(D1_MEMBERSHIP.mentioned ?? [])],
+});
+
+/** SP20, SP21: the user's stack of three, its third closing "Background sync with conditional requests" and failing. */
+const SYNC_STACK = sampleStack({
+    id: 'S_sync',
+    repository: GITHQ,
+    number: 29,
+    members: [
+        { title: 'Sync: move the loop into a worker', author: ME },
+        { title: 'Sync: read conditional requests first', author: ME },
+        {
+            title: 'Sync: pause when the allowance runs out',
+            author: ME,
+            closingIssueIds: ['I_12'],
+            reviewDecision: 'REVIEW_REQUIRED',
+            mergeStateStatus: 'BLOCKED',
+            checks: FAILING,
+        },
+    ],
+});
+
+/** SP22: another stack of the user's closing the same issue from its first; its second conflicts with its base. */
+const FAILOVER_STACK = sampleStack({
+    id: 'S_failover',
+    repository: GITHQ,
+    number: 35,
+    age: 6 * HOUR,
+    members: [
+        { title: 'Fail over to the second provider', author: ME, closingIssueIds: ['I_12'] },
+        { author: ME, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' },
+    ],
+});
+
+/** "My work" of the D1 mockup with a stack of the user's closing an assigned issue (stacked PRs D12, SP20, SP21). */
+export const STACK_UNDER_ISSUE_ITEMS: readonly Item[] = [...D1_ITEMS, ...SYNC_STACK];
+
+/** Which search found which item of {@link STACK_UNDER_ISSUE_ITEMS}. */
+export const STACK_UNDER_ISSUE_MEMBERSHIP: MyWorkMembership = sampleMembership({
+    reviewRequested: [...(D1_MEMBERSHIP.reviewRequested ?? [])],
+    authored: [...(D1_MEMBERSHIP.authored ?? []), ...SYNC_STACK.map(pr => pr.id)],
+    assigned: [...(D1_MEMBERSHIP.assigned ?? [])],
+    mentioned: [...(D1_MEMBERSHIP.mentioned ?? [])],
+});
+
+/** As {@link STACK_UNDER_ISSUE_ITEMS}, with a second stack closing the same issue (D23, SP22). */
+export const TWO_STACKS_UNDER_ISSUE_ITEMS: readonly Item[] = [...STACK_UNDER_ISSUE_ITEMS, ...FAILOVER_STACK];
+
+/** Which search found which item of {@link TWO_STACKS_UNDER_ISSUE_ITEMS}. */
+export const TWO_STACKS_UNDER_ISSUE_MEMBERSHIP: MyWorkMembership = sampleMembership({
+    reviewRequested: [...(STACK_UNDER_ISSUE_MEMBERSHIP.reviewRequested ?? [])],
+    authored: [...(STACK_UNDER_ISSUE_MEMBERSHIP.authored ?? []), ...FAILOVER_STACK.map(pr => pr.id)],
+    assigned: [...(STACK_UNDER_ISSUE_MEMBERSHIP.assigned ?? [])],
+    mentioned: [...(STACK_UNDER_ISSUE_MEMBERSHIP.mentioned ?? [])],
 });
 
 function repository(nameWithOwner: string): ItemRepository {

@@ -49,6 +49,13 @@ export interface ListRow<T> extends ListEntry<T> {
      * stack (D3, D16, SP13): the stack, described, for the row's marker.
      */
     readonly stackMarker?: StackDescription | null;
+    /**
+     * Stacks' entries nested under it, before `nested` — in my work, the user's stacks closing an assigned issue (stacked
+     * PRs D12, D23). With one, in the list the entry serves as the stack's header: it takes the stack's chevron, and the
+     * stack's pull requests are its rows while it is expanded. With two or more — and on the board — each is an entry of
+     * its own one step in.
+     */
+    readonly stacks?: readonly ListRow<T>[];
 }
 
 /** What a stack's entry stands for: the stack, described, and its pull requests in the entry's group. */

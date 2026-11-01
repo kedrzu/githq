@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, Layers, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
@@ -6,6 +6,7 @@ import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import type { Item } from '@/store/ItemTypes.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
@@ -23,6 +24,8 @@ const props = withDefaults(
     now: number;
     /** The repository the whole list is of (`owner/name`): its stacks leave it out. */
     repository?: string | null;
+    /** The issue the entry is nested under (D23); its repository is left out when they share it. */
+    parent?: Item | null;
     /** Who the entry shows, as `ItemRow`: who opened its pull requests (my work) or who they are assigned to. */
     people?: 'assignees' | 'author';
     /** The signed-in user: with `people: 'author'`, their own pull requests show no face. */
@@ -32,7 +35,7 @@ const props = withDefaults(
     /** Some of its pull requests are in that selection, not all (D20, SP28): a half mark. */
     halfChecked?: boolean;
   }>(),
-  { repository: null, people: 'assignees', viewerLogin: null },
+  { repository: null, parent: null, people: 'assignees', viewerLogin: null },
 );
 
 defineSlots<{
@@ -50,11 +53,14 @@ const stackFacts = useStackFacts({
 
 const shown = computed(() => new Set(props.properties));
 const description = computed(() => props.stack.description);
-const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nameWithOwner ?? null);
+const nameWithOwner = computed(() => {
+  const name = props.stack.pullRequests[0]?.repository.nameWithOwner ?? null;
+  return name === props.repository || name === props.parent?.repository.nameWithOwner ? null : name;
+});
 </script>
 
 <template>
-  <div :class="css.stackRow">
+  <div :class="[css.stackRow, parent && css.stackRow_nested]">
     <Check
       v-if="checked"
       :class="css.stackRow_check"
@@ -102,7 +108,7 @@ const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nam
       </div>
       <div :class="css.stackRow_line">
         <span
-          v-if="nameWithOwner && nameWithOwner !== repository"
+          v-if="nameWithOwner"
           :class="css.stackRow_repository"
           >{{ nameWithOwner }}</span
         >
@@ -176,6 +182,10 @@ const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nam
   padding: $spacing-7 $spacing-16;
 }
 
+.stackRow_nested {
+  padding-left: 42px;
+}
+
 .stackRow_icon,
 .stackRow_check {
   flex: none;
@@ -234,6 +244,10 @@ const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nam
   font-weight: $font-weight-medium;
   line-height: 18px;
   color: $color-fg;
+
+  .stackRow_nested & {
+    font-size: $font-size-sm;
+  }
 }
 
 .stackRow_count,

@@ -11,7 +11,14 @@ import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
-import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
+import {
+    STACK_UNDER_ISSUE_ITEMS,
+    STACK_UNDER_ISSUE_MEMBERSHIP,
+    STACKED_MY_WORK_ITEMS,
+    STACKED_MY_WORK_MEMBERSHIP,
+    TWO_STACKS_UNDER_ISSUE_ITEMS,
+    TWO_STACKS_UNDER_ISSUE_MEMBERSHIP,
+} from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
@@ -289,6 +296,104 @@ test('stacked PRs D3: on the board a stack is one card, whole, in the first reas
     expect(column.element().querySelectorAll('[data-entry-key]')).toHaveLength(3);
 });
 
+test('stacked PRs D12: my stack closing an assigned issue sits under it, whole; the issue takes its chevron, pips and state', async () => {
+    const view = mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP);
+
+    const assigned = page.getByRole('region', { name: 'Assigned to me' });
+    const issue = assigned.getByRole('listitem').filter({ hasText: 'Background sync with conditional requests' });
+    await expect.element(issue).toHaveTextContent('2 of 3 ready, #31 blocks');
+    // Nowhere else, and collapsed: "My pull requests" keeps its three rows, the issue none of the stack's.
+    await expect.element(page.getByText('Sync: move the loop into a worker')).not.toBeInTheDocument();
+    expect(page.getByRole('region', { name: 'My pull requests' }).getByRole('listitem').elements()).toHaveLength(3);
+    await expect.element(assigned.getByRole('heading')).toHaveTextContent(/4$/);
+
+    // → on the issue expands it; its rows are the stack's pull requests, number alone.
+    view.selectedId.value = 'I_12';
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(issue.getByRole('button', { name: 'Collapse the stack' })).toBeInTheDocument();
+    const member = assigned.getByRole('listitem').filter({ hasText: 'Sync: read conditional requests first' });
+    await expect.element(member).toHaveTextContent('#30');
+    expect(assigned.getByRole('listitem').elements()).toHaveLength(8);
+
+    // Enter on the issue opens the issue, not a pull request.
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['I_12']);
+
+    // ← on one of its rows collapses it and selects the issue.
+    await userEvent.keyboard('j');
+    await expect.poll(selectedTitle).toBe('Sync: move the loop into a worker');
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(page.getByText('Sync: move the loop into a worker')).not.toBeInTheDocument();
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+});
+
+test('stacked PRs D23: with an item open, j walks from the issue into its folded stack one by one, k back into it at its last', async () => {
+    const view = mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP);
+    view.selectedId.value = 'I_12';
+    view.openedId.value = 'I_12';
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+
+    await userEvent.keyboard('j');
+    expect(view.opened).toEqual(['PR_S_sync_1']);
+    view.openedId.value = 'PR_S_sync_1';
+    await userEvent.keyboard('j');
+    view.openedId.value = 'PR_S_sync_2';
+    await userEvent.keyboard('j');
+    view.openedId.value = 'PR_S_sync_3';
+    expect(view.opened).toEqual(['PR_S_sync_1', 'PR_S_sync_2', 'PR_S_sync_3']);
+    // The issue stays selected while its folded stack is walked.
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+
+    await userEvent.keyboard('j');
+    await expect.poll(selectedTitle).toBe('Command palette: jump to issue by number');
+    view.openedId.value = 'I_9';
+    await userEvent.keyboard('k');
+    view.openedId.value = 'PR_S_sync_3';
+    await userEvent.keyboard('k');
+    view.openedId.value = 'PR_S_sync_2';
+    await userEvent.keyboard('kk');
+    expect(view.opened.slice(3)).toEqual(['I_9', 'PR_S_sync_3', 'PR_S_sync_2', 'PR_S_sync_1', 'I_12']);
+});
+
+test('stacked PRs D23: two stacks under one issue each get a header one step in, expanded on their own; Enter opens the stack', async () => {
+    const view = mount(TWO_STACKS_UNDER_ISSUE_ITEMS, TWO_STACKS_UNDER_ISSUE_MEMBERSHIP);
+
+    const assigned = page.getByRole('region', { name: 'Assigned to me' });
+    const rows = assigned.getByRole('listitem');
+    const issue = rows.filter({ hasText: 'Background sync with conditional requests' });
+    await expect.element(issue.getByRole('button', { name: 'Expand the stack' })).not.toBeInTheDocument();
+    await expect.element(issue).not.toHaveTextContent('ready');
+    const sync = rows.filter({ hasText: 'Sync: move the loop into a worker' });
+    const failover = rows.filter({ hasText: 'Fail over to the second provider' });
+    await expect.element(sync).toHaveTextContent('2 of 3 ready, #31 blocks');
+    await expect.element(failover).toBeInTheDocument();
+    // The issue, its two headers, the other issues and the nested pull request of the first.
+    expect(rows.elements()).toHaveLength(7);
+
+    // → on a header expands its stack alone.
+    view.selectedId.value = 'PR_S_sync_1';
+    await expect.poll(selectedText).toContain('#31 blocks');
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(page.getByText('Sync: read conditional requests first')).toBeInTheDocument();
+    await expect.element(page.getByText('Part 2 of S_failover')).not.toBeInTheDocument();
+    expect(rows.elements()).toHaveLength(10);
+
+    view.selectedId.value = 'PR_S_failover_1';
+    await expect.poll(selectedText).toContain('Fail over to the second provider');
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['PR_S_failover_1']);
+});
+
+test('stacked PRs D12: on the board the stack is a card under the issue it closes', async () => {
+    mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP, { layout: 'board' });
+
+    const column = page.getByRole('region', { name: 'Assigned to me' });
+    const cards = column.getByRole('listitem');
+    await expect.element(cards.nth(2)).toHaveTextContent('Background sync with conditional requests');
+    await expect.element(cards.nth(3)).toHaveTextContent('2 of 3 ready, #31 blocks');
+    await expect.element(column.getByRole('heading')).toHaveTextContent(/4$/);
+});
+
 /**
  * Mounts the view over `initial` and the groups of `arrived` (all of D1 by default), holding its filter and
  * selection like the page does.
@@ -354,6 +459,8 @@ function mount(
 
     return {
         items,
+        /** The selected item, as the page holds it. */
+        selectedId,
         /** The items selected together. */
         checkedIds,
         /** The item opened over the list, as the page passes it. */
