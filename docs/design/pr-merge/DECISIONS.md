@@ -13,7 +13,9 @@ not.
 **githq merges pull requests, with the checks and merge options github.com offers for that repository.**
 (2026-11-01, owner)
 
-**Why.** The owner asked for it. Their reason is still to be recorded in the README.
+**Why.** githq's aim is to be the one place to run all of a user's GitHub projects and repositories, fast and
+snappy like Linear: every day-to-day action, not repository settings. Code review is meant to follow, but is out
+of scope here.
 
 > **Checked 2026-11-01:** the app already lists a pull request's checks with their state
 > (`packages/app/item/PullRequestChecks.vue`), but does not read whether a check is required: no operation asks
@@ -43,7 +45,7 @@ not.
 ## D2
 
 **The merge methods offered are those allowed by the repository settings, the target branch's rulesets and its
-linear-history rule, all together.** (2026-11-01, proposal of the design agent, not yet confirmed)
+linear-history rule, all together.** (2026-11-01; following the repository's setup is the owner's, working it out this way is the design agent's)
 
 **Why.** Offering a method one of them forbids gets a rejection from GitHub after the user has already chosen
 and written the message.
@@ -62,3 +64,71 @@ and written the message.
 
 **Rejected.**
 - Repository settings alone — a ruleset can narrow them, and the user then meets the refusal only on merging.
+
+## D3
+
+**A merge shows as merged only once GitHub confirms it; until then the pull request reads as being merged and the
+app stays usable.** (2026-11-01, owner)
+
+**Why.** It cannot be undone, and githq's copy of the pull request can be out of date, so showing it merged at
+once would sometimes claim something that did not happen. The edit pipeline fits: an edit's optimistic layer is
+drawn until GitHub answers (`packages/app/edits/EditTypes.ts:131`), and here it draws "being merged".
+
+**Rejected.**
+- Instant like other edits, rolling back on refusal — the user may have moved on before learning nothing merged.
+
+## D4
+
+**Every option github.com offers when merging is in: method, commit title and message, commit email, auto-merge,
+merge queue including jumping it, stacks, updating the branch, merging past requirements the user may bypass,
+deleting and restoring the branch, reverting, re-running GitHub Actions checks.** (2026-11-01, owner: "they all
+have to be there, so as not to limit specific workflows"; the list is the design agent's inventory.)
+
+**Why.** Leaving one out sends that workflow back to github.com, which is what this design removes.
+
+> **Checked 2026-11-01:** the schema has `enablePullRequestAutoMerge`, `disablePullRequestAutoMerge`,
+> `enqueuePullRequest`, `dequeuePullRequest`, `updatePullRequestBranch` (`MERGE`, `REBASE`), `deleteRef`,
+> `createRef`, `revertPullRequest`.
+
+> **Checked 2026-11-01:** Actions re-runs take the `repo` scope: "OAuth app tokens and personal access tokens
+> (classic) need the repo scope" ([workflow runs](https://docs.github.com/en/rest/actions/workflow-runs)). Other
+> checks: re-requesting a check run answers for the owning GitHub App only
+> ([check runs](https://docs.github.com/en/rest/checks/runs)), so those link out. Not tested live.
+
+> **Checked 2026-11-01:** the email selector offers verified addresses, is absent for rebase merges, and for squash
+> appears only to a pull request's author with more than one address
+> ([merging a pull request](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/merging-a-pull-request)).
+> Not found: what signoff does on a web merge or through the API
+> ([signoff policy](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository)).
+
+> **Checked 2026-11-01, not found:** an API for resolving conflicts, or for GitHub's "Rebase stack" button. Those
+> link to github.com.
+
+**Rejected.**
+- A smaller first version without the commit email and admin bypass (the agent's suggestion) — the owner wants
+  no workflow limited.
+
+## D5
+
+**Merges go through REST's asynchronous merge endpoint; GraphQL only for what it alone offers, a chosen commit email
+and jumping the queue.** (2026-11-01, proposal of the design agent, not yet confirmed)
+
+**Why.** One call covers direct merges, queues, stacks and bypass, and a repeated request is safe: a pending merge
+answers `409` with its UUID, so a reload loses nothing. This is an exception to the product principle of GraphQL
+for writing, on GitHub's own recommendation.
+
+> **Checked 2026-11-01 ([GitHub's OpenAPI description](https://github.com/github/rest-api-description)):**
+> `PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge-async` takes `commit_title`, `commit_message`, `sha`,
+> `merge_method`, `merge_action` (`direct_merge`, `merge_queue`, `default`) and `bypass_rules`, and has no email or
+> jump. "This is the required API for merging stacked pull requests. For a stacked pull request, the operation
+> includes all open downstack pull requests." `sha`: "if the PR is pushed in between the merge being requested
+> and being executed, the merge will be cancelled." A result stays readable for 24 hours (docs summary, not
+> verbatim). OAuth scope not stated.
+
+> **Checked 2026-11-01 (`packages/github/src/schema.graphql:28819`):** on `mergePullRequest`: "We recommend using
+> the asynchronous merge REST API instead. This mutation does not support stacked pull requests." Its input has
+> `authorEmail`; `enqueuePullRequest` has `jump`. With a merge queue any commit message given is ignored.
+
+**Rejected.**
+- `mergePullRequest` for everything — fits the GraphQL principle, but cannot merge a stack.
+- Refusing stacked pull requests in githq — this repository itself works in stacks.
