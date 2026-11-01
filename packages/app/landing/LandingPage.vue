@@ -40,6 +40,9 @@ useSeoMeta({
   ogUrl: SITE_URL,
   ogType: 'website',
   twitterCard: 'summary_large_image',
+  twitterTitle: () => t(l.title),
+  twitterDescription: () => t(l.description),
+  twitterImage: SHARE_IMAGE_URL,
 });
 useHead({ link: [{ rel: 'canonical', href: SITE_URL }] });
 

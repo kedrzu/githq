@@ -16,6 +16,7 @@ const LANDING_MARKERS: readonly { text: string; what: string }[] = [
     { text: '<meta property="og:description"', what: 'the Open Graph description' },
     { text: '<meta property="og:image" content="https://githq.dev/og.png">', what: 'the Open Graph image' },
     { text: '<meta name="twitter:card" content="summary_large_image">', what: 'the Twitter card' },
+    { text: '<meta name="twitter:image" content="https://githq.dev/og.png">', what: 'the Twitter card image' },
 ];
 
 /**
