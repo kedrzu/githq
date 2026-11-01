@@ -22,3 +22,7 @@ Append-only; one line per turn that settled something.
 - 2026-11-01 — Owner: rows carry pull request and CI state; check the cost. Measured on nuxt/nuxt: points
   negligible, latency 1 s vs 2-4 s per page. Proposed D8 (immutable pages cached for good, PR/CI for visible
   rows separately). Folded into README.
+- 2026-11-01 — Owner: caching and paging next; commits as a tab of the repository view, which must be
+  generalised (All/Issues/Pull requests today), UI decided by designing several directions. Measured refs,
+  batched branch history and the matching-refs ETag. Proposed D9 (paging and cache); recorded D10.
+  Folded into README. Open: does the graph need the repository tracked.

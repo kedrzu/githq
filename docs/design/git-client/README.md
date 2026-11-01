@@ -78,3 +78,29 @@ request and CI state do change â€” a check finishes, a pull request is merged â€
 with every commit makes each page of history two to three times slower. So githq fetches commits in pages
 on their own, and asks for the pull request and CI state only of the rows on screen, in a separate request
 it can repeat to refresh them. [How the graph is fetched](DECISIONS.md#d8).
+
+## Opening a repository's history without waiting
+
+The graph opens from what githq already has: commits seen before are kept in the browser for good, and
+the branches and tags as last seen. Only then does githq ask GitHub whether the branches and tags have
+moved, a check that costs nothing when they have not. So a repository opened before shows its graph at once.
+
+The first time, there is nothing kept yet. One request returns every branch and tag together with the
+first hundred commits of the default branch, in about a second, and those are shown straight away. Then
+githq looks at which branches point at commits it does not have yet, typically pull request branches a few
+commits ahead, and fetches a short stretch of each one's history, going deeper only for those that still
+have not met a commit it knows.
+
+Scrolling down asks for more: the next hundred commits from wherever the loaded history stops. The rows
+are ordered by date across all branches, as in `git log --date-order`, so githq only shows a commit once
+every branch has been loaded at least down to that commit's date. Otherwise a commit from a branch loaded
+later could turn up above rows already on screen. [How history is paged and kept](DECISIONS.md#d9).
+
+## Where the graph lives in the app
+
+The graph is a tab of the repository view. The repository view today shows one list of the repository's
+issues and pull requests, with tabs beside its title (All, Issues, Pull requests) that only filter that
+list, and a toolbar for its state, grouping and board layout. Commits is a different kind of content, none
+of whose controls apply to it, so the repository view has to become a set of sections with their own tools
+rather than one filtered list. Which UI does that best is decided by designing a few directions and
+picking one. [Commits as a tab of the repository](DECISIONS.md#d10).
