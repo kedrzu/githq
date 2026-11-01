@@ -1,11 +1,12 @@
 import type { ListStack } from '@/lists/ListTypes.js';
-import type { ItemRepository, PullRequestItem } from '@/store/ItemTypes.js';
+import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
+import type { Item, ItemRepository, PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { getStackPullRequestToOpen } from '@/store/stacks/getStackPullRequestToOpen.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 
 import { samplePullRequest } from './sampleItems.js';
-import { SAMPLE_NOW, sampleUser } from './sampleMyWork.js';
+import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleUser } from './sampleMyWork.js';
 import { SAMPLE_VIEWER } from './sampleViewer.js';
 
 const MINUTE = 60_000;
@@ -214,6 +215,23 @@ export const SAMPLE_STACKS = {
         ],
     }),
 } as const;
+
+/** The user's own stack of four, in "My pull requests"; the third fails its checks. */
+const MY_STACK = SAMPLE_STACKS.held.map(pr => ({ ...pr, author: sampleUser(SAMPLE_VIEWER.login, '#d6a23a') }));
+
+/**
+ * "My work" of the D1 mockup with two stacks (SP1): the user's own, and someone else's asking their review on two of
+ * its four — the other two in no group of my work.
+ */
+export const STACKED_MY_WORK_ITEMS: readonly Item[] = [...D1_ITEMS, ...MY_STACK, ...SAMPLE_STACKS.reviewRequested];
+
+/** Which search found which item of {@link STACKED_MY_WORK_ITEMS}. */
+export const STACKED_MY_WORK_MEMBERSHIP: MyWorkMembership = sampleMembership({
+    reviewRequested: [...(D1_MEMBERSHIP.reviewRequested ?? []), 'PR_S_webhooks_2', 'PR_S_webhooks_3'],
+    authored: [...(D1_MEMBERSHIP.authored ?? []), ...MY_STACK.map(pr => pr.id)],
+    assigned: [...(D1_MEMBERSHIP.assigned ?? [])],
+    mentioned: [...(D1_MEMBERSHIP.mentioned ?? [])],
+});
 
 function repository(nameWithOwner: string): ItemRepository {
     const [owner = ''] = nameWithOwner.split('/');

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleMyWork } from '@/testing/sampleMyWork.js';
+import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import MyWorkView from './MyWorkView.vue';
@@ -96,6 +97,23 @@ export const ByRepository: Story = {
     args: {
         selectedId: 'I_1187',
         trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'skyline-labs/portal', 'skyline-labs/api'],
+        options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'repository' },
+    },
+};
+
+/**
+ * SP1: stacks, each one entry in the first reason any of its pull requests has — someone else's asking the user's review
+ * on two of its four ("Your review on 2 of 4"), the user's own with its third failing.
+ */
+export const Stacks: Story = {
+    args: { work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all') },
+};
+
+/** Stacks grouped by repository: each entry whole in its repository's group. */
+export const StacksByRepository: Story = {
+    args: {
+        work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all'),
+        trackedRepositories: ['fitloop/webapp', 'fitloop/api'],
         options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'repository' },
     },
 };

@@ -9,6 +9,7 @@ import { safeNextPath } from '@/auth/routeAccess.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 
 import FirstDownloadView from './FirstDownloadView.vue';
 import type { FirstDownloadOverall, FirstDownloadRow } from './FirstDownloadView.vue';
@@ -29,8 +30,13 @@ const router = useRouter();
 const myWork = computed(() =>
   items.getSyncState('myWork').lastSuccessAt === null
     ? null
-    : buildMyWork({ membership: items.membership, getItem: id => items.get(id), filter: 'all', sort: 'updated' })
-        .counts,
+    : buildMyWork({
+        membership: items.membership,
+        getItem: id => items.get(id),
+        stacks: groupStacks(items.all),
+        filter: 'all',
+        sort: 'updated',
+      }).counts,
 );
 
 const rows = computed((): FirstDownloadRow[] => {

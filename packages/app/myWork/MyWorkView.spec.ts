@@ -11,6 +11,7 @@ import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
+import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
@@ -228,6 +229,33 @@ test('grouped by repository on the first download: what arrived is in its reposi
     await expect.element(sections.nth(0)).toHaveTextContent(/Add rate-limit backoff to webhook worker/);
     await expect.element(page.getByRole('region', { name: 'My pull requests' })).toHaveTextContent(/Still arriving/);
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
+});
+
+test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too; on the board, plain cards', async () => {
+    mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP);
+
+    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
+    const entry = review.filter({ hasText: 'Retry webhooks with backoff' });
+    await expect.element(entry).toHaveTextContent('Your review on 2 of 4');
+    expect(review.elements()).toHaveLength(3);
+    await expect.element(page.getByText('Part 4 of S_webhooks')).not.toBeInTheDocument();
+
+    // Expanded, it shows all four — the two in no group of my work too.
+    await userEvent.click(entry.getByRole('button', { name: 'Expand the stack' }));
+    await expect.element(page.getByText('Part 4 of S_webhooks')).toBeInTheDocument();
+    expect(review.elements()).toHaveLength(7);
+
+    const mine = page.getByRole('region', { name: 'My pull requests' });
+    await expect.element(mine).toHaveTextContent('Migrate class calendar to new date picker');
+    await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
+});
+
+test('stacked PRs: on the board a stack is its pull requests as plain cards', async () => {
+    mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, { layout: 'board' });
+
+    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
+    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
+    expect(review.elements()).toHaveLength(6);
 });
 
 /**
