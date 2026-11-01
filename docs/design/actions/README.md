@@ -13,8 +13,8 @@ failing line of a log takes several slow screens.
 ## What is different once it exists
 
 Something in githq you already look at tells you that a workflow is broken, in whichever repository. One
-screen shows what is broken across all of them. From there, one keystroke opens the failure at the line that
-explains it, with no page loads in between.
+screen shows what is broken across all of them. From there, one keystroke opens the failure and its log, without
+going through GitHub's Actions pages.
 
 ## What "broken" means
 
@@ -49,19 +49,17 @@ to look in, one sidebar entry gives the total and opens everything broken across
 
 ## Opening a failure
 
-Enter on a broken workflow opens its latest failed run directly. Failed jobs come first, and the log opens at the
-failed step, scrolled to GitHub's error marker with the lines above it, since the marker itself usually says only
-"exit code 1". The address is the same as GitHub's, `/owner/name/actions/runs/123`. Re-running the failed jobs is a
-command in the command menu, deliberately not a single key. [Why](DECISIONS.md#d10).
-
-So that this opens without waiting, githq reads the failed jobs' logs as soon as a workflow turns red, at low
-priority: a separate background reader that takes one log at a time, pauses between them, stops when the API
-allowance runs low and does nothing while the tab is hidden. [Why not a shared queue for all
-syncing](DECISIONS.md#d11).
+Enter on a broken workflow opens its latest failed run directly. What githq already knows, the workflow, the ref and
+when, is there at once, and the jobs and the log load in place. Failed jobs come first, and the whole log is shown,
+starting at the failed step and GitHub's error marker, because the marker usually says only "exit code 1" and the
+key information can be anywhere in the log. Logs are big, so they are only read when opened, never in the background.
+[Why nothing is read ahead](DECISIONS.md#d12). The address is the same as GitHub's, `/owner/name/actions/runs/123`.
+Re-running the failed jobs is a command in the command menu, deliberately not a single key.
+[Why](DECISIONS.md#d10).
 
 ## How it fits what GitHub allows
 
-GitHub has no list of runs across repositories, so githq asks each tracked repository separately. That is
+GitHub has no list of runs across repositories, so githq asks each tracked repository separately. It does so every three minutes, and at once when you open a workflow screen. That is
 affordable, since an unchanged answer costs nothing against the API allowance, and it needs no new permission
 at sign-in. [What we measured](DECISIONS.md#d2).
 
@@ -73,4 +71,6 @@ open, so this design does not promise that.
 
 ## How far this goes
 
-Being settled: the design is about to be reviewed for anything bigger than its problem.
+This covers repositories you track, and only GitHub Actions. It does not reach you while githq is closed, it does
+not stream a running job's log (GitHub has no documented way, so githq shows step status and hands off to GitHub),
+and it has no way to silence a workflow or to show workflows among issues in the All tab. It ships as one change.

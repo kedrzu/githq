@@ -95,3 +95,36 @@ existing 60s interval costs only when something changed.
   you triggered", which is the gap this design exists to close, and the endpoints are documented for classic
   personal tokens only ([notifications](https://docs.github.com/en/rest/activity/notifications), checked
   2026-11-01; not tried with an OAuth App token).
+
+## D11
+
+Retired 2026-11-01, replaced by [D12](../DECISIONS.md#d12): the owner dropped reading logs ahead.
+
+**When a workflow turns red, githq reads its failed jobs and their logs ahead of time and keeps them locally, as
+low-priority work.** (2026-11-01, owner)
+
+**Why.** Opening a failure without waiting is the point of the screen, but the owner expects a lot of sync running
+in time, so this must not compete with it.
+
+> **Checked 2026-11-01:** there is no shared priority across sync work. The five loops run independently
+> (`packages/app/sync/SyncEngine.ts:54-61`); `DetailPrefetch` stays out of the way by itself: one batch at a time,
+> 2s between batches, off while hidden, stops under 500 GraphQL points (`packages/app/sync/DetailPrefetch.ts:17-24`).
+> Only GraphQL has a reserve for edits (`packages/app/sync/getAllowancePause.ts:10`); logs draw on `core`, which has
+> none.
+
+> **Checked 2026-11-01:** secondary limits are "No more than 100 concurrent requests" and "no more than 900 points
+> per minute" per REST endpoint, with a `GET` at 1 point. The page does not say whether a 304 counts —
+> [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api). Polling is
+> sequential per repository (`packages/app/sync/TrackingSync.ts`).
+
+> **Not tested 2026-11-01:** what the logs endpoint returns for a job still running; no run was in progress.
+
+**Rejected.**
+- Reading the log only on opening: every failure starts with a wait.
+
+**How priority works: a separate background reader built like `DetailPrefetch`, with its own floor on `core`.**
+(2026-11-01, owner)
+
+**Also rejected.**
+- A shared queue with priorities for all sync work: a rebuild of `SyncEngine`, with no two kinds of work competing
+  for one bucket yet. Reopen when there is such a pair.

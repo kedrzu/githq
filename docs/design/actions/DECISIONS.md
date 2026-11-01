@@ -14,6 +14,13 @@ knowing it was rejected is not.
 failed. Runs that were cancelled or skipped give no verdict.** (2026-11-01, proposal of the design agent, not
 confirmed by the owner)
 
+Proposed from the 2026-11-01 failure sweep, not confirmed: `failure`, `timed_out` and `startup_failure` count as
+failed; `success` as passed; every other conclusion, unknown ones too, gives no verdict. "Latest" is by creation
+time. Reading goes back through runs until one has a verdict, so a row of cancelled runs cannot turn a broken
+workflow green, and a rebuilt cache gives the same answer. Only workflows in GitHub's current list with state
+`active` count, so a deleted one stops counting without ever passing. "Started by a pull request" is decided by the
+run's event, not its ref.
+
 **Why.** A run is one observation of a workflow, and a workflow can run on many refs: a green run on a feature
 branch says nothing about `main`. Grouping by pattern and not by exact ref is what lets a one-shot tag recover.
 
@@ -44,8 +51,8 @@ owner's repositories do not keep parallel lines.
 
 **Workflow state is read per repository over REST only: a conditional request on the repository's runs detects a
 change, then conditional requests per workflow on `actions/workflows/{id}/runs` read the runs of the refs that
-count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope.** (2026-11-01,
-design agent, not confirmed by the owner)
+count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope. Polled every 3 minutes while a tab is shown, and at once when the Workflows tab or the
+cross-repository screen opens.** (2026-11-01, owner for the 3 minutes, design agent for the rest, not confirmed)
 
 **Why.** There is no cross-repository listing, and a 304 costs nothing against the primary allowance. REST is the
 only API that can see which ref a run was on, and [D1](#d1) needs that. It departs from the project's "GraphQL
@@ -64,12 +71,19 @@ for fetching" principle because GraphQL cannot answer the question here.
 > the tag name in `head_branch`. `branch=` is an exact match, so a wildcard pattern means filtering in the client
 > and paging.
 
+**Cost of a busy repository, computed 2026-11-01.** Per 3-minute cycle with a change: 1 repository request, the
+workflow list and each unchanged workflow at 304 (free), about 2 changed workflows, so about 3 points, or 60 an
+hour. Thirty such repositories cost about 1,800 of `core`'s 5,000 an hour. The 2 changed workflows and thirty busy
+repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.ts` handles the rest.
+
 > **Checked 2026-11-01:** listing runs, reading job logs and re-running failed jobs need only `repo`, which
 > githq already requests — [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs),
 > [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs),
 > scopes in `packages/github/src/oauth.ts:40`.
 
 **Rejected.**
+- Polling every 60s like the other loops: the problem is failures missed for hours, and an active repository's
+  answer changes with every run status.
 - GraphQL `node(id:) { ... on Workflow { runs(first: n) } }` for reading runs: `runs` takes only paging and
   `orderBy`, and `WorkflowRun` has no head ref (`packages/github` schema; `checkSuite.branch` is `null` on a tag),
   so it cannot match a pattern. In a live read of CLA's latest 30 runs only 2 were on `main`, so the default
@@ -99,6 +113,10 @@ for fetching" principle because GraphQL cannot answer the question here.
 
 > **Checked 2026-11-01:** no log streaming endpoint is documented for a running job; the logs endpoint returns
 > a plain-text file — [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs).
+
+The screen says what happened when there is nothing normal to show (2026-11-01 failure sweep, not confirmed): no
+jobs because the workflow file is invalid, a log past GitHub's retention, a re-run GitHub refuses. With no error
+marker in the log, it starts at the log's end.
 
 **Rejected.**
 - Check-run annotations as the pointer into the log: see the check above.
@@ -186,33 +204,20 @@ a higher total, not space on the list of issues.
 **Rejected.**
 - A single-key shortcut on the failure screen.
 
-## D11
+## D12
 
-**When a workflow turns red, githq reads its failed jobs and their logs ahead of time and keeps them locally, as
-low-priority work.** (2026-11-01, owner)
-
-**Why.** Opening a failure without waiting is the point of the screen, but the owner expects a lot of sync running
-in time, so this must not compete with it.
-
-> **Checked 2026-11-01:** there is no shared priority across sync work. The five loops run independently
-> (`packages/app/sync/SyncEngine.ts:54-61`); `DetailPrefetch` stays out of the way by itself: one batch at a time,
-> 2s between batches, off while hidden, stops under 500 GraphQL points (`packages/app/sync/DetailPrefetch.ts:17-24`).
-> Only GraphQL has a reserve for edits (`packages/app/sync/getAllowancePause.ts:10`); logs draw on `core`, which has
-> none.
-
-> **Checked 2026-11-01:** secondary limits are "No more than 100 concurrent requests" and "no more than 900 points
-> per minute" per REST endpoint, with a `GET` at 1 point. The page does not say whether a 304 counts —
-> [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api). Polling is
-> sequential per repository (`packages/app/sync/TrackingSync.ts`).
-
-> **Not tested 2026-11-01:** what the logs endpoint returns for a job still running; no run was in progress.
-
-**Rejected.**
-- Reading the log only on opening: every failure starts with a wait.
-
-**How priority works: a separate background reader built like `DetailPrefetch`, with its own floor on `core`.**
+**Jobs and logs are read on demand, when a workflow's failure is opened; nothing is read ahead or kept on disk.**
 (2026-11-01, owner)
 
-**Also rejected.**
-- A shared queue with priorities for all sync work: a rebuild of `SyncEngine`, with no two kinds of work competing
-  for one bucket yet. Reopen when there is such a pair.
+**Why.** The owner: logs are too big, and the key information sits in different places, so no excerpt can stand in
+for the log. The stored run (workflow, ref, when) shows at once; the failed job and log load in place, which is the
+only wait on this screen.
+
+> **Checked 2026-11-01:** the tested log has 176,562 characters over 2,086 lines; see [D3](#d3).
+
+**Rejected.**
+- Reading failed jobs' logs in the background when a workflow turns red, at low priority: logs are too big
+  ([history](history/DECISIONS.md#d11)).
+- Keeping about 200 lines before the error marker: the key information is not always there.
+- A shared queue with priorities for all sync work: with no background log reading, nothing competes for it here.
+  Reopen when two kinds of work compete for one bucket.
