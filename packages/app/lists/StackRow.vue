@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the milestone when shared, else how many. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -68,6 +68,11 @@ interface HeldTextParams {
   readonly open: number;
   readonly number: number;
 }
+
+defineSlots<{
+  /** In a project's view, the values of its fields its pull requests share (D15), as `ItemRow`'s. */
+  fields?(): unknown;
+}>();
 
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
@@ -302,6 +307,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
           />
           {{ milestone }}
         </span>
+        <slot name="fields" />
         <template v-if="shown.has('labels')">
           <LabelPill
             v-for="label in labels.shared"

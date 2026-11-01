@@ -243,6 +243,19 @@ test('with an item open, j/k walk a collapsed entry’s pull requests one by one
     expect(view.opened).toHaveLength(10);
 });
 
+test('with an item open, j/k walk an expanded entry’s rows one by one, passing over the entry itself', async () => {
+    const view = mount(STACKED, 'list', { followOpened: true });
+    await userEvent.keyboard('j{Enter}');
+    await userEvent.click(page.getByRole('button', { name: 'Expand the stack' }));
+
+    for (const key of ['j', 'j', 'j', 'j', 'k', 'k', 'k', 'k']) {
+        await userEvent.keyboard(key);
+    }
+
+    expect(view.opened).toEqual(['a1', 'p1', 'p2', 'p3', 'a2', 'p3', 'p2', 'p1', 'a1']);
+    expect(selectedCard()).toBe('a1');
+});
+
 test('keys pressed before the opened item catches up walk on from the last one they opened', async () => {
     const view = mount(STACKED, 'list');
     await userEvent.keyboard('jj{Enter}');

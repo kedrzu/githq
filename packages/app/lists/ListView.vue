@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk a collapsed entry's pull requests one by one, entering it at its first from above and at its last from below; `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -82,6 +82,8 @@ interface ListSlotProps<TValue> {
   checked: boolean;
   /** Set on a stack's entry: draw it as one. */
   stack: ListStack | null;
+  /** The entries nested under it, shown or not: a stack entry's pull requests. */
+  nested: readonly ListEntry<TValue>[];
 }
 
 /** An entry where the list shows it. */
@@ -377,7 +379,8 @@ watch(
 
 /**
  * With an item open over the list: its pull requests one by one (D9) — through a collapsed stack's entry member by
- * member, the entry staying selected, into one from above at its first and from below at its last.
+ * member, the entry staying selected, into one from above at its first and from below at its last; an expanded one's
+ * entry is passed over, its rows being its pull requests.
  */
 function stepOpened(keys: readonly string[], index: number, next: number, by: 1 | -1) {
   const openedId = walking.at(-1) ?? props.openedId ?? null;
@@ -388,10 +391,13 @@ function stepOpened(keys: readonly string[], index: number, next: number, by: 1 
     return openInEntry(keys[index] ?? null, sibling);
   }
 
-  const key = keys[next] ?? null;
+  // An expanded entry would open one of its rows out of turn: on to the row past it, or nowhere at the list's top.
+  const past = next + by;
+  const target = !isExpandedEntry(keys[next]) ? next : keys[past] === undefined ? index : past;
+  const key = keys[target] ?? null;
   const entered = getCollapsedMembers(key);
   const member = by === 1 ? entered[0] : entered.at(-1);
-  if (next !== index && member !== undefined) {
+  if (target !== index && member !== undefined) {
     return openInEntry(key, member);
   }
 
@@ -404,6 +410,12 @@ function stepOpened(keys: readonly string[], index: number, next: number, by: 1 
 function getCollapsedMembers(key: string | null | undefined): readonly string[] {
   const current = key == null ? undefined : placed.value.get(key);
   return current?.stack && !expandedStacks.has(current.stack.id) ? current.ids : [];
+}
+
+/** A stack's entry shown expanded, its rows under it. */
+function isExpandedEntry(key: string | undefined) {
+  const current = key === undefined ? undefined : placed.value.get(key);
+  return current?.stack != null && expandedStacks.has(current.stack.id);
 }
 
 /** Selects the entry `key` with `id`, one of the items it stands for, and opens that item. */
@@ -805,6 +817,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                     :group="group"
                     :checked="isChecked(entry.key)"
                     :stack="parent ? null : (row.stack ?? null)"
+                    :nested="parent ? [] : row.nested"
                   />
                 </li>
               </template>
@@ -887,6 +900,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :group="group"
                   :checked="isChecked(entry.key)"
                   :stack="parent ? null : (row.stack ?? null)"
+                  :nested="parent ? [] : row.nested"
                 />
               </li>
             </template>
