@@ -167,6 +167,22 @@ function onPage(path: string): Decorator {
     };
 }
 
+/** In the macOS desktop app, a strip along the top holds the window controls and moves the window; here with more repositories than fit, as the sidebar scrolls. */
+export const WindowControlsOverflowing: Story = {
+    args: {
+        windowControls: true,
+        tracked: {
+            projects: [],
+            repositories: Array.from({ length: 60 }, (_, index) =>
+                repository(`kedrzu/repository-${index}`, { kind: 'count', count: index }),
+            ),
+        },
+    },
+};
+
+/** The rail in the macOS desktop app. */
+export const WindowControlsCollapsed: Story = { args: { windowControls: true, collapsed: true } };
+
 function project(title: string, owner: string, number: number, status: SidebarTrackedStatus): SidebarTrackedEntry {
     return {
         key: `project:${number}`,

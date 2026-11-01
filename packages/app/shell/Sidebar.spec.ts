@@ -21,6 +21,8 @@ const {
     NothingTracked,
     OnRepositoryIssues,
     TrackedMenu,
+    WindowControlsCollapsed,
+    WindowControlsOverflowing,
 } = composeStories(stories);
 
 const NOTHING_TRACKED_NOTE = 'Repositories and projects you track appear here.';
@@ -233,4 +235,49 @@ test('many marks scroll on the rail, the logo and the way to expand staying in v
     const logo = page.getByRole('img', { name: 'githq' }).element();
     await expect.poll(() => last.getBoundingClientRect().top).toBeGreaterThan(expand.getBoundingClientRect().bottom);
     expect(logo.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+});
+
+test.each([
+    ['expanded', Expanded],
+    ['on the rail', Collapsed],
+])('%s without window controls over it, nothing of the sidebar moves the window', async (_, story) => {
+    await story.run();
+
+    const sidebar = page.getByRole('navigation', { name: 'Sidebar' }).element();
+    expect(sidebar.querySelector('[data-tauri-drag-region]')).toBeNull();
+    expect(getComputedStyle(sidebar).paddingTop).toBe('12px');
+});
+
+test('the strip for the window controls holds its height and its place, and items go under it, as the lists scroll', async () => {
+    await WindowControlsOverflowing.run();
+
+    const sidebar = page.getByRole('navigation', { name: 'Sidebar' }).element();
+    const strip = sidebar.querySelector('[data-tauri-drag-region]');
+    if (!strip) {
+        throw new Error('No strip for the window controls');
+    }
+
+    expect(strip.getBoundingClientRect().height).toBe(36);
+    // As wide as the sidebar, to its edges: all of the top moves the window.
+    expect(strip.getBoundingClientRect().width).toBe(sidebar.clientWidth);
+
+    const { top, left } = sidebar.getBoundingClientRect();
+    expect(strip.getBoundingClientRect().top).toBe(top);
+
+    const last = page.getByRole('link', { name: /^kedrzu\/repository-59/u }).element();
+    last.scrollIntoView();
+    await expect.poll(() => last.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+    expect(strip.getBoundingClientRect().top).toBe(top);
+    expect(strip.getBoundingClientRect().height).toBe(36);
+    // What is under the window controls is the strip, not an item scrolled there.
+    expect(document.elementFromPoint(left + 20, top + 18)).toBe(strip);
+});
+
+test('on the rail the strip reaches across it, for all of the top to move the window', async () => {
+    await WindowControlsCollapsed.run();
+
+    const sidebar = page.getByRole('navigation', { name: 'Sidebar' }).element();
+    const strip = sidebar.querySelector('[data-tauri-drag-region]');
+    expect(strip?.getBoundingClientRect().width).toBe(sidebar.clientWidth);
+    expect(strip?.getBoundingClientRect().height).toBe(36);
 });

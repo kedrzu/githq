@@ -8,6 +8,7 @@ export const SETTINGS_CONTROLS_ID = 'settings-controls';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Kbd from '@/components/Kbd.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
@@ -72,7 +73,10 @@ function getCount(candidate: SettingsSection) {
 
 <template>
   <div :class="css.settingsView">
-    <header :class="css.settingsView_header">
+    <header
+      :class="css.settingsView_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h1 :class="css.settingsView_title">{{ t(l.title) }}</h1>
       <SegmentedTabs
         v-model="section"

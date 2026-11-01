@@ -25,6 +25,7 @@ import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -587,7 +588,10 @@ function setRowField(fieldId: string | null) {
     v-if="tracked && !project"
     :class="css.projectPage"
   >
-    <header :class="css.projectPage_header">
+    <header
+      :class="css.projectPage_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h1 :class="css.projectPage_title">{{ name }}</h1>
     </header>
     <EmptyState
