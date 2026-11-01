@@ -16,3 +16,6 @@ Append-only; one line per turn that settled something.
   markers plus in the branch list, with per-worktree actions such as reveal in Finder (D6); forks as simple as
   possible (D5: match by origin only). Unanswered: can one repository have two separate clones. README:
   clones and worktrees section written.
+- 2026-11-01 — Owner: one clone per repository, worktrees for parallel work, deliberately opinionated (D7).
+  Proposed: adding a worktree folder adds its clone; adding a second clone offers replacement. Folded into
+  README. Next: the first version (graph from GitHub's API) — row content, navigation, loading history.

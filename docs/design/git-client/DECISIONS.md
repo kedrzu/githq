@@ -95,3 +95,17 @@ revealing its folder in the platform's file manager.** (2026-11-01, owner)
 
 **Why.** With several agents working in worktrees at once, where each one stands is the most useful thing the
 view can show, and the folder is the first thing you want to reach from it.
+
+## D7
+
+**A GitHub repository has at most one local clone in githq; parallel work goes through that clone's
+worktrees. Adding a worktree's folder adds its clone (resolved with `git rev-parse --git-common-dir`);
+adding a second separate clone of the same repository offers to replace the first.** (2026-11-01, owner:
+"we support only one clone per repo… opinionated, but so be it"; the handling of the two add cases is the
+design agent's proposal)
+
+**Why.** With worktrees a second clone gains almost nothing, and supporting it means several sets of local
+branches in one graph and a choice of clone behind every local action.
+
+**Rejected.**
+- Several clones per repository — too much complexity for too little gain (owner).

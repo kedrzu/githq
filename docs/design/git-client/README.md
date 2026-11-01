@@ -56,6 +56,12 @@ repository by the URL of its `origin` remote and finds the worktrees itself with
 may also find clones by scanning the disk. [How a clone is matched to a repository](DECISIONS.md#d5).
 A fork, whose `origin` is your fork and whose `upstream` is the original, gets no special handling yet.
 
+A repository has at most one clone in githq; parallel work happens in its worktrees. This is a deliberate
+opinion: a second clone of the same repository would mix two sets of local branches in one graph, and
+worktrees already give everything a second clone would. Adding the folder of a worktree adds the clone it
+belongs to. Adding a second, separate clone of a repository that already has one asks whether to replace it.
+[One clone per repository](DECISIONS.md#d7).
+
 Each worktree shows up in two places: as a marker at the commit it has checked out in the graph, with the
 count of its uncommitted changes, and in the list of branches beside the graph, on the branch it has checked
 out. From either place you can act on the worktree itself, for a start by revealing its folder in Finder (or
