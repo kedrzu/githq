@@ -106,7 +106,7 @@ restart when it's ready.
 - **Windows** (x64): the `-setup.exe` installer. Builds are not signed yet, so SmartScreen warns about an
   unrecognised app: choose **More info → Run anyway**. With Smart App Control turned on, Windows 11 blocks unsigned
   apps outright, and the only way past it is turning Smart App Control off. Signed builds are planned (see below).
-- **Linux** (x64): the `.AppImage`, which updates itself, or the `.deb` / `.rpm`, which don't: install a newer
+- **Linux** (x64): the `.AppImage`, which updates itself, or the `.deb`, which doesn't: install a newer
   release by hand. The keychain is the Secret Service (GNOME Keyring, KWallet). Without one, githq asks you to
   sign in at every launch.
 

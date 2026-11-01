@@ -107,9 +107,10 @@ jobs:
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
             args: --bundles nsis
+          # No .rpm: it takes no `-` in a version (`0.1.0-rc.1`). The AppImage updates itself; the .deb does not.
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            args: ''
+            args: --bundles deb,appimage
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 60
     steps:

@@ -21,7 +21,7 @@ the release GitHub marks "latest".
      variable `GITHQ_GITHUB_CLIENT_ID`), and fails if the variable is missing;
    - `draft` creates the draft release `githq v0.2.0`, marked as a prerelease when the tag has a `-`;
    - `bundle` builds on GitHub-hosted runners: macOS Apple Silicon and Intel (`.dmg`, `.app.tar.gz`), Windows x64
-     (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`, `.rpm`). Each build signs its updater bundles
+     (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
      (`.sig`) and adds itself to the release's `latest.json`;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
      update.
