@@ -80,7 +80,13 @@ serves it with the Worker in one `wrangler dev`, with a dummy OAuth App from
 and serves it with a static server falling back to `index.html`
 (`src/desktop/serveDesktopApp.ts`, no Worker); its native side is faked in the page
 (`src/desktop/FakeNativeBridge.ts`), and a request to githq.dev or `/api/*` fails the test. Both servers
-start whichever project runs; one project alone: `bun run e2e --project=desktop`. Every GitHub host is
+start whichever project runs; one project alone: `bun run e2e --project=desktop`. Both builds go through Nx's cache
+(`nx.targets` in `packages/app/package.json`): a run with nothing the app is built from changed reuses the last
+build instead of building again; `GITHQ_E2E_REBUILD=1 bun run e2e` builds regardless. In the `web` project the
+browser takes the build's assets (`/_nuxt/*`) from `.output-local` on the disk (`localAssets` in
+`src/fixtures.ts`): `wrangler dev`'s asset server is slow under parallel workers, and routing turns off the
+browser's cache. The Worker still serves every page and `/api/*`, and `src/globalSetup.ts` checks it serves the
+assets too. Every GitHub host is
 answered by the GitHub mock (`src/github/GitHubMock.ts`): an operation or URL a test did not register fails
 that test by name. Both servers listen on free ports picked for each run (`src/localApp.ts`), so `bun run dev`
 and other worktrees' e2e runs can go on next to it.
