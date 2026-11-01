@@ -55,12 +55,16 @@ today's state in [D7](#d7).
 
 ## D5
 
-**githq remembers the last view per repository on the device, separately from the settings, so that coming
-back to a repository opens the same tab (Issues or Pull requests).** (2026-11-01, owner)
+**githq remembers the last tab per repository on the device, separately from the settings, so that coming back to a repository
+opens the same tab (Issues or Pull requests).** (2026-11-01, owner)
 
 > **Checked 2026-11-01:** nothing does this today. The tab lives only in the address
 > (`packages/app/repository/RepositoryPage.vue:59-64`) and sidebar links use the repository's base path
 > (`packages/app/layouts/shell.vue:83`).
+
+**Rejected.**
+- Remembering a project's saved view as well ([history](history/DECISIONS.md#d5)) — the design agent's extension, nobody asked
+  for it.
 
 ## D6
 
@@ -112,38 +116,38 @@ githq cannot delete the repository with the scopes it has.
 
 ## D7
 
-**Synced: tracked repositories and projects; per list, its layout, grouping, sort and visible properties; the row field
-per project. Local: a list's filter, the last view, how items open, sidebar and panel sizes, new issue drafts, approval
-request clicks.** (2026-11-01, owner, on the design agent's proposal)
+**Synced: only which repositories and projects are tracked. Local: everything about views, meaning a list's layout, grouping,
+sort, visible properties and filter, a project's row field, the last view, how items open, sidebar and panel sizes, plus new issue
+drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the design agent's reading)
 
-**Why.** A filter changes constantly and each synced change would be a commit, and it describes what the user is
-looking at now.
+**Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
+later; they are not part of this design.
 
 | State | Where today (`packages/app/`) | |
 |---|---|---|
 | Tracked repositories and projects | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48` | synced |
-| Layout, grouping, sort, visible properties | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12` | synced |
-| Row field per project | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | synced |
-| Filter per list | same key as layout, `lists/useListViewOptions.ts:39-45` | local |
+| Layout, grouping, sort, visible properties, filter | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12` | local |
+| Row field per project | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | local |
 | How items open (panel, modal, page) | `githq.itemArrangement`, `services/LocalPreferences.ts:11` | local |
 | Sidebar collapsed, panel widths | `services/LocalPreferences.ts:12-13` | local |
 | New issue drafts, approval request clicks | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12` | local |
 
+No other per-user setting exists today (the app is dark only, `styles/tokens.scss:4`). The "modified locally" label on a project
+view stays true and stays as it is.
+
 **Rejected.**
+- Syncing layout, grouping, sort, visible properties and the row field ([history](history/DECISIONS.md#d7)) — too volatile (owner).
 - Synchronising how items open — owner, 2026-11-01.
 
 ## D8
 
-**Settings have their own place in `localStorage`, per account, outside the cache database, whether syncing is on or
-off.** (2026-11-01, owner for `localStorage` as the default; the per-account key is the design agent's proposal,
-following `packages/app/auth/createAccountSlot.ts`)
+**The tracked list is not cache: it stays local by default, survives a change of the cache database's schema, and is cleared at
+sign-out with the rest. Where exactly it is kept is the implementer's call; the owner's default is `localStorage`.** (2026-11-01,
+owner)
 
-**Why.** The cache database is meant to be disposable, and the tracked list inside it is not.
-
-> **Checked 2026-11-01:** a schema version bump drops every IndexedDB store with no migration, the tracked list and row
-> fields included (`packages/app/store/IndexedDbPersistence.ts:25-29`, `:333-337`), which sends the user back through
-> the choice. Sign-out also deletes `createAccountSlot` keys (`packages/app/auth/createAccountSlot.ts:46-48`), so with
-> syncing off, signing out still forgets the settings, as it does today.
+> **Checked 2026-11-01:** a schema version bump drops every IndexedDB store with no migration, the tracked list included
+> (`packages/app/store/IndexedDbPersistence.ts:25-29`, `:333-337`), which sends the user back through the choice. Sign-out also
+> deletes `createAccountSlot` keys (`packages/app/auth/createAccountSlot.ts:46-48`).
 
 ## D9
 
@@ -172,8 +176,8 @@ it happens on github.com, through a link from settings.** (2026-11-01, owner, on
 **One merge rule covers every case: the device keeps, next to its settings, the copy of the file it last saw and that copy's
 `sha`, in the same `localStorage` place. What differs between the two is what it has not saved yet. Merging compares the
 device's settings, the file now, and that copy, key by key, matching array entries by identity; when both sides changed the same
-key the file wins. Order is the file's, with new entries at the end. Nothing is ever removed.** (2026-11-01, proposal of the
-design agent, not confirmed)
+key the file wins. Order is the file's, with new entries at the end. Nothing is ever removed.** (2026-11-01, owner, on the design agent's
+proposal)
 
 **Why.** First contact ([D9](#d9)) is this rule with an empty copy. A write refused with 409 is this rule after a re-read. A
 response lost after a successful write merges to no change. A leader tab that closes loses nothing, because the next leader
@@ -191,8 +195,8 @@ loop at the usual 60 s visible and 300 s hidden (`packages/app/sync/SyncEngine.t
 ## D12
 
 **Anything that prevents syncing puts the device into one state, "syncing stopped": it keeps working from local settings,
-never writes to the file, says why once and in settings, and offers to try again.** (2026-11-01, proposal of the design
-agent, not confirmed)
+never writes to the file, says why once and in settings, and offers to try again.** (2026-11-01, owner, on the design
+agent's proposal)
 
 **Why.** The reasons need no rule of their own: the repository was deleted (404), it exists without our file, so it isn't
 ours, it is public when connecting, the file is unreadable or hand-edited into something invalid, its `version` is newer than this
@@ -201,77 +205,53 @@ recoverable. Visibility is checked when connecting, not on every poll.
 
 ## D13
 
-**The file is `settings.json`: formatted JSON with a stable key order and a `version` number at the root, next to `repositories`
-and `projects`, arrays in the user's order. Each entry nests its own settings: a repository its list options, a project its row
-field and its options per saved view. Whether something is tracked is one of those settings, `tracking: true`; entries are never
-removed, so untracking keeps the rest. Projects work the same way as repositories. My work's options sit at the root under `myWork`. Unknown keys are preserved when merging;
-`version` goes up only for a change an older build can't safely ignore. Repositories keep today's identity (`owner/name`, with
-the node id stored), projects their node ids.** (2026-11-01, owner for `version`, the root layout with nesting and `tracking` on a
-repository; the rest is a proposal of the design agent, not confirmed)
+**The file is `settings.json`: formatted JSON with a stable key order, a `version` number at the root, next to `repositories` and
+`projects`, arrays in the user's order. An entry says what it is and whether it is tracked, `tracking: true`; entries are never
+removed, so settings added to an entry later survive untracking, and an untracked item doesn't come back when lists are
+combined. `version` goes up with any new field, and a build that meets a higher number stops syncing ([D12](#d12)) until reloaded.**
+(2026-11-01, owner for `version`, the root layout and `tracking`; projects the same way as repositories, owner; the rest is the
+design agent's proposal)
 
 ```json
 {
   "version": 1,
   "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true, "list": { "layout": "board", "sort": "updated" } },
-    { "nameWithOwner": "acme/api", "tracking": false, "list": { "sort": "created" } }
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
   ],
   "projects": [
-    {
-      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true,
-      "rowField": "PVTF_…",
-      "views": { "PVTV_…": { "grouping": "status" } }
-    }
-  ],
-  "myWork": { "grouping": "repository" }
+    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
+  ]
 }
 ```
 
-**Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs.
-
-**Consequences.** A repository gets an entry when it is tracked or when one of its options changes, so options of untracked
-repositories travel too (`packages/app/repository/RepositoryPage.vue:66` keeps them for any repository page today), and the file
-grows only by repositories someone adjusted. `id` is optional, because a repository page doesn't always know it. A repository
-tracked again returns to its old place in the sidebar, which is the entries that have `tracking: true`, in order.
+**Why.** A reader on github.com gets a readable diff per change, and an older tab can't overwrite a field it doesn't know. A repository tracked again returns to its old place in the sidebar, which is the entries with `tracking: true`, in
+order.
 
 **Rejected.**
-- A separate `tracked` object with settings in a flat `lists` map by key ([history](history/DECISIONS.md#d13)) — owner.
-- Entries only for tracked repositories, removed on untrack, with other options local ([history](history/DECISIONS.md#d13)) —
-  untracking would throw settings away (owner).
-- Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
-  display options, which is what happens today.
+- A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
+  owner; view details are local ([D7](#d7)).
+- Removing an entry on untrack — it would forget that the user untracked it (owner).
+- Preserving unknown keys so older tabs keep syncing past a new field ([history](history/DECISIONS.md#d13)) — nothing to preserve
+  until a second kind of setting exists, and reloading is cheap.
+- Keying repositories by node id — the app identifies them by name throughout
+  (`packages/app/tracking/TrackingStore.ts:144`), and the id is stored if renames turn out to matter.
 
-## Open questions
+## D14
 
-### Accepted risks, pending the owner's word
+**Accepted risks.** (2026-11-01, owner)
 
-From the failure sweep of 2026-11-01:
-
-- A repository untracked in the file long ago and tracked here since, with syncing off, ends untracked when syncing is turned on.
+- A repository marked untracked in the file and tracked here since, with syncing off, ends untracked when syncing is turned on,
+  with its local copy.
 - Untracking by mistake: the other device has already discarded its copy, and downloads it again after re-tracking.
 - Revoking githq's access on github.com ends in the existing sign-out on 401, which clears local settings
   (`packages/app/auth/AuthStore.ts:224-226`). Without syncing they are gone, as today.
-- A renamed repository stays in the file under its old name, with its options, and the new name starts with defaults.
+- A renamed repository stays in the file under its old name. What tracking does then was not checked.
 
-### Project views' local changes now travel
-
-> **Checked 2026-11-01:** `packages/app/lists/useListViewOptions.ts:30` shows a project view as "modified locally" and documents
-> the options as local only, per D13 of [the githq design](../githq/DECISIONS.md#d13). With layout, grouping, sort and properties
-> synced ([D7](#d7)), those changes follow the user. They still never reach GitHub's project.
-
-The agent's proposal: the label becomes "modified", and nothing else changes.
-
-### Where the last-view memory applies
-
-The agent's proposal: the repository's tab and a project's saved view. A link with an explicit address always wins. Kept per
-account in `localStorage`, cleared at sign-out.
-
-### Order of building
-
-The agent's proposal, each step usable by itself: settings in their own place, moving the tracked list out of the cache database,
-plus the last view (no network); then loading, saving and merging behind the first-setup checkbox; then the settings screen.
+The order of building is the implementer's call (owner). First write to an empty repository was not tested live; the implementer
+checks it.
 
 > **Checked 2026-11-01:** `PUT …/contents/…` initialises an empty repository, and the REST API "will return a 409 Conflict if
 > the Git repository is empty or unavailable", the latter while GitHub is still creating it —
-> [Git database](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database). Not tested live:
-> a test repository couldn't be removed afterwards, the `gh` token here has no `delete_repo`.
+> [Git database](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database).
+
