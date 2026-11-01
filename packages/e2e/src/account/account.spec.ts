@@ -16,7 +16,7 @@ const LOGIN = SAMPLE_VIEWER.viewer.login;
 /** What is kept of the browser's own, whoever signs in: the sidebar folded, how an item opens. */
 const PER_DEVICE_KEYS = ['githq.sidebarCollapsed', 'githq.itemArrangement'];
 
-test('the account page shows an organisation hiding its private data, and remembers that approval was requested', async ({
+test('the Account section shows an organisation hiding its private data, and remembers that approval was requested', async ({
     page,
     github,
 }) => {
@@ -53,7 +53,7 @@ test('the account page shows an organisation hiding its private data, and rememb
     await expect(account.organization('secretive')).toContainText('You requested approval on');
 });
 
-test('⌘K finds the account page', async ({ page, github }) => {
+test('⌘K finds the Account section', async ({ page, github }) => {
     await signIn(page, github);
     answerTrackingCandidates(github, { login: LOGIN });
 
@@ -65,7 +65,7 @@ test('⌘K finds the account page', async ({ page, github }) => {
     await expect(new AccountScreenHarness(page).root).toContainText('member of no organisations');
 });
 
-test("signing out on the account page deletes this browser's copy and signs out every tab", async ({
+test("signing out on the Account section deletes this browser's copy and signs out every tab", async ({
     page,
     context,
     github,

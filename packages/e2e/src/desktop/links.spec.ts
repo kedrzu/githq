@@ -68,7 +68,7 @@ test('an item\'s "Open on GitHub", a link in its description and an address gith
     expect(page.context().pages()).toHaveLength(1);
 });
 
-test("an organisation's \"Request approval\" opens GitHub's page of githq's OAuth App in the system browser, and the window stays on the account page", async ({
+test("an organisation's \"Request approval\" opens GitHub's page of githq's OAuth App in the system browser, and the window stays on the Account section", async ({
     page,
     github,
     native,
