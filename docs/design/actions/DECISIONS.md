@@ -114,9 +114,16 @@ and for turning off counters; "counters only" as the owner's wording read by the
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
 wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
 
-**Open.** The default before any configuration. Proposal: the default branch, `release`, `release/*` and all tags, without runs started
-by a pull request; the plain `release` branch and `release/*` are there because of the check under
-[D1](#d1). Where patterns are stored: see the check below.
+**Default: the repository's default branch only, without runs started by a pull request. Anything else is added
+in the repository's settings.** (2026-11-01, owner)
+
+Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
+repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
+
+**Open.** Where patterns are stored: see the check below.
+
+**Rejected.**
+- Default branch, `release`, `release/*` and all tags as the default: the owner says few people work that way.
 
 > **Checked 2026-11-01:** the tracked list lives in the `meta` store of the local database
 > (`packages/app/store/IndexedDbPersistence.ts:233`), which is deleted and rebuilt on any schema version change
@@ -163,3 +170,41 @@ not, because it no longer runs and could never go green.
 
 **Rejected.**
 - A mute setting in githq, kept locally: not wanted now.
+
+## D10
+
+**Re-running failed jobs is a command in the command menu, not a single key.** (2026-11-01, owner)
+
+**Why.** It starts something in the repository, so it should not be one stray keystroke away. It needs only the
+`repo` scope ([D2](#d2)).
+
+**Rejected.**
+- A single-key shortcut on the failure screen.
+
+## D11
+
+**When a workflow turns red, githq reads its failed jobs and their logs ahead of time and keeps them locally, as
+low-priority work that gives way to everything else.** (2026-11-01, owner, for reading ahead at low priority; how
+priority works is open)
+
+**Why.** Opening a failure without waiting is the point of the screen, but the owner expects a lot of sync running
+in time, so this must not compete with it.
+
+> **Checked 2026-11-01:** there is no shared priority across sync work. The five loops run independently
+> (`packages/app/sync/SyncEngine.ts:54-61`); `DetailPrefetch` stays out of the way by itself: one batch at a time,
+> 2s between batches, off while hidden, stops under 500 GraphQL points (`packages/app/sync/DetailPrefetch.ts:17-24`).
+> Only GraphQL has a reserve for edits (`packages/app/sync/getAllowancePause.ts:10`); logs draw on `core`, which has
+> none.
+
+> **Checked 2026-11-01:** secondary limits are "No more than 100 concurrent requests" and "no more than 900 points
+> per minute" per REST endpoint, with a `GET` at 1 point. The page does not say whether a 304 counts —
+> [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api). Polling is
+> sequential per repository (`packages/app/sync/TrackingSync.ts`).
+
+> **Not tested 2026-11-01:** what the logs endpoint returns for a job still running; no run was in progress.
+
+**Rejected.**
+- Reading the log only on opening: every failure starts with a wait.
+
+**Open.** Proposal of the design agent, not confirmed: a separate background reader built like `DetailPrefetch`,
+with its own floor on `core`, and no shared scheduler until two kinds of work actually compete for one bucket.

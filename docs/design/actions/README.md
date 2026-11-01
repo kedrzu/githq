@@ -28,7 +28,8 @@ So state is kept per workflow and per group of refs. A group rather than a singl
 only once: if `v1.0-rc.1` fails and `v1.0-rc.3` passes, the release is fine again. A cancelled run says nothing
 either way. [The rule and the runs it was tested on](DECISIONS.md#d1).
 
-Each repository can say, with wildcards, which refs light the counters, for example only `main` and `release/*`.
+By default only the repository's default branch lights the counters. A repository's settings can add others,
+with wildcards, for example `release/*` or `v*`.
 That setting only affects counters: every workflow and run stays visible in the repository, so a wrong pattern
 cannot hide a failure from someone looking for it. [What this setting does, and what is still open
 about it](DECISIONS.md#d5).
@@ -46,6 +47,16 @@ silences it. [The owner's call](DECISIONS.md#d9). And because you may not know w
 to look in, one sidebar entry gives the total and opens everything broken across repositories.
 [Why not nested menus or columns](DECISIONS.md#d6).
 
+## Opening a failure
+
+Enter on a broken workflow opens its latest failed run directly. Failed jobs come first, and the log opens at the
+failed step, scrolled to GitHub's error marker with the lines above it, since the marker itself usually says only
+"exit code 1". The address is the same as GitHub's, `/owner/name/actions/runs/123`. Re-running the failed jobs is a
+command in the command menu, deliberately not a single key. [Why](DECISIONS.md#d10).
+
+So that this opens without waiting, githq reads the failed jobs' logs as soon as a workflow turns red, at low
+priority so that it never gets in the way of other syncing. [How that could work](DECISIONS.md#d11).
+
 ## How it fits what GitHub allows
 
 GitHub has no list of runs across repositories, so githq asks each tracked repository separately. That is
@@ -60,5 +71,5 @@ open, so this design does not promise that.
 
 ## How far this goes
 
-Not settled yet. To be decided with the owner: the default refs before any configuration, and what the failure screen does that
-GitHub's does not.
+Not settled yet. To be decided with the owner: how background work is prioritised, where a repository's patterns
+are stored, and whether a workflow disabled on GitHub counts.
