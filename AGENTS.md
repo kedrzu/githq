@@ -53,6 +53,12 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   commit messages, branch names, PR titles and descriptions, issues and their comments, review comments.
   When a document quotes the owner, translate the quote.
 
+## Design
+
+Before changing the design file (`githq.pen`), read and follow `DESIGN.md`, in whichever client you run. When told
+that a design changelog is on a worktree, read `.context/design/` there and follow "Implementing from a changelog"
+in `DESIGN.md`.
+
 ## Worktrees and pull requests
 
 Work happens in Paseo worktrees, several at once: one task = one worktree = one branch = one PR. When Paseo
