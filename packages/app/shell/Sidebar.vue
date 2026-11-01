@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
+<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put as the sidebar scrolls. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -69,6 +69,8 @@ const props = defineProps<{
   viewer: Viewer;
   /** Collapsed to the rail. */
   collapsed?: boolean;
+  /** Keep the top free for macOS's window controls, which sit over it (`WINDOW_CONTROLS_OVERLAID`). */
+  windowControls?: boolean;
   /** The rows of each "my work" group, as its list counts them; `null` until the first download. */
   counts?: MyWorkCounts | null;
   /** The tracked projects and repositories; none when not given. */
@@ -119,9 +121,14 @@ function statusText(status: SidebarTrackedStatus) {
 
 <template>
   <nav
-    :class="[css.sidebar, collapsed && css.sidebar_collapsed]"
+    :class="[css.sidebar, collapsed && css.sidebar_collapsed, windowControls && css.sidebar_underWindowControls]"
     :aria-label="t(l.navigation)"
   >
+    <div
+      v-if="windowControls"
+      :class="css.sidebar_windowControls"
+      data-tauri-drag-region
+    />
     <template v-if="!collapsed">
       <div :class="css.sidebar_account">
         <AccountMenu
@@ -340,6 +347,26 @@ function statusText(status: SidebarTrackedStatus) {
   gap: $spacing-4;
   align-items: center;
   padding: $spacing-12 0;
+}
+
+.sidebar_underWindowControls {
+  padding-top: 0;
+}
+
+// Out to the sidebar's edges; items scroll away under it, not under the window controls.
+.sidebar_windowControls {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  align-self: stretch;
+  height: $window-controls-height;
+  margin: 0 (-$spacing-10);
+  background: $color-bg-2;
+
+  .sidebar_collapsed > & {
+    margin: 0;
+  }
 }
 
 .sidebar_account {

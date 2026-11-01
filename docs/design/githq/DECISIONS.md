@@ -376,14 +376,23 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
 - **Architecture "A — minimal interface"** (owner, at planning). The SPA builds for a third target,
   `GITHQ_TARGET=desktop` (define `__DESKTOP__`, output `.output-desktop`), and the web builds drop the desktop
   code entirely (`checkProductionBuild.ts` asserts it). All desktop code lives in `packages/app/desktop/` and comes
-  in through one gate, `installDesktop` from `plugins/iocPlugin.ts`, plus four `__DESKTOP__` choices (the signed-out
-  home page, the status bar's update segment, the organisation-approval URL and the GitHub hand-off page). The native
+  in through one gate, `installDesktop` from `plugins/iocPlugin.ts`, plus five `__DESKTOP__` choices (the signed-out
+  home page, the status bar's update segment, the organisation-approval URL, the GitHub hand-off page and the macOS
+  window controls). The native
   bridge (`desktop/NativeBridge.ts`) talks to `window.__TAURI_INTERNALS__` directly, with no `@tauri-apps/*`
   packages in the SPA. The Device Flow, the keychain, opening links and the updater are Rust commands in
   `packages/desktop/src-tauri`. The token reaches `AuthStore` through a `TokenVault` seam: `localStorage` on the
   web, as before, and the native store on desktop. Rejected: a flexible "host contributions" design, where the
   shell registers services and UI into the app (more surface than four choices need); and a shim shaped like
   `Storage` for the token (it would hide that the desktop store is asynchronous and may be unavailable).
+- **macOS window controls over the sidebar.** On a Mac the window has no title bar of its own: the controls sit in a
+  36px strip along the top of the sidebar, and the rail is 80px there, not 56px, to hold them (owner, 2026-11-01).
+  With no title bar the page says what moves the window (`shell/windowControls.ts`): that strip, each screen's top
+  header except what is clickable in it, and the same on the two screens with no sidebar. Windows and Linux keep their
+  title bars. Accepted: in full screen, where macOS hides the controls, the strip stays empty (removing it needs native
+  window events), and an unfocused window only activates on the first press, as Tauri documents for this style.
+  Rejected: `accept_first_mouse`, which would drag at once but also send that first press to every control in the app;
+  a 56px rail, with the controls spilling over the screen's header.
 - **The window stays on the app.** Every address outside the app opens in the system browser: the page
   intercepts links and the `Browser` service, and the window's `on_navigation`/`on_new_window` handlers back it
   up. The content security policy allows `connect-src` only to `api.github.com`, and images only from GitHub's

@@ -53,6 +53,7 @@ import SearchField from '@/components/SearchField.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -204,7 +205,10 @@ function keyOf(target: TrackedTarget) {
 
 <template>
   <div :class="css.trackingView">
-    <header :class="css.trackingView_header">
+    <header
+      :class="css.trackingView_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h1 :class="css.trackingView_title">{{ t(l.title) }}</h1>
       <SegmentedTabs
         v-model="tab"

@@ -1,4 +1,4 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge, their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge, their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -22,6 +22,7 @@ import type { SegmentEdits } from './FreshnessSegment.vue';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
 import StatusBar from './StatusBar.vue';
+import { WINDOW_CONTROLS_OVERLAID } from './windowControls.js';
 
 defineProps<{
   viewer: Viewer;
@@ -65,8 +66,8 @@ defineSlots<{
 /** The sidebar collapsed to the rail. */
 const collapsed = defineModel<boolean>('collapsed', { default: false });
 
-/** `$sidebar-rail-width`: the rail is not resized. */
-const SIDEBAR_RAIL_WIDTH = 56;
+/** `$sidebar-rail-width`, or room for macOS's window controls over it: the rail is not resized. */
+const SIDEBAR_RAIL_WIDTH = WINDOW_CONTROLS_OVERLAID ? 80 : 56;
 /** What is left to the screen, at least, in percent of the window. */
 const SCREEN_MIN_SIZE = 25;
 
@@ -123,6 +124,7 @@ function onLayout(sizes: number[]) {
     :class="css.appShell"
     :style="{
       '--sidebar-width': `${sidebarWidth.current}px`,
+      '--sidebar-rail-width': `${SIDEBAR_RAIL_WIDTH}px`,
       '--item-panel-width': `${panelWidth.current}px`,
     }"
   >
@@ -145,6 +147,7 @@ function onLayout(sizes: number[]) {
         <Sidebar
           :viewer="viewer"
           :collapsed="collapsed"
+          :window-controls="WINDOW_CONTROLS_OVERLAID"
           :counts="myWorkCounts"
           :tracked="tracked"
           @toggle="toggle"
