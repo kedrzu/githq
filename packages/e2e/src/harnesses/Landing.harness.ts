@@ -12,6 +12,11 @@ export class LandingHarness {
         this.root = page.getByRole('main');
     }
 
+    /** The hero's headline, the page's only `h1`. */
+    get heading(): Locator {
+        return this.root.getByRole('heading', { level: 1 });
+    }
+
     /** The hero's "Sign in with GitHub", the first of the page's two (the other closes the page). */
     get signInButton(): Locator {
         return this.root.getByRole('button', { name: 'Sign in with GitHub' }).first();
