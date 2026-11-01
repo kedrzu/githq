@@ -1,14 +1,21 @@
 <!-- The landing page's statement (githq.pen "Landing — githq.dev", Statement): githq is not another tracker but a faster way to work GitHub's — everything stays on GitHub and every change is an ordinary GitHub change. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useTemplateRef } from 'vue';
 
 import * as l from './LandingStatement.loc.js';
+import { useReveal } from './useReveal.js';
 
 const t = useTranslate();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 </script>
 
 <template>
-  <section :class="css.landingStatement">
+  <section
+    ref="section"
+    :class="css.landingStatement"
+    :data-reveal="reveal"
+  >
     <h2 :class="css.landingStatement_title">
       <span :class="css.landingStatement_line">{{ t(l.title) }}</span>
       <span :class="[css.landingStatement_line, css.landingStatement_line_dim]">{{ t(l.subtitle) }}</span>
@@ -34,6 +41,8 @@ const t = useTranslate();
 }
 
 .landingStatement_title {
+  @include landing-reveal;
+
   max-width: 960px;
   font-family: $font-family-brand;
   font-size: clamp(30px, 3.06cqi, 44px);
@@ -53,6 +62,8 @@ const t = useTranslate();
 }
 
 .landingStatement_body {
+  @include landing-reveal($landing-reveal-stagger);
+
   max-width: 820px;
   font-size: 20px;
   line-height: 1.55;

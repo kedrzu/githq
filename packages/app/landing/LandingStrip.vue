@@ -2,10 +2,13 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleDot, GitPullRequest, Milestone, Repeat, SquareKanban, Tag, Users } from 'lucide-vue-next';
+import { useTemplateRef } from 'vue';
 
 import * as l from './LandingStrip.loc.js';
+import { useReveal } from './useReveal.js';
 
 const t = useTranslate();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 
 const concepts = [
   { icon: CircleDot, label: l.issues },
@@ -19,7 +22,11 @@ const concepts = [
 </script>
 
 <template>
-  <section :class="css.landingStrip">
+  <section
+    ref="section"
+    :class="css.landingStrip"
+    :data-reveal="reveal"
+  >
     <h2 :class="css.landingStrip_title">{{ t(l.title) }}</h2>
     <ul :class="css.landingStrip_concepts">
       <li
@@ -55,6 +62,8 @@ const concepts = [
 }
 
 .landingStrip_title {
+  @include landing-reveal;
+
   font-family: $font-family-mono;
   font-size: $font-size-xs;
   font-weight: $font-weight-normal;
@@ -65,6 +74,8 @@ const concepts = [
 }
 
 .landingStrip_concepts {
+  @include landing-reveal($landing-reveal-stagger);
+
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-16 56px;

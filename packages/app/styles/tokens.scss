@@ -161,6 +161,31 @@ $shadow-landing-toast: 0 12px 32px rgb(0 0 0 / 67%);
     }
 }
 
+// The landing page's motion: calm, like the app — under 400 ms, ease-out, and none at all for a visitor who asked
+// for reduced motion.
+$landing-motion-duration: 320ms;
+// A section's copy fades up by this much as it scrolls into view, its visual this much later.
+$landing-reveal-distance: 12px;
+$landing-reveal-stagger: 80ms;
+
+// A part of a landing section that fades up the first time the section scrolls into view (`useReveal` sets the
+// section's `data-reveal`). Hidden only while the section waits below the viewport after mount, so the prerendered
+// page shows it; moved by `transform` only, so the layout never shifts.
+@mixin landing-reveal($delay: 0ms) {
+    @media (prefers-reduced-motion: no-preference) {
+        [data-reveal='waiting'] & {
+            opacity: 0;
+            transform: translateY($landing-reveal-distance);
+        }
+
+        [data-reveal='revealed'] & {
+            transition:
+                opacity $landing-motion-duration ease-out $delay,
+                transform $landing-motion-duration ease-out $delay;
+        }
+    }
+}
+
 // The focus ring for keyboard users only.
 @mixin focus-ring {
     &:focus-visible {

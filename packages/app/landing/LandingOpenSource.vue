@@ -2,23 +2,27 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Code, Github, Globe, Layers, Star } from 'lucide-vue-next';
-import { useId } from 'vue';
+import { useId, useTemplateRef } from 'vue';
 
 import Button from '@/components/Button.vue';
 
 import * as l from './LandingOpenSource.loc.js';
 import LandingSectionTitle from './LandingSectionTitle.vue';
 import { LandingSectionId, REPOSITORY_URL } from './landingLinks.js';
+import { useReveal } from './useReveal.js';
 
 const t = useTranslate();
 const headingId = useId();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 </script>
 
 <template>
   <section
     :id="LandingSectionId.openSource"
+    ref="section"
     :class="css.landingOpenSource"
     :aria-labelledby="headingId"
+    :data-reveal="reveal"
   >
     <div :class="css.landingOpenSource_copy">
       <LandingSectionTitle
@@ -112,6 +116,8 @@ const headingId = useId();
 }
 
 .landingOpenSource_copy {
+  @include landing-reveal;
+
   display: flex;
   flex: none;
   flex-direction: column;
@@ -138,6 +144,8 @@ const headingId = useId();
 }
 
 .landingOpenSource_card {
+  @include landing-reveal($landing-reveal-stagger);
+
   display: flex;
   flex: 1;
   flex-direction: column;

@@ -1,33 +1,36 @@
-<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, installable, anywhere on GitHub, reviews on github.com — in rows of two, three and two; one under another on a phone. The navigation's "How it works" lands here, the footer's "Install the app" on its card. -->
+<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, installable, anywhere on GitHub, reviews on github.com — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here, the footer's "Install the app" on its card. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { AppWindow, BadgeDollarSign, Gauge, GitMerge, Globe, Link, Lock, ServerOff } from 'lucide-vue-next';
-import { useId } from 'vue';
+import { useId, useTemplateRef, watch } from 'vue';
 
 import * as l from './LandingDetails.loc.js';
 import LandingDetail from './LandingDetail.vue';
 import LandingSectionTitle from './LandingSectionTitle.vue';
 import { LandingSectionId } from './landingLinks.js';
+import HostSwapLoop from './HostSwapLoop.vue';
+import { GITHUB_HOST, SWAP_PATH, useHostSwap } from './useHostSwap.js';
+import { useReveal } from './useReveal.js';
 
 const t = useTranslate();
 const headingId = useId();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 
-// "Swap the host": one address on GitHub and in githq — addresses, not words to translate. Only the host differs,
-// in an element of its own.
-const ADDRESS_PATH = '/acme/web/issues/42';
-const addresses = [
-  { host: 'github.com', label: l.swapBefore, githq: false },
-  { host: 'githq.dev', label: l.swapAfter, githq: true },
-];
+const swap = useHostSwap();
+
+watch(reveal, state => state === 'revealed' && swap.play());
 </script>
 
 <template>
   <section
     :id="LandingSectionId.howItWorks"
+    ref="section"
     :class="css.landingDetails"
     :aria-labelledby="headingId"
+    :data-reveal="reveal"
   >
     <LandingSectionTitle
+      :class="css.landingDetails_title"
       :eyebrow="t(l.eyebrow)"
       :lines="[t(l.titleLine1), t(l.titleLine2)]"
       :heading-id="headingId"
@@ -39,21 +42,30 @@ const addresses = [
         :icon="Link"
         :title="t(l.swapTitle)"
         :body="t(l.swapBody)"
+        @pointerenter="swap.play()"
       >
         <div :class="css.landingDetails_addresses">
-          <p
-            v-for="address in addresses"
-            :key="address.host"
-            :class="[css.landingDetails_address, address.githq && css.landingDetails_address_githq]"
-          >
+          <p :class="css.landingDetails_address">
             <Lock
               :class="css.landingDetails_lock"
               aria-hidden="true"
             />
-            <span :class="css.landingDetails_hidden">{{ t(address.label) }}: </span
+            <span :class="css.landingDetails_hidden">{{ t(l.swapBefore) }}: </span
             ><span :class="css.landingDetails_scheme">https://</span
-            ><span :class="css.landingDetails_host">{{ address.host }}</span
-            ><span :class="css.landingDetails_path">{{ ADDRESS_PATH }}</span>
+            ><span :class="css.landingDetails_host">{{ GITHUB_HOST }}</span
+            ><span :class="css.landingDetails_path">{{ SWAP_PATH }}</span>
+          </p>
+          <p :class="[css.landingDetails_address, css.landingDetails_address_githq]">
+            <Lock
+              :class="css.landingDetails_lock"
+              aria-hidden="true"
+            />
+            <span :class="css.landingDetails_hidden">{{ t(l.swapAfter) }}: </span
+            ><span :class="css.landingDetails_scheme">https://</span
+            ><HostSwapLoop
+              :step="swap.step"
+              :host="swap.host"
+            />
           </p>
         </div>
       </LandingDetail>
@@ -118,8 +130,14 @@ $gap: 16px;
   }
 }
 
+.landingDetails_title {
+  @include landing-reveal;
+}
+
 // Rows of two (wide and narrow), three and two cards; the widths of a row add up to the whole, gaps included.
 .landingDetails_grid {
+  @include landing-reveal($landing-reveal-stagger);
+
   display: flex;
   flex-wrap: wrap;
   gap: $gap;
@@ -223,10 +241,6 @@ $gap: 16px;
 
 .landingDetails_host {
   font-weight: $font-weight-semibold;
-
-  .landingDetails_address_githq & {
-    color: $color-accent;
-  }
 }
 
 .landingDetails_hidden {

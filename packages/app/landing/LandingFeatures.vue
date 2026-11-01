@@ -1,4 +1,4 @@
-<!-- The landing page's four features (githq.pen "Landing — githq.dev", Feature 01–04): Instant — with the toast of an edit saved to GitHub —, My work, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides. The navigation's "Features" and "Keyboard" land here. -->
+<!-- The landing page's four features (githq.pen "Landing — githq.dev", Feature 01–04): Instant — with the toast of an edit saved to GitHub —, My work, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides. As a feature first scrolls into view, Instant's toast slides up after its screenshot, and Keyboard presses ⌘K — the command menu opens — then S. The navigation's "Features" and "Keyboard" land here. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -21,11 +21,12 @@ import { LandingSectionId } from './landingLinks.js';
 
 const t = useTranslate();
 
-// "Keyboard"'s keys, two to a row; `command` puts ⌘ before the key.
+// "Keyboard"'s keys, two to a row; `command` puts ⌘ before the key. `pressAt`: when the key is pressed after the
+// feature starts to reveal, in ms — ⌘K as the command menu opens, then S.
 const keys = [
-  { key: 'K', command: true, action: l.keyCommandMenu },
+  { key: 'K', command: true, action: l.keyCommandMenu, pressAt: 480 },
   { key: 'C', command: false, action: l.keyNewIssue },
-  { key: 'S', command: false, action: l.keySetStatus },
+  { key: 'S', command: false, action: l.keySetStatus, pressAt: 1100 },
   { key: 'A', command: false, action: l.keyAssignee },
   { key: 'L', command: false, action: l.keyLabels },
   { key: 'O', command: false, action: l.keyOpenOnGitHub },
@@ -92,7 +93,10 @@ const keys = [
             :key="item.key"
             :class="css.landingFeatures_key"
           >
-            <kbd :class="css.landingFeatures_keycap">
+            <kbd
+              :class="[css.landingFeatures_keycap, item.pressAt != null && css.landingFeatures_keycap_pressed]"
+              :style="item.pressAt != null ? { '--press-at': `${item.pressAt}ms` } : undefined"
+            >
               <template v-if="item.command">
                 <Command
                   :class="css.landingFeatures_command"
@@ -140,6 +144,8 @@ const keys = [
 <style lang="scss" module="css">
 // Above the screenshot's fade, as the design has it.
 .landingFeatures_toast {
+  @include landing-reveal(480ms);
+
   position: absolute;
   bottom: 38px;
   left: 28px;
@@ -207,6 +213,23 @@ const keys = [
   border-radius: $radius-md;
 }
 
+// Pressed, a key drops its bottom border; its top moves down by as much, so its box stays where it is.
+.landingFeatures_keycap_pressed {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal='revealed'] & {
+      animation: key-press 240ms ease-out var(--press-at);
+    }
+  }
+}
+
+@keyframes key-press {
+  30%,
+  70% {
+    padding-top: 1px;
+    border-bottom-width: 1px;
+  }
+}
+
 .landingFeatures_command {
   width: 14px;
   height: 14px;
@@ -228,9 +251,22 @@ const keys = [
   position: absolute;
   inset: 0;
   background: rgba($color-bg, 0.6);
+
+  // The list dims as ⌘K opens the command menu.
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal='waiting'] & {
+      opacity: 0;
+    }
+
+    [data-reveal='revealed'] & {
+      transition: opacity $landing-motion-duration ease-out 560ms;
+    }
+  }
 }
 
 .landingFeatures_commandMenu {
+  @include landing-reveal(560ms);
+
   position: absolute;
   top: 56px;
   left: 20px;

@@ -1,4 +1,4 @@
-<!-- One feature of the landing page (githq.pen "Landing — githq.dev", Feature 01–04): its number and kicker, a title, what it does and three points beside a screenshot of the app that fades into the page; side by side on a wide page — the screenshot on either side — and the screenshot under the text on a narrow one. -->
+<!-- One feature of the landing page (githq.pen "Landing — githq.dev", Feature 01–04): its number and kicker, a title, what it does and three points beside a screenshot of the app that fades into the page; side by side on a wide page — the screenshot on either side — and the screenshot under the text on a narrow one. The first time it scrolls into view the text fades up, the screenshot after it (`useReveal`); what the overlay animates keys off its `data-reveal`. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -10,7 +10,9 @@ export interface LandingFeaturePoint {
 </script>
 
 <script lang="ts" setup>
-import { useId } from 'vue';
+import { useId, useTemplateRef } from 'vue';
+
+import { useReveal } from './useReveal.js';
 
 withDefaults(
   defineProps<{
@@ -41,12 +43,15 @@ defineSlots<{
 }>();
 
 const titleId = useId();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 </script>
 
 <template>
   <section
+    ref="section"
     :class="[css.landingFeature, flip && css.landingFeature_flip]"
     :aria-labelledby="titleId"
+    :data-reveal="reveal"
   >
     <div :class="css.landingFeature_copy">
       <p :class="css.landingFeature_eyebrow">
@@ -128,6 +133,8 @@ const titleId = useId();
 }
 
 .landingFeature_copy {
+  @include landing-reveal;
+
   display: flex;
   flex: none;
   flex-direction: column;
@@ -216,6 +223,8 @@ const titleId = useId();
 
 // The app's window, cut to a box: its top left at the size the design shows it, the rest cropped or faded.
 .landingFeature_visual {
+  @include landing-reveal($landing-reveal-stagger);
+
   position: relative;
   flex: 1;
   min-width: 0;

@@ -3,12 +3,13 @@
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, Minus } from 'lucide-vue-next';
-import { useId } from 'vue';
+import { useId, useTemplateRef } from 'vue';
 
 import Wordmark from '@/components/Wordmark.vue';
 
 import * as l from './LandingComparison.loc.js';
 import LandingSectionTitle from './LandingSectionTitle.vue';
+import { useReveal } from './useReveal.js';
 
 /** What a cell of the table says: a check, a dash, "Partly" or a word of its own (a price). */
 type Mark = 'no' | 'partly' | 'yes' | Translation;
@@ -21,6 +22,7 @@ interface ComparisonRow {
 
 const t = useTranslate();
 const headingId = useId();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 
 const rows: ComparisonRow[] = [
   { label: l.nextToCode, marks: ['yes', 'no', 'yes'] },
@@ -34,10 +36,13 @@ const rows: ComparisonRow[] = [
 
 <template>
   <section
+    ref="section"
     :class="css.landingComparison"
     :aria-labelledby="headingId"
+    :data-reveal="reveal"
   >
     <LandingSectionTitle
+      :class="css.landingComparison_title"
       :eyebrow="t(l.eyebrow)"
       :lines="[t(l.titleLine1), t(l.titleLine2)]"
       :heading-id="headingId"
@@ -133,8 +138,14 @@ const rows: ComparisonRow[] = [
   }
 }
 
+.landingComparison_title {
+  @include landing-reveal;
+}
+
 // The design's 480 for the labels and 240 for each column at 1440; 74 for a column on a phone.
 .landingComparison_table {
+  @include landing-reveal($landing-reveal-stagger);
+
   width: 100%;
   table-layout: fixed;
   border-spacing: 0;

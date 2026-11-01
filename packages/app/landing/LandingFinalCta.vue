@@ -1,13 +1,14 @@
 <!-- The landing page's last call to action (githq.pen "Landing — githq.dev", Final CTA): the sygnet, "Your issues are already here", "Sign in with GitHub" — straight to GitHub's consent screen (D21) — and "Star on GitHub", and what GitHub will ask for and why, over a violet glow from below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { useId } from 'vue';
+import { useId, useTemplateRef } from 'vue';
 
 import Sygnet from '@/components/Sygnet.vue';
 
 import LandingActions from './LandingActions.vue';
 import * as l from './LandingFinalCta.loc.js';
 import LandingPermission from './LandingPermission.vue';
+import { useReveal } from './useReveal.js';
 
 const emit = defineEmits<{
   /** "Sign in with GitHub". */
@@ -16,12 +17,15 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const headingId = useId();
+const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 </script>
 
 <template>
   <section
+    ref="section"
     :class="css.landingFinalCta"
     :aria-labelledby="headingId"
+    :data-reveal="reveal"
   >
     <Sygnet :class="css.landingFinalCta_sygnet" />
     <h2
@@ -31,8 +35,11 @@ const headingId = useId();
       {{ t(l.headline) }}
     </h2>
     <p :class="css.landingFinalCta_sub">{{ t(l.sub) }}</p>
-    <LandingActions @sign-in="emit('signIn')" />
-    <LandingPermission />
+    <LandingActions
+      :class="css.landingFinalCta_actions"
+      @sign-in="emit('signIn')"
+    />
+    <LandingPermission :class="css.landingFinalCta_actions" />
   </section>
 </template>
 
@@ -56,10 +63,14 @@ const headingId = useId();
 }
 
 .landingFinalCta_sygnet {
+  @include landing-reveal;
+
   --sygnet-size: 64px;
 }
 
 .landingFinalCta_headline {
+  @include landing-reveal;
+
   max-width: 960px;
   font-family: $font-family-brand;
   font-size: clamp(36px, 4.44cqi, 64px);
@@ -76,6 +87,8 @@ const headingId = useId();
 }
 
 .landingFinalCta_sub {
+  @include landing-reveal;
+
   max-width: 700px;
   font-size: 19px;
   line-height: 1.5;
@@ -84,5 +97,10 @@ const headingId = useId();
   @include landing-mobile {
     font-size: 17px;
   }
+}
+
+// "Sign in with GitHub" and what GitHub will ask for, after the text.
+.landingFinalCta_actions {
+  @include landing-reveal($landing-reveal-stagger);
 }
 </style>
