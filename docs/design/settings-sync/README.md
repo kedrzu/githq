@@ -17,8 +17,10 @@ repositories to choose from, githq says it found your settings and offers to loa
 looks the way you left it. From then on, a repository you start tracking on one computer appears
 on the other the next time you come back to it.
 
-If you leave the box unticked, nothing leaves the browser, and githq works as it does today. A separate settings
-screen, which githq does not have yet, lets you change your mind later.
+If you leave the box unticked, nothing leaves the browser, and githq works as it does today. A settings screen, which githq does
+not have yet, lets you change your mind later. You reach it from the command menu and from the menu on your user, now at the bottom
+of the sidebar, under a logo at the top. It also becomes the one place to start tracking something, so
+[the track buttons around the app go](DECISIONS.md#d15).
 
 Everything about views stays on each device, because it changes constantly and describes what you are looking at: a
 list's layout, sort and filter, how wide a panel is, how items open. When you come back to a repository, githq opens the tab

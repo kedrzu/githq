@@ -22,9 +22,11 @@ projects githq should copy in full.
    repositories" and access to projects. The wording is broad because GitHub has nothing narrower. One
    line under each "Sign in with GitHub" on the landing page warns about it and says that githq only touches
    issues, pull requests and projects; its "Why?" leads to the full explanation on the Privacy page.
-3. **Back in githq: choosing what to track.** githq lists the user's repositories and projects. Their own
-   repositories are pre-selected, and organisation repositories are not. The user adjusts the selection and
-   continues. This choice can be changed later from anywhere in the app.
+3. **Back in githq: choosing what to track.** If the user's account already holds saved settings, githq
+   offers to load them instead ([settings sync](../../settings-sync/README.md)). Otherwise githq lists the user's
+   repositories and projects. Their own repositories are pre-selected, and organisation repositories are not. The
+   user adjusts the selection, may tick the unticked option to keep settings in a private repository in their account,
+   and continues. This choice can be changed later in settings.
 4. **First download.** githq copies the chosen repositories and projects. "What concerns me" (my issues,
    my PRs, my review requests) comes first and is small, so it can be usable within seconds while the rest
    continues in the background.
@@ -58,9 +60,9 @@ projects githq should copy in full.
 
 ## Also part of this path
 
-- **Changing what I track, later.** The same choice as on first sign-in, reached from the sidebar ("Track
-  repositories…") or the command menu. It also covers untracking, and tracking projects as well as
-  repositories.
+- **Changing what I track, later.** The same choice as on first sign-in, in settings, the only place to start
+  tracking something ([why](../../settings-sync/DECISIONS.md#d15)). Settings is reached from the command menu and the
+  menu on the signed-in user. A tracked item's own menu can still stop tracking it.
 - **Account.** Who I'm signed in as, signing out (which also clears the copy kept in this browser), and the
   organisations whose private data is hidden, each with a way to request approval.
 
@@ -68,6 +70,5 @@ projects githq should copy in full.
 
 - How much should the tracking step ask at all? One option is a deliberate step. The other is to skip it,
   track only the user's own repositories, and offer "track more" later.
-- Where does "change what I track" live once the user is inside the app?
 - How much explanation does the broad permission request deserve before GitHub's consent screen? Settled
   by D21: one line on the landing page, the rest on the Privacy page.

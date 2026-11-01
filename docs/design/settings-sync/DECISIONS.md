@@ -259,3 +259,19 @@ checks it.
 > the Git repository is empty or unavailable", the latter while GitHub is still creating it —
 > [Git database](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database).
 
+## D15
+
+**Settings is one screen, reached from the command menu and from the menu on the signed-in user. It is the only place to start
+tracking a repository or project: the `+` buttons and "Track repositories…" in the sidebar go. With no tracked project the sidebar
+shows no Projects section. The signed-in user moves to the bottom of the sidebar, and the top carries the logo, the signet when
+collapsed.** (2026-11-01, owner; that this also removes the offers to track on an untracked repository's and project's own screen,
+and the "Track repositories…" command, is the design agent's reading of "no track buttons", and untracking from a tracked item's
+menu stays)
+
+**Why.** Owner's call on the shape of the app, made together with the settings screen this design introduces. It changes what
+[the screens of the first sign-in path](../githq/ui/first-sign-in.md) describe. A list opened for an untracked repository still works.
+
+> **Checked 2026-11-01:** what goes today: `packages/app/shell/Sidebar.vue:189-193`, `:228-232`, `:265-273`, `:316-321`; the offers on
+> `packages/app/repository/RepositoryPage.vue:211` and `packages/app/projects/ProjectPage.vue:484`; the command in
+> `packages/app/commands/AppCommands.loc.yaml:15`. `/settings` is today the account page and `/settings/tracking` the tracking screen
+> (`packages/app/app/router.options.ts:85-103`).
