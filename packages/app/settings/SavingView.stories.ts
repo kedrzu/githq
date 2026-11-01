@@ -78,7 +78,6 @@ export const Stopped: Story = {
             reason: { kind: 'deleted' },
             base: EMPTY_SETTINGS_DOCUMENT,
             sha: 'abc',
-            etag: null,
             syncedAt: NOW - 3 * 3_600_000,
         },
     },

@@ -13,6 +13,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
+import { readSettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
 const WEB: TrackedRepository = { nameWithOwner: 'acme/web', id: 'R_web' };
@@ -36,10 +37,11 @@ test('turning on with no repository creates it and saves the settings, once GitH
     const { session, tracking, sync, github } = await open();
     tracking.choose({ repositories: [WEB, API], projects: [] });
 
-    expect(await sync.inspect()).toEqual({ kind: 'absent' });
+    const inspection = await inspectUsable(sync);
+    expect(inspection).toEqual({ kind: 'absent', login: github.login });
     // A new repository refuses its first write for a moment.
     github.refuseNextWrites = 1;
-    const turningOn = sync.turnOn();
+    const turningOn = sync.turnOn(inspection);
     await session.clock.advance(1000);
     await turningOn;
 
@@ -59,12 +61,7 @@ test('first contact keeps what either side tracks, and what the file untracked e
         ]),
     );
 
-    const found = await sync.inspect();
-    if (found.kind !== 'found') {
-        throw new Error(`Expected the file, got ${found.kind}`);
-    }
-
-    await sync.turnOn(found);
+    await sync.turnOn(await inspectUsable(sync));
 
     const merged = documentOf([
         { ...API, tracking: false },
@@ -293,7 +290,7 @@ test('creating the repository refused, trying again creates it', async () => {
     tracking.choose({ repositories: [WEB], projects: [] });
     github.refuseCreate = 'Repository creation failed.';
 
-    await sync.turnOn();
+    await sync.turnOn(await inspectUsable(sync));
     expect(sync.state).toEqual({
         state: 'stopped',
         reason: { kind: 'refused', message: 'Repository creation failed.' },
@@ -360,10 +357,143 @@ test('answers for a session that ended are dropped', async () => {
     expect(writes(session.operations())).toEqual([]);
 });
 
+test("githq's own repository left empty — its first write never made — is written into, not taken for another's", async () => {
+    const { session, tracking, sync, github } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    github.repository = { private: true, empty: true };
+
+    const inspection = await inspectUsable(sync);
+    expect(inspection).toEqual({ kind: 'empty', login: github.login });
+    await sync.turnOn(inspection);
+    await session.clock.advance(0);
+
+    expect(session.operations()).not.toContain('POST /user/repos');
+    expect(github.file && parseSettings(github.file.text)).toEqual({ kind: 'ok', document: tracking.document });
+    expect(sync.state).toMatchObject({ state: 'on', sha: github.file?.sha });
+});
+
+test('trying again after creating was refused finds a file saved since: it waits for the word to combine (T6)', async () => {
+    const { session, tracking, sync, github } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    github.refuseCreate = 'Repository creation failed.';
+    await sync.turnOn(await inspectUsable(sync));
+
+    // Another device saved settings meanwhile, untracking web.
+    github.repository = { private: true };
+    github.writeFile(
+        documentOf([
+            { ...WEB, tracking: false },
+            { ...DOCS, tracking: true },
+        ]),
+    );
+    const before = session.operations().length;
+    const found = await sync.retry();
+    await session.clock.advance(0);
+
+    expect(found).toMatchObject({ kind: 'found', sha: github.file?.sha });
+    expect(sync.state).toEqual({ state: 'off' });
+    expect(tracking.repositories).toEqual([WEB]);
+    expect(writes(session.operations().slice(before))).toEqual([]);
+
+    if (!found) {
+        throw new Error('Expected the file');
+    }
+
+    await sync.turnOn(found);
+    expect(tracking.repositories).toEqual([DOCS]);
+    expect(sync.state).toMatchObject({ state: 'on' });
+});
+
+test.each([
+    ['a refusal', { status: 451, body: { message: 'Repository access blocked' } }, 'refused'],
+    ['a directory', { status: 200, body: [{ name: 'settings.json', type: 'file' }] }, 'unreadable'],
+    ['a file too large to send', { status: 200, body: { encoding: 'none', content: '', sha: 'big' } }, 'unreadable'],
+] as const)('a read answered with %s stops syncing', async (_, answer, kind) => {
+    const { session, tracking, sync, github } = await turnedOn();
+    github.readAnswer = answer;
+
+    tracking.track({ repository: API });
+    await session.clock.advance(0);
+
+    expect(sync.state).toMatchObject({
+        state: 'stopped',
+        reason: kind === 'refused' ? { kind, message: 'Repository access blocked' } : { kind },
+    });
+    expect(writes(session.operations())).toEqual([]);
+});
+
+test('turning on meets a directory where the file should be: unusable, unreadable', async () => {
+    const { sync, github } = await open();
+    github.repository = { private: true };
+    github.readAnswer = { status: 200, body: [] };
+
+    expect(await sync.inspect()).toEqual({ kind: 'unusable', reason: { kind: 'unreadable' } });
+});
+
+test('the file deleted from a repository still there stops syncing: what is left is not githq’s', async () => {
+    const { session, sync, github } = await turnedOn();
+    github.file = null;
+
+    session.setVisible(true);
+    await session.clock.advance(0);
+
+    expect(sync.state).toMatchObject({ state: 'stopped', reason: { kind: 'foreign' } });
+});
+
+test('a write answered after another tab saved a later version keeps that version', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const later = documentOf([
+        { ...WEB, tracking: true },
+        { ...API, tracking: true },
+        { ...DOCS, tracking: true },
+    ]);
+    // Another tab reads this write and saves a version written over it, before this write's answer arrives.
+    github.afterNextWrite = () => {
+        github.writeFile(later);
+        tracking.saveSaving({ state: 'on', base: later, sha: github.file?.sha ?? null, etag: null, syncedAt: 0 });
+    };
+
+    tracking.track({ repository: API });
+    await session.clock.advance(0);
+
+    expect(sync.state).toMatchObject({ state: 'on', base: later, sha: github.file?.sha });
+});
+
+test("a file found for a user who signed out since is not combined into the next one's settings", async () => {
+    const { session, tracking, sync, github } = await open();
+    github.repository = { private: true };
+    github.writeFile(documentOf([{ ...DOCS, tracking: true }]));
+    const found = await inspectUsable(sync);
+
+    session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
+    await tracking.ready();
+    await session.clock.advance(0);
+    const theirs = tracking.document;
+    await sync.turnOn(found);
+    await session.clock.advance(0);
+
+    expect(tracking.document).toEqual(theirs);
+    expect(sync.state).toEqual({ state: 'off' });
+    expect(writes(session.operations())).toEqual([]);
+});
+
+test('the slot of an earlier build, stopped with an ETag kept, is read without it', () => {
+    expect(
+        readSettingsSaving({
+            state: 'stopped',
+            reason: { kind: 'deleted' },
+            base: documentOf([]),
+            sha: 'abc',
+            etag: '"abc"',
+            syncedAt: 1,
+        }),
+    ).toEqual({ state: 'stopped', reason: { kind: 'deleted' }, base: documentOf([]), sha: 'abc', syncedAt: 1 });
+});
+
 /** The fake settings repository of one user, behind the REST answers of the test session. */
 interface SettingsGitHub {
-    /** `null`: there is none. */
-    repository: { private: boolean } | null;
+    /** `null`: there is none. `empty`: no commit yet — created, the file never written. */
+    repository: { private: boolean; empty?: boolean } | null;
     file: { text: string; sha: string } | null;
     created: boolean;
     /** The statuses answered to the settings file's reads and writes, in order. */
@@ -372,6 +502,10 @@ interface SettingsGitHub {
     refuseNextWrites: number;
     /** Run before the next write is answered — another device writing first. */
     beforeNextWrite: (() => void) | null;
+    /** Run once the next write is done, before it is answered. */
+    afterNextWrite: (() => void) | null;
+    /** What every read of the file is answered with instead, while set. */
+    readAnswer: TestRestAnswer | null;
     /** The next write is done, but its answer does not arrive. */
     loseNextWriteAnswer: boolean;
     /** Every request fails with a 502. */
@@ -407,7 +541,7 @@ async function open(login = `user-${crypto.randomUUID()}`) {
 async function turnedOn() {
     const opened = await open();
     opened.tracking.choose({ repositories: [WEB], projects: [] });
-    await opened.sync.turnOn();
+    await opened.sync.turnOn(await inspectUsable(opened.sync));
     await opened.session.clock.advance(0);
     opened.session.github.requests.length = 0;
     return opened;
@@ -425,6 +559,8 @@ function createSettingsGitHub(login: string) {
         answered: [],
         refuseNextWrites: 0,
         beforeNextWrite: null,
+        afterNextWrite: null,
+        readAnswer: null,
         loseNextWriteAnswer: false,
         down: false,
         refuseWrites: null,
@@ -436,6 +572,9 @@ function createSettingsGitHub(login: string) {
                 text: typeof content === 'string' ? content : serializeSettings(content),
                 sha: `sha${++version}`,
             };
+            if (state.repository) {
+                state.repository = { ...state.repository, empty: false };
+            }
         },
     };
 
@@ -456,11 +595,19 @@ function createSettingsGitHub(login: string) {
                     return { status: 422, body: { message: state.refuseCreate } };
                 }
 
-                state.repository = { private: true };
+                state.repository = { private: true, empty: true };
                 state.created = true;
                 return { status: 201, body: { name: 'githq-settings' } };
+            case `GET ${repositoryPath}/commits`:
+                if (!state.repository) {
+                    return { status: 404, body: { message: 'Not Found' } };
+                }
+
+                return state.repository.empty
+                    ? { status: 409, body: { message: 'Git Repository is empty.' } }
+                    : { status: 200, body: [{ sha: 'commit' }] };
             case `GET ${filePath}`:
-                return record(readFile(request));
+                return record(state.readAnswer ?? readFile(request));
             case `PUT ${filePath}`:
                 return record(writeFile(request));
             default:
@@ -520,18 +667,31 @@ function createSettingsGitHub(login: string) {
 
         const binary = atob(body.content);
         state.writeFile(new TextDecoder().decode(Uint8Array.from(binary, char => char.codePointAt(0) ?? 0)));
+        const written = state.file?.sha;
+        state.afterNextWrite?.();
+        state.afterNextWrite = null;
         if (state.loseNextWriteAnswer) {
             state.loseNextWriteAnswer = false;
             return undefined;
         }
 
-        return { status: 200, body: { content: { sha: state.file?.sha } } };
+        return { status: 200, body: { content: { sha: written } } };
     }
 
     function record(result: TestRestAnswer | undefined) {
         state.answered.push(result?.status ?? 502);
         return result;
     }
+}
+
+/** What inspecting the account found, which a test expects turning on to go on from. */
+async function inspectUsable(sync: SettingsSync) {
+    const inspection = await sync.inspect();
+    if (inspection.kind === 'unusable') {
+        throw new Error(`Expected a usable repository, got ${inspection.reason.kind}`);
+    }
+
+    return inspection;
 }
 
 function documentOf(repositories: SettingsRepository[]): SettingsDocument {

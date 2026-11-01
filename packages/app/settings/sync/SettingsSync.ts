@@ -2,12 +2,14 @@ import { GitHubApiError } from '@githq/github/GitHubApiError.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { createSettingsRepository } from '@githq/github/settings/createSettingsRepository.js';
 import { getSettingsRepository } from '@githq/github/settings/getSettingsRepository.js';
+import { isSettingsRepositoryEmpty } from '@githq/github/settings/isSettingsRepositoryEmpty.js';
 import { readSettingsFile } from '@githq/github/settings/readSettingsFile.js';
 import { writeSettingsFile } from '@githq/github/settings/writeSettingsFile.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
@@ -24,15 +26,26 @@ import type { SettingsSaving, StoppedReason } from './SettingsSaving.js';
 
 /** What turning syncing on would meet in the user's account (settings-sync T3, T6). */
 export type SettingsInspection =
-    /** No settings repository: turning on creates it. */
-    | { readonly kind: 'absent' }
-    /** Settings saved before, from this or another device: turning on combines them with this one's (D9). */
-    | ({ readonly kind: 'found' } & FoundSettings)
+    | NoSettings
+    | FoundSettings
     /** A repository that cannot be used, and why. */
     | { readonly kind: 'unusable'; readonly reason: StoppedReason };
 
-/** The settings file as {@link SettingsSync.inspect} found it. */
+/**
+ * No settings file, so turning on writes one: `absent` — no repository, which it creates; `empty` — the repository
+ * githq created before, its first write never made (an answer lost, a sign-out, a refusal), which it writes into.
+ */
+export interface NoSettings {
+    readonly kind: 'absent' | 'empty';
+    /** The user it was found for: turning on refuses it for another. */
+    readonly login: string;
+}
+
+/** Settings saved before, from this or another device: turning on combines them with this one's (D9). */
 export interface FoundSettings {
+    readonly kind: 'found';
+    /** The user it was found for: turning on refuses it for another. */
+    readonly login: string;
     readonly document: SettingsDocument;
     /** The version's blob sha. */
     readonly sha: string;
@@ -110,9 +123,9 @@ export const SettingsSync = defineService({
         };
 
         /**
-         * Looks at what the user's account holds for turning syncing on: no repository, a usable file, or a
-         * repository that cannot be used — public, without the file, or with one this build cannot read. Rejects
-         * when signed out or when GitHub cannot be reached.
+         * Looks at what the user's account holds for turning syncing on: no repository, githq's own still empty, a
+         * usable file, or a repository that cannot be used — public, someone else's without the file, or with one
+         * this build cannot read. Rejects when signed out or when GitHub cannot be reached.
          */
         async function inspect(): Promise<SettingsInspection> {
             const current = assertSession();
@@ -129,45 +142,67 @@ export const SettingsSync = defineService({
         }
 
         /**
-         * Turns syncing on. With nothing `found` ({@link inspect} found no repository) it creates the repository and
-         * saves this device's settings in it. With a file found, the two are combined as on first contact (D9): what
-         * either tracks stays, and what the file untracked ends untracked here; the result is saved when it differs
-         * from the file. A refusal stops syncing; rejects when signed out or when GitHub cannot be reached.
+         * Turns syncing on from what {@link inspect} found for the signed-in user; one found for another user is
+         * ignored. With no repository it creates it, and with no file it saves this device's settings in it. With a
+         * file found, the two are combined as on first contact (D9): what either tracks stays, and what the file
+         * untracked ends untracked here; the result is saved when it differs from the file. A refusal stops syncing;
+         * rejects when signed out or when GitHub cannot be reached.
          */
-        async function turnOn(found?: FoundSettings) {
+        async function turnOn(inspection: NoSettings | FoundSettings) {
             const current = assertSession();
-            if (!found) {
-                try {
-                    await createSettingsRepository(current.rest);
-                } catch (error) {
-                    const failure = classify(error);
-                    if (failure.kind === 'transient' || !isCurrent(current)) {
-                        throw error;
-                    }
-
-                    tracking.saveSaving({ state: 'stopped', reason: failure.reason });
-                    return;
-                }
-
-                if (!isCurrent(current)) {
-                    return;
-                }
-
-                // The sync writes the file: a new repository may refuse it for a moment, which it takes for a conflict.
-                tracking.saveSaving({
-                    state: 'on',
-                    base: EMPTY_SETTINGS_DOCUMENT,
-                    sha: null,
-                    etag: null,
-                    syncedAt: null,
-                });
-                await sync();
+            if (inspection.login !== current.account.login) {
                 return;
             }
 
+            switch (inspection.kind) {
+                case 'absent':
+                    try {
+                        await createSettingsRepository(current.rest);
+                    } catch (error) {
+                        const failure = classify(error);
+                        if (failure.kind === 'transient' || !isCurrent(current)) {
+                            throw error;
+                        }
+
+                        tracking.saveSaving({ state: 'stopped', reason: failure.reason });
+                        return;
+                    }
+
+                    if (!isCurrent(current)) {
+                        return;
+                    }
+
+                    await startEmpty();
+                    return;
+                case 'empty':
+                    await startEmpty();
+                    return;
+                case 'found':
+                    await startFrom(inspection);
+                    return;
+                default:
+                    assertNever(inspection);
+            }
+        }
+
+        /** Goes on with a repository without the file: the sync writes it. */
+        async function startEmpty() {
+            // A new repository may refuse the write for a moment, which the sync takes for a conflict.
+            tracking.saveSaving({
+                state: 'on',
+                base: EMPTY_SETTINGS_DOCUMENT,
+                sha: null,
+                etag: null,
+                syncedAt: null,
+            });
+            await sync();
+        }
+
+        /** Combines this device's settings with the file found (D9), and goes on from it. */
+        async function startFrom(found: FoundSettings) {
             const local = tracking.document;
             const merged = mergeSettings({ local, remote: found.document, base: EMPTY_SETTINGS_DOCUMENT });
-            if (!isSame(merged, local)) {
+            if (!deepEquals(merged, local)) {
                 tracking.replaceDocument(merged);
             }
 
@@ -189,38 +224,43 @@ export const SettingsSync = defineService({
 
         /**
          * Tries again after syncing stopped: checks the repository again and, when it can be used, goes on from the
-         * file as this device last saw it — or, having never seen it, as on first contact. A repository gone stays
-         * gone: it is never created again here (T8). One this device never saw — GitHub refused creating it — is
-         * created, as turning on would. Rejects when signed out or when GitHub cannot be reached.
+         * file as this device last saw it. A repository gone stays gone: it is never created again here (T8). One
+         * this device never saw — GitHub refused creating it — is created, as turning on would; githq's own still
+         * empty is written into. A file this device never saw is combined only on the user's word (T6): syncing goes
+         * off, and the file comes back for {@link turnOn}, nothing else changed. Rejects when signed out or when
+         * GitHub cannot be reached.
          */
-        async function retry() {
+        async function retry(): Promise<FoundSettings | null> {
             const saving = tracking.readSaving();
             if (saving.state !== 'stopped') {
-                return;
+                return null;
             }
 
             const current = assertSession();
             const inspection = await inspect();
             if (!isCurrent(current)) {
-                return;
+                return null;
             }
 
             switch (inspection.kind) {
                 case 'absent':
-                    if (!saving.base) {
-                        await turnOn();
-                        return;
+                    if (saving.base) {
+                        stop({ kind: 'deleted' });
+                    } else {
+                        await turnOn(inspection);
                     }
 
-                    stop({ kind: 'deleted' });
-                    return;
+                    return null;
+                case 'empty':
+                    await turnOn(inspection);
+                    return null;
                 case 'unusable':
                     stop(inspection.reason);
-                    return;
+                    return null;
                 case 'found':
                     if (!saving.base) {
-                        await turnOn(inspection);
-                        return;
+                        tracking.saveSaving({ state: 'off' });
+                        return inspection;
                     }
 
                     tracking.saveSaving({
@@ -231,9 +271,9 @@ export const SettingsSync = defineService({
                         syncedAt: saving.syncedAt ?? null,
                     });
                     await sync();
-                    return;
+                    return null;
                 default:
-                    assertNever(inspection);
+                    return assertNever(inspection);
             }
         }
 
@@ -286,12 +326,15 @@ export const SettingsSync = defineService({
                     return;
                 }
 
-                const read = await readSettingsFile(current.rest, {
-                    owner: current.account.login,
-                    // A conflict says the file moved on: read it whole.
-                    etag: round === 0 ? saving.etag : null,
-                });
-                if (!isCurrent(current) || tracking.readSaving().state !== 'on') {
+                const { etag: heldEtag } = saving;
+                const read = await ask(current, () =>
+                    readSettingsFile(current.rest, {
+                        owner: current.account.login,
+                        // A conflict says the file moved on: read it whole.
+                        etag: round === 0 ? heldEtag : null,
+                    }),
+                );
+                if (!read || tracking.readSaving().state !== 'on') {
                     return;
                 }
 
@@ -303,11 +346,14 @@ export const SettingsSync = defineService({
                     case 404:
                         // Gone — unless this device created the repository and has not written the file yet.
                         if (saving.sha !== null) {
-                            stop({ kind: 'deleted' }, saving);
+                            await stopForMissingFile(current);
                             return;
                         }
 
                         break;
+                    case 'unreadable':
+                        stop({ kind: 'unreadable' });
+                        return;
                     case 200: {
                         const parsed = parseSettings(read.text);
                         if (parsed.kind !== 'ok') {
@@ -330,28 +376,37 @@ export const SettingsSync = defineService({
 
                 const local = tracking.document;
                 const merged = mergeSettings({ local, remote, base: saving.base });
-                if (!isSame(merged, local)) {
+                if (!deepEquals(merged, local)) {
                     tracking.replaceDocument(merged);
                 }
 
-                if (isSame(merged, remote) && sha !== null) {
-                    keepOn({ state: 'on', base: remote, sha, etag, syncedAt: clock.now() });
+                if (deepEquals(merged, remote) && sha !== null) {
+                    keepOn({ state: 'on', base: remote, sha, etag, syncedAt: clock.now() }, saving.sha);
                     return;
                 }
 
                 // Taken the file in: what is left to save is what this device adds to it, also if the write is lost.
-                saving = { state: 'on', base: remote, sha, etag, syncedAt: saving.syncedAt };
-                if (!keepOn(saving)) {
-                    return;
+                const seen: SettingsSaving = { state: 'on', base: remote, sha, etag, syncedAt: saving.syncedAt };
+                if (!keepOn(seen, saving.sha)) {
+                    // Another tab synced meanwhile: go on from what it saw.
+                    saving = tracking.readSaving();
+                    continue;
                 }
 
-                const written = await write(current, merged, sha);
+                const written = await ask(current, () =>
+                    writeSettingsFile(current.rest, {
+                        owner: current.account.login,
+                        text: serializeSettings(merged),
+                        sha,
+                    }),
+                );
                 if (!written) {
                     return;
                 }
 
                 if (written.kind === 'written') {
-                    keepOn({ state: 'on', base: merged, sha: written.sha, etag: null, syncedAt: clock.now() });
+                    // Another tab may have saved a newer version since: the next sync merges from it.
+                    keepOn({ state: 'on', base: merged, sha: written.sha, etag: null, syncedAt: clock.now() }, sha);
                     return;
                 }
 
@@ -363,14 +418,26 @@ export const SettingsSync = defineService({
             }
         }
 
-        /** Keeps `next` unless syncing was turned off or stopped meanwhile, here or in another tab; whether it did. */
-        function keepOn(next: SettingsSaving) {
-            if (tracking.readSaving().state !== 'on') {
+        /**
+         * Keeps `next` while syncing is on and the slot holds the version `expected` it was worked out from; whether
+         * it did. Another tab may have turned syncing off or stopped it, or saved a later version, meanwhile.
+         */
+        function keepOn(next: SettingsSaving, expected: string | null) {
+            const saving = tracking.readSaving();
+            if (saving.state !== 'on' || saving.sha !== expected) {
                 return false;
             }
 
             tracking.saveSaving(next);
             return true;
+        }
+
+        /** The file is gone while syncing was on: the repository is gone (D12), or what is left of it is not githq's. */
+        async function stopForMissingFile(current: Session) {
+            const repository = await ask(current, () => getSettingsRepository(current.rest, current.account.login));
+            if (repository) {
+                stop(repository.exists ? { kind: 'foreign' } : { kind: 'deleted' });
+            }
         }
 
         function pause(ms: number) {
@@ -379,15 +446,14 @@ export const SettingsSync = defineService({
             });
         }
 
-        /** Writes `document` over the version `sha`; `null` when it was not written, or syncing stopped. */
-        async function write(current: Session, document: SettingsDocument, sha: string | null) {
+        /**
+         * Asks GitHub `request` for `current`; `null` when the session ended, or GitHub refused it and syncing stopped.
+         * Rejects when GitHub cannot be reached.
+         */
+        async function ask<T>(current: Session, request: () => Promise<T>): Promise<T | null> {
             try {
-                const written = await writeSettingsFile(current.rest, {
-                    owner: current.account.login,
-                    text: serializeSettings(document),
-                    sha,
-                });
-                return isCurrent(current) ? written : null;
+                const answer = await request();
+                return isCurrent(current) ? answer : null;
             } catch (error) {
                 const failure = classify(error);
                 if (!isCurrent(current)) {
@@ -395,7 +461,7 @@ export const SettingsSync = defineService({
                 }
 
                 if (failure.kind === 'stop') {
-                    stop(failure.reason, tracking.readSaving());
+                    stop(failure.reason);
                     return null;
                 }
 
@@ -407,7 +473,7 @@ export const SettingsSync = defineService({
             const owner = current.account.login;
             const repository = await getSettingsRepository(current.rest, owner);
             if (!repository.exists) {
-                return { kind: 'absent' };
+                return { kind: 'absent', login: owner };
             }
 
             if (!repository.private) {
@@ -417,7 +483,11 @@ export const SettingsSync = defineService({
             const read = await readSettingsFile(current.rest, { owner, etag: null });
             switch (read.status) {
                 case 404:
-                    return { kind: 'unusable', reason: { kind: 'foreign' } };
+                    return (await isSettingsRepositoryEmpty(current.rest, owner))
+                        ? { kind: 'empty', login: owner }
+                        : { kind: 'unusable', reason: { kind: 'foreign' } };
+                case 'unreadable':
+                    return { kind: 'unusable', reason: { kind: 'unreadable' } };
                 case 304:
                     // Not asked conditionally; GitHub would not answer so.
                     throw new GitHubApiError({
@@ -428,7 +498,13 @@ export const SettingsSync = defineService({
                     const parsed = parseSettings(read.text);
                     switch (parsed.kind) {
                         case 'ok':
-                            return { kind: 'found', document: parsed.document, sha: read.sha, etag: read.etag };
+                            return {
+                                kind: 'found',
+                                login: owner,
+                                document: parsed.document,
+                                sha: read.sha,
+                                etag: read.etag,
+                            };
                         case 'newer':
                             return { kind: 'unusable', reason: { kind: 'newer', version: parsed.version } };
                         case 'unreadable':
@@ -451,7 +527,6 @@ export const SettingsSync = defineService({
                         reason,
                         base: from.base,
                         sha: from.sha,
-                        etag: from.etag,
                         syncedAt: from.syncedAt,
                     });
                     break;
@@ -525,8 +600,4 @@ function classify(error: unknown): Failure {
     }
 
     return { kind: 'stop', reason: { kind: 'refused', message: error.githubMessage ?? error.message } };
-}
-
-function isSame(a: SettingsDocument, b: SettingsDocument) {
-    return serializeSettings(a) === serializeSettings(b);
 }

@@ -9,6 +9,7 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import { computed, shallowRef } from 'vue';
 
@@ -29,6 +30,7 @@ import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingPersistence } from './TrackingPersistence.js';
 import type { PersistedTracking } from './TrackingPersistence.js';
 import { REPOSITORY_DOWNLOAD_PHASES } from './TrackingTypes.js';
+import { getTrackedKey } from './utils/getTrackedKey.js';
 import type { TrackingReference } from './utils/parseTrackingReference.js';
 import type {
     CandidateProject,
@@ -282,7 +284,7 @@ export const TrackingStore = defineService({
          */
         function readSaving(): SettingsSaving {
             const stored = loadedRef.value ? slot.read() : null;
-            if (stored && JSON.stringify(stored.saving) !== JSON.stringify(savingRef.value)) {
+            if (stored && !deepEquals(stored.saving, savingRef.value)) {
                 savingRef.value = stored.saving;
             }
 
@@ -313,7 +315,7 @@ export const TrackingStore = defineService({
         function getSyncState(target: { kind: 'repository'; nameWithOwner: string }): RepositorySyncState | undefined;
         function getSyncState(target: { kind: 'project'; id: string }): ProjectSyncState | undefined;
         function getSyncState(target: TrackedTarget): TrackedSyncState | undefined {
-            const state = syncRef.value.get(getSyncKey(target));
+            const state = syncRef.value.get(getTrackedKey(target));
             return state?.kind === target.kind ? state : undefined;
         }
 
@@ -336,7 +338,7 @@ export const TrackingStore = defineService({
                 return;
             }
 
-            const key = getSyncKey(target);
+            const key = getTrackedKey(target);
             const before = syncRef.value.get(key);
             const state: TrackedSyncState =
                 target.kind === 'repository'
@@ -358,7 +360,7 @@ export const TrackingStore = defineService({
 
         /** How far the first download of a tracked repository or project is; reactive. */
         function getProgress(target: TrackedTarget): TrackingProgress {
-            const state = syncRef.value.get(getSyncKey(target));
+            const state = syncRef.value.get(getTrackedKey(target));
             if (!state) {
                 return { state: 'downloading', done: 0, total: null };
             }
@@ -583,7 +585,7 @@ export const TrackingStore = defineService({
         /** No longer tracked: its sync state goes, and the listeners drop its copy. */
         function dropped(target: TrackedTarget) {
             const current = session;
-            const key = getSyncKey(target);
+            const key = getTrackedKey(target);
             const state = syncRef.value.get(key);
             if (current && state) {
                 const next = new Map(syncRef.value);
@@ -629,7 +631,7 @@ export const TrackingStore = defineService({
                 }
                 case 'trackedSyncState': {
                     const next = new Map(syncRef.value);
-                    const key = getSyncKey(toTarget(message.state));
+                    const key = getTrackedKey(message.state);
                     if (message.deleted) {
                         next.delete(key);
                     } else {
@@ -695,7 +697,7 @@ export const TrackingStore = defineService({
                 ? { chosen: stored.chosen, document: stored.document }
                 : takeOver(persisted?.tracking ?? null);
             savingRef.value = stored?.saving ?? SETTINGS_SAVING_OFF;
-            syncRef.value = new Map((persisted?.syncStates ?? []).map(state => [getSyncKey(toTarget(state)), state]));
+            syncRef.value = new Map((persisted?.syncStates ?? []).map(state => [getTrackedKey(state), state]));
             loadedRef.value = true;
             current.inbox.open();
         }
@@ -750,16 +752,6 @@ function startProjectState(id: string): ProjectSyncState {
         updatedAt: null,
         lastSuccessAt: null,
     };
-}
-
-function getSyncKey(target: TrackedTarget) {
-    return target.kind === 'repository' ? `repository:${target.nameWithOwner}` : `project:${target.id}`;
-}
-
-function toTarget(state: TrackedSyncState): TrackedTarget {
-    return state.kind === 'repository'
-        ? { kind: 'repository', nameWithOwner: state.nameWithOwner }
-        : { kind: 'project', id: state.id };
 }
 
 /** What the slot holds, `null` when nothing understood: a document of another version is not. */

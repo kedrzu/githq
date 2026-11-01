@@ -1,4 +1,4 @@
-<!-- The Saving to GitHub section of Settings (settings-sync T3–T8) on the settings sync: turning saving on — GitHub asked first, a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped. What combining would change is worked out from this device's settings as they are, and named with how many items each repository it untracks keeps here. -->
+<!-- The Saving to GitHub section of Settings (settings-sync T3–T8) on the settings sync: turning saving on — GitHub asked first, a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped, which shows a file found the same way. What combining would change is worked out from this device's settings as they are, and named with how many items each repository it untracks keeps here. -->
 <script lang="ts" setup>
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -59,7 +59,8 @@ async function turnOn() {
     const inspection = await sync.inspect();
     switch (inspection.kind) {
       case 'absent':
-        await sync.turnOn();
+      case 'empty':
+        await sync.turnOn(inspection);
         connecting.value = { kind: 'idle' };
         break;
       case 'found':
@@ -94,7 +95,10 @@ async function combine() {
 
 async function retry() {
   try {
-    await sync.retry();
+    const found = await sync.retry();
+    if (found) {
+      connecting.value = { kind: 'found', found };
+    }
   } catch (error) {
     logger.warn('Syncing the settings could not be tried again', { error });
   }

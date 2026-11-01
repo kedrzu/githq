@@ -15,10 +15,14 @@ export interface ReadSettingsFileParams {
     readonly etag: string | null;
 }
 
-/** The file did not change since the ETag, there is none (or no repository), or the file as it is now. */
+/**
+ * The file did not change since the ETag, there is none (or no repository), the file as it is now, or an answer that
+ * is not a file githq can read — a directory of that name, or a file too large for GitHub to send (`encoding: none`).
+ */
 export type ReadSettingsFileResult =
     | { readonly status: 304 }
     | { readonly status: 404 }
+    | { readonly status: 'unreadable' }
     | {
           readonly status: 200;
           readonly text: string;
@@ -29,7 +33,7 @@ export type ReadSettingsFileResult =
 
 /**
  * Reads `settings.json` of the user's settings repository (`GET /repos/{owner}/githq-settings/contents/settings.json`)
- * with `If-None-Match`. Throws `GitHubApiError` on any refusal but a 404, and when the answer is not a file.
+ * with `If-None-Match`. Throws `GitHubApiError` on any refusal but a 404.
  */
 export async function readSettingsFile(
     rest: GitHubRestRequester,
@@ -57,7 +61,7 @@ export async function readSettingsFile(
         typeof payload.content !== 'string' ||
         typeof payload.sha !== 'string'
     ) {
-        throw new GitHubApiError({ status: answer.status, message: 'GitHub file answer is malformed' });
+        return { status: 'unreadable' };
     }
 
     return {

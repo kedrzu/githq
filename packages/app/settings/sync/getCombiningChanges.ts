@@ -1,4 +1,5 @@
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
 
 import { mergeSettings } from './mergeSettings.js';
 import { EMPTY_SETTINGS_DOCUMENT } from './SettingsDocument.js';
@@ -35,7 +36,7 @@ export function getCombiningChanges(local: SettingsDocument, remote: SettingsDoc
     const untracked: CombiningEntry[] = [];
 
     for (const { target, name, tracking } of getEntries(merged)) {
-        const key = getKey(target);
+        const key = getTrackedKey(target);
         const here = trackedHere.has(key);
         if (tracking && !here) {
             download.push({ target, name });
@@ -53,7 +54,7 @@ function getTracked(document: SettingsDocument) {
     return new Set(
         getEntries(document)
             .filter(entry => entry.tracking)
-            .map(entry => getKey(entry.target)),
+            .map(entry => getTrackedKey(entry.target)),
     );
 }
 
@@ -70,8 +71,4 @@ function getEntries(document: SettingsDocument) {
             tracking: project.tracking,
         })),
     ];
-}
-
-function getKey(target: TrackedTarget) {
-    return target.kind === 'repository' ? `repository:${target.nameWithOwner}` : `project:${target.id}`;
 }

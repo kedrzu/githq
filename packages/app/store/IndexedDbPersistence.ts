@@ -14,6 +14,7 @@ import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/
 import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
 
 import type { ItemDetailPersistenceShape, ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
@@ -232,12 +233,12 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
 
     async function saveSyncState(login: string, state: TrackedSyncState) {
         const db = await getOpen(login);
-        await db.put('trackedSync', { key: getSyncStateKey(state), state });
+        await db.put('trackedSync', { key: getTrackedKey(state), state });
     }
 
     async function deleteSyncState(login: string, state: TrackedSyncState) {
         const db = await getOpen(login);
-        await db.delete('trackedSync', getSyncStateKey(state));
+        await db.delete('trackedSync', getTrackedKey(state));
     }
 
     async function loadProjects(login: string): Promise<PersistedProjects> {
@@ -340,8 +341,4 @@ function openDatabase(name: string) {
             db.createObjectStore('trackedSync', { keyPath: 'key' });
         },
     });
-}
-
-function getSyncStateKey(state: TrackedSyncState) {
-    return state.kind === 'repository' ? `repository:${state.nameWithOwner}` : `project:${state.id}`;
 }

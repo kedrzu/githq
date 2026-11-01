@@ -45,7 +45,6 @@ export type SettingsSaving =
           /** What `on` had when it stopped, for trying again from it; none when it stopped while connecting. */
           readonly base?: SettingsDocument;
           readonly sha?: string | null;
-          readonly etag?: string | null;
           /** When the settings and the file last agreed, before it stopped (epoch ms). */
           readonly syncedAt?: number | null;
       };
@@ -84,11 +83,12 @@ export function readSettingsSaving(stored: unknown): SettingsSaving {
                 return SETTINGS_SAVING_OFF;
             }
 
+            // The slot of an earlier build keeps an `etag` here too, unused.
             const base = readSettingsDocument(stored.base);
-            const { sha, etag } = stored;
+            const { sha } = stored;
             const syncedAt = typeof stored.syncedAt === 'number' ? stored.syncedAt : null;
-            return base && (sha === null || typeof sha === 'string') && (etag === null || typeof etag === 'string')
-                ? { state: 'stopped', reason, base, sha, etag, syncedAt }
+            return base && (sha === null || typeof sha === 'string')
+                ? { state: 'stopped', reason, base, sha, syncedAt }
                 : { state: 'stopped', reason };
         }
         default:
