@@ -77,6 +77,29 @@
                     "^build",
                     "typecheck"
                 ]
+            },
+            "build:local": {
+                "cache": true,
+                "inputs": [
+                    "production",
+                    "^production"
+                ],
+                "outputs": [
+                    "{projectRoot}/.output-local"
+                ]
+            },
+            "build:desktop": {
+                "cache": true,
+                "inputs": [
+                    "production",
+                    "^production",
+                    {
+                        "env": "GITHQ_GITHUB_CLIENT_ID"
+                    }
+                ],
+                "outputs": [
+                    "{projectRoot}/.output-desktop"
+                ]
             }
         }
     }
