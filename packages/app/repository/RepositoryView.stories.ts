@@ -34,12 +34,12 @@ const meta = {
         list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'milestone'),
         openCount: 6,
         projects: [
-            { id: 'PVT_q4', title: 'Platform Q4', count: 5, to: '/orgs/sigma-clinic/projects/1', external: false },
+            { id: 'PVT_q4', title: 'Platform Q4', count: 5, to: '/orgs/skyline-labs/projects/1', external: false },
             {
                 id: 'PVT_triage',
                 title: 'Bug triage',
                 count: 2,
-                to: 'https://github.com/orgs/sigma-clinic/projects/2',
+                to: 'https://github.com/orgs/skyline-labs/projects/2',
                 external: true,
             },
         ],

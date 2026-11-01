@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 
 /** K1: a label GitHub refused — which edit, why, and the way to GitHub's labels. */
 export const EditRejected: Story = {
-    args: { title: 'Label “regression” wasn’t added to sigma-clinic/portal#1187' },
+    args: { title: 'Label “regression” wasn’t added to skyline-labs/portal#1187' },
     render: args =>
         defineComponent({
             setup() {
@@ -62,13 +62,13 @@ export const EditRejected: Story = {
                             >
                                 {{
                                     default: () =>
-                                        'GitHub refused it: the label no longer exists in sigma-clinic/portal. The label was removed again.',
+                                        'GitHub refused it: the label no longer exists in skyline-labs/portal. The label was removed again.',
                                     actions: () => (
                                         <Button
                                             variant="secondary"
                                             size="sm"
                                             icon={ArrowUpRight}
-                                            link="https://github.com/sigma-clinic/portal/labels"
+                                            link="https://github.com/skyline-labs/portal/labels"
                                         >
                                             Open labels on GitHub
                                         </Button>
@@ -88,6 +88,6 @@ export const PartlyFailed: Story = {
     render: args => ({
         components: { Toast, Toaster },
         setup: () => ({ args }),
-        template: `<Toaster label="Notifications"><Toast v-bind="args" :duration="Infinity">mobile#88 failed: you can read sigma-clinic/mobile but not edit its labels, so that change was undone.</Toast></Toaster>`,
+        template: `<Toaster label="Notifications"><Toast v-bind="args" :duration="Infinity">mobile#88 failed: you can read skyline-labs/mobile but not edit its labels, so that change was undone.</Toast></Toaster>`,
     }),
 };

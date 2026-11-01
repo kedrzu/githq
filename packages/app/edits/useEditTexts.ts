@@ -271,7 +271,7 @@ export function useEditTexts(): EditTexts {
     }
 }
 
-/** `sigma-clinic/portal#1187` → `portal#1187`, as the status bar names an item. */
+/** `skyline-labs/portal#1187` → `portal#1187`, as the status bar names an item. */
 function shortReference(reference: string) {
     return parseRepositoryName(reference).name;
 }

@@ -19,15 +19,15 @@ const meta = {
         counts: { reviewRequested: 2, authored: 3, assigned: 5, mentioned: 3, total: 13 },
         tracked: {
             projects: [
-                project('Platform Q4', 'sigma-clinic', 1, { kind: 'count', count: 128 }),
+                project('Platform Q4', 'skyline-labs', 1, { kind: 'count', count: 128 }),
                 project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 }),
-                project('Docs revamp', 'sigma-clinic', 3, { kind: 'count', count: 12 }),
+                project('Docs revamp', 'skyline-labs', 3, { kind: 'count', count: 12 }),
             ],
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
                 repository('kedrzu/skills', { kind: 'count', count: 7 }),
-                repository('sigma-clinic/portal', { kind: 'count', count: 142 }, true),
-                repository('sigma-clinic/api', { kind: 'count', count: 96 }, true),
+                repository('skyline-labs/portal', { kind: 'count', count: 142 }, true),
+                repository('skyline-labs/api', { kind: 'count', count: 96 }, true),
             ],
         },
         onToggle: fn(),
@@ -62,8 +62,8 @@ export const Downloading: Story = {
             projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('sigma-clinic/portal', { kind: 'downloading', percent: 62 }, true),
-                repository('sigma-clinic/api', { kind: 'downloading', percent: null }, true),
+                repository('skyline-labs/portal', { kind: 'downloading', percent: 62 }, true),
+                repository('skyline-labs/api', { kind: 'downloading', percent: null }, true),
                 repository('acme-health/vault', { kind: 'hidden' }),
             ],
         },

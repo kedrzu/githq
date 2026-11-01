@@ -14,7 +14,7 @@ const meta = {
             kind: 'read',
             organizations: [
                 { login: 'acme-health', hiddenPrivate: true, requestedAt: Date.parse('2026-10-28T10:00:00Z') },
-                { login: 'sigma-clinic', hiddenPrivate: false, requestedAt: Date.parse('2026-10-20T10:00:00Z') },
+                { login: 'skyline-labs', hiddenPrivate: false, requestedAt: Date.parse('2026-10-20T10:00:00Z') },
                 { login: 'kedrzu-labs', hiddenPrivate: false, requestedAt: null },
             ],
         },

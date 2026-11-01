@@ -253,21 +253,15 @@ current"). What a surface can be, from the sync model ([D7](#d7)):
 
 ### D16
 
-Stack and setup replicate the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, the author's
+Stack and setup: bun workspaces + Nx, the author's
 framework nzyme as a git submodule (`workspace:*` deps), Nuxt 4 with `ssr: false` built statically, no
 auto-imports, routes declared in `router.options.ts`, state in nzyme IoC services (`defineService` with
 `shallowRef`/`computed`), `@nzyme/i18n` with `.loc.yaml`, reka-ui, oxlint/oxfmt, `bun test` + Vitest browser +
 Storybook + Playwright e2e, `setup.sh`/`setup.build.sh`, `paseo.json`, `.claude/skills/nzyme` symlink. One
 Cloudflare Worker serves the static SPA (`not_found_handling: single-page-application`) and runs first only for
-the OAuth token exchange ([D1](#d1)). User, 2026-10-30. Dropped from Cookery: Supabase, database/backend/mcp
-packages, RLS, Realtime, RPC commands.
+the OAuth token exchange ([D1](#d1)). No database, no backend of our own. User, 2026-10-30.
 
-> **Checked 2026-10-30 (codebase survey of `~/Dev/cook-app` and `~/Dev/nzyme`):** layout `packages/{app,api,
-> backend,core,database,mcp,e2e}`, nzyme submodule via `.gitmodules`; `packages/api/wrangler.jsonc` serves
-> assets with `run_worker_first` for `/api/*` etc.; app state via `@nzyme/vue-ioc`
-> (`packages/app/auth/AuthStore.ts`, `plugins/iocPlugin.ts`); architecture rules in
-> `docs/design/architektura/DECISIONS.md` (D2, D13–D14, D18, D21 no CI, D28 static SPA + Worker).
-> nzyme has **no** IndexedDB, local-first, query/cache or GraphQL layer, and no Cloudflare package; it has
+> **Checked 2026-10-30 (codebase survey of nzyme):** nzyme has **no** IndexedDB, local-first, query/cache or GraphQL layer, and no Cloudflare package; it has
 > `@nzyme/fetch-utils` (typed `defineEndpoint`/`defineFetchClient`) and `@nzyme/openapi`.
 
 ### D17
@@ -290,19 +284,11 @@ for items outside the user's work opened for the first time. Answers [Q8](#q8) (
 
 ### D19
 
-GitHub GraphQL client follows the pattern of the author's `healedcare/healed` repo (`packages/healthie`):
-graphql-codegen with `typescript`, `typescript-operations` and `typescript-generic-sdk` (`documentMode:
+GitHub GraphQL client: graphql-codegen with `typescript`, `typescript-operations` and `typescript-generic-sdk` (`documentMode:
 'string'`), one `.gql` file per operation under `src/operations/`, a committed SDL schema file, a committed
 `generated.gen.ts`, and a small hand-written requester that the generated SDK calls. Answers the typing part of
 [Q11](#q11) (user, 2026-10-30). REST with ETags stays for change detection ([D7](#d7)) and goes through
 `@nzyme/fetch-utils`.
-
-> **Checked 2026-10-30 (codebase, `~/Dev/sigma`, remote `healedcare/healed`):** `packages/healthie/codegen.yml`
-> — `schema: 'src/schema.graphql'`, `documents: 'src/operations/**/*.gql'`, plugins `add` (TypedDocumentString
-> header), `typescript`, `typescript-operations`, `typescript-generic-sdk`, `documentMode: 'string'`, hook
-> `oxfmt`; `src/createHealthieRequester.ts` posts `{query: String(doc), variables}` with `fetch`, throws on HTTP
-> error and on a non-empty `errors` array; `scripts/fetchSchema.ts` introspects and writes SDL; scripts
-> `schema`, `codegen`; `generated.gen.ts` is committed.
 
 > **Checked 2026-10-30:** GitHub publishes its GraphQL schema as SDL at
 > `https://docs.github.com/public/fpt/schema.docs.graphql` (HTTP 200, ~75k lines, last-modified 2026-10-30) —

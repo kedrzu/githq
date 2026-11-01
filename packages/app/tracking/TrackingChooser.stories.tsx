@@ -15,7 +15,7 @@ const meta = {
         found: [],
         approvals: {},
         find: fn(() => Promise.resolve(null)),
-        repositories: [...SAMPLE_OWN_CHOICE.repositories, 'sigma-clinic/portal', 'sigma-clinic/api'],
+        repositories: [...SAMPLE_OWN_CHOICE.repositories, 'skyline-labs/portal', 'skyline-labs/api'],
         projects: SAMPLE_OWN_CHOICE.projects,
         onTrack: fn(),
         onOnlyMine: fn(),
@@ -49,7 +49,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * G2: the user's own repositories chosen, two of sigma-clinic's too; the long groups folded; acme-health says it
+ * G2: the user's own repositories chosen, two of skyline-labs's too; the long groups folded; acme-health says it
  * hides its private repositories; the projects beside.
  */
 export const Choose: Story = {};
@@ -58,7 +58,7 @@ export const Choose: Story = {};
 export const LargeOrganisation: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('radio', { name: /^sigma-clinic/ }));
+        await userEvent.click(canvas.getByRole('radio', { name: /^skyline-labs/ }));
         await userEvent.type(canvas.getByRole('textbox', { name: 'Filter repositories' }), 'pay');
     },
 };

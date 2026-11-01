@@ -31,7 +31,7 @@ test('the saved views are tabs: the one shown is current, one changed here is ma
     await expect.element(tabs.getByRole('link', { name: 'Current sprint' })).toHaveAttribute('aria-current', 'page');
     await expect
         .element(tabs.getByRole('link', { name: 'Current sprint' }))
-        .toHaveAttribute('href', '/orgs/sigma-clinic/projects/2/views/1');
+        .toHaveAttribute('href', '/orgs/skyline-labs/projects/2/views/1');
     await expect
         .element(tabs.getByRole('link', { name: /Board/ }).getByRole('img', { name: 'modified locally' }))
         .toBeVisible();

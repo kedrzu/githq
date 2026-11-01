@@ -11,32 +11,32 @@ const PLATFORM: NavigationPlace = {
     group: 'projects',
     kind: 'project',
     title: 'Platform Q4',
-    keywords: ['sigma-clinic'],
-    path: '/orgs/sigma-clinic/projects/4',
+    keywords: ['skyline-labs'],
+    path: '/orgs/skyline-labs/projects/4',
 };
 const PORTAL: NavigationPlace = {
-    id: 'repository:sigma-clinic/portal',
+    id: 'repository:skyline-labs/portal',
     group: 'repositories',
     kind: 'repository',
-    title: 'sigma-clinic/portal',
-    path: '/sigma-clinic/portal',
+    title: 'skyline-labs/portal',
+    path: '/skyline-labs/portal',
 };
 
 const DATA: NavigationData = {
     places: [PLATFORM, PORTAL],
-    trackedRepositories: ['sigma-clinic/portal'],
+    trackedRepositories: ['skyline-labs/portal'],
     items: [
-        issue('a', 'sigma-clinic/portal', 1187, 'Calendar shows wrong timezone', '2026-10-20'),
-        issue('b', 'sigma-clinic/api', 1187, 'Timezone of the API', '2026-10-21'),
-        issue('c', 'sigma-clinic/api', 490, 'Platform fee rounding on invoices', '2026-10-22'),
-        issue('d', 'sigma-clinic/api', 12, 'Rounding of the platform fee', '2026-10-23'),
+        issue('a', 'skyline-labs/portal', 1187, 'Calendar shows wrong timezone', '2026-10-20'),
+        issue('b', 'skyline-labs/api', 1187, 'Timezone of the API', '2026-10-21'),
+        issue('c', 'skyline-labs/api', 490, 'Platform fee rounding on invoices', '2026-10-22'),
+        issue('d', 'skyline-labs/api', 12, 'Rounding of the platform fee', '2026-10-23'),
     ],
 };
 
 test('a number finds the items with it; a repository before it narrows them to that repository', () => {
     expect(ids(searchNavigation('#1187', DATA))).toEqual(['b', 'a']);
     expect(ids(searchNavigation('portal#1187', DATA))).toEqual(['a']);
-    expect(ids(searchNavigation('sigma-clinic/api#1187', DATA))).toEqual(['b']);
+    expect(ids(searchNavigation('skyline-labs/api#1187', DATA))).toEqual(['b']);
 });
 
 test('a title starting with the text ranks above a title holding its words; places are found by name or owner', () => {
@@ -44,31 +44,30 @@ test('a title starting with the text ranks above a title holding its words; plac
 
     expect(ids(results)).toEqual(['c', 'd']);
     expect(results.map(result => result.score)).toEqual([80, 60]);
-    expect(searchNavigation('sigma', DATA).map(result => (result.kind === 'place' ? result.place.id : null))).toEqual([
-        'project:1',
-        'repository:sigma-clinic/portal',
-    ]);
+    expect(searchNavigation('skyline', DATA).map(result => (result.kind === 'place' ? result.place.id : null))).toEqual(
+        ['project:1', 'repository:skyline-labs/portal'],
+    );
 });
 
 test('owner/name of a repository not tracked is offered to open (J3); a tracked one is its place', () => {
-    expect(searchNavigation('sigma-clinic/platform-infra', DATA)).toContainEqual({
+    expect(searchNavigation('skyline-labs/platform-infra', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,
-        nameWithOwner: 'sigma-clinic/platform-infra',
+        nameWithOwner: 'skyline-labs/platform-infra',
     });
-    expect(searchNavigation('https://github.com/sigma-clinic/platform-infra/issues', DATA)).toContainEqual({
+    expect(searchNavigation('https://github.com/skyline-labs/platform-infra/issues', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,
-        nameWithOwner: 'sigma-clinic/platform-infra',
+        nameWithOwner: 'skyline-labs/platform-infra',
     });
-    expect(searchNavigation('sigma-clinic/portal', DATA).filter(result => result.kind === 'repository')).toEqual([]);
-    expect(searchNavigation('sigma-clinic/api#1187', DATA).filter(result => result.kind === 'repository')).toEqual([]);
+    expect(searchNavigation('skyline-labs/portal', DATA).filter(result => result.kind === 'repository')).toEqual([]);
+    expect(searchNavigation('skyline-labs/api#1187', DATA).filter(result => result.kind === 'repository')).toEqual([]);
 });
 
 test('an issue being created is not found: it has no number to open it by yet', () => {
     const data = {
         ...DATA,
-        items: [...DATA.items, issue('pending', 'sigma-clinic/api', 0, 'Platform fee draft', '2026-10-24')],
+        items: [...DATA.items, issue('pending', 'skyline-labs/api', 0, 'Platform fee draft', '2026-10-24')],
     };
 
     expect(ids(searchNavigation('platform fee', data))).toEqual(['c', 'd']);

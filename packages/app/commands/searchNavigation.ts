@@ -38,7 +38,7 @@ export type NavigationResult =
 /** How many items the menu lists at most. */
 const ITEM_LIMIT = 8;
 
-/** An item as typed: `#12`, `12`, `portal#12`, `sigma-clinic/portal#12`. */
+/** An item as typed: `#12`, `12`, `portal#12`, `skyline-labs/portal#12`. */
 const ITEM_NUMBER = /^(?:([\w.-]+(?:\/[\w.-]+)?))?#?(\d+)$/u;
 
 /**

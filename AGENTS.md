@@ -22,7 +22,7 @@ Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (star
 
 ## Stack & commands
 
-Chosen, replicating the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, nzyme as a git submodule (`nzyme/`, deps as `workspace:*`), Nuxt 4 SPA (`ssr: false`, static build), one Cloudflare Worker serving the SPA and the OAuth token exchange, IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen (pattern of `healedcare/healed` `packages/healthie`). Details: `docs/design/githq/DECISIONS.md` D16–D19.
+Chosen: bun workspaces + Nx, nzyme as a git submodule (`nzyme/`, deps as `workspace:*`), Nuxt 4 SPA (`ssr: false`, static build), one Cloudflare Worker serving the SPA and the OAuth token exchange, IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen. Details: `docs/design/githq/DECISIONS.md` D16–D19.
 
 One exception to the SPA: `/` is prerendered signed out into `_landing.html` (Nuxt hybrid; `index.html` stays the shell, both build checks assert it), and the Worker also runs for `/` and `/_landing`, serving the shell to a browser with the signed-in hint cookie `githq_signed_in=1` (written only by `AuthStore`) and the landing to everyone else. `nuxt dev` never server-renders. Why: `docs/decisions/prerendered-landing-and-signed-in-hint.md`.
 

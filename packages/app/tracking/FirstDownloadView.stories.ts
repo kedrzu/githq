@@ -10,8 +10,8 @@ const ROWS: FirstDownloadRow[] = [
     ...['skills', 'dotfiles', 'blog', 'notes', 'cv', 'talks', 'snippets', 'aoc-2025', 'homelab', 'recipes', 'nvim'].map(
         name => repository(`kedrzu/${name}`, false, { state: 'done', done: 20, total: 20 }),
     ),
-    repository('sigma-clinic/portal', true, { state: 'downloading', done: 880, total: 1420 }),
-    repository('sigma-clinic/api', true, { state: 'downloading', done: 210, total: 1160 }),
+    repository('skyline-labs/portal', true, { state: 'downloading', done: 880, total: 1420 }),
+    repository('skyline-labs/api', true, { state: 'downloading', done: 210, total: 1160 }),
     {
         kind: 'project',
         key: 'project:PVT_1',
@@ -50,7 +50,7 @@ export const WorkArriving: Story = {
         myWork: null,
         rows: [
             repository('kedrzu/githq', false, { state: 'downloading', done: 0, total: null }),
-            repository('sigma-clinic/portal', true, { state: 'downloading', done: 0, total: null }),
+            repository('skyline-labs/portal', true, { state: 'downloading', done: 0, total: null }),
         ],
         overall: { done: 0, total: null, secondsLeft: null, finished: false },
     },

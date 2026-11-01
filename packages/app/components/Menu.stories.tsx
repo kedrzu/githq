@@ -53,7 +53,7 @@ export const Actions: Story = {
                                         </Button>
                                     ),
                                     default: () => [
-                                        <MenuLabel>sigma-clinic/portal#1187</MenuLabel>,
+                                        <MenuLabel>skyline-labs/portal#1187</MenuLabel>,
                                         <MenuItem
                                             icon={ExternalLink}
                                             kbd="O"

@@ -43,7 +43,7 @@ const FORM: IssueForm = {
             description: null,
             required: true,
             options: [
-                { label: 'No patient data', required: true },
+                { label: 'No customer data', required: true },
                 { label: 'Optional', required: false },
             ],
         },
@@ -54,14 +54,14 @@ test('a body fresh from the form misses every required field; comments do not co
     const body = buildIssueFormBody(FORM);
 
     expect(body).toContain('### What happened\n\n<!-- Tell us -->');
-    expect(body).toContain('### Checklist\n\n- [ ] No patient data\n- [ ] Optional');
+    expect(body).toContain('### Checklist\n\n- [ ] No customer data\n- [ ] Optional');
     expect(findMissingFormFields(FORM, body)).toEqual(['What happened', 'Browser', 'Checklist']);
 });
 
 test('answered sections and ticked required boxes are no longer missing; a removed required section is', () => {
     const body = buildIssueFormBody(FORM)
         .replace('<!-- Tell us -->', 'It crashes')
-        .replace('- [ ] No patient data', '- [x] No patient data')
+        .replace('- [ ] No customer data', '- [x] No customer data')
         .replace(/### Browser\n\n<!-- Chrome, Safari -->\n\n/u, '');
 
     expect(findMissingFormFields(FORM, body)).toEqual(['Browser']);
