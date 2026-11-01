@@ -2,6 +2,7 @@ import type { ListStack } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item, ItemRepository, PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { getStackPullRequestToOpen } from '@/store/stacks/getStackPullRequestToOpen.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -95,6 +96,72 @@ export function sampleListStack(members: readonly PullRequestItem[]): ListStack 
         pullRequests: stack.members,
     };
 }
+
+/**
+ * A stack as an opened pull request's map shows it (stacked PRs D17), from all its pull requests: described for
+ * {@link SAMPLE_VIEWER}.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function sampleStackDescription(members: readonly PullRequestItem[]): StackDescription {
+    const [stack] = groupStacks(members).values();
+    if (!stack) {
+        throw new Error('A sample stack needs pull requests.');
+    }
+
+    return describeStack({ stack, viewerLogin: SAMPLE_VIEWER.login, getItem: () => undefined });
+}
+
+/** SP30, SP33, SP35: a stack of two — the first ready, the second waiting for review. */
+export const GLYPHS_STACK: readonly PullRequestItem[] = sampleStack({
+    id: 'S_glyphs',
+    repository: TASKLET,
+    number: 36,
+    age: 30 * MINUTE,
+    members: [
+        { title: 'Draw the key glyphs', author: ME },
+        {
+            number: 41,
+            title: 'Use the glyphs in the palette',
+            author: ME,
+            reviewDecision: 'REVIEW_REQUIRED',
+            mergeStateStatus: 'BLOCKED',
+            reviewRequests: [{ kind: 'user', login: SB.login }],
+        },
+    ],
+});
+
+/** Waiting for #65 to be reviewed after its fixes, as SP31's later ones are. */
+const AWAITING_REVIEW = { reviewDecision: 'REVIEW_REQUIRED', mergeStateStatus: 'BLOCKED' } as const;
+
+/**
+ * SP31, SP32, SP34, SP36: a stack of ten, two landed, three ready, the sixth failing two checks with changes requested —
+ * holding back the four after it, which wait for review.
+ */
+export const SYNC_ENGINE_STACK: readonly PullRequestItem[] = sampleStack({
+    id: 'S_sync_engine',
+    repository: TASKLET,
+    number: 60,
+    age: 8 * MINUTE,
+    members: [
+        { title: 'Extract the sync queue', author: ME, state: 'MERGED', merged: true },
+        { title: 'Typed sync events', author: ME, state: 'MERGED', merged: true },
+        { title: 'Persist the cursor', author: ME },
+        { title: 'Retry with backoff', author: ME },
+        { title: 'Batch the writes', author: ME },
+        {
+            title: 'Conflict policy',
+            author: ME,
+            reviewDecision: 'CHANGES_REQUESTED',
+            mergeStateStatus: 'BLOCKED',
+            checks: { state: 'FAILURE', passing: 6, failing: 2, pending: 1 },
+        },
+        { title: 'Progress reporting', author: ME, ...AWAITING_REVIEW },
+        { title: 'Pause on rate limit', author: ME, ...AWAITING_REVIEW },
+        { title: 'Drop the old engine', author: ME, ...AWAITING_REVIEW },
+        { title: 'Docs for sync', author: ME, ...AWAITING_REVIEW },
+    ],
+});
 
 /** SP14's states (those githq tells today), as the pull requests of a stack each. */
 export const SAMPLE_STACKS = {

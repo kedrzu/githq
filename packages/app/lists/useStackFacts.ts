@@ -104,7 +104,7 @@ interface ShareHeldTextParams {
 }
 
 /** What holds a stack, as its held sentence names it: a draft, running checks, a review awaited, or that it blocks. */
-type HeldReason = 'checks' | 'draft' | 'other' | 'review';
+export type HeldReason = 'checks' | 'draft' | 'other' | 'review';
 
 /** The stack's held sentence for each reason: "2 of 4 ready, #1206 is a draft" (SP14). */
 const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
@@ -333,8 +333,12 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
     }
 }
 
-/** What a held sentence names about the pull request holding the stack (SP14). */
-function getHeldReason(blocker: StackBlocker): HeldReason {
+/**
+ * What a held sentence names about the pull request holding the stack (SP14) — the list's and the stack map's.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getHeldReason(blocker: StackBlocker): HeldReason {
     switch (blocker.kind) {
         case 'draft':
             return 'draft';
@@ -352,8 +356,12 @@ function getHeldReason(blocker: StackBlocker): HeldReason {
     }
 }
 
-/** A held stack reads in the colour of what holds it (SP14): red when broken, amber when moving, grey otherwise. */
-function getBlockerLook(kind: StackPullRequestPipKind): StackLook {
+/**
+ * A held stack reads in the colour of what holds it (SP14): red when broken, amber when moving, grey otherwise.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getBlockerLook(kind: StackPullRequestPipKind): StackLook {
     switch (kind) {
         case 'broken':
             return { icon: CircleX, tone: 'danger' };
@@ -371,8 +379,13 @@ function getBlockerLook(kind: StackPullRequestPipKind): StackLook {
     }
 }
 
-/** A pull request in its own state, as its pip draws it (D6): the icon and colour its line in an expanded card shows. */
-function getPullRequestLook(kind: StackPullRequestPipKind): StackLook {
+/**
+ * A pull request in its own state, as its pip draws it (D6): the icon and colour its line in an expanded card and its
+ * row in the stack map show.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getPullRequestLook(kind: StackPullRequestPipKind): StackLook {
     switch (kind) {
         case 'ready':
             return { icon: CircleCheck, tone: 'success' };

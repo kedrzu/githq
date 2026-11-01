@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from, the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -19,7 +19,11 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -27,6 +31,7 @@ import { getItemPagePath, getItemReference, getOpenedItemQuery } from './itemRou
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
+import type { StackNeighbours } from './StackMap.vue';
 import { useOpenedItem } from './useOpenedItem.js';
 
 const props = defineProps<{
@@ -40,6 +45,7 @@ const TICK_MS = 30_000;
 const t = useTranslate();
 const logger = useLogger();
 const details = useService(ItemDetailStore);
+const items = useService(ItemStore);
 const navigation = useService(ItemNavigation);
 const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
@@ -53,10 +59,43 @@ const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 const now = useNow(TICK_MS);
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
-const position = computed(() => {
+const listIndex = computed(() => {
   const ids = navigation.list?.ids ?? [];
-  const index = opened.id === null ? -1 : ids.indexOf(opened.id);
-  return index === -1 ? null : { index: index + 1, count: ids.length };
+  return opened.id === null ? -1 : ids.indexOf(opened.id);
+});
+const position = computed(() => {
+  const index = listIndex.value;
+  return index === -1 ? null : { index: index + 1, count: navigation.list?.ids.length ?? 0 };
+});
+const neighbours = computed((): StackNeighbours => {
+  const ids = navigation.list?.ids ?? [];
+  const index = listIndex.value;
+  return index === -1
+    ? { previous: null, next: null }
+    : { previous: ids[index - 1] ?? null, next: ids[index + 1] ?? null };
+});
+// The stack an opened pull request is in, from the local copy alone — no request (D17). Its map shows only with two or
+// more of its pull requests in the copy.
+const stack = computed((): StackDescription | null => {
+  const { item } = opened;
+  if (item?.kind !== 'pullRequest' || item.stack === null) {
+    return null;
+  }
+
+  const stackId = item.stack.id;
+  const others = items.all.filter(
+    other => other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
+  );
+  const found = groupStacks([...others, item]).get(stackId);
+  if (!found || found.members.length < 2) {
+    return null;
+  }
+
+  return describeStack({
+    stack: found,
+    viewerLogin: auth.viewer?.login ?? '',
+    getItem: id => details.getItem(id),
+  });
 });
 const closes = computed((): Item[] => {
   const { item } = opened;
@@ -135,10 +174,15 @@ watch(
 );
 
 function step(delta: 1 | -1) {
-  const ids = navigation.list?.ids ?? [];
-  const index = opened.id === null ? -1 : ids.indexOf(opened.id);
-  const target = index === -1 ? undefined : ids[index + delta];
-  const item = target === undefined ? undefined : details.getItem(target);
+  const target = delta === 1 ? neighbours.value.next : neighbours.value.previous;
+  if (target !== null) {
+    openInPlace(target);
+  }
+}
+
+/** Opens the item in the opened one's place, replacing the address: `K`/`J` and a row of a stack's map. */
+function openInPlace(id: string) {
+  const item = details.getItem(id);
   if (item) {
     void router.replace(locate(getItemReference(item), props.arrangement, item.kind));
   }
@@ -229,6 +273,8 @@ async function loadAllComments() {
       :now="now"
       :load-all-comments="loadAllComments"
       :editing="editing"
+      :stack="stack"
+      :neighbours="neighbours"
       @edit="edit"
       @need-projects="loadViewerProjects"
       @close="close"
@@ -236,6 +282,7 @@ async function loadAllComments() {
       @next="step(1)"
       @arrange="arrange"
       @open="open"
+      @open-in-place="openInPlace"
     />
     <EmptyState
       v-else
@@ -256,6 +303,8 @@ async function loadAllComments() {
     :now="now"
     :load-all-comments="loadAllComments"
     :editing="editing"
+    :stack="stack"
+    :neighbours="neighbours"
     @edit="edit"
     @need-projects="loadViewerProjects"
     @close="close"
@@ -263,6 +312,7 @@ async function loadAllComments() {
     @next="step(1)"
     @arrange="arrange"
     @open="open"
+    @open-in-place="openInPlace"
   />
   <div
     v-else

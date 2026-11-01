@@ -1,5 +1,8 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
+
+import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import {
     D1_ISSUE,
@@ -12,6 +15,7 @@ import {
 } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_CONTRIBUTOR_EDITING, SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
+import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import ItemView from './ItemView.vue';
 
@@ -33,6 +37,7 @@ const meta = {
         onNext: fn(),
         onArrange: fn(),
         onOpen: fn(),
+        onOpenInPlace: fn(),
     },
     // As tall as the window, and as wide as the arrangement: the panel's 560px, or the window.
     render: args => ({
@@ -80,3 +85,37 @@ export const ContributorView: Story = { args: { editing: SAMPLE_CONTRIBUTOR_EDIT
 
 /** Only shown: nothing is offered (an item of a session that ended). */
 export const ReadOnly: Story = { args: { editing: null } };
+
+/** SP30–SP36: the pull request at `index` of a sample stack opened, with F1's detail, the list's neighbours its own. */
+function openedInStack(members: readonly PullRequestItem[], index: number) {
+    const item = assertValue(members[index]);
+    return {
+        item,
+        detail: { ...F1_PULL_REQUEST_DETAIL, id: item.id, item },
+        closes: [],
+        stack: sampleStackDescription(members),
+        neighbours: { previous: members[index - 1]?.id ?? null, next: members[index + 1]?.id ?? null },
+    };
+}
+
+/** SP30: the second of a stack of two in the panel — the map's rows pinned above the content. */
+export const StackOfTwoInPanel: Story = {
+    args: { ...openedInStack(GLYPHS_STACK, 1), position: { index: 10, count: 23 } },
+};
+
+/** SP31, SP32: the sixth of a stack of ten in the panel — a window of six; scrolled, the map folds to one line. */
+export const StackOfTenInPanel: Story = {
+    args: { ...openedInStack(SYNC_ENGINE_STACK, 5), position: { index: 13, count: 31 } },
+};
+
+/** SP33: the stack of two at the top of the modal's side column. */
+export const StackOfTwoInModal: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'modal' } };
+
+/** SP34: the stack of ten in the modal, whole. */
+export const StackOfTenInModal: Story = { args: { ...StackOfTenInPanel.args, arrangement: 'modal' } };
+
+/** SP35: the stack of two on a page — a column of its own on the left. */
+export const StackOfTwoOnPage: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'page' } };
+
+/** SP36: the stack of ten on a page, whole in the left column; the main column gives up its width. */
+export const StackOfTenOnPage: Story = { args: { ...StackOfTenInPanel.args, arrangement: 'page' } };
