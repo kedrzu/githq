@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './SettingsView.stories.js';
 
-const { Repositories } = composeStories(stories);
+const { Repositories, SavingStopped } = composeStories(stories);
 
 test('the title and the four tabs, with what is tracked counted', async () => {
     await Repositories.run();
@@ -33,4 +33,12 @@ test('`1` to `4` and the tabs choose the section', async () => {
 
     await userEvent.click(page.getByRole('button', { name: 'Account' }));
     expect(onUpdateSection).toHaveBeenLastCalledWith('account');
+});
+
+test('syncing stopped, Saving to GitHub carries a dot that says so', async () => {
+    await SavingStopped.run();
+
+    await expect.element(page.getByRole('button', { name: 'Saving to GitHub Syncing stopped' })).toBeVisible();
+    await Repositories.run();
+    await expect.element(page.getByRole('button', { name: 'Saving to GitHub', exact: true })).toBeVisible();
 });

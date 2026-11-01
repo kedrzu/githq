@@ -56,6 +56,8 @@ export interface GitHubRestRequest {
     readonly url: URL;
     /** The `If-None-Match` header, or `null`. */
     readonly ifNoneMatch: string | null;
+    /** The JSON body (a `PUT`'s, a `POST`'s); `undefined` without one. */
+    readonly body: unknown;
 }
 
 /** A GraphQL operation the mock answered, as the app sent it ({@link GitHubMock.graphqlCalls}). */
@@ -391,8 +393,9 @@ export class GitHubMock {
         if (rest) {
             const request = route.request();
             const ifNoneMatch = (await request.allHeaders())['if-none-match'] ?? null;
-            const answer = await rest({ url, ifNoneMatch });
-            this.answeredRest.push({ method, url, ifNoneMatch, status: answer.status });
+            const body = parseJson(request.postData());
+            const answer = await rest({ url, ifNoneMatch, body });
+            this.answeredRest.push({ method, url, ifNoneMatch, body, status: answer.status });
             const fulfilled = this.apiAnswer(answer.status, answer.json, 'core', this.rateLimit);
             await route.fulfill({
                 ...fulfilled,

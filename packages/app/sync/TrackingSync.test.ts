@@ -97,7 +97,11 @@ test('a download stopped halfway — a tab closed — goes on in the next sessio
     expect(first.items.get('I_web_1')).toBeDefined();
 
     world.failing.clear();
-    const second = await setup(world, { login, persistence: createIndexedDbPersistence() });
+    const second = await setup(world, {
+        login,
+        persistence: createIndexedDbPersistence(),
+        localStorage: first.session.localStorage,
+    });
     await second.session.clock.advance(0);
 
     // What the first tab read is on disk; the second reads on from where it stopped, not from the start.
@@ -307,7 +311,11 @@ test('a project download that has to start over counts its items once', async ()
     await persistence.deleteProject(login, 'PVT_1');
 
     world.failing.clear();
-    const second = await setup(world, { login, persistence: createIndexedDbPersistence() });
+    const second = await setup(world, {
+        login,
+        persistence: createIndexedDbPersistence(),
+        localStorage: first.session.localStorage,
+    });
     await second.session.clock.advance(0);
 
     // Read again from its first page: what the first tab counted is not counted twice.
@@ -382,10 +390,22 @@ test('a project no longer tracked but still in the kept copy — and the rows on
     await first.session.clock.advance(0);
     expect(first.items.get('I_lib')).toBeDefined();
     // Untracked, but a read on its way wrote the project and its rows back afterwards.
-    await persistence.saveTracking(login, { chosen: true, repositories: [], projects: [] });
+    first.session.localStorage.set(
+        `githq.settings.${login}`,
+        JSON.stringify({
+            chosen: true,
+            document: {
+                version: 1,
+                repositories: [],
+                projects: [
+                    { id: 'PVT_1', owner: 'acme', ownerKind: 'org', number: 1, title: 'Roadmap', tracking: false },
+                ],
+            },
+        }),
+    );
 
     const reloaded = createIndexedDbPersistence();
-    const second = await setup(world, { login, persistence: reloaded });
+    const second = await setup(world, { login, persistence: reloaded, localStorage: first.session.localStorage });
     // The rows go with the first poll of "my work", which drops whatever nothing keeps.
     expect(second.projects.get('PVT_1')).toBeUndefined();
     expect(second.items.get('I_lib')).toBeUndefined();
@@ -518,6 +538,8 @@ function nodeOf(world: TrackingWorld, id: string) {
 interface SetupOptions {
     readonly login?: string;
     readonly persistence?: IndexedDbPersistence;
+    /** The `localStorage` of an earlier session, to reload it. */
+    readonly localStorage?: Map<string, string>;
 }
 
 /** Signs a user in against the world, with an empty kept copy unless given one, and lets the first poll run. */
@@ -526,6 +548,7 @@ async function setup(world: TrackingWorld, options: SetupOptions = {}) {
         login: options.login ?? uniqueLogin(),
         answer: request => world.answer(request),
         answerRest: request => world.answerRest(request),
+        localStorage: options.localStorage,
     });
     setIndexedDbPersistence(session.container, options.persistence);
 

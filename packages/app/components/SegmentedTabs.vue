@@ -15,6 +15,8 @@ export interface SegmentedTabsOption<T extends string> {
   keyshortcuts?: string;
   /** How many it holds, dim after the label ("Repositories 15"). */
   count?: number;
+  /** An amber dot after the label: something there needs the user, read out as this ("Syncing stopped"). */
+  attention?: string;
 }
 </script>
 
@@ -75,6 +77,12 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
         :class="css.segmentedTabs_count"
         >{{ option.count }}</span
       >
+      <span
+        v-if="option.attention"
+        :class="css.segmentedTabs_attention"
+        role="img"
+        :aria-label="option.attention"
+      />
     </ToggleGroupItem>
   </ToggleGroupRoot>
 </template>
@@ -152,5 +160,13 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   font-family: $font-family-mono;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+}
+
+.segmentedTabs_attention {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: $color-amber;
+  border-radius: 50%;
 }
 </style>

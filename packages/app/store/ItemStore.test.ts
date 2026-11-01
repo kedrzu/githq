@@ -202,6 +202,7 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
         },
         isVisible: () => true,
         onVisibilityChange: () => {},
+        onFocus: () => {},
         isOnline: () => true,
         onOnlineChange: () => {},
         writeCookie: () => {},

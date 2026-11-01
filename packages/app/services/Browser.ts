@@ -54,6 +54,8 @@ export interface BrowserShape {
     isVisible(): boolean;
     /** Calls `listener` when the tab is shown or hidden. */
     onVisibilityChange(listener: () => void): void;
+    /** Calls `listener` when the window gains focus — the user comes back to a tab that stayed shown beside another. */
+    onFocus(listener: () => void): void;
     /** Whether the browser believes it has a connection (`navigator.onLine`); `false` is reliable, `true` is not. */
     isOnline(): boolean;
     /** Calls `listener` when the browser loses or regains its connection (`online` and `offline` events). */
@@ -108,6 +110,9 @@ export const Browser = defineInterface<BrowserShape>({
         isVisible: () => document.visibilityState === 'visible',
         onVisibilityChange: listener => {
             document.addEventListener('visibilitychange', () => listener());
+        },
+        onFocus: listener => {
+            window.addEventListener('focus', () => listener());
         },
         isOnline: () => navigator.onLine,
         onOnlineChange: listener => {

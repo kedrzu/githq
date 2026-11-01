@@ -328,6 +328,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         },
         isVisible: () => true,
         onVisibilityChange: () => {},
+        onFocus: () => {},
         isOnline: () => true,
         onOnlineChange: () => {},
         estimateStorage: () => Promise.resolve(null),
