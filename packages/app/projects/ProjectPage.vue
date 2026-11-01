@@ -117,7 +117,7 @@ useCommands(() =>
           title: t(l.addItemsToProject, { project: project.value.title }),
           section: 'view',
           icon: Plus,
-          options: () => ({ options: getAddableItems(), several: true }),
+          options: () => ({ options: addableItems.value, several: true }),
         },
       ]
     : [],
@@ -176,6 +176,24 @@ const entries = computed((): ProjectEntry[] => {
   });
 });
 /** The filter applied: the saved view's, unless cleared here or all items are shown. */
+// One array until they change: the menu finds in it per keystroke, and it readies an array once (`filterOptions`).
+const addableItems = computed((): CommandOption[] => {
+  const current = project.value;
+  if (!current) {
+    return [];
+  }
+
+  const added = new Set(entries.value.map(entry => entry.item.contentId));
+  return items.all
+    .filter(item => !added.has(item.id) && !isPendingItem(item))
+    .toSorted((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
+    .map(item => ({
+      value: item.id,
+      label: item.title,
+      detail: formatShortReference(item),
+      pick: () => void editor.edit([item.id], { kind: 'addToProject', project: current }),
+    }));
+});
 const filter = computed(() => options.options.filter ?? '');
 const compiled = computed(() =>
   compileProjectFilter({
@@ -400,24 +418,6 @@ function startNewIssue(group: string | null, label: string | null) {
 }
 
 /** The issues and pull requests of the local copy not in the project yet, the latest changed first. */
-function getAddableItems(): CommandOption[] {
-  const current = project.value;
-  if (!current) {
-    return [];
-  }
-
-  const added = new Set(entries.value.map(entry => entry.item.contentId));
-  return items.all
-    .filter(item => !added.has(item.id) && !isPendingItem(item))
-    .toSorted((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
-    .map(item => ({
-      value: item.id,
-      label: item.title,
-      detail: formatShortReference(item),
-      pick: () => void editor.edit([item.id], { kind: 'addToProject', project: current }),
-    }));
-}
-
 function addDraft(title: string, group: string | null) {
   const current = project.value;
   if (!current) {

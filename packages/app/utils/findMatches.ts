@@ -8,15 +8,16 @@ const TERM_SPLIT_REGEX = new RegExp(TERM_SPLIT, 'gu');
 /** Words beyond this are still all required, but in no particular order and without ranges: uFuzzy permutes them. */
 const MAX_PERMUTED_WORDS = 5;
 
-const MATCHER = new uFuzzy({
-    intraMode: 1,
+const MATCHER_OPTIONS = {
     unicode: true,
     interSplit: TERM_SPLIT,
     intraSplit: '\\p{Ll}\\p{Lu}',
     intraBound: '\\p{Ll}\\p{Lu}',
     intraChars: "[\\p{L}\\d']",
     intraContr: "'\\p{L}{1,2}\\b",
-});
+};
+const MATCHER = new uFuzzy({ ...MATCHER_OPTIONS, intraMode: 1 });
+const EXACT_MATCHER = new uFuzzy({ ...MATCHER_OPTIONS, intraMode: 0 });
 
 /** Rows and their texts ready for `findMatches()`; prepare once per list, not per keystroke. */
 export interface PreparedMatchTexts<T> {
@@ -38,6 +39,8 @@ export interface MatchTextOwner<T> {
 export interface FindMatchesOptions {
     /** Also find the typed letters scattered in order ("sts" → "Set status"), below every other match. */
     readonly letters?: boolean;
+    /** Tolerate a typo in a word; on by default. Typo search is the slow part of a long list. */
+    readonly typos?: boolean;
     /** Keep only this many matching rows, the first in list order, and rank only those. */
     readonly hitLimit?: number;
 }
@@ -98,7 +101,8 @@ export function findMatches<T>(
         return prepared.rows.map(row => ({ row, score: 0, textIndex: 0, ranges: null }));
     }
 
-    const { letters = false, hitLimit = Infinity } = options;
+    const { letters = false, typos = true, hitLimit = Infinity } = options;
+    const matcher = typos ? MATCHER : EXACT_MATCHER;
     const { haystacks, owners } = prepared;
 
     // Words only: uFuzzy would read a word after ` -` as "must not contain" and a quoted part as exact.
@@ -135,7 +139,7 @@ export function findMatches<T>(
             return [];
         }
 
-        const [found] = MATCHER.search(haystacks, terms, 1, 0);
+        const [found] = matcher.search(haystacks, terms, 1, 0);
         return found ?? [];
     }
 
@@ -175,7 +179,7 @@ export function findMatches<T>(
 
     /** Ranges of the given hits; `null` above 5 words, where uFuzzy does not compute them. */
     function findFuzzyRanges(found: number[]) {
-        const [, info, order] = MATCHER.search(haystacks, terms, MAX_PERMUTED_WORDS, Infinity, found);
+        const [, info, order] = matcher.search(haystacks, terms, MAX_PERMUTED_WORDS, Infinity, found);
         if (info == null || order == null) {
             return null;
         }
@@ -207,7 +211,7 @@ export function findMatches<T>(
 
     /** Scattered letters come last, so they only ever add rows. */
     function addScatteredLetters() {
-        const marked = MATCHER.split(terms).length <= MAX_PERMUTED_WORDS;
+        const marked = matcher.split(terms).length <= MAX_PERMUTED_WORDS;
         for (const [hit, haystack] of haystacks.entries()) {
             const found = scoreLetters(needle, haystack);
             if (found != null) {

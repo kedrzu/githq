@@ -6,9 +6,9 @@ import { DropdownMenuCheckboxItem, DropdownMenuItem } from 'reka-ui';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import { filterOptions } from '@/components/filterOptions.js';
 import MenuSub from '@/components/MenuSub.vue';
 
-import { filterCommandOptions } from './buildCommandMenu.js';
 import * as l from './CommandSubmenu.loc.js';
 import type { Command, CommandOption } from './CommandTypes.js';
 
@@ -29,7 +29,7 @@ const filterRef = useTemplateRef<HTMLInputElement>('filter');
 
 // What it offers is read only while it is open: a repository's people and labels can be many.
 const offered = computed(() => (open.value ? (props.command.options?.() ?? null) : null));
-const filtered = computed(() => filterCommandOptions(query.value, offered.value?.options ?? []));
+const filtered = computed(() => filterOptions(query.value, offered.value?.options ?? []).map(({ option }) => option));
 // The chevron says there is more: the command menu's "Assign to…" is "Assign to ›" here.
 const title = computed(() => props.command.title.replace(/…$/u, ''));
 const filterable = computed(() => (offered.value?.options.length ?? 0) >= FILTER_FROM);

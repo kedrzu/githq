@@ -53,6 +53,7 @@ import SearchField from '@/components/SearchField.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -99,10 +100,13 @@ const filter = ref('');
 const listKeys = useFilteredListKeys({ container: lists, rows: '[data-row-focus]', filterField: searchField, filter });
 
 const approvalUrl = getApprovalUrl(browser.origin);
-const needle = computed(() => filter.value.trim().toLowerCase());
+const needle = computed(() => filter.value.trim());
 const rows = computed(() => (tab.value === 'repositories' ? props.tracked.repositories : props.tracked.projects));
 const shownRows = computed(() =>
-  needle.value === '' ? rows.value : rows.value.filter(row => row.name.toLowerCase().includes(needle.value)),
+  findMatches(
+    filter.value,
+    prepareMatchTexts(rows.value, row => [row.name]),
+  ).map(({ row }) => row),
 );
 const itemsKept = computed(() => sumOver(rows.value, row => row.items ?? 0));
 const trackedKeys = computed(
@@ -129,14 +133,20 @@ const untrackedProjects = computed((): CandidateProject[] => {
   return getCandidateProjects(candidates).filter(project => !trackedKeys.value.has(project.id));
 });
 const matchingRepositories = computed(() =>
-  untrackedRepositories.value
-    .filter(repository => repository.nameWithOwner.toLowerCase().includes(needle.value))
-    .slice(0, MATCHES_SHOWN),
+  findMatches(
+    filter.value,
+    prepareMatchTexts(untrackedRepositories.value, repository => [repository.nameWithOwner]),
+  )
+    .slice(0, MATCHES_SHOWN)
+    .map(({ row }) => row),
 );
 const matchingProjects = computed(() =>
-  untrackedProjects.value
-    .filter(project => needle.value === '' || project.title.toLowerCase().includes(needle.value))
-    .slice(0, MATCHES_SHOWN),
+  findMatches(
+    filter.value,
+    prepareMatchTexts(untrackedProjects.value, project => [project.title]),
+  )
+    .slice(0, MATCHES_SHOWN)
+    .map(({ row }) => row),
 );
 const organizations = computed(() => props.candidates?.organizations ?? []);
 

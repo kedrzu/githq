@@ -127,6 +127,22 @@ describe('scattered letters', () => {
     });
 });
 
+describe('typos off', () => {
+    const titles = ['Reactivity of the map', 'Żółty banner'];
+
+    test('finds no word with a typo, which it does by default', () => {
+        expect(search('reactivty', titles)).toHaveLength(1);
+        expect(search('reactivty', titles, { typos: false })).toEqual([]);
+    });
+
+    test('still finds any word order, without diacritics, and marks what matched', () => {
+        const [reordered] = search('map reactivity', titles, { typos: false });
+        expect(reordered?.row).toBe('Reactivity of the map');
+        expect(marked('Reactivity of the map', reordered?.ranges ?? [])).toEqual(['Reactivity', 'map']);
+        expect(search('zolty', titles, { typos: false }).map(match => match.score)).toEqual([80]);
+    });
+});
+
 describe('several texts', () => {
     const rows = [
         { title: 'Label', keyword: 'tag' },
