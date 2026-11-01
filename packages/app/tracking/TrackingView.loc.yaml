@@ -87,6 +87,10 @@ inOwner:
   en: '{total} in {owner}'
 open:
   en: '{count} open'
+archived:
+  en: archived · read-only
+ownerDone:
+  en: Everything you can see in {owner} is tracked.
 noMatch:
   en: Nothing you can see matches “{filter}”.
 projectsNote:
@@ -107,6 +111,8 @@ hiddenRequested:
   en: You requested approval on {date}.
 hiddenLimit:
   en: Until an owner approves it, only its public repositories can be tracked.
+hiddenProjects:
+  en: Until an owner approves it, its private projects stay hidden.
 hiddenLimitCounted:
   plural: count
   en:

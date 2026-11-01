@@ -112,9 +112,13 @@ export const TrackedItems = defineService({
             return count;
         }
 
-        /** Whether the repository is private, as its kept items tell; `false` while none are kept. Reactive. */
+        /** Whether the repository is private, as its kept items tell; `null` while none are kept. Reactive. */
         function isPrivate(nameWithOwner: string) {
-            return privateRepositories.value.has(nameWithOwner);
+            if (privateRepositories.value.has(nameWithOwner)) {
+                return true;
+            }
+
+            return latestByRepository.value.has(nameWithOwner) ? false : null;
         }
 
         /** The latest change of an item kept of the repository (epoch ms); `null` while none are kept. Reactive. */

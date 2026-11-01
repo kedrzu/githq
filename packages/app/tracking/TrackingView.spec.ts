@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { assert, expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { SAMPLE_CANDIDATES, sampleCandidateProject, sampleCandidateRepository } from '@/testing/sampleTracking.js';
@@ -44,6 +44,20 @@ test('G8: tracked rows with tag, items and activity, the size only in the headin
     await expect.element(blog.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '35');
 });
 
+test('a repository whose visibility nothing tells yet has no tag, never "public"', async () => {
+    const { tracked: sample } = stories.default.args;
+    const [first, ...rest] = sample.repositories;
+    assert(first);
+    await Repositories.run({
+        args: { ...Repositories.args, tracked: { ...sample, repositories: [{ ...first, isPrivate: null }, ...rest] } },
+    });
+
+    const portal = page.getByRole('listitem').filter({ hasText: 'sigma-clinic/portal' }).first();
+    await expect.element(portal).toHaveTextContent('1,420');
+    await expect.element(portal).not.toHaveTextContent('public');
+    await expect.element(portal).not.toHaveTextContent('private');
+});
+
 test('G8: suggested as drawn, then how many more there are, net of what is tracked and suggested', async () => {
     await Repositories.run();
 
@@ -53,6 +67,25 @@ test('G8: suggested as drawn, then how many more there are, net of what is track
     // 12 + 312 + 3, less 6 tracked of theirs (the seventh is someone else's) and 2 suggested.
     await expect
         .element(page.getByText('319 more repositories you can track. Search to find them.'))
+        .toBeInTheDocument();
+});
+
+test('a suggestion of an organisation whose list GitHub refused is not taken off a count that never had it', async () => {
+    const candidates: TrackingCandidates = {
+        ...SAMPLE_CANDIDATES,
+        organizations: SAMPLE_CANDIDATES.organizations.map(organization =>
+            organization.login === 'acme-health' ? { ...organization, repositories: null } : organization,
+        ),
+    };
+    const suggested = [
+        ...stories.default.args.suggested,
+        { nameWithOwner: 'acme-health/fhir-tools', isPrivate: false, items: 1, activeAt: stories.default.args.now },
+    ];
+    await Repositories.run({ args: { ...Repositories.args, candidates, suggested } });
+
+    // 12 + 312, less 6 tracked of theirs and the 2 suggestions of sigma-clinic.
+    await expect
+        .element(page.getByText('316 more repositories you can track. Search to find them.'))
         .toBeInTheDocument();
 });
 
@@ -124,6 +157,7 @@ test('T1: a search narrows both lists by recent activity, Suggested gone, and re
     await expect.element(rows.nth(0)).toHaveTextContent('41 open');
     await expect.element(rows.nth(0)).toHaveTextContent('active 1h ago');
     await expect.element(rows.nth(6)).toHaveTextContent('sigma-clinic/pay-portal-legacy');
+    await expect.element(rows.nth(6)).toHaveTextContent('6 open · archived · read-only');
 
     expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
 
@@ -151,6 +185,35 @@ test('the owner filter narrows both lists and reads only that owner, as long as 
     expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
 });
 
+test('an owner with nothing left says so in a line; one hiding its private data says that, not 0', async () => {
+    const candidates: TrackingCandidates = {
+        ...SAMPLE_CANDIDATES,
+        organizations: SAMPLE_CANDIDATES.organizations.map(organization =>
+            organization.login === 'acme-health'
+                ? { ...organization, repositories: { repositories: [], totalCount: 0, nextCursor: null } }
+                : organization,
+        ),
+    };
+    await Repositories.run({ args: { ...Repositories.args, candidates } });
+
+    await userEvent.click(page.getByRole('button', { name: 'Owner: All owners' }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'acme-health' }));
+    await expect
+        .element(
+            page
+                .getByRole('paragraph')
+                .getByText('Until an owner approves it, none of its repositories can be tracked.', { exact: true }),
+        )
+        .toBeInTheDocument();
+    await expect.element(notTracked()).not.toBeInTheDocument();
+
+    await Projects.run();
+    await userEvent.click(page.getByRole('button', { name: 'Owner: All owners' }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'kedrzu' }));
+    await expect.element(page.getByText('Everything you can see in kedrzu is tracked.')).toBeInTheDocument();
+    await expect.element(notTracked()).not.toBeInTheDocument();
+});
+
 test('a search looks across owners one at a time, the first that has pages left', async () => {
     const onLoadMore = vi.fn();
     const candidates: TrackingCandidates = {
@@ -169,6 +232,8 @@ test("`?q=`: someone else's repository is offered once GitHub answered, and trac
     const row = notTracked().getByRole('listitem');
     await expect.element(row).toHaveTextContent('vitejs/vite');
     await expect.element(row).toHaveTextContent('88 open');
+    // Looked up, not one of the lists: no "1 of …".
+    await expect.element(notTracked()).not.toHaveTextContent(/\d of \d/);
     await userEvent.click(row.getByRole('button', { name: /^Track/ }));
     expect(onTrack).toHaveBeenCalledWith(sampleCandidateRepository('vitejs/vite', { ago: 7_200_000, open: 88 }));
 });
@@ -190,6 +255,15 @@ test("a project's address is looked up and offered; one already listed is not lo
     await expect.element(notTracked().getByText('Bug triage')).toBeInTheDocument();
     await sleep(400);
     expect(listed).not.toHaveBeenCalled();
+});
+
+test("each section looks up only what it lists: a repository's name on Projects is not looked up", async () => {
+    const find = vi.fn(() => Promise.resolve(sampleCandidateRepository('vitejs/vite', { ago: 60_000, open: 1 })));
+    await Projects.run({ args: { ...Projects.args, find, initialSearch: 'vitejs/vite' } });
+
+    await sleep(400);
+    expect(find).not.toHaveBeenCalled();
+    await expect.element(page.getByText('vitejs/vite', { exact: true })).not.toBeInTheDocument();
 });
 
 test('lookups cannot race: one per settled input, and a stale answer never replaces the current one', async () => {

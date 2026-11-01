@@ -1,7 +1,8 @@
 <!-- The Repositories and Projects sections of Settings (G8): changing what is tracked, later. Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the section opens, once a session, the rest page by page as a filter needs it) and anyone's by name, and keeps the organisations in view. -->
 <script lang="ts" setup>
+import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, onMounted, shallowRef } from 'vue';
+import { computed, onMounted, shallowRef, watch } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
 import { useNow } from '@/services/useNow.js';
@@ -25,6 +26,8 @@ import { haveOpenItemsArrived } from './utils/haveOpenItemsArrived.js';
 const TICK_MS = 15_000;
 /** How many of the repositories "my work" lives in the section suggests. */
 const SUGGESTED = 8;
+/** How long what is tracked and kept must stay as it is before the size this browser keeps is asked again. */
+const ESTIMATE_DELAY_MS = 1000;
 
 defineProps<{
   /** Which of the two sections it is. */
@@ -43,13 +46,15 @@ const browser = useService(Browser);
 const now = useNow(TICK_MS);
 const storedBytes = shallowRef<number | null>(null);
 
-// What GitHub offered says a repository is private before any of its items arrive to say so.
-const privateCandidates = computed(() => {
+// Whether a repository is private, as what GitHub offered says: read this session, it tells before any of its items
+// arrive, and after a change of visibility.
+const offeredPrivate = computed(() => {
   const candidates = tracking.candidates;
-  return new Set(
-    (candidates ? getCandidateRepositories(candidates) : [])
-      .filter(repository => repository.isPrivate)
-      .map(repository => repository.nameWithOwner),
+  return new Map(
+    (candidates ? getCandidateRepositories(candidates) : []).map(repository => [
+      repository.nameWithOwner,
+      repository.isPrivate,
+    ]),
   );
 });
 
@@ -62,8 +67,7 @@ const tracked = computed(() => ({
       name: repository.nameWithOwner,
       owner: parseRepositoryName(repository.nameWithOwner).owner,
       to: getRepositoryPath(repository.nameWithOwner),
-      isPrivate:
-        trackedItems.isPrivate(repository.nameWithOwner) || privateCandidates.value.has(repository.nameWithOwner),
+      isPrivate: offeredPrivate.value.get(repository.nameWithOwner) ?? trackedItems.isPrivate(repository.nameWithOwner),
       items: progress.total === null ? null : progress.done,
       activeAt: trackedItems.getActiveAt(repository.nameWithOwner),
       state: getState(target, sync.getRepositoryFreshness(repository.nameWithOwner).kind),
@@ -77,13 +81,15 @@ const tracked = computed(() => ({
       name: project.title,
       owner: project.owner,
       to: getProjectPath(project),
-      isPrivate: false,
+      isPrivate: null,
       items: progress.total === null ? null : progress.done,
       activeAt: null,
       state: getState(target, sync.getProjectFreshness(project.id).kind),
     };
   }),
 }));
+
+const trackedRows = computed(() => [...tracked.value.repositories, ...tracked.value.projects]);
 
 // The repositories "my work" has items in that are not tracked, the most items first.
 const suggested = computed((): SuggestedRepository[] => {
@@ -119,8 +125,29 @@ const suggested = computed((): SuggestedRepository[] => {
 
 onMounted(() => {
   void tracking.loadCandidates();
-  void browser.estimateStorage().then(estimate => (storedBytes.value = estimate));
+  void estimateStorage(() => false);
 });
+
+// What this browser keeps grows with each page a download writes and shrinks with each untracking: asked again once
+// what is tracked and how many items are kept settle, latest wins.
+watch(
+  [() => trackedRows.value.map(row => row.name).join('\n'), () => sumOver(trackedRows.value, row => row.items ?? 0)],
+  (_now, _before, onCleanup) => {
+    let stale = false;
+    const timer = setTimeout(() => void estimateStorage(() => stale), ESTIMATE_DELAY_MS);
+    onCleanup(() => {
+      stale = true;
+      clearTimeout(timer);
+    });
+  },
+);
+
+async function estimateStorage(isStale: () => boolean) {
+  const estimate = await browser.estimateStorage();
+  if (!isStale()) {
+    storedBytes.value = estimate;
+  }
+}
 
 function getState(target: TrackedTarget, freshness: Freshness['kind']): TrackedRowState {
   const progress = tracking.getProgress(target);

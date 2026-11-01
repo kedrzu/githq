@@ -22,7 +22,8 @@ export interface TrackedRow {
   /** The login it belongs to. */
   readonly owner: string;
   readonly to: string;
-  readonly isPrivate: boolean;
+  /** `null`: not known yet, or a project — no tag. */
+  readonly isPrivate: boolean | null;
   /** Its items this browser keeps; `null` before it counted them. */
   readonly items: number | null;
   /** The latest change of an item this browser keeps of it (epoch ms); `null` when none tells. */
@@ -68,9 +69,10 @@ import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { useFilteredListKeys } from '@/utils/useFilteredListKeys.js';
 
-import { getCandidateProjects, getCandidateRepositories } from './trackingCandidates.js';
+import { getCandidateProjects, getCandidateRepositories, getOwnerLists } from './trackingCandidates.js';
 import { getProjectPath, getRepositoryPath } from './trackingRoutes.js';
 import * as l from './TrackingView.loc.js';
 import type {
@@ -197,13 +199,15 @@ const matchingProjects = computed(() =>
 const matchingOffers = computed(() =>
   props.tab === 'repositories' ? matchingRepositories.value : matchingProjects.value,
 );
-// What the search names, once what is read of the lists doesn't have it: not while they are being read, and not
-// under an owner filter naming someone else.
+// What the search names, once what is read of the lists doesn't have it: only what the section lists (a repository
+// on Repositories, a project on Projects), not while the lists are being read, and not under an owner filter naming
+// someone else.
 const lookupReference = computed(() => {
   const named = reference.value;
+  const isKindShown = named?.kind === (props.tab === 'repositories' ? 'repository' : 'project');
   const isListed = shownRows.value.length > 0 || matchingOffers.value.length > 0;
   const isOwnerNamed = owner.value === ALL_OWNERS || owner.value.toLowerCase() === named?.owner.toLowerCase();
-  return named && props.candidates && !isListed && isOwnerNamed ? named : null;
+  return named && isKindShown && props.candidates && !isListed && isOwnerNamed ? named : null;
 });
 const foundOffer = computed((): OfferRow | null => {
   const candidate = found.value;
@@ -262,17 +266,20 @@ const offerSections = computed((): OfferSection[] => {
       ? matchingRepositories.value.map(toRepositoryOffer)
       : matchingProjects.value.map(toProjectOffer);
   const offered = foundOffer.value ? [...listed, foundOffer.value] : listed;
-  return !narrowed.value && offered.length === 0
+  // Nothing left of the owner chosen: the line under the lists says so, not a heading over nothing.
+  const isOwnerDone = needle.value === '' && untrackedTotal.value === 0;
+  return offered.length === 0 && (!narrowed.value || isOwnerDone)
     ? []
-    : [{ name: t(l.notTracked), detail: getNotTrackedDetail(offered.length), rows: offered }];
+    : [{ name: t(l.notTracked), detail: getNotTrackedDetail(listed.length), rows: offered }];
 });
 const offers = computed(() => offerSections.value.flatMap(section => section.rows));
+// Net of the suggestions `untrackedTotal` counted: those of an owner whose list GitHub gave.
 const moreRepositories = computed(() => {
-  const known = new Set(owners.value);
-  const suggestedOffered = props.suggested.filter(repository =>
-    known.has(repository.nameWithOwner.split('/')[0] ?? ''),
+  const listed = new Set(props.candidates ? getOwnerLists(props.candidates).map(list => list.login) : []);
+  const suggestedCounted = props.suggested.filter(repository =>
+    listed.has(parseRepositoryName(repository.nameWithOwner).owner),
   );
-  return Math.max(0, untrackedTotal.value - suggestedOffered.length);
+  return Math.max(0, untrackedTotal.value - suggestedCounted.length);
 });
 // Under the lists: what is left to find, what tracking a project means, or that nothing matches once all was read.
 const listNote = computed(() => {
@@ -281,6 +288,10 @@ const listNote = computed(() => {
   }
 
   if (narrowed.value) {
+    if (needle.value === '' && owner.value !== ALL_OWNERS && untrackedTotal.value === 0) {
+      return getOwnerDoneNote();
+    }
+
     const nothing = shownRows.value.length === 0 && offers.value.length === 0;
     return needle.value !== '' && nothing && !lookingUp.value && !pagesLeft.value
       ? t(l.noMatch, { filter: searchText.value })
@@ -296,6 +307,7 @@ const listNote = computed(() => {
     : null;
 });
 const organizations = computed(() => props.candidates?.organizations ?? []);
+const ownerOrganization = computed(() => organizations.value.find(organization => organization.login === owner.value));
 
 // The rest of what the filter looks through, a page at a time and an owner at a time: a page that arrives changes
 // `pagedOwners`, which asks for the next; one that fails changes nothing, which stops it. With no filter on there
@@ -387,28 +399,36 @@ function matchesSearch(name: string, path: string) {
   );
 }
 
-function getOwnerLists(candidates: TrackingCandidates) {
-  const own = { login: candidates.login, ...candidates.repositories };
-  return [
-    own,
-    ...candidates.organizations.flatMap(organization =>
-      organization.repositories ? [{ login: organization.login, ...organization.repositories }] : [],
-    ),
-  ];
-}
-
-function getNotTrackedDetail(matching: number) {
+// How many are listed of how many there are; one looked up by name is no part of the lists, so it is not counted.
+function getNotTrackedDetail(listed: number) {
   const total = numbers.format(untrackedTotal.value);
+  const hidden = ownerOrganization.value?.hiddenPrivate ? [t(l.privateHidden)] : [];
   if (needle.value === '') {
     return owner.value === ALL_OWNERS
       ? t(l.projectsYouCanSee, { count: untrackedTotal.value, formatted: total })
-      : t(l.inOwner, { total, owner: owner.value });
+      : [t(l.inOwner, { total, owner: owner.value }), ...hidden].join(' · ');
   }
 
-  const counted = numbers.format(matching);
-  return owner.value === ALL_OWNERS
-    ? t(l.matching, { matching: counted, total })
-    : t(l.matchingInOwner, { matching: counted, total, owner: owner.value });
+  if (foundOffer.value) {
+    return hidden.join('');
+  }
+
+  const counted = numbers.format(listed);
+  const matching =
+    owner.value === ALL_OWNERS
+      ? t(l.matching, { matching: counted, total })
+      : t(l.matchingInOwner, { matching: counted, total, owner: owner.value });
+  return [matching, ...hidden].join(' · ');
+}
+
+// The owner chosen has nothing left to track: one hiding its private data says so instead of a count.
+function getOwnerDoneNote() {
+  const organization = ownerOrganization.value;
+  if (!organization?.hiddenPrivate) {
+    return t(l.ownerDone, { owner: owner.value });
+  }
+
+  return props.tab === 'repositories' ? hiddenLimit(organization) : t(l.hiddenProjects);
 }
 
 function toRepositoryOffer(repository: CandidateRepository): OfferRow {
@@ -418,7 +438,10 @@ function toRepositoryOffer(repository: CandidateRepository): OfferRow {
     icon: repository.isPrivate ? Lock : BookMarked,
     isPrivate: repository.isPrivate,
     owner: null,
-    meta: t(l.open, { count: repository.openIssues + repository.openPullRequests }),
+    meta: [
+      t(l.open, { count: repository.openIssues + repository.openPullRequests }),
+      ...(repository.isArchived ? [t(l.archived)] : []),
+    ].join(' · '),
     active: repository.pushedAt === null ? null : activeText(Date.parse(repository.pushedAt)),
     track: () => emit('track', repository),
   };
@@ -512,7 +535,7 @@ function rowIcon(row: TrackedRow) {
     return SquareKanban;
   }
 
-  return row.isPrivate ? Lock : BookMarked;
+  return row.isPrivate === true ? Lock : BookMarked;
 }
 
 function findRowTarget(from: EventTarget | null): TrackedTarget | null {
@@ -623,14 +646,14 @@ function keyOf(target: TrackedTarget) {
                   >{{ row.name }}</RouterLink
                 >
                 <span
-                  v-if="row.target.kind === 'repository'"
-                  :class="css.trackingView_tag"
-                  >{{ t(row.isPrivate ? l.private : l.public) }}</span
-                >
-                <span
-                  v-else
+                  v-if="row.target.kind === 'project'"
                   :class="css.trackingView_owned"
                   >{{ row.owner }}</span
+                >
+                <span
+                  v-else-if="row.isPrivate !== null"
+                  :class="css.trackingView_tag"
+                  >{{ t(row.isPrivate ? l.private : l.public) }}</span
                 >
               </span>
               <template v-if="row.state.kind === 'downloading' && row.state.total">
