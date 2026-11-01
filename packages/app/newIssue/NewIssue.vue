@@ -10,7 +10,6 @@ import { computed, ref, shallowRef, watch } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import { AuthStore } from '@/auth/AuthStore.js';
-import { scoreText } from '@/commands/scoreText.js';
 import type { PickerOption } from '@/components/Picker.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
@@ -21,6 +20,7 @@ import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.js';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 
 import { findMissingFormFields } from './findMissingFormFields.js';
 import { IssueTemplateStore } from './IssueTemplateStore.js';
@@ -168,7 +168,7 @@ const projectOptions = computed((): PickerOption[] => {
 const repositoryChoices = computed((): RepositoryChoiceSection[] => {
   const typed = repositoryQuery.value.trim();
   const query = getTypedRepository(typed) ?? typed;
-  const sections: RepositoryChoiceSection[] = [];
+  const ours: { readonly best: number; readonly section: RepositoryChoiceSection }[] = [];
   const listed = new Set<string>();
   const project = composer.context?.project;
   if (project) {
@@ -181,6 +181,8 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
     tracking.repositories.map(tracked => tracked.nameWithOwner),
   );
   addSection('yourWork', t(l.yourWork), getWorkRepositories());
+  // The section holding the best match first, so Enter picks it; nothing typed scores all alike and keeps their order.
+  const sections = ours.toSorted((a, b) => b.best - a.best).map(({ section }) => section);
   const others = found.value.filter(choice => !listed.has(choice.nameWithOwner));
   const available = others.filter(choice => !choice.unavailable);
   const unavailable = others.filter(choice => choice.unavailable);
@@ -195,14 +197,19 @@ const repositoryChoices = computed((): RepositoryChoiceSection[] => {
   return sections;
 
   function addSection(key: string, heading: string, names: readonly string[]) {
-    const choices = names
-      .filter(name => !listed.has(name) && (!query || scoreText(query, name) !== null))
-      .map((name): RepositoryChoice => {
-        listed.add(name);
-        return { nameWithOwner: name, isPrivate: isPrivateRepository(name), detail: getChoiceDetail(name) };
-      });
-    if (choices.length > 0) {
-      sections.push({ key, heading, choices });
+    const unlisted = names.filter(name => !listed.has(name));
+    const matches = findMatches(
+      query,
+      prepareMatchTexts(unlisted, name => [name]),
+      { letters: true },
+    );
+    const choices = matches.map(({ row: name }): RepositoryChoice => {
+      listed.add(name);
+      return { nameWithOwner: name, isPrivate: isPrivateRepository(name), detail: getChoiceDetail(name) };
+    });
+    const [best] = matches;
+    if (best) {
+      ours.push({ best: best.score, section: { key, heading, choices } });
     }
   }
 });

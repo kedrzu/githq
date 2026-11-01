@@ -2,9 +2,45 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { sampleCandidateRepository, SAMPLE_CANDIDATES } from '@/testing/sampleTracking.js';
+
 import * as stories from './TrackingChooser.stories.jsx';
+import type { TrackingCandidates } from './TrackingTypes.js';
 
 const { Choose, HiddenOrganisation, NothingToPick } = composeStories(stories);
+
+const ANY = { ago: 0, open: 0 };
+
+/** Two owners, whose rows in the list's order rank differently; `sigma-clinic` has more pages to read. */
+const FILTERED: TrackingCandidates = {
+    ...SAMPLE_CANDIDATES,
+    repositories: {
+        repositories: [
+            sampleCandidateRepository('kedrzu/keynote', ANY),
+            sampleCandidateRepository('kedrzu/note', ANY),
+            sampleCandidateRepository('kedrzu/Żółty-theme', ANY),
+            sampleCandidateRepository('kedrzu/nvim-tools-extras', ANY),
+        ],
+        totalCount: 4,
+        nextCursor: null,
+    },
+    organizations: [
+        {
+            login: 'sigma-clinic',
+            avatarUrl: '',
+            hiddenPrivate: false,
+            repositories: {
+                repositories: [
+                    sampleCandidateRepository('sigma-clinic/banknote', ANY),
+                    sampleCandidateRepository('sigma-clinic/notes', ANY),
+                ],
+                totalCount: 50,
+                nextCursor: 'cursor-2',
+            },
+            projects: [],
+        },
+    ],
+};
 
 test('the own repositories fold after four, saying how many are chosen; an organisation shown in full reads more of its repositories when asked', async () => {
     const onLoadMore = vi.fn();
@@ -92,3 +128,51 @@ test('with nothing to pick, ⌘↵ goes on to My work', async () => {
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     expect(onTrack).toHaveBeenCalledOnce();
 });
+
+test('typed text ranks the rows within each owner, whose order stays; ⌘A and the counts follow the rows shown', async () => {
+    const onLoadMore = vi.fn();
+    await Choose.run({ args: { ...Choose.args, candidates: FILTERED, repositories: [], projects: [], onLoadMore } });
+
+    await userEvent.keyboard('/note');
+    await expect.poll(repositoryNames).toEqual(['note', 'keynote', 'notes', 'banknote']);
+    await expect.element(page.getByText('2 of 4 match “note”')).toBeInTheDocument();
+    await expect.element(page.getByText('2 of 50 match “note”')).toBeInTheDocument();
+    // A filter still looks through all of an owner's repositories.
+    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+
+    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+    for (const name of ['note', 'keynote', 'notes', 'banknote']) {
+        await expect.element(repositoryRow(name)).toBeChecked();
+    }
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(repositoryRow('Żółty-theme')).not.toBeChecked();
+});
+
+test('words in another order and a name without its diacritics find the same row; scattered letters do not', async () => {
+    await Choose.run({ args: { ...Choose.args, candidates: FILTERED, repositories: [], projects: [] } });
+
+    await userEvent.keyboard('/zolty');
+    await expect.poll(repositoryNames).toEqual(['Żółty-theme']);
+
+    await userEvent.keyboard('{Escape}theme zolty');
+    await expect.poll(repositoryNames).toEqual(['Żółty-theme']);
+
+    // Its letters in order, but not its words: nothing to find, nothing for ⌘A to choose.
+    await userEvent.keyboard('{Escape}nvx');
+    await expect.poll(repositoryNames).toEqual([]);
+    await expect.element(page.getByText('0 of 4 match “nvx”')).toBeInTheDocument();
+});
+
+/** The rows of the repositories' column, in order, by the name after the owner. */
+function repositoryNames() {
+    return page
+        .getByRole('region', { name: 'Repositories' })
+        .getByRole('checkbox')
+        .elements()
+        .map(row => /\/(.+?)\s*(?:public|private)/iu.exec(row.closest('[data-tracking-row]')?.textContent ?? '')?.[1]);
+}
+
+function repositoryRow(name: string) {
+    return page.getByRole('checkbox', { name: new RegExp(`/${name} `, 'u') });
+}

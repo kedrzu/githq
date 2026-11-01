@@ -19,6 +19,7 @@ import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Menu from '@/components/Menu.vue';
 import Popover from '@/components/Popover.vue';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import * as l from './ListToolbar.loc.js';
 import ListToolbarControl from './ListToolbarControl.vue';
@@ -247,7 +248,10 @@ function change(changes: Partial<ListViewOptions>) {
 </script>
 
 <template>
-  <header :class="css.listToolbar">
+  <header
+    :class="css.listToolbar"
+    v-bind="WINDOW_DRAG_REGION"
+  >
     <h1 :class="css.listToolbar_title">
       <Menu
         v-if="$slots.titleMenu"

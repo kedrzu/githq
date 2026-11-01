@@ -256,7 +256,7 @@ const text = computed(() => {
 
 .statusBar_sidebar_collapsed {
   justify-content: center;
-  width: $sidebar-rail-width;
+  width: var(--sidebar-rail-width, $sidebar-rail-width);
   padding: 0;
 }
 

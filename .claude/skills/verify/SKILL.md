@@ -74,15 +74,16 @@ Rules:
 
 `bun run e2e` (Playwright, `packages/e2e`) runs two projects. `web` builds the local app
 (`bun --cwd packages/app build:local` → `packages/app/.output-local`, which includes the dev token sign-in) and
-serves it with the Worker in one `wrangler dev` on `http://localhost:8790`, with a dummy OAuth App from
+serves it with the Worker in one `wrangler dev`, with a dummy OAuth App from
 `packages/e2e/worker.vars` (never the real `.env`). `desktop` (`src/desktop/`) builds the desktop app's SPA
 (`GITHQ_GITHUB_CLIENT_ID=e2e-client bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
-and serves it on `http://localhost:8791` with a static server falling back to `index.html`
+and serves it with a static server falling back to `index.html`
 (`src/desktop/serveDesktopApp.ts`, no Worker); its native side is faked in the page
 (`src/desktop/FakeNativeBridge.ts`), and a request to githq.dev or `/api/*` fails the test. Both servers
 start whichever project runs; one project alone: `bun run e2e --project=desktop`. Every GitHub host is
 answered by the GitHub mock (`src/github/GitHubMock.ts`): an operation or URL a test did not register fails
-that test by name. Ports 8790 and 8791 must be free; `bun run dev` on 8787 can stay up.
+that test by name. Both servers listen on free ports picked for each run (`src/localApp.ts`), so `bun run dev`
+and other worktrees' e2e runs can go on next to it.
 
 A failed test leaves its screenshot and trace in `packages/e2e/test-results/<test>/`:
 `bunx playwright show-trace packages/e2e/test-results/<test>/trace.zip` replays it. Tests must pass run
