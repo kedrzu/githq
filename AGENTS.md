@@ -36,6 +36,11 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run deploy` — build the SPA and deploy both Workers by hand: `githq` on https://githq.dev and
   `githq-www` redirecting www (Cloudflare account of kedrzu@gmail.com; the OAuth App "githq" credentials are
   Worker secrets). Every push to `main` deploys by itself once the checks pass (`.github/workflows/deploy.yml`).
+- `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D21) against `nuxt dev`; sign-in uses the
+  Device Flow with `.env`'s `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
+- `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
+- Desktop releases: push a tag `vX.Y.Z` from `main` (`-rc.N` for a prerelease the updater never offers); CI fills a
+  draft release that the owner publishes by hand. Steps and one-time setup: `docs/desktop/RELEASING.md`.
 - `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`
   (`bun --cwd packages/github schema` refreshes GitHub's schema).
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
