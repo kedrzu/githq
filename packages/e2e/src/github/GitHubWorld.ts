@@ -357,6 +357,8 @@ interface WorldMutationHandler<TName extends GitHubWorldMutation> {
 
 /** How many checks a pull request of the world runs. */
 const CHECK_COUNT = 5;
+/** The tip of every base branch of the world; each pull request is up to date with it. */
+const MAIN_OID = '0000000000000000000000000000000000000001';
 /** A connection the world answers whole: no page after it. */
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
@@ -1687,6 +1689,10 @@ export class GitHubWorld {
                 nodes: pullRequest.reviewRequests.map(login => ({ requestedReviewer: { login } })),
             },
             latestOpinionatedReviews: { nodes: [] },
+            stack: null,
+            stackEntry: null,
+            baseRefOid: MAIN_OID,
+            baseRef: { target: { oid: MAIN_OID } },
             additions: 12 * item.number,
             deletions: 3 * item.number,
             changedFiles: 2,

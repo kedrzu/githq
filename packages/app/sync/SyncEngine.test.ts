@@ -712,5 +712,9 @@ function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragme
         statusCheckRollup: null,
         reviewRequests: { nodes: [] },
         latestOpinionatedReviews: { nodes: [] },
+        stack: null,
+        stackEntry: null,
+        baseRefOid: 'base-oid',
+        baseRef: { target: { oid: 'base-oid' } },
     };
 }

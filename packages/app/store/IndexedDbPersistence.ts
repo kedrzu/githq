@@ -27,7 +27,7 @@ import type { Item } from './ItemTypes.js';
  * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over too (`TabChannel`): raise
  * it when a `TabMessage` changes, so tabs of two githq versions do not hear each other.
  */
-export const LOCAL_DATABASE_VERSION = 3;
+export const LOCAL_DATABASE_VERSION = 4;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {

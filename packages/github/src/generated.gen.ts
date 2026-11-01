@@ -592,6 +592,7 @@ export type ItemDetailQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              baseRefOid: string;
               reactionGroups: Array<{
                   content: ReactionContent;
                   viewerHasReacted: boolean;
@@ -807,6 +808,9 @@ export type ItemDetailQuery = {
                   viewerPermission: RepositoryPermission | null;
                   owner: { login: string } | { login: string };
               };
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               latestOpinionatedReviews: {
                   nodes: Array<{
                       state: PullRequestReviewState;
@@ -1071,6 +1075,7 @@ export type ItemDetailsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              baseRefOid: string;
               reactionGroups: Array<{
                   content: ReactionContent;
                   viewerHasReacted: boolean;
@@ -1286,6 +1291,9 @@ export type ItemDetailsQuery = {
                   viewerPermission: RepositoryPermission | null;
                   owner: { login: string } | { login: string };
               };
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               latestOpinionatedReviews: {
                   nodes: Array<{
                       state: PullRequestReviewState;
@@ -1377,6 +1385,7 @@ export type ItemsByIdsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              baseRefOid: string;
               author:
                   | { login: string; avatarUrl: string }
                   | { login: string; avatarUrl: string }
@@ -1411,6 +1420,9 @@ export type ItemsByIdsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contexts: {
@@ -1758,6 +1770,7 @@ export type ProjectFullQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                baseRefOid: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -1791,6 +1804,16 @@ export type ProjectFullQuery = {
                                             | Record<PropertyKey, never>
                                             | null;
                                     } | null> | null;
+                                } | null;
+                                stack: { id: string; number: number; size: number } | null;
+                                stackEntry: { position: number } | null;
+                                baseRef: {
+                                    target:
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | null;
                                 } | null;
                                 statusCheckRollup: {
                                     state: StatusState;
@@ -1982,6 +2005,7 @@ export type ProjectItemsQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                baseRefOid: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -2015,6 +2039,16 @@ export type ProjectItemsQuery = {
                                             | Record<PropertyKey, never>
                                             | null;
                                     } | null> | null;
+                                } | null;
+                                stack: { id: string; number: number; size: number } | null;
+                                stackEntry: { position: number } | null;
+                                baseRef: {
+                                    target:
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | { oid: string }
+                                        | null;
                                 } | null;
                                 statusCheckRollup: {
                                     state: StatusState;
@@ -2224,6 +2258,10 @@ export type PullRequestStatusesQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              baseRefOid: string;
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contexts: {
@@ -2480,6 +2518,7 @@ export type RepositoryPullRequestsQuery = {
                 reviewDecision: PullRequestReviewDecision | null;
                 mergeable: MergeableState;
                 mergeStateStatus: MergeStateStatus;
+                baseRefOid: string;
                 author:
                     | { login: string; avatarUrl: string }
                     | { login: string; avatarUrl: string }
@@ -2513,6 +2552,11 @@ export type RepositoryPullRequestsQuery = {
                             | Record<PropertyKey, never>
                             | null;
                     } | null> | null;
+                } | null;
+                stack: { id: string; number: number; size: number } | null;
+                stackEntry: { position: number } | null;
+                baseRef: {
+                    target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                 } | null;
                 statusCheckRollup: {
                     state: StatusState;
@@ -3480,6 +3524,7 @@ export type ProjectItemPageFieldsFragment = {
                   reviewDecision: PullRequestReviewDecision | null;
                   mergeable: MergeableState;
                   mergeStateStatus: MergeStateStatus;
+                  baseRefOid: string;
                   author:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -3513,6 +3558,11 @@ export type ProjectItemPageFieldsFragment = {
                               | Record<PropertyKey, never>
                               | null;
                       } | null> | null;
+                  } | null;
+                  stack: { id: string; number: number; size: number } | null;
+                  stackEntry: { position: number } | null;
+                  baseRef: {
+                      target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                   } | null;
                   statusCheckRollup: {
                       state: StatusState;
@@ -3683,6 +3733,7 @@ export type ProjectItemRowFieldsFragment = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              baseRefOid: string;
               author:
                   | { login: string; avatarUrl: string }
                   | { login: string; avatarUrl: string }
@@ -3717,6 +3768,9 @@ export type ProjectItemRowFieldsFragment = {
                           | null;
                   } | null> | null;
               } | null;
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contexts: {
@@ -3917,6 +3971,7 @@ export type PullRequestDetailFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    baseRefOid: string;
     reactionGroups: Array<{
         content: ReactionContent;
         viewerHasReacted: boolean;
@@ -4123,6 +4178,9 @@ export type PullRequestDetailFieldsFragment = {
         viewerPermission: RepositoryPermission | null;
         owner: { login: string } | { login: string };
     };
+    stack: { id: string; number: number; size: number } | null;
+    stackEntry: { position: number } | null;
+    baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     latestOpinionatedReviews: {
         nodes: Array<{
             state: PullRequestReviewState;
@@ -4157,6 +4215,7 @@ export type PullRequestFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    baseRefOid: string;
     author:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -4187,6 +4246,9 @@ export type PullRequestFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    stack: { id: string; number: number; size: number } | null;
+    stackEntry: { position: number } | null;
+    baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     statusCheckRollup: {
         state: StatusState;
         contexts: {
@@ -4231,6 +4293,10 @@ export type PullRequestStatusFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    baseRefOid: string;
+    stack: { id: string; number: number; size: number } | null;
+    stackEntry: { position: number } | null;
+    baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     statusCheckRollup: {
         state: StatusState;
         contexts: {
@@ -4460,6 +4526,7 @@ export type AddDraftIssueMutation = {
                       reviewDecision: PullRequestReviewDecision | null;
                       mergeable: MergeableState;
                       mergeStateStatus: MergeStateStatus;
+                      baseRefOid: string;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -4493,6 +4560,11 @@ export type AddDraftIssueMutation = {
                                   | Record<PropertyKey, never>
                                   | null;
                           } | null> | null;
+                      } | null;
+                      stack: { id: string; number: number; size: number } | null;
+                      stackEntry: { position: number } | null;
+                      baseRef: {
+                          target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                       } | null;
                       statusCheckRollup: {
                           state: StatusState;
@@ -6036,6 +6108,20 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -6161,6 +6247,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -6455,6 +6555,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -6736,6 +6850,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -7116,6 +7244,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -7698,6 +7840,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -8140,6 +8296,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -8329,6 +8499,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -8822,6 +9006,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -9109,6 +9307,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -9267,6 +9479,20 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -9679,6 +9905,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
@@ -10209,6 +10449,20 @@ fragment PullRequestStatusFields on PullRequest {
   reviewDecision
   mergeable
   mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
   statusCheckRollup {
     state
     contexts {
