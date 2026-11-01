@@ -12,9 +12,9 @@ export class LandingHarness {
         this.root = page.getByRole('main');
     }
 
-    /** The hero's "Sign in with GitHub". */
+    /** The hero's "Sign in with GitHub", the first of the page's two (the other closes the page). */
     get signInButton(): Locator {
-        return this.root.getByRole('button', { name: 'Sign in with GitHub' });
+        return this.root.getByRole('button', { name: 'Sign in with GitHub' }).first();
     }
 
     /** Why the visitor is back from a sign-in (G1): cancelled, failed, signed out. */

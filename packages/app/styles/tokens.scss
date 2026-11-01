@@ -123,6 +123,9 @@ $landing-visual-width: 640px;
 $landing-visual-height: 560px;
 $landing-visual-height-mobile: 400px;
 $radius-landing-visual: 16px;
+// The open source section's repository card, as GitHub draws a repository's language.
+$radius-landing-card: 18px;
+$color-landing-typescript: #3178c6;
 // Screenshots lifted off the page, and the boxes laid over them.
 $shadow-landing-visual: 0 30px 80px rgb(0 0 0 / 60%);
 $shadow-landing-overlay: 0 24px 64px rgb(0 0 0 / 75%);
@@ -151,6 +154,11 @@ $shadow-landing-toast: 0 12px 32px rgb(0 0 0 / 67%);
 // down to 20 on a phone, and never wider than `$landing-content-width`.
 @mixin landing-gutter {
     padding-inline: max(clamp(20px, 8.33cqi, 120px), calc((100% - #{$landing-content-width}) / 2));
+
+    // The phone frame's 20: the scale above would still give 32 at 390.
+    @include landing-mobile {
+        padding-inline: 20px;
+    }
 }
 
 // The focus ring for keyboard users only.

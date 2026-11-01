@@ -1,18 +1,14 @@
-<!-- The landing page's statement (githq.pen "Landing — githq.dev", Statement): githq is not another tracker but a faster way to work GitHub's — everything stays on GitHub and every change is an ordinary GitHub change. The navigation's "How it works" lands here. -->
+<!-- The landing page's statement (githq.pen "Landing — githq.dev", Statement): githq is not another tracker but a faster way to work GitHub's — everything stays on GitHub and every change is an ordinary GitHub change. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
 import * as l from './LandingStatement.loc.js';
-import { LandingSectionId } from './landingLinks.js';
 
 const t = useTranslate();
 </script>
 
 <template>
-  <section
-    :id="LandingSectionId.howItWorks"
-    :class="css.landingStatement"
-  >
+  <section :class="css.landingStatement">
     <h2 :class="css.landingStatement_title">
       <span :class="css.landingStatement_line">{{ t(l.title) }}</span>
       <span :class="[css.landingStatement_line, css.landingStatement_line_dim]">{{ t(l.subtitle) }}</span>

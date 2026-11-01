@@ -28,7 +28,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** A first visit on a wide screen: the navigation, the hero, the GitHub concepts, the statement and the features. */
+/** A first visit on a wide screen: the navigation, the hero, the GitHub concepts, the statement, the features, the details, the comparison, open source, the last call to action and the footer. */
 export const Landing: Story = { decorators: [wide] };
 
 /** G1: back from GitHub after "Cancel" on its consent screen, the banner above the hero. */
@@ -41,7 +41,7 @@ export const SignInCancelled: Story = {
     }),
 };
 
-/** On a phone: the navigation folds into a menu, the features stack, the screenshots are cropped to their top left. */
+/** On a phone: the navigation folds into a menu, the features, the details and the footer stack, the screenshots are cropped to their top left. */
 export const Phone: Story = { decorators: [phone] };
 
 /** On a phone, the navigation's menu open. */

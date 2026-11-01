@@ -17,33 +17,47 @@ function landingPage(): HTMLElement {
     return root;
 }
 
-test('"Sign in" in the navigation and "Sign in with GitHub" in the hero both sign in', async () => {
+test('every "Sign in" signs in: the navigation, the hero, the last call to action and the footer', async () => {
     const onSignIn = Landing.args.onSignIn;
     await Landing.run();
 
     // On a wide page the sections are in the bar, with no menu.
     await expect.element(page.getByRole('navigation', { name: 'Sections' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Menu' })).not.toBeInTheDocument();
-    await userEvent.click(page.getByRole('button', { name: 'Sign in', exact: true }));
+    await userEvent.click(page.getByRole('banner').getByRole('button', { name: 'Sign in', exact: true }));
     expect(onSignIn).toHaveBeenCalledTimes(1);
-    await userEvent.click(page.getByRole('button', { name: 'Sign in with GitHub' }));
+
+    const signIns = page.getByRole('button', { name: 'Sign in with GitHub' });
+    expect(signIns.elements()).toHaveLength(2);
+    await userEvent.click(signIns.nth(0));
     expect(onSignIn).toHaveBeenCalledTimes(2);
+    await userEvent.click(signIns.nth(1));
+    expect(onSignIn).toHaveBeenCalledTimes(3);
+
+    await userEvent.click(page.getByRole('contentinfo').getByRole('button', { name: 'Sign in', exact: true }));
+    expect(onSignIn).toHaveBeenCalledTimes(4);
 });
 
 test('"Star on GitHub" and "Why?" open the repository on GitHub, in a tab of their own', async () => {
     await Landing.run();
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    const star = page.getByRole('link', { name: 'Star on GitHub' });
-    await expect.element(star).toHaveAttribute('href', REPOSITORY_URL);
-    await expect.element(star).toHaveAttribute('target', '_blank');
-    const why = page.getByRole('link', { name: 'Why?' });
-    await expect
-        .element(why)
-        .toHaveAttribute(
-            'href',
+    // The hero, the open source card and the last call to action.
+    const stars = page.getByRole('link', { name: 'Star on GitHub' }).elements();
+    expect(stars).toHaveLength(3);
+    for (const star of stars) {
+        expect(star.getAttribute('href')).toBe(REPOSITORY_URL);
+        expect(star.getAttribute('target')).toBe('_blank');
+    }
+    // The hero and the last call to action.
+    const whys = page.getByRole('link', { name: 'Why?' }).elements();
+    expect(whys).toHaveLength(2);
+    for (const why of whys) {
+        expect(why.getAttribute('href')).toBe(
             `${REPOSITORY_URL}/blob/main/docs/design/githq/README.md#what-githq-keeps-in-your-browser`,
         );
-    await expect.element(why).toHaveAttribute('target', '_blank');
+        expect(why.getAttribute('target')).toBe('_blank');
+    }
 });
 
 test('every way off the page goes to githq on GitHub, and every link within it lands on a section', async () => {
@@ -57,13 +71,50 @@ test('every way off the page goes to githq on GitHub, and every link within it l
     expect(outside.filter(href => !href.startsWith(REPOSITORY_URL))).toEqual([]);
     expect(root.textContent).not.toContain('mlaine');
 
-    // "Open source" (`#open-source`) lands on a section the rest of the page brings.
-    const sections = links.filter(href => href.startsWith('#') && href !== '#open-source');
-    expect(sections).toEqual(['#features', '#keyboard', '#how-it-works']);
+    // The navigation's, then the footer's.
+    const sections = links.filter(href => href.startsWith('#'));
+    expect(sections).toEqual([
+        '#features',
+        '#keyboard',
+        '#how-it-works',
+        '#open-source',
+        '#features',
+        '#keyboard',
+        '#install',
+    ]);
     for (const href of sections) {
         expect(root.querySelector(href)).not.toBeNull();
     }
 });
+
+test('the comparison says every mark in words, not only with an icon', async () => {
+    await Landing.run();
+
+    const table = page.getByRole('table', { name: 'The best of both. Without the second tool.' });
+    await expect.element(table).toBeVisible();
+    const columns = table.getByRole('columnheader').elements();
+    expect(columns.map(textOf)).toEqual(['github.com', 'A dedicated tracker', 'git/hq']);
+    // githq's column is headed by the wordmark, named for screen readers.
+    await expect.element(table.getByRole('columnheader', { name: 'githq' })).toBeVisible();
+
+    const rows = [...table.element().querySelectorAll('tbody tr')].map(row => [...row.children].map(textOf));
+    expect(rows).toEqual([
+        ['Your work lives next to your code', 'Yes', 'No', 'Yes'],
+        ['Instant — no spinner on navigation', 'No', 'Yes', 'Yes'],
+        ['Everything from the keyboard', 'Partly', 'Yes', 'Yes'],
+        ['All your repositories in one view', 'Partly', 'Yes', 'Yes'],
+        ['Nothing to import or keep in sync', 'Yes', 'No', 'Yes'],
+        ['Price for your team', 'Free', 'Per seat', 'Free'],
+    ]);
+    for (const cell of table.element().querySelectorAll('tbody th')) {
+        expect(cell.getAttribute('scope')).toBe('row');
+    }
+});
+
+/** An element's text with its spaces made plain: the translations keep "A" with the word after it (a no-break space). */
+function textOf(element: Element): string {
+    return element.textContent.replaceAll(/\s+/g, ' ').trim();
+}
 
 test('the hero screenshot loads first; the rest wait for the reader, with their size known before they load', async () => {
     await Landing.run();
@@ -86,7 +137,8 @@ test('on a phone the sections are behind a menu, which a chosen section closes',
     await Phone.run();
 
     const menuButton = page.getByRole('button', { name: 'Menu' });
-    await expect.element(page.getByRole('link', { name: 'Keyboard' })).not.toBeInTheDocument();
+    const header = page.getByRole('banner');
+    await expect.element(header.getByRole('link', { name: 'Keyboard' })).not.toBeInTheDocument();
     await expect.element(menuButton).toHaveAttribute('aria-expanded', 'false');
 
     await userEvent.click(menuButton);

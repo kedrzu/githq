@@ -1,0 +1,4 @@
+permission:
+  en: GitHub will ask for full repository access. githq only touches issues, pull requests and projects.
+why:
+  en: Why?

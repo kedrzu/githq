@@ -1,0 +1,36 @@
+tagline:
+  en: GitHub Issues, at the speed of thought.
+product:
+  en: Product
+features:
+  en: Features
+keyboard:
+  en: Keyboard
+install:
+  en: Install the app
+signIn:
+  en: Sign in
+project:
+  en: Project
+github:
+  en: GitHub
+issues:
+  en: Issues
+designDocs:
+  en: Design docs
+releases:
+  en: Releases
+resources:
+  en: Resources
+howSyncWorks:
+  en: How sync works
+apiLimits:
+  en: API limits
+privacy:
+  en: Privacy
+legal:
+  en: © 2026 githq · Not affiliated with GitHub, Inc.
+githubRepository:
+  en: githq on GitHub
+releaseFeed:
+  en: Release feed
