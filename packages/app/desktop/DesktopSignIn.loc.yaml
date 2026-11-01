@@ -42,7 +42,7 @@ asksTitle:
 asksRepositories:
   en: Full access to repositories
 asksRepositoriesDetail:
-  en: GitHub has nothing narrower for issues and pull requests. githq only reads and edits issues, pull requests, labels, milestones and comments. It never touches code, branches or settings.
+  en: GitHub has nothing narrower for issues and pull requests. githq only reads and edits issues, pull requests, labels, milestones and comments and, if you ask, its own settings repository. It never touches code, branches or the settings of your repositories.
 asksProjects:
   en: Projects
 asksProjectsDetail:
