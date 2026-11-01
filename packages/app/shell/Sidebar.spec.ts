@@ -17,7 +17,7 @@ test("a tracked repository's row is current on any of its lists, not only on its
 test('a private repository has a lock instead of the repository icon', async () => {
     await Expanded.run();
 
-    const portal = page.getByRole('link', { name: /^sigma-clinic\/portal/ }).element();
+    const portal = page.getByRole('link', { name: /^skyline-labs\/portal/ }).element();
     const githq = page.getByRole('link', { name: /^kedrzu\/githq/ }).element();
     expect(portal.querySelector('.lucide-lock')).not.toBeNull();
     expect(githq.querySelector('.lucide-lock')).toBeNull();

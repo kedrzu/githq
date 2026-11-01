@@ -39,9 +39,9 @@ test('words in another order and a name without its diacritics find the same row
 test('what is not tracked is ranked before it is cut to the first twenty', async () => {
     const repositories = [
         ...Array.from({ length: 24 }, (_, index) =>
-            sampleCandidateRepository(`sigma-clinic/keynote-${index}`, { ago: 0, open: 0 }),
+            sampleCandidateRepository(`skyline-labs/keynote-${index}`, { ago: 0, open: 0 }),
         ),
-        sampleCandidateRepository('sigma-clinic/note', { ago: 0, open: 0 }),
+        sampleCandidateRepository('skyline-labs/note', { ago: 0, open: 0 }),
     ];
     await Repositories.run({
         args: {
@@ -56,7 +56,7 @@ test('what is not tracked is ranked before it is cut to the first twenty', async
 
     await find('note');
     await expect.poll(() => notTracked().length).toBe(20);
-    expect(notTracked()[0]).toMatch(/^sigma-clinic\/note/u);
+    expect(notTracked()[0]).toMatch(/^skyline-labs\/note/u);
 });
 
 test('words in another order find a project to track; with nothing typed they stay in their order', async () => {

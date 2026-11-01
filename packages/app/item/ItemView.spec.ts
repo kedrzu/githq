@@ -93,7 +93,7 @@ test('opened before its detail arrives: the row shows at once and the comments s
     await LoadingComments.run();
 
     await expect
-        .element(page.getByRole('heading', { name: 'Calendar shows wrong timezone for recurring visits' }))
+        .element(page.getByRole('heading', { name: 'Calendar shows wrong timezone for recurring bookings' }))
         .toBeInTheDocument();
     await expect.element(page.getByText('Loading comments…')).toBeInTheDocument();
     await expect.element(page.getByText('In progress')).toBeInTheDocument();
@@ -151,7 +151,7 @@ test('M1: the reference opens the item menu — the actions grouped, each with i
     await IssueInPanel.run();
     const { onEdit, onClose } = IssueInPanel.args;
 
-    await userEvent.click(page.getByRole('button', { name: /^Actions of sigma-clinic\/portal#/ }));
+    await userEvent.click(page.getByRole('button', { name: /^Actions of skyline-labs\/portal#/ }));
     const menu = page.getByRole('menu');
     await expect.element(menu).toBeVisible();
     const entries = [...menu.element().querySelectorAll('[role="menuitem"]')].map(entry => entry.textContent);
@@ -216,7 +216,7 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
 test("K1b: edits a contributor can't make are not offered — no keys, no pickers, one line says why", async () => {
     await ContributorView.run();
 
-    await expect.element(page.getByRole('note')).toHaveTextContent("set by sigma-clinic/portal's maintainers");
+    await expect.element(page.getByRole('note')).toHaveTextContent("set by skyline-labs/portal's maintainers");
     await expect.element(page.getByRole('button', { name: /^Labels:/ })).not.toBeInTheDocument();
     await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await expect.element(page.getByRole('menuitem', { name: /^Assign to/ })).not.toBeInTheDocument();

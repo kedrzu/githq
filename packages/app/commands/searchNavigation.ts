@@ -54,7 +54,7 @@ const ITEM_HIT_LIMIT = 1000;
 /** The items as searched, per `items` array: readying them is the one step too slow to repeat per keystroke. */
 const PREPARED_ITEMS = new WeakMap<readonly Item[], PreparedMatchTexts<Item>>();
 
-/** An item as typed: `#12`, `12`, `portal#12`, `sigma-clinic/portal#12`. */
+/** An item as typed: `#12`, `12`, `portal#12`, `skyline-labs/portal#12`. */
 const ITEM_NUMBER = /^(?:([\w.-]+(?:\/[\w.-]+)?)?#)?(\d+)$/u;
 
 /** `#12`: nothing but an item's number is asked for. */

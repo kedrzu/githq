@@ -11,7 +11,7 @@ const { Choose, HiddenOrganisation, NothingToPick } = composeStories(stories);
 
 const ANY = { ago: 0, open: 0 };
 
-/** Two owners, whose rows in the list's order rank differently; `sigma-clinic` has more pages to read. */
+/** Two owners, whose rows in the list's order rank differently; `skyline-labs` has more pages to read. */
 const FILTERED: TrackingCandidates = {
     ...SAMPLE_CANDIDATES,
     repositories: {
@@ -26,13 +26,13 @@ const FILTERED: TrackingCandidates = {
     },
     organizations: [
         {
-            login: 'sigma-clinic',
+            login: 'skyline-labs',
             avatarUrl: '',
             hiddenPrivate: false,
             repositories: {
                 repositories: [
-                    sampleCandidateRepository('sigma-clinic/banknote', ANY),
-                    sampleCandidateRepository('sigma-clinic/notes', ANY),
+                    sampleCandidateRepository('skyline-labs/banknote', ANY),
+                    sampleCandidateRepository('skyline-labs/notes', ANY),
                 ],
                 totalCount: 50,
                 nextCursor: 'cursor-2',
@@ -51,12 +51,12 @@ test('the own repositories fold after four, saying how many are chosen; an organ
     await userEvent.click(page.getByRole('button', { name: '8 more of yours, all selected' }));
     await expect.element(page.getByRole('checkbox', { name: /^kedrzu\/nvim / })).toBeChecked();
 
-    // sigma-clinic's two chosen ones stay in sight beside its first four; its other 292 are read when asked for.
+    // skyline-labs's two chosen ones stay in sight beside its first four; its other 292 are read when asked for.
     await userEvent.click(page.getByRole('button', { name: 'Show all 312' }));
-    await expect.element(page.getByRole('checkbox', { name: /^sigma-clinic\/service-9 / })).toBeInTheDocument();
+    await expect.element(page.getByRole('checkbox', { name: /^skyline-labs\/service-9 / })).toBeInTheDocument();
     expect(onLoadMore).not.toHaveBeenCalled();
     await userEvent.click(page.getByRole('button', { name: 'Show more of the 292 others' }));
-    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
 });
 
 test('/ filters, ↓/↑ move between the matching rows and back to the filter, Space chooses, ⌘A chooses all that match, Esc clears, ⌘↵ tracks', async () => {
@@ -64,15 +64,15 @@ test('/ filters, ↓/↑ move between the matching rows and back to the filter, 
     const onLoadMore = vi.fn();
     await Choose.run({ args: { ...Choose.args, onTrack, onLoadMore } });
     const filter = page.getByRole('textbox', { name: 'Filter repositories' });
-    const payments = page.getByRole('checkbox', { name: /^sigma-clinic\/payments / });
-    const worker = page.getByRole('checkbox', { name: /^sigma-clinic\/payments-worker / });
+    const payments = page.getByRole('checkbox', { name: /^skyline-labs\/payments / });
+    const worker = page.getByRole('checkbox', { name: /^skyline-labs\/payments-worker / });
 
     await userEvent.keyboard('/');
     await expect.element(filter).toHaveFocus();
     await userEvent.keyboard('pay');
     await expect.element(page.getByText('7 of 312 match “pay”')).toBeInTheDocument();
     // A filter looks through all of them: the rest are read.
-    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
 
     await userEvent.keyboard('{ArrowDown}');
     await expect.element(payments).toHaveFocus();
@@ -86,11 +86,11 @@ test('/ filters, ↓/↑ move between the matching rows and back to the filter, 
 
     await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
     await expect.element(worker).toBeChecked();
-    await expect.element(page.getByRole('checkbox', { name: /^sigma-clinic\/pay-e2e / })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: /^skyline-labs\/pay-e2e / })).toBeChecked();
     // Those the filter hid are left as they were.
     await userEvent.keyboard('{Escape}');
     await expect.element(filter).toHaveValue('');
-    await expect.element(page.getByRole('checkbox', { name: /^sigma-clinic\/mobile / })).not.toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: /^skyline-labs\/mobile / })).not.toBeChecked();
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     expect(onTrack).toHaveBeenCalledOnce();
@@ -138,7 +138,7 @@ test('typed text ranks the rows within each owner, whose order stays; ⌘A and t
     await expect.element(page.getByText('2 of 4 match “note”')).toBeInTheDocument();
     await expect.element(page.getByText('2 of 50 match “note”')).toBeInTheDocument();
     // A filter still looks through all of an owner's repositories.
-    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
 
     await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
     for (const name of ['note', 'keynote', 'notes', 'banknote']) {

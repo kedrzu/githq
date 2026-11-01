@@ -12,22 +12,22 @@ test('a group per tracked repository in the tracking order, those without rows l
         'kedrzu/githq',
         'acme/empty',
         'kedrzu/skills',
-        'sigma-clinic/portal',
-        'sigma-clinic/api',
+        'skyline-labs/portal',
+        'skyline-labs/api',
     ]);
 
     expect(grouped.map(group => [group.repository, group.rows.map(row => row.item.id)])).toEqual([
         ['kedrzu/githq', ['PR_15', 'I_12', 'I_9']],
         ['kedrzu/skills', ['I_31']],
         // Review requested first, then the assigned issue — reason order, not age.
-        ['sigma-clinic/portal', ['PR_1203', 'I_1187']],
-        ['sigma-clinic/api', ['PR_482', 'PR_477', 'I_463']],
+        ['skyline-labs/portal', ['PR_1203', 'I_1187']],
+        ['skyline-labs/api', ['PR_482', 'PR_477', 'I_463']],
         [null, ['PR_18842', 'PR_94']],
     ]);
 });
 
 test('every row of my work once, the nested pull request still under its issue, and the counts summing to the total', () => {
-    const grouped = groupMyWorkByRepository(work.groups, ['sigma-clinic/portal']);
+    const grouped = groupMyWorkByRepository(work.groups, ['skyline-labs/portal']);
 
     const rows = grouped.flatMap(group => group.rows);
     expect(rows.length).toBe(work.counts.total);

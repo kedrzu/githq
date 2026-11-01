@@ -43,8 +43,8 @@ export const Gallery: Story = {
                                             countLabel: '4 of 12 selected',
                                         },
                                         {
-                                            value: 'sigma-clinic',
-                                            label: 'sigma-clinic',
+                                            value: 'skyline-labs',
+                                            label: 'skyline-labs',
                                             icon: Building2,
                                             count: '0 / 26',
                                             countLabel: '0 of 26 selected',

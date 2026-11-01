@@ -67,11 +67,11 @@ test('H2: with no repository the chooser comes first; Enter takes the first that
     await ChoosingRepository.run();
 
     await expect.element(page.getByRole('textbox', { name: 'Repository' })).toHaveFocus();
-    await expect.element(page.getByRole('option', { name: /sigma-clinic\/api-v1/u })).toHaveAttribute('data-disabled');
+    await expect.element(page.getByRole('option', { name: /skyline-labs\/api-v1/u })).toHaveAttribute('data-disabled');
     await userEvent.keyboard('{Enter}');
 
     await expect
-        .element(page.getByRole('button', { name: /Repository: sigma-clinic\/api\. Choose another/u }))
+        .element(page.getByRole('button', { name: /Repository: skyline-labs\/api\. Choose another/u }))
         .toBeInTheDocument();
     await expect.element(page.getByRole('textbox', { name: 'Title' })).toHaveFocus();
 });
@@ -99,7 +99,7 @@ test('H9: a rejection shows why above the text it kept', async () => {
 test('a repository that won’t take an issue says so before anything is typed; nothing can be created', async () => {
     await Archived.run();
 
-    await expect.element(page.getByText("sigma-clinic/api-v1 won't take a new issue")).toBeInTheDocument();
+    await expect.element(page.getByText("skyline-labs/api-v1 won't take a new issue")).toBeInTheDocument();
     await userEvent.keyboard('Typed anyway{Enter}');
     await expect.element(page.getByTestId('created')).toHaveTextContent('Nothing created');
 });
@@ -120,7 +120,7 @@ test('values the repository does not have are named before sending: they will be
 
     await expect
         .element(page.getByRole('status'))
-        .toHaveTextContent('Not in sigma-clinic/portal, so left out: needs-design, v9 — Someday, Epic.');
+        .toHaveTextContent('Not in skyline-labs/portal, so left out: needs-design, v9 — Someday, Epic.');
 });
 
 test('H9: refused issues wait beside the one being written; each can be restored or dropped', async () => {

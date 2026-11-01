@@ -17,7 +17,7 @@ import type { NewIssueRepositoryState, NewIssueWaitingEntry } from './NewIssueDi
 import type { RepositoryChoiceSection } from './RepositoryChooser.vue';
 
 const EMPTY: NewIssueDraft = {
-    repository: 'sigma-clinic/portal',
+    repository: 'skyline-labs/portal',
     title: '',
     body: '',
     assignees: [],
@@ -87,13 +87,13 @@ const CHOICES: readonly RepositoryChoiceSection[] = [
     {
         key: 'tracked',
         heading: 'Tracked',
-        choices: [{ nameWithOwner: 'sigma-clinic/api', isPrivate: true, detail: '96 open' }],
+        choices: [{ nameWithOwner: 'skyline-labs/api', isPrivate: true, detail: '96 open' }],
     },
     {
         key: 'others',
         heading: 'Other repositories you can create issues in',
         choices: [
-            { nameWithOwner: 'sigma-clinic/api-gateway', isPrivate: true, detail: 'private' },
+            { nameWithOwner: 'skyline-labs/api-gateway', isPrivate: true, detail: 'private' },
             { nameWithOwner: 'stripe/stripe-node', isPrivate: false, detail: 'public' },
         ],
     },
@@ -102,7 +102,7 @@ const CHOICES: readonly RepositoryChoiceSection[] = [
         heading: "Won't take an issue",
         choices: [
             {
-                nameWithOwner: 'sigma-clinic/api-v1',
+                nameWithOwner: 'skyline-labs/api-v1',
                 isPrivate: true,
                 unavailable: 'Archived repositories are read-only',
             },
@@ -110,9 +110,9 @@ const CHOICES: readonly RepositoryChoiceSection[] = [
     },
 ];
 
-const PROJECTS: readonly PickerOption[] = [{ value: 'PVT_q4', label: 'Platform Q4', detail: 'sigma-clinic' }];
+const PROJECTS: readonly PickerOption[] = [{ value: 'PVT_q4', label: 'Platform Q4', detail: 'skyline-labs' }];
 const PARENTS: readonly PickerOption[] = [
-    { value: 'I_1187', label: 'Recurring visits ignore the clinic timezone', detail: 'portal#1187' },
+    { value: 'I_1187', label: 'Recurring bookings ignore the team timezone', detail: 'portal#1187' },
 ];
 
 /**
@@ -288,12 +288,12 @@ export const IssueFormBody: Story = {
     args: {
         draft: {
             ...EMPTY,
-            title: 'Exported calendar drops the clinic timezone',
+            title: 'Exported calendar drops the team timezone',
             body: buildIssueFormBody(BUG_FORM),
             labels: ['bug'],
             form: BUG_FORM.filename,
         },
-        templates: { ...VITE_TEMPLATES, nameWithOwner: 'sigma-clinic/portal', blankIssuesEnabled: true },
+        templates: { ...VITE_TEMPLATES, nameWithOwner: 'skyline-labs/portal', blankIssuesEnabled: true },
         form: BUG_FORM,
     },
 };
@@ -318,13 +318,13 @@ export const Waiting: Story = {
             {
                 id: 1,
                 title: 'Reminders skip DST',
-                repository: 'sigma-clinic/portal',
+                repository: 'skyline-labs/portal',
                 why: 'GitHub said: Repository was archived so is read-only.',
             },
             {
                 id: 2,
                 title: 'Export drops the timezone',
-                repository: 'sigma-clinic/portal',
+                repository: 'skyline-labs/portal',
                 why: "githq closed before GitHub answered. Check it wasn't created before sending it again.",
             },
         ],
@@ -334,7 +334,7 @@ export const Waiting: Story = {
 /** States: a repository that won't take an issue, said before anything is typed. */
 export const Archived: Story = {
     args: {
-        draft: { ...EMPTY, repository: 'sigma-clinic/api-v1' },
-        repository: { kind: 'unavailable', nameWithOwner: 'sigma-clinic/api-v1', isPrivate: true, why: 'archived' },
+        draft: { ...EMPTY, repository: 'skyline-labs/api-v1' },
+        repository: { kind: 'unavailable', nameWithOwner: 'skyline-labs/api-v1', isPrivate: true, why: 'archived' },
     },
 };

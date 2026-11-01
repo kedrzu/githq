@@ -25,7 +25,7 @@ test('searches with the query, the newest change first, and reads the hits', asy
                     node_id: 'I_kwDOAAAC',
                     number: 21,
                     updated_at: '2026-10-29T08:30:00Z',
-                    repository_url: 'https://api.github.com/repos/kedrzu/cook-app',
+                    repository_url: 'https://api.github.com/repos/kedrzu/recipes',
                 },
             ],
         }),
@@ -50,7 +50,7 @@ test('searches with the query, the newest change first, and reads the hits', asy
                 number: 21,
                 updatedAt: '2026-10-29T08:30:00Z',
                 isPullRequest: false,
-                repositoryFullName: 'kedrzu/cook-app',
+                repositoryFullName: 'kedrzu/recipes',
             },
         ],
     };

@@ -92,11 +92,10 @@ background.
 
 ## How githq is built
 
-githq is built the way the author's other app, Cookery, is: a Nuxt app compiled to static files, the
-author's own framework nzyme for services and translations, and one Cloudflare Worker that serves the app.
-The difference is that Cookery has a database and an API behind that Worker, and githq has neither. Its Worker
-does one thing besides serving files: the sign-in exchange described below. So the repository holds just the
-app, the Worker and the end-to-end tests. [What was carried over from Cookery and what was dropped](DECISIONS.md#d16).
+githq is a Nuxt app compiled to static files, with the author's own framework nzyme for services and
+translations, and one Cloudflare Worker that serves the app. There is no database and no API behind that
+Worker: besides serving files it does one thing, the sign-in exchange described below. So the repository holds
+just the app, the Worker and the end-to-end tests. [The stack in detail](DECISIONS.md#d16).
 
 Inside the app, everything you see is computed from memory. When githq starts, it reads its copy from the
 browser's database (IndexedDB) into memory, and from then on every list, count, filter and project view is a
@@ -112,7 +111,7 @@ time. [Exactly what is kept](DECISIONS.md#d18).
 githq talks to GitHub in two ways. Asking "has anything changed?" uses GitHub's REST API, because there an
 unchanged answer costs nothing. Fetching and changing data uses GraphQL, where one request can bring an issue
 together with its fields in every project. The GraphQL queries are written as separate files, and typed code
-is generated from them against GitHub's published schema, the same way the author's Healed repository does it.
+is generated from them against GitHub's published schema.
 [The client setup](DECISIONS.md#d19).
 
 If you open githq in several tabs, only one of them refreshes from GitHub and the others receive its changes,

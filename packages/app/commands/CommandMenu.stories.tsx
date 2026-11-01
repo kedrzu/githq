@@ -35,29 +35,29 @@ const NAVIGATION: NavigationData = {
             group: 'projects',
             kind: 'project',
             title: 'Platform Q4',
-            detail: 'sigma-clinic',
-            keywords: ['sigma-clinic'],
-            path: '/orgs/sigma-clinic/projects/4',
+            detail: 'skyline-labs',
+            keywords: ['skyline-labs'],
+            path: '/orgs/skyline-labs/projects/4',
         },
         {
             id: 'project:onboarding',
             group: 'projects',
             kind: 'project',
             title: 'Platform onboarding',
-            detail: 'sigma-clinic',
-            keywords: ['sigma-clinic'],
-            path: '/orgs/sigma-clinic/projects/7',
+            detail: 'skyline-labs',
+            keywords: ['skyline-labs'],
+            path: '/orgs/skyline-labs/projects/7',
         },
         {
             id: 'repository:portal',
             group: 'repositories',
             kind: 'repository',
-            title: 'sigma-clinic/portal',
-            path: '/sigma-clinic/portal',
+            title: 'skyline-labs/portal',
+            path: '/skyline-labs/portal',
         },
         { id: 'tracking', group: 'goTo', kind: 'tracking', title: 'Track repositories…', path: '/settings/tracking' },
     ],
-    trackedRepositories: ['sigma-clinic/portal'],
+    trackedRepositories: ['skyline-labs/portal'],
     items: [
         ...D1_ITEMS,
         { ...sampleIssue('I_77'), number: 77, title: 'Keep reactivity when the sidebar collapses' },
@@ -67,16 +67,16 @@ const NAVIGATION: NavigationData = {
 
 const MOBILE_METADATA: RepositoryMetadata = {
     ...SAMPLE_PORTAL_METADATA,
-    nameWithOwner: 'sigma-clinic/mobile',
+    nameWithOwner: 'skyline-labs/mobile',
     id: 'R_mobile',
     viewerPermission: 'READ',
 };
 
 /** E4: three issues in Platform Q4, one of them in a repository where the user only reads. */
 const SELECTED: readonly Item[] = [
-    selectedIssue('I_455', 'sigma-clinic/portal', 455, 'Document webhook retry policy', 'WRITE'),
-    selectedIssue('I_1210', 'sigma-clinic/portal', 1210, 'Clinic switcher loses filter state', 'WRITE'),
-    selectedIssue('I_91', 'sigma-clinic/mobile', 91, 'Crash on Android 15 when opening receipts', 'READ'),
+    selectedIssue('I_455', 'skyline-labs/portal', 455, 'Document webhook retry policy', 'WRITE'),
+    selectedIssue('I_1210', 'skyline-labs/portal', 1210, 'Client switcher loses filter state', 'WRITE'),
+    selectedIssue('I_91', 'skyline-labs/mobile', 91, 'Crash on Android 15 when opening receipts', 'READ'),
 ];
 
 /**

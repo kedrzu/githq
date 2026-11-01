@@ -121,14 +121,14 @@ test('E3: places and items from the local copy by name and number; an untracked 
 
     await userEvent.clear(page.getByRole('textbox', { name: 'Type a command or search…' }));
     await userEvent.keyboard('portal#1187{Enter}');
-    await expect.element(page.getByTestId('went')).toHaveTextContent('sigma-clinic/portal#1187');
+    await expect.element(page.getByTestId('went')).toHaveTextContent('skyline-labs/portal#1187');
 
-    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}sigma-clinic/platform-infra');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}skyline-labs/platform-infra');
     await expect
-        .element(page.getByRole('option', { name: /sigma-clinic\/platform-infra not tracked/u }))
+        .element(page.getByRole('option', { name: /skyline-labs\/platform-infra not tracked/u }))
         .toBeInTheDocument();
     await userEvent.keyboard('{Enter}');
-    await expect.element(page.getByTestId('went')).toHaveTextContent('/sigma-clinic/platform-infra');
+    await expect.element(page.getByTestId('went')).toHaveTextContent('/skyline-labs/platform-infra');
 });
 
 test('E5: nothing typed draws no marks', async () => {
@@ -143,21 +143,21 @@ test("E5: the letters typed are marked in a title, a detail and a reference, and
     const field = page.getByRole('textbox', { name: 'Type a command or search…' });
 
     await userEvent.keyboard('plat');
-    const inTitle = page.getByRole('option', { name: 'Platform Q4 sigma-clinic', exact: true });
+    const inTitle = page.getByRole('option', { name: 'Platform Q4 skyline-labs', exact: true });
     await expect.element(inTitle).toBeInTheDocument();
     expect(getMarks(inTitle)).toEqual(['Plat']);
 
     // A project's owner is its detail: marked where it stands, no separate word.
     await userEvent.clear(field);
-    await userEvent.keyboard('sigma');
-    const inDetail = page.getByRole('option', { name: 'Platform Q4 sigma-clinic', exact: true });
+    await userEvent.keyboard('skyline');
+    const inDetail = page.getByRole('option', { name: 'Platform Q4 skyline-labs', exact: true });
     await expect.element(inDetail).toBeInTheDocument();
-    expect(getMarks(inDetail)).toEqual(['sigma']);
+    expect(getMarks(inDetail)).toEqual(['skyline']);
 
     await userEvent.clear(field);
     await userEvent.keyboard('portal#1187');
     const inReference = page.getByRole('option', {
-        name: 'Calendar shows wrong timezone for recurring visits portal#1187',
+        name: 'Calendar shows wrong timezone for recurring bookings portal#1187',
         exact: true,
     });
     await expect.element(inReference).toBeInTheDocument();

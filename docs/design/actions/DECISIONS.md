@@ -34,9 +34,8 @@ branch says nothing about `main`. Grouping by pattern and not by exact ref is wh
 **Known cost.** Under `release/*`, a pass on `release/1.3` hides a failure on `release/1.2`. Accepted because the
 owner's repositories do not keep parallel lines.
 
-> **Checked 2026-11-01 (live, 24 repositories of `kedrzu` and `healedcare` pushed since May 2026):** branches
-> starting with `release`: `kedrzu/nzyme`, `healedcare/healed` and `healedcare/sigma_backup` have one `release`;
-> `kedrzu/slapss-app` has `release/2.0.1`, `kedrzu/cli` has `release/v4.0.0`. None has more than one.
+> **Checked 2026-11-01 (live, the owner's 24 repositories pushed since May 2026):** none has more than one branch
+> starting with `release`.
 
 **Rejected.**
 

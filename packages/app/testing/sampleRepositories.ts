@@ -4,9 +4,9 @@ import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { SAMPLE_NOW, sampleUser } from './sampleMyWork.js';
 import { SAMPLE_VIEWER } from './sampleViewer.js';
 
-/** What sigma-clinic/portal offers in the pickers, for stories: its labels, people, milestones and types. */
+/** What skyline-labs/portal offers in the pickers, for stories: its labels, people, milestones and types. */
 export const SAMPLE_PORTAL_METADATA: RepositoryMetadata = {
-    nameWithOwner: 'sigma-clinic/portal',
+    nameWithOwner: 'skyline-labs/portal',
     id: 'R_portal',
     viewerPermission: 'WRITE',
     hasIssuesEnabled: true,
@@ -36,7 +36,7 @@ export const SAMPLE_PORTAL_METADATA: RepositoryMetadata = {
     fetchedAt: SAMPLE_NOW,
 };
 
-/** The item view's editing for a maintainer of sigma-clinic/portal: everything offered. */
+/** The item view's editing for a maintainer of skyline-labs/portal: everything offered. */
 export const SAMPLE_MAINTAINER_EDITING: ItemEditing = {
     permissions: {
         comment: true,

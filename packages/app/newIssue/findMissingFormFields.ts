@@ -66,7 +66,7 @@ function readSections(body: string) {
     return sections;
 }
 
-/** The tasks ticked in a section, by their text: a whole line each (`- [x] No patient data`). */
+/** The tasks ticked in a section, by their text: a whole line each (`- [x] No customer data`). */
 function readTicked(content: string) {
     const ticked = new Set<string>();
     for (const line of content.split('\n')) {

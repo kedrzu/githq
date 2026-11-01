@@ -11,32 +11,32 @@ const PLATFORM: NavigationPlace = {
     group: 'projects',
     kind: 'project',
     title: 'Platform Q4',
-    keywords: ['sigma-clinic'],
-    path: '/orgs/sigma-clinic/projects/4',
+    keywords: ['skyline-labs'],
+    path: '/orgs/skyline-labs/projects/4',
 };
 const PORTAL: NavigationPlace = {
-    id: 'repository:sigma-clinic/portal',
+    id: 'repository:skyline-labs/portal',
     group: 'repositories',
     kind: 'repository',
-    title: 'sigma-clinic/portal',
-    path: '/sigma-clinic/portal',
+    title: 'skyline-labs/portal',
+    path: '/skyline-labs/portal',
 };
 
 const DATA: NavigationData = {
     places: [PLATFORM, PORTAL],
-    trackedRepositories: ['sigma-clinic/portal'],
+    trackedRepositories: ['skyline-labs/portal'],
     items: [
-        issue('a', 'sigma-clinic/portal', 1187, 'Calendar shows wrong timezone', '2026-10-20'),
-        issue('b', 'sigma-clinic/api', 1187, 'Timezone of the API', '2026-10-21'),
-        issue('c', 'sigma-clinic/api', 490, 'Platform fee rounding on invoices', '2026-10-22'),
-        issue('d', 'sigma-clinic/api', 12, 'Rounding of the platform fee', '2026-10-23'),
+        issue('a', 'skyline-labs/portal', 1187, 'Calendar shows wrong timezone', '2026-10-20'),
+        issue('b', 'skyline-labs/api', 1187, 'Timezone of the API', '2026-10-21'),
+        issue('c', 'skyline-labs/api', 490, 'Platform fee rounding on invoices', '2026-10-22'),
+        issue('d', 'skyline-labs/api', 12, 'Rounding of the platform fee', '2026-10-23'),
     ],
 };
 
 test('a number finds the items with it; a repository before it narrows them to that repository', () => {
     expect(ids(searchNavigation('#1187', DATA))).toEqual(['b', 'a']);
     expect(ids(searchNavigation('portal#1187', DATA))).toEqual(['a']);
-    expect(ids(searchNavigation('sigma-clinic/api#1187', DATA))).toEqual(['b']);
+    expect(ids(searchNavigation('skyline-labs/api#1187', DATA))).toEqual(['b']);
 });
 
 test('a title starting with the text ranks above a title holding its words; places are found by name or owner', () => {
@@ -44,31 +44,30 @@ test('a title starting with the text ranks above a title holding its words; plac
 
     expect(ids(results)).toEqual(['c', 'd']);
     expect(results.map(result => result.score)).toEqual([80, 60]);
-    expect(searchNavigation('sigma', DATA).map(result => (result.kind === 'place' ? result.place.id : null))).toEqual([
-        'project:1',
-        'repository:sigma-clinic/portal',
-    ]);
+    expect(searchNavigation('skyline', DATA).map(result => (result.kind === 'place' ? result.place.id : null))).toEqual(
+        ['project:1', 'repository:skyline-labs/portal'],
+    );
 });
 
 test('owner/name of a repository not tracked is offered to open (J3); a tracked one is its place', () => {
-    expect(searchNavigation('sigma-clinic/platform-infra', DATA)).toContainEqual({
+    expect(searchNavigation('skyline-labs/platform-infra', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,
-        nameWithOwner: 'sigma-clinic/platform-infra',
+        nameWithOwner: 'skyline-labs/platform-infra',
     });
-    expect(searchNavigation('https://github.com/sigma-clinic/platform-infra/issues', DATA)).toContainEqual({
+    expect(searchNavigation('https://github.com/skyline-labs/platform-infra/issues', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,
-        nameWithOwner: 'sigma-clinic/platform-infra',
+        nameWithOwner: 'skyline-labs/platform-infra',
     });
-    expect(searchNavigation('sigma-clinic/portal', DATA).filter(result => result.kind === 'repository')).toEqual([]);
-    expect(searchNavigation('sigma-clinic/api#1187', DATA).filter(result => result.kind === 'repository')).toEqual([]);
+    expect(searchNavigation('skyline-labs/portal', DATA).filter(result => result.kind === 'repository')).toEqual([]);
+    expect(searchNavigation('skyline-labs/api#1187', DATA).filter(result => result.kind === 'repository')).toEqual([]);
 });
 
 test('an issue being created is not found: it has no number to open it by yet', () => {
     const data = {
         ...DATA,
-        items: [...DATA.items, issue('pending', 'sigma-clinic/api', 0, 'Platform fee draft', '2026-10-24')],
+        items: [...DATA.items, issue('pending', 'skyline-labs/api', 0, 'Platform fee draft', '2026-10-24')],
     };
 
     expect(ids(searchNavigation('platform fee', data))).toEqual(['c', 'd']);
@@ -84,7 +83,7 @@ test('a number hit marks the digits of the reference as the menu writes it', () 
         { field: 'reference', text: 'api#1187', ranges: [4, 8] },
         { field: 'reference', text: 'portal#1187', ranges: [7, 11] },
     ]);
-    expect(matches(searchNavigation('sigma-clinic/api#012', DATA))).toEqual([
+    expect(matches(searchNavigation('skyline-labs/api#012', DATA))).toEqual([
         { field: 'reference', text: 'api#12', ranges: [4, 6] },
     ]);
 });
@@ -98,7 +97,7 @@ test('`#12` is items only: a place holding the digits is not found, even with no
 
 test('bare digits are a number among items; a place holding them is still found', () => {
     const places = [{ ...PORTAL, id: 'sprint', title: 'Sprint 1187' }];
-    const items = [...DATA.items, issue('title', 'sigma-clinic/api', 7, 'Holds 1187 in its title', '2026-10-24')];
+    const items = [...DATA.items, issue('title', 'skyline-labs/api', 7, 'Holds 1187 in its title', '2026-10-24')];
     const results = searchNavigation('1187', { ...DATA, places, items });
 
     expect(ids(results)).toEqual(['b', 'a']);
@@ -108,8 +107,8 @@ test('bare digits are a number among items; a place holding them is still found'
 
 test('text ending in digits is not a number: `q4` searches titles', () => {
     const items = [
-        issue('title', 'sigma-clinic/q', 40, 'Plan q4 budget', '2026-10-20'),
-        issue('numbered', 'sigma-clinic/q', 4, 'Other', '2026-10-21'),
+        issue('title', 'skyline-labs/q', 40, 'Plan q4 budget', '2026-10-20'),
+        issue('numbered', 'skyline-labs/q', 4, 'Other', '2026-10-21'),
     ];
 
     expect(ids(searchNavigation('q4', { ...DATA, items }))).toEqual(['title']);
@@ -119,10 +118,10 @@ test('text ending in digits is not a number: `q4` searches titles', () => {
 });
 
 test('a slash before digits names a repository, not an item in it', () => {
-    expect(searchNavigation('sigma-clinic/12', DATA)).toContainEqual({
+    expect(searchNavigation('skyline-labs/12', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,
-        nameWithOwner: 'sigma-clinic/12',
+        nameWithOwner: 'skyline-labs/12',
     });
 });
 
@@ -130,8 +129,8 @@ test('a title is found with a typo, in any word order and without diacritics, an
     const data = {
         ...DATA,
         items: [
-            issue('r', 'sigma-clinic/api', 1, 'Reactivity of the map', '2026-10-20'),
-            issue('z', 'sigma-clinic/api', 2, 'Żółty banner', '2026-10-21'),
+            issue('r', 'skyline-labs/api', 1, 'Reactivity of the map', '2026-10-20'),
+            issue('z', 'skyline-labs/api', 2, 'Żółty banner', '2026-10-21'),
         ],
     };
 
@@ -182,16 +181,16 @@ test('a new array of items is searched anew: what was prepared for the last one 
 });
 
 test("a place marks its title, a word it shows as its detail in place, and a word it doesn't show as hidden", () => {
-    const owned: NavigationPlace = { ...PLATFORM, detail: 'sigma-clinic' };
+    const owned: NavigationPlace = { ...PLATFORM, detail: 'skyline-labs' };
 
     expect(matches(searchNavigation('platform', { ...DATA, places: [owned], items: [] }))).toEqual([
         { field: 'title', text: 'Platform Q4', ranges: [0, 8] },
     ]);
-    expect(matches(searchNavigation('clinic', { ...DATA, places: [owned], items: [] }))).toEqual([
-        { field: 'detail', text: 'sigma-clinic', ranges: [6, 12] },
+    expect(matches(searchNavigation('labs', { ...DATA, places: [owned], items: [] }))).toEqual([
+        { field: 'detail', text: 'skyline-labs', ranges: [8, 12] },
     ]);
-    expect(matches(searchNavigation('clinic', { ...DATA, places: [PLATFORM], items: [] }))).toEqual([
-        { field: 'hidden', text: 'sigma-clinic', ranges: [6, 12] },
+    expect(matches(searchNavigation('labs', { ...DATA, places: [PLATFORM], items: [] }))).toEqual([
+        { field: 'hidden', text: 'skyline-labs', ranges: [8, 12] },
     ]);
 });
 
@@ -213,7 +212,7 @@ test('nothing typed marks nothing and keeps the order of the places', () => {
 
     expect(results.map(result => (result.kind === 'place' ? result.place.id : null))).toEqual([
         'project:1',
-        'repository:sigma-clinic/portal',
+        'repository:skyline-labs/portal',
     ]);
     expect(matches(results)).toEqual([null, null]);
 });

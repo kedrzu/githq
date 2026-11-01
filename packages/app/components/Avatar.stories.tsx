@@ -43,7 +43,7 @@ export const Gallery: Story = {
                 />
                 <Avatar name="phowak" />
                 <Avatar
-                    name="sigma-clinic"
+                    name="skyline-labs"
                     size="md"
                 />
             </StoryRow>

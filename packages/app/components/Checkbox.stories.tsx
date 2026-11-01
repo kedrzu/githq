@@ -34,12 +34,12 @@ export const Gallery: Story = {
                             <Checkbox
                                 modelValue={mobile.value}
                                 onUpdate:modelValue={value => (mobile.value = value)}
-                                label="sigma-clinic/mobile"
+                                label="skyline-labs/mobile"
                             />
                             <Checkbox
                                 modelValue={false}
                                 indeterminate
-                                label="sigma-clinic · 2 of 312"
+                                label="skyline-labs · 2 of 312"
                             />
                             <Checkbox
                                 modelValue={false}
