@@ -1,4 +1,4 @@
-<!-- Development only: signing in with a pasted GitHub token (`gh auth token`) instead of the OAuth flow, which needs the OAuth App's secret. Never in the production build: the sign-in page imports it only under `nuxt dev` and in the local build (`build:local`). -->
+<!-- Development only: signing in with a pasted GitHub token (`gh auth token`) instead of the OAuth flow, which needs the OAuth App's secret. Never in the production build: the landing page (`landing/LandingPage.vue`) imports it only under `nuxt dev` and in the local build (`build:local`). -->
 <script lang="ts" setup>
 import { Form } from '@nzyme/vue-forms/components/Form.jsx';
 import { useForm } from '@nzyme/vue-forms/useForm.js';

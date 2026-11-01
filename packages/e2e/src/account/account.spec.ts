@@ -4,7 +4,7 @@ import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AccountScreenHarness } from '../harnesses/AccountScreen.harness.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
-import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
@@ -58,7 +58,7 @@ test('⌘K finds the account page', async ({ page, github }) => {
     await signIn(page, github);
     answerTrackingCandidates(github, { login: LOGIN });
 
-    await page.keyboard.press('Meta+K');
+    await page.keyboard.press('ControlOrMeta+K');
     await page.keyboard.type('account');
     await page.keyboard.press('Enter');
 
@@ -92,9 +92,11 @@ test("signing out on the account page deletes this browser's copy and signs out 
     await expect(account.copy).toContainText(/^no\srepositories, no\sprojects · \d+\sitems · /);
     await account.signOutButton.click();
 
+    // The account's tab comes back to it after signing in again; the other one was home anyway.
+    await expect(page).toHaveURL('/?next=/settings');
+    await expect(otherTab).toHaveURL('/');
     for (const tab of [page, otherTab]) {
-        await expect(tab).toHaveURL(/^[^?]*\/login\?next=/);
-        await expect(new SignInScreenHarness(tab).signInButton).toBeVisible();
+        await expect(new LandingHarness(tab).signInButton).toBeVisible();
         expect(await readStoredToken(tab)).toBeNull();
         await expect.poll(() => readLocalDatabases(tab)).not.toContain(`githq-${LOGIN}`);
         expect((await readStoredKeys(tab)).filter(key => !PER_DEVICE_KEYS.includes(key))).toEqual([]);

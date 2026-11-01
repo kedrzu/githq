@@ -21,7 +21,7 @@ test('H1: the cursor is in the title; Enter creates and closes', async () => {
 test('⌘Enter creates another: the capture stays, the title is cleared and keeps the cursor', async () => {
     await QuickCapture.run();
 
-    await userEvent.keyboard('First one{Meta>}{Enter}{/Meta}');
+    await userEvent.keyboard('First one{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
     await expect.element(page.getByTestId('created')).toHaveTextContent('Created, another: First one');
     const title = page.getByRole('textbox', { name: 'Title' });
@@ -58,7 +58,7 @@ test('expanded, Enter in the title goes on to the body, and ⌘Enter creates onc
     await expect.element(page.getByRole('textbox', { name: 'Description' })).toHaveFocus();
 
     await userEvent.click(page.getByRole('textbox', { name: 'Title' }));
-    await userEvent.keyboard('{Meta>}{Enter}{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('created')).toHaveTextContent('Created: Once only');
     await expect.element(page.getByTestId('count')).toHaveTextContent('1');
 });

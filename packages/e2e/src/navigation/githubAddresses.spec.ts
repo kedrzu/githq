@@ -8,7 +8,7 @@ import type { MyWorkGroupName } from '../harnesses/MyWorkScreen.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { ProjectScreenHarness } from '../harnesses/ProjectScreen.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
-import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
@@ -207,7 +207,7 @@ test('signing in for the first time from a link with GitHub\'s "return_to" choos
 
     // GitHub's sign-in links carry the whole github.com address: its path is the same here.
     await page.goto(`/login?return_to=${encodeURIComponent('https://github.com/pulls')}`);
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     await expect(page).toHaveURL('/settings/tracking/new?next=/pulls');
     await new FirstSignInHarness(page).continueButton.click();
 
@@ -243,8 +243,8 @@ test('an address githq does not show leaves for the same address on github.com, 
     }
 
     // Back does not land on the githq address again: it was replaced.
-    await page.goto('/login');
-    await expect(new SignInScreenHarness(page).signInButton).toBeVisible();
+    await page.goto('/');
+    await expect(new LandingHarness(page).signInButton).toBeVisible();
     const target = answerGitHubPage(github, '/acme');
     await page.evaluate(() => {
         window.location.href = '/acme';
@@ -252,7 +252,7 @@ test('an address githq does not show leaves for the same address on github.com, 
     await target;
     await expect(page).toHaveURL('https://github.com/acme');
     await page.goBack();
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL('/');
 });
 
 /**

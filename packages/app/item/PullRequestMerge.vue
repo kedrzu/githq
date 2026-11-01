@@ -291,7 +291,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        :variant="mergeable && open ? 'primary' : 'secondary'"
+        :variant="mergeable && open ? 'light' : 'secondary'"
         size="sm"
         :icon="Github"
         :link="pr.url"
@@ -307,7 +307,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         size="sm"
         :icon="FileDiff"
         :link="filesUrl"
-        kbd="⇧O"
+        kbd="Shift+O"
         target="_blank"
         rel="noopener noreferrer"
         aria-keyshortcuts="Shift+O"

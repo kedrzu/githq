@@ -99,7 +99,7 @@ test('E4: the selection\'s actions say "2 of 3 editable"; its key runs the same 
 test('⌘K opens the menu; a single key typed in it is text, not its action', async () => {
     await Closed.run();
 
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveFocus();
     await userEvent.keyboard('[[');
     await expect.element(page.getByRole('textbox', { name: 'Type a command or search…' })).toHaveValue('[');
@@ -116,7 +116,7 @@ test('E3: places and items from the local copy by name and number; an untracked 
     await userEvent.keyboard('portal#1187{Enter}');
     await expect.element(page.getByTestId('went')).toHaveTextContent('sigma-clinic/portal#1187');
 
-    await userEvent.keyboard('{Meta>}k{/Meta}sigma-clinic/platform-infra');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}sigma-clinic/platform-infra');
     await expect
         .element(page.getByRole('option', { name: /sigma-clinic\/platform-infra not tracked/u }))
         .toBeInTheDocument();

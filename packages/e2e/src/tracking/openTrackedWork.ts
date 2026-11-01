@@ -6,7 +6,7 @@ import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
-import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 
 /**
  * Signs in for the first time with GitHub answering from `world`, tracks what the first sign-in chooses — the
@@ -15,8 +15,8 @@ import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
 export async function openTrackedWork(page: Page, github: GitHubMock, world: GitHubWorld): Promise<AppShellHarness> {
     world.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
 
     const firstSignIn = new FirstSignInHarness(page);
     await firstSignIn.trackButton.click();

@@ -87,8 +87,8 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
     :filter-label="t(l.label)"
     :message="message"
     :hints="[
-      { keys: '↵', label: t(l.choose) },
-      { keys: 'Esc', label: t(l.back) },
+      { keys: 'Enter', label: t(l.choose) },
+      { keys: 'Escape', label: t(l.back) },
     ]"
     back-on-escape
     @update:model-value="choose"
@@ -118,7 +118,10 @@ function choose(value: AcceptableValue | AcceptableValue[]) {
         :class="css.repositoryChooser_detail"
         >{{ row.choice.unavailable }}</span
       >
-      <Kbd v-else-if="highlighted">↵</Kbd>
+      <Kbd
+        v-else-if="highlighted"
+        keys="Enter"
+      />
     </template>
   </FilterList>
 </template>

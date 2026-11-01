@@ -198,7 +198,7 @@ function rowIcon(row: FirstDownloadRow) {
       </div>
       <Button
         variant="primary"
-        kbd="↵"
+        kbd="Enter"
         aria-keyshortcuts="Enter"
         :disabled="!myWork"
         @click="emit('open')"

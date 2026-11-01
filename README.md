@@ -1,11 +1,6 @@
 <div align="center">
 
-<a href="https://githq.dev">
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/wordmark-dark.svg">
-<img src="docs/assets/readme/wordmark-light.svg" alt="githq" height="56">
-</picture>
-</a>
+<a href="https://githq.dev"><img src="docs/assets/readme/wordmark.svg" alt="githq" height="80"></a>
 
 A keyboard-first client for GitHub Issues, pull requests and Projects.
 

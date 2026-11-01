@@ -6,7 +6,7 @@ import { GitHubHttpError } from '../github/GitHubMock.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
-import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { E2E_BASE_URL, E2E_CLIENT_ID } from '../localApp.js';
@@ -15,14 +15,22 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
-test('signed out, the app opens on sign-in, saying what GitHub will ask for', async ({ page }) => {
+test('signed out, home is the landing page, saying what GitHub will ask for', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page).toHaveURL('/login?next=/');
-    const signIn = new SignInScreenHarness(page);
-    await expect(signIn.permissions).toBeVisible();
-    await expect(signIn.signInButton).toBeVisible();
-    await expect(signIn.notice).toBeHidden();
+    await expect(page).toHaveURL('/');
+    const landing = new LandingHarness(page);
+    await expect(landing.root.getByRole('heading', { level: 1 })).toContainText('Your GitHub issues,');
+    await expect(landing.root).toContainText('GitHub will ask for full repository access.');
+    await expect(landing.signInButton).toBeVisible();
+    await expect(landing.banner).toBeHidden();
+});
+
+test("GitHub's sign-in address opens the landing page, keeping where to go after signing in", async ({ page }) => {
+    await page.goto(`/login?return_to=${encodeURIComponent('https://github.com/pulls')}&other=1`);
+
+    await expect(new LandingHarness(page).signInButton).toBeVisible();
+    await expect(page).toHaveURL('/?return_to=https://github.com/pulls');
 });
 
 test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub comes back explained', async ({
@@ -30,8 +38,8 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
     github,
 }) => {
     const authorize = answerAuthorize(github, state => ({ error: 'access_denied', state }));
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInButton.click();
+    await page.goto('/');
+    await new LandingHarness(page).signInButton.click();
 
     const query = (await authorize).searchParams;
     expect(query.get('client_id')).toBe(E2E_CLIENT_ID);
@@ -39,27 +47,33 @@ test('"Sign in with GitHub" asks GitHub for the scopes, and a cancel on GitHub c
     expect(query.get('redirect_uri')).toBe(`${E2E_BASE_URL}${OAUTH_CALLBACK_PATH}`);
     expect(query.get('state')).toMatch(/^[\w-]{43}$/);
 
-    const signIn = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/login?failed=cancelled');
-    await expect(signIn.notice).toContainText("Sign-in didn't finish");
-    await expect(signIn.notice).toContainText("Access was cancelled on GitHub's screen");
+    const landing = new LandingHarness(page);
+    await expect(page).toHaveURL('/?failed=cancelled');
+    await expect(landing.banner).toContainText("Sign-in didn't finish.");
+    await expect(landing.banner).toContainText("Access was cancelled on GitHub's screen");
     expect(await readStoredToken(page)).toBeNull();
 
     // The reason is in the address, so a reload still explains it.
     await page.reload();
-    await expect(signIn.notice).toContainText("Access was cancelled on GitHub's screen");
+    await expect(landing.banner).toContainText("Access was cancelled on GitHub's screen");
+
+    // "Try again" goes back to GitHub.
+    const again = answerAuthorize(github, state => ({ error: 'access_denied', state }));
+    await landing.tryAgainButton.click();
+    await again;
+    await expect(page).toHaveURL('/?failed=cancelled');
 });
 
 test('a return from GitHub with a state this tab did not issue fails without signing in', async ({ page, github }) => {
     // The code is never exchanged: the token exchange is not mocked, so a call to it would fail the test.
     const authorize = answerAuthorize(github, () => ({ code: 'e2e-code', state: 'not-the-state-this-tab-sent' }));
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInButton.click();
+    await page.goto('/');
+    await new LandingHarness(page).signInButton.click();
     await authorize;
 
-    const signIn = new SignInScreenHarness(page);
-    await expect(page).toHaveURL('/login?failed=failed');
-    await expect(signIn.notice).toContainText('Something went wrong on the way back from GitHub');
+    const landing = new LandingHarness(page);
+    await expect(page).toHaveURL('/?failed=failed');
+    await expect(landing.banner).toContainText('Something went wrong on the way back from GitHub');
     expect(await readStoredToken(page)).toBeNull();
 });
 
@@ -69,8 +83,10 @@ test('signing in with GitHub ends in the app, where the user was heading', async
     github.graphql('Viewer', SAMPLE_VIEWER);
     answerTrackingCandidates(github, { login: LOGIN });
 
-    await page.goto('/login?next=/pulls');
-    await new SignInScreenHarness(page).signInButton.click();
+    // Signed out, the app address leads to the landing page, which keeps it.
+    await page.goto('/pulls');
+    await expect(page).toHaveURL('/?next=/pulls');
+    await new LandingHarness(page).signInButton.click();
     await authorize;
 
     // The first sign-in chooses what to track first (here nothing: the user has no repositories), then goes on to
@@ -91,8 +107,8 @@ test('signed in with a token, the shell shows the user and the allowance, and op
         token === SAMPLE_TOKEN ? SAMPLE_VIEWER : new GitHubHttpError(401, 'Bad credentials'),
     );
     answerTrackingCandidates(github, { login: LOGIN });
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     await new FirstSignInHarness(page).continueButton.click();
 
     const shell = new AppShellHarness(page);

@@ -26,6 +26,7 @@
         "@fontsource/inter": "5.3.0",
         "@fontsource/jetbrains-mono": "5.3.0",
         "@githq/github": "workspace:*",
+        "@nzyme/dom-utils": "workspace:*",
         "@nzyme/i18n": "workspace:*",
         "@nzyme/i18n-core": "workspace:*",
         "@nzyme/ioc": "workspace:*",

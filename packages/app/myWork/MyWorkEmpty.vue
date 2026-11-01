@@ -8,7 +8,7 @@ import { CircleCheckBig, Coffee, Hourglass, Search, SquarePen } from 'lucide-vue
 import { computed } from 'vue';
 
 import { APP_KEYS, CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 
@@ -72,7 +72,7 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: stri
           variant="ghost"
           size="sm"
           :icon="SquarePen"
-          :kbd="formatCommandKey(NEW_ISSUE_KEY).join('')"
+          :kbd="NEW_ISSUE_KEY"
           :aria-keyshortcuts="NEW_ISSUE_KEY"
           @click="newIssue && registry.run(newIssue)"
         >
@@ -82,8 +82,8 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: stri
           variant="ghost"
           size="sm"
           :icon="Search"
-          :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-          :aria-keyshortcuts="APP_KEYS.commandMenu"
+          :kbd="APP_KEYS.commandMenu"
+          :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
           @click="registry.openMenu()"
         >
           {{ t(l.jumpToProject) }}

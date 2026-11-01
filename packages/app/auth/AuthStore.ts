@@ -1,12 +1,18 @@
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
-import { hasOAuthScopes, OAUTH_AUTHORIZE_PATH, OAUTH_CALLBACK_PATH, OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
+import {
+    hasOAuthScopes,
+    OAUTH_AUTHORIZE_PATH,
+    OAUTH_CALLBACK_PATH,
+    OAUTH_TOKEN_PATH,
+    SIGNED_IN_HINT_COOKIE,
+} from '@githq/github/oauth.js';
 import type { OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
-import { shallowRef } from 'vue';
+import { shallowRef, watch } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
 import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
@@ -21,7 +27,7 @@ export interface Viewer {
 }
 
 /**
- * Why the user is on the sign-in page again, which it explains:
+ * Why the user is on the landing page again, which its banner explains:
  *
  * - `cancelled`: they declined on GitHub's consent screen;
  * - `failed`: anything else on the way back — a `state` that is not ours, a code GitHub refused, the network;
@@ -63,6 +69,9 @@ interface PendingSignIn {
  * then read again from GitHub in the background, and a token GitHub rejects (401) signs the user out with
  * `failure: 'tokenRejected'`. The token is never logged.
  *
+ * While a token is stored, the `githq_signed_in` cookie ({@link SIGNED_IN_HINT_COOKIE}) is set, so the Worker serves
+ * the app rather than the landing page at `/`; it is cleared with the token. It carries no token and no identity.
+ *
  * Every tab of the app shares the session: signing out in one signs out the others, and signing in as someone
  * else in one moves the others to that user.
  */
@@ -86,6 +95,13 @@ export const AuthStore = defineService({
             void refreshViewer();
         }
 
+        // Follows the token, not `signedIn`: the cookie must not blink while a stored token's user is fetched. Every
+        // change of the token goes through `tokenRef`, so this is the only place that writes the cookie.
+        watch(tokenRef, token => browser.writeCookie(signedInHintCookie(token !== null)), {
+            immediate: true,
+            flush: 'sync',
+        });
+
         browser.onLocalStorageChange(key => {
             if (key === TOKEN_KEY || key === null) {
                 followStoredToken();
@@ -105,7 +121,7 @@ export const AuthStore = defineService({
             get token() {
                 return tokenRef.value;
             },
-            /** Why the last sign-in failed or the session ended, for the sign-in page; reactive. */
+            /** Why the last sign-in failed or the session ended, for the landing page's banner; reactive. */
             get failure() {
                 return failureRef.value;
             },
@@ -115,6 +131,7 @@ export const AuthStore = defineService({
             completeSignIn,
             signInWithToken,
             signOut,
+            dismissFailure,
             refreshViewer,
         };
 
@@ -170,13 +187,18 @@ export const AuthStore = defineService({
             return await acceptToken(token, '/');
         }
 
-        /** Forgets the token and the user. With a `failure`, the sign-in page explains it. */
+        /** Forgets the token and the user. With a `failure`, the landing page explains it. */
         function signOut(failure: SignInFailure | null = null) {
             browser.localStorage.removeItem(TOKEN_KEY);
             browser.localStorage.removeItem(VIEWER_KEY);
             tokenRef.value = null;
             viewerRef.value = null;
             failureRef.value = failure;
+        }
+
+        /** The user dismissed the explanation of `failure`: the route guard no longer brings it back. */
+        function dismissFailure() {
+            failureRef.value = null;
         }
 
         /**
@@ -266,7 +288,7 @@ export const AuthStore = defineService({
             }
 
             // The other tab kept the user right after the token, so it is normally there already; until GitHub
-            // answers, the user shown so far stays rather than flashing the sign-in page.
+            // answers, the user shown so far stays rather than flashing the landing page.
             viewerRef.value = readStoredViewer() ?? viewerRef.value;
             void refreshViewer();
         }
@@ -332,6 +354,13 @@ export const AuthStore = defineService({
         function fail(failure: SignInFailure): SignInResult {
             failureRef.value = failure;
             return { ok: false, failure };
+        }
+
+        /** The hint cookie, set or cleared; `Secure` exactly when the app is served over https. */
+        function signedInHintCookie(set: boolean) {
+            const { name, value, maxAgeSeconds } = SIGNED_IN_HINT_COOKIE;
+            const secure = browser.origin.startsWith('https:') ? '; Secure' : '';
+            return `${name}=${set ? value : ''}; Path=/; SameSite=Lax; Max-Age=${set ? maxAgeSeconds : 0}${secure}`;
         }
 
         function createState() {

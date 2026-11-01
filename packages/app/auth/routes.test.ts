@@ -13,9 +13,15 @@ import { resolveRouteAccess } from './routeAccess.js';
 
 const routes: RouteRecordRaw[] = routerOptions.routes();
 
+/** The access of the app's screens: signed in, or home — a group of "my work" is the app too. */
+const APP_AUTH: readonly (RouteAuth | undefined)[] = ['signedIn', 'home'];
+
+const SIGNED_OUT = { signedIn: false, failure: null, trackingChosen: false };
+
 /** The screens open without signing in, by what they are for; redirects show nothing and are left out. */
 const NOT_SIGNED_IN = new Map<string, RouteAuth | undefined>([
-    ['/login', 'signedOut'],
+    // Home: the landing page signed out.
+    ['/', 'home'],
     ['/auth/callback', undefined],
     // The hand-off to github.com: nothing of the user's is shown, so signed out too.
     ['/:path(.*)*', undefined],
@@ -25,23 +31,27 @@ const NOT_SIGNED_IN = new Map<string, RouteAuth | undefined>([
 /** The routes that show something; a redirect record has no component and no access of its own. */
 const screens = routes.filter(route => route.component);
 
-test('every screen of the app is for signed-in users; a signed-out visitor is sent to sign in', () => {
+test('every screen of the app is for signed-in users; a signed-out visitor is sent to the landing page', () => {
     const app = screens.filter(route => !NOT_SIGNED_IN.has(route.path));
-    expect(app.map(route => route.path)).toEqual(expect.arrayContaining(['/', '/settings', '/issues/assigned']));
+    expect(app.map(route => route.path)).toEqual(expect.arrayContaining(['/settings', '/issues/assigned', '/pulls']));
 
     for (const route of app) {
-        expect(route.meta?.auth, route.path).toBe('signedIn');
+        expect(APP_AUTH, route.path).toContain(route.meta?.auth);
         expect(
             resolveRouteAccess(
-                { fullPath: route.path, query: {}, meta: route.meta ?? {} },
-                { signedIn: false, failure: null, trackingChosen: false },
+                { path: route.path, fullPath: route.path, query: {}, meta: route.meta ?? {} },
+                SIGNED_OUT,
             ),
             route.path,
-        ).toEqual({
-            path: '/login',
-            query: { next: route.path },
-        });
+        ).toEqual({ path: '/', query: { next: route.path } });
     }
+});
+
+test('signed out, home shows the landing page', () => {
+    const home = screens.find(route => route.path === '/');
+    expect(
+        resolveRouteAccess({ path: '/', fullPath: '/', query: {}, meta: home?.meta ?? {} }, SIGNED_OUT),
+    ).toBeUndefined();
 });
 
 test('the other routes keep their own access; an unknown address is handed off to GitHub', () => {

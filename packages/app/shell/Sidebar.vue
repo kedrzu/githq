@@ -50,7 +50,7 @@ import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { TRACKING_PATH } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -142,8 +142,8 @@ function statusText(status: SidebarTrackedStatus) {
         variant="field"
         block
         :icon="Search"
-        :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-        :aria-keyshortcuts="APP_KEYS.commandMenu"
+        :kbd="APP_KEYS.commandMenu"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       >
         {{ t(l.search) }}
@@ -291,8 +291,8 @@ function statusText(status: SidebarTrackedStatus) {
         size="md"
         :icon="Search"
         :label="t(l.search)"
-        :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-        :aria-keyshortcuts="APP_KEYS.commandMenu"
+        :kbd="APP_KEYS.commandMenu"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       />
       <hr :class="css.sidebar_divider" />

@@ -16,8 +16,8 @@ import type { LucideIcon } from 'lucide-vue-next';
  */
 export type ButtonVariant = 'danger' | 'field' | 'ghost' | 'light' | 'link' | 'outline' | 'primary' | 'secondary';
 
-/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action. */
-export type ButtonSize = 'lg' | 'md' | 'sm';
+/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action, `xl` the landing page's hero. */
+export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the look. */
 export const ButtonProps = {
@@ -28,7 +28,7 @@ export const ButtonProps = {
   size: defineProp<ButtonSize>(),
   /** Leading icon, a lucide component. */
   icon: defineProp<LucideIcon>(),
-  /** Keyboard hint after the label ("⌘↵"). Only drawn: give the shortcut to `aria-keyshortcuts` too. */
+  /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `aria-keyshortcuts` too. */
   kbd: defineProp<string>(),
   /** Fills its container's width, the content at the start and the hint at the end — a sidebar entry, a field. */
   block: defineProp<boolean>({ type: Boolean, default: false }),
@@ -81,8 +81,8 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
         :class="css.button_kbd"
         :tone="kbdTone"
         :size="size === 'sm' ? 'sm' : 'md'"
-        >{{ kbd }}</Kbd
-      >
+        :keys="kbd"
+      />
     </span>
     <span
       v-if="busy"
@@ -171,6 +171,22 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 .button_lg {
   padding: 9px 15px;
   font-size: $font-size-lg;
+}
+
+.button_xl {
+  padding: 13px 21px;
+  font-size: 16px;
+  line-height: 20px;
+  border-radius: $radius-xl;
+
+  .button_content {
+    gap: $spacing-10;
+  }
+
+  .button_icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .button_primary {
