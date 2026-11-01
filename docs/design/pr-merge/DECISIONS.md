@@ -276,4 +276,3 @@ the text, as it loses the state.
 > does not list, and `estimatedTimeToMerge` is nullable; PM16 shows both. `Repository.viewerPossibleCommitEmails` and
 > `viewerDefaultCommitEmail` give the addresses, so the email needs no new scope. `viewerCanMergeAsAdmin` is one boolean,
 > with no answer per rule. `PullRequest.stackEntry` gives the position in a stack.
-
