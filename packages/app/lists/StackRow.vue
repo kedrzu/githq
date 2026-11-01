@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -17,19 +17,21 @@ import {
   Layers,
   Loader,
   Milestone,
+  SquareKanban,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import type { ItemLabel, ItemUser } from '@/store/ItemTypes.js';
 import type { StackBlocker, StackDescription, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
+import { getItemPeople } from './utils/getItemPeople.js';
 
 /** The faces shown before "+N" (D15). */
 const MAX_PEOPLE = 3;
@@ -62,6 +64,14 @@ interface StackStateFact {
   readonly text: string;
 }
 
+/** The row field of its pull requests' first project (githq D12) as the entry shows it (D15). */
+interface StackProjectFieldFact {
+  /** The value all of them share; `null` when they differ: "+N" alone. */
+  readonly value: string | null;
+  readonly title: string;
+  readonly more: string | null;
+}
+
 /** What the held sentence counts and names. */
 interface HeldTextParams {
   readonly ready: number;
@@ -76,6 +86,7 @@ defineSlots<{
 
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
+const fieldList = new Intl.ListFormat(APP_LANGUAGE);
 
 const shown = computed(() => new Set(props.properties));
 const description = computed(() => props.stack.description);
@@ -87,7 +98,7 @@ const count = computed(() => {
 const people = computed(() => {
   const byLogin = new Map<string, ItemUser>();
   for (const pr of props.stack.pullRequests) {
-    for (const user of getPeople(pr)) {
+    for (const user of getItemPeople({ item: pr, shown: props.people, viewerLogin: props.viewerLogin })) {
       byLogin.set(user.login, user);
     }
   }
@@ -132,15 +143,31 @@ const milestone = computed(() => {
 
   return title !== undefined && props.stack.pullRequests.every(pr => pr.milestone) ? title : null;
 });
-const narrow = computed(() => description.value.pips.length > MAX_WIDE_PIPS);
-
-function getPeople(pr: PullRequestItem): readonly ItemUser[] {
-  if (props.people === 'assignees') {
-    return pr.assignees;
+// D15, as labels: the row field of the first project (githq D12) when every pull request has the same, else how many
+// values there are among them.
+const projectField = computed((): StackProjectFieldFact | null => {
+  const values = new Map<string, string>();
+  for (const pr of props.stack.pullRequests) {
+    const [first] = pr.projects;
+    if (first?.status) {
+      const title = t(l.projectField, { project: first.title, value: first.status.name });
+      values.set(title, first.status.name);
+    }
   }
 
-  return pr.author && pr.author.login !== props.viewerLogin ? [pr.author] : [];
-}
+  const [shared] = values;
+  if (!shared) {
+    return null;
+  }
+
+  const [title, value] = shared;
+  if (values.size === 1 && props.stack.pullRequests.every(pr => pr.projects[0]?.status)) {
+    return { value, title, more: null };
+  }
+
+  return { value: null, title: fieldList.format(values.keys()), more: t(l.more, { count: values.size }) };
+});
+const narrow = computed(() => description.value.pips.length > MAX_WIDE_PIPS);
 
 function getStateFact(stack: StackDescription): StackStateFact {
   const fact = getOpenStateFact(stack);
@@ -298,6 +325,22 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
           >{{ size }}</span
         >
         <span
+          v-if="projectField && shown.has('projectField')"
+          :class="css.stackRow_field"
+          :title="projectField.title"
+        >
+          <SquareKanban
+            :class="css.stackRow_fieldIcon"
+            aria-hidden="true"
+          />
+          {{ projectField.value }}
+          <span
+            v-if="projectField.more"
+            :class="css.stackRow_more"
+            >{{ projectField.more }}</span
+          >
+        </span>
+        <span
           v-if="milestone && shown.has('milestone')"
           :class="css.stackRow_field"
         >
@@ -331,7 +374,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 .stackRow {
   display: flex;
   gap: $spacing-10;
-  padding: 7px $spacing-16;
+  padding: $spacing-7 $spacing-16;
 }
 
 .stackRow_icon,
@@ -339,7 +382,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
   flex: none;
   width: 15px;
   height: 15px;
-  margin-top: 2px;
+  margin-top: $spacing-2;
 }
 
 .stackRow_icon {
@@ -347,7 +390,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 }
 
 .stackRow_check {
-  padding: 2px;
+  padding: $spacing-2;
   color: $color-on-light;
   background: $color-accent;
   border-radius: $radius-sm;
@@ -357,7 +400,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 5px;
+  gap: $spacing-5;
   min-width: 0;
 }
 
@@ -388,7 +431,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13.5px;
+  font-size: $font-size-row-title;
   font-weight: $font-weight-medium;
   line-height: 18px;
   color: $color-fg;
@@ -411,7 +454,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 .stackRow_pips {
   display: inline-flex;
   flex: none;
-  gap: 2px;
+  gap: $spacing-2;
   align-items: center;
 }
 
@@ -462,7 +505,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 .stackRow_state {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
 }
 
@@ -498,7 +541,7 @@ function getBlockerLook(kind: StackPullRequestPipKind): Pick<StackStateFact, 'ic
 .stackRow_field {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
   color: $color-fg-2;
 }

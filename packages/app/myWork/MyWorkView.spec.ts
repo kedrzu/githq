@@ -262,8 +262,15 @@ test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside 
     await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
 });
 
-test('stacked PRs: on the board a stack is the cards of its pull requests in the group, others left out, with their mark', async () => {
-    mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, { layout: 'board' });
+test("stacked PRs: on the board a stack's pull requests are plain cards, each in its own group's column, with their mark", async () => {
+    // The fourth is found by a later group's search alone: it is a card there, as on a board without stacks.
+    const membership = sampleMembership({
+        reviewRequested: [...(STACKED_MY_WORK_MEMBERSHIP.reviewRequested ?? [])],
+        authored: [...(STACKED_MY_WORK_MEMBERSHIP.authored ?? [])],
+        assigned: [...(STACKED_MY_WORK_MEMBERSHIP.assigned ?? [])],
+        mentioned: [...(STACKED_MY_WORK_MEMBERSHIP.mentioned ?? []), 'PR_S_webhooks_4'],
+    });
+    mount(STACKED_MY_WORK_ITEMS, membership, { layout: 'board' });
 
     const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
     await expect
@@ -274,6 +281,9 @@ test('stacked PRs: on the board a stack is the cards of its pull requests in the
         .toHaveTextContent(/your review requested/i);
     await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).not.toBeInTheDocument();
     expect(review.elements()).toHaveLength(4);
+
+    const mentioned = page.getByRole('region', { name: 'Mentioned' }).getByRole('listitem');
+    await expect.element(mentioned.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
 });
 
 /**
@@ -306,7 +316,7 @@ function mount(
             h(
                 MyWorkView,
                 {
-                    work: sampleMyWork(items.value, membership.value, filter.value),
+                    work: sampleMyWork(items.value, membership.value, filter.value, display.layout),
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     waitingCount: 0,

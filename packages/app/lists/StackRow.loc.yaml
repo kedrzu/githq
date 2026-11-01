@@ -32,6 +32,8 @@ more:
   en: '+{count}'
 size:
   en: '+{additions} −{deletions}'
+projectField:
+  en: '{project}: {value}'
 milestones:
   plural: count
   en:

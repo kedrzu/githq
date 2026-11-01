@@ -22,8 +22,9 @@ export interface FoldStacksParams<T> {
 
 /**
  * A list's groups with the rows of each stack folded into one entry per group (D2, D3): where a group lists two or more
- * pull requests of one stack, they become an entry in place of the first of them — the best sorted — nesting them in the
- * stack's order. A stack with one open pull request left stays plain rows (D3), and so does one alone in its group.
+ * open pull requests of one stack, they become an entry in place of the first of them — the best sorted — nesting them
+ * in the stack's order. Its merged and closed ones stay plain rows of a list that shows them, as does a stack with one
+ * open pull request left (D3), or one alone in its group.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -34,7 +35,7 @@ export function foldStacks<T>(params: FoldStacksParams<T>): ListGroup<T>[] {
     function foldGroup(group: ListGroup<T>): ListGroup<T> {
         const byStack = new Map<string, StackMemberRow<T>[]>();
         for (const row of group.rows) {
-            const pullRequest = params.getPullRequest(row.value);
+            const pullRequest = getOpenStacked(row);
             if (pullRequest?.stack) {
                 const members = byStack.get(pullRequest.stack.id) ?? [];
                 members.push({ row, pullRequest, position: pullRequest.stack.position });
@@ -57,7 +58,7 @@ export function foldStacks<T>(params: FoldStacksParams<T>): ListGroup<T>[] {
         const rows: ListRow<T>[] = [];
         const placed = new Set<string>();
         for (const row of group.rows) {
-            const id = params.getPullRequest(row.value)?.stack?.id;
+            const id = getOpenStacked(row)?.stack?.id;
             const entry = id === undefined ? undefined : entries.get(id);
             if (!entry) {
                 rows.push(row);
@@ -68,6 +69,15 @@ export function foldStacks<T>(params: FoldStacksParams<T>): ListGroup<T>[] {
         }
 
         return { ...group, rows };
+    }
+
+    /**
+     * The row's pull request when it is open and of a stack: a landed or closed one stays a plain row of a list that
+     * shows them (the entry says how many landed).
+     */
+    function getOpenStacked(row: ListRow<T>) {
+        const pullRequest = params.getPullRequest(row.value);
+        return pullRequest?.stack && isOpenPullRequest(pullRequest) ? pullRequest : null;
     }
 
     function getEntry(group: ListGroup<T>, stack: PullRequestStack, members: StackMemberRow<T>[]): ListRow<T> {

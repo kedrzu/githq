@@ -243,6 +243,38 @@ test('a held pull request a stack read no longer lists has left the stack, and t
     expect(github.graphql('PullRequestStacks')).toEqual([]);
 });
 
+test('a closed pull request the stack linked anew left is read out of it, though the stack holds every place', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'CLOSED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+    expect(items.get('PR_1')).toMatchObject({ state: 'CLOSED', stack: { id: 'ST_1', position: 1, size: 3 } });
+
+    // The closed first one dropped and a new one linked on top: every place of three is held again, by four.
+    const relinked = [stackedNode('PR_2', 1, 3), stackedNode('PR_3', 2, 3), stackedNode('PR_4', 3, 3)];
+    github.stacks.set('ST_1', relinked);
+    for (const node of relinked) {
+        github.statuses.set(node.id, node);
+    }
+
+    // My work finds the new one; held from then on, so nothing drops what the stack no longer keeps — as a tracked
+    // repository would keep its closed pull request.
+    github.found.reviewRequested = [stackedNode('PR_2', 1, 3), stackedNode('PR_4', 3, 3)];
+    await clock.advance(30_000);
+    expect(items.get('PR_4')).toMatchObject({ stack: { id: 'ST_1', position: 3, size: 3 } });
+    github.holdSearch = createPromise().promise;
+
+    github.requests.length = 0;
+    await clock.advance(30_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_1')).toMatchObject({ state: 'CLOSED', stack: null });
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+});
+
 test('a stack gone is asked once, its pull requests out of it; one GitHub refuses keeps them', async () => {
     const github = fakeGitHub();
     const mine = stackedNode('PR_2', 2, 3);

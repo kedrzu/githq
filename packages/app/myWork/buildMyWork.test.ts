@@ -212,9 +212,34 @@ test('a stack is one entry, whole, in the first group any of its pull requests i
     expect(rowIds(work)).toEqual({ reviewRequested: ['S_1'], authored: ['PR_plain'], assigned: [], mentioned: [] });
     expect(nestedIds(work, 'S_1')).toEqual(['PR_S_1_1', 'PR_S_1_2', 'PR_S_1_3', 'PR_S_1_4']);
     expect(work.counts).toEqual({ reviewRequested: 1, authored: 1, assigned: 0, mentioned: 0, total: 2 });
-    // What the board draws as cards: those its group's search found, not the rest of the stack.
-    const [entry] = work.groups.find(group => group.group === 'reviewRequested')?.rows ?? [];
-    expect(entry?.foundInGroup.map(member => member.id)).toEqual(['PR_S_1_2', 'PR_S_1_3']);
+});
+
+test('without stacks (the board) each pull request of a stack is a plain row of the first group its search found', () => {
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}, {}] });
+    const plain = pr('PR_plain');
+    const items = [...stack, plain];
+    const byId = new Map(items.map(item => [item.id, item]));
+
+    const work = buildMyWork({
+        membership: {
+            reviewRequested: new Set(['PR_S_1_2', 'PR_S_1_3']),
+            authored: new Set([plain.id, 'PR_S_1_4']),
+            mentioned: new Set(['PR_S_1_4']),
+        },
+        getItem: id => byId.get(id),
+        stacks: new Map(),
+        filter: 'all',
+        sort: 'updated',
+    });
+
+    expect(sortedRowIds(work)).toEqual({
+        reviewRequested: ['PR_S_1_2', 'PR_S_1_3'],
+        authored: ['PR_S_1_4', 'PR_plain'],
+        assigned: [],
+        mentioned: [],
+    });
+    expect(work.groups.flatMap(group => group.rows).every(row => row.stack === null)).toBe(true);
+    expect(work.counts.total).toBe(4);
 });
 
 test("a stack's entry nests its open pull requests in the stack's order and opens the first not yet approved", () => {

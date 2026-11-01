@@ -22,6 +22,7 @@ import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS, SYNC_LOOPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup, SyncLoop } from '@/store/ItemStoreTypes.js';
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { toItem, toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
@@ -40,6 +41,7 @@ import { TabChannel } from './TabChannel.js';
 import type { TabMessage } from './TabChannel.js';
 import { PROJECT_PROBE_INTERVAL_MS, TrackingSync } from './TrackingSync.js';
 import type { TrackingSyncContext } from './TrackingSync.js';
+import { groupNodeErrors } from './utils/groupNodeErrors.js';
 import { isNodeGone } from './utils/isNodeGone.js';
 
 /**
@@ -667,7 +669,7 @@ export const SyncEngine = defineService({
             for (const group of MY_WORK_GROUPS) {
                 for (const id of items.membership[group] ?? []) {
                     const item = items.get(id);
-                    if (item?.kind === 'pullRequest' && item.state === 'OPEN') {
+                    if (item?.kind === 'pullRequest' && isOpenPullRequest(item)) {
                         open.add(id);
                     }
                 }
@@ -675,7 +677,7 @@ export const SyncEngine = defineService({
 
             // Those copied for their stack only: nothing else re-reads them.
             for (const item of items.all) {
-                if (item.kind === 'pullRequest' && item.state === 'OPEN' && item.stack) {
+                if (item.kind === 'pullRequest' && isOpenPullRequest(item) && item.stack) {
                     open.add(item.id);
                 }
             }
@@ -728,25 +730,30 @@ export const SyncEngine = defineService({
 
         /**
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
-         * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7). Once the copy
-         * holds them all, nothing is asked. The answer is what the stack holds: a held pull request it does not list
+         * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7), and those it
+         * holds too many of. Once the copy holds them all, one at each place, nothing is asked. The answer is what the stack holds: a held pull request it does not list
          * has left the stack — all of them when the stack is gone — which moves no `updated_at`, so nothing else
          * would tell a closed one.
          */
         async function readIncompleteStacks(current: Session) {
-            const held = new Map<string, { size: number; positions: Set<number> }>();
+            const held = new Map<string, { size: number; members: number; positions: Set<number> }>();
             for (const item of items.all) {
                 if (item.kind !== 'pullRequest' || !item.stack) {
                     continue;
                 }
 
-                const stack = held.get(item.stack.id) ?? { size: 0, positions: new Set<number>() };
+                const stack = held.get(item.stack.id) ?? { size: 0, members: 0, positions: new Set<number>() };
                 stack.size = Math.max(stack.size, item.stack.size);
+                stack.members++;
                 stack.positions.add(item.stack.position);
                 held.set(item.stack.id, stack);
             }
 
-            const incomplete = [...held].filter(([, stack]) => stack.positions.size < stack.size);
+            // Whole only when it holds as many as the stack has, each at its own place: one more, or two at one place,
+            // is a pull request that left the stack (closed, then the stack linked anew) and must be read out of it.
+            const incomplete = [...held].filter(
+                ([, stack]) => stack.members !== stack.size || stack.positions.size !== stack.members,
+            );
             for (const batch of splitIntoChunks(incomplete, NODES_BATCH_SIZE)) {
                 checkAllowance('graphql');
                 const errors: GitHubGraphQLErrorEntry[] = [];
@@ -766,10 +773,11 @@ export const SyncEngine = defineService({
                     logger.warn('Pull request stacks read in part', { errors });
                 }
 
+                const errorsByNode = groupNodeErrors(errors);
                 const read: Item[] = [];
                 for (const [index, [id]] of batch.entries()) {
                     const node = nodes[index] ?? null;
-                    const nodeErrors = errors.filter(error => error.path?.[0] === 'nodes' && error.path[1] === index);
+                    const nodeErrors = errorsByNode.get(index) ?? [];
                     if (node === null || !('entries' in node)) {
                         if (isNodeGone(nodeErrors)) {
                             read.push(...leaveStack(id, new Set()));

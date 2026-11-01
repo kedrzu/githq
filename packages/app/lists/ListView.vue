@@ -1019,11 +1019,11 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   }
 }
 
-// In the 16px gutter left of the row's icon, level with its first line.
+// In the 16px gutter left of the row's icon, level with it: the row's padding and the icon's own offset.
 .listView_stackToggle {
   position: absolute;
-  top: 9px;
-  left: 1px;
+  top: $spacing-7 + $spacing-2;
+  left: calc(($spacing-16 - 14px) / 2);
   display: flex;
   align-items: center;
   justify-content: center;

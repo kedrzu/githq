@@ -77,6 +77,34 @@ test('a stack with one open pull request left stays plain rows', () => {
     expect(group?.rows.map(row => row.stack ?? null)).toEqual([null, null, null]);
 });
 
+test('only open pull requests fold: merged and closed ones of a list that shows them stay plain rows', () => {
+    const stack = sampleStack({
+        id: 'S_1',
+        number: 11,
+        members: [{ state: 'MERGED', merged: true }, { state: 'MERGED', merged: true }, {}, { state: 'CLOSED' }, {}],
+    });
+    const [first, second, third, fourth, fifth] = [
+        member(stack, 0),
+        member(stack, 1),
+        member(stack, 2),
+        member(stack, 3),
+        member(stack, 4),
+    ] as const;
+
+    const [both, closed] = fold(
+        [toGroup('both', [first, third, fourth, fifth]), toGroup('closed', [first, second, fourth])],
+        stack,
+        [],
+    );
+
+    expect(both?.rows.map(row => row.id)).toEqual([first.id, 'stack:S_1', fourth.id]);
+    const entry = both?.rows[1];
+    expect(entry?.nested.map(nested => nested.id)).toEqual([third.id, fifth.id]);
+    expect(entry?.stack?.pullRequests).toEqual([third, fifth]);
+    // Landed and closed alone: no entry speaking for open pull requests the list does not show.
+    expect(closed?.rows.map(row => row.id)).toEqual([first.id, second.id, fourth.id]);
+});
+
 test('a group without two pull requests of one stack is given back as it was', () => {
     const groups = [toGroup('todo', [ISSUE])];
 

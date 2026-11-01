@@ -1,5 +1,6 @@
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
+import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import type { PullRequestStack } from './groupStacks.js';
@@ -338,10 +339,6 @@ function canMerge(pr: PullRequestItem): boolean {
         default:
             return false;
     }
-}
-
-function isReviewRequestedOf(pr: PullRequestItem, login: string): boolean {
-    return pr.reviewRequests.some(request => request.kind === 'user' && request.login === login);
 }
 
 function isMerged(pr: PullRequestItem): boolean {

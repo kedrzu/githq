@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, within } from 'storybook/test';
 
+import type { ItemProject } from '@/store/ItemTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_STACKS, sampleListStack } from '@/testing/sampleStacks.js';
 
@@ -81,3 +82,44 @@ export const InItsRepository: Story = { args: { repository: 'mlaine/tasklet' } }
 
 /** All its pull requests are among the items edited together (`x`, D20). */
 export const Checked: Story = { args: { checked: true } };
+
+/** D15, githq D12: every pull request is "In review" in its first project — the entry shows the value they share. */
+export const ProjectFieldShared: Story = {
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map(pr => ({ ...pr, projects: [sampleProject('Platform Q4', 'In review')] })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByTitle('Platform Q4: In review')).toHaveTextContent('In review');
+    },
+};
+
+/** D15, as labels: the pull requests' first projects' row fields differ — the marker and "+N", the values on hover. */
+export const ProjectFieldDiffers: Story = {
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) => ({
+                ...pr,
+                projects: [sampleProject('Platform Q4', index === 0 ? 'Done' : 'In review')],
+            })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        const field = within(canvasElement).getByTitle('Platform Q4: Done and Platform Q4: In review');
+        await expect(field).toHaveTextContent('+2');
+        await expect(field).not.toHaveTextContent('In review');
+    },
+};
+
+function sampleProject(title: string, status: string): ItemProject {
+    return {
+        itemId: `PVTI_${title}`,
+        projectId: `PVT_${title}`,
+        title,
+        number: 1,
+        url: 'https://github.com/orgs/acme/projects/1',
+        status: { name: status, color: 'YELLOW', optionId: null },
+        updatedAt: '2026-10-29T10:00:00Z',
+    };
+}
