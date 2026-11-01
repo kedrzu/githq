@@ -54,7 +54,7 @@ export const EditRejected: Story = {
                         />
                         <span tid="dismissed">Dismissed: {dismissed.value}</span>
                         <span tid="escapes">Escapes seen behind: {escapes.value}</span>
-                        <Toaster label="Notifications">
+                        <Toaster>
                             <Toast
                                 {...args}
                                 duration={Number.POSITIVE_INFINITY}
@@ -88,6 +88,6 @@ export const PartlyFailed: Story = {
     render: args => ({
         components: { Toast, Toaster },
         setup: () => ({ args }),
-        template: `<Toaster label="Notifications"><Toast v-bind="args" :duration="Infinity">mobile#88 failed: you can read skyline-labs/mobile but not edit its labels, so that change was undone.</Toast></Toaster>`,
+        template: `<Toaster><Toast v-bind="args" :duration="Infinity">mobile#88 failed: you can read skyline-labs/mobile but not edit its labels, so that change was undone.</Toast></Toaster>`,
     }),
 };

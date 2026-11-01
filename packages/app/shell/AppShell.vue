@@ -44,6 +44,8 @@ defineProps<{
   myWorkCounts?: MyWorkCounts | null;
   /** The tracked projects and repositories for the sidebar. */
   tracked?: SidebarTracked;
+  /** Syncing the settings stopped (settings-sync T9): an amber dot on the user's avatar. */
+  settingsSyncStopped?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -150,6 +152,7 @@ function onLayout(sizes: number[]) {
           :window-controls="WINDOW_CONTROLS_OVERLAID"
           :counts="myWorkCounts"
           :tracked="tracked"
+          :settings-sync-stopped="settingsSyncStopped"
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"

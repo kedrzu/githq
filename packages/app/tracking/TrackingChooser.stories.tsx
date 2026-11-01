@@ -2,10 +2,14 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn, userEvent, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 
+import SavingChoice from '@/settings/SavingChoice.vue';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { EMPTY_CANDIDATES, SAMPLE_CANDIDATES, SAMPLE_OWN_CHOICE } from '@/testing/sampleTracking.js';
 
 import TrackingChooser from './TrackingChooser.vue';
+
+/** The chooser's props, as a story passes them. */
+type ChooserArgs = InstanceType<typeof TrackingChooser>['$props'];
 
 const meta = {
     component: TrackingChooser,
@@ -24,24 +28,7 @@ const meta = {
         onFound: fn(),
     },
     // The choice is the story's own, so its checkboxes work; as tall as the window, scrolling like the page.
-    render: args =>
-        defineComponent({
-            setup() {
-                const repositories = ref(args.repositories);
-                const projects = ref(args.projects);
-                return () => (
-                    <div style={{ height: '100vh', overflowY: 'auto' }}>
-                        <TrackingChooser
-                            {...args}
-                            repositories={repositories.value}
-                            projects={projects.value}
-                            onUpdate:repositories={value => (repositories.value = value)}
-                            onUpdate:projects={value => (projects.value = value)}
-                        />
-                    </div>
-                );
-            },
-        }),
+    render: args => renderChooser(args, false),
 } satisfies Meta<typeof TrackingChooser>;
 
 export default meta;
@@ -74,3 +61,44 @@ export const HiddenOrganisation: Story = {
 export const NothingToPick: Story = {
     args: { candidates: EMPTY_CANDIDATES, repositories: [], projects: [] },
 };
+
+/** G2's saving choice, ticked (G12): "Track these" then creates the settings repository. */
+export const SavingTicked: Story = {
+    args: { creates: 'mlaine/githq-settings' },
+    render: args => renderChooser(args, true),
+};
+
+/** G10 with the saving choice above "Continue to My work". */
+export const NothingToPickWithSaving: Story = {
+    args: { candidates: EMPTY_CANDIDATES, repositories: [], projects: [] },
+    render: args => renderChooser(args, true),
+};
+
+/** The chooser with its own choice; with `saving`, the saving choice in its band, ticked as `creates` says. */
+function renderChooser(args: ChooserArgs, saving: boolean) {
+    return defineComponent({
+        setup() {
+            const repositories = ref(args.repositories);
+            const projects = ref(args.projects);
+            const save = ref(Boolean(args.creates));
+            const savingChoice = () => (
+                <SavingChoice
+                    modelValue={save.value}
+                    onUpdate:modelValue={value => (save.value = value)}
+                />
+            );
+            return () => (
+                <div style={{ height: '100vh', overflowY: 'auto' }}>
+                    <TrackingChooser
+                        {...args}
+                        repositories={repositories.value}
+                        projects={projects.value}
+                        onUpdate:repositories={value => (repositories.value = value)}
+                        onUpdate:projects={value => (projects.value = value)}
+                        v-slots={saving ? { saving: () => savingChoice() } : {}}
+                    />
+                </div>
+            );
+        },
+    });
+}
