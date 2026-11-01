@@ -1,0 +1,10 @@
+# Journal
+
+Append-only; one line per turn that settled something.
+
+- 2026-11-01 — Owner: wants a commit graph view (branches, tags, no code yet), Fork/GitKraken-like; long-term a
+  full local git client in the desktop app, tightly integrated with GitHub; asks whether the browser should
+  hold a checkout in a virtual file system so web and desktop feel the same. Checked: github.com git endpoints
+  have no CORS; GraphQL has refs, history and parents. Proposed D1 (graph from the API on the web, local clone
+  overlay on desktop, no browser clone) — not confirmed. Folded into README: opening (why still missing) and
+  the data-source section.
