@@ -15,8 +15,8 @@ const meta = {
         tab: 'repositories',
         tracked: {
             repositories: [
-                repository('sigma-clinic/portal', true, 1420),
-                repository('sigma-clinic/api', true, 1160),
+                repository('skyline-labs/portal', true, 1420),
+                repository('skyline-labs/api', true, 1160),
                 repository('kedrzu/githq', false, 430),
                 repository('kedrzu/dotfiles', false, 6),
                 repository('kedrzu/skills', false, 212),
@@ -51,9 +51,9 @@ const meta = {
             ],
         },
         suggested: [
-            { nameWithOwner: 'sigma-clinic/mobile', isPrivate: true, items: 1, activeAt: SAMPLE_NOW - 3_600_000 },
+            { nameWithOwner: 'skyline-labs/mobile', isPrivate: true, items: 1, activeAt: SAMPLE_NOW - 3_600_000 },
             {
-                nameWithOwner: 'sigma-clinic/platform-infra',
+                nameWithOwner: 'skyline-labs/platform-infra',
                 isPrivate: true,
                 items: 2,
                 activeAt: SAMPLE_NOW - 2 * 86_400_000,
@@ -94,7 +94,7 @@ type Story = StoryObj<typeof meta>;
  */
 export const Repositories: Story = {};
 
-/** T1: a search narrows what is tracked and what is not, Suggested gone; the rest of sigma-clinic is being read. */
+/** T1: a search narrows what is tracked and what is not, Suggested gone; the rest of skyline-labs is being read. */
 export const Searching: Story = { args: { initialSearch: 'pay' } };
 
 /** T2: the projects, tracked and not. */

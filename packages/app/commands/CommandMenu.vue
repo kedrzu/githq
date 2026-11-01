@@ -1,5 +1,6 @@
 <!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ⌫ in an empty field or Esc steps back out of a submenu, Esc closes. -->
 <script lang="ts" setup>
+import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -25,13 +26,17 @@ import Avatar from '@/components/Avatar.vue';
 import Dialog from '@/components/Dialog.vue';
 import FilterList from '@/components/FilterList.vue';
 import type { FilterListGroup, FilterListHint, FilterListRow } from '@/components/FilterList.vue';
+import { filterOptions } from '@/components/filterOptions.js';
+import type { FoundOption } from '@/components/filterOptions.js';
 import Kbd from '@/components/Kbd.vue';
+import MatchedText from '@/components/MatchedText.vue';
 import { formatShortReference } from '@/item/itemRoutes.js';
 
-import { buildCommandMenu, filterCommandOptions } from './buildCommandMenu.js';
+import { buildCommandMenu } from './buildCommandMenu.js';
 import type { CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
 import * as l from './CommandMenu.loc.js';
 import type { Command, CommandOption, CommandSubject } from './CommandTypes.js';
+import type { CommandMenuMatch } from './findMenuRows.js';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 
 const props = withDefaults(
@@ -69,6 +74,8 @@ interface Row extends FilterListRow {
   readonly keys?: readonly string[];
   readonly submenu?: boolean;
   readonly chosen?: boolean;
+  /** What typed text matched on the line: drawn marked, a `hidden` word only because of it. */
+  readonly match?: CommandMenuMatch | null;
   activate(): void;
 }
 
@@ -102,7 +109,8 @@ const groups = computed((): FilterListGroup<Row>[] => {
   const command = submenu.value;
   const options = submenuOptions.value;
   if (command && options) {
-    return groupOptions(command, filterCommandOptions(query.value, options.options).slice(0, SUBMENU_LIMIT));
+    const found = filterOptions(query.value, options.options).slice(0, SUBMENU_LIMIT);
+    return groupOptions(command, found);
   }
 
   return buildCommandMenu({
@@ -193,6 +201,7 @@ function toRow(entry: CommandMenuEntry): Row {
         detail: command.detail,
         keys: command.key?.split('+'),
         submenu: command.options !== undefined,
+        match: entry.match,
         activate: () => runCommand(command),
       };
     }
@@ -208,6 +217,7 @@ function toRow(entry: CommandMenuEntry): Row {
         color: option.color,
         avatarUrl: option.avatarUrl,
         chosen: option.chosen,
+        match: entry.match,
         activate: () => pick(option),
       };
     }
@@ -232,6 +242,7 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
         title: place.title,
         detail: place.detail,
         keys: place.key?.split('+'),
+        match: result.match,
         activate: go,
       };
     }
@@ -242,6 +253,7 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
         icon: item.kind === 'issue' ? CircleDot : GitPullRequest,
         title: item.title,
         reference: formatShortReference(item),
+        match: result.match,
         activate: go,
       };
     }
@@ -252,9 +264,10 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
   }
 }
 
-function groupOptions(command: Command, options: readonly CommandOption[]): FilterListGroup<Row>[] {
+function groupOptions(command: Command, found: readonly FoundOption<CommandOption>[]): FilterListGroup<Row>[] {
   const grouped: { key: string; heading: string | null; rows: Row[] }[] = [];
-  for (const option of options) {
+  for (const foundOption of found) {
+    const { option } = foundOption;
     const heading = option.group ?? null;
     const row: Row = {
       value: `option:${option.value}`,
@@ -264,6 +277,7 @@ function groupOptions(command: Command, options: readonly CommandOption[]): Filt
       color: option.color,
       avatarUrl: option.avatarUrl,
       chosen: option.chosen,
+      match: toOptionMatch(foundOption),
       activate: () => pick(option),
     };
     const last = grouped.at(-1);
@@ -275,6 +289,24 @@ function groupOptions(command: Command, options: readonly CommandOption[]): Filt
   }
 
   return grouped;
+}
+
+function toOptionMatch({ option, field, ranges }: FoundOption<CommandOption>): CommandMenuMatch | null {
+  switch (field) {
+    case 'label':
+      return { field: 'title', text: option.label, ranges };
+    case 'detail':
+      assert(option.detail);
+      return { field: 'detail', text: option.detail, ranges };
+    case null:
+      return null;
+    default:
+      return assertNever(field);
+  }
+}
+
+function getRanges(row: Row, field: CommandMenuMatch['field']) {
+  return row.match?.field === field ? row.match.ranges : null;
 }
 
 function runCommand(command: Command) {
@@ -421,18 +453,39 @@ function onEscape(event: KeyboardEvent) {
           decorative
         />
         <span :class="css.commandMenu_title">
-          <template v-if="row.lead">{{ row.lead }} → </template>{{ row.title }}
+          <template v-if="row.lead">{{ row.lead }} → </template
+          ><MatchedText
+            :text="row.title"
+            :ranges="getRanges(row, 'title')"
+          />
+        </span>
+        <span
+          v-if="row.match?.field === 'hidden'"
+          :class="css.commandMenu_detail"
+        >
+          <MatchedText
+            :text="row.match.text"
+            :ranges="row.match.ranges"
+          />
         </span>
         <span
           v-if="row.reference"
           :class="css.commandMenu_reference"
-          >{{ row.reference }}</span
         >
+          <MatchedText
+            :text="row.reference"
+            :ranges="getRanges(row, 'reference')"
+          />
+        </span>
         <span
           v-if="row.detail"
           :class="css.commandMenu_detail"
-          >{{ row.detail }}</span
         >
+          <MatchedText
+            :text="row.detail"
+            :ranges="getRanges(row, 'detail')"
+          />
+        </span>
         <Check
           v-if="row.chosen"
           :class="css.commandMenu_check"

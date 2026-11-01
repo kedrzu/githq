@@ -1,9 +1,13 @@
+import { formatShortReference } from '@/item/itemRoutes.js';
 import type { SettingsSection } from '@/settings/settingsRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.js';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
+import type { PreparedMatchTexts } from '@/utils/findMatches.js';
 
-import { scoreText } from './scoreText.js';
+import { findMenuRows } from './findMenuRows.js';
+import type { CommandMenuMatch } from './findMenuRows.js';
 
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
@@ -33,35 +37,49 @@ export interface NavigationData {
 
 /** A place or an item the typed text finds. */
 export type NavigationResult =
-    | { readonly kind: 'place'; readonly score: number; readonly place: NavigationPlace }
-    | { readonly kind: 'item'; readonly score: number; readonly item: Item }
+    /** `match` is `null` when nothing is typed: every place is listed, none is marked. */
+    | {
+          readonly kind: 'place';
+          readonly score: number;
+          readonly place: NavigationPlace;
+          readonly match: CommandMenuMatch | null;
+      }
+    | { readonly kind: 'item'; readonly score: number; readonly item: Item; readonly match: CommandMenuMatch }
     /** `owner/name` typed of a repository not tracked: its screen (J3). */
     | { readonly kind: 'repository'; readonly score: number; readonly nameWithOwner: string };
 
 /** How many items the menu lists at most. */
 const ITEM_LIMIT = 8;
 
-/** An item as typed: `#12`, `12`, `portal#12`, `sigma-clinic/portal#12`. */
-const ITEM_NUMBER = /^(?:([\w.-]+(?:\/[\w.-]+)?))?#?(\d+)$/u;
+/** How many items a query ranks, the newest of those it finds: over 50,000 items, ranking them all takes frames. */
+const ITEM_HIT_LIMIT = 1000;
+
+/** The items as searched, per `items` array: readying them is the one step too slow to repeat per keystroke. */
+const PREPARED_ITEMS = new WeakMap<readonly Item[], PreparedMatchTexts<Item>>();
+
+/** An item as typed: `#12`, `12`, `portal#12`, `skyline-labs/portal#12`. */
+const ITEM_NUMBER = /^(?:([\w.-]+(?:\/[\w.-]+)?)?#)?(\d+)$/u;
+
+/** `#12`: nothing but an item's number is asked for. */
+const ONLY_ITEM_NUMBER = /^#\d+$/u;
 
 /**
- * The places and items typed text finds in the local copy, best first. Places by their names; items by number
- * (`#123`, `repo#123`, `owner/repo#123`) above a title starting with the text above the title's words holding
- * it, newest first among equals; any `owner/name` or repository address that is not
- * tracked as a repository to open. Nothing typed:
- * every place, no item.
+ * The places and items typed text finds in the local copy, best first, each with what the menu marks. Places by
+ * their names; items by number (`#123`, `repo#123`, `owner/repo#123`) above a title starting with the text above
+ * the title's words holding it, newest first among equals; any `owner/name` or repository address that is not
+ * tracked as a repository to open. `#123` is items only. Nothing typed: every place, no item.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function searchNavigation(query: string, data: NavigationData): NavigationResult[] {
     const typed = query.trim();
-    const results: NavigationResult[] = [];
-    for (const place of data.places) {
-        const score = scorePlace(typed, place);
-        if (score !== null) {
-            results.push({ kind: 'place', score, place });
-        }
-    }
+    const places = isOnlyItemNumber(typed) ? [] : data.places;
+    const results: NavigationResult[] = findMenuRows(typed, places).map(({ row, score, match }) => ({
+        kind: 'place',
+        score,
+        place: row,
+        match,
+    }));
 
     if (typed === '') {
         return results;
@@ -81,49 +99,77 @@ export function searchNavigation(query: string, data: NavigationData): Navigatio
     return results.toSorted((a, b) => b.score - a.score);
 }
 
-function scorePlace(typed: string, place: NavigationPlace) {
-    const scores = [place.title, ...(place.keywords ?? [])].map(text => scoreText(typed, text));
-    const found = scores.filter(score => score !== null);
-    return found.length === 0 ? null : Math.max(...found);
+/**
+ * Whether typed text asks for an item's number and nothing else (`#123`): no action, option or place is found by it.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isOnlyItemNumber(typed: string) {
+    return ONLY_ITEM_NUMBER.test(typed);
 }
 
 function findItems(typed: string, number: RegExpExecArray | null, items: readonly Item[]): NavigationResult[] {
-    const found: { item: Item; score: number }[] = [];
-    for (const item of items) {
-        // An issue being created has no number to be found or opened by yet.
-        if (isPendingItem(item)) {
-            continue;
-        }
+    const prepared = prepareItems(items);
+    const found = number ? findItemsByNumber(prepared.rows, number[1], Number(number[2])) : findItemsByTitle();
+    return found.slice(0, ITEM_LIMIT);
 
-        const score = number ? scoreNumber(item, number[1], Number(number[2])) : scoreTitle(typed, item.title);
-        if (score !== null) {
-            found.push({ item, score });
+    function findItemsByTitle(): NavigationResult[] {
+        return findMatches(typed, prepared, { hitLimit: ITEM_HIT_LIMIT }).map(({ row, score, ranges }) => ({
+            kind: 'item',
+            score,
+            item: row,
+            match: { field: 'title', text: row.title, ranges },
+        }));
+    }
+}
+
+/** Newest first, so a stable ranking keeps the newest first among equals. An issue being created has no number yet. */
+function prepareItems(items: readonly Item[]) {
+    const kept = PREPARED_ITEMS.get(items);
+    if (kept) {
+        return kept;
+    }
+
+    const searched = items
+        .filter(item => !isPendingItem(item))
+        .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    const prepared = prepareMatchTexts(searched, item => [item.title]);
+    PREPARED_ITEMS.set(items, prepared);
+    return prepared;
+}
+
+function findItemsByNumber(items: readonly Item[], repository: string | undefined, number: number) {
+    const found: NavigationResult[] = [];
+    for (const item of items) {
+        if (hasNumber(item, repository, number)) {
+            const reference = formatShortReference(item);
+            found.push({
+                kind: 'item',
+                score: 100,
+                item,
+                match: {
+                    field: 'reference',
+                    text: reference,
+                    ranges: [reference.length - String(number).length, reference.length],
+                },
+            });
         }
     }
 
-    return found
-        .toSorted((a, b) => b.score - a.score || b.item.updatedAt.localeCompare(a.item.updatedAt))
-        .slice(0, ITEM_LIMIT)
-        .map(({ item, score }) => ({ kind: 'item', score, item }));
+    return found;
 }
 
 /** `#12` finds every item 12; `portal#12` the one in a repository named so, `owner/portal#12` in that one. */
-function scoreNumber(item: Item, repository: string | undefined, number: number) {
+function hasNumber(item: Item, repository: string | undefined, number: number) {
     if (item.number !== number) {
-        return null;
+        return false;
     }
 
     if (repository === undefined) {
-        return 100;
+        return true;
     }
 
     const name = item.repository.nameWithOwner.toLowerCase();
     const wanted = repository.toLowerCase();
-    return name === wanted || name.endsWith(`/${wanted}`) ? 100 : null;
-}
-
-/** A title found by its start or its words — not by scattered letters, which find too many. */
-function scoreTitle(typed: string, title: string) {
-    const score = scoreText(typed, title);
-    return score !== null && score >= 40 ? score : null;
+    return name === wanted || name.endsWith(`/${wanted}`);
 }

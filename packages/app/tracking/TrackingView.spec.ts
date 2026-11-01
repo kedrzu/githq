@@ -4,9 +4,12 @@ import { page, userEvent } from 'vitest/browser';
 
 import { SAMPLE_CANDIDATES, sampleCandidateProject, sampleCandidateRepository } from '@/testing/sampleTracking.js';
 
+import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+
 import type { CandidateProject, CandidateRepository, TrackingCandidates } from './TrackingTypes.js';
 import type { TrackingReference } from './utils/parseTrackingReference.js';
 import * as stories from './TrackingView.stories.js';
+import type { TrackedRow } from './TrackingView.vue';
 
 const { NoOrganisations, Projects, ReadingOrganisations, Repositories, Searching, SomeoneElses } =
     composeStories(stories);
@@ -33,7 +36,7 @@ test('G8: tracked rows with tag, items and activity, the size only in the headin
     await expect
         .element(tracked().getByText('7 repositories · 3,692 items · 48 MB in this browser'))
         .toBeInTheDocument();
-    const portal = page.getByRole('listitem').filter({ hasText: 'sigma-clinic/portal' }).first();
+    const portal = page.getByRole('listitem').filter({ hasText: 'skyline-labs/portal' }).first();
     await expect.element(portal).toHaveTextContent('private');
     await expect.element(portal).toHaveTextContent('1,420');
     await expect.element(portal).toHaveTextContent('active 12m ago');
@@ -52,7 +55,7 @@ test('a repository whose visibility nothing tells yet has no tag, never "public"
         args: { ...Repositories.args, tracked: { ...sample, repositories: [{ ...first, isPrivate: null }, ...rest] } },
     });
 
-    const portal = page.getByRole('listitem').filter({ hasText: 'sigma-clinic/portal' }).first();
+    const portal = page.getByRole('listitem').filter({ hasText: 'skyline-labs/portal' }).first();
     await expect.element(portal).toHaveTextContent('1,420');
     await expect.element(portal).not.toHaveTextContent('public');
     await expect.element(portal).not.toHaveTextContent('private');
@@ -83,7 +86,7 @@ test('a suggestion of an organisation whose list GitHub refused is not taken off
     ];
     await Repositories.run({ args: { ...Repositories.args, candidates, suggested } });
 
-    // 12 + 312, less 6 tracked of theirs and the 2 suggestions of sigma-clinic.
+    // 12 + 312, less 6 tracked of theirs and the 2 suggestions of skyline-labs.
     await expect
         .element(page.getByText('316 more repositories you can track. Search to find them.'))
         .toBeInTheDocument();
@@ -96,7 +99,7 @@ test('the Track button and T track; Untrack and ⌫ untrack', async () => {
 
     const row = page.getByRole('region', { name: 'Suggested' }).getByRole('listitem').first();
     await userEvent.click(row.getByRole('button', { name: /^Track/ }));
-    expect(onTrackSuggested).toHaveBeenCalledWith('sigma-clinic/mobile');
+    expect(onTrackSuggested).toHaveBeenCalledWith('skyline-labs/mobile');
 
     row.getByRole('button', { name: /^Track/ })
         .element()
@@ -136,7 +139,7 @@ test('↓ from the search goes to the rows, ↑ back; Esc clears it', async () =
 
     await userEvent.click(search());
     await userEvent.keyboard('{ArrowDown}');
-    await expect.element(page.getByRole('link', { name: 'sigma-clinic/portal', exact: true })).toHaveFocus();
+    await expect.element(page.getByRole('link', { name: 'skyline-labs/portal', exact: true })).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}');
     await expect.element(search()).toHaveFocus();
 
@@ -152,14 +155,14 @@ test('T1: a search narrows both lists by recent activity, Suggested gone, and re
     await expect.element(tracked()).not.toBeInTheDocument();
     await expect.element(notTracked()).toHaveTextContent('7 of 321');
     const rows = notTracked().getByRole('listitem');
-    await expect.element(rows.nth(0)).toHaveTextContent('sigma-clinic/payments');
+    await expect.element(rows.nth(0)).toHaveTextContent('skyline-labs/payments');
     await expect.element(rows.nth(0)).toHaveTextContent('private');
     await expect.element(rows.nth(0)).toHaveTextContent('41 open');
     await expect.element(rows.nth(0)).toHaveTextContent('active 1h ago');
-    await expect.element(rows.nth(6)).toHaveTextContent('sigma-clinic/pay-portal-legacy');
+    await expect.element(rows.nth(6)).toHaveTextContent('skyline-labs/pay-portal-legacy');
     await expect.element(rows.nth(6)).toHaveTextContent('6 open · archived · read-only');
 
-    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
 
     onLoadMore.mockClear();
     await userEvent.clear(search());
@@ -177,12 +180,12 @@ test('the owner filter narrows both lists and reads only that owner, as long as 
     expect(onLoadMore).not.toHaveBeenCalled();
 
     await userEvent.click(page.getByRole('button', { name: 'Owner: All owners' }));
-    await userEvent.click(page.getByRole('menuitemradio', { name: 'sigma-clinic' }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'skyline-labs' }));
 
     await expect.element(tracked()).toHaveTextContent('2 matches');
-    await expect.element(notTracked()).toHaveTextContent('310 in sigma-clinic');
+    await expect.element(notTracked()).toHaveTextContent('310 in skyline-labs');
     expect(onLoadMore).toHaveBeenCalledTimes(1);
-    expect(onLoadMore).toHaveBeenCalledWith('sigma-clinic');
+    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
 });
 
 test('an owner with nothing left says so in a line; one hiding its private data says that, not 0', async () => {
@@ -250,7 +253,7 @@ test("a project's address is looked up and offered; one already listed is not lo
 
     const listed = vi.fn(() => Promise.resolve(null));
     await Projects.run({
-        args: { ...Projects.args, find: listed, initialSearch: 'https://github.com/orgs/sigma-clinic/projects/3' },
+        args: { ...Projects.args, find: listed, initialSearch: 'https://github.com/orgs/skyline-labs/projects/3' },
     });
     await expect.element(notTracked().getByText('Bug triage')).toBeInTheDocument();
     await sleep(400);
@@ -342,3 +345,79 @@ test('with no organisations the panel is gone; while reading it says so', async 
     await ReadingOrganisations.run();
     await expect.element(page.getByText('Reading your organisations…')).toBeInTheDocument();
 });
+
+const FOUND_TRACKED = {
+    repositories: [trackedRow('kedrzu/keynote'), trackedRow('kedrzu/note'), trackedRow('kedrzu/Żółty-theme')],
+    projects: [],
+};
+
+test('typed text finds what is tracked, in the order it is kept', async () => {
+    await Repositories.run({ args: { ...Repositories.args, tracked: FOUND_TRACKED } });
+
+    await searchFor('note');
+    await expect.poll(trackedNames).toEqual(['kedrzu/keynote', 'kedrzu/note']);
+});
+
+test('words in another order and a name without its diacritics find the same row; scattered letters do not', async () => {
+    await Repositories.run({ args: { ...Repositories.args, tracked: FOUND_TRACKED } });
+
+    await searchFor('zolty');
+    await expect.poll(trackedNames).toEqual(['kedrzu/Żółty-theme']);
+
+    await searchFor('theme zolty');
+    await expect.poll(trackedNames).toEqual(['kedrzu/Żółty-theme']);
+
+    // Its letters in order, but none of its words.
+    await searchFor('ztm');
+    await expect.poll(trackedNames).toEqual([]);
+});
+
+test('words in another order find a project to track; with nothing typed they stay in their order', async () => {
+    await Projects.run();
+
+    await expect
+        .poll(notTrackedRows)
+        .toEqual([
+            expect.stringMatching(/^Platform Q4/u),
+            expect.stringMatching(/^Bug triage/u),
+            expect.stringMatching(/^Docs revamp/u),
+            expect.stringMatching(/^Mobile 2\.0/u),
+        ]);
+
+    await searchFor('q4 platform');
+    await expect.poll(notTrackedRows).toEqual([expect.stringMatching(/^Platform Q4/u)]);
+});
+
+/** Types into the search, in place of what was there. */
+async function searchFor(text: string) {
+    await userEvent.clear(search());
+    await userEvent.type(search(), text);
+}
+
+function trackedNames() {
+    return tracked()
+        .getByRole('listitem')
+        .elements()
+        .map(row => row.querySelector('a')?.textContent);
+}
+
+/** The rows of "Not tracked", each its whole text: the name comes first. */
+function notTrackedRows() {
+    return notTracked()
+        .getByRole('listitem')
+        .elements()
+        .map(row => row.textContent);
+}
+
+function trackedRow(name: string): TrackedRow {
+    return {
+        target: { kind: 'repository', nameWithOwner: name },
+        name,
+        owner: name.split('/')[0] ?? '',
+        to: `/${name}`,
+        isPrivate: false,
+        items: 1,
+        activeAt: null,
+        state: { kind: 'read', at: SAMPLE_NOW, fresh: true, slower: false },
+    };
+}

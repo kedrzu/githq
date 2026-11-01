@@ -17,7 +17,7 @@ const meta = {
         rows: D1_ITEMS.slice(0, 1).map(item => ({ key: item.id, id: item.id, value: item, nested: [] })),
         summary: 'githq only has what concerns you in Mobile launch: 1 item.',
         others: "Its other items are on GitHub. Search and ⌘K only find what's here.",
-        settingsTo: getSettingsPath('projects', 'https://github.com/orgs/sigma-clinic/projects/5'),
+        settingsTo: getSettingsPath('projects', 'https://github.com/orgs/skyline-labs/projects/5'),
         properties: ['status', 'updated'],
         viewerLogin: SAMPLE_VIEWER.login,
         now: SAMPLE_NOW,

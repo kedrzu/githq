@@ -61,9 +61,9 @@ test('by iteration: the current and coming ones first, in order; a completed one
 test('by repository, drafts apart; by assignee, an item under each of its people; neither movable', () => {
     const byRepository = build('repository', MANUAL_SORT);
     expect(byRepository.map(group => group.label)).toEqual([
-        'sigma-clinic/api',
-        'sigma-clinic/mobile',
-        'sigma-clinic/portal',
+        'skyline-labs/api',
+        'skyline-labs/mobile',
+        'skyline-labs/portal',
         'Drafts',
     ]);
     expect(byRepository.some(group => group.droppable)).toBe(false);

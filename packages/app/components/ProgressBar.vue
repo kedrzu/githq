@@ -5,7 +5,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   /** How much is done, 0–1; `null` while not known yet (an empty bar). */
   value: number | null;
-  /** What the bar measures ("sigma-clinic/portal"). */
+  /** What the bar measures ("skyline-labs/portal"). */
   label: string;
 }>();
 

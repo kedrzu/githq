@@ -1,5 +1,6 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { userEvent } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 
@@ -34,25 +35,25 @@ const NAVIGATION: NavigationData = {
             group: 'projects',
             kind: 'project',
             title: 'Platform Q4',
-            detail: 'sigma-clinic',
-            keywords: ['sigma-clinic'],
-            path: '/orgs/sigma-clinic/projects/4',
+            detail: 'skyline-labs',
+            keywords: ['skyline-labs'],
+            path: '/orgs/skyline-labs/projects/4',
         },
         {
             id: 'project:onboarding',
             group: 'projects',
             kind: 'project',
             title: 'Platform onboarding',
-            detail: 'sigma-clinic',
-            keywords: ['sigma-clinic'],
-            path: '/orgs/sigma-clinic/projects/7',
+            detail: 'skyline-labs',
+            keywords: ['skyline-labs'],
+            path: '/orgs/skyline-labs/projects/7',
         },
         {
             id: 'repository:portal',
             group: 'repositories',
             kind: 'repository',
-            title: 'sigma-clinic/portal',
-            path: '/sigma-clinic/portal',
+            title: 'skyline-labs/portal',
+            path: '/skyline-labs/portal',
         },
         { id: 'settings', group: 'goTo', kind: 'settings', title: 'Settings', key: ',', path: '/settings' },
         {
@@ -84,22 +85,26 @@ const NAVIGATION: NavigationData = {
             path: '/settings?tab=account',
         },
     ],
-    trackedRepositories: ['sigma-clinic/portal'],
-    items: D1_ITEMS,
+    trackedRepositories: ['skyline-labs/portal'],
+    items: [
+        ...D1_ITEMS,
+        { ...sampleIssue('I_77'), number: 77, title: 'Keep reactivity when the sidebar collapses' },
+        { ...sampleIssue('I_78'), number: 78, title: 'Żółty label is unreadable on the dark theme' },
+    ],
 };
 
 const MOBILE_METADATA: RepositoryMetadata = {
     ...SAMPLE_PORTAL_METADATA,
-    nameWithOwner: 'sigma-clinic/mobile',
+    nameWithOwner: 'skyline-labs/mobile',
     id: 'R_mobile',
     viewerPermission: 'READ',
 };
 
 /** E4: three issues in Platform Q4, one of them in a repository where the user only reads. */
 const SELECTED: readonly Item[] = [
-    selectedIssue('I_455', 'sigma-clinic/portal', 455, 'Document webhook retry policy', 'WRITE'),
-    selectedIssue('I_1210', 'sigma-clinic/portal', 1210, 'Clinic switcher loses filter state', 'WRITE'),
-    selectedIssue('I_91', 'sigma-clinic/mobile', 91, 'Crash on Android 15 when opening receipts', 'READ'),
+    selectedIssue('I_455', 'skyline-labs/portal', 455, 'Document webhook retry policy', 'WRITE'),
+    selectedIssue('I_1210', 'skyline-labs/portal', 1210, 'Client switcher loses filter state', 'WRITE'),
+    selectedIssue('I_91', 'skyline-labs/mobile', 91, 'Crash on Android 15 when opening receipts', 'READ'),
 ];
 
 /**
@@ -259,6 +264,21 @@ export const Typing: Story = { args: { subject: 'none' } };
 
 /** E4: three items selected — their actions, "2 of 3 editable" where only some may take it. */
 export const SeveralSelected: Story = { args: { subject: 'selection' } };
+
+/** E5: letters typed are marked where they matched, in a title here. */
+export const MatchInTitle: Story = {
+    args: { subject: 'none' },
+    play: async () => {
+        await userEvent.keyboard('plat');
+    },
+};
+
+/** E5: found only by a word the line does not show: that word, dimmed after the title, its letters marked. */
+export const MatchInHiddenWord: Story = {
+    play: async () => {
+        await userEvent.keyboard('assignees');
+    },
+};
 
 /** Closed: the keys open it (⌘K), or an action's submenu where nothing else runs it. */
 export const Closed: Story = { args: { subject: 'selection', startOpen: false } };

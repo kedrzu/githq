@@ -16,7 +16,7 @@ const props = withDefaults(
   { src: null, size: 'sm' },
 );
 
-// "kedrzu" → "KE", "sigma-clinic" → "SC".
+// "kedrzu" → "KE", "skyline-labs" → "SL".
 const initials = computed(() => {
   const words = props.name.split(/[\s_.-]+/u).filter(Boolean);
   const [first, second] = words;

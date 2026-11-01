@@ -28,8 +28,8 @@ test('the account, its organisations, what this browser keeps and signing out', 
     await expect.element(page.getByText('You requested approval on Oct 28.', { exact: false })).toBeVisible();
     // Its approval was requested from here and it hides nothing now; the other never hid anything.
     await expect
-        .element(page.getByRole('listitem').filter({ hasText: 'sigma-clinic' }))
-        .toHaveTextContent(/sigma-clinic\s*Approved/);
+        .element(page.getByRole('listitem').filter({ hasText: 'skyline-labs' }))
+        .toHaveTextContent(/skyline-labs\s*Approved/);
     await expect
         .element(page.getByRole('listitem').filter({ hasText: 'kedrzu-labs' }))
         .toHaveTextContent(/kedrzu-labs\s*No restrictions/);

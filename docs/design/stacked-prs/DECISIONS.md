@@ -235,3 +235,126 @@ pull request.** Reordering and removing one are dissolve and link again. (2026-1
 
 - Treating any chain of bases as a stack — merge rules and merging differ for those, so githq would promise what GitHub does not do.
 - Link, add and dissolve as links to github.com, as "Rebase stack" — the owner wants all of it here.
+
+## D14
+
+**A stack's entry is a two-line row like any other, with a stack icon, no number of its own, a chevron in the gutter, the name and count,
+and pips: one per pull request in order, each in its own state, beside the state in words.** Merged ones stay as pips. The pip of the pull
+request open in the item is tall, so the entry shows where you are while collapsed. (2026-11-01, owner, picking SP10 of the design agent's
+variants)
+
+**Why.** Keeping the row's height keeps the list calm next to ordinary rows. Only an entry has pips, so it cannot be taken for a pull request,
+and an issue with nested pull requests has its own number and no fold (SP11). The pips answer [D10](#d10)'s cost: where the trouble sits is
+visible collapsed. Beyond 12 pull requests pips narrow.
+
+**Rejected.**
+
+- One line — a third less height, but the state is cut to fit and it breaks the rhythm of the list.
+- Words only — no new element, but it cannot show where the trouble sits or where you are.
+
+## D15
+
+**When an entry's pull requests differ: assignees are the union, up to three faces and +N; labels and project fields are those all share, the
+rest +N; milestone only when shared, otherwise "2 milestones"; size the sum; updated the latest.** (2026-11-01, design agent, SP12; owner
+accepted)
+
+**Why.** The row must stay one line of properties, and expanding shows the rest.
+
+## D16
+
+**A share of a stack on a board or in a group reads "2 of 4", and its pips show this share filled and the others hollow. A lone row or card
+carries a small marker: icon, pips with this one tall, and its place ("3 of 4"), with no chevron.** (2026-11-01, owner, picking SP27; SP13, SP24,
+SP26)
+
+**Rejected.**
+
+- A second edge behind the card — says "several" sooner, as decoration on a calm board.
+
+## D17
+
+**The map never goes away while walking. In a panel it sits above the content: at the top, as rows, a window of at most six for a long stack (one
+before, two after, the rest folded into a line that says what they hold); once the content scrolls, it folds to one line of pips, place, what
+blocks and the neighbours on `K` and `J`, and unfolds back at the top or on a click. In a modal it sits at the top of the side column, whole. On a
+full page it is a column of its own on the left, whole.** (2026-11-01, owner: the panel unfolded at the top and folded when scrolled, and the left
+column on a full page; SP30–SP32, SP33–SP36)
+
+**Why.** `J` and `K` then change only what is highlighted, and every pull request opens unfolded at the top. The panel is short on height, so the
+rows give way to the content once it is being read. On a full page the column reads as the stack's contents.
+
+**Rejected.**
+
+- A panel with only the one-line strip — what is next is only learned by going.
+- A panel with only the rows — they take the content's room while reading.
+- The full page's side column, like the modal — keeps one place for both, but the owner prefers contents on the left; the cost is 300 px of
+  reading width.
+
+## D18
+
+**How far is a line in the panel's list, moved with `↑` and `↓`. Later ones stay dimmed below it and the button counts.** (2026-11-01, owner,
+picking SP41)
+
+**Why.** The usual merge gains no key. The line cannot skip, which is GitHub's own rule ([D11](#d11)).
+
+With exactly one going, the merge is an ordinary one and the commit text is back (SP43). The first open pull request is the only one that can
+go alone, so GitHub's unclear handling of titles ([D11](#d11)) does not arise.
+
+**Rejected.**
+
+- A "How far" line with its own key — one key more, and the list no longer shows the cut.
+
+## D19
+
+**When a stack is held, `⇧M` opens with the line at the last one that can land, and `⌘↵` lands those.** The panel says "2 of 4 can land" and who
+holds the rest. (2026-11-01, owner, picking SP45)
+
+**Why.** Same two keys, and it is what the map's "Merge 2 of 4" promises. Cost accepted: landing part of a stack by habit, softened by the amber
+verdict and the count on the button.
+
+**Rejected.**
+
+- Nothing armed until `↑` picks a place — safer against habit, one key more every time.
+
+## D20
+
+**`X` on a collapsed entry selects it whole, and the count is of pull requests. `⇧J` crosses a collapsed entry in one step and an expanded one row
+by row. `X` on a row inside selects that one, with a half mark on the entry.** (2026-11-01, design agent, SP28; owner accepted)
+
+**Why.** Edits on an entry apply to its pull requests, so the count must say how many will change.
+
+## D21
+
+**A stack needing a rebase reads amber, all pips amber, with the sentence "Needs rebase · nothing can merge". When selected it shows "Rebase on
+GitHub" on `⇧M`, and in the panel `⌘↵` opens GitHub. It keeps its place in the list.** (2026-11-01, owner, picking SP15; SP46)
+
+**Why.** Amber, because nothing is wrong with the code and something must happen elsewhere; red stays for what is broken. `⇧M` already means "land
+this", so no key is added. It is frequent, so it must not shout or reorder.
+
+> **Not found:** a field saying that a stack needs rebasing, or why ([D8](#d8)). SP46 and SP47 tell a moved target from an earlier push; they need
+> this settled in the live test.
+
+**Rejected.**
+
+- The way out on every such row, selected or not — plainer, noisier for something this frequent.
+
+## D22
+
+**Link, add and dissolve are palette and item menu commands with no single keys, opening the merge panel's surface. Linking shows the order from
+the branches, with each base, and there is nothing to arrange. Refusals githq can see from the branches appear before sending. Add lists pull
+requests based on the last one's branch. Dissolving says per pull request who stays and who leaves.** (2026-11-01, design agent, SP70–SP79; owner accepted)
+
+**Why.** They are rare, so they don't earn keys. GitHub links by chain, so a chosen order would be false.
+
+## D23
+
+**`↵` on an issue serving as a stack's header opens the issue; `J` then walks into the stack. Two stacks under one issue each get a header one step
+in, with their rows on a rail below it.** (2026-11-01, design agent, SP21, SP22; owner accepted)
+
+**Why.** The issue is an item with content of its own, unlike a stack's entry. Two stacks are the one case [D12](#d12) leaves open: their own headers
+make one more level than "no third level" suggests. It is rare.
+
+## D24
+
+**A merged entry goes purple and leaves at the next refresh. The toolbar's position counts pull requests walked, not entries, so it can exceed the
+list's count.** (2026-11-01, design agent, SP8, SP3; owner accepted)
+
+**Why.** `J` steps through pull requests ([D9](#d9)), and the count of entries is for the list ([D3](#d3)).

@@ -28,9 +28,9 @@ export const Row: Story = {
                     <StoryPage>
                         <ContextMenu>
                             {{
-                                default: () => <p tid="row">Calendar shows wrong timezone for recurring visits</p>,
+                                default: () => <p tid="row">Calendar shows wrong timezone for recurring bookings</p>,
                                 content: () => [
-                                    <MenuLabel>sigma-clinic/portal#1187</MenuLabel>,
+                                    <MenuLabel>skyline-labs/portal#1187</MenuLabel>,
                                     <MenuItem
                                         icon={ExternalLink}
                                         shortcut="O"

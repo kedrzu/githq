@@ -12,8 +12,8 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** sigma-clinic's repositories of the mockups (G2, G4): the four first ones, then "pay" ones among many others. */
-const SIGMA_NAMES: readonly [string, number, number, boolean?][] = [
+/** skyline-labs's repositories of the mockups (G2, G4): the four first ones, then "pay" ones among many others. */
+const SKYLINE_NAMES: readonly [string, number, number, boolean?][] = [
     ['portal', 5 * MINUTE, 142],
     ['api', 20 * MINUTE, 96],
     ['payments', HOUR, 41],
@@ -75,11 +75,11 @@ const OWN: CandidateRepository[] = [
     ),
 ];
 
-/** The page of sigma-clinic's repositories first read: 20 of 312, the rest to come. */
-const SIGMA: CandidateRepositories = {
+/** The page of skyline-labs's repositories first read: 20 of 312, the rest to come. */
+const SKYLINE: CandidateRepositories = {
     repositories: [
-        ...SIGMA_NAMES.map(([name, ago, open, isArchived]) =>
-            sampleCandidateRepository(`sigma-clinic/${name}`, {
+        ...SKYLINE_NAMES.map(([name, ago, open, isArchived]) =>
+            sampleCandidateRepository(`skyline-labs/${name}`, {
                 ago,
                 open,
                 isPrivate: name !== 'stripe-pay-sdk',
@@ -87,7 +87,7 @@ const SIGMA: CandidateRepositories = {
             }),
         ),
         ...Array.from({ length: 9 }, (_, index) =>
-            sampleCandidateRepository(`sigma-clinic/service-${index + 1}`, {
+            sampleCandidateRepository(`skyline-labs/service-${index + 1}`, {
                 ago: (200 + index * 10) * DAY,
                 open: index,
                 isPrivate: true,
@@ -99,7 +99,7 @@ const SIGMA: CandidateRepositories = {
 };
 
 /**
- * What the tracking screens offer in the mockups (G2): the user's twelve repositories and their project, sigma-clinic
+ * What the tracking screens offer in the mockups (G2): the user's twelve repositories and their project, skyline-labs
  * with 312 repositories and four projects, and acme-health, which hides its private data from githq (G5).
  */
 export const SAMPLE_CANDIDATES: TrackingCandidates = {
@@ -108,15 +108,15 @@ export const SAMPLE_CANDIDATES: TrackingCandidates = {
     projects: [sampleCandidateProject('githq Roadmap', 'kedrzu', 1, 34)],
     organizations: [
         {
-            login: 'sigma-clinic',
+            login: 'skyline-labs',
             avatarUrl: '',
             hiddenPrivate: false,
-            repositories: SIGMA,
+            repositories: SKYLINE,
             projects: [
-                sampleCandidateProject('Platform Q4', 'sigma-clinic', 2, 128),
-                sampleCandidateProject('Bug triage', 'sigma-clinic', 3, 61),
-                sampleCandidateProject('Docs revamp', 'sigma-clinic', 4, 12),
-                sampleCandidateProject('Mobile 2.0', 'sigma-clinic', 5, 210),
+                sampleCandidateProject('Platform Q4', 'skyline-labs', 2, 128),
+                sampleCandidateProject('Bug triage', 'skyline-labs', 3, 61),
+                sampleCandidateProject('Docs revamp', 'skyline-labs', 4, 12),
+                sampleCandidateProject('Mobile 2.0', 'skyline-labs', 5, 210),
             ],
         },
         {

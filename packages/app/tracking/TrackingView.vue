@@ -64,6 +64,7 @@ import SearchField from '@/components/SearchField.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { SETTINGS_CONTROLS_ID } from '@/settings/SettingsView.vue';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -169,7 +170,13 @@ const owners = computed(() => {
   return candidates ? [candidates.login, ...candidates.organizations.map(organization => organization.login)] : [];
 });
 const rows = computed(() => (props.tab === 'repositories' ? props.tracked.repositories : props.tracked.projects));
-const shownRows = computed(() => rows.value.filter(row => isOwnerShown(row.owner) && matchesSearch(row.name, row.to)));
+const shownRows = computed(() =>
+  findSearched(
+    rows.value.filter(row => isOwnerShown(row.owner)),
+    row => row.name,
+    row => row.to,
+  ),
+);
 const itemsKept = computed(() => sumOver(rows.value, row => row.items ?? 0));
 const trackedKeys = computed(
   () =>
@@ -179,14 +186,13 @@ const trackedKeys = computed(
     ]),
 );
 const matchingRepositories = computed(() =>
-  (props.candidates ? getCandidateRepositories(props.candidates) : [])
-    .filter(
-      repository =>
-        !trackedKeys.value.has(repository.nameWithOwner) &&
-        isOwnerShown(repository.owner) &&
-        matchesSearch(repository.nameWithOwner, getRepositoryPath(repository.nameWithOwner)),
-    )
-    .toSorted((a, b) => (b.pushedAt ?? '').localeCompare(a.pushedAt ?? '')),
+  findSearched(
+    (props.candidates ? getCandidateRepositories(props.candidates) : []).filter(
+      repository => !trackedKeys.value.has(repository.nameWithOwner) && isOwnerShown(repository.owner),
+    ),
+    repository => repository.nameWithOwner,
+    repository => getRepositoryPath(repository.nameWithOwner),
+  ).toSorted((a, b) => (b.pushedAt ?? '').localeCompare(a.pushedAt ?? '')),
 );
 const untrackedProjects = computed(() =>
   (props.candidates ? getCandidateProjects(props.candidates) : []).filter(
@@ -194,7 +200,11 @@ const untrackedProjects = computed(() =>
   ),
 );
 const matchingProjects = computed(() =>
-  untrackedProjects.value.filter(project => matchesSearch(project.title, getProjectPath(project))),
+  findSearched(
+    untrackedProjects.value,
+    project => project.title,
+    project => getProjectPath(project),
+  ),
 );
 const matchingOffers = computed(() =>
   props.tab === 'repositories' ? matchingRepositories.value : matchingProjects.value,
@@ -392,11 +402,17 @@ function isOwnerShown(login: string) {
   return owner.value === ALL_OWNERS || owner.value === login;
 }
 
-function matchesSearch(name: string, path: string) {
-  return (
-    name.toLowerCase().includes(needle.value) ||
-    (referencePath.value !== null && path.toLowerCase() === referencePath.value)
+// Those of `rows` the search finds, in their order: by name, with a typo or the words in any order, or by the exact
+// address a reference names.
+function findSearched<T>(list: readonly T[], getName: (row: T) => string, getPath: (row: T) => string) {
+  const matched = new Set(
+    findMatches(
+      searchText.value,
+      prepareMatchTexts(list, row => [getName(row)]),
+    ).map(m => m.row),
   );
+  const path = referencePath.value;
+  return list.filter(row => matched.has(row) || (path !== null && getPath(row).toLowerCase() === path));
 }
 
 // How many are listed of how many there are; one looked up by name is no part of the lists, so it is not counted.

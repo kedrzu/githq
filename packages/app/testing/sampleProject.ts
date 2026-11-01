@@ -12,14 +12,14 @@ const DAY = 24 * HOUR;
 export const SAMPLE_TODAY = '2026-10-30';
 
 const PORTAL: ItemRepository = {
-    nameWithOwner: 'sigma-clinic/portal',
-    owner: 'sigma-clinic',
+    nameWithOwner: 'skyline-labs/portal',
+    owner: 'skyline-labs',
     isPrivate: true,
     viewerPermission: 'WRITE',
 };
-const API: ItemRepository = { ...PORTAL, nameWithOwner: 'sigma-clinic/api' };
+const API: ItemRepository = { ...PORTAL, nameWithOwner: 'skyline-labs/api' };
 /** A repository the user may only read: its items' project fields can still be set (`ui/project.md`). */
-const MOBILE: ItemRepository = { ...PORTAL, nameWithOwner: 'sigma-clinic/mobile', viewerPermission: 'READ' };
+const MOBILE: ItemRepository = { ...PORTAL, nameWithOwner: 'skyline-labs/mobile', viewerPermission: 'READ' };
 
 const BUG: ItemLabel = { name: 'bug', color: 'e5534b' };
 const FEATURE: ItemLabel = { name: 'feature', color: '3fb950' };
@@ -145,8 +145,8 @@ export const SAMPLE_PROJECT: Project = {
     id: 'PVT_q4',
     title: 'Platform Q4',
     number: 2,
-    url: 'https://github.com/orgs/sigma-clinic/projects/2',
-    owner: 'sigma-clinic',
+    url: 'https://github.com/orgs/skyline-labs/projects/2',
+    owner: 'skyline-labs',
     ownerKind: 'org',
     closed: false,
     viewerCanUpdate: true,
@@ -172,8 +172,8 @@ export const SAMPLE_PROJECT_WITHOUT_SELECT: Project = {
     id: 'PVT_docs',
     title: 'Docs revamp',
     number: 4,
-    url: 'https://github.com/orgs/sigma-clinic/projects/4',
-    owner: 'sigma-clinic',
+    url: 'https://github.com/orgs/skyline-labs/projects/4',
+    owner: 'skyline-labs',
     ownerKind: 'org',
     closed: false,
     viewerCanUpdate: true,
@@ -214,7 +214,7 @@ export const SAMPLE_EMPTY_PROJECT: Project = {
 /** Platform Q4's items: issues and pull requests from three repositories, and a draft issue. */
 export const SAMPLE_PROJECT_ENTRIES: readonly ProjectEntry[] = [
     entry(
-        issue('I_1187', 1187, 'Calendar shows wrong timezone for recurring visits', 20 * 60_000, {
+        issue('I_1187', 1187, 'Calendar shows wrong timezone for recurring bookings', 20 * 60_000, {
             labels: [BUG],
             assignees: [KE],
             issueType: { name: 'Bug', color: 'RED' },
@@ -222,7 +222,7 @@ export const SAMPLE_PROJECT_ENTRIES: readonly ProjectEntry[] = [
         { status: IN_PROGRESS, priority: HIGH, iteration: SPRINT_14, estimate: 3, due: '2026-11-02' },
     ),
     entry(
-        pullRequest('PR_1203', 1203, 'Migrate appointment calendar to new date picker', 5 * HOUR, {
+        pullRequest('PR_1203', 1203, 'Migrate booking calendar to new date picker', 5 * HOUR, {
             assignees: [KE],
             checks: { state: 'PENDING', passing: 3, failing: 0, pending: 2 },
         }),
@@ -257,7 +257,7 @@ export const SAMPLE_PROJECT_ENTRIES: readonly ProjectEntry[] = [
         iteration: SPRINT_15,
         estimate: 1,
     }),
-    entry(issue('I_1210', 1210, 'Clinic switcher loses filter state', 6 * HOUR, { labels: [FEATURE] }), {
+    entry(issue('I_1210', 1210, 'Client switcher loses filter state', 6 * HOUR, { labels: [FEATURE] }), {
         status: TODO,
         priority: MEDIUM,
         iteration: SPRINT_15,

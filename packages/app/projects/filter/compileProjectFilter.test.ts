@@ -59,8 +59,8 @@ describe('evaluated locally, as GitHub does', () => {
         ['label:*ed', ['I_1220']],
         ['-label:bug', ['PR_1203', 'I_470', 'PR_477', 'I_455', 'I_1210', 'I_1150', 'I_1220']],
         ['milestone:"v4.2"', []],
-        ['repo:sigma-clinic/api', ['I_470', 'PR_477', 'I_455']],
-        ['repo:SIGMA-CLINIC/API,sigma-clinic/mobile', ['I_470', 'PR_477', 'I_91', 'I_455']],
+        ['repo:skyline-labs/api', ['I_470', 'PR_477', 'I_455']],
+        ['repo:SKYLINE-LABS/API,skyline-labs/mobile', ['I_470', 'PR_477', 'I_91', 'I_455']],
         ['type:bug', ['I_1187', 'I_91']],
         ['type:"Bug"', ['I_1187', 'I_91']],
         ['title:"Document webhook retry policy"', ['I_455']],
@@ -117,7 +117,7 @@ describe('with draft issues in the project', () => {
         ['title:"decide on retention policy for audit logs"', ['PVTI_draft_1']],
         ['label:bug', ['I_1187', 'I_91']],
         ['no:label', ['PR_1203', 'I_470', 'PR_477', 'I_1150', 'PVTI_draft_1']],
-        ['-repo:sigma-clinic/api', ['I_1187', 'PR_1203', 'I_91', 'I_1210', 'I_1150', 'I_1220', 'PVTI_draft_1']],
+        ['-repo:skyline-labs/api', ['I_1187', 'PR_1203', 'I_91', 'I_1210', 'I_1150', 'I_1220', 'PVTI_draft_1']],
         ['no:assignee', ['I_91', 'I_455', 'I_1210', 'I_1220', 'PVTI_draft_1']],
     ])('%p', (filter, expected) => {
         expect(evaluate(filter, LISTED, true)).toEqual(expected.toSorted());

@@ -37,7 +37,7 @@ test("a tracked repository's row is current on any of its lists, not only on its
 test('a private repository has a lock instead of the repository icon', async () => {
     await Expanded.run();
 
-    const portal = page.getByRole('link', { name: /^sigma-clinic\/portal/ }).element();
+    const portal = page.getByRole('link', { name: /^skyline-labs\/portal/ }).element();
     const githq = page.getByRole('link', { name: /^kedrzu\/githq/ }).element();
     expect(portal.querySelector('.lucide-lock')).not.toBeNull();
     expect(githq.querySelector('.lucide-lock')).toBeNull();
@@ -158,7 +158,7 @@ test('the rail: the logo on top, the user at the very bottom, a mark for each pr
     await expect.element(nav.getByRole('link', { name: 'Docs revamp' })).toHaveTextContent('DR');
     await expect
         .element(nav.getByRole('link', { name: 'Docs revamp' }))
-        .toHaveAttribute('href', '/orgs/sigma-clinic/projects/3');
+        .toHaveAttribute('href', '/orgs/skyline-labs/projects/3');
     expect(nav.getByRole('separator').elements()).toHaveLength(2);
     expect(nav.getByRole('link', { name: /track|settings/iu }).elements()).toHaveLength(0);
 

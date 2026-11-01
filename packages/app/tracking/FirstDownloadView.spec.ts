@@ -17,7 +17,7 @@ test('"Open My work" waits for the user\'s own work only; then it opens with Ent
     await WorkReady.run({ args: { ...WorkReady.args, onOpen } });
     await expect.element(open).toBeEnabled();
     await expect
-        .element(page.getByRole('progressbar', { name: 'sigma-clinic/portal' }))
+        .element(page.getByRole('progressbar', { name: 'skyline-labs/portal' }))
         .toHaveAttribute('aria-valuenow', '62');
     await userEvent.keyboard('{Enter}');
     expect(onOpen).toHaveBeenCalledOnce();
