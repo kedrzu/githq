@@ -10,6 +10,10 @@ held:
   en: '{ready} of {open} ready, #{number} blocks'
 heldByDraft:
   en: '{ready} of {open} ready, #{number} is a draft'
+heldByChecks:
+  en: '{ready} of {open} ready, #{number} checks running'
+heldByReview:
+  en: '{ready} of {open} ready, #{number} waiting for review'
 needsRebase:
   en: Needs rebase · nothing can merge
 closedInside:
@@ -26,6 +30,8 @@ landed:
   en: '{count} landed · {state}'
 more:
   en: '+{count}'
+size:
+  en: '+{additions} −{deletions}'
 milestones:
   plural: count
   en:

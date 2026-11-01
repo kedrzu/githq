@@ -4,6 +4,7 @@ import type { Item, ItemRepository, PullRequestItem } from '@/store/ItemTypes.js
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { getStackPullRequestToOpen } from '@/store/stacks/getStackPullRequestToOpen.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { samplePullRequest } from './sampleItems.js';
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleUser } from './sampleMyWork.js';
@@ -136,6 +137,24 @@ export const SAMPLE_STACKS = {
             { mergeStateStatus: 'BLOCKED', checks: RUNNING },
         ],
     }),
+    /** SP23: the second's checks are running, and it holds the stack — "1 of 2 ready, #1216 checks running". */
+    checksRunning: sampleStack({
+        id: 'S_emails',
+        number: 1215,
+        age: 7 * HOUR,
+        members: [{ title: 'Booking emails: templates' }, { mergeStateStatus: 'BLOCKED', checks: RUNNING }],
+    }),
+    /** SP12: the third waits for a review — "2 of 3 ready, #142 waiting for review". */
+    waitingForReview: sampleStack({
+        id: 'S_waitlist',
+        repository: MOBILE,
+        number: 140,
+        members: [
+            { title: 'Waitlist for full classes' },
+            {},
+            { reviewDecision: 'REVIEW_REQUIRED', mergeStateStatus: 'BLOCKED' },
+        ],
+    }),
     /** A later pull request is behind its base: nothing can merge until the stack is rebased on github.com. */
     needsRebase: sampleStack({
         id: 'S_offline',
@@ -234,6 +253,6 @@ export const STACKED_MY_WORK_MEMBERSHIP: MyWorkMembership = sampleMembership({
 });
 
 function repository(nameWithOwner: string): ItemRepository {
-    const [owner = ''] = nameWithOwner.split('/');
+    const { owner } = parseRepositoryName(nameWithOwner);
     return { nameWithOwner, owner, isPrivate: false, viewerPermission: 'WRITE' };
 }

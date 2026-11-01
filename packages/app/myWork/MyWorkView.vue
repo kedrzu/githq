@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). In the list a stack is one entry (`StackRow`, its pull requests nested under it once expanded); on the board its pull requests are plain cards. On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). In the list a stack is one entry (`StackRow`, its pull requests nested under it once expanded); on the board, until it draws stacks, the pull requests its group's search found are plain cards. On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CloudOff, ListFilter } from 'lucide-vue-next';
@@ -115,13 +115,15 @@ const properties = computed(() => {
 
 /**
  * The rows there because the user's review is asked: they say so whatever group they are drawn in. A stack's entry says
- * it itself ("Your review on 2 of 4").
+ * it itself ("Your review on 2 of 4"); its pull requests asking it say so as cards and as rows once it is expanded.
  */
 const reviewRequestedIds = computed(
   () =>
     new Set(
       props.work.groups.flatMap(entry =>
-        entry.group === 'reviewRequested' ? entry.rows.flatMap(row => (row.stack ? [] : [row.item.id])) : [],
+        entry.group === 'reviewRequested'
+          ? entry.rows.flatMap(row => (row.stack ? row.foundInGroup.map(pr => pr.id) : [row.item.id]))
+          : [],
       ),
     ),
 );
@@ -188,14 +190,17 @@ function repositoryOf(group: ListGroup<Item>) {
   return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
 }
 
-/** A row as the engine lists it: a stack's entry in the list, its pull requests as plain cards on the board. */
+/**
+ * A row as the engine lists it: a stack's entry in the list; on the board, until it draws stacks, the entry's pull
+ * requests that its group's search found, as plain cards — not the rest of the stack, someone else's among them.
+ */
 function toListRows(row: MyWorkRow): ListRow<Item>[] {
   if (!row.stack) {
     return [toListRow(row.item, row.nested)];
   }
 
   if (options.value.layout !== 'list') {
-    return row.nested.map(pr => toListRow(pr, []));
+    return row.foundInGroup.map(pr => toListRow(pr, []));
   }
 
   const id = `stack:${row.stack.id}`;
@@ -264,6 +269,8 @@ function toListRow(item: Item, nested: readonly Item[]): ListRow<Item> {
           :stack="stack"
           :properties="properties"
           :repository="repositoryOf(listGroup)"
+          people="author"
+          :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
         />

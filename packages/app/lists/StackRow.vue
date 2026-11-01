@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6) — and the state in words (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the milestone when shared, else how many. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14), then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the milestone when shared, else how many. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -23,14 +23,13 @@ import { computed } from 'vue';
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { ItemLabel, ItemUser } from '@/store/ItemTypes.js';
-import type { StackDescription, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
+import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackBlocker, StackDescription, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
-import * as factTexts from './useItemFacts.loc.js';
 
 /** The faces shown before "+N" (D15). */
 const MAX_PEOPLE = 3;
@@ -46,10 +45,14 @@ const props = withDefaults(
     now: number;
     /** The repository the whole list is of (`owner/name`): its stacks leave it out. */
     repository?: string | null;
+    /** Who the entry shows, as `ItemRow`: who opened its pull requests (my work) or who they are assigned to. */
+    people?: 'assignees' | 'author';
+    /** The signed-in user: with `people: 'author'`, their own pull requests show no face. */
+    viewerLogin?: string | null;
     /** All its pull requests are in the selection several items are edited together in (`x`). */
     checked?: boolean;
   }>(),
-  { repository: null },
+  { repository: null, people: 'assignees', viewerLogin: null },
 );
 
 /** The state in words, its icon and colour (SP14). */
@@ -57,6 +60,13 @@ interface StackStateFact {
   readonly icon: LucideIcon;
   readonly tone: 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
   readonly text: string;
+}
+
+/** What the held sentence counts and names. */
+interface HeldTextParams {
+  readonly ready: number;
+  readonly open: number;
+  readonly number: number;
 }
 
 const t = useTranslate();
@@ -72,7 +82,7 @@ const count = computed(() => {
 const people = computed(() => {
   const byLogin = new Map<string, ItemUser>();
   for (const pr of props.stack.pullRequests) {
-    for (const user of pr.assignees) {
+    for (const user of getPeople(pr)) {
       byLogin.set(user.login, user);
     }
   }
@@ -90,7 +100,7 @@ const size = computed(() => {
     deletions += pr.deletions;
   }
 
-  return t(factTexts.size, { additions: numbers.format(additions), deletions: numbers.format(deletions) });
+  return t(l.size, { additions: numbers.format(additions), deletions: numbers.format(deletions) });
 });
 // D15: the labels every pull request carries, then how many others any of them does.
 const labels = computed(() => {
@@ -119,6 +129,14 @@ const milestone = computed(() => {
 });
 const narrow = computed(() => description.value.pips.length > MAX_WIDE_PIPS);
 
+function getPeople(pr: PullRequestItem): readonly ItemUser[] {
+  if (props.people === 'assignees') {
+    return pr.assignees;
+  }
+
+  return pr.author && pr.author.login !== props.viewerLogin ? [pr.author] : [];
+}
+
 function getStateFact(stack: StackDescription): StackStateFact {
   const fact = getOpenStateFact(stack);
   const { state } = stack;
@@ -133,10 +151,7 @@ function getOpenStateFact({ state }: StackDescription): StackStateFact {
     case 'held': {
       const { blocker, readyCount, openCount } = state;
       const params = { ready: readyCount, open: openCount, number: blocker.number };
-      return {
-        ...getBlockerLook(blocker.kind),
-        text: blocker.kind === 'draft' ? t(l.heldByDraft, params) : t(l.held, params),
-      };
+      return { ...getBlockerLook(blocker.kind), text: getHeldText(blocker, params) };
     }
     case 'needsRebase':
       return { icon: GitCompareArrows, tone: 'warning', text: t(l.needsRebase) };
@@ -164,6 +179,25 @@ function getOpenStateFact({ state }: StackDescription): StackStateFact {
       };
     default:
       return assertNever(state);
+  }
+}
+
+/** The held sentence names what holds the stack (SP14): "#1216 checks running", "#97 waiting for review". */
+function getHeldText(blocker: StackBlocker, params: HeldTextParams): string {
+  switch (blocker.kind) {
+    case 'draft':
+      return t(l.heldByDraft, params);
+    case 'moving':
+      return t(l.heldByChecks, params);
+    case 'waiting':
+      return blocker.waitingForReview ? t(l.heldByReview, params) : t(l.held, params);
+    case 'broken':
+    case 'ready':
+    case 'merged':
+    case 'closed':
+      return t(l.held, params);
+    default:
+      return assertNever(blocker.kind);
   }
 }
 

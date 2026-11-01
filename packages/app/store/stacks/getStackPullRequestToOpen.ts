@@ -1,3 +1,4 @@
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 /**
@@ -7,6 +8,6 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
  * @__NO_SIDE_EFFECTS__
  */
 export function getStackPullRequestToOpen(members: readonly PullRequestItem[]): PullRequestItem | undefined {
-    const open = members.filter(pr => pr.state === 'OPEN' && !pr.merged);
+    const open = members.filter(isOpenPullRequest);
     return open.find(pr => pr.reviewDecision !== 'APPROVED') ?? open[0] ?? members.at(-1);
 }

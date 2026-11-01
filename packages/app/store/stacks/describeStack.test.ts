@@ -64,7 +64,7 @@ test('the blocker is the first open one from the bottom that cannot merge; the r
         kind: 'held',
         readyCount: 1,
         openCount: 4,
-        blocker: { number: 102, kind: 'broken' },
+        blocker: { number: 102, kind: 'broken', waitingForReview: false },
     });
     // A later one stays green on its own pip (D5).
     expect(pipKinds(description)).toEqual(['ready', 'broken', 'ready', 'waiting']);
@@ -77,7 +77,23 @@ test('a lowest open one that cannot merge blocks the whole stack, and is named',
         kind: 'held',
         readyCount: 0,
         openCount: 3,
-        blocker: { number: 101, kind: 'waiting' },
+        blocker: { number: 101, kind: 'waiting', waitingForReview: false },
+    });
+});
+
+test('a blocker waiting for a review says so', () => {
+    const description = describeMembers(
+        [pr(1), pr(2, { mergeStateStatus: 'BLOCKED', reviewDecision: 'REVIEW_REQUIRED' })],
+        {
+            size: 2,
+        },
+    );
+
+    expect(description.state).toEqual({
+        kind: 'held',
+        readyCount: 1,
+        openCount: 2,
+        blocker: { number: 102, kind: 'waiting', waitingForReview: true },
     });
 });
 
@@ -88,7 +104,7 @@ test('a draft blocks what comes after it, and the blocker says it is a draft', (
         kind: 'held',
         readyCount: 1,
         openCount: 3,
-        blocker: { number: 102, kind: 'draft' },
+        blocker: { number: 102, kind: 'draft', waitingForReview: false },
     });
     expect(pipKinds(description)).toEqual(['ready', 'draft', 'ready']);
 });
@@ -105,7 +121,7 @@ test('a partly merged stack counts what landed and is ready from the lowest open
         kind: 'held',
         readyCount: 0,
         openCount: 2,
-        blocker: { number: 102, kind: 'moving' },
+        blocker: { number: 102, kind: 'moving', waitingForReview: false },
     });
     expect(pipKinds(description)).toEqual(['merged', 'moving', 'ready']);
 });
@@ -115,7 +131,20 @@ test('fewer pull requests in the copy than the size never reads ready, and the m
 
     expect(description.state).toEqual({ kind: 'incomplete' });
     expect(description).toMatchObject({ size: 4, held: 2 });
-    expect(description.pips.map(pipLabel)).toEqual(['ready', 'missing 2', 'ready', 'missing 4']);
+    // Pale, no green (D7, SP14).
+    expect(description.pips.map(pipLabel)).toEqual(['waiting', 'missing 2', 'waiting', 'missing 4']);
+});
+
+test('an incomplete copy draws every pip it holds pale, whatever their own states', () => {
+    const description = describeMembers(
+        [
+            pr(1, { state: 'MERGED', merged: true }),
+            pr(2, { checks: { state: 'FAILURE', passing: 0, failing: 1, pending: 0 } }),
+        ],
+        { size: 3 },
+    );
+
+    expect(description.pips.map(pipLabel)).toEqual(['waiting', 'waiting', 'missing 3']);
 });
 
 test('an incomplete copy goes before needing a rebase or being merged', () => {
@@ -135,7 +164,7 @@ test('an incomplete copy goes before needing a rebase or being merged', () => {
     expect(pipKinds(merged)).toEqual(['merged', 'merged']);
 });
 
-test('an open one above the lowest open one behind its base needs a rebase, and its pip is moving', () => {
+test('an open one above the lowest open one behind its base needs a rebase, and every open pip is amber (D21)', () => {
     const description = describeMembers([
         pr(1, { state: 'MERGED', merged: true }),
         pr(2),
@@ -144,7 +173,7 @@ test('an open one above the lowest open one behind its base needs a rebase, and 
     ]);
 
     expect(description.state).toEqual({ kind: 'needsRebase', behindNumber: 103 });
-    expect(pipKinds(description)).toEqual(['merged', 'ready', 'moving', 'moving']);
+    expect(pipKinds(description)).toEqual(['merged', 'moving', 'moving', 'moving']);
 });
 
 test('the lowest open one behind its base alone does not need a rebase', () => {

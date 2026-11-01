@@ -1,4 +1,5 @@
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import type { PullRequestStack } from './groupStacks.js';
@@ -45,8 +46,9 @@ export interface StackMissingPip {
  * The state of one pull request as its pip shows it — its own, not held back by earlier ones (D5):
  *
  * - `broken`: failing checks, conflicts or changes requested — something for its author;
- * - `moving`: checks running, or behind its base while that makes the stack need a rebase;
- * - `waiting`: open and none of the others — waiting for a review, mostly.
+ * - `moving`: checks running, or any open one of a stack that needs a rebase (D21);
+ * - `waiting`: open and none of the others — waiting for a review, mostly; also every pip while the copy is
+ *   incomplete (D7: pale, never ready).
  */
 export type StackPullRequestPipKind = 'merged' | 'closed' | 'draft' | 'ready' | 'broken' | 'moving' | 'waiting';
 
@@ -127,10 +129,15 @@ export interface StackHeldState {
     readonly blocker: StackBlocker;
 }
 
-/** The pull request that holds a stack back, and why as its pip shows it (`draft`: "#102 is a draft"). */
+/**
+ * The pull request that holds a stack back, and why as its pip shows it — what the sentence names (SP14): "#102 is a
+ * draft", "#1216 checks running", "#97 waiting for review", otherwise "#1206 blocks".
+ */
 export interface StackBlocker {
     readonly number: number;
     readonly kind: StackPullRequestPipKind;
+    /** A `waiting` one waits for a review; `waiting` for anything else only "blocks". */
+    readonly waitingForReview: boolean;
 }
 
 /** What a stack is described from. */
@@ -151,7 +158,7 @@ export interface DescribeStackParams {
 export function describeStack(params: DescribeStackParams): StackDescription {
     const { stack } = params;
     const { members } = stack;
-    const open = members.filter(isOpen);
+    const open = members.filter(isOpenPullRequest);
     const lowestOpen = open[0];
     const behind = open.find(pr => pr !== lowestOpen && pr.behindBase);
     const pips = getPips(stack, behind !== undefined);
@@ -186,13 +193,15 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             return { kind: 'needsRebase', behindNumber: behind.number };
         }
 
-        const closedIndex = members.findIndex((pr, index) => isClosed(pr) && members.slice(index + 1).some(isOpen));
+        const closedIndex = members.findIndex(
+            (pr, index) => isClosed(pr) && members.slice(index + 1).some(isOpenPullRequest),
+        );
         const closed = members[closedIndex];
         if (closed) {
             return {
                 kind: 'closedInside',
                 closedNumber: closed.number,
-                stuckCount: members.slice(closedIndex + 1).filter(isOpen).length,
+                stuckCount: members.slice(closedIndex + 1).filter(isOpenPullRequest).length,
             };
         }
 
@@ -224,7 +233,11 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             kind: 'held',
             readyCount,
             openCount: open.length,
-            blocker: { number: blocker.number, kind: getPipKind(blocker, false) },
+            blocker: {
+                number: blocker.number,
+                kind: getPipKind(blocker),
+                waitingForReview: getPullRequestStanding(blocker).waitingForReview,
+            },
         };
     }
 }
@@ -247,7 +260,10 @@ function getStackName(params: DescribeStackParams): StackName {
     return { title: members[0]?.title ?? '', issueId: null };
 }
 
-/** The pips of a stack, a missing one in each place the copy does not hold. */
+/**
+ * The pips of a stack, a missing one in each place the copy does not hold. While the copy is incomplete every pip is
+ * pale — never green, never ready (D7, SP14); a stack needing a rebase has every open one amber (D21).
+ */
 function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
     const pips: StackPip[] = [];
     let next = 1;
@@ -257,7 +273,7 @@ function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
             pips.push({ kind: 'missing', position: next++ });
         }
 
-        pips.push({ kind: getPipKind(member, needsRebase), pullRequest: member });
+        pips.push({ kind: getPipKind(member), pullRequest: member });
         next = Math.max(next, position + 1);
     }
 
@@ -265,11 +281,21 @@ function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
         pips.push({ kind: 'missing', position: next++ });
     }
 
+    if (pips.some(pip => pip.kind === 'missing')) {
+        return pips.map((pip): StackPip => (pip.kind === 'missing' ? pip : { ...pip, kind: 'waiting' }));
+    }
+
+    if (needsRebase) {
+        return pips.map((pip): StackPip =>
+            pip.kind !== 'missing' && isOpenPullRequest(pip.pullRequest) ? { ...pip, kind: 'moving' } : pip,
+        );
+    }
+
     return pips;
 }
 
-/** A pull request's own state, as its pip shows it; `needsRebase` makes one behind its base `moving`. */
-function getPipKind(pr: PullRequestItem, needsRebase: boolean): StackPullRequestPipKind {
+/** A pull request's own state, as its pip shows it. */
+function getPipKind(pr: PullRequestItem): StackPullRequestPipKind {
     if (isMerged(pr)) {
         return 'merged';
     }
@@ -280,10 +306,6 @@ function getPipKind(pr: PullRequestItem, needsRebase: boolean): StackPullRequest
 
     if (pr.isDraft) {
         return 'draft';
-    }
-
-    if (needsRebase && pr.behindBase) {
-        return 'moving';
     }
 
     if (canMerge(pr)) {
@@ -304,7 +326,7 @@ function getPipKind(pr: PullRequestItem, needsRebase: boolean): StackPullRequest
 
 /** Open, not a draft, and GitHub lets it merge — as far as it alone goes (D5). */
 function canMerge(pr: PullRequestItem): boolean {
-    if (!isOpen(pr) || pr.isDraft) {
+    if (!isOpenPullRequest(pr) || pr.isDraft) {
         return false;
     }
 
@@ -320,10 +342,6 @@ function canMerge(pr: PullRequestItem): boolean {
 
 function isReviewRequestedOf(pr: PullRequestItem, login: string): boolean {
     return pr.reviewRequests.some(request => request.kind === 'user' && request.login === login);
-}
-
-function isOpen(pr: PullRequestItem): boolean {
-    return pr.state === 'OPEN' && !pr.merged;
 }
 
 function isMerged(pr: PullRequestItem): boolean {

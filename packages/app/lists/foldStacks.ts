@@ -1,5 +1,6 @@
 import { assertValue } from '@nzyme/utils/assert.js';
 
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { getStackPullRequestToOpen } from '@/store/stacks/getStackPullRequestToOpen.js';
@@ -44,7 +45,7 @@ export function foldStacks<T>(params: FoldStacksParams<T>): ListGroup<T>[] {
         const entries = new Map<string, ListRow<T>>();
         for (const [id, members] of byStack) {
             const stack = params.stacks.get(id);
-            if (stack && members.length > 1 && stack.members.filter(isOpen).length !== 1) {
+            if (stack && members.length > 1 && stack.members.filter(isOpenPullRequest).length !== 1) {
                 entries.set(id, getEntry(group, stack, members));
             }
         }
@@ -99,8 +100,4 @@ interface StackMemberRow<T> {
     readonly row: ListRow<T>;
     readonly pullRequest: PullRequestItem;
     readonly position: number;
-}
-
-function isOpen(pr: PullRequestItem): boolean {
-    return pr.state === 'OPEN' && !pr.merged;
 }

@@ -237,25 +237,43 @@ test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside 
     const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
     const entry = review.filter({ hasText: 'Retry webhooks with backoff' });
     await expect.element(entry).toHaveTextContent('Your review on 2 of 4');
+    // Like my work's rows, it shows who opened its pull requests (SP1), not who they are assigned to.
+    await expect.element(entry.getByRole('img', { name: 'sbrown' })).toBeInTheDocument();
     expect(review.elements()).toHaveLength(3);
     await expect.element(page.getByText('Part 4 of S_webhooks')).not.toBeInTheDocument();
 
-    // Expanded, it shows all four — the two in no group of my work too.
+    // Expanded, it shows all four — the two in no group of my work too; those asking the user's review say so.
     await userEvent.click(entry.getByRole('button', { name: 'Expand the stack' }));
     await expect.element(page.getByText('Part 4 of S_webhooks')).toBeInTheDocument();
     expect(review.elements()).toHaveLength(7);
+    await expect
+        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect
+        .element(review.filter({ hasText: 'Part 4 of S_webhooks' }))
+        .not.toHaveTextContent(/your review requested/i);
 
+    // The user's own stack shows no face: not theirs, nor those its pull requests are assigned to.
     const mine = page.getByRole('region', { name: 'My pull requests' });
-    await expect.element(mine).toHaveTextContent('Migrate class calendar to new date picker');
+    const own = mine.getByRole('listitem').filter({ hasText: 'Migrate class calendar to new date picker' });
+    await expect.element(own).toBeInTheDocument();
+    await expect.element(own.getByRole('img', { name: SAMPLE_VIEWER.login })).not.toBeInTheDocument();
+    await expect.element(own.getByRole('img', { name: 'mlaine' })).not.toBeInTheDocument();
     await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
 });
 
-test('stacked PRs: on the board a stack is its pull requests as plain cards', async () => {
+test('stacked PRs: on the board a stack is the cards of its pull requests in the group, others left out, with their mark', async () => {
     mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, { layout: 'board' });
 
     const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
-    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
-    expect(review.elements()).toHaveLength(6);
+    await expect
+        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect
+        .element(review.filter({ hasText: 'Part 3 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).not.toBeInTheDocument();
+    expect(review.elements()).toHaveLength(4);
 });
 
 /**
