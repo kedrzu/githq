@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue';
 import Avatar from './Avatar.vue';
 import FilterList from './FilterList.vue';
 import type { FilterListGroup, FilterListRow } from './FilterList.vue';
+import { filterOptions } from './filterOptions.js';
 import * as l from './Picker.loc.js';
 import Popover from './Popover.vue';
 
@@ -88,19 +89,12 @@ const chosen = ref<string[]>([]);
 const touched = ref<ReadonlySet<string>>(new Set());
 
 const groups = computed(() => {
-  const needle = query.value.trim().toLowerCase();
-  const options = needle
-    ? props.options.filter(
-        option =>
-          option.label.toLowerCase().includes(needle) || (option.detail?.toLowerCase().includes(needle) ?? false),
-      )
-    : props.options;
   const grouped: { key: string; heading: string | null; rows: PickerRow[] }[] = [];
-  if (!props.multiple && props.noneLabel !== undefined && !needle) {
+  if (!props.multiple && props.noneLabel !== undefined && query.value.trim() === '') {
     grouped.push({ key: NONE, heading: null, rows: [{ value: NONE, option: null }] });
   }
 
-  for (const option of options) {
+  for (const { option } of filterOptions(query.value, props.options)) {
     const heading = option.group ?? null;
     const row: PickerRow = {
       value: option.value,

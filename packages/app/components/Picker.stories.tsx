@@ -29,6 +29,12 @@ const MILESTONES: PickerOption[] = [
     { value: 'v4.3', label: 'v4.3 — December', detail: 'due Dec 19' },
 ];
 
+const STATUSES: PickerOption[] = [
+    { value: 'not-done', label: 'Not done yet', group: 'In flight' },
+    { value: 'yellow', label: 'Żółty sprint', group: 'In flight' },
+    { value: 'done', label: 'Done', group: 'Closed' },
+];
+
 /** L: labels of one issue, toggled and applied together when it closes. */
 export const Labels: Story = {
     args: { label: 'Labels', options: LABELS },
@@ -142,6 +148,40 @@ export const MilestonePicker: Story = {
                             <span tid="picked">
                                 {picked.value === undefined ? 'Nothing picked' : `Picked: ${picked.value ?? 'none'}`}
                             </span>
+                        </StoryRow>
+                    </StoryPage>
+                );
+            },
+        }),
+};
+
+/** Options under headings: typed text brings the group holding the best match first. */
+export const Grouped: Story = {
+    args: { label: 'Status', options: STATUSES },
+    render: args =>
+        defineComponent({
+            setup() {
+                const picked = ref('Nothing picked');
+
+                return () => (
+                    <StoryPage>
+                        <StoryRow>
+                            <Picker
+                                {...args}
+                                onPick={value => (picked.value = `Picked: ${value ?? 'none'}`)}
+                            >
+                                {{
+                                    trigger: () => (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                        >
+                                            Status
+                                        </Button>
+                                    ),
+                                }}
+                            </Picker>
+                            <span tid="picked">{picked.value}</span>
                         </StoryRow>
                     </StoryPage>
                 );

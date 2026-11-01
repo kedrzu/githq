@@ -1,5 +1,6 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { userEvent } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 
@@ -57,7 +58,11 @@ const NAVIGATION: NavigationData = {
         { id: 'tracking', group: 'goTo', kind: 'tracking', title: 'Track repositories…', path: '/settings/tracking' },
     ],
     trackedRepositories: ['skyline-labs/portal'],
-    items: D1_ITEMS,
+    items: [
+        ...D1_ITEMS,
+        { ...sampleIssue('I_77'), number: 77, title: 'Keep reactivity when the sidebar collapses' },
+        { ...sampleIssue('I_78'), number: 78, title: 'Żółty label is unreadable on the dark theme' },
+    ],
 };
 
 const MOBILE_METADATA: RepositoryMetadata = {
@@ -231,6 +236,21 @@ export const Typing: Story = { args: { subject: 'none' } };
 
 /** E4: three items selected — their actions, "2 of 3 editable" where only some may take it. */
 export const SeveralSelected: Story = { args: { subject: 'selection' } };
+
+/** E5: letters typed are marked where they matched, in a title here. */
+export const MatchInTitle: Story = {
+    args: { subject: 'none' },
+    play: async () => {
+        await userEvent.keyboard('plat');
+    },
+};
+
+/** E5: found only by a word the line does not show: that word, dimmed after the title, its letters marked. */
+export const MatchInHiddenWord: Story = {
+    play: async () => {
+        await userEvent.keyboard('assignees');
+    },
+};
 
 /** Closed: the keys open it (⌘K), or an action's submenu where nothing else runs it. */
 export const Closed: Story = { args: { subject: 'selection', startOpen: false } };
