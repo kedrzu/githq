@@ -29,6 +29,7 @@ account page (`packages/app/account/AccountPage.vue`), and the first-setup step 
 through the redirect in `packages/app/auth/routeAccess.ts:105-120`.
 
 **Rejected.**
+
 - On by default, with a ticked checkbox ([history](history/DECISIONS.md#d2)) — it would create a repository for
   everyone who just clicks through.
 
@@ -42,6 +43,7 @@ in settings, and both places explain it the same way.** (2026-11-01, owner)
 A device that has local settings and syncing off is never interrupted; it looks for the repository when syncing is turned on.
 
 **Rejected.**
+
 - Proactively offering to create the repository when none is found ([history](history/DECISIONS.md#d3)) — it no longer
   fits a default of staying local.
 
@@ -63,6 +65,7 @@ opens the same tab (Issues or Pull requests).** (2026-11-01, owner)
 > (`packages/app/layouts/shell.vue:83`).
 
 **Rejected.**
+
 - Remembering a project's saved view as well ([history](history/DECISIONS.md#d5)) — the design agent's extension, nobody asked
   for it.
 
@@ -97,6 +100,7 @@ githq cannot delete the repository with the scopes it has.
 > (`packages/github/src/oauth.ts:41`).
 
 **Rejected.**
+
 - A secret gist, the owner's first idea. It needs the `gist` scope at every sign-in, for write access to all of the
   user's gists, because detection has to see them before anyone chooses anything. It is readable by anyone with the URL,
   while the settings hold names of private repositories. There is no unique name or server-side lookup, so finding one
@@ -123,19 +127,20 @@ drafts and approval request clicks.** (2026-11-01, owner; the row field counted 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
 
-| State | Where today (`packages/app/`) | |
-|---|---|---|
-| Tracked repositories and projects | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48` | synced |
-| Layout, grouping, sort, visible properties, filter | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12` | local |
-| Row field per project | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | local |
-| How items open (panel, modal, page) | `githq.itemArrangement`, `services/LocalPreferences.ts:11` | local |
-| Sidebar collapsed, panel widths | `services/LocalPreferences.ts:12-13` | local |
-| New issue drafts, approval request clicks | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12` | local |
+|State|Where today (`packages/app/`)||
+|-|-|-|
+|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
+|Layout, grouping, sort, visible properties, filter|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|local|
+|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|local|
+|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
+|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
+|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
 
 No other per-user setting exists today (the app is dark only, `styles/tokens.scss:4`). The "modified locally" label on a project
 view stays true and stays as it is.
 
 **Rejected.**
+
 - Syncing layout, grouping, sort, visible properties and the row field ([history](history/DECISIONS.md#d7)) — too volatile (owner).
 - Synchronising how items open — owner, 2026-11-01.
 
@@ -158,6 +163,7 @@ on both sides, the saved one wins.** (2026-11-01, owner, on the design agent's p
 ([D13](#d13)) counts as set on both sides, so it ends untracked here too; only one the file doesn't mention is added.
 
 **Rejected.**
+
 - Replacing local settings with the saved ones — simpler, but silently removes repositories from the device along with
   their local copy.
 
@@ -169,6 +175,7 @@ it happens on github.com, through a link from settings.** (2026-11-01, owner, on
 **Why.** The data is the user's ([D1](#d1)), and githq cannot delete a repository ([D6](#d6)).
 
 **Rejected.**
+
 - Asking for the `delete_repo` scope for a button in githq — it would widen the consent screen for everyone.
 
 ## D11
@@ -189,6 +196,7 @@ nothing changed. A write that failed is still the same difference, so the next r
 > a reorder cannot conflict with an add today.
 
 **Rejected.**
+
 - Checking the file in a loop at 60 s visible and 300 s hidden, writing about 5 seconds after a change through the leader tab, and
   writing at sign-out ([history](history/DECISIONS.md#d11)) — tracking changes rarely, and a stale write is refused anyway. All it
   buys is an open, unfocused device updating sooner (owner).
@@ -232,6 +240,7 @@ design agent's proposal)
 order.
 
 **Rejected.**
+
 - A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
   owner; view details are local ([D7](#d7)).
 - Removing an entry on untrack and keeping only what is tracked — repositories will have settings later, which must survive

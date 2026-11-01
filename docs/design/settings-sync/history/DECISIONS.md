@@ -46,17 +46,18 @@ request clicks.** (2026-11-01, owner, on the design agent's proposal)
 **Why.** A filter changes constantly and each synced change would be a commit, and it describes what the user is
 looking at now.
 
-| State | Where today (`packages/app/`) | |
-|---|---|---|
-| Tracked repositories and projects | IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48` | synced |
-| Layout, grouping, sort, visible properties | `githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12` | synced |
-| Row field per project | IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9` | synced |
-| Filter per list | same key as layout, `lists/useListViewOptions.ts:39-45` | local |
-| How items open (panel, modal, page) | `githq.itemArrangement`, `services/LocalPreferences.ts:11` | local |
-| Sidebar collapsed, panel widths | `services/LocalPreferences.ts:12-13` | local |
-| New issue drafts, approval request clicks | `newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12` | local |
+|State|Where today (`packages/app/`)||
+|-|-|-|
+|Tracked repositories and projects|IndexedDB `meta.tracking`, `store/IndexedDbPersistence.ts:48`|synced|
+|Layout, grouping, sort, visible properties|`githq.listViews.<login>`, `lists/ListViewOptionsStore.ts:12`|synced|
+|Row field per project|IndexedDB `projects[].rowFieldId`, `projects/ProjectPersistence.ts:9`|synced|
+|Filter per list|same key as layout, `lists/useListViewOptions.ts:39-45`|local|
+|How items open (panel, modal, page)|`githq.itemArrangement`, `services/LocalPreferences.ts:11`|local|
+|Sidebar collapsed, panel widths|`services/LocalPreferences.ts:12-13`|local|
+|New issue drafts, approval request clicks|`newIssue/NewIssueComposer.ts:20`, `tracking/ApprovalRequests.ts:12`|local|
 
 **Rejected.**
+
 - Synchronising how items open — owner, 2026-11-01.
 
 ## D8
@@ -94,6 +95,7 @@ loop at the usual 60 s visible and 300 s hidden (`packages/app/sync/SyncEngine.t
 > a reorder cannot conflict with an add today.
 
 **Rejected.**
+
 - Recording changes as a list of operations — a second structure that has to survive tab closes, for what the difference
   already gives.
 
@@ -110,6 +112,7 @@ repositories also store their node id (`packages/app/tracking/TrackingTypes.ts:4
 one-way mapping if renames turn out to matter.
 
 **Rejected.**
+
 - Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
   display options, which is what happens today.
 
@@ -147,6 +150,7 @@ repository stay local; tracking moves them into the file; untracking removes the
 another edits that entry's settings, the removal wins.
 
 **Rejected.**
+
 - A separate `tracked` object with settings in a flat `lists` map by key ([history](history/DECISIONS.md#d13)) — owner.
 - Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
   display options, which is what happens today.
@@ -187,6 +191,7 @@ grows only by repositories someone adjusted. `id` is optional, because a reposit
 tracked again returns to its old place in the sidebar, which is the entries that have `tracking: true`, in order.
 
 **Rejected.**
+
 - A separate `tracked` object with settings in a flat `lists` map by key ([history](history/DECISIONS.md#d13)) — owner.
 - Entries only for tracked repositories, removed on untrack, with other options local ([history](history/DECISIONS.md#d13)) —
   untracking would throw settings away (owner).
@@ -220,6 +225,7 @@ older tabs. A repository tracked again returns to its old place in the sidebar, 
 order.
 
 **Rejected.**
+
 - A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
   owner; view details are local ([D7](#d7)).
 - Removing an entry on untrack — it would forget that the user untracked it (owner).
