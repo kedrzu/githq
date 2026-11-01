@@ -146,7 +146,8 @@ function getCount(candidate: SettingsSection) {
   }
 }
 
-// Takes the free room before the spacer does, up to its full width, and gives it back first when there is none.
+// Takes the free room before the spacer does, up to its full width (the owner menu and the 280px search of G8), and
+// gives it back first when there is none.
 .settingsView_controls {
   display: flex;
   flex: 1000 1 226px;

@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -43,7 +44,7 @@ test('coming back to a repository opens the tab it was left on, and an address n
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
 });
 
-test('J3: an untracked repository holds only what concerns the user, and offers no tracking', async ({
+test('J3: an untracked repository holds only what concerns the user and offers no tracking; tracked in Settings, the rest of its items arrive', async ({
     page,
     github,
 }) => {
@@ -64,7 +65,7 @@ test('J3: an untracked repository holds only what concerns the user, and offers 
         author: 'hubot',
         minutesAgo: 120,
     });
-    await openTrackedWork(page, github, sample.world);
+    const shell = await openTrackedWork(page, github, sample.world);
     const repository = new RepositoryScreenHarness(page);
 
     await page.goto('/hubot/tools');
@@ -73,4 +74,20 @@ test('J3: an untracked repository holds only what concerns the user, and offers 
     );
     await expect(repository.rows('Concerns you')).toHaveText([/Lint the release notes/]);
     await expect(page.getByRole('button', { name: /^Track/ })).toHaveCount(0);
+
+    await page.getByRole('link', { name: 'Settings' }).last().click();
+    const tracking = new TrackingScreenHarness(page);
+    await tracking
+        .notTracked('hubot/tools')
+        .getByRole('button', { name: /^Track/ })
+        .click();
+    await shell.tracked('hubot/tools').click();
+
+    await expect(repository.groupingButton).toHaveText('Group: Milestone');
+    await expect(repository.rows('No milestone')).toHaveText([
+        /Lint the release notes/,
+        /Cache the build/,
+        /Bump the toolchain/,
+    ]);
+    await expect(shell.trackedCount('hubot/tools')).toHaveText('3');
 });
