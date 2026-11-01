@@ -1,4 +1,4 @@
-<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. -->
+<!-- A checkbox with its label on nzyme's `useCheckbox` (a `role="checkbox"` button): bound by `v-model` or a form `field`; Space or a click on the box or the label toggles it. `indeterminate` shows a partly chosen group. `readonly` holds it still yet keeps the focus it has, where `disabled` drops it. -->
 <script lang="ts" setup>
 import { useCheckbox } from '@nzyme/vue-forms/components/useCheckbox.jsx';
 import { Check, Minus } from 'lucide-vue-next';
@@ -17,8 +17,11 @@ const { Checkbox, field } = useCheckbox();
 
 <template>
   <!-- The label wraps the box, so it names the checkbox and a click on it toggles it. -->
-  <label :class="[css.checkbox, disabled && css.checkbox_disabled]">
-    <Checkbox :class="[css.checkbox_box, (field.value || indeterminate) && css.checkbox_box_on]">
+  <label :class="[css.checkbox, (disabled || readonly) && css.checkbox_disabled]">
+    <Checkbox
+      :class="[css.checkbox_box, (field.value || indeterminate) && css.checkbox_box_on]"
+      :aria-readonly="readonly || undefined"
+    >
       <Check
         v-if="field.value"
         :class="css.checkbox_mark"
@@ -70,7 +73,8 @@ const { Checkbox, field } = useCheckbox();
   border: 1px solid $color-border-2;
   border-radius: $radius-sm;
 
-  &:disabled {
+  &:disabled,
+  &[aria-readonly='true'] {
     opacity: 0.5;
   }
 }

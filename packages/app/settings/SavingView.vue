@@ -44,7 +44,6 @@ import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import SavingChoice from './SavingChoice.vue';
 import SavingStopped from './SavingStopped.vue';
 import type { SettingsSaving } from './sync/SettingsSaving.js';
-import * as savingChoice from './SavingChoice.loc.js';
 import * as l from './SavingView.loc.js';
 
 /** The key of "Combine and turn on". */
@@ -276,7 +275,7 @@ function turnOff() {
           v-else-if="connect.kind === 'unreachable'"
           :class="css.savingView_note"
         >
-          {{ t(savingChoice.unreachable) }}
+          {{ t(l.unreachable) }}
         </p>
 
         <div

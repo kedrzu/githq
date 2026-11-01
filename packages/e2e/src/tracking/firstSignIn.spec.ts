@@ -7,11 +7,7 @@ import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { SavingScreenHarness } from '../harnesses/SavingScreen.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
-import {
-    answerSettingsRepository,
-    countSettingsCreations,
-    getSettingsWrites,
-} from '../settings/answerSettingsRepository.js';
+import { answerSettingsRepository, getSettingsWrites } from '../settings/answerSettingsRepository.js';
 
 import { answerEmptyRepositories, answerTrackingCandidates } from './answerTracking.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT, SAMPLE_REPOSITORY } from './sampleTrackedWork.js';
@@ -304,22 +300,33 @@ test('"Track these" goes on once: pressed again while it does, nothing happens, 
     await firstSignIn.savingChoice.click();
     await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
 
-    // The next step's code held back: the page stays, going on.
+    // The creation held unanswered — pressed again now, a second press would still find no repository and create
+    // one — and the next step's code held back, so the page stays, going on.
+    let creationsAsked = 0;
+    const creationAsked = createPromise();
+    const createdIn = createPromise();
+    github.rest('POST', '/user/repos', async () => {
+        creationsAsked++;
+        creationAsked.resolve();
+        await createdIn.promise;
+        repository.exists = true;
+        return { status: 201, json: { name: 'githq-settings' } };
+    });
     const nextStepIn = createPromise();
     await page.route('**/_nuxt/**', async route => {
         await nextStepIn.promise;
         await route.fallback();
     });
     await firstSignIn.trackButton.click();
-    await expect.poll(() => countSettingsCreations(github)).toBe(1);
+    await creationAsked.promise;
     await expect(firstSignIn.trackButton).toHaveAttribute('aria-busy', 'true');
-    await expect(firstSignIn.onlyMineButton).toBeDisabled();
     await page.keyboard.press('ControlOrMeta+Enter');
     nextStepIn.resolve();
 
     await expect(page).toHaveURL('/settings/tracking/download');
+    createdIn.resolve();
     await expect.poll(() => repository.file).not.toBeNull();
-    expect(countSettingsCreations(github)).toBe(1);
+    expect(creationsAsked).toBe(1);
 });
 
 test('"Only my repositories" does nothing while "Track these" looks at GitHub: what was chosen is what is tracked', async ({
@@ -347,9 +354,11 @@ test('"Only my repositories" does nothing while "Track these" looks at GitHub: w
         return { status: 404, json: { message: 'Not Found' } };
     });
     await firstSignIn.trackButton.click();
-    await expect(firstSignIn.onlyMineButton).toBeDisabled();
-    // A disabled button takes no click; forced, it still changes nothing.
-    await firstSignIn.onlyMineButton.click({ force: true });
+    // Shown disabled, yet it keeps the focus and takes the press: the page ignores it.
+    await expect(firstSignIn.onlyMineButton).toHaveAttribute('aria-disabled', 'true');
+    await firstSignIn.onlyMineButton.focus();
+    await page.keyboard.press('Enter');
+    await expect(firstSignIn.onlyMineButton).toBeFocused();
     lookedIn.resolve();
 
     await expect(page).toHaveURL('/settings/tracking/download');
@@ -362,7 +371,7 @@ test('"Only my repositories" does nothing while "Track these" looks at GitHub: w
     });
 });
 
-test('with the box ticked and GitHub out of reach, "Track these" stays and says so; pressed again once GitHub answers, it goes on and saves', async ({
+test('with the box ticked and GitHub out of reach, "Track these" stays and says so, the focus still on the box; pressed again once GitHub answers, it goes on and saves', async ({
     page,
     github,
 }) => {
@@ -373,16 +382,18 @@ test('with the box ticked and GitHub out of reach, "Track these" stays and says 
     await page.goto('/');
     await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
-    await firstSignIn.savingChoice.click();
+    await firstSignIn.savingChoice.focus();
+    await page.keyboard.press('Space');
     await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
 
     github.rest('GET', `/repos/${LOGIN}/githq-settings`, () => ({ status: 502, json: { message: 'Bad Gateway' } }));
-    await firstSignIn.trackButton.click();
+    await page.keyboard.press('ControlOrMeta+Enter');
     await expect(firstSignIn.root.getByRole('alert')).toHaveText(
-        "GitHub couldn't be reached, so saving stays off. Tick the box to try again.",
+        "GitHub couldn't be reached, so nothing was saved yet. Press Track these to try again, or untick the box to go on without saving.",
     );
     await expect(page).toHaveURL(/\/settings\/tracking\/new/);
     await expect(firstSignIn.savingChoice).toBeChecked();
+    await expect(firstSignIn.savingChoice).toBeFocused();
     expect(getSettingsWrites(github)).toEqual([]);
 
     const repository = answerSettingsRepository(github, { exists: false, file: null });

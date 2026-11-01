@@ -287,3 +287,17 @@ test('with nothing to pick, the saving choice sits above "Continue to My work"; 
     await expect.element(page.getByText('then creates', { exact: false })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Continue to My work' })).toBeVisible();
 });
+
+test('busy, ⌘↵ and "Track these" do nothing, and "Only my repositories" shows as disabled but keeps its focus', async () => {
+    const onTrack = vi.fn();
+    await Choose.run({ args: { ...Choose.args, busy: true, onTrack } });
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await userEvent.click(page.getByRole('button', { name: 'Track these' }));
+    expect(onTrack).not.toHaveBeenCalled();
+
+    const onlyMine = page.getByRole('button', { name: 'Only my repositories' });
+    await expect.element(onlyMine).toHaveAttribute('aria-disabled', 'true');
+    onlyMine.element().focus();
+    await expect.element(onlyMine).toHaveFocus();
+});

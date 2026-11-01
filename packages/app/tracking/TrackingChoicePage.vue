@@ -13,7 +13,6 @@ import { safeNextPath } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
 import SavedSettingsNotLoaded from '@/settings/SavedSettingsNotLoaded.vue';
 import SavedSettingsOffer from '@/settings/SavedSettingsOffer.vue';
-import * as savingChoice from '@/settings/SavingChoice.loc.js';
 import SavingChoice from '@/settings/SavingChoice.vue';
 import type { StoppedReason } from '@/settings/sync/SettingsSaving.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
@@ -330,7 +329,7 @@ function getChoice(): TrackingChoice {
             :class="css.trackingChoicePage_unreachable"
             role="alert"
           >
-            {{ t(savingChoice.unreachable) }}
+            {{ t(l.unreachable) }}
           </p>
         </template>
         <SavedSettingsNotLoaded

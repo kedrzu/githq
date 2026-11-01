@@ -1,4 +1,4 @@
-<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key and "Sign out". While syncing the settings stopped (settings-sync T9, T10) an amber dot sits on the avatar, and "Settings" says "Syncing stopped" and opens straight on Saving to GitHub. -->
+<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key and "Sign out". While syncing the settings stopped (settings-sync T9, T10) an amber dot sits on the avatar, and "Settings" says "Syncing stopped", shows no key (`,` opens plain Settings) and opens straight on Saving to GitHub. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronUp, LogOut, Settings } from 'lucide-vue-next';
@@ -97,7 +97,7 @@ function openSettings() {
       <MenuLabel>{{ t(l.signedInAs, { login: viewer.login }) }}</MenuLabel>
       <MenuItem
         :icon="Settings"
-        :shortcut="APP_KEYS.settings"
+        :shortcut="settingsSyncStopped ? undefined : APP_KEYS.settings"
         @select="openSettings"
       >
         {{ t(l.settings) }}

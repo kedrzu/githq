@@ -77,7 +77,10 @@ const props = defineProps<{
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
   creates?: string | null;
-  /** "Track these" is under way: it, ⌘↵ and "Only my repositories" do nothing until it ends. */
+  /**
+   * "Track these" is under way: it and ⌘↵ do nothing until it ends. "Only my repositories" shows as disabled but keeps
+   * its focus and still emits — the page ignores it meanwhile.
+   */
   busy?: boolean;
 }>();
 
@@ -699,7 +702,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
           <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
           <Button
             :class="css.trackingChooser_onlyMine"
-            :disabled="busy"
+            :aria-disabled="busy || undefined"
             @click="emit('onlyMine')"
           >
             {{ t(l.onlyMine) }}

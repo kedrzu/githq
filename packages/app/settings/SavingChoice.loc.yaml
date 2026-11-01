@@ -5,5 +5,3 @@ explanation:
     githq creates a private repository named githq-settings in your account, with one file: the repositories and
     projects you track. Another computer can then load them. Views stay on this device. githq has no server and keeps
     nothing about you; the data is yours, in your repository. Leave this off and nothing leaves this device.
-unreachable:
-  en: GitHub couldn't be reached, so saving stays off. Tick the box to try again.
