@@ -1,4 +1,4 @@
-<!-- Tracking someone else's repository or project by its name or address (G10, G8): `owner/repository`, or a project's URL. Enter or "Track" looks it up on GitHub; what is found is handed on, and what is not says why under the field. -->
+<!-- Tracking someone else's repository or project by its name or address (G10): `owner/repository`, or a project's URL. Enter or "Track" looks it up on GitHub; what is found is handed on, and what is not says why under the field. -->
 <script lang="ts" setup>
 import { Form } from '@nzyme/vue-forms/components/Form.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';

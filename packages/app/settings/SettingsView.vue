@@ -1,4 +1,9 @@
-<!-- The Settings screen (D15, G8, T4): its title, a tab for each section, with how many repositories and projects are tracked, and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
+<!-- The Settings screen (D15, G8, T4): its title, a tab for each section, with how many repositories and projects are tracked, and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. A section with controls of its own (the owner filter and the search of G8) teleports them to the end of the header, `#${SETTINGS_CONTROLS_ID}`, keeping their state and keys with its lists. -->
+<script lang="ts">
+/** The id of the place in the header a section teleports its controls to. */
+export const SETTINGS_CONTROLS_ID = 'settings-controls';
+</script>
+
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -84,6 +89,10 @@ function getCount(candidate: SettingsSection) {
         {{ t(l.keysTo) }}
         <Kbd :keys="SECTION_KEYS.account" />
       </span>
+      <div
+        :id="SETTINGS_CONTROLS_ID"
+        :class="css.settingsView_controls"
+      />
     </header>
     <div :class="css.settingsView_section">
       <slot />
@@ -105,9 +114,11 @@ function getCount(candidate: SettingsSection) {
   display: flex;
   flex: none;
   gap: $spacing-10;
+  flex-wrap: wrap;
+  row-gap: $spacing-6;
   align-items: center;
-  height: $list-header-height;
-  padding: 0 20px;
+  min-height: $list-header-height;
+  padding: $spacing-6 20px;
   border-bottom: 1px solid $color-border;
 }
 
@@ -131,6 +142,23 @@ function getCount(candidate: SettingsSection) {
 
   // In a narrow screen the tabs need the room; each still names its key to the help sheet.
   @container (max-width: 580px) {
+    display: none;
+  }
+}
+
+// Takes the free room before the spacer does, up to its full width, and gives it back first when there is none.
+.settingsView_controls {
+  display: flex;
+  flex: 1000 1 226px;
+  gap: $spacing-10;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 386px;
+  min-width: 0;
+  // Wrapped to a line of their own, they stay at the right.
+  margin-left: auto;
+
+  &:empty {
     display: none;
   }
 }

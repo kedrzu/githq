@@ -32,6 +32,8 @@ test('`1` to `4` and the tabs switch the sections, kept in the address', async (
     await page.keyboard.press('4');
     await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.signOutButton).toBeVisible();
+    await expect(tracking.search).toHaveCount(0);
+    await expect(tracking.ownerFilter).toHaveCount(0);
 
     await settings.section('Projects').click();
     await expect(page).toHaveURL('/settings?tab=projects');

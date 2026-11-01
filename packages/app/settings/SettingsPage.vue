@@ -1,4 +1,4 @@
-<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). "Saving to GitHub" shows nothing yet. -->
+<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). "Saving to GitHub" shows nothing yet. A section's controls go into the header from the section itself (`SettingsView`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
