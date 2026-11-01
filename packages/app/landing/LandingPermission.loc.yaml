@@ -1,4 +1,4 @@
 permission:
-  en: GitHub will ask for full repository access. githq only touches issues, pull requests and projects.
+  en: GitHub will ask for full repository access. githq only touches issues, pull requests, projects and, if you ask, its own settings repository.
 why:
   en: Why?
