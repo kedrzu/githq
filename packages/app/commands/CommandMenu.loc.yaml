@@ -17,7 +17,7 @@ items:
 app:
   en: App
 notTracked:
-  en: not tracked · open to track it
+  en: not tracked
 chosen:
   en: current
 loading:

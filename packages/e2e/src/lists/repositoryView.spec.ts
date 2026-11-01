@@ -26,7 +26,7 @@ test('a tracked repository is grouped by milestone, and as a board by issue type
     await expect(repository.rows('No type')).toHaveText([/Document the setup/, /Fix the crash on start/]);
 });
 
-test('J3: an untracked repository holds what concerns the user; tracked from there, the rest of its items arrive in place', async ({
+test('J3: an untracked repository holds only what concerns the user, and offers no tracking', async ({
     page,
     github,
 }) => {
@@ -47,19 +47,13 @@ test('J3: an untracked repository holds what concerns the user; tracked from the
         author: 'hubot',
         minutesAgo: 120,
     });
-    const shell = await openTrackedWork(page, github, sample.world);
+    await openTrackedWork(page, github, sample.world);
     const repository = new RepositoryScreenHarness(page);
 
     await page.goto('/hubot/tools');
-    await expect(repository.notTracked('hubot/tools')).toContainText('only has what concerns you here: 1 item');
+    await expect(repository.notTracked('hubot/tools')).toContainText(
+        'githq only has what concerns you in hubot/tools: 1 issue.',
+    );
     await expect(repository.rows('Concerns you')).toHaveText([/Lint the release notes/]);
-
-    await repository.trackButton('hubot/tools').click();
-    await expect(repository.groupingButton).toHaveText('Group: Milestone');
-    await expect(repository.rows('No milestone')).toHaveText([
-        /Lint the release notes/,
-        /Cache the build/,
-        /Bump the toolchain/,
-    ]);
-    await expect(shell.trackedCount('hubot/tools')).toHaveText('3');
+    await expect(page.getByRole('button', { name: /^Track/ })).toHaveCount(0);
 });

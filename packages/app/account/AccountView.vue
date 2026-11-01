@@ -1,4 +1,4 @@
-<!-- The account page (G9), from the account menu or ⌘K: who the user is signed in as, the organisations they belong to — each one hiding its private data from githq (D14) with a way to request approval, and when they did; one that no longer hides it "Approved" when its approval was requested from here, else "No restrictions" — what this browser holds and how it refreshes, and signing out, which says plainly that it deletes the copy kept here and changes nothing on GitHub. -->
+<!-- The Account section of Settings (G9): who the user is signed in as, the organisations they belong to — each one hiding its private data from githq (D14) with a way to request approval, and when they did; one that no longer hides it "Approved" when its approval was requested from here, else "No restrictions" — what this browser holds and how it refreshes, and signing out, which says plainly that it deletes the copy kept here and changes nothing on GitHub. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -10,14 +10,13 @@ import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import * as l from './AccountView.loc.js';
 
-/** An organisation the user belongs to, as the page lists it. */
+/** An organisation the user belongs to, as the section lists it. */
 export interface AccountOrganization {
   readonly login: string;
   /** It hides its private repositories and projects from githq until an owner approves it (G5). */
@@ -56,7 +55,7 @@ const props = defineProps<{
   refresh: AccountRefresh;
   /** GitHub's GraphQL allowance from its last answer, or `null` before one. */
   rateLimit: GitHubRateLimit | null;
-  /** The page's clock, for "last 14s ago". */
+  /** The section's clock, for "last 14s ago". */
   now: number;
   /** The link to GitHub's page where an organisation's approval is requested. */
   approvalUrl: string;
@@ -141,12 +140,6 @@ function formatBytes(bytes: number) {
 
 <template>
   <div :class="css.accountView">
-    <header
-      :class="css.accountView_header"
-      v-bind="WINDOW_DRAG_REGION"
-    >
-      <h1 :class="css.accountView_title">{{ t(l.title) }}</h1>
-    </header>
     <div :class="css.accountView_body">
       <div :class="css.accountView_column">
         <section
@@ -329,20 +322,6 @@ function formatBytes(bytes: number) {
   flex: 1;
   flex-direction: column;
   min-height: 0;
-}
-
-.accountView_header {
-  display: flex;
-  flex: none;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 20px;
-  border-bottom: 1px solid $color-border;
-}
-
-.accountView_title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
 }
 
 .accountView_body {

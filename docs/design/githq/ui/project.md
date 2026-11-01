@@ -58,7 +58,7 @@ triage and move things quickly, and don't make me wait."
     PRs?
   - How does the user get from a repository to the projects its issues live in?
   - Show a tracked repository, and also what happens when the user opens an untracked one from the command
-    menu (E3 shows "Track").
+    menu (it shows what concerns the user and points to Settings, J3).
 - **A view modified locally, and resetting it.**
 - **A view whose filter is answered by GitHub** rather than locally.
 - **A project with no single-choice field at all,** where there's nothing to group a board by.

@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3, `UntrackedView`): githq has only what concerns the user here; it lists that — narrowed by the same kind tabs — and says so, pointing to Settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   Ban,
   BookMarked,
-  EyeOff,
   GitCompareArrows,
   ListFilter,
   Lock,
@@ -29,18 +28,13 @@ import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
-import type {
-  ListChoice,
-  ListContextMenuProps,
-  ListEntry,
-  ListGroup,
-  ListMove,
-  ListViewOptions,
-} from '@/lists/ListTypes.js';
+import type { ListChoice, ListContextMenuProps, ListEntry, ListMove, ListViewOptions } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
-import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
+import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import * as untracked from '@/tracking/UntrackedView.loc.js';
+import UntrackedView from '@/tracking/UntrackedView.vue';
 
 import type { RepositoryKind, RepositoryList, RepositoryState } from './buildRepositoryList.js';
 import { REPOSITORY_KINDS, REPOSITORY_STATES } from './buildRepositoryList.js';
@@ -85,10 +79,6 @@ const props = withDefaults(
     modified?: boolean;
     /** Whether the user may move the item from one group into another (set that milestone, label…). */
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
-    /** Tracking it was asked for and GitHub shows no such repository. */
-    notFound?: boolean;
-    /** Tracking it is being asked for. */
-    trackBusy?: boolean;
   }>(),
   {
     projects: () => [],
@@ -97,8 +87,6 @@ const props = withDefaults(
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
-    notFound: false,
-    trackBusy: false,
   },
 );
 
@@ -109,8 +97,6 @@ const emit = defineEmits<{
   move: [move: ListMove];
   /** The view options back to their defaults. */
   reset: [];
-  /** "Track" (J3). */
-  track: [];
 }>();
 
 const state = defineModel<RepositoryState>('state', { default: 'open' });
@@ -181,12 +167,28 @@ const meta = computed(() => {
 
   return parts.join(' · ');
 });
-/** Not tracked: what concerns the user, in one group, as a list. */
-const concerning = computed((): ListGroup<Item>[] => {
-  const rows = props.list.groups.flatMap(group => group.rows);
-  return rows.length > 0 ? [{ key: 'concerns', label: t(l.concernsYou), arrived: true, droppable: false, rows }] : [];
+/** Not tracked: what githq has of it, by the kind tabs' counts, whichever tab is shown (J3). */
+const summary = computed(() => {
+  const name = props.nameWithOwner;
+  const { issues, pullRequests } = props.list.counts;
+  if (issues > 0 && pullRequests > 0) {
+    const what = t(l.issuesAndPullRequests, {
+      issues: t(l.issueCount, { count: issues }),
+      pullRequests: t(l.pullRequestCount, { count: pullRequests }),
+    });
+    return t(l.onlyWhatConcerns, { name, what });
+  }
+
+  if (issues > 0) {
+    return t(l.onlyWhatConcerns, { name, what: t(l.issueCount, { count: issues }) });
+  }
+
+  if (pullRequests > 0) {
+    return t(l.onlyWhatConcerns, { name, what: t(l.pullRequestCount, { count: pullRequests }) });
+  }
+
+  return t(untracked.nothingConcerns, { name });
 });
-const concerningCount = computed(() => concerning.value[0]?.rows.length ?? 0);
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 </script>
 
@@ -313,111 +315,44 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
       </ListView>
     </template>
 
-    <template v-else>
-      <header
-        :class="css.repositoryView_header"
-        v-bind="WINDOW_DRAG_REGION"
-      >
-        <BookMarked
-          :class="css.repositoryView_headerIcon"
-          aria-hidden="true"
-        />
-        <h1 :class="css.repositoryView_title">{{ nameWithOwner }}</h1>
-        <span
-          v-if="meta"
-          :class="css.repositoryView_meta"
-          >{{ meta }}</span
-        >
-        <span :class="css.repositoryView_badge">
-          <EyeOff
-            :class="css.repositoryView_metaIcon"
-            aria-hidden="true"
-          />
-          {{ t(l.notTracked) }}
-        </span>
+    <UntrackedView
+      v-else
+      v-model:selected-id="selectedId"
+      v-model:checked-ids="checkedIds"
+      :icon="BookMarked"
+      :name="nameWithOwner"
+      :meta="meta"
+      :github-url="githubUrl"
+      :rows="list.groups.flatMap(group => group.rows)"
+      :summary="summary"
+      :others="t(list.counts.all > 0 ? l.othersOnGitHub : l.allOnGitHub)"
+      :settings-to="getSettingsPath('repositories', nameWithOwner)"
+      :properties="properties"
+      :viewer-login="viewerLogin"
+      :now="now"
+      :opened-id="openedId"
+      :undone="undone"
+      @open="emit('open', $event)"
+      @listed="emit('listed', $event)"
+    >
+      <template #controls>
         <SegmentedTabs
           v-model="kind"
           :class="css.repositoryView_kinds"
           :label="t(l.kinds)"
           :options="kindOptions"
         />
-        <span :class="css.repositoryView_spacer" />
-        <Button
-          variant="ghost"
-          size="sm"
-          :icon="ArrowUpRight"
-          :link="githubUrl"
-          target="_blank"
-        >
-          {{ t(l.openOnGitHub) }}
-        </Button>
-      </header>
-
-      <section
-        :class="css.repositoryView_callout"
-        :aria-label="t(l.notTrackedTitle, { name: nameWithOwner })"
+      </template>
+      <template
+        v-if="$slots.contextMenu"
+        #contextMenu="menu"
       >
-        <EyeOff
-          :class="css.repositoryView_calloutIcon"
-          aria-hidden="true"
+        <slot
+          name="contextMenu"
+          v-bind="menu"
         />
-        <div :class="css.repositoryView_calloutText">
-          <h2 :class="css.repositoryView_calloutTitle">{{ t(l.notTrackedTitle, { name: nameWithOwner }) }}</h2>
-          <p>{{ notFound ? t(l.notFound) : t(l.notTrackedDetail, { count: concerningCount }) }}</p>
-        </div>
-        <Button
-          v-if="!notFound"
-          variant="primary"
-          :busy="trackBusy"
-          @click="emit('track')"
-        >
-          {{ t(l.track, { name: nameWithOwner }) }}
-        </Button>
-      </section>
-
-      <div :class="css.repositoryView_concerning">
-        <ListView
-          v-model:selected-id="selectedId"
-          v-model:checked-ids="checkedIds"
-          :groups="concerning"
-          layout="list"
-          :opened-id="openedId"
-          :get-url="item => item.url"
-          @open="emit('open', $event)"
-          @listed="emit('listed', $event)"
-        >
-          <template #row="{ entry, checked }">
-            <ItemRow
-              :item="entry.value"
-              :properties="properties"
-              :viewer-login="viewerLogin"
-              :now="now"
-              :checked="checked"
-              :undone="undone.get(entry.id)"
-            />
-          </template>
-          <template #card="{ entry, checked }">
-            <ItemCard
-              :item="entry.value"
-              :properties="properties"
-              :viewer-login="viewerLogin"
-              :now="now"
-              :checked="checked"
-            />
-          </template>
-          <template
-            v-if="$slots.contextMenu"
-            #contextMenu="menu"
-          >
-            <slot
-              name="contextMenu"
-              v-bind="menu"
-            />
-          </template>
-        </ListView>
-        <p :class="css.repositoryView_note">{{ t(l.othersAfterTracking, { name: nameWithOwner }) }}</p>
-      </div>
-    </template>
+      </template>
+    </UntrackedView>
   </div>
 </template>
 
@@ -463,97 +398,6 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 
 .repositoryView_count {
   font-family: $font-family-mono;
-  color: $color-fg-dim;
-}
-
-.repositoryView_header {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-16;
-  border-bottom: 1px solid $color-border;
-}
-
-.repositoryView_headerIcon {
-  flex: none;
-  width: 15px;
-  height: 15px;
-  color: $color-fg-2;
-}
-
-.repositoryView_title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  white-space: nowrap;
-}
-
-.repositoryView_badge {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  padding: 1px 8px;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  white-space: nowrap;
-  border: 1px solid $color-border-2;
-  border-radius: 10px;
-}
-
-.repositoryView_spacer {
-  flex: 1;
-}
-
-.repositoryView_callout {
-  display: flex;
-  flex: none;
-  gap: $spacing-16;
-  align-items: center;
-  padding: $spacing-16 $spacing-24;
-  background: $color-bg-2;
-  border-bottom: 1px solid $color-border;
-}
-
-.repositoryView_calloutIcon {
-  flex: none;
-  box-sizing: content-box;
-  width: 18px;
-  height: 18px;
-  padding: 10px;
-  color: $color-fg-2;
-  background: $color-bg-3;
-  border-radius: $radius-lg;
-}
-
-.repositoryView_calloutText {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: $spacing-4;
-  font-size: $font-size-md;
-  line-height: $line-height-normal;
-  color: $color-fg-2;
-}
-
-.repositoryView_calloutTitle {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
-// The few rows that concern the user, then the note under them, scrolled together.
-.repositoryView_concerning {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.repositoryView_note {
-  flex: none;
-  padding: $spacing-16 $spacing-16 $spacing-24 56px;
-  font-size: $font-size-sm;
-  line-height: $line-height-normal;
   color: $color-fg-dim;
 }
 </style>

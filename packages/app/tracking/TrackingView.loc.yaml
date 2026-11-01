@@ -1,11 +1,3 @@
-title:
-  en: Tracking
-kinds:
-  en: What is tracked
-repositories:
-  en: Repositories
-projects:
-  en: Projects
 findRepository:
   en: Find a repository to track…
 findProject:
