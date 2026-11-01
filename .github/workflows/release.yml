@@ -79,6 +79,7 @@ jobs:
             release_id=$(gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
               -f tag_name="$GITHUB_REF_NAME" \
               -f name="githq $GITHUB_REF_NAME" \
+              -f body="Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](https://github.com/$GITHUB_REPOSITORY#code-signing-policy)." \
               -F draft=true \
               -F prerelease="$PRERELEASE" \
               --jq .id)

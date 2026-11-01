@@ -111,8 +111,7 @@ restart when it's ready.
   sign in at every launch.
 
 **Uninstalling:** on macOS, move githq from Applications to the Bin. On Windows, use Settings → Apps → Installed
-apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`,
-`sudo dnf remove githq`). Signing out first removes the token from your keychain. Otherwise, delete the
+apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`). Signing out first removes the token from your keychain. Otherwise, delete the
 `dev.githq.desktop` entry from it yourself.
 
 ## Code signing policy
