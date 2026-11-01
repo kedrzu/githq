@@ -14,6 +14,7 @@ import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import * as l from './AppShell.loc.js';
 import FreshnessSegment from './FreshnessSegment.vue';
@@ -57,6 +58,8 @@ defineSlots<{
   default?(): unknown;
   /** An item opened beside the screen (`ItemView` in its panel arrangement). */
   panel?(): unknown;
+  /** The entries of a tracked project's or repository's context menu in the sidebar. */
+  trackedMenu?(props: { target: TrackedTarget }): unknown;
 }>();
 
 /** The sidebar collapsed to the rail. */
@@ -147,7 +150,17 @@ function onLayout(sizes: number[]) {
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"
-        />
+        >
+          <template
+            v-if="$slots.trackedMenu"
+            #trackedMenu="menu"
+          >
+            <slot
+              name="trackedMenu"
+              v-bind="menu"
+            />
+          </template>
+        </Sidebar>
       </SplitterPanel>
       <ResizeHandle
         v-if="!collapsed"

@@ -47,7 +47,10 @@ defineExpose({
       :class="css.searchField_input"
       :aria-keyshortcuts="kbd ?? undefined"
     />
-    <Kbd v-if="kbd">{{ kbd }}</Kbd>
+    <Kbd
+      v-if="kbd"
+      :keys="kbd"
+    />
     <slot name="end" />
   </div>
 </template>

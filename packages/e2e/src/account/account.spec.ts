@@ -58,7 +58,7 @@ test('⌘K finds the account page', async ({ page, github }) => {
     await signIn(page, github);
     answerTrackingCandidates(github, { login: LOGIN });
 
-    await page.keyboard.press('Meta+K');
+    await page.keyboard.press('ControlOrMeta+K');
     await page.keyboard.type('account');
     await page.keyboard.press('Enter');
 

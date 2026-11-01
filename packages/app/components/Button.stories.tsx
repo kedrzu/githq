@@ -25,7 +25,7 @@ export const Gallery: Story = {
                         variant="light"
                         size="lg"
                         icon={Github}
-                        kbd="↵"
+                        kbd="Enter"
                     >
                         Sign in with GitHub
                     </Button>
@@ -53,13 +53,13 @@ export const Gallery: Story = {
                     <Button>Only my repositories</Button>
                     <Button
                         variant="primary"
-                        kbd="⌘↵"
+                        kbd="Mod+Enter"
                     >
                         Track these
                     </Button>
                     <Button
                         variant="primary"
-                        kbd="⌘↵"
+                        kbd="Mod+Enter"
                     >
                         Create issue
                     </Button>
@@ -104,7 +104,7 @@ export const Gallery: Story = {
                         variant="field"
                         block
                         icon={Search}
-                        kbd="⌘K"
+                        kbd="Mod+K"
                         aria-disabled="true"
                     >
                         Search…

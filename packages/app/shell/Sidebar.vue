@@ -1,5 +1,7 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order, each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). -->
+<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
 <script lang="ts">
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+
 /** What a tracked project or repository shows beside its name. */
 export type SidebarTrackedStatus =
   /** Its open issues, pull requests and draft issues. */
@@ -16,7 +18,11 @@ export interface SidebarTrackedEntry {
   readonly label: string;
   /** Where its view is. */
   readonly to: string;
+  /** What it is, for its context menu. */
+  readonly target: TrackedTarget;
   readonly status: SidebarTrackedStatus;
+  /** A private repository: a lock instead of the repository icon. */
+  readonly isPrivate?: boolean;
 }
 
 /** The tracked projects and repositories, in the user's order. */
@@ -29,14 +35,25 @@ export interface SidebarTracked {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { AtSign, BookMarked, Inbox, PanelLeftClose, PanelLeftOpen, Plus, Search, SquareKanban } from 'lucide-vue-next';
+import {
+  AtSign,
+  BookMarked,
+  Inbox,
+  Lock,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Search,
+  SquareKanban,
+} from 'lucide-vue-next';
 import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { TRACKING_PATH } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
+import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
@@ -64,6 +81,11 @@ const emit = defineEmits<{
   /** "Search or jump to…": the command menu. */
   search: [];
   signOut: [];
+}>();
+
+defineSlots<{
+  /** The entries of a tracked project's or repository's context menu. */
+  trackedMenu?(props: { target: TrackedTarget }): unknown;
 }>();
 
 const t = useTranslate();
@@ -120,8 +142,8 @@ function statusText(status: SidebarTrackedStatus) {
         variant="field"
         block
         :icon="Search"
-        :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-        :aria-keyshortcuts="APP_KEYS.commandMenu"
+        :kbd="APP_KEYS.commandMenu"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       >
         {{ t(l.search) }}
@@ -178,18 +200,26 @@ function statusText(status: SidebarTrackedStatus) {
           v-for="project in tracked.projects"
           :key="project.key"
         >
-          <RouterLink
-            :to="project.to"
-            :class="css.sidebar_item"
-            :active-class="css.sidebar_item_active"
-          >
-            <SquareKanban
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
-            <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
-          </RouterLink>
+          <ContextMenu :disabled="!$slots.trackedMenu">
+            <RouterLink
+              :to="project.to"
+              :class="css.sidebar_item"
+              :active-class="css.sidebar_item_active"
+            >
+              <SquareKanban
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
+              <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
+            </RouterLink>
+            <template #content>
+              <slot
+                name="trackedMenu"
+                :target="project.target"
+              />
+            </template>
+          </ContextMenu>
         </li>
       </ul>
 
@@ -209,18 +239,27 @@ function statusText(status: SidebarTrackedStatus) {
           v-for="repository in tracked.repositories"
           :key="repository.key"
         >
-          <RouterLink
-            :to="repository.to"
-            :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
-            :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
-          >
-            <BookMarked
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
-            <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
-          </RouterLink>
+          <ContextMenu :disabled="!$slots.trackedMenu">
+            <RouterLink
+              :to="repository.to"
+              :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
+              :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
+            >
+              <component
+                :is="repository.isPrivate ? Lock : BookMarked"
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
+              <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
+            </RouterLink>
+            <template #content>
+              <slot
+                name="trackedMenu"
+                :target="repository.target"
+              />
+            </template>
+          </ContextMenu>
         </li>
       </ul>
       <Button
@@ -252,8 +291,8 @@ function statusText(status: SidebarTrackedStatus) {
         size="md"
         :icon="Search"
         :label="t(l.search)"
-        :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-        :aria-keyshortcuts="APP_KEYS.commandMenu"
+        :kbd="APP_KEYS.commandMenu"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       />
       <hr :class="css.sidebar_divider" />

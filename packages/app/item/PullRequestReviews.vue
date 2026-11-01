@@ -7,7 +7,6 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { CircleCheck, CircleSlash, FileDiff, Hourglass, MessageSquare, UserPlus, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
@@ -140,7 +139,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
             variant="ghost"
             size="sm"
             :icon="UserPlus"
-            :kbd="formatCommandKey(EDIT_KEYS.reviewers).join('')"
+            :kbd="EDIT_KEYS.reviewers"
             :aria-keyshortcuts="EDIT_KEYS.reviewers"
           >
             {{ t(l.request) }}

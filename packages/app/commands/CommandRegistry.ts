@@ -21,7 +21,7 @@ export interface CommandMenuRequest {
 }
 
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
-export const APP_KEYS = { commandMenu: 'Meta+K', help: '?', sidebar: '[' } as const;
+export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', sidebar: '[' } as const;
 
 /** The key of a new issue (H1): the app's, and a project's own where it starts in that project (H5). */
 export const NEW_ISSUE_KEY = 'C';
@@ -32,7 +32,7 @@ const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
 /**
  * The app's actions (D9): every component registers the ones it offers while it is shown (`useCommands`), and
  * this one registry feeds the command menu (⌘K), the keys and the help sheet (`?`). It runs an action's key
- * itself: outside fields for a single key, also in a one-line field for a ⌘ key; never while the menu or the help
+ * itself: outside fields for a single key, also in a one-line field for a `Mod` key; never while the menu or the help
  * is open. Two actions on one key: the one whose section comes first ({@link COMMAND_SECTIONS}) runs.
  */
 export type CommandRegistry = Resolved<typeof CommandRegistry>;
@@ -150,7 +150,7 @@ export const CommandRegistry = defineService({
 });
 
 /**
- * A single key is a field's own; a ⌘ key is a field's only where the user writes. Nothing runs from inside a layer
+ * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
  * the items behind it).
  */
@@ -159,7 +159,7 @@ function isFreeTarget(target: EventTarget | null, key: string) {
         return false;
     }
 
-    if (key.startsWith('Meta+')) {
+    if (key.includes('Mod+')) {
         return !(target instanceof Element && target.closest(WRITING) !== null);
     }
 

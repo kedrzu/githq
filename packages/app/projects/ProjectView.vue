@@ -23,7 +23,7 @@ import { RouterLink } from 'vue-router';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
-import { formatCommandKey } from '@/commands/formatCommandKey.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
@@ -129,6 +129,8 @@ const checkedIds = defineModel<readonly string[]>('checkedIds', { default: () =>
 const options = defineModel<ProjectViewOptions>('options', { required: true });
 
 defineSlots<{
+  /** The entries of the menu the title opens (`ListToolbar`'s `titleMenu`). */
+  menu?(): unknown;
   /** The actions of the items edited together, while there are any. */
   selection?(props: { ids: readonly string[] }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
@@ -257,6 +259,12 @@ function addDraft(title: string, group: string | null) {
       :extra-options="[rowFieldOption]"
       @reset="emit('reset')"
     >
+      <template
+        v-if="$slots.menu"
+        #titleMenu
+      >
+        <slot name="menu" />
+      </template>
       <template #title>
         <span :class="css.projectView_meta">
           {{ t(l.meta, { owner: project.owner, count: itemCount }) }}
@@ -401,8 +409,8 @@ function addDraft(title: string, group: string | null) {
             <Button
               variant="secondary"
               :icon="Plus"
-              :kbd="formatCommandKey(APP_KEYS.commandMenu).join('')"
-              :aria-keyshortcuts="APP_KEYS.commandMenu"
+              :kbd="APP_KEYS.commandMenu"
+              :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
               @click="emit('addItems')"
             >
               {{ t(l.addExistingIssues) }}

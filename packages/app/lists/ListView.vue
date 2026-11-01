@@ -545,14 +545,21 @@ function findKey(keys: readonly string[], id: string) {
                   v-if="group.marker"
                   :marker="group.marker"
                 />
-                {{ group.label }}
+                <span :class="group.monospace && css.listView_mono">{{ group.label }}</span>
                 <span :class="css.listView_count">{{ group.rows.length }}</span>
               </Button>
               <span
                 v-if="group.detail"
                 :class="css.listView_detail"
-                >{{ group.detail }}</span
               >
+                <component
+                  :is="group.detailIcon"
+                  v-if="group.detailIcon"
+                  :class="css.listView_detailIcon"
+                  aria-hidden="true"
+                />
+                {{ group.detail }}
+              </span>
             </h2>
             <p
               v-if="group.rows.length === 0"
@@ -617,7 +624,7 @@ function findKey(keys: readonly string[], id: string) {
               v-if="group.marker"
               :marker="group.marker"
             />
-            <span :class="css.listView_columnLabel">{{ group.label }}</span>
+            <span :class="[css.listView_columnLabel, group.monospace && css.listView_mono]">{{ group.label }}</span>
             <span :class="css.listView_count">{{ group.arrived ? group.rows.length : t(l.countArriving) }}</span>
           </h2>
           <p
@@ -740,8 +747,20 @@ function findKey(keys: readonly string[], id: string) {
 }
 
 .listView_detail {
+  display: inline-flex;
+  gap: $spacing-4;
+  align-items: center;
   font-weight: $font-weight-normal;
   color: $color-fg-dim;
+}
+
+.listView_detailIcon {
+  width: 11px;
+  height: 11px;
+}
+
+.listView_mono {
+  font-family: $font-family-mono;
 }
 
 .listView_note {

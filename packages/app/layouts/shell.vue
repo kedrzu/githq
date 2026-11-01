@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser. An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser. An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -15,7 +15,9 @@ import { ItemResolver } from '@/item/ItemResolver.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
+import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
+import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
@@ -67,6 +69,7 @@ const tracked = computed((): SidebarTracked => ({
     key: `project:${project.id}`,
     label: project.title,
     to: getProjectPath(project),
+    target: { kind: 'project', id: project.id },
     status: getTrackedStatus(
       { kind: 'project', id: project.id },
       haveOpenItemsArrived(tracking.getSyncState({ kind: 'project', id: project.id })),
@@ -78,7 +81,9 @@ const tracked = computed((): SidebarTracked => ({
       key: `repository:${repository.nameWithOwner}`,
       label: repository.nameWithOwner,
       to: getRepositoryPath(repository.nameWithOwner),
+      target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
+      isPrivate: trackedItems.isPrivate(repository.nameWithOwner),
     };
   }),
 }));
@@ -199,6 +204,16 @@ function showLastFailure() {
       <OpenedItem
         :reference="opened.reference"
         arrangement="panel"
+      />
+    </template>
+    <template #trackedMenu="{ target }">
+      <RepositoryContextMenu
+        v-if="target.kind === 'repository'"
+        :name-with-owner="target.nameWithOwner"
+      />
+      <ProjectContextMenu
+        v-else
+        :project-id="target.id"
       />
     </template>
   </AppShell>
