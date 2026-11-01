@@ -101,6 +101,7 @@ function getCount(candidate: SettingsSection) {
 }
 
 .settingsView_header {
+  container-type: inline-size;
   display: flex;
   flex: none;
   gap: $spacing-10;
@@ -127,6 +128,11 @@ function getCount(candidate: SettingsSection) {
   align-items: center;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+
+  // In a narrow screen the tabs need the room; each still names its key to the help sheet.
+  @container (max-width: 580px) {
+    display: none;
+  }
 }
 
 .settingsView_section {

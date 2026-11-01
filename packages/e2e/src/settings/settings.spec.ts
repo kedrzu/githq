@@ -54,6 +54,18 @@ test('`1` to `4` and the tabs switch the sections, kept in the address', async (
     await expect(page).toHaveURL('/');
 });
 
+test('a key pressed in an open menu stays with the menu', async ({ page, github }) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await expect(new MyWorkScreenHarness(page).groups.first()).toBeVisible();
+
+    await shell.account('octocat').click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.keyboard.press(',');
+
+    await expect(page.getByRole('menu')).toBeVisible();
+    await expect(page).toHaveURL('/');
+});
+
 test('typing a digit in the search field is typing, not switching the section', async ({ page, github }) => {
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     await page.goto('/settings');
