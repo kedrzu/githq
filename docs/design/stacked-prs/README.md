@@ -90,5 +90,5 @@ a stack on a pull request is what it would build on.
 
 ## Where this stands
 
-The design is closed. The screens are drawn, with variants for the owner to pick from: [the brief lists them](ui/work-through-a-stack.md#the-screens).
+The design is closed. The screens are drawn and the owner has picked among the variants: [the brief lists them](ui/work-through-a-stack.md#the-screens).
 Then comes the build in the order above.
