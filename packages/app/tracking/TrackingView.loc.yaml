@@ -4,6 +4,10 @@ findProject:
   en: Find a project to track…
 findLabel:
   en: Find something to track
+ownerLabel:
+  en: 'Owner: {owner}'
+allOwners:
+  en: All owners
 tracked:
   en: Tracked
 trackedRepositories:
@@ -18,19 +22,32 @@ trackedProjects:
     zero: no projects yet
     one: 1 project
     many: '{count} projects'
-itemsKept:
+items:
   plural: count
   en:
-    one: 1 item in this browser
-    many: '{formatted} items in this browser'
+    one: 1 item
+    many: '{formatted} items'
+inThisBrowser:
+  en: '{size} in this browser'
+matches:
+  plural: count
+  en:
+    one: 1 match
+    many: '{count} matches'
+private:
+  en: private
+public:
+  en: public
+active:
+  en: active {age} ago
 untrack:
   en: Untrack
 untrackNote:
-  en: Untracking deletes its copy from this browser. Items that concern you stay in My work.
+  en: Untracking deletes the repository's copy from this browser. Items that concern you stay in My work.
 waiting:
   en: waiting
 downloading:
-  en: downloading {percent}%
+  en: Downloading · {done} of {total}
 hidden:
   en: Not shown to githq
 refused:
@@ -44,41 +61,64 @@ staleNever:
 suggested:
   en: Suggested
 suggestedDetail:
-  en: your work lives here, and they aren't tracked
-suggestedProjectsDetail:
-  en: yours and your organisations', not tracked
+  en: not tracked, and your work lives here
 inMyWork:
   plural: count
   en:
     one: 1 item in My work · active {age} ago
     many: '{count} items in My work · active {age} ago'
-notTracked:
-  en: Not tracked
-matching:
-  en: 'matching “{filter}”'
-noMatch:
-  en: Nothing you can see matches “{filter}”.
-projectMeta:
+moreRepositories:
   plural: count
   en:
-    one: '{owner} · 1 item'
-    many: '{owner} · {count} items'
+    one: 1 more repository you can track. Search to find it.
+    many: '{formatted} more repositories you can track. Search to find them.'
+notTracked:
+  en: Not tracked
+projectsYouCanSee:
+  plural: count
+  en:
+    one: 1 project you can see
+    many: '{formatted} projects you can see'
+matching:
+  en: '{matching} of {total}'
+matchingInOwner:
+  en: '{matching} of {total} in {owner}'
+inOwner:
+  en: '{total} in {owner}'
+open:
+  en: '{count} open'
+archived:
+  en: archived · read-only
+ownerDone:
+  en: Everything you can see in {owner} is tracked.
+noMatch:
+  en: Nothing you can see matches “{filter}”.
+projectsNote:
+  en: A tracked project brings its items with it, even from repositories you don't track.
 track:
   en: Track
-byName:
-  en: Someone else's
-byNameDetail:
-  en: by its name or address
 organisations:
   en: Organisations
 privateHidden:
   en: Private data hidden
-visible:
-  en: Visible to githq
+approved:
+  en: Approved
+noRestrictions:
+  en: No restrictions
 hiddenDetail:
-  en: Hides its private data from githq. Until an owner approves it, only its public repositories can be tracked.
+  en: Hides its private data from githq.
 hiddenRequested:
-  en: Hides its private data from githq. You requested approval on {date}. Until an owner approves it, only its public repositories can be tracked.
+  en: You requested approval on {date}.
+hiddenLimit:
+  en: Until an owner approves it, only its public repositories can be tracked.
+hiddenProjects:
+  en: Until an owner approves it, its private projects stay hidden.
+hiddenLimitCounted:
+  plural: count
+  en:
+    zero: Until an owner approves it, none of its repositories can be tracked.
+    one: Until an owner approves it, only its 1 public repository can be tracked.
+    many: Until an owner approves it, only its {count} public repositories can be tracked.
 requestApproval:
   en: Request approval on GitHub
 readingOrganisations:

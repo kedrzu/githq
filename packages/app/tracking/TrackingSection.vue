@@ -1,8 +1,10 @@
-<!-- The Repositories and Projects sections of Settings (G8): changing what is tracked, later. Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the section opens, once a session) and anyone's by name, and keeps the organisations hiding their data in view. -->
+<!-- The Repositories and Projects sections of Settings (G8): changing what is tracked, later. Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the section opens, once a session, the rest page by page as a filter needs it) and anyone's by name, and keeps the organisations in view. -->
 <script lang="ts" setup>
+import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, shallowRef, watch } from 'vue';
 
+import { Browser } from '@/services/Browser.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -11,7 +13,7 @@ import { SyncEngine } from '@/sync/SyncEngine.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { ApprovalRequests } from './ApprovalRequests.js';
-import { toTrackedProject, toTrackedRepository } from './trackingCandidates.js';
+import { getCandidateRepositories, toTrackedProject, toTrackedRepository } from './trackingCandidates.js';
 import { getProjectPath, getRepositoryPath } from './trackingRoutes.js';
 import { TrackingStore } from './TrackingStore.js';
 import type { CandidateProject, CandidateRepository, TrackedTarget } from './TrackingTypes.js';
@@ -24,6 +26,8 @@ import { haveOpenItemsArrived } from './utils/haveOpenItemsArrived.js';
 const TICK_MS = 15_000;
 /** How many of the repositories "my work" lives in the section suggests. */
 const SUGGESTED = 8;
+/** How long what is tracked and kept must stay as it is before the size this browser keeps is asked again. */
+const ESTIMATE_DELAY_MS = 1000;
 
 defineProps<{
   /** Which of the two sections it is. */
@@ -37,8 +41,22 @@ const approvals = useService(ApprovalRequests);
 const items = useService(ItemStore);
 const trackedItems = useService(TrackedItems);
 const sync = useService(SyncEngine);
+const browser = useService(Browser);
 
 const now = useNow(TICK_MS);
+const storedBytes = shallowRef<number | null>(null);
+
+// Whether a repository is private, as what GitHub offered says: read this session, it tells before any of its items
+// arrive, and after a change of visibility.
+const offeredPrivate = computed(() => {
+  const candidates = tracking.candidates;
+  return new Map(
+    (candidates ? getCandidateRepositories(candidates) : []).map(repository => [
+      repository.nameWithOwner,
+      repository.isPrivate,
+    ]),
+  );
+});
 
 const tracked = computed(() => ({
   repositories: tracking.repositories.map((repository): TrackedRow => {
@@ -47,9 +65,11 @@ const tracked = computed(() => ({
     return {
       target,
       name: repository.nameWithOwner,
+      owner: parseRepositoryName(repository.nameWithOwner).owner,
       to: getRepositoryPath(repository.nameWithOwner),
-      isPrivate: trackedItems.isPrivate(repository.nameWithOwner),
+      isPrivate: offeredPrivate.value.get(repository.nameWithOwner) ?? trackedItems.isPrivate(repository.nameWithOwner),
       items: progress.total === null ? null : progress.done,
+      activeAt: trackedItems.getActiveAt(repository.nameWithOwner),
       state: getState(target, sync.getRepositoryFreshness(repository.nameWithOwner).kind),
     };
   }),
@@ -59,13 +79,17 @@ const tracked = computed(() => ({
     return {
       target,
       name: project.title,
+      owner: project.owner,
       to: getProjectPath(project),
-      isPrivate: false,
+      isPrivate: null,
       items: progress.total === null ? null : progress.done,
+      activeAt: null,
       state: getState(target, sync.getProjectFreshness(project.id).kind),
     };
   }),
 }));
+
+const trackedRows = computed(() => [...tracked.value.repositories, ...tracked.value.projects]);
 
 // The repositories "my work" has items in that are not tracked, the most items first.
 const suggested = computed((): SuggestedRepository[] => {
@@ -99,7 +123,31 @@ const suggested = computed((): SuggestedRepository[] => {
     .slice(0, SUGGESTED);
 });
 
-onMounted(() => void tracking.loadCandidates());
+onMounted(() => {
+  void tracking.loadCandidates();
+  void estimateStorage(() => false);
+});
+
+// What this browser keeps grows with each page a download writes and shrinks with each untracking: asked again once
+// what is tracked and how many items are kept settle, latest wins.
+watch(
+  [() => trackedRows.value.map(row => row.name).join('\n'), () => sumOver(trackedRows.value, row => row.items ?? 0)],
+  (_now, _before, onCleanup) => {
+    let stale = false;
+    const timer = setTimeout(() => void estimateStorage(() => stale), ESTIMATE_DELAY_MS);
+    onCleanup(() => {
+      stale = true;
+      clearTimeout(timer);
+    });
+  },
+);
+
+async function estimateStorage(isStale: () => boolean) {
+  const estimate = await browser.estimateStorage();
+  if (!isStale()) {
+    storedBytes.value = estimate;
+  }
+}
 
 function getState(target: TrackedTarget, freshness: Freshness['kind']): TrackedRowState {
   const progress = tracking.getProgress(target);
@@ -110,10 +158,7 @@ function getState(target: TrackedTarget, freshness: Freshness['kind']): TrackedR
   // Each kind through its own overload.
   const state = target.kind === 'repository' ? tracking.getSyncState(target) : tracking.getSyncState(target);
   if (!haveOpenItemsArrived(state)) {
-    return {
-      kind: 'downloading',
-      percent: progress.total ? Math.floor((progress.done / progress.total) * 100) : null,
-    };
+    return { kind: 'downloading', done: progress.done, total: progress.total };
   }
 
   if (state.refused && state.kind === 'repository') {
@@ -147,11 +192,13 @@ function track(candidate: CandidateProject | CandidateRepository) {
     :suggested="suggested"
     :candidates="tracking.candidates"
     :approvals="approvals.requests"
+    :stored-bytes="storedBytes"
     :now="now"
     :find="tracking.findCandidate"
     @untrack="tracking.untrack"
     @track-suggested="trackSuggested"
     @track="track"
+    @load-more="tracking.loadMoreRepositories"
     @request-approval="approvals.record"
   />
 </template>
