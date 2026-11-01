@@ -120,3 +120,35 @@ dissolving and linking again.
 - How selection works with entries: what `X` selects, and how `⇧J` runs across a collapsed entry.
 - How the stack that needs rebasing reads in the list, since it is frequent and blocks everything.
 - Where the link, add and dissolve commands surface, and how linking shows the order that will result.
+
+## The screens
+
+In `githq.pen`, frame **"App · Stacked pull requests"** (`LIEPU`). The numbers are the frame's. Where there are variants, the recommended one
+comes first. The decisions are D14 onward in [DECISIONS](../DECISIONS.md).
+
+|Question|Answer in the frame|Variants|
+|-|-|-|
+|An entry against a pull request and an issue|Two lines, stack icon, pips: SP10a, SP11|One line (SP10b), words only (SP10c)|
+|Properties that differ|Union of assignees, shared labels and milestone, +N: SP12||
+|The lone marker and "2 of 4"|SP13, SP26, SP27a|An edge behind the card (SP27b)|
+|The map in a panel|Pinned above the content: SP30a; ten, a window: SP31a|One line (SP32b)|
+|The map in a modal and a full page|Top of the side column: SP33, SP34, SP35a, SP36a|Own left column (SP37b)|
+|Choosing how far|A line moved with `↑` and `↓`: SP41a, SP42|A "How far" line (SP41b)|
+|Selection|`X` and `⇧J`: SP28||
+|Needing a rebase in a list|Amber, the hand-off on `⇧M`: SP15a, SP46, SP47|Always spelled out (SP15b)|
+|Link, add, dissolve|Palette and menu: SP70–SP72, SP79; order: SP73||
+
+The walk: SP1–SP8, keys SP9. Lists: under an issue SP20–SP22, repository SP23, by label SP24, filtered SP25, board SP26.
+Panel states: whole SP40, one lands SP43, method SP44, held SP45a and SP45b, rebase SP46 and SP47, closed SP48, draft SP49, copy not complete SP50, being
+read SP51, auto-merge SP52, queue SP53 and SP54, bypass SP55, being merged SP56, merged SP57, partly merged SP58. Entry states: SP14.
+Failures: partway SP59, SP60, SP80; refused SP61; someone pushed SP62; an edit refused SP81; linking refused SP74, SP75; dissolving SP77, SP78. Unlinked
+chain: SP38. "No answer in time" and "reloaded" stay as PM29, PM30 and PM36, with the stack's list.
+
+Open with the owner, and not settled by the screens:
+
+- **Landing part of a held stack on the usual two keys (SP45a or SP45b).** A merge cannot be undone.
+- **Two stacks under one issue (SP22)** make one more level than "no third level" suggests.
+- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so);
+  whether a stack in a queue has one position (SP53, SP54). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
+- **The merge brief's "Being merged" row (PM37)** is unchanged: a stack needed only the entry's own sentence.
+
