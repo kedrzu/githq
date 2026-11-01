@@ -8,6 +8,7 @@ import * as stories from './Sidebar.stories.js';
 
 const {
     Collapsed,
+    CollapsedManyProjects,
     CollapsedNoProjects,
     CollapsedNothingTracked,
     CollapsedOnProject,
@@ -220,4 +221,16 @@ test('the rail with nothing tracked has the Settings icon', async () => {
     const nav = page.getByRole('navigation', { name: 'Sidebar' });
     await expect.element(nav.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings');
     expect(nav.getByRole('separator').elements()).toHaveLength(1);
+});
+
+test('many marks scroll on the rail, the logo and the way to expand staying in view', async () => {
+    await CollapsedManyProjects.run();
+
+    const last = page.getByRole('link', { name: 'Project 59' }).element();
+    last.scrollIntoView();
+
+    const expand = page.getByRole('button', { name: 'Expand sidebar' }).element();
+    const logo = page.getByRole('img', { name: 'githq' }).element();
+    await expect.poll(() => last.getBoundingClientRect().top).toBeGreaterThan(expand.getBoundingClientRect().bottom);
+    expect(logo.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
 });

@@ -136,6 +136,19 @@ export const CollapsedNoProjects: Story = {
     args: { ...NoProjects.args, collapsed: true },
 };
 
+/** The rail with more marks than fit: they scroll, under the logo and search. */
+export const CollapsedManyProjects: Story = {
+    args: {
+        collapsed: true,
+        tracked: {
+            projects: Array.from({ length: 60 }, (_, index) =>
+                project(`Project ${index}`, 'kedrzu', index, { kind: 'count', count: index }),
+            ),
+            repositories: [],
+        },
+    },
+};
+
 /** The rail with nothing tracked: the way to Settings instead of the marks. */
 export const CollapsedNothingTracked: Story = {
     args: { ...NothingTracked.args, collapsed: true },

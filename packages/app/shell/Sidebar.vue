@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll; the signed-in user, with their menu, stays at the very bottom. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -285,26 +285,26 @@ function getProjectMark(title: string) {
     </template>
 
     <template v-else>
+      <div :class="css.sidebar_railLogo">
+        <Sygnet :class="css.sidebar_sygnet" />
+      </div>
+      <IconButton
+        size="md"
+        :icon="PanelLeftOpen"
+        :label="t(l.expand)"
+        :kbd="APP_KEYS.sidebar"
+        :aria-keyshortcuts="APP_KEYS.sidebar"
+        @click="emit('toggle')"
+      />
+      <IconButton
+        size="md"
+        :icon="Search"
+        :label="t(l.search)"
+        :kbd="APP_KEYS.commandMenu"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        @click="emit('search')"
+      />
       <div :class="[css.sidebar_scroll, css.sidebar_scroll_rail]">
-        <div :class="css.sidebar_railLogo">
-          <Sygnet :class="css.sidebar_sygnet" />
-        </div>
-        <IconButton
-          size="md"
-          :icon="PanelLeftOpen"
-          :label="t(l.expand)"
-          :kbd="APP_KEYS.sidebar"
-          :aria-keyshortcuts="APP_KEYS.sidebar"
-          @click="emit('toggle')"
-        />
-        <IconButton
-          size="md"
-          :icon="Search"
-          :label="t(l.search)"
-          :kbd="APP_KEYS.commandMenu"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
-          @click="emit('search')"
-        />
         <hr :class="css.sidebar_divider" />
         <RouterLink
           to="/"
