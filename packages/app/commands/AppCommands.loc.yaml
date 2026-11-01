@@ -6,6 +6,8 @@ newIssue:
   en: New issue
 createKeyword:
   en: create
+settings:
+  en: Settings
 signOut:
   en: Sign out
 restartToUpdate:

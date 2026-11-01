@@ -13,6 +13,18 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import AppCommands from './AppCommands.vue';
 
+test('`,` opens Settings, and the command menu offers it with its key', async () => {
+    const router = mount();
+
+    await userEvent.keyboard(',');
+    await expect.poll(() => router.currentRoute.value.path).toBe('/settings');
+
+    await router.push('/');
+    await userEvent.keyboard('{Meta>}k{/Meta}');
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Settings/u })).toBeInTheDocument();
+});
+
 test('on the web the command menu offers no update', async () => {
     mount();
 
@@ -89,4 +101,5 @@ function mount(update?: AppUpdateShape) {
         app.unmount();
         host.remove();
     });
+    return router;
 }

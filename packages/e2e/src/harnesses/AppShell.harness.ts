@@ -101,10 +101,10 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /changes? failed/ });
     }
 
-    /** Opens the account page (G9) through the account menu. */
+    /** Opens the account page (G9), at `/settings`, with "Settings" of the account menu. */
     async openAccount(login: string): Promise<void> {
         await this.account(login).click();
-        await this.page.getByRole('menuitem', { name: 'Account' }).click();
+        await this.page.getByRole('menuitem', { name: 'Settings' }).click();
     }
 
     /**

@@ -21,7 +21,7 @@ export interface CommandMenuRequest {
 }
 
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
-export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', sidebar: '[' } as const;
+export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: '[' } as const;
 
 /** The key of a new issue (H1): the app's, and a project's own where it starts in that project (H5). */
 export const NEW_ISSUE_KEY = 'C';

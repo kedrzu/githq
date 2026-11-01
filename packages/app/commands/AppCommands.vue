@@ -1,8 +1,16 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). The account page is a place it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3 offers to track it). -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). The account page is a place it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3 offers to track it). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CircleArrowDown, CircleHelp, Clock, Command as CommandIcon, LogOut, SquarePen } from 'lucide-vue-next';
+import {
+  CircleArrowDown,
+  CircleHelp,
+  Clock,
+  Command as CommandIcon,
+  LogOut,
+  Settings,
+  SquarePen,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -100,6 +108,16 @@ useCommands(() => [
     icon: SquarePen,
     keywords: [t(l.createKeyword)],
     run: startNewIssue,
+  },
+  {
+    id: 'app.settings',
+    title: t(l.settings),
+    section: 'app',
+    key: APP_KEYS.settings,
+    icon: Settings,
+    run: () => {
+      void router.push(ACCOUNT_PATH);
+    },
   },
   {
     id: 'app.signOut',

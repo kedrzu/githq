@@ -12,7 +12,7 @@ test('untracking a repository drops its items that nothing else keeps: those in 
     github,
 }) => {
     const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
-    await shell.sidebar.getByRole('link', { name: 'Track repositories…' }).click();
+    await page.goto('/settings/tracking');
 
     const tracking = new TrackingScreenHarness(page);
     await tracking.untrack(SAMPLE_REPOSITORY);
