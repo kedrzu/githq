@@ -4,10 +4,11 @@ import { checkPrerenderedPages } from './checkPrerenderedPages.js';
 import { readBuiltFiles } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
-// what the Worker will serve has nothing of local development in it — the prerendered landing page
-// (`_landing.html`) included — and that it has the SPA shell and the landing page (`checkPrerenderedPages.ts`). The sign-in with a pasted token is in
-// `nuxt dev` and the local build only — the landing page imports it under `import.meta.dev || __LOCAL_BUILD__`,
-// which the production build turns into `false`.
+// what the Worker will serve has nothing of local development or of the desktop app in it — the prerendered landing
+// page (`_landing.html`) included — and that it has the SPA shell and the landing page (`checkPrerenderedPages.ts`).
+// The sign-in with a pasted token is in `nuxt dev` and the local build only — the landing page imports it under
+// `import.meta.dev || __LOCAL_BUILD__`, which the production build turns into `false`; the desktop code is in the
+// desktop build only, behind `__DESKTOP__`.
 
 const OUTPUT = path.join(import.meta.dirname, '../.output/public');
 
@@ -23,6 +24,18 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'read:org scopes, e.g.', what: 'the development sign-in hint' },
 ];
 
+/**
+ * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
+ * window, the command the token is read with, and the update notice with the command it restarts with. The
+ * production build must have none; the desktop build must have all (`checkDesktopBuild.ts`).
+ */
+export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
+    { text: '__TAURI_INTERNALS__', what: "Tauri's native side" },
+    { text: 'token_load', what: "the desktop app's token vault" },
+    { text: 'update_restart', what: "the desktop app's updater" },
+    { text: 'UpdateSegment', what: "the desktop app's update notice" },
+];
+
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */
 export const APP_MARKER = '/api/auth/authorize';
 
@@ -31,7 +44,7 @@ async function checkProductionBuild() {
 
     const problems = checkPrerenderedPages(files);
     for (const file of files) {
-        for (const { text, what } of DEV_SIGN_IN_MARKERS) {
+        for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...DESKTOP_MARKERS]) {
             if (file.content.includes(text)) {
                 problems.push(`${file.path}: ${what} (${text})`);
             }
@@ -49,7 +62,7 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in.`,
+        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code.`,
     );
 }
 

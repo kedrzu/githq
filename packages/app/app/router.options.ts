@@ -47,7 +47,7 @@ function HomePage() {
 function* getRoutes(): Generator<RouteRecordRaw> {
     // Home: "My work", and narrowed to one of its groups at GitHub's dashboard address of that list —
     // `/pulls/mentioned` too, for the mentioned group holds pull requests as well; one page instance for all (`key`).
-    // Signed out, `/` is the landing page. The guard sets the layout (`middleware/auth.global.ts`): the shell
+    // Signed out, `/` is the landing page (the desktop app's sign-in in its build, `home/HomePage.vue`). The guard sets the layout (`middleware/auth.global.ts`): the shell
     // signed in, none for the landing page — which is also what the server renders.
     yield {
         path: HOME_PATH,

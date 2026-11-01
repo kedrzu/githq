@@ -8,7 +8,8 @@ import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import type { Viewer } from '@/auth/AuthStore.js';
-import { AuthStore, TOKEN_KEY, VIEWER_KEY } from '@/auth/AuthStore.js';
+import { AuthStore, VIEWER_KEY } from '@/auth/AuthStore.js';
+import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';

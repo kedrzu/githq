@@ -347,6 +347,116 @@ mentioned); the row's status line still says why the item is there. The nesting 
 [D11](#d11) hold: a PR that closes an assigned issue stays nested under it, and the group counts sum to the
 "My work" total. The sidebar's per-reason counts don't change with the grouping. Screen D6.
 
+### D23
+
+githq also ships as a Tauri v2 desktop app for macOS (Apple Silicon and Intel), Windows (x64) and Linux (x64),
+which bundles the built SPA locally and updates itself from GitHub Releases with signed updates. User,
+2026-10-31 (issue #31; spec and plan `.context/specs|plans/2026-10-31-desktop-app.md`). Why: a token with `repo`
+scope deserves code that ships inside a signed bundle, a token obtained straight from GitHub and kept in the OS
+keychain, and an app that talks to nothing but GitHub. That is a stronger trust story than a web page whose code
+is whatever githq.dev serves today and whose sign-in passes through our Worker ([D1](#d1)).
+Rejected: a thin webview loading githq.dev. Updates would come for free, but it cannot start offline, the code it
+runs is whatever githq.dev serves at that moment, and native APIs would be exposed to a remote origin. That is
+the installable PWA with extra steps. Would win if releasing the shell became a real burden.
+
+- **Sign-in:** GitHub's OAuth Device Flow, with the same OAuth App as the web ([D3](#d3)) and Device Flow enabled
+  on it. The app needs no client secret and our Worker plays no part. The public client ID is compiled in
+  (`GITHQ_GITHUB_CLIENT_ID`). The scopes are the same `repo project read:org`. A token granted with fewer scopes
+  is refused and never stored. The token lives in the OS credential store (Keychain, Credential Manager, Secret
+  Service). Without a working store it lives in memory for that run and the screen says so up front. It is never
+  written to a file or to web storage. Rejected: the web flow through the Worker with a deep link back into the
+  app (the token passes through our server); a loopback web flow (needs the client secret embedded in the app);
+  reusing `gh auth token` (gh's default token lacks `project` and carries broader scopes such as `gist` and
+  `workflow`).
+- **Its own screen before signing in (S1).** The desktop app has no landing page in front of the Device Flow
+  ([D21](#d21)), so S1 stands on its own rather than reusing a web screen, which no longer exists: its explanation,
+  layout and copy live in `desktop/DesktopSignIn.vue`. The desktop build prerenders nothing, so `/` in its window is
+  `index.html`, the app shell, and signed out home shows S1 at `/`, with `/login` and every other address of the
+  app leading there as on the web.
+- **Architecture "A — minimal interface"** (owner, at planning). The SPA builds for a third target,
+  `GITHQ_TARGET=desktop` (define `__DESKTOP__`, output `.output-desktop`), and the web builds drop the desktop
+  code entirely (`checkProductionBuild.ts` asserts it). All desktop code lives in `packages/app/desktop/` and comes
+  in through one gate, `installDesktop` from `plugins/iocPlugin.ts`, plus four `__DESKTOP__` choices (the signed-out
+  home page, the status bar's update segment, the organisation-approval URL and the GitHub hand-off page). The native
+  bridge (`desktop/NativeBridge.ts`) talks to `window.__TAURI_INTERNALS__` directly, with no `@tauri-apps/*`
+  packages in the SPA. The Device Flow, the keychain, opening links and the updater are Rust commands in
+  `packages/desktop/src-tauri`. The token reaches `AuthStore` through a `TokenVault` seam: `localStorage` on the
+  web, as before, and the native store on desktop. Rejected: a flexible "host contributions" design, where the
+  shell registers services and UI into the app (more surface than four choices need); and a shim shaped like
+  `Storage` for the token (it would hide that the desktop store is asynchronous and may be unavailable).
+- **The window stays on the app.** Every address outside the app opens in the system browser: the page
+  intercepts links and the `Browser` service, and the window's `on_navigation`/`on_new_window` handlers back it
+  up. The content security policy allows `connect-src` only to `api.github.com`, and images only from GitHub's
+  hosts.
+- **Updates:** the app checks GitHub Releases at launch and every 4 hours and downloads in the background. The
+  signature is always verified. The update is then offered as "githq X.Y.Z is ready · Restart · Later" at the
+  right end of the status bar (`githq.pen`, "Desktop · Update ready", U1). Nothing restarts on its own. On macOS
+  and Linux the download is installed at once and runs from the next launch. On Windows the installer runs on
+  Restart.
+- **Releases:** a manually dispatched action, `.github/workflows/release.yml`, with a mode: `preview` prints the
+  next version and notes and releases nothing; `candidate` and `stable` tag `main`, create a draft release with the
+  generated notes, and build on GitHub-hosted runners for all three OSes (the repository is public, so they are
+  free). The owner publishes the draft by hand. The version and the notes come from the Conventional Commit titles
+  of the PRs since the last stable tag, by a small tested script, `packages/app/scripts/releasePlan.ts`: `feat`
+  bumps minor, `fix` and `perf` patch, `!` is breaking (minor while 0.x), and a `web` or `cloud` scope keeps a change
+  out of the desktop version and notes. A tag `-rc.N` (`v0.2.0-rc.1`) becomes a prerelease. GitHub never makes a
+  prerelease "latest", and the updater reads `releases/latest/download/latest.json`, so prereleases never reach
+  installed apps. Windows ships as an NSIS installer only: WiX takes no version with a non-numeric prerelease part.
+  Owner, 2026-11-01: on demand, the changelog lives in GitHub Releases with no `CHANGELOG.md`, and the scopes are
+  `web` and `cloud`. Rejected: release-please (a bot PR rewritten on every push, version commits on `main` that
+  also deploy the web, and it needs PR rights for Actions and a separate token, because tags made with the default
+  token start no workflow); git-cliff (no documented `-rc.N` numbering, and the desktop-only exclusions would still
+  need our own logic); a schedule (undecided drafts and tags would pile up, and a release is a decision). Not yet
+  possible: forcing a version, so 1.0.0 needs a small PR adding an input to the action. How-to:
+  `docs/desktop/RELEASING.md`.
+- **Signing:** macOS with the owner's Developer ID, bought by the owner; until then ad-hoc (`signingIdentity: "-"`), so
+  Apple Silicon says "unidentified developer" rather than "damaged". Windows through SignPath Foundation (free
+  code signing for open source), in a follow-up once the project is accepted; until then unsigned. Rejected:
+  Azure Artifact Signing (individuals only in the USA and Canada, see below); an OV certificate ($150–300 a year,
+  and SmartScreen reputation still builds slowly). Either would win if SignPath turned the project down.
+  SignPath requires a license "without commercial dual-licensing": githq is AGPL-only and no commercial license
+  is offered (user, 2026-11-01). The CLA keeps the maintainer's right to offer other terms, unused; offering a
+  commercial license later would break this condition and need another way to sign Windows builds.
+
+> **Checked 2026-10-12:** the Device Flow needs no client secret, and its endpoints answer no CORS, so it runs
+> from the native side, not the webview. Evidence under [Q1](#q1).
+
+> **Checked 2026-10-31 (live, Task 1 of the plan, macOS):** the built desktop app opened a deep path directly,
+> so Tauri v2 serves `index.html` for unknown asset paths (the fallback added in tauri commit 8a7921e, 2021), and
+> web-history routing works without hash routes. A GraphQL call to `api.github.com` from the app's origin
+> (`tauri://localhost`) succeeded: `access-control-allow-origin: *` covers it, as it covers githq.dev
+> ([Q1](#q1)). E2E (`packages/e2e/src/desktop/`) keeps the deep-path case covered against a static server with
+> the same fallback.
+
+> **Checked 2026-10-31:** `WebviewWindowBuilder::on_new_window` does not fire for `target="_blank"` anchor clicks
+> on Windows/WebView2 ([tauri-apps/tauri#15872](https://github.com/tauri-apps/tauri/issues/15872), open). So the
+> page catches external links itself, and `on_new_window`/`on_navigation` are only backstops.
+
+> **Checked 2026-10-31:** an empty `APPLE_CERTIFICATE` in the environment counts as present and fails the bundle:
+> "failed to import keychain certificate Ok("")"
+> ([tauri-apps/tauri-action#234](https://github.com/tauri-apps/tauri-action/issues/234)). So the release workflow
+> exports the Apple variables only when the secrets are set.
+
+> **Checked 2026-10-31:** Azure Artifact Signing (formerly Trusted Signing), ~$9.99/month: "Individual developers
+> are currently limited to the USA and Canada". OV certificates: $150–300/year
+> ([Microsoft Learn, Code signing options for Windows app developers](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options)).
+> The owner publishes as an individual from outside both countries.
+
+> **Checked 2026-10-31:** unsigned Windows apps get a SmartScreen warning when downloaded, and "Windows 11 with
+> Smart App Control turned on … blocks unknown unsigned apps even if they weren't downloaded from the browser, and
+> users can't allow a single app, only turn Smart App Control off entirely"
+> ([Tauri, Windows Code Signing](https://v2.tauri.app/distribute/sign/windows/)).
+
+> **Checked 2026-10-31 ([signpath.org/terms](https://signpath.org/terms.html)):** the conditions for a free SignPath
+> Foundation certificate include: an OSI-approved license "without commercial dual-licensing for all components",
+> and no proprietary components; the project "must already be released in the form that should be signed";
+> binaries "built from source code in a verifiable way" (in practice, on GitHub-hosted runners from the
+> repository); "every release needs manual approval for signing"; MFA for every team member on SignPath and on
+> GitHub; and a "Code signing policy" on the home page and the download page. That policy names the team roles
+> (Authors, Reviewers, Approvers), carries a privacy statement and, once signing is active, the line "Free code
+> signing provided by SignPath.io, certificate by SignPath Foundation". Software that installs must also explain
+> how to uninstall it. The policy is in the root `README.md`.
+
 ## Open questions
 
 ### Q1

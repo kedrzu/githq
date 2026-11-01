@@ -10,7 +10,8 @@ import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
-import { AuthStore, TOKEN_KEY, VIEWER_KEY } from '@/auth/AuthStore.js';
+import { AuthStore, VIEWER_KEY } from '@/auth/AuthStore.js';
+import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import type { ClockShape } from '@/services/Clock.js';

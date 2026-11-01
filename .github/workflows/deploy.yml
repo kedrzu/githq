@@ -1,5 +1,6 @@
 # Deploys githq to https://githq.dev on every push to main, once the checks of the full verify protocol
-# (`.claude/skills/verify/SKILL.md`, all but the Storybook build) have passed on that commit.
+# (`.claude/skills/verify/SKILL.md`, all but the Storybook build) have passed on that commit, the desktop app's
+# Rust checks among them. The desktop app itself is released on demand by the action in `release.yml`.
 # The Cloudflare API token is a secret of the `production` environment; the account is in `wrangler.jsonc`.
 name: Deploy
 
@@ -17,7 +18,48 @@ permissions:
   contents: read
 
 jobs:
+  # The desktop app's native side (packages/desktop/src-tauri). Its own job: it needs neither bun nor nzyme, only
+  # Rust and the system libraries Tauri links on Linux.
+  desktop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v5
+
+      # Tauri v2's Linux prerequisites (https://v2.tauri.app/start/prerequisites/#linux).
+      - name: Install the Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev \
+            librsvg2-dev libdbus-1-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: packages/desktop/src-tauri -> target
+
+      # `tauri::generate_context!()` reads the app's build folder (`build.frontendDist`) at compile time; the
+      # checks do not need the app in it, only the folder.
+      - name: The app's desktop build folder
+        run: mkdir -p ../../app/.output-desktop/public
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test
+
   deploy:
+    needs: desktop
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment:
@@ -59,6 +101,7 @@ jobs:
       - name: Component tests
         run: bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
 
+      # Both projects: `web` against the local build, `desktop` against the desktop app's SPA (no Rust).
       - name: E2E
         run: bun run e2e
 

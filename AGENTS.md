@@ -38,6 +38,12 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run deploy` — build the SPA and deploy both Workers by hand: `githq` on https://githq.dev and
   `githq-www` redirecting www (Cloudflare account of kedrzu@gmail.com; the OAuth App "githq" credentials are
   Worker secrets). Every push to `main` deploys by itself once the checks pass (`.github/workflows/deploy.yml`).
+- `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D23) against `nuxt dev`; sign-in uses the
+  Device Flow with `.env`'s `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
+- `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
+- Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|candidate|stable`)
+  works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.
+  Steps and one-time setup: `docs/desktop/RELEASING.md`.
 - `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`
   (`bun --cwd packages/github schema` refreshes GitHub's schema).
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
@@ -69,7 +75,8 @@ fast-forwards the local `main`, copies files that live outside git from the main
 **Without asking** (standing permission): name the branch and the workspace once the task is known; at the
 end of every turn that changed files — commit, catch up with `main`, push, then open the PR (ready for review,
 not a draft) or update its description when the scope grew. Keep the branch current with `main` by merging,
-never rebase or force-push; resolve conflicts yourself. End with the PR link.
+never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
+Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 
 **Only on the owner's word** ("mergujemy", "merge it"): the squash merge. Never push to `main` — the `git`
 plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an

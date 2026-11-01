@@ -8,6 +8,12 @@ createKeyword:
   en: create
 signOut:
   en: Sign out
+restartToUpdate:
+  en: Restart to update
+updateVersion:
+  en: githq {version}
+updateLater:
+  en: Update later
 myWork:
   en: My work
 savedView:

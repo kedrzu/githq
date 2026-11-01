@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "githq",
+    "version": "0.1.0",
+    "identifier": "dev.githq.desktop",
+    "build": {
+        "devUrl": "http://localhost:8787",
+        "frontendDist": "../../app/.output-desktop/public",
+        "beforeDevCommand": {
+            "script": "bun --cwd packages/app dev:desktop",
+            "cwd": "../../..",
+            "wait": false
+        },
+        "beforeBuildCommand": {
+            "script": "bun --cwd packages/app build:desktop",
+            "cwd": "../../.."
+        }
+    },
+    "app": {
+        "windows": [],
+        "security": {
+            "csp": {
+                "default-src": "'self'",
+                "connect-src": "ipc: http://ipc.localhost https://api.github.com",
+                "font-src": "'self' data:",
+                "img-src": "'self' data: https://avatars.githubusercontent.com https://*.githubusercontent.com https://github.com"
+            }
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+        "macOS": {
+            "signingIdentity": "-"
+        }
+    },
+    "plugins": {
+        "updater": {
+            "endpoints": ["https://github.com/kedrzu/githq/releases/latest/download/latest.json"],
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI5Njg1MzM1REU4MUI2N0IKUldSN3RvSGVOVk5vdVNYVnRRU1NRSzNrYXEwb1NTalkrMm0zRUVLeFFyMFl1cStqRGgrS2F2elQK"
+        }
+    }
+}

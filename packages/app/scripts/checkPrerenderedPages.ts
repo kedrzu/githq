@@ -25,6 +25,24 @@ const LANDING_MARKERS: readonly { text: string; what: string }[] = [
  * serves to a signed-out visitor. Returns what is wrong, empty when nothing is.
  */
 export function checkPrerenderedPages(files: readonly BuiltFile[]): string[] {
+    const problems = checkAppShell(files);
+
+    const landing = files.find(file => file.path === '_landing.html');
+    if (!landing) {
+        problems.push('_landing.html (the prerendered landing page) is missing');
+    } else {
+        for (const { text, what } of LANDING_MARKERS) {
+            if (!landing.content.includes(text)) {
+                problems.push(`_landing.html: ${what} is missing (${text})`);
+            }
+        }
+    }
+
+    return problems;
+}
+
+/** Checks `index.html`, the SPA shell every build loads deep links with. Returns what is wrong, empty when nothing is. */
+export function checkAppShell(files: readonly BuiltFile[]): string[] {
     const problems: string[] = [];
 
     const shell = files.find(file => file.path === 'index.html');
@@ -39,17 +57,6 @@ export function checkPrerenderedPages(files: readonly BuiltFile[]): string[] {
         }
         if (shell.content.includes(LANDING_HEADING)) {
             problems.push('index.html: holds the landing page, deep links would paint it');
-        }
-    }
-
-    const landing = files.find(file => file.path === '_landing.html');
-    if (!landing) {
-        problems.push('_landing.html (the prerendered landing page) is missing');
-    } else {
-        for (const { text, what } of LANDING_MARKERS) {
-            if (!landing.content.includes(text)) {
-                problems.push(`_landing.html: ${what} is missing (${text})`);
-            }
         }
     }
 

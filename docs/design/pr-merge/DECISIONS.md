@@ -38,6 +38,7 @@ of scope here.
 > `repo`, `project` and `read:org`. Needs a live test with a token of exactly those scopes.
 
 **Rejected.**
+
 - Showing mergeability and opening github.com to merge — the earlier decision in
   [the githq design](../githq/DECISIONS.md#d10), which the owner has now reversed. It was the agent's
   recommendation, adopted among other corrections.
@@ -63,6 +64,7 @@ and written the message.
 > the page does not say whether the person merging can override it.
 
 **Rejected.**
+
 - Repository settings alone — a ruleset can narrow them, and the user then meets the refusal only on merging.
 
 ## D3
@@ -79,6 +81,7 @@ as whatever GitHub last said. The merge is not sent again, because if the earlie
 one. In a queue or under auto-merge the state shown is GitHub's own (`mergeQueueEntry`, `autoMergeRequest`).
 
 **Rejected.**
+
 - Instant like other edits, rolling back on refusal — the user may have moved on before learning nothing merged.
 
 ## D4
@@ -109,6 +112,7 @@ have to be there, so as not to limit specific workflows"; the list is the design
 > link to github.com.
 
 **Rejected.**
+
 - A smaller first version without the commit email and admin bypass (the agent's suggestion) — the owner wants
   no workflow limited.
 
@@ -134,6 +138,7 @@ result has to exist regardless: a `202` only says the request was accepted. It f
 > `authorEmail`; `enqueuePullRequest` has `jump`. With a merge queue any commit message given is ignored.
 
 **Rejected.**
+
 - `mergePullRequest` for everything — fits the GraphQL rule, but cannot merge a stack.
 - `mergePullRequest` and `enqueuePullRequest` for ordinary merges, REST for stacks and bypass — follows the GraphQL rule
   to the letter and answers at once, but asking for the result has to exist for stacks anyway, and what the mutation
@@ -155,6 +160,7 @@ brings the rulesets, the proposed messages and fresh status. Sent before it arri
 own default, and a method a ruleset forbids is refused, with the panel and the text kept.
 
 **Rejected.**
+
 - No read on opening — the panel would have no proposed message to edit and no rulesets to narrow the methods.
 - Waiting for the fresh read before enabling the merge — closes only that gap, and every merge pays for it.
 
@@ -171,6 +177,7 @@ Shifted keys are already what the app uses for heavier actions on a pull request
 > `Shift+M`. `Mod+Enter` is already the app's way of sending (`packages/app/item/ItemComposer.vue:26`).
 
 **Rejected.**
+
 - A single key that merges at once — cannot be undone.
 - `M` — taken by the milestone.
 
@@ -184,6 +191,7 @@ matter of ordering and waiting rather than one confirmation. It deserves its own
 no data is stored, and one merge is what such a queue would repeat.
 
 **Rejected.**
+
 - One confirmation sending several in turn, reporting the refusals at the end
   ([history](history/DECISIONS.md#d8)) — in a repository requiring up-to-date branches usually only the first passes.
 
@@ -197,4 +205,5 @@ design)
 **Why.** Every option of [the full list](#d4) stays reachable and the usual merge stays two keys.
 
 **Rejected.**
+
 - All of them in the panel — gains only seeing them in one place.

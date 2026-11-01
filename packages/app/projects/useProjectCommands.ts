@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
+import { Browser } from '@/services/Browser.js';
 import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
 import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -38,6 +39,7 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
     const tracking = useService(TrackingStore);
     const projects = useService(ProjectStore);
     const composer = useService(NewIssueComposer);
+    const browser = useService(Browser);
 
     return target => {
         const path = getProjectPath(target);
@@ -87,7 +89,7 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
                 title: t(l.openOnGitHub),
                 section: 'view',
                 icon: Github,
-                run: () => void window.open(url, '_blank', 'noopener,noreferrer'),
+                run: () => browser.openInNewTab(url),
             },
             copyLink: {
                 id: 'project.copyLink',

@@ -2,6 +2,7 @@
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -52,6 +53,7 @@ import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
+import { Browser } from '@/services/Browser.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -116,6 +118,7 @@ const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
 /** What is typed into the comment box and not posted yet. */
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
+const browser = useService(Browser);
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer');
@@ -391,7 +394,7 @@ function getItemCommands(): Command[] {
       section: 'item',
       key: ITEM_KEYS.openOnGitHub,
       icon: Github,
-      run: () => openTab(item.url),
+      run: () => browser.openInNewTab(item.url),
     },
     {
       id: 'item.openFiles',
@@ -400,7 +403,7 @@ function getItemCommands(): Command[] {
       key: ITEM_KEYS.openFiles,
       icon: FileDiff,
       when: () => pr.value !== null,
-      run: () => openTab(`${item.url}/files`),
+      run: () => browser.openInNewTab(`${item.url}/files`),
     },
     {
       id: 'item.copyLink',
@@ -469,10 +472,6 @@ function getProjectOptions(): CommandOption[] {
       detail: project.owner,
       pick: () => emit('edit', { kind: 'addToProject', project }),
     }));
-}
-
-function openTab(url: string) {
-  window.open(url, '_blank', 'noopener,noreferrer');
 }
 </script>
 

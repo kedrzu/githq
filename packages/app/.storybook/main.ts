@@ -17,12 +17,18 @@ const config: StorybookConfig = {
         },
     },
     // Storybook builds the app's components without Nuxt, so this repeats what Nuxt's Vite setup gives them:
-    // the Vue and Vue JSX plugins, the shared CSS options and the `@` alias. The Vitest plugin
-    // (`vitest.config.ts`) takes its Vite config from here too.
+    // the Vue and Vue JSX plugins, the shared CSS options, the build-time constants and the `@` alias. The Vitest
+    // plugin (`vitest.config.ts`) takes its Vite config from here too.
     viteFinal: viteConfig =>
         mergeConfig(viteConfig, {
             plugins: [vue(), vueJsx()],
             css: cssOptions,
+            // `shims.d.ts`: the stories show the web app.
+            define: {
+                __LOCAL_BUILD__: 'false',
+                __DESKTOP__: 'false',
+                __GITHUB_CLIENT_ID__: 'null',
+            },
             resolve: {
                 alias: {
                     '@': appPath,

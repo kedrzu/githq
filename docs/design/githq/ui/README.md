@@ -149,3 +149,4 @@ The things in the app, and what GitHub gives us about each.
 - [Checking what's on my plate and acting on it](my-work.md)
 - [Working inside a project or a repository](project.md)
 - [Creating an issue](new-issue.md)
+- [The desktop app: signing in with a code, and updating](desktop.md)
