@@ -145,10 +145,20 @@ export const SettingsSync = defineService({
          * Turns syncing on from what {@link inspect} found for the signed-in user; one found for another user is
          * ignored. With no repository it creates it, and with no file it saves this device's settings in it. With a
          * file found, the two are combined as on first contact (D9): what either tracks stays, and what the file
-         * untracked ends untracked here; the result is saved when it differs from the file. A refusal stops syncing;
-         * rejects when signed out or when GitHub cannot be reached.
+         * untracked ends untracked here; the result is saved when it differs from the file. Nothing unless syncing is
+         * off as the slot holds it now: another tab may have turned it on, or it stopped, since `inspection` was
+         * made. A refusal stops syncing; rejects when signed out or when GitHub cannot be reached.
          */
         async function turnOn(inspection: NoSettings | FoundSettings) {
+            if (tracking.readSaving().state !== 'off') {
+                return;
+            }
+
+            await start(inspection);
+        }
+
+        /** Turns syncing on from `inspection`, whatever its state: {@link turnOn}, or {@link retry} after it stopped. */
+        async function start(inspection: NoSettings | FoundSettings) {
             const current = assertSession();
             if (inspection.login !== current.account.login) {
                 return;
@@ -247,12 +257,12 @@ export const SettingsSync = defineService({
                     if (saving.base) {
                         stop({ kind: 'deleted' });
                     } else {
-                        await turnOn(inspection);
+                        await start(inspection);
                     }
 
                     return null;
                 case 'empty':
-                    await turnOn(inspection);
+                    await start(inspection);
                     return null;
                 case 'unusable':
                     stop(inspection.reason);

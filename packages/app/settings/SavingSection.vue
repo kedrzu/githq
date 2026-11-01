@@ -1,9 +1,9 @@
-<!-- The Saving to GitHub section of Settings (settings-sync T3–T8) on the settings sync: turning saving on — GitHub asked first, a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped, which shows a file found the same way. What combining would change is worked out from this device's settings as they are, and named with how many items each repository it untracks keeps here. -->
+<!-- The Saving to GitHub section of Settings (settings-sync T3–T8), wired to `SettingsSync`: turning saving on — GitHub asked first, and a repository found combined only on the user's word (T6) — turning it off, and trying again after it stopped. Trying again after it stopped before this device ever saw the file, and finding one, shows that file for the same word. What combining would change is worked out from this device's settings as they are, and names, for each repository it untracks, how many items it keeps here. -->
 <script lang="ts" setup>
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, shallowRef } from 'vue';
+import { computed, shallowRef, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -34,6 +34,16 @@ const logger = useService(Logger);
 
 const now = useNow(TICK_MS);
 const connecting = shallowRef<Connecting>({ kind: 'idle' });
+
+// Saving left off — another tab turned it on, or it stopped: what turning on found is no longer the user's to answer.
+watch(
+  () => sync.state.state,
+  state => {
+    if (state !== 'off' && connecting.value.kind !== 'busy') {
+      connecting.value = { kind: 'idle' };
+    }
+  },
+);
 
 const connect = computed((): SavingConnect => {
   const current = connecting.value;

@@ -14,6 +14,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
 import { readSettingsSaving } from './SettingsSaving.js';
+import type { SettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
 const WEB: TrackedRepository = { nameWithOwner: 'acme/web', id: 'R_web' };
@@ -457,6 +458,29 @@ test('a write answered after another tab saved a later version keeps that versio
     await session.clock.advance(0);
 
     expect(sync.state).toMatchObject({ state: 'on', base: later, sha: github.file?.sha });
+});
+
+test('a file found while off is not combined once another tab stopped syncing meanwhile', async () => {
+    const { session, tracking, sync, github, login } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    github.repository = { private: true };
+    github.writeFile(documentOf([{ ...DOCS, tracking: true }]));
+    const found = await inspectUsable(sync);
+
+    // Another tab's sync stopped, written to the slot this tab has not read since.
+    const key = `githq.settings.${login}`;
+    const stopped: SettingsSaving = { state: 'stopped', reason: { kind: 'deleted' } };
+    session.localStorage.set(
+        key,
+        JSON.stringify({ ...JSON.parse(session.localStorage.get(key) ?? '{}'), saving: stopped }),
+    );
+    const before = session.operations().length;
+    await sync.turnOn(found);
+    await session.clock.advance(0);
+
+    expect(tracking.repositories).toEqual([WEB]);
+    expect(sync.state).toEqual(stopped);
+    expect(writes(session.operations().slice(before))).toEqual([]);
 });
 
 test("a file found for a user who signed out since is not combined into the next one's settings", async () => {

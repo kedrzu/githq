@@ -97,7 +97,7 @@ const ticked = computed({
     if (value) {
       void props.turnOn();
     } else if (props.connect.kind === 'found') {
-      emit('cancel');
+      cancel();
     }
   },
 });
@@ -157,17 +157,17 @@ const combiningGroups = computed((): CombiningGroup[] => {
 });
 
 useCommands(() => {
-  switch (props.connect.kind) {
-    case 'found':
-      return [
+  if (props.saving.state !== 'off') {
+    return [{ id: 'settings.saving.turnOff', title: t(l.turnOffTitle), section: 'view', run: turnOff }];
+  }
+
+  // What combining changes (T6) is shown only while saving is off.
+  return props.connect.kind === 'found'
+    ? [
         { id: 'settings.saving.combine', title: t(l.combine), section: 'view', key: COMBINE_KEY, run: runCombine },
         { id: 'settings.saving.cancel', title: t(l.cancel), section: 'view', key: 'Escape', run: cancel },
-      ];
-    default:
-      return props.saving.state === 'off'
-        ? []
-        : [{ id: 'settings.saving.turnOff', title: t(l.turnOffTitle), section: 'view', run: turnOff }];
-  }
+      ]
+    : [];
 });
 
 function formatUntracked(entry: SavingUntracked) {
@@ -212,6 +212,7 @@ function turnOff() {
           <SavingChoice
             v-model="ticked"
             :busy="connect.kind === 'busy'"
+            :disabled="combining"
           />
         </div>
 

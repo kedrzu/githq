@@ -84,7 +84,7 @@ hintMove:
 hintSelect:
   en: Select
 hintSelectRange:
-  en: + click Select a range
+  en: Select a range
 hintSelectAll:
   en: Select all matching
 hintClear:

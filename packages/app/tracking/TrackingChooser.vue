@@ -599,7 +599,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
               >
                 <span><Kbd keys="ArrowUp ArrowDown" /> {{ t(l.hintMove) }}</span>
                 <span><Kbd keys="Space" /> {{ t(l.hintSelect) }}</span>
-                <span><Kbd keys="Shift" /> {{ t(l.hintSelectRange) }}</span>
+                <span><Kbd keys="Shift+Click" /> {{ t(l.hintSelectRange) }}</span>
                 <span><Kbd keys="Mod+A" /> {{ t(l.hintSelectAll) }}</span>
                 <span><Kbd keys="Escape" /> {{ t(l.hintClear) }}</span>
               </p>

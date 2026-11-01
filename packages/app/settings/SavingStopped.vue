@@ -1,4 +1,4 @@
-<!-- Syncing the settings stopped (settings-sync D12, T7, T8), in Settings and on the first sign-in: why, in plain words, that githq goes on from what this device has, "Try again" (`R`), and where the fix is on GitHub the way straight to it — for a newer githq, Reload. -->
+<!-- Syncing the settings stopped (settings-sync D12, T7, T8), in Settings: why, in plain words; that githq goes on from what this device has; "Try again" (`R`); and a link to the page on GitHub where the cause can be fixed — or, for a file of a newer githq, Reload. -->
 <script lang="ts" setup>
 import { SETTINGS_FILE_PATH } from '@githq/github/settings/readSettingsFile.js';
 import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';

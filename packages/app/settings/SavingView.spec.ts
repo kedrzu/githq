@@ -66,6 +66,28 @@ test('unticking a found repository cancels', async () => {
     expect(onCancel).toHaveBeenCalledOnce();
 });
 
+test('while combining, the box cannot be unticked', async () => {
+    const combine = vi.fn(() => new Promise<void>(() => {}));
+    await Combining.run({ args: { ...Combining.args, combine } });
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    expect(combine).toHaveBeenCalledOnce();
+    await expect.element(page.getByRole('checkbox', { name: CHOICE })).toBeDisabled();
+    await expect.element(page.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+});
+
+test('a file found while saving is no longer off: ⌘↵ and Esc do nothing', async () => {
+    const combine = vi.fn(() => Promise.resolve());
+    const onCancel = vi.fn();
+    await Combining.run({ args: { ...Combining.args, saving: On.args.saving, combine, onCancel } });
+
+    await expect.element(page.getByText('Saving what you track to your GitHub account')).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(combine).not.toHaveBeenCalled();
+});
+
 test('a repository that cannot be used says why under the choice, still off', async () => {
     const turnOn = vi.fn(() => Promise.resolve());
     await Unusable.run({ args: { ...Unusable.args, turnOn } });

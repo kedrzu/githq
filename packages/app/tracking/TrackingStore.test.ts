@@ -119,6 +119,68 @@ test('what localStorage keeps wins over an older choice still in the local copy'
     expect(second.tracking.document.repositories).toEqual([{ ...WEB, tracking: false }]);
 });
 
+test('a slot this build does not understand is not replaced by an older choice in the local copy', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    await keepOlderChoice(login, { chosen: true, repositories: [WEB], projects: [] });
+    const key = `githq.settings.${login}`;
+    const newer = JSON.stringify({ chosen: true, document: { version: 2, repositories: [], projects: [] } });
+    const localStorage = new Map([[key, newer]]);
+
+    const { tracking } = await open({ login, localStorage });
+    expect(tracking.chosen).toBe(false);
+    expect(tracking.repositories).toEqual([]);
+    expect(localStorage.get(key)).toBe(newer);
+
+    // A change the user makes here is kept.
+    tracking.choose({ repositories: [API], projects: [] });
+    expect(JSON.parse(localStorage.get(key) ?? 'null')).toMatchObject({ chosen: true, document: { version: 1 } });
+});
+
+test('a tab that has not heard of another tab’s change yet writes on top of it: the slot they share is the truth', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    const key = `githq.settings.${login}`;
+    // One localStorage, no broadcast between them: the second tab never hears what the first one sends.
+    const first = await open({ login });
+    const second = await open({ login, localStorage: first.localStorage });
+    first.tracking.choose({ repositories: [WEB], projects: [] });
+
+    second.tracking.track({ repository: API });
+    expect(second.tracking.repositories).toEqual([WEB, API]);
+    expect(JSON.parse(first.localStorage.get(key) ?? 'null')).toMatchObject({
+        document: {
+            repositories: [
+                { ...WEB, tracking: true },
+                { ...API, tracking: true },
+            ],
+        },
+    });
+
+    first.tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/api' });
+    first.tracking.saveSaving({ state: 'stopped', reason: { kind: 'deleted' } });
+    // The second tab saves its saving state onto the document the first one left.
+    second.tracking.saveSaving({ state: 'off', repositoryLeft: true });
+    expect(JSON.parse(first.localStorage.get(key) ?? 'null')).toEqual({
+        chosen: true,
+        document: {
+            version: 1,
+            repositories: [
+                { ...WEB, tracking: true },
+                { ...API, tracking: false },
+            ],
+            projects: [],
+        },
+        saving: { state: 'off', repositoryLeft: true },
+    });
+    expect(second.tracking.repositories).toEqual([WEB]);
+
+    // And replacing the document keeps the saving state the first tab left.
+    first.tracking.saveSaving({ state: 'stopped', reason: { kind: 'deleted' } });
+    second.tracking.replaceDocument({ version: 1, repositories: [{ ...DOCS, tracking: true }], projects: [] });
+    expect(JSON.parse(first.localStorage.get(key) ?? 'null')).toMatchObject({
+        saving: { state: 'stopped', reason: { kind: 'deleted' } },
+    });
+});
+
 test('signing out deletes the kept choice', async () => {
     const { tracking, session, localStorage, login } = await open();
     tracking.choose({ repositories: [WEB], projects: [] });

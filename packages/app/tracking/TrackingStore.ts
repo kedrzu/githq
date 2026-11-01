@@ -213,7 +213,7 @@ export const TrackingStore = defineService({
          * in the order given, and the ones left out are untracked.
          */
         function choose(choice: TrackingChoice) {
-            write({ ...keptRef.value, chosen: true, document: applyChoice(keptRef.value.document, choice) });
+            write(kept => ({ chosen: true, document: applyChoice(kept.document, choice) }));
             changedHere();
         }
 
@@ -222,32 +222,32 @@ export const TrackingStore = defineService({
          * nothing when it already is.
          */
         function track(target: { repository: TrackedRepository } | { project: TrackedProject }) {
-            const { repositories, projects } = trackingRef.value;
-            if ('repository' in target) {
-                const { repository } = target;
-                if (!isTracked({ kind: 'repository', nameWithOwner: repository.nameWithOwner })) {
-                    retrack({ repositories: [...repositories, repository], projects });
+            retrack(({ repositories, projects }) => {
+                if ('repository' in target) {
+                    const { repository } = target;
+                    return repositories.some(repo => repo.nameWithOwner === repository.nameWithOwner)
+                        ? null
+                        : { repositories: [...repositories, repository], projects };
                 }
-            } else if (!isTracked({ kind: 'project', id: target.project.id })) {
-                retrack({ repositories, projects: [...projects, target.project] });
-            }
+
+                const { project } = target;
+                return projects.some(other => other.id === project.id)
+                    ? null
+                    : { repositories, projects: [...projects, project] };
+            });
         }
 
         /** Stops tracking the repository or project; its copy goes unless something else keeps it. */
         function untrack(target: TrackedTarget) {
-            if (!isTracked(target)) {
-                return;
-            }
+            retrack(({ repositories, projects }) => {
+                if (target.kind === 'repository') {
+                    const kept = repositories.filter(repo => repo.nameWithOwner !== target.nameWithOwner);
+                    return kept.length === repositories.length ? null : { repositories: kept, projects };
+                }
 
-            const { repositories, projects } = trackingRef.value;
-            retrack(
-                target.kind === 'repository'
-                    ? {
-                          repositories: repositories.filter(repo => repo.nameWithOwner !== target.nameWithOwner),
-                          projects,
-                      }
-                    : { repositories, projects: projects.filter(project => project.id !== target.id) },
-            );
+                const kept = projects.filter(project => project.id !== target.id);
+                return kept.length === projects.length ? null : { repositories, projects: kept };
+            });
         }
 
         /**
@@ -256,13 +256,21 @@ export const TrackingStore = defineService({
          * other tabs like any change; nothing while signed out.
          */
         function replaceDocument(document: SettingsDocument) {
-            write({ ...keptRef.value, document });
+            write(kept => ({ ...kept, document }));
         }
 
-        /** Tracks exactly `choice`, as {@link choose} does, without counting as the user's choice. */
-        function retrack(choice: TrackingChoice) {
-            write({ ...keptRef.value, document: applyChoice(keptRef.value.document, choice) });
-            changedHere();
+        /**
+         * Tracks exactly the choice `change` makes of what is tracked now, as {@link choose} does, without counting as
+         * the user's choice; nothing when it makes none.
+         */
+        function retrack(change: (tracking: Tracking) => TrackingChoice | null) {
+            const written = write(kept => {
+                const choice = change(toTracking(kept));
+                return choice && { ...kept, document: applyChoice(kept.document, choice) };
+            });
+            if (written) {
+                changedHere();
+            }
         }
 
         /** Calls `listener` with each repository or project the user stops tracking, once it is no longer tracked. */
@@ -291,14 +299,22 @@ export const TrackingStore = defineService({
             return savingRef.value;
         }
 
-        /** Keeps the saving state next to the settings; nothing while signed out or before they are read. */
+        /**
+         * Keeps the saving state next to the settings as the slot holds them now — another tab may have changed them
+         * since this one heard; nothing while signed out or before they are read.
+         */
         function saveSaving(saving: SettingsSaving) {
             if (!session || !loadedRef.value) {
                 return;
             }
 
+            const kept = readSlot()?.kept ?? keptRef.value;
+            if (!deepEquals(kept, keptRef.value)) {
+                keptRef.value = kept;
+            }
+
             savingRef.value = saving;
-            slot.save({ ...keptRef.value, saving });
+            slot.save({ ...kept, saving });
         }
 
         function changedHere() {
@@ -553,18 +569,27 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Keeps `next` and tells the other tabs; what was tracked and no longer is gets dropped — its sync state and
-         * its copy.
+         * Keeps what `change` makes of the settings as the slot holds them now — the slot the tabs share is the truth,
+         * and another tab may have changed it since this one heard — with the saving state read there too, and tells
+         * the other tabs; what was tracked and no longer is gets dropped — its sync state and its copy. Returns whether
+         * it wrote: nothing when signed out or when `change` makes nothing.
          */
-        function write(next: KeptSettings) {
+        function write(change: (kept: KeptSettings) => KeptSettings | null) {
             if (!session) {
-                return;
+                return false;
             }
 
-            const before = trackingRef.value;
+            const stored = readSlot();
+            const kept = stored?.kept ?? keptRef.value;
+            const next = change(kept);
+            if (!next) {
+                return false;
+            }
+
+            // What the other tab untracked it dropped itself: only what this change untracks is dropped here.
+            const before = toTracking(kept);
             keptRef.value = next;
-            // The saving state as another tab's sync may have left it, kept with this tab's settings.
-            savingRef.value = slot.read()?.saving ?? savingRef.value;
+            savingRef.value = stored?.saving ?? savingRef.value;
             slot.save({ ...next, saving: savingRef.value });
             const after = trackingRef.value;
             tabs.publish({ kind: 'tracking', tracking: after });
@@ -580,6 +605,14 @@ export const TrackingStore = defineService({
                     dropped({ kind: 'project', id: project.id });
                 }
             }
+
+            return true;
+        }
+
+        /** The settings and the saving state the slot holds now, `null` when it holds nothing understood. */
+        function readSlot() {
+            const stored = slot.read();
+            return stored && { kept: { chosen: stored.chosen, document: stored.document }, saving: stored.saving };
         }
 
         /** No longer tracked: its sync state goes, and the listeners drop its copy. */
@@ -670,8 +703,9 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Puts the kept choice and the sync states into memory once the item store opened the local copy. With no
-         * choice kept in `localStorage`, one an older githq kept in the local copy is taken over (all of it tracked).
+         * Puts the kept choice and the sync states into memory once the item store opened the local copy. With
+         * nothing kept in `localStorage`, a choice an older githq kept in the local copy is taken over (all of it
+         * tracked); something kept there that this build does not understand is not replaced.
          */
         async function readKept(current: Session) {
             await items.ready();
@@ -693,9 +727,14 @@ export const TrackingStore = defineService({
             }
 
             const stored = slot.read();
-            keptRef.value = stored
-                ? { chosen: stored.chosen, document: stored.document }
-                : takeOver(persisted?.tracking ?? null);
+            if (stored) {
+                keptRef.value = { chosen: stored.chosen, document: stored.document };
+            } else if (browser.localStorage.getItem(KEY_PREFIX + current.account.login) === null) {
+                keptRef.value = takeOver(persisted?.tracking ?? null);
+            }
+
+            // A slot this build does not understand — a newer githq's — is left as it is: nothing is in memory, and
+            // only a change the user makes here writes over it.
             savingRef.value = stored?.saving ?? SETTINGS_SAVING_OFF;
             syncRef.value = new Map((persisted?.syncStates ?? []).map(state => [getTrackedKey(state), state]));
             loadedRef.value = true;

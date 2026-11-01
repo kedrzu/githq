@@ -112,6 +112,35 @@ test('cancelled, combining writes nothing and tracks nothing', async ({ page, gi
     await expect(new AppShellHarness(page).tracked('acme/web')).toHaveCount(0);
 });
 
+test('settings found wait for an answer only while saving stays off: another tab stopping it drops them', async ({
+    page,
+    github,
+}) => {
+    answerSettingsRepository(github, {
+        exists: true,
+        file: {
+            text: JSON.stringify({
+                version: 1,
+                repositories: [{ nameWithOwner: 'acme/web', id: 'R_web', tracking: true }],
+                projects: [],
+            }),
+            sha: 'saved',
+        },
+    });
+    await openSaving(page, github);
+    const saving = new SavingScreenHarness(page);
+    await saving.choice.click();
+    await expect(saving.combining).toBeVisible();
+
+    await saveSavingFromAnotherTab(page, { state: 'stopped', reason: { kind: 'deleted' } });
+    await expect(saving.stopped).toBeVisible();
+    await saveSavingFromAnotherTab(page, { state: 'off' });
+
+    await expect(saving.choice).not.toBeChecked();
+    await expect(saving.combining).toHaveCount(0);
+    expect(writes(github)).toEqual([]);
+});
+
 test('a repository deleted on GitHub stops syncing when the window is focused; trying again never creates it', async ({
     page,
     github,
@@ -142,6 +171,20 @@ test('a repository deleted on GitHub stops syncing when the window is focused; t
 async function openSaving(page: Page, github: GitHubMock) {
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     await page.goto('/settings?tab=saving');
+}
+
+/** Another tab writes the saving state into the settings' slot, and this window is focused, which reads it. */
+async function saveSavingFromAnotherTab(page: Page, saving: unknown) {
+    await page.evaluate(
+        ({ key, state }) => {
+            localStorage.setItem(
+                key,
+                JSON.stringify({ ...JSON.parse(localStorage.getItem(key) ?? '{}'), saving: state }),
+            );
+            window.dispatchEvent(new Event('focus'));
+        },
+        { key: `githq.settings.${LOGIN}`, state: saving },
+    );
 }
 
 /** Answers the user's settings repository and its file as `repository` says, keeping what is written to it. */
