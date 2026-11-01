@@ -106,8 +106,9 @@ update the macOS line in the root README's download section and its Code signing
 SignPath Foundation signs open-source projects for free, with a certificate issued to the foundation. Its
 conditions are at [signpath.org/terms](https://signpath.org/terms.html), summarised in D23.
 
-1. Before applying, settle the licensing question in D23: SignPath requires a license "without commercial
-   dual-licensing", and the root README offers a commercial license.
+1. Keep githq AGPL-only: SignPath requires a license "without commercial dual-licensing" (D23). The CLA lets the
+   maintainer offer other terms, so say in the application that this right is unused and no commercial license is
+   offered.
 2. Publish the first public (unsigned) release: SignPath signs only software already released in that form.
 3. Make sure the root README's **Code signing policy** is current: the team roles, the privacy statement, and how
    to uninstall.

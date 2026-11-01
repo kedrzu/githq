@@ -1,6 +1,6 @@
 # Asks every outside contributor to sign the Contributor License Agreement (`CLA.md`) on their pull request,
-# so githq can be offered under a commercial license besides the AGPL. Signatures are stored in
-# `signatures/cla.json` on the `cla-signatures` branch, never on main.
+# which keeps the maintainer's option to offer githq under other terms; today it is AGPL only. Signatures are
+# stored in `signatures/cla.json` on the `cla-signatures` branch, never on main.
 # The action does not check out pull request code, so `pull_request_target` is safe here.
 name: CLA
 

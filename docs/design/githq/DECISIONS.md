@@ -403,8 +403,9 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   code signing for open source), in a follow-up once the project is accepted; until then unsigned. Rejected:
   Azure Artifact Signing (individuals only in the USA and Canada, see below); an OV certificate ($150–300 a year,
   and SmartScreen reputation still builds slowly). Either would win if SignPath turned the project down.
-  **Open:** SignPath requires a license "without commercial dual-licensing", and the root README offers a
-  commercial license. Settle this before applying.
+  SignPath requires a license "without commercial dual-licensing": githq is AGPL-only and no commercial license
+  is offered (user, 2026-11-01). The CLA keeps the maintainer's right to offer other terms, unused; offering a
+  commercial license later would break this condition and need another way to sign Windows builds.
 
 > **Checked 2026-10-12:** the Device Flow needs no client secret, and its endpoints answer no CORS, so it runs
 > from the native side, not the webview. Evidence under [Q1](#q1).
