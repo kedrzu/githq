@@ -115,3 +115,34 @@ from GitHub Actions, and GitHub's "Rebase stack" button.
   (ours are full pull request descriptions).
 - How bypass reads so that it cannot be taken for the usual merge.
 - Where the ordinary commands surface at the moment they matter.
+
+## The screens
+
+In `githq.pen`, frame **"App · Merging a pull request"** (`LLr2k`). The numbers are the frame's. Where there are variants,
+the recommended one comes first.
+
+|Question|Answer in the frame|Variants|
+|-|-|-|
+|The panel's form|Its own surface over any screen: PM1a, PM2a|Inside the row or the standing (PM1b, PM2b), a tray (PM1c, PM2c)|
+|Required checks without noise|One line while green, a row with a tag when off: PM4a|Two lines always (PM4b); all open: PM4c|
+|"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept (PM32a) or stays (PM32b)|
+|A late refusal|Toast, status bar and row: PM35||
+|Commit text|Title and one line: PM3a; editing: PM3d|Folded (PM3b), always open (PM3c)|
+|Bypass|Own red zone and chord: PM12a|Armed with a key (PM12b)|
+|Ordinary commands|Beside the reason (PM20, PM26), the palette and menus: PM39||
+
+The states: ready PM5–PM7, being read PM8–PM9, auto-merge PM10–PM11, nothing to offer PM13, queue PM14–PM16, stack
+PM17–PM18, conflicts PM19, behind PM20, draft PM21, unknown PM22, can't merge here PM23, merged PM26, PM34. The failures:
+refused PM25, PM35, head moved PM27, method PM28, no answer PM29, PM36, reload PM30, permission PM31. The standing in each
+state: PM38.
+
+Open with the owner, and not settled by the screens:
+
+- **A stack and `⌘Enter` before the read.** The row holds no `stackEntry`, so a merge sent from PM8 can take pull requests
+  down with it that the panel never showed. The brief says they are shown before the merge.
+- **The commit email when bypassing.** It needs GraphQL and bypass needs REST (D5), so PM12 has none. The brief excludes it
+  only for a stack.
+- **Commit text in a stack.** GitHub doesn't say what one title does to several squashed pull requests. PM17 assumes it
+  applies to the top one. Needs a live test.
+- **What bypass really skips.** `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what is unmet, and GitHub can
+  still refuse a rule the user may not bypass.

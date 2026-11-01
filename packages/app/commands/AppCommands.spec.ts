@@ -37,7 +37,7 @@ test('`,` opens Settings; the command menu offers it once, under "Go to" with it
 test('on the web the command menu offers no update', async () => {
     mount();
 
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
@@ -48,7 +48,7 @@ test('while an update is ready the menu offers "Restart to update" and "Update l
     const update = createUpdate('1.4.0');
     mount(update);
 
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     await expect.element(menu.getByRole('option', { name: /^Restart to update\s*githq 1\.4\.0$/ })).toBeInTheDocument();
     expect(update.restart).not.toHaveBeenCalled();
@@ -57,7 +57,7 @@ test('while an update is ready the menu offers "Restart to update" and "Update l
     expect(update.later).toHaveBeenCalledOnce();
     expect(update.restart).not.toHaveBeenCalled();
 
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
 });
@@ -66,7 +66,7 @@ test('"Restart to update" restarts into the update', async () => {
     const update = createUpdate('1.4.0');
     mount(update);
 
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     await userEvent.keyboard('restart to update{Enter}');
 
     expect(update.restart).toHaveBeenCalledOnce();
