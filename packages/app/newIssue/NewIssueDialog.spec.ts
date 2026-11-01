@@ -2,10 +2,21 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+
 import * as stories from './NewIssueDialog.stories.jsx';
 
-const { QuickCapture, ChoosingRepository, IssueFormBody, Rejected, Archived, Templates, NotInRepository, Waiting } =
-    composeStories(stories);
+const {
+    QuickCapture,
+    ChoosingRepository,
+    IssueFormBody,
+    Rejected,
+    Archived,
+    Templates,
+    NotInRepository,
+    Waiting,
+    DetailsLoading,
+} = composeStories(stories);
 
 test('H1: the cursor is in the title; Enter creates and closes', async () => {
     await QuickCapture.run();
@@ -61,6 +72,37 @@ test('expanded, Enter in the title goes on to the body, and ⌘Enter creates onc
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('created')).toHaveTextContent('Created: Once only');
     await expect.element(page.getByTestId('count')).toHaveTextContent('1');
+});
+
+test('⌥A and Enter pressed before the repository’s details are in wait for them, and then assign and create', async () => {
+    await DetailsLoading.run();
+
+    await userEvent.keyboard('Typed fast{Alt>}a{/Alt}{Enter}');
+    await expect
+        .element(page.getByRole('button', { name: 'Create Working…', exact: true }))
+        .toHaveAttribute('aria-busy', 'true');
+    await expect.element(page.getByTestId('created')).toHaveTextContent('Nothing created');
+    await expect.element(page.getByTestId('assignees')).toHaveTextContent('Nobody assigned');
+
+    // A hidden button outside the modal, clicked from the DOM.
+    document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
+    await expect.element(page.getByTestId('created')).toHaveTextContent('Created: Typed fast');
+    await expect.element(page.getByTestId('assignees')).toHaveTextContent(SAMPLE_VIEWER.login);
+    await expect.element(page.getByTestId('count')).toHaveTextContent('1');
+});
+
+test('⌘Enter pressed before the repository’s details are in creates another once they are', async () => {
+    await DetailsLoading.run();
+
+    await userEvent.keyboard('One of many{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByRole('button', { name: 'Create another Working…', exact: true }))
+        .toHaveAttribute('aria-busy', 'true');
+    await expect.element(page.getByTestId('created')).toHaveTextContent('Nothing created');
+
+    document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
+    await expect.element(page.getByTestId('created')).toHaveTextContent('Created, another: One of many');
+    await expect.element(page.getByRole('textbox', { name: 'Title' })).toHaveValue('');
 });
 
 test('H2: with no repository the chooser comes first; Enter takes the first that takes an issue', async () => {
