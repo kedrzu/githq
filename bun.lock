@@ -844,6 +844,7 @@
         "@fontsource/inter": "5.3.0",
         "@fontsource/jetbrains-mono": "5.3.0",
         "@githq/github": "workspace:*",
+        "@leeoniya/ufuzzy": "1.0.19",
         "@nzyme/dom-utils": "workspace:*",
         "@nzyme/i18n": "workspace:*",
         "@nzyme/i18n-core": "workspace:*",
@@ -1563,6 +1564,8 @@
     "@kwsites/file-exists": ["@kwsites/file-exists@1.1.1", "", { "dependencies": { "debug": "^4.1.1" } }, "sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw=="],
 
     "@kwsites/promise-deferred": ["@kwsites/promise-deferred@1.1.1", "", {}, "sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw=="],
+
+    "@leeoniya/ufuzzy": ["@leeoniya/ufuzzy@1.0.19", "", {}, "sha512-0pikDeYt0IHEUPza5RTCDXc/17S1pTrYnReEMp8Aa6k1ovzw5QdZLwicW8TjljwEZRb6oYag0xmALohrcq/yOQ=="],
 
     "@linear/sdk": ["@linear/sdk@98.0.0", "", { "dependencies": { "@graphql-typed-document-node/core": "^3.2.0" } }, "sha512-DRakJJiGe4QE2tc49+XQVE0lyeR9CUHJTpCPsx5291LsmDaMvhP8+beCgXQQ7jET+OshHEm2BYtMx6EUt9ZR8Q=="],
 
