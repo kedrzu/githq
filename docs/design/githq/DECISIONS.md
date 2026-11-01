@@ -323,12 +323,14 @@ The G1b part is superseded by [D21](#d21).
 There is no sign-in screen of our own on the web: "Sign in with GitHub" on the landing page (githq.dev) goes
 straight to GitHub's consent screen. Supersedes G1b in [D20](#d20) (user, 2026-10-31: the landing page now
 says what githq is, so a screen between it and GitHub only adds a click). What G1b explained moves:
+
 - one line under each "Sign in with GitHub" on the landing page warns that GitHub will ask for full
   repository access and that githq only touches issues, pull requests and projects, linking to a "Why?"
   that lives on the Privacy page (scopes, why nothing narrower exists, where the data goes);
 - coming back from GitHub with the sign-in cancelled or failed lands on the landing page with a one-line,
   dismissible banner and "Try again" (screen G1, formerly G1c);
 - a visitor who already holds a token goes from githq.dev straight into the app.
+
 The desktop app keeps its own screen before signing in (S1): it has no landing page in front of the Device
 Flow.
 
