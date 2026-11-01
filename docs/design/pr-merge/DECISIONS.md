@@ -160,14 +160,19 @@ own default, and a method a ruleset forbids is refused, with the panel and the t
 
 ## D7
 
-**One merge panel, opened by one key from the opened pull request, the list and the command palette; it starts on the
+**One merge panel, opened by `Shift+M` from the opened pull request, the list and the command palette; it starts on the
 default method and GitHub's proposed message, and ⌘Enter merges.** (2026-11-01, owner, on the design agent's proposal;
-the key is not chosen)
+the key chosen by the design agent when the owner asked for it to be checked)
 
 **Why.** Two keys for the usual merge, and the second is a deliberate confirmation of something that cannot be undone.
+Shifted keys are already what the app uses for heavier actions on a pull request: closing is `Shift+X`.
+
+> **Checked 2026-11-01:** `M` is the milestone (`packages/app/commands/useEditCommands.ts:39`); no code binds
+> `Shift+M`. `Mod+Enter` is already the app's way of sending (`packages/app/item/ItemComposer.vue:26`).
 
 **Rejected.**
 - A single key that merges at once — cannot be undone.
+- `M` — taken by the milestone.
 
 ## D9
 

@@ -51,8 +51,8 @@ the commit email and jumping the queue.
 
 ## Merging is two keys
 
-[One panel opens with one key](DECISIONS.md#d7) from the opened pull request, the list or the command palette. It
-starts on the repository's default method and GitHub's proposed message, so a usual merge is that key and then
+[One panel opens with `Shift+M`](DECISIONS.md#d7) from the opened pull request, the list or the command palette. It
+starts on the repository's default method and GitHub's proposed message, so a usual merge is that shortcut and then
 ⌘Enter. There is no single-key merge, because a merge cannot be undone.
 
 [The merge does not wait for githq to re-read the pull request](DECISIONS.md#d6). The panel reads fresh state when
@@ -78,6 +78,8 @@ Proposed order, each step usable on its own:
 
 Code review in githq and merging several together are not part of this.
 
-When this design closes, the statements that githq does not merge have to change with it: the design of githq
-as a whole says so in its decisions, its story and its UI briefs, and so does the note in the pull request's
-merge panel. The wider aim above, running all of GitHub from here, belongs in that design's story too.
+## Where this stands
+
+The design is closed. The screens come next, from [the brief for merging a pull
+request](ui/merge-a-pull-request.md), and then the build in the order above. The note in the pull request's merge
+panel saying that merging happens on GitHub stays true until the build changes it, so it goes with the build.
