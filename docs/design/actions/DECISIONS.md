@@ -25,8 +25,12 @@ branch says nothing about `main`. Grouping by pattern and not by exact ref is wh
 > `v0.1.0-rc.3` success. Per exact ref, rc.1 would stay red forever because a tag never runs again; per pattern
 > `v*` it recovers at rc.3. Deploy ran on both `main` and `chore/deploy-workflow`.
 
-**Known cost.** Under `release/*`, a pass on `release/1.3` hides a failure on `release/1.2`. Not yet put to the
-owner.
+**Known cost.** Under `release/*`, a pass on `release/1.3` hides a failure on `release/1.2`. Accepted because the
+owner's repositories do not keep parallel lines.
+
+> **Checked 2026-11-01 (live, 24 repositories of `kedrzu` and `healedcare` pushed since May 2026):** branches
+> starting with `release`: `kedrzu/nzyme`, `healedcare/healed` and `healedcare/sigma_backup` have one `release`;
+> `kedrzu/slapss-app` has `release/2.0.1`, `kedrzu/cli` has `release/v4.0.0`. None has more than one.
 
 **Rejected.**
 - A workflow is broken when its latest finished run on any ref failed: a feature branch flips the state of
@@ -110,8 +114,9 @@ and for turning off counters; "counters only" as the owner's wording read by the
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
 wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
 
-**Open.** The default before any configuration. Proposal: the default branch and all tags, without runs started
-by a pull request. Where patterns are stored: see the check below.
+**Open.** The default before any configuration. Proposal: the default branch, `release`, `release/*` and all tags, without runs started
+by a pull request; the plain `release` branch and `release/*` are there because of the check under
+[D1](#d1). Where patterns are stored: see the check below.
 
 > **Checked 2026-11-01:** the tracked list lives in the `meta` store of the local database
 > (`packages/app/store/IndexedDbPersistence.ts:233`), which is deleted and rebuilt on any schema version change
@@ -121,9 +126,9 @@ by a pull request. Where patterns are stored: see the check below.
 
 ## D6
 
-**Failing workflows are reached four ways: a Workflows tab in the repository view at `/owner/name/actions`, the
-repository's All tab ([D8](#d8)), a red marker on the repository's sidebar row, and one cross-repository entry in
-the sidebar with a total.** (2026-11-01, owner)
+**Failing workflows are reached three ways: a Workflows tab in the repository view at `/owner/name/actions`, a
+red marker on the repository's sidebar row, and one cross-repository entry in the sidebar with a total.**
+(2026-11-01, owner)
 
 **Why.** Per-repository views answer "what is in this repository"; the owner's problem is not knowing which
 repository. With many tracked repositories a red row can sit below the fold, and the collapsed rail shows no
@@ -131,6 +136,8 @@ repositories at all (`packages/app/shell/Sidebar.vue:276-322`), so a total is ne
 requests already exist on the same page (`packages/app/tracking/trackingRoutes.ts:14`).
 
 **Rejected.**
+- Broken workflows also in the repository's All tab, in a block above the items: the owner dropped it for now,
+  workflows stay in their own tab ([history](history/DECISIONS.md#d8)).
 - A nested sidebar menu per repository: several rows per repository to carry one fact, on a sidebar that already
   grows with every tracked repository.
 - Issues, pull requests and workflows in columns on the repository page: a workflow has no fields, assignees or
@@ -144,25 +151,15 @@ recent runs, instead of GitHub's single chronological feed.** (2026-11-01, owner
 **Why.** The owner: failing workflows are buried, runs are mixed together, and failures on pull requests and
 checks are not tied to a commit you would look at, so finding them means going through the Actions tab.
 
-## D8
+## D9
 
-**The repository's All tab also shows its broken workflows, in a block of their own above the issues and pull
-requests.** (2026-11-01, owner for showing them in All; design agent for the block and the rules below, not
-confirmed)
+**Nothing silences a broken workflow: it stays red until a run passes.** (2026-11-01, owner)
 
-**Why.** The All tab is a list of items: grouped by milestone by default, filtered by open or closed, shown as a
-list or a board, with items that can be dragged between groups (`packages/app/repository/RepositoryView.vue:1`,
-`buildRepositoryList.ts`). A workflow has no milestone, state or assignee, so as a row it would have no group to
-sit in and no meaning under those filters.
+**Why.** The owner's call for now. With workflows only in their own tab, a long-broken one costs a red marker and
+a higher total, not space on the list of issues.
 
-Proposed rules: the same set as the sidebar marker, so ref patterns apply ([D5](#d5)); shown whatever the
-grouping, sort and open or closed filter; on the board, above the columns; not counted in the tab's item count;
-reachable by the list's keyboard movement; no selection or bulk actions.
+**Open.** Whether a workflow disabled on GitHub still counts. Proposal of the design agent, not confirmed: it does
+not, because it no longer runs and could never go green.
 
-**Open.** Whether anything can silence a workflow that stays broken on purpose, since the block sits on top of
-this tab until it passes. Proposal: no setting in githq; a workflow disabled on GitHub does not count.
-
-**Rejected (proposed, owner has not decided).**
-- Workflows as rows mixed among the items: see Why.
-- All failures including runs from pull requests: bots and contributors' branches would fill the top of the tab,
-  and those stay visible in the Workflows tab.
+**Rejected.**
+- A mute setting in githq, kept locally: not wanted now.
