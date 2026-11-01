@@ -74,3 +74,5 @@ open, so this design does not promise that.
 This covers repositories you track, and only GitHub Actions. It does not reach you while githq is closed, it does
 not stream a running job's log (GitHub has no documented way, so githq shows step status and hands off to GitHub),
 and it has no way to silence a workflow or to show workflows among issues in the All tab. It ships as one change.
+
+The design is closed. [The screens, as a brief for designing them](ui/failing-workflows.md).

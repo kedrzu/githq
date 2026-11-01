@@ -11,10 +11,9 @@ knowing it was rejected is not.
 ## D1
 
 **A workflow is broken for a ref pattern when its latest run on a ref matching that pattern, with a verdict,
-failed. Runs that were cancelled or skipped give no verdict.** (2026-11-01, proposal of the design agent, not
-confirmed by the owner)
+failed. Runs that were cancelled or skipped give no verdict.** (2026-11-01, design agent, accepted by the owner when closing the design)
 
-Proposed from the 2026-11-01 failure sweep, not confirmed: `failure`, `timed_out` and `startup_failure` count as
+From the 2026-11-01 failure sweep, accepted when closing the design: `failure`, `timed_out` and `startup_failure` count as
 failed; `success` as passed; every other conclusion, unknown ones too, gives no verdict. "Latest" is by creation
 time. Reading goes back through runs until one has a verdict, so a row of cancelled runs cannot turn a broken
 workflow green, and a rebuilt cache gives the same answer. Only workflows in GitHub's current list with state
@@ -52,7 +51,7 @@ owner's repositories do not keep parallel lines.
 **Workflow state is read per repository over REST only: a conditional request on the repository's runs detects a
 change, then conditional requests per workflow on `actions/workflows/{id}/runs` read the runs of the refs that
 count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope. Polled every 3 minutes while a tab is shown, and at once when the Workflows tab or the
-cross-repository screen opens.** (2026-11-01, owner for the 3 minutes, design agent for the rest, not confirmed)
+cross-repository screen opens.** (2026-11-01, owner for the 3 minutes, design agent for the rest, accepted when closing the design)
 
 **Why.** There is no cross-repository listing, and a 304 costs nothing against the primary allowance. REST is the
 only API that can see which ref a run was on, and [D1](#d1) needs that. It departs from the project's "GraphQL
@@ -97,7 +96,7 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 ## D3
 
 **The failure screen reads logs directly from the browser, and finds the failing place from the log itself.**
-(2026-11-01, proposal of the design agent, not confirmed by the owner)
+(2026-11-01, design agent, accepted by the owner when closing the design)
 
 **Why.** It needs no server, in line with the rest of githq.
 
@@ -114,7 +113,7 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 > **Checked 2026-11-01:** no log streaming endpoint is documented for a running job; the logs endpoint returns
 > a plain-text file — [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs).
 
-The screen says what happened when there is nothing normal to show (2026-11-01 failure sweep, not confirmed): no
+The screen says what happened when there is nothing normal to show (2026-11-01 failure sweep, accepted when closing the design): no
 jobs because the workflow file is invalid, a log past GitHub's retention, a re-run GitHub refuses. With no error
 marker in the log, it starts at the log's end.
 
@@ -134,7 +133,7 @@ marker in the log, it starts at the log's end.
 
 **Each repository has ref patterns with wildcards, which decide what lights the counters and nothing else.
 Everything stays visible in the repository's workflow list.** (2026-11-01, owner for per-repository wildcards
-and for turning off counters; "counters only" as the owner's wording read by the design agent, not confirmed)
+and for turning off counters; "counters only" as the design agent's reading, accepted when closing the design)
 
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
 wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
@@ -191,7 +190,13 @@ a higher total, not space on the list of issues.
 
 **A workflow disabled on GitHub does not count.** (2026-11-01, owner) It no longer runs and could never go green.
 
+**Workflows GitHub generates itself (Dependabot, CodeQL, Pages) count like any other**, though they have no file in
+the repository to fix and can stay red for long. (2026-11-01, design agent's recommendation, accepted by the owner
+when closing the design)
+
 **Rejected.**
+- Counting only workflows with a file in `.github/workflows`: a special rule with no evidence the noise hurts, and a
+  failed Pages deploy would light nothing.
 - A mute setting in githq, kept locally: not wanted now.
 
 ## D10
