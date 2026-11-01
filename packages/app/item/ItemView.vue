@@ -54,6 +54,7 @@ import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { Browser } from '@/services/Browser.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -480,7 +481,10 @@ function getProjectOptions(): CommandOption[] {
     :class="[css.itemView, css[`itemView_${arrangement}`]]"
     :aria-label="item.title"
   >
-    <header :class="css.itemView_toolbar">
+    <header
+      :class="css.itemView_toolbar"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <Menu
         v-model:open="itemMenuOpen"
         align="start"

@@ -18,6 +18,7 @@ import { computed, ref, useId } from 'vue';
 
 import Button from '@/components/Button.vue';
 import Wordmark from '@/components/Wordmark.vue';
+import { WINDOW_CONTROLS_OVERLAID } from '@/shell/windowControls.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 
@@ -110,6 +111,12 @@ function runMainAction() {
 
 <template>
   <div :class="css.desktopSignIn">
+    <!-- macOS's window controls sit over the window's corner, with no title bar to move the window by. -->
+    <div
+      v-if="WINDOW_CONTROLS_OVERLAID"
+      :class="css.desktopSignIn_windowBar"
+      data-tauri-drag-region
+    />
     <main :class="css.desktopSignIn_body">
       <div :class="css.desktopSignIn_column">
         <Wordmark
@@ -280,6 +287,14 @@ function runMainAction() {
   flex-direction: column;
   min-height: 100%;
   background: $color-bg;
+}
+
+.desktopSignIn_windowBar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: $window-controls-height;
 }
 
 .desktopSignIn_body {
