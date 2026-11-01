@@ -14,6 +14,7 @@ import ChoiceList from '@/components/ChoiceList.vue';
 import type { ChoiceListOption } from '@/components/ChoiceList.vue';
 import Kbd from '@/components/Kbd.vue';
 import SearchField from '@/components/SearchField.vue';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { useFilteredListKeys } from '@/utils/useFilteredListKeys.js';
 
@@ -54,7 +55,7 @@ interface OwnerCount {
 /** A group as the list shows it now. */
 interface ShownGroup extends OwnerGroup {
   readonly rows: readonly CandidateRepository[];
-  /** Those of its read repositories the filter matches. */
+  /** Those of its read repositories the filter matches, best first. */
   readonly matching: readonly CandidateRepository[];
   readonly selected: number;
   readonly total: number;
@@ -119,7 +120,7 @@ const groups = computed((): OwnerGroup[] => [
 ]);
 const chosenRepositories = computed(() => new Set(repositories.value));
 const chosenProjects = computed(() => new Set(projects.value));
-const needle = computed(() => filter.value.trim().toLowerCase());
+const needle = computed(() => filter.value.trim());
 const shownGroups = computed(() =>
   groups.value.filter(group => owner.value === 'all' || group.login === owner.value).map(showGroup),
 );
@@ -227,7 +228,10 @@ function onFilterKeydown(event: KeyboardEvent) {
 
 function showGroup(group: OwnerGroup): ShownGroup {
   const read = group.list?.repositories ?? [];
-  const matching = needle.value === '' ? read : read.filter(repository => matches(repository.nameWithOwner));
+  const matching = findMatches(
+    filter.value,
+    prepareMatchTexts(read, repository => [repository.nameWithOwner]),
+  ).map(({ row }) => row);
   const unfolded = owner.value !== 'all' || needle.value !== '' || unfoldedOwners.value.has(group.login);
   const rows = unfolded
     ? matching
@@ -246,10 +250,6 @@ function showGroup(group: OwnerGroup): ShownGroup {
     unfolded,
     folded: unfolded ? 0 : total - rows.length,
   };
-}
-
-function matches(name: string) {
-  return name.toLowerCase().includes(needle.value);
 }
 
 function groupDetail(group: ShownGroup) {

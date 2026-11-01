@@ -163,7 +163,7 @@ export const F3_PULL_REQUEST_DETAIL: PullRequestDetail = {
     bodyHtml:
         '<p>Retries webhook deliveries that fail with a 5xx, with exponential backoff capped at one hour. Duplicate deliveries are dropped by event id.</p>',
     projects: [project('Platform Q4', { status: ['In review', 'PURPLE'], priority: 'High', estimate: 2 })],
-    headRepository: 'sigma-clinic/api',
+    headRepository: 'skyline-labs/api',
     checks: ['lint', 'typecheck', 'unit', 'e2e', 'build', 'deploy', 'CodeQL', 'Vercel', 'docs'].map(name =>
         check('ci', name, 'passing', 50_000),
     ),

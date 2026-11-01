@@ -69,7 +69,7 @@ export interface CommandOptions {
     readonly options: readonly CommandOption[];
     /** Still being read: says so instead of "nothing matches". */
     readonly loading?: boolean;
-    /** A quiet line under the options ("mobile#91 is in sigma-clinic/mobile, where you can't edit labels"). */
+    /** A quiet line under the options ("mobile#91 is in skyline-labs/mobile, where you can't edit labels"). */
     readonly note?: string;
     /** Picking one leaves the submenu open, to pick several one after another (items added to a project). */
     readonly several?: boolean;

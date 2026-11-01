@@ -16,14 +16,14 @@ const DAY = 24 * HOUR;
 
 /** "My work" of the D1 mockup: every kind of row, a pull request nested under the issue it closes. */
 export const D1_ITEMS: readonly Item[] = [
-    pr('PR_482', 'sigma-clinic/api', 482, 'Add rate-limit backoff to webhook worker', 2 * HOUR, {
+    pr('PR_482', 'skyline-labs/api', 482, 'Add rate-limit backoff to webhook worker', 2 * HOUR, {
         author: sampleUser('olam', '#7fb3d5'),
         additions: 214,
         deletions: 38,
         reviewDecision: 'REVIEW_REQUIRED',
         checks: { state: 'SUCCESS', passing: 4, failing: 0, pending: 0 },
     }),
-    pr('PR_1203', 'sigma-clinic/portal', 1203, 'Migrate appointment calendar to new date picker', 5 * HOUR, {
+    pr('PR_1203', 'skyline-labs/portal', 1203, 'Migrate booking calendar to new date picker', 5 * HOUR, {
         author: sampleUser('tw', '#c3a6f2'),
         additions: 1092,
         deletions: 640,
@@ -35,7 +35,7 @@ export const D1_ITEMS: readonly Item[] = [
         reviewDecision: 'CHANGES_REQUESTED',
         checks: { state: 'FAILURE', passing: 5, failing: 2, pending: 0 },
     }),
-    pr('PR_477', 'sigma-clinic/api', 477, 'Retry Stripe webhook delivery on 5xx', 3 * HOUR, {
+    pr('PR_477', 'skyline-labs/api', 477, 'Retry Stripe webhook delivery on 5xx', 3 * HOUR, {
         additions: 58,
         deletions: 9,
         reviewDecision: 'APPROVED',
@@ -47,12 +47,12 @@ export const D1_ITEMS: readonly Item[] = [
         reviewDecision: 'REVIEW_REQUIRED',
         reviewRequests: [{ kind: 'user', login: 'sapphi-red' }],
     }),
-    issue('I_1187', 'sigma-clinic/portal', 1187, 'Calendar shows wrong timezone for recurring visits', 20 * MINUTE, {
+    issue('I_1187', 'skyline-labs/portal', 1187, 'Calendar shows wrong timezone for recurring bookings', 20 * MINUTE, {
         author: sampleUser('pnowak', '#81c995'),
         labels: [{ name: 'bug', color: 'e5534b' }],
         projects: [project('Platform Q4', 'In progress'), project('Bug triage', 'Confirmed')],
     }),
-    pr('PR_1205', 'sigma-clinic/portal', 1205, 'Fix timezone offset for recurring visits', 20 * MINUTE, {
+    pr('PR_1205', 'skyline-labs/portal', 1205, 'Fix timezone offset for recurring bookings', 20 * MINUTE, {
         closingIssueIds: ['I_1187'],
         checks: { state: 'PENDING', passing: 3, failing: 0, pending: 6 },
     }),
@@ -64,12 +64,12 @@ export const D1_ITEMS: readonly Item[] = [
         labels: [{ name: 'feature', color: '3fb950' }],
     }),
     issue('I_31', 'kedrzu/skills', 31, 'design-doc: support multi-file briefs', 7 * DAY),
-    issue('I_463', 'sigma-clinic/api', 463, 'Webhook signatures fail behind the new proxy', 3 * HOUR, {
+    issue('I_463', 'skyline-labs/api', 463, 'Webhook signatures fail behind the new proxy', 3 * HOUR, {
         author: sampleUser('olam', '#7fb3d5'),
         // No "Status" in its first project: the row shows the project marker and "+1" alone.
         projects: [project('Platform Q4', null), project('Bug triage', 'Confirmed')],
     }),
-    pr('PR_94', 'sigma-clinic/mobile', 94, 'Offline queue for appointment edits', DAY, {
+    pr('PR_94', 'skyline-labs/mobile', 94, 'Offline queue for booking edits', DAY, {
         author: sampleUser('tsw', '#f2b8a6'),
         isDraft: true,
         additions: 731,

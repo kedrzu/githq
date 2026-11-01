@@ -13,8 +13,8 @@ const meta = {
         tab: 'repositories',
         tracked: {
             repositories: [
-                repository('sigma-clinic/portal', true, 1420),
-                repository('sigma-clinic/api', true, 1160),
+                repository('skyline-labs/portal', true, 1420),
+                repository('skyline-labs/api', true, 1160),
                 repository('kedrzu/githq', false, 430),
                 repository('kedrzu/dotfiles', false, 6),
                 repository('kedrzu/skills', false, 212),
@@ -44,9 +44,9 @@ const meta = {
             ],
         },
         suggested: [
-            { nameWithOwner: 'sigma-clinic/mobile', isPrivate: true, items: 1, activeAt: SAMPLE_NOW - 3_600_000 },
+            { nameWithOwner: 'skyline-labs/mobile', isPrivate: true, items: 1, activeAt: SAMPLE_NOW - 3_600_000 },
             {
-                nameWithOwner: 'sigma-clinic/platform-infra',
+                nameWithOwner: 'skyline-labs/platform-infra',
                 isPrivate: true,
                 items: 2,
                 activeAt: SAMPLE_NOW - 2 * 86_400_000,

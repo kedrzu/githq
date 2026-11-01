@@ -6,7 +6,7 @@ import ProgressBar from './ProgressBar.vue';
 
 const meta = {
     component: ProgressBar,
-    args: { value: 0.62, label: 'sigma-clinic/portal' },
+    args: { value: 0.62, label: 'skyline-labs/portal' },
 } satisfies Meta<typeof ProgressBar>;
 
 export default meta;
@@ -21,13 +21,13 @@ export const Gallery: Story = {
                 <StorySection title="Not known yet">
                     <ProgressBar
                         value={null}
-                        label="sigma-clinic/api"
+                        label="skyline-labs/api"
                     />
                 </StorySection>
                 <StorySection title="Going on">
                     <ProgressBar
                         value={0.62}
-                        label="sigma-clinic/portal"
+                        label="skyline-labs/portal"
                     />
                 </StorySection>
                 <StorySection title="Done">

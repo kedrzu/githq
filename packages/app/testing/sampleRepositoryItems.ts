@@ -7,8 +7,8 @@ const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
 const PORTAL: ItemRepository = {
-    nameWithOwner: 'sigma-clinic/portal',
-    owner: 'sigma-clinic',
+    nameWithOwner: 'skyline-labs/portal',
+    owner: 'skyline-labs',
     isPrivate: true,
     viewerPermission: 'WRITE',
 };
@@ -32,14 +32,14 @@ export const SAMPLE_REPOSITORY = PORTAL.nameWithOwner;
  * and project row fields; a pull request; closed items that count towards the milestones' progress.
  */
 export const SAMPLE_REPOSITORY_ITEMS: readonly (IssueItem | PullRequestItem)[] = [
-    issue('I_1187', 1187, 'Calendar shows wrong timezone for recurring visits', 20 * 60_000, {
+    issue('I_1187', 1187, 'Calendar shows wrong timezone for recurring bookings', 20 * 60_000, {
         milestone: V42,
         labels: [BUG, CALENDAR],
         assignees: [KE],
         issueType: { name: 'Bug', color: 'RED' },
         projects: [project('Platform Q4', 'In progress'), project('Bug triage', 'Confirmed')],
     }),
-    issue('I_1199', 1199, 'Patient search ignores diacritics', DAY, {
+    issue('I_1199', 1199, 'Product search ignores diacritics', DAY, {
         milestone: V42,
         labels: [{ name: 'search', color: 'a57bf5' }],
         assignees: [JD],
@@ -65,7 +65,7 @@ export const SAMPLE_REPOSITORY_ITEMS: readonly (IssueItem | PullRequestItem)[] =
         issueType: { name: 'Task', color: 'GRAY' },
         projects: [project('Bug triage', 'Confirmed')],
     }),
-    pullRequest('PR_1203', 1203, 'Migrate appointment calendar to new date picker', 5 * HOUR, {
+    pullRequest('PR_1203', 1203, 'Migrate booking calendar to new date picker', 5 * HOUR, {
         labels: [CALENDAR],
         assignees: [KE],
         checks: { state: 'PENDING', passing: 3, failing: 0, pending: 2 },
@@ -102,7 +102,7 @@ function project(title: string, status: string): ItemProject {
         projectId: `PVT_${title}`,
         title,
         number: 1,
-        url: 'https://github.com/orgs/sigma-clinic/projects/1',
+        url: 'https://github.com/orgs/skyline-labs/projects/1',
         status: { name: status, color: 'YELLOW', optionId: null },
         updatedAt: '2026-10-29T10:00:00Z',
     };

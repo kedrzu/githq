@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed, defineComponent, ref } from 'vue';
 
 import { StoryPage } from '@/.storybook/StoryLayout.jsx';
+import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 
 import type { FilterListGroup, FilterListRow } from './FilterList.vue';
 import FilterList from './FilterList.vue';
@@ -38,7 +39,10 @@ export const Filtered: Story = {
                     {
                         key: 'fruit',
                         heading: 'Fruit',
-                        rows: FRUIT.filter(row => row.label.toLowerCase().includes(query.value.trim().toLowerCase())),
+                        rows: findMatches(
+                            query.value,
+                            prepareMatchTexts(FRUIT, row => [row.label]),
+                        ).map(({ row }) => row),
                     },
                 ]);
 

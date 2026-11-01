@@ -14,7 +14,7 @@ test('opens named and described with focus inside, keeps Tab inside, and Escape 
     await userEvent.click(trigger);
 
     const dialog = page.getByRole('dialog', { name: 'New issue' });
-    await expect.element(dialog).toHaveAccessibleDescription('In sigma-clinic/portal');
+    await expect.element(dialog).toHaveAccessibleDescription('In skyline-labs/portal');
     await expect.element(dialog.getByRole('textbox', { name: 'Title' })).toHaveFocus();
 
     // Title → Create another → Create issue → Close, then round to the title again.

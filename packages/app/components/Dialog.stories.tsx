@@ -31,7 +31,7 @@ export const NewIssue: Story = {
                             open={open.value}
                             onUpdate:open={(value: boolean) => (open.value = value)}
                             title="New issue"
-                            description="In sigma-clinic/portal"
+                            description="In skyline-labs/portal"
                         >
                             {{
                                 trigger: () => <Button>New issue</Button>,

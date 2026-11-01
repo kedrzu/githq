@@ -1,15 +1,30 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { findOptionLabels } from '@/components/filterOptions.js';
+
 import type { Command, CommandOption, CommandSection, CommandSubject } from './CommandTypes.js';
-import { scoreText } from './scoreText.js';
-import { searchNavigation } from './searchNavigation.js';
+import { findMenuRows } from './findMenuRows.js';
+import type { CommandMenuMatch } from './findMenuRows.js';
+import { isOnlyItemNumber, searchNavigation } from './searchNavigation.js';
 import type { NavigationData, NavigationGroup, NavigationResult } from './searchNavigation.js';
 
-/** A line of the command menu. */
+/** A line of the command menu. What it marks is its `match`; a navigation line's is on its `result`. */
 export type CommandMenuEntry =
-    | { readonly kind: 'command'; readonly id: string; readonly command: Command }
+    /** `match` is `null` when nothing is typed: every action is listed, none is marked. */
+    | {
+          readonly kind: 'command';
+          readonly id: string;
+          readonly command: Command;
+          readonly match: CommandMenuMatch | null;
+      }
     /** E4: an option of an action's submenu found by what was typed — "Set Status → In progress". */
-    | { readonly kind: 'option'; readonly id: string; readonly command: Command; readonly option: CommandOption }
+    | {
+          readonly kind: 'option';
+          readonly id: string;
+          readonly command: Command;
+          readonly option: CommandOption;
+          readonly match: CommandMenuMatch;
+      }
     | { readonly kind: 'navigation'; readonly id: string; readonly result: NavigationResult };
 
 /** The menu's headings: the subject's actions, the screen's, the places, the app's. */
@@ -45,15 +60,16 @@ const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
 /** How many options of one action typing finds directly. */
 const OPTION_LIMIT = 3;
 
-/** An option found directly must match its name's start or words — not scattered letters. */
-const OPTION_MIN_SCORE = 60;
+/** An option found directly must match its name's start or words, maybe with a typo at a word's start. */
+const OPTION_MIN_SCORE = 50;
 
 /**
  * The command menu's top level (E1, E3, E4): the subject's actions — the selection's, else the opened item's,
  * none once the user took the subject out — then the screen's, the places to go and the app's. Typed text finds
  * actions by title and keywords, places and items in the local copy (`searchNavigation`), and — from two letters —
  * the options of the actions' submenus directly (E4: "in prog" finds "Set Status → In progress"); the heading with
- * the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only.
+ * the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
+ * `#123` finds the items only.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -64,21 +80,22 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     const typed = (commandsOnly ? query.trimStart().slice(1) : query).trim();
     const scored = new Map<CommandMenuGroupKey, { entry: CommandMenuEntry; score: number }[]>();
 
-    for (const command of params.commands) {
-        if (command.menu === false || !isOffered(command, subject)) {
-            continue;
-        }
-
+    const offered = isOnlyItemNumber(typed)
+        ? []
+        : params.commands.filter(command => command.menu !== false && isOffered(command, subject));
+    const foundCommands = new Map(findMenuRows(typed, offered).map(found => [found.row, found]));
+    for (const command of offered) {
         const group = getGroup(command.section);
-        const score = scoreCommand(typed, command);
-        if (score !== null) {
-            add(group, { kind: 'command', id: command.id, command }, score);
+        const found = foundCommands.get(command);
+        if (found) {
+            add(group, { kind: 'command', id: command.id, command, match: found.match }, found.score);
         }
 
         if (command.options && typed.length >= 2) {
-            for (const { option, score: optionScore } of findOptions(typed, command)) {
+            for (const { option, score, ranges } of findOptions(typed, command)) {
+                const match: CommandMenuMatch = { field: 'title', text: option.label, ranges };
                 // Above the action itself: the value is what was typed.
-                add(group, { kind: 'option', id: `${command.id}:${option.value}`, command, option }, optionScore + 1);
+                add(group, { kind: 'option', id: `${command.id}:${option.value}`, command, option, match }, score + 1);
             }
         }
     }
@@ -101,29 +118,6 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
         entries.push({ entry, score });
         scored.set(group, entries);
     }
-}
-
-/**
- * The options of an action's submenu that typed text finds, best first.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function filterCommandOptions(query: string, options: readonly CommandOption[]): CommandOption[] {
-    const typed = query.trim();
-    if (typed === '') {
-        return [...options];
-    }
-
-    return options
-        .flatMap(option => {
-            const score = Math.max(
-                scoreText(typed, option.label) ?? -1,
-                (scoreText(typed, option.detail ?? '') ?? 0) - 30,
-            );
-            return score < 0 ? [] : [{ option, score }];
-        })
-        .toSorted((a, b) => b.score - a.score)
-        .map(({ option }) => option);
 }
 
 /** The menu offers the subject's actions only for its subject: the selection's, or the opened item's. */
@@ -149,22 +143,10 @@ function getGroup(section: CommandSection): CommandMenuGroupKey {
     }
 }
 
-function scoreCommand(typed: string, command: Command) {
-    const scores = [command.title, ...(command.keywords ?? [])].map(text => scoreText(typed, text));
-    const found = scores.filter(score => score !== null);
-    return found.length === 0 ? null : Math.max(...found);
-}
-
 function findOptions(typed: string, command: Command) {
-    const found: { option: CommandOption; score: number }[] = [];
-    for (const option of command.options?.().options ?? []) {
-        const score = scoreText(typed, option.label);
-        if (score !== null && score >= OPTION_MIN_SCORE) {
-            found.push({ option, score });
-        }
-    }
-
-    return found.toSorted((a, b) => b.score - a.score).slice(0, OPTION_LIMIT);
+    return findOptionLabels(typed, command.options?.().options ?? [])
+        .filter(match => match.score >= OPTION_MIN_SCORE)
+        .slice(0, OPTION_LIMIT);
 }
 
 function getNavigationId(result: NavigationResult) {

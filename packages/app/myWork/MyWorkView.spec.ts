@@ -25,7 +25,7 @@ test('K4: nothing on the plate names what was checked: the tracked repositories,
     const detail = page.getByText('No review requests, open pull requests', { exact: false });
     await expect.element(detail).toHaveTextContent(/anywhere on GitHub\.$/);
 
-    view.trackedRepositories.value = ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/api', 'sigma-clinic/portal'];
+    view.trackedRepositories.value = ['kedrzu/githq', 'kedrzu/skills', 'skyline-labs/api', 'skyline-labs/portal'];
     await expect.element(detail).toHaveTextContent(/across your 4 tracked repositories\.$/);
 });
 
@@ -36,7 +36,7 @@ test('j/k move the selection; a sync that reorders the list keeps it on its item
     await userEvent.keyboard('jjj');
     await expect.poll(selectedTitle).toBe('IndexedDB store for issues and pull requests');
     await userEvent.keyboard('k');
-    await expect.poll(selectedTitle).toBe('Migrate appointment calendar to new date picker');
+    await expect.poll(selectedTitle).toBe('Migrate booking calendar to new date picker');
 
     // A sync: #1203 was updated (it moves to the top of its group) and a new review request arrives above it.
     view.sync(
@@ -46,7 +46,7 @@ test('j/k move the selection; a sync that reorders the list keeps it on its item
             { ...findItem('PR_482'), id: 'PR_new', title: 'A new review request', updatedAt: '2026-10-30T11:59:30Z' },
         ],
     );
-    await expect.poll(selectedTitle).toBe('Migrate appointment calendar to new date picker');
+    await expect.poll(selectedTitle).toBe('Migrate booking calendar to new date picker');
 
     // The next sync: #1203 is gone. The selection goes to the row after it, not to the top.
     view.sync(['PR_new', 'PR_482']);
@@ -58,7 +58,7 @@ test('the last row leaving hands the selection to the row before it', async () =
 
     // Past the end: the selection stops on the last row of "Mentioned".
     await userEvent.keyboard('j'.repeat(D1_ITEMS.length + 3));
-    await expect.poll(selectedTitle).toBe('Offline queue for appointment edits');
+    await expect.poll(selectedTitle).toBe('Offline queue for booking edits');
 
     view.sync(['PR_482', 'PR_1203'], view.items.value, { mentioned: ['I_463'] });
     await expect.poll(selectedTitle).toBe('Webhook signatures fail behind the new proxy');
@@ -73,7 +73,7 @@ test('collapsing the group of the selected row moves the selection to the next v
     await expect
         .element(page.getByRole('button', { name: 'My pull requests' }))
         .toHaveAttribute('aria-expanded', 'false');
-    await expect.poll(selectedTitle).toBe('Calendar shows wrong timezone for recurring visits');
+    await expect.poll(selectedTitle).toBe('Calendar shows wrong timezone for recurring bookings');
 });
 
 test('"Open on GitHub" opens the pull request in a new tab without selecting its row', async () => {
@@ -175,43 +175,43 @@ test('Board: a column per group, the pull request under the issue it closes; ←
 
     const assigned = page.getByRole('region', { name: 'Assigned to me' });
     const cards = assigned.getByRole('listitem');
-    await expect.element(cards.nth(0)).toHaveTextContent('Calendar shows wrong timezone for recurring visits');
-    await expect.element(cards.nth(1)).toHaveTextContent('Fix timezone offset for recurring visits');
+    await expect.element(cards.nth(0)).toHaveTextContent('Calendar shows wrong timezone for recurring bookings');
+    await expect.element(cards.nth(1)).toHaveTextContent('Fix timezone offset for recurring bookings');
 
     await userEvent.keyboard('jj');
-    await expect.poll(selectedText).toContain('Migrate appointment calendar to new date picker');
+    await expect.poll(selectedText).toContain('Migrate booking calendar to new date picker');
     await userEvent.keyboard('{ArrowRight}');
     await expect.poll(selectedText).toContain('Retry Stripe webhook delivery on 5xx');
     // At the same height in "Assigned to me": the nested pull request is a stop of its own.
     await userEvent.keyboard('{ArrowRight}');
-    await expect.poll(selectedText).toContain('Fix timezone offset for recurring visits');
+    await expect.poll(selectedText).toContain('Fix timezone offset for recurring bookings');
     await userEvent.keyboard('{ArrowDown}');
     await expect.poll(selectedText).toContain('Background sync with conditional requests');
 });
 
 test('D22: grouped by repository — the tracked ones in order, rows named by number, then the others, not tracked', async () => {
     const view = mount(D1_ITEMS, D1_MEMBERSHIP, { grouping: 'repository' });
-    view.trackedRepositories.value = ['kedrzu/githq', 'sigma-clinic/portal', 'sigma-clinic/api'];
+    view.trackedRepositories.value = ['kedrzu/githq', 'skyline-labs/portal', 'skyline-labs/api'];
 
     const sections = page.getByRole('region');
     await expect.element(sections.nth(0)).toHaveAccessibleName('kedrzu/githq');
-    await expect.element(sections.nth(1)).toHaveAccessibleName('sigma-clinic/portal');
-    await expect.element(sections.nth(2)).toHaveAccessibleName('sigma-clinic/api');
+    await expect.element(sections.nth(1)).toHaveAccessibleName('skyline-labs/portal');
+    await expect.element(sections.nth(2)).toHaveAccessibleName('skyline-labs/api');
     await expect.element(sections.nth(3)).toHaveAccessibleName('Other repositories');
     expect(sections.elements()).toHaveLength(4);
 
-    const api = page.getByRole('region', { name: 'sigma-clinic/api' });
+    const api = page.getByRole('region', { name: 'skyline-labs/api' });
     // Reason order inside the group: the review asked first; it still says so.
     const review = api.getByRole('listitem').nth(0);
     await expect.element(review).toHaveTextContent('Add rate-limit backoff to webhook worker');
     await expect.element(review).toHaveTextContent('#482');
-    await expect.element(review).not.toHaveTextContent('sigma-clinic/api#482');
+    await expect.element(review).not.toHaveTextContent('skyline-labs/api#482');
     await expect.element(review).toHaveTextContent(/your review requested/i);
 
     // The pull request closing an assigned issue stays nested under it.
-    const portal = page.getByRole('region', { name: 'sigma-clinic/portal' }).getByRole('listitem');
-    await expect.element(portal.nth(1)).toHaveTextContent('Calendar shows wrong timezone for recurring visits');
-    await expect.element(portal.nth(2)).toHaveTextContent('Fix timezone offset for recurring visits');
+    const portal = page.getByRole('region', { name: 'skyline-labs/portal' }).getByRole('listitem');
+    await expect.element(portal.nth(1)).toHaveTextContent('Calendar shows wrong timezone for recurring bookings');
+    await expect.element(portal.nth(2)).toHaveTextContent('Fix timezone offset for recurring bookings');
 
     const others = page.getByRole('region', { name: 'Other repositories' });
     await expect.element(others).toHaveTextContent('not tracked');
@@ -221,10 +221,10 @@ test('D22: grouped by repository — the tracked ones in order, rows named by nu
 
 test('grouped by repository on the first download: what arrived is in its repositories, the reasons still arriving after them', async () => {
     const view = mount(D1_ITEMS, { reviewRequested: new Set(['PR_482']) }, { grouping: 'repository' });
-    view.trackedRepositories.value = ['sigma-clinic/api'];
+    view.trackedRepositories.value = ['skyline-labs/api'];
 
     const sections = page.getByRole('region');
-    await expect.element(sections.nth(0)).toHaveAccessibleName('sigma-clinic/api');
+    await expect.element(sections.nth(0)).toHaveAccessibleName('skyline-labs/api');
     await expect.element(sections.nth(0)).toHaveTextContent(/Add rate-limit backoff to webhook worker/);
     await expect.element(page.getByRole('region', { name: 'My pull requests' })).toHaveTextContent(/Still arriving/);
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);

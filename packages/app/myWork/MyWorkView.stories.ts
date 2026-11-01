@@ -49,7 +49,7 @@ export const OneGroup: Story = { args: { group: 'authored' } };
 export const NothingOnYourPlate: Story = {
     args: {
         work: sampleMyWork([], sampleMembership({}), 'all'),
-        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/api', 'sigma-clinic/portal'],
+        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'skyline-labs/api', 'skyline-labs/portal'],
     },
 };
 
@@ -95,7 +95,7 @@ export const Board: Story = {
 export const ByRepository: Story = {
     args: {
         selectedId: 'I_1187',
-        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'sigma-clinic/portal', 'sigma-clinic/api'],
+        trackedRepositories: ['kedrzu/githq', 'kedrzu/skills', 'skyline-labs/portal', 'skyline-labs/api'],
         options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'repository' },
     },
 };

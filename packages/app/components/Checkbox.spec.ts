@@ -25,6 +25,6 @@ test('a partly chosen group reads as mixed', async () => {
     await Gallery.run();
 
     await expect
-        .element(page.getByRole('checkbox', { name: 'sigma-clinic · 2 of 312' }))
+        .element(page.getByRole('checkbox', { name: 'skyline-labs · 2 of 312' }))
         .toHaveAttribute('aria-checked', 'mixed');
 });
