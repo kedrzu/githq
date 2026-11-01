@@ -116,8 +116,9 @@ const PARENTS: readonly PickerOption[] = [
 ];
 
 /**
- * The capture as the composer drives it: what it asks for is written out under it (`created`, `template`), and a
- * create closes it — or, "create another", clears the title — as the composer does.
+ * The capture as the composer drives it: what it asks for is written out under it (`created`, `template`,
+ * `assignees`), and a create closes it — or, "create another", clears the title — as the composer does. A repository
+ * whose details are loading gets them when `arrive` is clicked.
  */
 const Harness = defineComponent({
     props: {
@@ -144,6 +145,7 @@ const Harness = defineComponent({
         const createdCount = ref(0);
         const template = ref('No template');
         const missing = computed(() => (props.form ? findMissingFormFields(props.form, draft.value.body) : []));
+        const arrived = ref(false);
         // A repository chosen in the chooser is ready at once, as one read before.
         const repository = computed((): NewIssueRepositoryState => {
             const name = draft.value.repository;
@@ -151,7 +153,7 @@ const Harness = defineComponent({
                 return { kind: 'none' };
             }
 
-            return props.repository.kind === 'none'
+            return props.repository.kind === 'none' || (props.repository.kind === 'loading' && arrived.value)
                 ? { kind: 'ready', metadata: { ...SAMPLE_PORTAL_METADATA, nameWithOwner: name }, isPrivate: true }
                 : props.repository;
         });
@@ -160,8 +162,20 @@ const Harness = defineComponent({
             <div style={{ padding: '16px' }}>
                 <p>
                     <span tid="created">{created.value}</span> · <span tid="template">{template.value}</span> ·{' '}
-                    <span tid="kept">{draft.value.title}</span> · <span tid="count">{createdCount.value}</span>
+                    <span tid="kept">{draft.value.title}</span> · <span tid="count">{createdCount.value}</span> ·{' '}
+                    <span tid="assignees">{draft.value.assignees.join(', ') || 'Nobody assigned'}</span>
                 </p>
+                {/* Hidden: the specs click it from the DOM, as the modal covers the page. */}
+                {props.repository.kind === 'loading' && (
+                    <button
+                        type="button"
+                        tid="arrive"
+                        hidden
+                        onClick={() => (arrived.value = true)}
+                    >
+                        The repository's details arrive
+                    </button>
+                )}
                 <NewIssueDialog
                     open={open.value}
                     onUpdate:open={(value: boolean) => (open.value = value)}
@@ -329,6 +343,11 @@ export const Waiting: Story = {
             },
         ],
     },
+};
+
+/** States: the repository's details still on their way — a create or ⌥A asked for now waits for them. */
+export const DetailsLoading: Story = {
+    args: { repository: { kind: 'loading', nameWithOwner: 'skyline-labs/portal', isPrivate: true } },
 };
 
 /** States: a repository that won't take an issue, said before anything is typed. */

@@ -37,7 +37,6 @@ test('C from my work, the repository chosen, ⌥A and Enter: the issue shows at 
     // Nothing used yet: the repository comes first, those of my work offered.
     await capture.chooseRepository('web', 'acme/web');
     await capture.title.fill('Remember the last tab');
-    await expect(capture.create).toBeEnabled();
     await page.keyboard.press('Alt+a');
     await expect(capture.root.getByRole('button', { name: 'Assigned to me' })).toHaveAttribute('aria-pressed', 'true');
 
@@ -68,7 +67,6 @@ test('⌘Enter creates another in the same repository; the next C starts in the 
     await capture.open();
     await capture.chooseRepository('web', 'acme/web');
     await capture.title.fill('First of two');
-    await expect(capture.create).toBeEnabled();
     await capture.title.press('ControlOrMeta+Enter');
     await expect(capture.title).toHaveValue('');
     await expect(capture.title).toBeFocused();
@@ -98,7 +96,6 @@ test('a creation GitHub refuses opens the capture again with the title and body 
     await capture.title.fill('Do not lose me');
     await capture.title.press('Tab');
     await capture.body.fill('Three paragraphs of careful thought.');
-    await expect(capture.create).toBeEnabled();
     await capture.body.press('ControlOrMeta+Enter');
 
     await expect(capture.rejection).toContainText("GitHub didn't create this issue");
@@ -164,7 +161,6 @@ test('"New issue" in a project’s column adds it there with that column’s Sta
     await capture.chooseRepository('app', SAMPLE_REPOSITORY);
     await expect(capture.root.getByRole('button', { name: /^Roadmap · Status: In Progress/u })).toBeVisible();
     await capture.title.fill('Explain the board');
-    await expect(capture.create).toBeEnabled();
     await capture.title.press('Enter');
 
     await expect(project.rows('In Progress')).toHaveText([/Remember the sidebar width/, /Explain the board/]);

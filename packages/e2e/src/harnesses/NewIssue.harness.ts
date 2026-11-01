@@ -29,14 +29,6 @@ export class NewIssueHarness {
         return this.root.getByRole('textbox', { name: 'Description' });
     }
 
-    /**
-     * "Create": enabled once the title is typed and the repository's details (whether the user can push, its
-     * fields) are in. Until then the capture's keys — Enter, ⌘Enter, ⌥A — do nothing, so wait for it first.
-     */
-    get create(): Locator {
-        return this.root.getByRole('button', { name: 'Create', exact: true });
-    }
-
     /** The repository chooser's field (H2). */
     get repositoryField(): Locator {
         return this.root.getByRole('textbox', { name: 'Repository' });
