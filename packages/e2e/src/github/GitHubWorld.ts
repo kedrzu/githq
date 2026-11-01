@@ -403,7 +403,7 @@ const PROJECT_FIRST_PAGE = 100;
  * A small GitHub for the e2e tests: repositories with issues and pull requests, some found by the four "my work"
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
- * their query; `ItemsByIds`, `PullRequestStatuses`, `ItemDetails`, `ItemDetail` and `MoreComments` by node id
+ * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (none), `ItemDetails`, `ItemDetail` and `MoreComments` by node id
  * (the check list and the reviews left out); `ItemByNumber`; `RepositoryMetadata`; `ViewerProjects` (every
  * project of the world is the viewer's).
  *
@@ -816,6 +816,8 @@ export class GitHubWorld {
                 notFoundErrors(ids, id => this.readItem(id) !== undefined),
             );
         });
+        // No pull request of the world is in a stack: a stack asked for is not there.
+        github.graphql('PullRequestStacks', ({ variables }) => ({ nodes: readIds(variables).map(() => null) }));
         // Read ahead for "my work" after every poll (D18).
         github.graphql('ItemDetails', ({ variables }) => {
             const ids = readIds(variables);

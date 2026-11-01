@@ -105,6 +105,10 @@ export function createTrackingWorld(): TrackingWorld {
                 const nodes = ids.map(id => (operation === 'ItemsByIds' ? (world.items.get(id) ?? null) : null));
                 return { data: { nodes } };
             }
+            case 'PullRequestStacks': {
+                const ids = Array.isArray(variables.ids) ? variables.ids.map(String) : [];
+                return { data: { nodes: ids.map(id => stackNode(id)) } };
+            }
             case 'RepositoryIssues':
             case 'RepositoryPullRequests': {
                 const nameWithOwner = `${String(variables.owner)}/${String(variables.name)}`;
@@ -209,6 +213,18 @@ export function createTrackingWorld(): TrackingWorld {
         }
 
         return undefined;
+    }
+
+    /** The stack the world's pull requests say they are in, as `PullRequestStacks` reads it; `null` for none. */
+    function stackNode(id: string) {
+        const entries: { pullRequest: PullRequestFieldsFragment }[] = [];
+        for (const item of world.items.values()) {
+            if (item.__typename === 'PullRequest' && item.stack?.id === id) {
+                entries.push({ pullRequest: item });
+            }
+        }
+
+        return entries.length > 0 ? { id, entries: { nodes: entries } } : null;
     }
 
     function projectNode() {

@@ -2242,6 +2242,114 @@ export type ProjectUpdatedAtQueryVariables = Exact<{
 
 export type ProjectUpdatedAtQuery = { node: { updatedAt: string } | Record<PropertyKey, never> | null };
 
+export type PullRequestStacksQueryVariables = Exact<{
+    ids: Array<string> | string;
+    first: number;
+}>;
+
+export type PullRequestStacksQuery = {
+    nodes: Array<
+        | {
+              id: string;
+              entries: {
+                  nodes: Array<{
+                      pullRequest: {
+                          __typename: 'PullRequest';
+                          url: string;
+                          number: number;
+                          title: string;
+                          createdAt: string;
+                          closedAt: string | null;
+                          additions: number;
+                          deletions: number;
+                          changedFiles: number;
+                          headRefName: string;
+                          baseRefName: string;
+                          id: string;
+                          updatedAt: string;
+                          state: PullRequestState;
+                          isDraft: boolean;
+                          merged: boolean;
+                          reviewDecision: PullRequestReviewDecision | null;
+                          mergeable: MergeableState;
+                          mergeStateStatus: MergeStateStatus;
+                          baseRefOid: string;
+                          author:
+                              | { login: string; avatarUrl: string }
+                              | { login: string; avatarUrl: string }
+                              | { login: string; avatarUrl: string }
+                              | { login: string; avatarUrl: string }
+                              | { login: string; avatarUrl: string }
+                              | null;
+                          assignees: { nodes: Array<{ login: string; avatarUrl: string } | null> | null };
+                          labels: { nodes: Array<{ name: string; color: string } | null> | null } | null;
+                          milestone: { title: string; dueOn: string | null } | null;
+                          comments: { totalCount: number };
+                          closingIssuesReferences: { nodes: Array<{ id: string } | null> | null } | null;
+                          repository: {
+                              nameWithOwner: string;
+                              isPrivate: boolean;
+                              viewerPermission: RepositoryPermission | null;
+                              owner: { login: string } | { login: string };
+                          };
+                          projectItems: {
+                              nodes: Array<{
+                                  id: string;
+                                  isArchived: boolean;
+                                  updatedAt: string;
+                                  project: { id: string; title: string; number: number; url: string };
+                                  fieldValueByName:
+                                      | {
+                                            name: string | null;
+                                            color: ProjectV2SingleSelectFieldOptionColor;
+                                            optionId: string | null;
+                                        }
+                                      | Record<PropertyKey, never>
+                                      | null;
+                              } | null> | null;
+                          } | null;
+                          stack: { id: string; number: number; size: number } | null;
+                          stackEntry: { position: number } | null;
+                          baseRef: {
+                              target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
+                          } | null;
+                          statusCheckRollup: {
+                              state: StatusState;
+                              contexts: {
+                                  checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
+                                  statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
+                              };
+                          } | null;
+                          reviewRequests: {
+                              nodes: Array<{
+                                  requestedReviewer:
+                                      | { slug: string; name: string }
+                                      | { login: string }
+                                      | Record<PropertyKey, never>
+                                      | null;
+                              } | null> | null;
+                          } | null;
+                          latestOpinionatedReviews: {
+                              nodes: Array<{
+                                  state: PullRequestReviewState;
+                                  author:
+                                      | { login: string }
+                                      | { login: string }
+                                      | { login: string }
+                                      | { login: string }
+                                      | { login: string }
+                                      | null;
+                              } | null> | null;
+                          } | null;
+                      } | null;
+                  } | null> | null;
+              };
+          }
+        | Record<PropertyKey, never>
+        | null
+    >;
+};
+
 export type PullRequestStatusesQueryVariables = Exact<{
     ids: Array<string> | string;
 }>;
@@ -9461,6 +9569,155 @@ export const ProjectUpdatedAtDocument = new TypedDocumentString(`
   }
 }
     `);
+export const PullRequestStacksDocument = new TypedDocumentString(`
+    query PullRequestStacks($ids: [ID!]!, $first: Int!) {
+  nodes(ids: $ids) {
+    ... on PullRequestStack {
+      id
+      entries(first: $first) {
+        nodes {
+          pullRequest {
+            ...PullRequestFields
+          }
+        }
+      }
+    }
+  }
+}
+    fragment ItemProjectItemFields on ProjectV2Item {
+  id
+  isArchived
+  updatedAt
+  project {
+    id
+    title
+    number
+    url
+  }
+  fieldValueByName(name: "Status") {
+    ... on ProjectV2ItemFieldSingleSelectValue {
+      name
+      color
+      optionId
+    }
+  }
+}
+fragment ItemRepositoryFields on Repository {
+  nameWithOwner
+  isPrivate
+  viewerPermission
+  owner {
+    login
+  }
+}
+fragment PullRequestFields on PullRequest {
+  ...PullRequestStatusFields
+  url
+  number
+  title
+  createdAt
+  closedAt
+  author {
+    login
+    avatarUrl
+  }
+  assignees(first: 10) {
+    nodes {
+      login
+      avatarUrl
+    }
+  }
+  labels(first: 20) {
+    nodes {
+      name
+      color
+    }
+  }
+  milestone {
+    title
+    dueOn
+  }
+  comments {
+    totalCount
+  }
+  additions
+  deletions
+  changedFiles
+  headRefName
+  baseRefName
+  closingIssuesReferences(first: 10) {
+    nodes {
+      id
+    }
+  }
+  repository {
+    ...ItemRepositoryFields
+  }
+  projectItems(first: 10) {
+    nodes {
+      ...ItemProjectItemFields
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
+  __typename
+  id
+  updatedAt
+  state
+  isDraft
+  merged
+  reviewDecision
+  mergeable
+  mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
+  statusCheckRollup {
+    state
+    contexts {
+      checkRunCountsByState {
+        state
+        count
+      }
+      statusContextCountsByState {
+        state
+        count
+      }
+    }
+  }
+  reviewRequests(first: 10) {
+    nodes {
+      requestedReviewer {
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+          name
+        }
+      }
+    }
+  }
+  latestOpinionatedReviews(first: 10) {
+    nodes {
+      author {
+        login
+      }
+      state
+    }
+  }
+}`);
 export const PullRequestStatusesDocument = new TypedDocumentString(`
     query PullRequestStatuses($ids: [ID!]!) {
   nodes(ids: $ids) {
@@ -11203,6 +11460,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ProjectUpdatedAtQuery>;
+        },
+        PullRequestStacks(variables: PullRequestStacksQueryVariables, options?: C): Promise<PullRequestStacksQuery> {
+            return requester<PullRequestStacksQuery, PullRequestStacksQueryVariables>(
+                PullRequestStacksDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestStacksQuery>;
         },
         PullRequestStatuses(
             variables: PullRequestStatusesQueryVariables,

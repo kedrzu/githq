@@ -145,6 +145,70 @@ test('the open pull requests of my work get their status re-read, without the re
     expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', reviewDecision: 'APPROVED', updatedAt: MONDAY });
 });
 
+test('a pull request of a stack brings the rest of the stack, merged ones too, read once; a stack held whole costs nothing more', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_1')).toMatchObject({ state: 'MERGED', stack: { id: 'ST_1', position: 1, size: 3 } });
+    expect(items.get('PR_3')).toMatchObject({ state: 'OPEN', stack: { id: 'ST_1', position: 3, size: 3 } });
+    expect(items.membership.reviewRequested).toEqual(new Set(['PR_2']));
+
+    // Whole now: the stack is not asked again.
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+
+    // A fourth pull request stacked on top: the size the statuses bring says one is missing, so it is read again.
+    const grown = [stackedNode('PR_1', 1, 4, 'MERGED'), stackedNode('PR_2', 2, 4), stackedNode('PR_3', 3, 4)];
+    github.stacks.set('ST_1', [...grown, stackedNode('PR_4', 4, 4)]);
+    for (const node of grown) {
+        github.statuses.set(node.id, node);
+    }
+
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_4')).toMatchObject({ stack: { id: 'ST_1', position: 4, size: 4 } });
+});
+
+test('the open pull requests copied for their stack get their status re-read too, the merged ones not', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.authored = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+    github.requests.length = 0;
+
+    github.statuses.set('PR_3', { ...stackedNode('PR_3', 3, 3), reviewDecision: 'APPROVED' });
+    await clock.advance(60_000);
+
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_2', 'PR_3']]);
+    expect(items.get('PR_3')).toMatchObject({ kind: 'pullRequest', reviewDecision: 'APPROVED' });
+});
+
+test('a pull request copied for its stack stays while another of the stack is in my work, and goes with the last', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+
+    // My work polled again, dropping what nothing keeps: the stack stays with the one I review.
+    await clock.advance(30_000);
+    expect(items.get('PR_1')).toBeDefined();
+    expect(items.get('PR_3')).toBeDefined();
+
+    // My review is no longer asked: the whole stack goes.
+    github.found.reviewRequested = [];
+    await clock.advance(30_000);
+    expect(items.get('PR_1')).toBeUndefined();
+    expect(items.get('PR_2')).toBeUndefined();
+    expect(items.get('PR_3')).toBeUndefined();
+});
+
 test('after signing out nothing more is asked of GitHub', async () => {
     const github = fakeGitHub();
     const { auth, clock } = await setup(github, 'alice');
@@ -320,6 +384,8 @@ interface FakeGitHub {
     forbiddenProject: Map<string, number>;
     /** What `PullRequestStatuses` answers, over `found`. */
     statuses: Map<string, PullRequestStatusFieldsFragment>;
+    /** The pull requests of each stack, by its id, as `PullRequestStacks` answers them. */
+    stacks: Map<string, readonly PullRequestFieldsFragment[]>;
     requests: FakeRequest[];
     searchAllowance: { remaining: number; resetAt: number };
     graphqlAllowance: { remaining: number; resetAt: number };
@@ -345,6 +411,7 @@ function fakeGitHub(): FakeGitHub {
         refused: new Map(),
         forbiddenProject: new Map(),
         statuses: new Map(),
+        stacks: new Map(),
         requests: [],
         searchAllowance: { remaining: 29, resetAt: START + 60_000 },
         graphqlAllowance: { remaining: 4800, resetAt: START + 3_600_000 },
@@ -388,6 +455,14 @@ function fakeGitHub(): FakeGitHub {
             );
         }
 
+        if (name === 'PullRequestStacks') {
+            const nodes = ids.map(id => {
+                const members = github.stacks.get(id);
+                return members ? { id, entries: { nodes: members.map(pullRequest => ({ pullRequest })) } } : null;
+            });
+            return Response.json({ data: { nodes } }, { headers: graphqlHeaders });
+        }
+
         // As GitHub answers: `null` for a node it cannot give, with an error pointing at it.
         const errors: GitHubGraphQLErrorEntry[] = [];
         const nodes = ids.map((id, index) => {
@@ -417,7 +492,13 @@ function fakeGitHub(): FakeGitHub {
                 });
             }
 
-            return name === 'PullRequestStatuses' ? (github.statuses.get(id) ?? node) : node;
+            if (name !== 'PullRequestStatuses') {
+                return node;
+            }
+
+            // A pull request copied for its stack, which no search found.
+            const stacked = [...github.stacks.values()].flat().find(member => member.id === id);
+            return github.statuses.get(id) ?? node ?? stacked ?? null;
         });
         return Response.json(errors.length > 0 ? { data: { nodes }, errors } : { data: { nodes } }, {
             headers: graphqlHeaders,
@@ -678,6 +759,17 @@ function issueNode(id: string, updatedAt: string): IssueFieldsFragment {
         repository: REPOSITORY,
         projectItems: { nodes: [] },
     };
+}
+
+/** A pull request at `position` of the stack `ST_1` of `size` pull requests. */
+function stackedNode(id: string, position: number, size: number, state: 'OPEN' | 'MERGED' = 'OPEN') {
+    return {
+        ...pullRequestNode(id, MONDAY),
+        state,
+        merged: state === 'MERGED',
+        stack: { id: 'ST_1', number: 1, size },
+        stackEntry: { position },
+    } satisfies PullRequestFieldsFragment;
 }
 
 function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragment {
