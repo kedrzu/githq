@@ -1,4 +1,4 @@
-<!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). While the candidates are read, it looks for settings saved to GitHub (settings-sync D3): found, it offers to load them instead (G11); otherwise the choice offers saving them, unticked (G2), and ticked, "Track these" creates the repository (G12). Declined (G13), or in a repository githq can't use (G14), one line says so instead. Nothing is created on GitHub unless the box is ticked, and a file found is loaded only on the user's word; a look that fails never holds the sign-in up. -->
+<!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). While the candidates are read, it looks for settings saved to GitHub (settings-sync D3): found, it offers to load them instead (G11); otherwise the choice offers saving them, unticked (G2), and ticked, "Track these" creates the repository (G12). Declined (G13), or in a repository githq can't use (G14), one line says so instead. Nothing is created on GitHub unless the box is ticked, and a file found is loaded only on the user's word; a look that fails never holds the sign-in up, unless the box is ticked: then "Track these" stays and says GitHub couldn't be reached, until it is pressed again or the box unticked. -->
 <script lang="ts" setup>
 import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -13,6 +13,7 @@ import { safeNextPath } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
 import SavedSettingsNotLoaded from '@/settings/SavedSettingsNotLoaded.vue';
 import SavedSettingsOffer from '@/settings/SavedSettingsOffer.vue';
+import * as savingChoice from '@/settings/SavingChoice.loc.js';
 import SavingChoice from '@/settings/SavingChoice.vue';
 import type { StoppedReason } from '@/settings/sync/SettingsSaving.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
@@ -63,8 +64,12 @@ const found = shallowRef<readonly (CandidateProject | CandidateRepository)[]>([]
 const saved = shallowRef<SavedSettings>({ kind: 'looking' });
 /** The box to save what is tracked to GitHub (G2, G12). */
 const save = ref(false);
-/** GitHub is asked what saving would meet: the box stays still, and "Track these" waits. */
+/** GitHub is asked what saving would meet: the box stays still, and "Track these" does nothing. */
 const looking = ref(false);
+/** "Track these" under way, from the press until the page is left or it stays: pressed again, nothing happens. */
+const busy = ref(false);
+/** "Track these" looked again with the box ticked and could not reach GitHub: it stayed, and says so. */
+const unreachable = ref(false);
 const now = clock.now();
 
 const next = computed(() => safeNextPath(route.query.next));
@@ -133,7 +138,7 @@ async function inspect(): Promise<SavedSettings | null> {
 /**
  * Looks again, for the box ticked or "Track these": what is there may have changed since — another device saved its
  * settings. Settings found are offered (G11), and a repository that can't be used says why (G14), the box gone.
- * Whether saving can go on, and from what — `null` when GitHub could not be asked.
+ * Whether saving can go on — `null`: it can't — and from what — `inspection` `null`: GitHub could not be asked.
  */
 async function lookAgain(): Promise<{ readonly inspection: NoSettings | null } | null> {
   const looked = await inspect();
@@ -152,6 +157,7 @@ async function lookAgain(): Promise<{ readonly inspection: NoSettings | null } |
 
 async function setSave(value: boolean) {
   save.value = value;
+  unreachable.value = false;
   if (value && saved.value.kind === 'none' && !saved.value.inspection) {
     await lookAgain();
   }
@@ -173,6 +179,10 @@ function addFound(candidate: CandidateProject | CandidateRepository) {
 }
 
 async function trackOnlyMine() {
+  if (busy.value || looking.value) {
+    return;
+  }
+
   if (candidates.value) {
     repositories.value = ownRepositories(candidates.value);
     projects.value = [];
@@ -182,37 +192,52 @@ async function trackOnlyMine() {
 }
 
 /**
- * "Track these": keeps the choice and goes on. With the box ticked it looks again first — settings found or a
- * repository that can't be used stay on this step (G11, G14) — and then turns saving on behind the download, which
- * creates the repository; a refusal leaves syncing stopped (T7). GitHub out of reach leaves saving off.
+ * "Track these": keeps the choice and goes on, once — pressed again meanwhile, nothing happens. With the box ticked it
+ * looks again first — settings found or a repository that can't be used stay on this step (G11, G14), and so does
+ * GitHub out of reach, the box still ticked, saying so — and then turns saving on behind the download, which creates
+ * the repository; a refusal leaves syncing stopped (T7).
  */
 async function track() {
-  if (looking.value) {
+  if (busy.value || looking.value) {
     return;
   }
 
-  let inspection: NoSettings | null = null;
-  if (save.value) {
-    const looked = await lookAgain();
-    if (!looked) {
-      return;
+  busy.value = true;
+  try {
+    let inspection: NoSettings | null = null;
+    if (save.value) {
+      unreachable.value = false;
+      const looked = await lookAgain();
+      if (!looked) {
+        return;
+      }
+
+      if (!looked.inspection) {
+        unreachable.value = true;
+        return;
+      }
+
+      ({ inspection } = looked);
     }
 
-    ({ inspection } = looked);
-  }
+    const choice = getChoice();
+    tracking.choose(choice);
+    if (inspection) {
+      sync.turnOn(inspection).catch((error: unknown) => {
+        logger.warn('Saving the settings could not be turned on', { error });
+      });
+    }
 
-  const choice = getChoice();
-  tracking.choose(choice);
-  if (inspection) {
-    sync.turnOn(inspection).catch((error: unknown) => {
-      logger.warn('Saving the settings could not be turned on', { error });
-    });
+    await goOn(choice.repositories.length + choice.projects.length);
+  } finally {
+    busy.value = false;
   }
-
-  await goOn(choice.repositories.length + choice.projects.length);
 }
 
-/** "Load these" (G11): the settings found replace this device's empty ones, saving goes on, and the choice is made. */
+/**
+ * "Load these" (G11): the settings found replace this device's empty ones, saving goes on, and the choice is made —
+ * by turning on, as soon as they are taken in.
+ */
 async function loadSaved() {
   const current = saved.value;
   if (current.kind !== 'found') {
@@ -227,7 +252,6 @@ async function loadSaved() {
     return;
   }
 
-  tracking.markChosen();
   await goOn(tracking.repositories.length + tracking.projects.length);
 }
 
@@ -286,6 +310,7 @@ function getChoice(): TrackingChoice {
       :approvals="approvals.requests"
       :find="tracking.findCandidate"
       :creates="save ? settingsRepository : null"
+      :busy="busy"
       @track="track"
       @only-mine="trackOnlyMine"
       @load-more="tracking.loadMoreRepositories"
@@ -293,12 +318,21 @@ function getChoice(): TrackingChoice {
       @found="addFound"
     >
       <template #saving>
-        <SavingChoice
-          v-if="saved.kind === 'none'"
-          :model-value="save"
-          :busy="looking"
-          @update:model-value="setSave"
-        />
+        <template v-if="saved.kind === 'none'">
+          <SavingChoice
+            :model-value="save"
+            :busy="looking"
+            :disabled="busy"
+            @update:model-value="setSave"
+          />
+          <p
+            v-if="unreachable"
+            :class="css.trackingChoicePage_unreachable"
+            role="alert"
+          >
+            {{ t(savingChoice.unreachable) }}
+          </p>
+        </template>
         <SavedSettingsNotLoaded
           v-else-if="saved.kind === 'declined'"
           :reason="null"
@@ -324,7 +358,12 @@ function getChoice(): TrackingChoice {
           >
             {{ t(l.retry) }}
           </Button>
-          <Button @click="track">{{ t(l.skip) }}</Button>
+          <Button
+            :disabled="busy"
+            @click="track"
+          >
+            {{ t(l.skip) }}
+          </Button>
         </div>
       </template>
       <p
@@ -346,6 +385,13 @@ function getChoice(): TrackingChoice {
   justify-content: center;
   min-height: 100%;
   font-size: $font-size-md;
+  color: $color-fg-2;
+}
+
+.trackingChoicePage_unreachable {
+  margin-top: $spacing-10;
+  font-size: $font-size-sm;
+  line-height: 1.5;
   color: $color-fg-2;
 }
 

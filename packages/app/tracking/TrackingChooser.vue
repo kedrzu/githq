@@ -77,6 +77,8 @@ const props = defineProps<{
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
   creates?: string | null;
+  /** "Track these" is under way: it, ⌘↵ and "Only my repositories" do nothing until it ends. */
+  busy?: boolean;
 }>();
 
 defineSlots<{
@@ -239,7 +241,10 @@ onWindowEvent('keydown', event => {
 
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
-    emit('track');
+    if (!props.busy) {
+      emit('track');
+    }
+
     return;
   }
 
@@ -461,6 +466,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
           variant="primary"
           kbd="Mod+Enter"
           :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+          :busy="busy"
           @click="emit('track')"
         >
           {{ t(l.continue) }}
@@ -693,6 +699,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
           <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
           <Button
             :class="css.trackingChooser_onlyMine"
+            :disabled="busy"
             @click="emit('onlyMine')"
           >
             {{ t(l.onlyMine) }}
@@ -701,6 +708,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
             variant="primary"
             kbd="Mod+Enter"
             :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :busy="busy"
             @click="emit('track')"
           >
             {{ t(l.track) }}

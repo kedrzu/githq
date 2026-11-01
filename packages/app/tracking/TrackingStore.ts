@@ -219,8 +219,8 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Counts the choice as made (G2) without changing what is tracked: the user loaded their saved settings
-         * instead (settings-sync G11), which replaced the document.
+         * Counts the choice as made (G2) without changing what is tracked: the settings saved to GitHub were taken
+         * in instead (settings-sync G11), by `SettingsSync`'s turning on.
          */
         function markChosen() {
             write(kept => (kept.chosen ? null : { ...kept, chosen: true }));

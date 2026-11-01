@@ -75,6 +75,55 @@ test('first contact keeps what either side tracks, and what the file untracked e
     expect(sync.state).toMatchObject({ state: 'on', base: merged, sha: github.file?.sha });
 });
 
+test('settings found count as the choice made as soon as they are taken in: a reload before GitHub answers finds it made, and syncing on', async () => {
+    const { session, tracking, sync, github, login } = await open();
+    github.repository = { private: true };
+    const saved = documentOf([{ ...DOCS, tracking: true }]);
+    github.writeFile(saved);
+    const found = await inspectUsable(sync);
+    expect(tracking.chosen).toBe(false);
+
+    const turningOn = sync.turnOn(found);
+    expect(JSON.parse(session.localStorage.get(`githq.settings.${login}`) ?? 'null')).toMatchObject({
+        chosen: true,
+        document: saved,
+        saving: { state: 'on', base: saved },
+    });
+    await turningOn;
+
+    expect(tracking.chosen).toBe(true);
+    expect(tracking.repositories).toEqual([DOCS]);
+});
+
+test('settings found are not taken in, nor the choice made, while syncing is not off', async () => {
+    const { tracking, sync, github } = await open();
+    github.repository = { private: true };
+    github.writeFile(documentOf([{ ...DOCS, tracking: true }]));
+    const found = await inspectUsable(sync);
+    tracking.saveSaving({ state: 'stopped', reason: { kind: 'deleted' } });
+
+    await sync.turnOn(found);
+
+    expect(tracking.chosen).toBe(false);
+    expect(tracking.repositories).toEqual([]);
+    expect(sync.state).toEqual({ state: 'stopped', reason: { kind: 'deleted' } });
+});
+
+test('turned on twice at once, the repository is created once: the second creation, refused as already there, leaves syncing on', async () => {
+    const { session, tracking, sync, github } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    const inspection = await inspectUsable(sync);
+
+    const turningOn = Promise.all([sync.turnOn(inspection), sync.turnOn(inspection)]);
+    await session.clock.advance(1000);
+    await turningOn;
+    await session.clock.advance(0);
+
+    expect(rest(session.operations()).filter(operation => operation === 'POST /user/repos')).toHaveLength(2);
+    expect(github.file && parseSettings(github.file.text)).toEqual({ kind: 'ok', document: tracking.document });
+    expect(sync.state).toMatchObject({ state: 'on', sha: github.file?.sha });
+});
+
 test.each([
     ['a repository that is public', { private: false }, documentOf([]), { kind: 'public' }],
     ['a repository without the file', { private: true }, null, { kind: 'foreign' }],
@@ -667,6 +716,10 @@ function createSettingsGitHub(login: string) {
             case 'POST /user/repos':
                 if (state.refuseCreate !== null) {
                     return { status: 422, body: { message: state.refuseCreate } };
+                }
+
+                if (state.repository) {
+                    return { status: 422, body: { message: 'name already exists on this account' } };
                 }
 
                 state.repository = { private: true, empty: true };

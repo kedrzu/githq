@@ -34,8 +34,6 @@ repositorySettings:
   en: Repository settings on GitHub
 turnedOff:
   en: Saving is off on this device. What you track here stayed, and {repository} is still in your account.
-unreachable:
-  en: GitHub couldn't be reached, so saving stays off. Tick the box to try again.
 combineTitle:
   en: '{repository} already exists, so it will be combined with this device'
 download:

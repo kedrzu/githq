@@ -146,9 +146,10 @@ export const SettingsSync = defineService({
          * Turns syncing on from what {@link inspect} found for the signed-in user; one found for another user is
          * ignored. With no repository it creates it, and with no file it saves this device's settings in it. With a
          * file found, the two are combined as on first contact (D9): what either tracks stays, and what the file
-         * untracked ends untracked here; the result is saved when it differs from the file. Nothing unless syncing is
-         * off as the slot holds it now: another tab may have turned it on, or it stopped, since `inspection` was
-         * made. A refusal stops syncing; rejects when signed out or when GitHub cannot be reached.
+         * untracked ends untracked here, and the choice of what to track counts as made (G11); the result is saved
+         * when it differs from the file. Nothing unless syncing is off as the slot holds it now: another tab may have
+         * turned it on, or it stopped, since `inspection` was made. A refusal stops syncing — unless syncing went on
+         * meanwhile; rejects when signed out or when GitHub cannot be reached.
          */
         async function turnOn(inspection: NoSettings | FoundSettings) {
             if (tracking.readSaving().state !== 'off') {
@@ -175,7 +176,12 @@ export const SettingsSync = defineService({
                             throw error;
                         }
 
-                        tracking.saveSaving({ state: 'stopped', reason: failure.reason });
+                        // Created meanwhile by another start, in this tab or another, which GitHub's "name already
+                        // exists" refusal is: syncing is on, and stays on.
+                        if (tracking.readSaving().state !== 'on') {
+                            tracking.saveSaving({ state: 'stopped', reason: failure.reason });
+                        }
+
                         return;
                     }
 
@@ -209,13 +215,19 @@ export const SettingsSync = defineService({
             await sync();
         }
 
-        /** Combines this device's settings with the file found (D9), and goes on from it. */
+        /**
+         * Combines this device's settings with the file found (D9), and goes on from it. Taken in, they count as the
+         * user's choice of what to track (G11) at once, before GitHub is asked anything: a reload meanwhile finds
+         * syncing on and the choice made, never one without the other.
+         */
         async function startFrom(found: FoundSettings) {
             const local = tracking.document;
             const merged = mergeSettings({ local, remote: found.document, base: EMPTY_SETTINGS_DOCUMENT });
             if (!deepEquals(merged, local)) {
                 tracking.replaceDocument(merged);
             }
+
+            tracking.markChosen();
 
             // Seen the file and taken it in: what is left to save is what this device adds to it.
             tracking.saveSaving({

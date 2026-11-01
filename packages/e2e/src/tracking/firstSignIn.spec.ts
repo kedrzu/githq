@@ -7,7 +7,11 @@ import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { SavingScreenHarness } from '../harnesses/SavingScreen.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
-import { answerSettingsRepository, getSettingsWrites } from '../settings/answerSettingsRepository.js';
+import {
+    answerSettingsRepository,
+    countSettingsCreations,
+    getSettingsWrites,
+} from '../settings/answerSettingsRepository.js';
 
 import { answerEmptyRepositories, answerTrackingCandidates } from './answerTracking.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT, SAMPLE_REPOSITORY } from './sampleTrackedWork.js';
@@ -284,4 +288,105 @@ test('left unticked, "Track these" creates nothing on GitHub', async ({ page, gi
     await expect(page).toHaveURL('/settings/tracking/download');
     await expect(firstSignIn.root).toContainText('Everything is here.');
     expect(getSettingsWrites(github)).toEqual([]);
+});
+
+test('"Track these" goes on once: pressed again while it does, nothing happens, and the repository is created once', async ({
+    page,
+    github,
+}) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    const repository = answerSettingsRepository(github, { exists: false, file: null });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await firstSignIn.savingChoice.click();
+    await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
+
+    // The next step's code held back: the page stays, going on.
+    const nextStepIn = createPromise();
+    await page.route('**/_nuxt/**', async route => {
+        await nextStepIn.promise;
+        await route.fallback();
+    });
+    await firstSignIn.trackButton.click();
+    await expect.poll(() => countSettingsCreations(github)).toBe(1);
+    await expect(firstSignIn.trackButton).toHaveAttribute('aria-busy', 'true');
+    await expect(firstSignIn.onlyMineButton).toBeDisabled();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    nextStepIn.resolve();
+
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect.poll(() => repository.file).not.toBeNull();
+    expect(countSettingsCreations(github)).toBe(1);
+});
+
+test('"Only my repositories" does nothing while "Track these" looks at GitHub: what was chosen is what is tracked', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.organization('acme');
+    sample.world.repository('acme/api');
+    sample.world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    const repository = answerSettingsRepository(github, { exists: false, file: null });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await firstSignIn.savingChoice.click();
+    await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
+    await firstSignIn.repository('acme/api').check();
+
+    // The look "Track these" takes first held back.
+    const lookedIn = createPromise();
+    github.rest('GET', `/repos/${LOGIN}/githq-settings`, async () => {
+        await lookedIn.promise;
+        return { status: 404, json: { message: 'Not Found' } };
+    });
+    await firstSignIn.trackButton.click();
+    await expect(firstSignIn.onlyMineButton).toBeDisabled();
+    // A disabled button takes no click; forced, it still changes nothing.
+    await firstSignIn.onlyMineButton.click({ force: true });
+    lookedIn.resolve();
+
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect.poll(() => repository.file).not.toBeNull();
+    expect(JSON.parse(repository.file?.text ?? 'null')).toMatchObject({
+        repositories: [
+            { nameWithOwner: SAMPLE_REPOSITORY, tracking: true },
+            { nameWithOwner: 'acme/api', tracking: true },
+        ],
+    });
+});
+
+test('with the box ticked and GitHub out of reach, "Track these" stays and says so; pressed again once GitHub answers, it goes on and saves', async ({
+    page,
+    github,
+}) => {
+    createSampleTrackedWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerSettingsRepository(github, { exists: false, file: null });
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await firstSignIn.savingChoice.click();
+    await expect(firstSignIn.root).toContainText(`then creates ${LOGIN}/githq-settings`);
+
+    github.rest('GET', `/repos/${LOGIN}/githq-settings`, () => ({ status: 502, json: { message: 'Bad Gateway' } }));
+    await firstSignIn.trackButton.click();
+    await expect(firstSignIn.root.getByRole('alert')).toHaveText(
+        "GitHub couldn't be reached, so saving stays off. Tick the box to try again.",
+    );
+    await expect(page).toHaveURL(/\/settings\/tracking\/new/);
+    await expect(firstSignIn.savingChoice).toBeChecked();
+    expect(getSettingsWrites(github)).toEqual([]);
+
+    const repository = answerSettingsRepository(github, { exists: false, file: null });
+    await firstSignIn.trackButton.click();
+    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect.poll(() => repository.file).not.toBeNull();
 });

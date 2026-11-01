@@ -49,6 +49,11 @@ export class FirstSignInHarness {
         return this.root.getByRole('button', { name: 'Track these' });
     }
 
+    /** "Only my repositories": the user's own, nothing else, tracked. */
+    get onlyMineButton(): Locator {
+        return this.root.getByRole('button', { name: 'Only my repositories' });
+    }
+
     /** The box to save what is tracked to the user's GitHub account (settings-sync G2, G12). */
     get savingChoice(): Locator {
         return this.root.getByRole('checkbox', { name: 'Save what I track to my GitHub account' });
