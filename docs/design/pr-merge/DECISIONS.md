@@ -134,7 +134,10 @@ result has to exist regardless: a `202` only says the request was accepted. It f
 > `authorEmail`; `enqueuePullRequest` has `jump`. With a merge queue any commit message given is ignored.
 
 **Rejected.**
-- `mergePullRequest` for everything — fits the GraphQL principle, but cannot merge a stack.
+- `mergePullRequest` for everything — fits the GraphQL rule, but cannot merge a stack.
+- `mergePullRequest` and `enqueuePullRequest` for ordinary merges, REST for stacks and bypass — follows the GraphQL rule
+  to the letter and answers at once, but asking for the result has to exist for stacks anyway, and what the mutation
+  does for an admin is unchecked: it has no bypass input.
 - Refusing stacked pull requests in githq — this repository itself works in stacks.
 
 ## D6
@@ -166,11 +169,27 @@ the key is not chosen)
 **Rejected.**
 - A single key that merges at once — cannot be undone.
 
-## D8
+## D9
 
-**Several selected pull requests can be merged together: one confirmation, each with its own default method and
-message; one failing does not stop the others, and the user sees which failed.** (2026-11-01, owner, on the design
-agent's proposal)
+**Pull requests are merged one at a time; after a merge from the list, the list moves to the next one. Merging several
+is a separate later feature, a local queue of merges.** (2026-11-01, owner)
 
-**Why.** The case is a run of small pull requests such as five from Dependabot. Closing several at once already
-exists (`packages/app/lists/ItemContextMenu.vue:241`).
+**Why.** Every merge moves the target branch, so later ones can fall behind or conflict, which makes merging several a
+matter of ordering and waiting rather than one confirmation. It deserves its own design. Nothing here gets in its way:
+no data is stored, and one merge is what such a queue would repeat.
+
+**Rejected.**
+- One confirmation sending several in turn, reporting the refusals at the end
+  ([history](history/DECISIONS.md#d8)) — in a repository requiring up-to-date branches usually only the first passes.
+
+## D10
+
+**The panel holds what shapes the merge: method, commit title and message, commit email, auto-merge, merge queue with
+jumping it, and bypass. Updating the branch, deleting and restoring it, reverting, re-running checks and leaving the
+queue are ordinary commands.** (2026-11-01, owner, on the design agent's proposal; a starting point for the owner's UI
+design)
+
+**Why.** Every option of [the full list](#d4) stays reachable and the usual merge stays two keys.
+
+**Rejected.**
+- All of them in the panel — gains only seeing them in one place.

@@ -37,7 +37,9 @@ merged, and the rest of the app stays usable.
 
 [Every option github.com offers at this point is in](DECISIONS.md#d4), so that no particular workflow is left
 out. Two things cannot be done from githq and link to github.com instead: the web editor for resolving
-conflicts, and re-running checks that do not come from GitHub Actions.
+conflicts, and re-running checks that do not come from GitHub Actions. [The panel holds what shapes the
+merge](DECISIONS.md#d10): method, message, email, auto-merge, the queue and bypass. The rest, such as updating the
+branch or reverting, are ordinary commands.
 
 ## How a merge reaches GitHub
 
@@ -58,15 +60,23 @@ it opens, but if what githq holds already says ready, ⌘Enter works at once. Gi
 and the head commit sent with the request cancels the merge if someone pushed in the meantime. The cost is that a
 check that is not required may have just failed, and you merge before seeing it.
 
-[Several selected pull requests can be merged together](DECISIONS.md#d8), say five from Dependabot: one
-confirmation, each with its own default method and message. One that fails does not stop the others, and you see
-which it was.
+[Pull requests are merged one at a time](DECISIONS.md#d9), and after a merge from the list, the list moves to the
+next one. Merging several together stays out of this design. Every merge moves the target branch, so the later ones
+can fall behind or conflict, and handling that is a feature of its own: a queue of merges in githq, built later.
 
-## Still open
+## What gets built first
 
-- Whether merging a pull request that changes `.github/workflows` works with githq's current OAuth scopes.
-  If it needs the `workflow` scope, everyone has to sign in again. It takes a test with a token of exactly those
-  scopes.
+Proposed order, each step usable on its own:
+
+1. A test of merging a pull request that changes `.github/workflows` with a token of exactly githq's scopes. If it
+   needs the `workflow` scope, everyone has to sign in again; that is the one open question, and its answer does not
+   change the rest of this design.
+2. A merge from the panel: the allowed methods, the proposed message, required checks marked, the merge shown once
+   GitHub confirms it.
+3. What stacks and queues need, then auto-merge, bypass and the commit email.
+4. The ordinary commands: updating the branch, deleting and restoring it, reverting, re-running checks.
+
+Code review in githq and merging several together are not part of this.
 
 When this design closes, the statements that githq does not merge have to change with it: the design of githq
 as a whole says so in its decisions, its story and its UI briefs, and so does the note in the pull request's
