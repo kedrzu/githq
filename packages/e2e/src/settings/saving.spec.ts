@@ -151,6 +151,44 @@ test('a repository deleted on GitHub stops syncing when the window is focused; t
     expect(countSettingsCreations(github)).toBe(created);
 });
 
+test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar stays until syncing is turned off', async ({
+    page,
+    github,
+}) => {
+    const repository = await openSaving(page, github, { exists: false, file: null });
+    const saving = new SavingScreenHarness(page);
+    await saving.choice.click();
+    await expect(saving.on).toBeVisible();
+    await page.goto('/');
+
+    const shell = new AppShellHarness(page);
+    repository.exists = false;
+    repository.file = null;
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+
+    await expect(shell.syncStoppedToast).toContainText(
+        `The repository ${LOGIN}/githq-settings no longer exists on GitHub. githq keeps working from what's on this device.`,
+    );
+    await expect(shell.accountSyncStopped(LOGIN)).toBeVisible();
+
+    await page.keyboard.press('Alt+KeyS');
+    await expect(page).toHaveURL(/\/settings\?tab=saving$/u);
+    await expect(saving.stopped).toBeVisible();
+    await expect(shell.syncStoppedToast).toHaveCount(0);
+
+    await page.goto('/');
+    await expect(shell.accountSyncStopped(LOGIN)).toBeVisible();
+    await expect(shell.syncStoppedToast).toHaveCount(0);
+
+    await shell.accountSyncStopped(LOGIN).click();
+    await page.getByRole('menuitem', { name: /^Settings/u }).click();
+    await expect(page).toHaveURL(/\/settings\?tab=saving$/u);
+    await saving.turnOffButton.click();
+
+    await expect(saving.choice).not.toBeChecked();
+    await expect(shell.account(LOGIN)).toHaveAccessibleName(`Account: ${LOGIN}`);
+});
+
 /**
  * Signs in with the sample tracked, then answers the settings repository as `repository` says — none on the first
  * sign-in, so it offers no saved settings — and opens Settings' Saving to GitHub.

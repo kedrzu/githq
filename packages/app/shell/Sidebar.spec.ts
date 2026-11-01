@@ -20,6 +20,8 @@ const {
     NoRepositories,
     NothingTracked,
     OnRepositoryIssues,
+    SyncStopped,
+    CollapsedSyncStopped,
     TrackedMenu,
     WindowControlsCollapsed,
     WindowControlsOverflowing,
@@ -138,6 +140,33 @@ test('the user menu opens upwards with who is signed in, Settings and its key, a
 
     await userEvent.click(menu.getByRole('menuitem', { name: 'Sign out' }));
     expect(onSignOut).toHaveBeenCalledOnce();
+});
+
+test.each([
+    ['expanded', SyncStopped],
+    ['on the rail', CollapsedSyncStopped],
+])('syncing stopped, %s: a dot on the avatar, and Settings says so and opens Saving to GitHub', async (_, story) => {
+    await story.run();
+
+    const account = page.getByRole('button', { name: `Account: ${SAMPLE_VIEWER.login} · syncing stopped` });
+    await expect.element(account).toBeVisible();
+    await userEvent.click(account);
+    const settings = page.getByRole('menuitem', { name: /^Settings/u });
+    await expect.element(settings).toHaveTextContent('Syncing stopped');
+    await expect.element(settings).toHaveAttribute('aria-keyshortcuts', ',');
+
+    await userEvent.click(settings);
+    await expect
+        .poll(() => document.querySelector('[data-route]')?.getAttribute('data-route'))
+        .toBe('/settings?tab=saving');
+});
+
+test('syncing not stopped: no dot, and Settings opens Settings', async () => {
+    await Expanded.run();
+
+    const account = page.getByRole('button', { name: `Account: ${SAMPLE_VIEWER.login}`, exact: true });
+    await userEvent.click(account);
+    await expect.element(page.getByRole('menuitem', { name: 'Settings' })).not.toHaveTextContent('Syncing stopped');
 });
 
 test('on the rail the user menu opens to the right', async () => {

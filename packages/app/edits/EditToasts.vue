@@ -1,4 +1,4 @@
-<!-- The toasts of the user's edits that failed (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub, and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub, and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -7,7 +7,6 @@ import { ArrowUpRight, Undo2 } from 'lucide-vue-next';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
-import Toaster from '@/components/Toaster.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
@@ -92,52 +91,50 @@ function getLink(failure: EditFailure) {
 </script>
 
 <template>
-  <Toaster :label="t(l.notifications)">
-    <template
-      v-for="failure in queue.failures"
-      :key="failure.id"
+  <template
+    v-for="failure in queue.failures"
+    :key="failure.id"
+  >
+    <Toast
+      v-if="failure.toast"
+      :title="texts.failureTitle(failure)"
+      :tone="failure.failed.length < failure.editCount ? 'warning' : 'danger'"
+      @update:open="queue.setToast(failure.id, $event)"
+      @dismiss="queue.dismiss(failure.id)"
     >
-      <Toast
-        v-if="failure.toast"
-        :title="texts.failureTitle(failure)"
-        :tone="failure.failed.length < failure.editCount ? 'warning' : 'danger'"
-        @update:open="queue.setToast(failure.id, $event)"
-        @dismiss="queue.dismiss(failure.id)"
-      >
-        {{ texts.failureDetail(failure) }}
-        <template #actions>
-          <Button
-            v-if="getFailedIds(failure).length > 0"
-            variant="secondary"
-            size="sm"
-            kbd="Shift+F"
-            aria-keyshortcuts="Shift+F"
-            @click="selectFailed(failure)"
-          >
-            {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}
-          </Button>
-          <Button
-            v-if="getUnrestoredComment(failure)"
-            variant="secondary"
-            size="sm"
-            :icon="Undo2"
-            @click="restoreComment(failure)"
-          >
-            {{ t(l.restoreComment) }}
-          </Button>
-          <Button
-            v-if="getLink(failure)"
-            variant="secondary"
-            size="sm"
-            :icon="ArrowUpRight"
-            :link="getLink(failure)?.url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ getLink(failure)?.text }}
-          </Button>
-        </template>
-      </Toast>
-    </template>
-  </Toaster>
+      {{ texts.failureDetail(failure) }}
+      <template #actions>
+        <Button
+          v-if="getFailedIds(failure).length > 0"
+          variant="secondary"
+          size="sm"
+          kbd="Shift+F"
+          aria-keyshortcuts="Shift+F"
+          @click="selectFailed(failure)"
+        >
+          {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}
+        </Button>
+        <Button
+          v-if="getUnrestoredComment(failure)"
+          variant="secondary"
+          size="sm"
+          :icon="Undo2"
+          @click="restoreComment(failure)"
+        >
+          {{ t(l.restoreComment) }}
+        </Button>
+        <Button
+          v-if="getLink(failure)"
+          variant="secondary"
+          size="sm"
+          :icon="ArrowUpRight"
+          :link="getLink(failure)?.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ getLink(failure)?.text }}
+        </Button>
+      </template>
+    </Toast>
+  </template>
 </template>

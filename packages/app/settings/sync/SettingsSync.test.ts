@@ -13,7 +13,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
-import { readSettingsSaving } from './SettingsSaving.js';
+import { getUntoldStop, readSettingsSaving } from './SettingsSaving.js';
 import type { SettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
@@ -501,6 +501,54 @@ test("a file found for a user who signed out since is not combined into the next
     expect(writes(session.operations())).toEqual([]);
 });
 
+test('a stop is told once (T9): remembered across a reload, told again for another reason or after syncing went on', async () => {
+    const { session, tracking, sync, github, login } = await turnedOn();
+    github.repository = null;
+    github.file = null;
+    session.setVisible(true);
+    await session.clock.advance(0);
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'deleted' });
+
+    sync.markTold();
+    expect(getUntoldStop(sync.state)).toBeNull();
+
+    // The same reason found again on trying again: still told.
+    await sync.retry();
+    expect(sync.state).toMatchObject({ state: 'stopped', reason: { kind: 'deleted' }, told: 'deleted' });
+    expect(getUntoldStop(sync.state)).toBeNull();
+
+    // A reload remembers it.
+    const reloaded = await open(login, session.localStorage);
+    expect(reloaded.sync.state).toMatchObject({ state: 'stopped', told: 'deleted' });
+
+    // Another reason: told again.
+    github.repository = { private: false };
+    await sync.retry();
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'public' });
+    sync.markTold();
+
+    // On again, and stopped again for the first reason: a new stop, told again.
+    github.repository = { private: true };
+    github.writeFile(tracking.document);
+    await sync.retry();
+    expect(sync.state).toMatchObject({ state: 'on' });
+    github.repository = null;
+    github.file = null;
+    session.setVisible(true);
+    await session.clock.advance(0);
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'deleted' });
+});
+
+test('telling is not remembered while syncing is on or off', async () => {
+    const { sync } = await turnedOn();
+    sync.markTold();
+    expect(sync.state).not.toHaveProperty('told');
+
+    sync.turnOff();
+    sync.markTold();
+    expect(sync.state).toEqual({ state: 'off', repositoryLeft: true });
+});
+
 test('the slot of an earlier build, stopped with an ETag kept, is read without it', () => {
     expect(
         readSettingsSaving({
@@ -545,10 +593,12 @@ interface SettingsGitHub {
     writeFile(content: SettingsDocument | string): void;
 }
 
-async function open(login = `user-${crypto.randomUUID()}`) {
+/** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
+async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);
     const session = createTestSession({
         login,
+        localStorage,
         answer: () => undefined,
         answerRest: request => github.answer(request),
     });

@@ -1,7 +1,8 @@
-<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key and "Sign out". -->
+<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key and "Sign out". While syncing the settings stopped (settings-sync T9, T10) an amber dot sits on the avatar, and "Settings" says "Syncing stopped" and opens straight on Saving to GitHub. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronUp, LogOut, Settings } from 'lucide-vue-next';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -13,14 +14,16 @@ import Menu from '@/components/Menu.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
-import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
+import { getSettingsPath, SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 
 import * as l from './AccountMenu.loc.js';
 
-defineProps<{
+const props = defineProps<{
   viewer: Viewer;
   /** The rail: the avatar alone. */
   compact?: boolean;
+  /** Syncing the settings stopped: the dot on the avatar, and Settings leads to why. */
+  settingsSyncStopped?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -29,6 +32,16 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const router = useRouter();
+
+const label = computed(() =>
+  props.settingsSyncStopped
+    ? t(l.accountMenuSyncStopped, { login: props.viewer.login })
+    : t(l.accountMenu, { login: props.viewer.login }),
+);
+
+function openSettings() {
+  void router.push(props.settingsSyncStopped ? getSettingsPath('saving') : SETTINGS_PATH);
+}
 </script>
 
 <template>
@@ -40,27 +53,39 @@ const router = useRouter();
       <IconButton
         v-if="compact"
         size="md"
-        :label="t(l.accountMenu, { login: viewer.login })"
+        :label="label"
       >
-        <Avatar
-          :name="viewer.login"
-          :src="viewer.avatarUrl"
-          size="md"
-          decorative
-        />
+        <span :class="css.accountMenu_avatar">
+          <Avatar
+            :name="viewer.login"
+            :src="viewer.avatarUrl"
+            size="md"
+            decorative
+          />
+          <span
+            v-if="settingsSyncStopped"
+            :class="css.accountMenu_stopped"
+          />
+        </span>
       </IconButton>
       <Button
         v-else
         variant="ghost"
         block
         :class="css.accountMenu_trigger"
-        :aria-label="t(l.accountMenu, { login: viewer.login })"
+        :aria-label="label"
       >
-        <Avatar
-          :name="viewer.login"
-          :src="viewer.avatarUrl"
-          decorative
-        />
+        <span :class="css.accountMenu_avatar">
+          <Avatar
+            :name="viewer.login"
+            :src="viewer.avatarUrl"
+            decorative
+          />
+          <span
+            v-if="settingsSyncStopped"
+            :class="css.accountMenu_stopped"
+          />
+        </span>
         <span :class="css.accountMenu_login">{{ viewer.login }}</span>
         <ChevronUp
           :class="css.accountMenu_chevron"
@@ -73,9 +98,19 @@ const router = useRouter();
       <MenuItem
         :icon="Settings"
         :shortcut="APP_KEYS.settings"
-        @select="router.push(SETTINGS_PATH)"
+        @select="openSettings"
       >
         {{ t(l.settings) }}
+        <template
+          v-if="settingsSyncStopped"
+          #status
+        >
+          <span
+            :class="css.accountMenu_statusDot"
+            aria-hidden="true"
+          />
+          <span :class="css.accountMenu_status">{{ t(l.syncStopped) }}</span>
+        </template>
       </MenuItem>
       <MenuSeparator />
       <MenuItem
@@ -101,6 +136,36 @@ const router = useRouter();
 
 .accountMenu_items_compact {
   min-width: 230px;
+}
+
+.accountMenu_avatar {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+// On the avatar's corner, ringed in the sidebar's colour.
+.accountMenu_stopped {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 8px;
+  height: 8px;
+  background: $color-amber;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px $color-bg-2;
+}
+
+.accountMenu_statusDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: $color-amber;
+  border-radius: 50%;
+}
+
+.accountMenu_status {
+  color: $color-amber;
 }
 
 .accountMenu_login {

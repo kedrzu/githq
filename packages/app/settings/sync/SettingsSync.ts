@@ -120,6 +120,7 @@ export const SettingsSync = defineService({
             turnOff,
             retry,
             sync,
+            markTold,
         };
 
         /**
@@ -230,6 +231,17 @@ export const SettingsSync = defineService({
         /** Stops syncing on this device: its settings stay, and the repository stays in the account (D10). */
         function turnOff() {
             tracking.saveSaving({ state: 'off', repositoryLeft: true });
+        }
+
+        /**
+         * Remembers that the user was told why syncing stopped (T9), in the slot, so the reason is not told again —
+         * on reload or in another tab. Nothing unless it stopped as the slot holds it now.
+         */
+        function markTold() {
+            const saving = tracking.readSaving();
+            if (saving.state === 'stopped' && saving.told !== saving.reason.kind) {
+                tracking.saveSaving({ ...saving, told: saving.reason.kind });
+            }
         }
 
         /**

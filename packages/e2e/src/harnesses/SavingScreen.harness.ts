@@ -40,6 +40,11 @@ export class SavingScreenHarness {
         return this.root.getByRole('region', { name: 'Syncing stopped' });
     }
 
+    /** "Turn off" (T4, T7). */
+    get turnOffButton(): Locator {
+        return this.root.getByRole('button', { name: 'Turn off', exact: true });
+    }
+
     /** "Try again" of the stopped box. */
     get tryAgainButton(): Locator {
         return this.stopped.getByRole('button', { name: 'Try again' });

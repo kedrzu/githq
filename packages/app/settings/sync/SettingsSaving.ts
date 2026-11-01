@@ -47,6 +47,11 @@ export type SettingsSaving =
           readonly sha?: string | null;
           /** When the settings and the file last agreed, before it stopped (epoch ms). */
           readonly syncedAt?: number | null;
+          /**
+           * The kind of reason the user was told about in a toast (T9), so it is told once — again for another reason,
+           * or once syncing went on and stopped again, which drops it.
+           */
+          readonly told?: StoppedReason['kind'];
       };
 
 /** Syncing never turned on. */
@@ -87,12 +92,37 @@ export function readSettingsSaving(stored: unknown): SettingsSaving {
             const base = readSettingsDocument(stored.base);
             const { sha } = stored;
             const syncedAt = typeof stored.syncedAt === 'number' ? stored.syncedAt : null;
-            return base && (sha === null || typeof sha === 'string')
-                ? { state: 'stopped', reason, base, sha, syncedAt }
-                : { state: 'stopped', reason };
+            const told = readReasonKind(stored.told);
+            const stopped: SettingsSaving =
+                base && (sha === null || typeof sha === 'string')
+                    ? { state: 'stopped', reason, base, sha, syncedAt }
+                    : { state: 'stopped', reason };
+            return told ? { ...stopped, told } : stopped;
         }
         default:
             return stored.repositoryLeft === true ? { state: 'off', repositoryLeft: true } : SETTINGS_SAVING_OFF;
+    }
+}
+
+/**
+ * Why syncing stopped, while the user has not been told yet (T9); `null` when it has not stopped, or they were.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getUntoldStop(saving: SettingsSaving): StoppedReason | null {
+    return saving.state === 'stopped' && saving.told !== saving.reason.kind ? saving.reason : null;
+}
+
+function readReasonKind(stored: unknown): StoppedReason['kind'] | null {
+    switch (stored) {
+        case 'deleted':
+        case 'foreign':
+        case 'public':
+        case 'unreadable':
+        case 'newer':
+        case 'refused':
+            return stored;
+        default:
+            return null;
     }
 }
 
