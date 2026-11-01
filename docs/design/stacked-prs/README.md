@@ -52,13 +52,43 @@ githq keeps what concerns you and what you track, and one stack can be partly ne
 your review of only two of its four pull requests. [githq copies the rest of the stack too](DECISIONS.md#d7), so that the
 entry is always whole.
 
+## Merging
+
+[Merging a stack](DECISIONS.md#d11) is the merge panel the app already designs for one pull request, the same two keys. From a
+stack's entry it takes the whole stack, and from one pull request everything up to it, because GitHub lands them from the first
+up. The panel names what goes and lets you stop earlier. Each pull request lands under its own title, so there is no commit text
+to edit. GitHub rewrites what is left, and the rest of the stack carries on.
+
+## Under an issue
+
+In my work a pull request that closes your assigned issue sits under that issue. In a stack usually only one of them does, so
+[the whole stack goes there, and the issue serves as its header](DECISIONS.md#d12).
+
+## Managing a stack
+
+[Linking pull requests into a stack, adding one on top and dissolving a stack are commands](DECISIONS.md#d13). GitHub offers no way
+to reorder or take one out, so that means dissolving and linking again. A chain of pull requests nobody has linked stays ordinary
+rows, as it is on GitHub, and githq offers to link it.
+
 ## What cannot be done from githq
 
-[GitHub has no API for "Rebase stack"](DECISIONS.md#d8), the button needed after a push to an earlier pull request or
-when the target branch moves. githq says why the stack cannot merge and links to the button.
+[GitHub has no API for "Rebase stack"](DECISIONS.md#d8), the button needed after a push to an earlier pull request or when the
+target branch moves. githq says why the stack cannot merge and links to the button.
+
+## What this leaves out
+
+Creating pull requests, reading code in githq, a combined diff and branching stacks. Review is meant to come here later, and opening
+a stack on a pull request is what it would build on.
+
+## What gets built first
+
+1. A test on a real open stack: whether GitHub's mergeability fields already count earlier pull requests, whether joining a stack
+   moves `updated_at`, what a partway failure leaves behind, and whether a `repo` token can write to stacks.
+2. Seeing: stack data on rows, the whole stack in the copy, entries in lists, the map, walking with `J` and `K`.
+3. Merging through the panel.
+4. Managing.
 
 ## Where this stands
 
-Being worked out with the owner. Settled: stacks are grouped in lists, and all of seeing, merging and managing them is in.
-Proposed and not yet confirmed: everything marked so in [the decisions](DECISIONS.md). The screens come next, in a separate
-branch, from a brief still to be written.
+The design is closed. Next come the screens, from [the brief for working through a stack](ui/work-through-a-stack.md), with
+[the prompt for the design agent](ui/design-agent-prompt.md), and then the build in the order above.
