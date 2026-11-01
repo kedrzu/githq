@@ -54,6 +54,7 @@ test('the choice is kept in localStorage in the file’s shape: untracking keeps
     expect(JSON.parse(localStorage.get(`githq.settings.${login}`) ?? 'null')).toEqual({
         chosen: true,
         document: tracking.document,
+        saving: { state: 'off' },
     });
 });
 

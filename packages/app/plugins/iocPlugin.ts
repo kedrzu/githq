@@ -8,6 +8,7 @@ import { AppLanguageContext } from '@/i18n/AppLanguageContext.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
+import { SettingsSync } from '@/settings/sync/SettingsSync.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
@@ -60,4 +61,6 @@ function startServices(container: Container) {
     container.resolve(DetailPrefetch);
     // Answers the saved views GitHub filters, shown in this tab or — while it syncs — in another.
     container.resolve(ProjectViewAnswers);
+    // Keeps the settings in the user's settings repository once they turn it on; quiet while it is off.
+    container.resolve(SettingsSync);
 }

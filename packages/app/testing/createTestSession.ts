@@ -26,7 +26,7 @@ export interface TestGraphQLAnswer {
     readonly errors?: readonly GitHubGraphQLErrorEntry[];
 }
 
-/** What the fake GitHub answers a REST `GET` with. */
+/** What the fake GitHub answers a REST request with. */
 export interface TestRestAnswer {
     readonly status: number;
     /** JSON; none for a 304. */
@@ -41,8 +41,9 @@ export interface CreateTestSessionParams {
     /** Answers the GraphQL operations; one it returns `undefined` for fails with a 502. */
     readonly answer: (request: TestGraphQLRequest) => TestGraphQLAnswer | undefined;
     /**
-     * Answers the REST `GET`s, recorded as `GET <path>` with the query parameters and the ETag sent
-     * (`ifNoneMatch`) as variables; one it returns `undefined` for — or every one, without it — fails with a 502.
+     * Answers the REST requests, recorded as `<method> <path>` (`GET /search/issues`) with the query parameters, the
+     * ETag sent (`ifNoneMatch`) and a JSON body sent (`body`) as variables; one it returns `undefined` for — or every
+     * one, without it — fails with a 502.
      */
     readonly answerRest?: (request: TestGraphQLRequest) => TestRestAnswer | undefined;
     /**
@@ -156,8 +157,9 @@ export function createTestSession(params: CreateTestSessionParams) {
     async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
         const headers = new Headers(init?.headers);
         const token = (headers.get('Authorization') ?? '').replace('Bearer ', '');
-        if ((init?.method ?? 'GET') === 'GET') {
-            return await fetchRest(new URL(input instanceof Request ? input.url : input), token, headers);
+        const url = new URL(input instanceof Request ? input.url : input);
+        if (url.pathname !== '/graphql') {
+            return await fetchRest(url, token, init);
         }
 
         const body: unknown = JSON.parse(typeof init?.body === 'string' ? init.body : '{}');
@@ -179,10 +181,16 @@ export function createTestSession(params: CreateTestSessionParams) {
         return Response.json(answer, { headers: limits });
     }
 
-    async function fetchRest(url: URL, token: string, headers: Headers): Promise<Response> {
+    async function fetchRest(url: URL, token: string, init: RequestInit | undefined): Promise<Response> {
+        const headers = new Headers(init?.headers);
+        const body: unknown = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined;
         const request: TestGraphQLRequest = {
-            operation: `GET ${url.pathname}`,
-            variables: { ...Object.fromEntries(url.searchParams), ifNoneMatch: headers.get('If-None-Match') },
+            operation: `${init?.method ?? 'GET'} ${url.pathname}`,
+            variables: {
+                ...Object.fromEntries(url.searchParams),
+                ifNoneMatch: headers.get('If-None-Match'),
+                ...(body === undefined ? {} : { body }),
+            },
             token,
         };
         github.requests.push(request);

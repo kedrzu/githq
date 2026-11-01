@@ -19,7 +19,7 @@ export interface GitHubRequesterOptions {
 /** One request to GitHub, before the token is added. */
 export interface GitHubRequest {
     url: string;
-    method: 'GET' | 'POST';
+    method: 'GET' | 'POST' | 'PUT';
     headers: Record<string, string>;
     body?: string;
 }

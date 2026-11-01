@@ -27,6 +27,72 @@ export interface SettingsProject extends TrackedProject {
 /** A document of no repository and no project. */
 export const EMPTY_SETTINGS_DOCUMENT: SettingsDocument = { version: 1, repositories: [], projects: [] };
 
+/** What {@link parseSettings} made of a settings file. */
+export type ParsedSettings =
+    | { readonly kind: 'ok'; readonly document: SettingsDocument }
+    /** Not JSON, or not a document: an entry not understood, or two naming the same repository or project. */
+    | { readonly kind: 'unreadable' }
+    /** Written by a newer githq, which raised `version` for a field this build does not know (D13). */
+    | { readonly kind: 'newer'; readonly version: number };
+
+/**
+ * Reads the text of `settings.json`. Strict, unlike {@link readSettingsDocument}: anything not understood makes the
+ * whole file unreadable, so a sync stops rather than overwrite what it could not read (D12).
+ * @__NO_SIDE_EFFECTS__
+ */
+export function parseSettings(text: string): ParsedSettings {
+    let stored: unknown;
+    try {
+        stored = JSON.parse(text);
+    } catch {
+        return { kind: 'unreadable' };
+    }
+
+    if (!isPlainObject(stored) || typeof stored.version !== 'number' || !Number.isInteger(stored.version)) {
+        return { kind: 'unreadable' };
+    }
+
+    if (stored.version > 1) {
+        return { kind: 'newer', version: stored.version };
+    }
+
+    if (stored.version !== 1 || !Array.isArray(stored.repositories) || !Array.isArray(stored.projects)) {
+        return { kind: 'unreadable' };
+    }
+
+    const document = readSettingsDocument(stored);
+    if (
+        !document ||
+        document.repositories.length !== stored.repositories.length ||
+        document.projects.length !== stored.projects.length
+    ) {
+        return { kind: 'unreadable' };
+    }
+
+    return { kind: 'ok', document };
+}
+
+/**
+ * The text of `settings.json` for `document` (D13): formatted, keys in a stable order, a trailing newline — so each
+ * change reads as a small diff on github.com.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function serializeSettings(document: SettingsDocument): string {
+    const ordered: SettingsDocument = {
+        version: document.version,
+        repositories: document.repositories.map(({ nameWithOwner, id, tracking }) => ({ nameWithOwner, id, tracking })),
+        projects: document.projects.map(({ id, owner, ownerKind, number, title, tracking }) => ({
+            id,
+            owner,
+            ownerKind,
+            number,
+            title,
+            tracking,
+        })),
+    };
+    return `${JSON.stringify(ordered, null, 2)}\n`;
+}
+
 /**
  * The document in `stored`, `null` when it is not one of version 1. An entry not understood is left out, as is a
  * second entry naming the same repository or project.

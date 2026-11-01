@@ -17,6 +17,8 @@ import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import { EMPTY_SETTINGS_DOCUMENT, readSettingsDocument } from '@/settings/sync/SettingsDocument.js';
 import type { SettingsDocument, SettingsProject, SettingsRepository } from '@/settings/sync/SettingsDocument.js';
+import { readSettingsSaving, SETTINGS_SAVING_OFF } from '@/settings/sync/SettingsSaving.js';
+import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
@@ -56,10 +58,15 @@ export type UntrackListener = (target: TrackedTarget) => void;
 /** Where the user's settings are kept, per user: `githq.settings.<login>` (D8). */
 const KEY_PREFIX = 'githq.settings.';
 
-/** What the account slot keeps for the user: whether they chose (G2), and their settings in the file's shape (D13). */
+/** Whether the user chose (G2), and their settings in the file's shape (D13). */
 interface KeptSettings {
     readonly chosen: boolean;
     readonly document: SettingsDocument;
+}
+
+/** What the account slot keeps for the user: their settings, and whether and how they are synced (`SettingsSync`). */
+interface StoredSettings extends KeptSettings {
+    readonly saving: SettingsSaving;
 }
 
 const NOTHING_KEPT: KeptSettings = { chosen: false, document: EMPTY_SETTINGS_DOCUMENT };
@@ -104,11 +111,13 @@ export const TrackingStore = defineService({
     },
     setup({ accounts, browser, items, persistence, tabs, logger }) {
         const keptRef = shallowRef<KeptSettings>(NOTHING_KEPT);
+        const savingRef = shallowRef<SettingsSaving>(SETTINGS_SAVING_OFF);
         const trackingRef = computed(() => toTracking(keptRef.value));
         const syncRef = shallowRef<ReadonlyMap<string, TrackedSyncState>>(new Map());
         const loadedRef = shallowRef(false);
         const candidatesRef = shallowRef<TrackingCandidates | null>(null);
         const untrackListeners: UntrackListener[] = [];
+        const changeListeners: (() => void)[] = [];
 
         let session: Session | null = null;
 
@@ -117,7 +126,7 @@ export const TrackingStore = defineService({
             accounts,
             browser,
             keyPrefix: KEY_PREFIX,
-            parse: readKeptSettings,
+            parse: readStoredSettings,
             follow: () => {
                 // Read once the item store opened the local copy (`readKept`): an older choice is taken over from it.
             },
@@ -150,6 +159,13 @@ export const TrackingStore = defineService({
             get document() {
                 return keptRef.value.document;
             },
+            /**
+             * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
+             * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
+             */
+            get saving() {
+                return savingRef.value;
+            },
             /** What the tracking screens offer, once {@link loadCandidates} read it; reactive. */
             get candidates() {
                 return candidatesRef.value;
@@ -161,6 +177,9 @@ export const TrackingStore = defineService({
             untrack,
             replaceDocument,
             onUntrack,
+            onLocalChange,
+            readSaving,
+            saveSaving,
             getSyncState,
             updateSyncState,
             getProgress,
@@ -192,6 +211,7 @@ export const TrackingStore = defineService({
          */
         function choose(choice: TrackingChoice) {
             write({ ...keptRef.value, chosen: true, document: applyChoice(keptRef.value.document, choice) });
+            changedHere();
         }
 
         /**
@@ -239,11 +259,53 @@ export const TrackingStore = defineService({
         /** Tracks exactly `choice`, as {@link choose} does, without counting as the user's choice. */
         function retrack(choice: TrackingChoice) {
             write({ ...keptRef.value, document: applyChoice(keptRef.value.document, choice) });
+            changedHere();
         }
 
         /** Calls `listener` with each repository or project the user stops tracking, once it is no longer tracked. */
         function onUntrack(listener: UntrackListener) {
             untrackListeners.push(listener);
+        }
+
+        /**
+         * Calls `listener` after the user changed what is tracked in this tab — chose, tracked or untracked — not when
+         * another tab did, nor when the document was replaced.
+         */
+        function onLocalChange(listener: () => void) {
+            changeListeners.push(listener);
+        }
+
+        /**
+         * The saving state as the slot holds it now — another tab may have moved it since — taken into
+         * {@link saving}; off while signed out or before the kept settings are read.
+         */
+        function readSaving(): SettingsSaving {
+            const stored = loadedRef.value ? slot.read() : null;
+            if (stored && JSON.stringify(stored.saving) !== JSON.stringify(savingRef.value)) {
+                savingRef.value = stored.saving;
+            }
+
+            return savingRef.value;
+        }
+
+        /** Keeps the saving state next to the settings; nothing while signed out or before they are read. */
+        function saveSaving(saving: SettingsSaving) {
+            if (!session || !loadedRef.value) {
+                return;
+            }
+
+            savingRef.value = saving;
+            slot.save({ ...keptRef.value, saving });
+        }
+
+        function changedHere() {
+            if (!session) {
+                return;
+            }
+
+            for (const listener of changeListeners) {
+                listener();
+            }
         }
 
         /** The sync state of a tracked repository or project, `undefined` before its download started; reactive. */
@@ -493,7 +555,9 @@ export const TrackingStore = defineService({
 
             const before = trackingRef.value;
             keptRef.value = next;
-            slot.save(next);
+            // The saving state as another tab's sync may have left it, kept with this tab's settings.
+            savingRef.value = slot.read()?.saving ?? savingRef.value;
+            slot.save({ ...next, saving: savingRef.value });
             const after = trackingRef.value;
             tabs.publish({ kind: 'tracking', tracking: after });
 
@@ -548,12 +612,13 @@ export const TrackingStore = defineService({
                     // The sending tab saved its document before it sent: read it, as it holds what the message cannot
                     // (the untracked entries and their places). A slot that does not hold it yet — a tab of an older
                     // githq sent it — takes the message's tracking in, as a choice of exactly these would.
-                    const base = slot.read() ?? keptRef.value;
+                    const stored = slot.read();
+                    const base = stored ?? keptRef.value;
                     keptRef.value = {
-                        ...base,
                         chosen: message.tracking.chosen,
                         document: applyChoice(base.document, message.tracking),
                     };
+                    savingRef.value = stored?.saving ?? savingRef.value;
                     break;
                 }
                 case 'trackedSyncState': {
@@ -577,6 +642,7 @@ export const TrackingStore = defineService({
         function follow(account: Account | null) {
             session = null;
             keptRef.value = NOTHING_KEPT;
+            savingRef.value = SETTINGS_SAVING_OFF;
             syncRef.value = new Map();
             candidatesRef.value = null;
             loadedRef.value = false;
@@ -618,7 +684,11 @@ export const TrackingStore = defineService({
                 return;
             }
 
-            keptRef.value = slot.read() ?? takeOver(persisted?.tracking ?? null);
+            const stored = slot.read();
+            keptRef.value = stored
+                ? { chosen: stored.chosen, document: stored.document }
+                : takeOver(persisted?.tracking ?? null);
+            savingRef.value = stored?.saving ?? SETTINGS_SAVING_OFF;
             syncRef.value = new Map((persisted?.syncStates ?? []).map(state => [getSyncKey(toTarget(state)), state]));
             loadedRef.value = true;
             current.inbox.open();
@@ -634,7 +704,7 @@ export const TrackingStore = defineService({
                 chosen: tracking.chosen,
                 document: applyChoice(EMPTY_SETTINGS_DOCUMENT, tracking),
             };
-            slot.save(kept);
+            slot.save({ ...kept, saving: SETTINGS_SAVING_OFF });
             return kept;
         }
 
@@ -687,13 +757,13 @@ function toTarget(state: TrackedSyncState): TrackedTarget {
 }
 
 /** What the slot holds, `null` when nothing understood: a document of another version is not. */
-function readKeptSettings(stored: unknown): KeptSettings | null {
+function readStoredSettings(stored: unknown): StoredSettings | null {
     if (!isPlainObject(stored) || typeof stored.chosen !== 'boolean') {
         return null;
     }
 
     const document = readSettingsDocument(stored.document);
-    return document && { chosen: stored.chosen, document };
+    return document && { chosen: stored.chosen, document, saving: readSettingsSaving(stored.saving) };
 }
 
 /** The tracked entries of the document, in its order. */
