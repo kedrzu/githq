@@ -16,6 +16,7 @@ import type { DraftIssueFieldInput } from '@/edits/ItemEditor.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import type { ProjectFieldInput } from '@/edits/EditTypes.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
+import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
@@ -28,6 +29,8 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { ProjectIteration } from '@/store/ItemDetailTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getProjectPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -230,18 +233,32 @@ const texts = computed((): ProjectListTexts => ({
     return current ? t(l.iterationCurrent, { range }) : range;
   },
 }));
-const groups = computed(() =>
-  project.value && selected.value
-    ? buildProjectList({
-        project: project.value,
-        entries: selected.value,
-        grouping: grouping.value,
-        sort: options.options.sort,
-        texts: texts.value,
-        today: today.value,
-      })
-    : null,
-);
+const groups = computed(() => {
+  if (!project.value || !selected.value) {
+    return null;
+  }
+
+  const built = buildProjectList({
+    project: project.value,
+    entries: selected.value,
+    grouping: grouping.value,
+    sort: options.options.sort,
+    texts: texts.value,
+    today: today.value,
+  });
+  if (options.options.layout !== 'list') {
+    return built;
+  }
+
+  // D3: in the list, a stack's pull requests in a group share an entry — described from the whole stack, which the
+  // local copy holds even where the project does not.
+  return foldStacks({
+    groups: built,
+    getPullRequest: entry => (entry.content?.kind === 'pullRequest' ? entry.content : null),
+    stacks: groupStacks(items.all),
+    describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
+  });
+});
 const itemCount = computed(() => entries.value.filter(entry => !entry.item.isArchived).length);
 const tabs = computed((): ProjectTab[] => {
   const current = project.value;

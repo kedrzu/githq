@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import type { VueContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
@@ -8,13 +9,31 @@ import { createApp, h, ref, shallowRef } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
-import type { ListContextMenuProps, ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
+import type {
+    ListContextMenuProps,
+    ListEntry,
+    ListGroup,
+    ListLayout,
+    ListMove,
+    ListRow,
+    ListStack,
+} from './ListTypes.js';
 import ListView from './ListView.vue';
 
 // Mounted by hand rather than from a story: these tests change the groups under the list, as a sync or an edit does.
 
-/** Columns of a board: each group's key and the ids in it. */
-type Columns = readonly (readonly [string, readonly string[]])[];
+/** Columns of a board: each group's key and the ids in it, or the stacks folded there. */
+type Columns = readonly (readonly [string, readonly (SampleStackEntry | string)[]])[];
+
+/** A stack's entry: its pull requests in the group, and the one Enter opens. */
+interface SampleStackEntry {
+    readonly stack: string;
+    readonly members: readonly string[];
+    readonly open: string;
+}
+
+/** In a group between two rows: the stack S_1 of p1–p3, Enter opening p2. */
+const STACKED: Columns = [['todo', ['a1', { stack: 'S_1', members: ['p1', 'p2', 'p3'], open: 'p2' }, 'a2']]];
 
 const BOARD: Columns = [
     ['todo', ['a1', 'a2', 'a3']],
@@ -137,6 +156,94 @@ test('an item listed in two groups is selected in one place; x adds the item onc
     expect(view.listed.at(-1)).toEqual(['a', 'b']);
 });
 
+test('a stack entry is collapsed; → expands it, ← collapses it — from a row inside too, selecting the entry', async () => {
+    const view = mount(STACKED, 'list');
+    expect(rowTexts()).toEqual(['a1', 'stack S_1', 'a2']);
+
+    await userEvent.keyboard('jj{ArrowRight}');
+    expect(rowTexts()).toEqual(['a1', 'stack S_1', 'p1', 'p2', 'p3', 'a2']);
+    await userEvent.keyboard('jj');
+    await expect.poll(selectedCard).toBe('p2');
+
+    await userEvent.keyboard('{ArrowLeft}');
+    expect(rowTexts()).toEqual(['a1', 'stack S_1', 'a2']);
+    await expect.poll(selectedCard).toBe('stack S_1');
+
+    // The chevron toggles it and opens nothing.
+    await userEvent.click(page.getByRole('button', { name: 'Expand the stack' }));
+    expect(rowTexts()).toContain('p3');
+    await userEvent.click(page.getByRole('button', { name: 'Collapse the stack' }));
+    expect(rowTexts()).not.toContain('p3');
+    expect(view.opened).toEqual([]);
+});
+
+test('expanding a stack lasts across the lists of the session', async () => {
+    const container = createListContainer();
+    const first = mount(STACKED, 'list', { container });
+    await userEvent.keyboard('jj{ArrowRight}');
+    first.unmount();
+
+    mount([['done', [{ stack: 'S_1', members: ['p1', 'p3'], open: 'p1' }]]], 'list', { container });
+    expect(rowTexts()).toEqual(['stack S_1', 'p1', 'p3']);
+});
+
+test('the items handed over walk a stack’s pull requests one by one, never the entry’s own id', async () => {
+    const view = mount(STACKED, 'list');
+    expect(view.listed.at(-1)).toEqual(['a1', 'p1', 'p2', 'p3', 'a2']);
+
+    await userEvent.keyboard('jj{ArrowRight}');
+    expect(view.listed.at(-1)).toEqual(['a1', 'p1', 'p2', 'p3', 'a2']);
+});
+
+test('Enter or a click on an entry opens the pull request it names; with one open, moving onto it opens that one', async () => {
+    const view = mount(STACKED, 'list');
+
+    await userEvent.keyboard('jj{Enter}');
+    expect(view.opened).toEqual(['p2']);
+
+    view.openedId.value = 'p2';
+    await userEvent.keyboard('k');
+    view.openedId.value = 'a1';
+    await userEvent.keyboard('j');
+    expect(view.opened).toEqual(['p2', 'a1', 'p2']);
+
+    await userEvent.click(page.getByText('stack S_1'));
+    expect(view.opened.at(-1)).toBe('p2');
+});
+
+test('an item opened inside a collapsed entry selects the entry; once expanded, its row', async () => {
+    const view = mount(STACKED, 'list');
+
+    view.selectedId.value = 'p3';
+    await expect.poll(selectedCard).toBe('stack S_1');
+
+    // A sync reorders the group: the entry stays selected.
+    view.columns.value = [['todo', ['a2', { stack: 'S_1', members: ['p1', 'p2', 'p3'], open: 'p2' }, 'a1']]];
+    await expect.poll(rowTexts).toEqual(['a2', 'stack S_1', 'a1']);
+    expect(selectedCard()).toBe('stack S_1');
+
+    await userEvent.keyboard('{ArrowRight}');
+    view.selectedId.value = 'p1';
+    await expect.poll(selectedCard).toBe('p1');
+});
+
+test('x on a collapsed entry takes all its pull requests, on a row inside that one alone; the menu acts on them', async () => {
+    const view = mount(STACKED, 'list', { contextMenu: true });
+
+    await userEvent.keyboard('jjx');
+    expect(view.checkedIds.value).toEqual(['p1', 'p2', 'p3']);
+    await userEvent.keyboard('x');
+    expect(view.checkedIds.value).toEqual([]);
+
+    await userEvent.keyboard('{ArrowRight}jx');
+    expect(view.checkedIds.value).toEqual(['p1']);
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.click(page.getByText('stack S_1'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Open p1,p2,p3' }));
+    expect(view.opened.at(-1)).toBe('p2');
+});
+
 /** Native drag and drop of `card` onto `column`, as the browser fires it. */
 function drag(card: Element | null, column: Element) {
     const dataTransfer = new DataTransfer();
@@ -150,6 +257,8 @@ interface MountOptions {
     readonly canMove?: (entry: ListEntry<string>, from: string, to: string) => boolean;
     /** Gives the list a context menu naming the ids it is drawn for, with an "Open" button. */
     readonly contextMenu?: boolean;
+    /** The app's services, shared by the lists mounted in one test; a container of its own when not given. */
+    readonly container?: VueContainer;
 }
 
 test('a right-click on a row opens the context menu for it alone and selects it; on one of the items edited together, for all of them', async () => {
@@ -190,8 +299,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     const moves: ListMove[] = [];
     const listed: (readonly string[])[] = [];
 
-    const container = createContainer();
-    container.set(LanguageContext, () => APP_LANGUAGE);
+    const container = options.container ?? createListContainer();
     const host = document.createElement('div');
     host.style.height = '100vh';
     host.style.display = 'flex';
@@ -219,7 +327,8 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                     onListed: (ids: readonly string[]) => listed.push(ids),
                 },
                 {
-                    row: ({ entry }: { entry: ListEntry<string> }) => h('span', entry.value),
+                    row: ({ entry, stack }: { entry: ListEntry<string>; stack: ListStack | null }) =>
+                        h('span', stack ? `stack ${stack.id}` : entry.value),
                     card: ({ entry }: { entry: ListEntry<string> }) => h('span', entry.value),
                     ...(options.contextMenu && {
                         contextMenu: ({ ids, open }: ListContextMenuProps) =>
@@ -230,22 +339,62 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     });
     app.use(IocPlugin, { container });
     app.mount(host);
-    onTestFinished(() => {
-        app.unmount();
-        host.remove();
-    });
+    let mounted = true;
+    onTestFinished(unmount);
 
-    return { columns, checkedIds, openedId, opened, moves, listed };
+    return { columns, selectedId, checkedIds, openedId, opened, moves, listed, unmount };
+
+    function unmount() {
+        if (mounted) {
+            mounted = false;
+            app.unmount();
+            host.remove();
+        }
+    }
 }
 
-function toGroup(key: string, ids: readonly string[]): ListGroup<string> {
-    return {
-        key,
-        label: key,
-        arrived: true,
-        droppable: true,
-        rows: ids.map(id => ({ key: `${key}:${id}`, id, value: id, nested: [] })),
+function createListContainer() {
+    const container = createContainer();
+    container.set(LanguageContext, () => APP_LANGUAGE);
+    return container;
+}
+
+function toGroup(key: string, ids: readonly (SampleStackEntry | string)[]): ListGroup<string> {
+    return { key, label: key, arrived: true, droppable: true, rows: ids.map(id => toRow(key, id)) };
+}
+
+function toRow(group: string, row: SampleStackEntry | string): ListRow<string> {
+    if (typeof row === 'string') {
+        return { key: `${group}:${row}`, id: row, value: row, nested: [] };
+    }
+
+    const stack: ListStack = {
+        id: row.stack,
+        description: {
+            name: { title: row.stack, issueId: null },
+            size: row.members.length,
+            held: row.members.length,
+            pips: [],
+            state: { kind: 'ready', openCount: row.members.length },
+            landed: 0,
+            updatedAt: '',
+        },
+        open: row.open,
+        pullRequests: [],
     };
+    const id = `stack:${row.stack}`;
+    return {
+        key: `${group}:${id}`,
+        id,
+        value: row.open,
+        nested: row.members.map(member => ({ key: `${group}:${member}`, id: member, value: member })),
+        stack,
+    };
+}
+
+/** The texts of the rows shown, top to bottom. */
+function rowTexts() {
+    return [...document.querySelectorAll('[data-entry-key]')].map(row => row.textContent?.trim() ?? '');
 }
 
 /** The text of the selected card or row, or `null`. */

@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9); `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -15,8 +15,17 @@ import { followSelection } from '@/utils/followSelection.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
+import { ExpandedStacks } from './ExpandedStacks.js';
 import ListGroupMarker from './ListGroupMarker.vue';
-import type { ListContextMenuProps, ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
+import type {
+  ListContextMenuProps,
+  ListEntry,
+  ListGroup,
+  ListLayout,
+  ListMove,
+  ListRow,
+  ListStack,
+} from './ListTypes.js';
 import * as l from './ListView.loc.js';
 
 const props = withDefaults(
@@ -36,15 +45,18 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** Enter or a click on an entry, or the selection moved while an item is open. */
   open: [id: string];
-  /** The items the list shows, top to bottom (column by column on the board), each once. */
+  /**
+   * The items the list shows, top to bottom (column by column on the board), each once: a stack's entry gives its pull
+   * requests, collapsed or not.
+   */
   listed: [ids: readonly string[]];
   /** An entry was dropped into another group, or moved there with `⇧←`/`⇧→`. */
   move: [move: ListMove];
 }>();
 
-/** The selected item's id. */
+/** The selected item's id; on a stack's entry, the pull request Enter opens or the one opened inside it. */
 const selectedId = defineModel<string | null>('selectedId', { default: null });
-/** The items edited together (`x`), in the list's order. */
+/** The items edited together (`x`), in the list's order — never a stack entry's own id. */
 const checkedIds = defineModel<readonly string[]>('checkedIds', { default: () => [] });
 
 defineSlots<{
@@ -66,8 +78,10 @@ interface ListSlotProps<TValue> {
   /** The entry it is nested under. */
   parent: ListEntry<TValue> | null;
   group: ListGroup<TValue>;
-  /** Among the items edited together. */
+  /** Among the items edited together; a stack's entry when all its pull requests are. */
   checked: boolean;
+  /** Set on a stack's entry: draw it as one. */
+  stack: ListStack | null;
 }
 
 /** An entry where the list shows it. */
@@ -76,8 +90,14 @@ interface Placed {
   readonly group: ListGroup<T>;
   /** On the board, the column's index. */
   readonly column: number;
-  /** Nested under another entry: never moved on its own. */
-  readonly nested: boolean;
+  /** The entry it is nested under — it is never moved on its own. */
+  readonly parent: ListRow<T> | null;
+  /** Set on a stack's entry. */
+  readonly stack: ListStack | null;
+  /** The items it stands for: its own, or a stack entry's pull requests. */
+  readonly ids: readonly string[];
+  /** The item Enter opens. */
+  readonly openId: string;
 }
 
 /** An entry being dragged. */
@@ -88,14 +108,20 @@ interface Dragged {
 
 const t = useTranslate();
 const browser = useService(Browser);
+const expandedStacks = useService(ExpandedStacks);
 const bodyRef = useTemplateRef<HTMLElement>('body');
 const collapsed = ref<ReadonlySet<string>>(new Set());
 const selectedKey = ref<string | null>(null);
 const dragged = shallowRef<Dragged | null>(null);
 const dropTarget = ref<string | null>(null);
 const menuIds = shallowRef<readonly string[]>([]);
+/** The item the context menu's "Open" opens; `null` when it is for several. */
+const menuOpenId = ref<string | null>(null);
 
-/** Every entry the list shows, in its order: the board's column by column, a collapsed group's left out. */
+/**
+ * Every entry the list shows, in its order: the board's column by column, a collapsed group's left out, and so are
+ * the rows of a collapsed stack's entry.
+ */
 const placed = computed(() => {
   const entries = new Map<string, Placed>();
   for (const [column, group] of props.groups.entries()) {
@@ -104,9 +130,26 @@ const placed = computed(() => {
     }
 
     for (const row of group.rows) {
-      entries.set(row.key, { entry: row, group, column, nested: false });
-      for (const nested of row.nested) {
-        entries.set(nested.key, { entry: nested, group, column, nested: true });
+      const stack = row.stack ?? null;
+      entries.set(row.key, {
+        entry: row,
+        group,
+        column,
+        parent: null,
+        stack,
+        ids: stack ? row.nested.map(nested => nested.id) : [row.id],
+        openId: stack ? stack.open : row.id,
+      });
+      for (const nested of getNestedShown(row)) {
+        entries.set(nested.key, {
+          entry: nested,
+          group,
+          column,
+          parent: row,
+          stack: null,
+          ids: [nested.id],
+          openId: nested.id,
+        });
       }
     }
   }
@@ -123,16 +166,20 @@ const columns = computed(() => {
 
   return keys;
 });
-const listedIds = computed(() => [...new Set([...placed.value.values()].map(({ entry }) => entry.id))]);
+const listedIds = computed(() => [...new Set([...placed.value.values()].flatMap(({ ids }) => ids))]);
 
-// The selection given from outside (an item opened by its address, a toast's request) lands on the item's first
-// entry; one already on that item stays where it is.
+// The selection given from outside (an item opened by its address, a toast's request, `J` in an opened item) lands on
+// the item's first entry — a collapsed stack's entry for one of its pull requests; one already on that item stays
+// where it is. On an expanded stack's entry, another of its pull requests moves it onto that one's row.
 watch(
   selectedId,
   id => {
-    const current = selectedKey.value === null ? undefined : placed.value.get(selectedKey.value);
-    if (current?.entry.id !== id) {
+    const key = selectedKey.value;
+    const current = key === null ? undefined : placed.value.get(key);
+    if (key === null || id === null || !current?.ids.includes(id)) {
       selectedKey.value = id === null ? null : findKey(order.value, id);
+    } else if (current.stack && id !== current.openId && expandedStacks.has(current.stack.id)) {
+      selectedKey.value = order.value.find(other => isNestedRowOf(other, key, id)) ?? key;
     }
   },
   { immediate: true },
@@ -218,6 +265,8 @@ onWindowEvent('keydown', event => {
       if (board) {
         event.preventDefault();
         stepColumn(event.key === 'ArrowLeft' ? -1 : 1);
+      } else if (expandSelected(event.key === 'ArrowRight')) {
+        event.preventDefault();
       }
 
       return;
@@ -227,7 +276,7 @@ onWindowEvent('keydown', event => {
       return;
     case 'Enter':
       if (!(event.target instanceof HTMLButtonElement || event.target instanceof HTMLAnchorElement)) {
-        const id = currentId();
+        const id = currentOpenId();
         if (id !== null) {
           event.preventDefault();
           emit('open', id);
@@ -281,6 +330,17 @@ function getKeyCommands(): Command[] {
         menu: false,
       },
     );
+  }
+
+  if (props.layout === 'list' && [...placed.value.values()].some(({ stack }) => stack !== null)) {
+    commands.push({
+      id: 'list.toggleStack',
+      title: t(l.toggleStack),
+      section: 'view',
+      key: 'ArrowRight',
+      otherKeys: ['ArrowLeft'],
+      menu: false,
+    });
   }
 
   return commands;
@@ -338,7 +398,7 @@ function go(key: string | null) {
 function moveSelected(by: 1 | -1) {
   const key = selectedKey.value;
   const current = key === null ? undefined : placed.value.get(key);
-  if (!current || current.nested) {
+  if (!current || current.parent) {
     return;
   }
 
@@ -351,22 +411,61 @@ function moveSelected(by: 1 | -1) {
   }
 }
 
+/** `x`: the selected entry's items in or out of the items edited together — a stack's entry all of them (D20). */
 function toggleChecked() {
-  const id = currentId();
-  if (id === null) {
+  const ids = currentIds();
+  if (ids.length === 0) {
     return;
   }
 
-  setChecked(
-    checkedIds.value.includes(id) ? checkedIds.value.filter(other => other !== id) : [...checkedIds.value, id],
-  );
+  const checked = checkedIds.value;
+  setChecked(ids.every(id => checked.includes(id)) ? checked.filter(id => !ids.includes(id)) : [...checked, ...ids]);
 }
 
 /** Adds the selected entry and the one `by` away, and moves there. */
 function extend(by: 1 | -1) {
-  const before = currentId();
-  const after = step(by);
-  setChecked([...checkedIds.value, ...[before, after].filter(id => id !== null)]);
+  const before = currentIds();
+  step(by);
+  setChecked([...checkedIds.value, ...before, ...currentIds()]);
+}
+
+/**
+ * `→` expands the selected stack's entry, `←` collapses it — or, on one of its rows, collapses it and selects it.
+ * Whether it was a stack's to expand or collapse.
+ */
+function expandSelected(expand: boolean) {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  if (current?.stack) {
+    expandedStacks.set(current.stack.id, expand);
+    return true;
+  }
+
+  const parent = current?.parent;
+  if (!expand && parent?.stack) {
+    // Selected before it collapses, so the selection never sees its row go.
+    selectedKey.value = parent.key;
+    expandedStacks.set(parent.stack.id, false);
+    void nextTick(scrollToSelected);
+    return true;
+  }
+
+  return false;
+}
+
+function toggleStack(stack: ListStack) {
+  expandedStacks.set(stack.id, !expandedStacks.has(stack.id));
+}
+
+/** The rows nested under the row the list shows: none of a collapsed stack's entry. */
+function getNestedShown(row: ListRow<T>) {
+  return row.stack && !expandedStacks.has(row.stack.id) ? [] : row.nested;
+}
+
+/** All the items the entry stands for are among those edited together. */
+function isChecked(key: string) {
+  const ids = placed.value.get(key)?.ids ?? [];
+  return ids.length > 0 && ids.every(id => checkedIds.value.includes(id));
 }
 
 /** In the list's order, each once. */
@@ -376,26 +475,43 @@ function setChecked(ids: readonly string[]) {
 }
 
 function openEntry(key: string) {
-  const id = select(key);
+  select(key);
+  const id = placed.value.get(key)?.openId ?? null;
   if (id !== null) {
     emit('open', id);
   }
 }
 
-/** Selects the entry; returns its item's id. */
+/**
+ * Selects the entry; returns its item's id — on a stack's entry the selected pull request when it is one of its,
+ * else the one Enter opens.
+ */
 function select(key: string | null) {
-  const id = key === null ? null : (placed.value.get(key)?.entry.id ?? null);
+  const current = key === null ? undefined : placed.value.get(key);
+  const kept = selectedId.value;
+  const id = current?.stack && kept !== null && current.ids.includes(kept) ? kept : (current?.openId ?? null);
   selectedKey.value = key;
   selectedId.value = id;
   return id;
 }
 
 /**
- * The selected item's id — read from the entry, as the model given by the owner changes only once it re-renders.
+ * The items the selected entry stands for — read from the entry, as the model given by the owner changes only once it
+ * re-renders.
  */
-function currentId() {
+function currentIds(): readonly string[] {
   const key = selectedKey.value;
-  return key === null ? selectedId.value : (placed.value.get(key)?.entry.id ?? null);
+  if (key === null) {
+    return selectedId.value === null ? [] : [selectedId.value];
+  }
+
+  return placed.value.get(key)?.ids ?? [];
+}
+
+/** The item Enter opens for the selected entry. */
+function currentOpenId() {
+  const key = selectedKey.value;
+  return key === null ? selectedId.value : (placed.value.get(key)?.openId ?? null);
 }
 
 function openSelectedOnGitHub() {
@@ -470,30 +586,43 @@ function endDrag() {
 function prepareContextMenu(event: MouseEvent) {
   const row = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-entry-key]') : null;
   const key = row?.dataset.entryKey;
-  const entry = key === undefined ? undefined : placed.value.get(key)?.entry;
-  if (key === undefined || !entry) {
+  const current = key === undefined ? undefined : placed.value.get(key);
+  if (key === undefined || !current) {
     event.stopImmediatePropagation();
     return;
   }
 
-  if (checkedIds.value.length > 1 && checkedIds.value.includes(entry.id)) {
-    menuIds.value = checkedIds.value;
+  const checked = checkedIds.value;
+  if (checked.length > 1 && current.ids.every(id => checked.includes(id))) {
+    menuIds.value = checked;
+    menuOpenId.value = null;
     return;
   }
 
-  menuIds.value = [entry.id];
+  menuIds.value = current.ids;
+  menuOpenId.value = current.openId;
   select(key);
 }
 
 function openFromMenu() {
-  const [id] = menuIds.value;
-  if (menuIds.value.length === 1 && id !== undefined) {
-    emit('open', id);
+  if (menuOpenId.value !== null) {
+    emit('open', menuOpenId.value);
   }
 }
 
+/** The item's own entry, else the stack's entry it is in. */
 function findKey(keys: readonly string[], id: string) {
-  return keys.find(key => placed.value.get(key)?.entry.id === id) ?? null;
+  return (
+    keys.find(key => placed.value.get(key)?.entry.id === id) ??
+    keys.find(key => placed.value.get(key)?.ids.includes(id)) ??
+    null
+  );
+}
+
+/** The row of the item nested under the entry `parentKey`. */
+function isNestedRowOf(key: string, parentKey: string, id: string) {
+  const current = placed.value.get(key);
+  return current?.parent?.key === parentKey && current.entry.id === id;
 }
 </script>
 
@@ -581,24 +710,40 @@ function findKey(keys: readonly string[], id: string) {
                 <li
                   v-for="{ entry, parent } in [
                     { entry: row, parent: null },
-                    ...row.nested.map(nested => ({ entry: nested, parent: row })),
+                    ...getNestedShown(row).map(nested => ({ entry: nested, parent: row })),
                   ]"
                   :key="entry.key"
                   :class="[
                     css.listView_row,
                     selectedKey === entry.key && css.listView_row_selected,
-                    checkedIds.includes(entry.id) && css.listView_row_checked,
+                    isChecked(entry.key) && css.listView_row_checked,
                   ]"
                   :aria-current="selectedKey === entry.key ? 'true' : undefined"
                   :data-entry-key="entry.key"
                   @click="openEntry(entry.key)"
                 >
+                  <!-- In the row's gutter (SP10); toggling it opens nothing. -->
+                  <button
+                    v-if="!parent && row.stack"
+                    type="button"
+                    tabindex="-1"
+                    :class="css.listView_stackToggle"
+                    :aria-expanded="expandedStacks.has(row.stack.id)"
+                    :aria-label="t(expandedStacks.has(row.stack.id) ? l.collapseStack : l.expandStack)"
+                    @click.stop="toggleStack(row.stack)"
+                  >
+                    <component
+                      :is="expandedStacks.has(row.stack.id) ? ChevronDown : ChevronRight"
+                      aria-hidden="true"
+                    />
+                  </button>
                   <slot
                     name="row"
                     :entry="entry"
                     :parent="parent"
                     :group="group"
-                    :checked="checkedIds.includes(entry.id)"
+                    :checked="isChecked(entry.key)"
+                    :stack="parent ? null : (row.stack ?? null)"
                   />
                 </li>
               </template>
@@ -657,14 +802,14 @@ function findKey(keys: readonly string[], id: string) {
               <li
                 v-for="{ entry, parent } in [
                   { entry: row, parent: null },
-                  ...row.nested.map(nested => ({ entry: nested, parent: row })),
+                  ...getNestedShown(row).map(nested => ({ entry: nested, parent: row })),
                 ]"
                 :key="entry.key"
                 :class="[
                   css.listView_card,
                   parent && css.listView_card_nested,
                   selectedKey === entry.key && css.listView_card_selected,
-                  checkedIds.includes(entry.id) && css.listView_card_checked,
+                  isChecked(entry.key) && css.listView_card_checked,
                   dragged?.entry.key === entry.key && css.listView_card_dragged,
                 ]"
                 :aria-current="selectedKey === entry.key ? 'true' : undefined"
@@ -679,7 +824,8 @@ function findKey(keys: readonly string[], id: string) {
                   :entry="entry"
                   :parent="parent"
                   :group="group"
-                  :checked="checkedIds.includes(entry.id)"
+                  :checked="isChecked(entry.key)"
+                  :stack="parent ? null : (row.stack ?? null)"
                 />
               </li>
             </template>
@@ -790,10 +936,38 @@ function findKey(keys: readonly string[], id: string) {
 }
 
 .listView_row {
+  position: relative;
   cursor: default;
 
   &:hover {
     background: $color-bg-2;
+  }
+}
+
+// In the 16px gutter left of the row's icon, level with its first line.
+.listView_stackToggle {
+  position: absolute;
+  top: 9px;
+  left: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  color: $color-fg-3;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $color-fg-2;
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
   }
 }
 
