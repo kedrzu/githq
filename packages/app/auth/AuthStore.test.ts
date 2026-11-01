@@ -7,6 +7,7 @@ import {
     OAUTH_SCOPES,
     OAUTH_STATE_PATTERN,
     OAUTH_TOKEN_PATH,
+    SIGNED_IN_HINT_COOKIE,
 } from '@githq/github/oauth.js';
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
@@ -299,16 +300,17 @@ function fakeGitHub(options: FakeGitHubOptions) {
     return { fetch, exchanges, tokensSeen };
 }
 
-function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, string> = {}) {
+function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, string> = {}, origin: string = ORIGIN) {
     const local = new Map(Object.entries(stored));
     const session = new Map<string, string>();
     const navigatedTo: string[] = [];
+    const cookies: string[] = [];
     const storageListeners: ((key: string | null) => void)[] = [];
     const browser: BrowserShape = {
         fetch: github.fetch,
         localStorage: mapStorage(local),
         sessionStorage: mapStorage(session),
-        origin: ORIGIN,
+        origin,
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
@@ -317,6 +319,9 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         },
         replaceLocation: () => {},
         openInNewTab: () => {},
+        writeCookie: cookie => {
+            cookies.push(cookie);
+        },
         onLocalStorageChange: listener => {
             storageListeners.push(listener);
         },
@@ -349,7 +354,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         }
     }
 
-    return { auth, container, browser: { local, session, navigatedTo, fromAnotherTab } };
+    return { auth, container, browser: { local, session, navigatedTo, cookies, fromAnotherTab } };
 }
 
 function mapStorage(map: Map<string, string>): BrowserLocalStorage {
@@ -367,3 +372,62 @@ function mapStorage(map: Map<string, string>): BrowserLocalStorage {
         },
     };
 }
+
+const SET = `${SIGNED_IN_HINT_COOKIE.name}=${SIGNED_IN_HINT_COOKIE.value}; Path=/; SameSite=Lax; Max-Age=31536000`;
+const SET_SECURE = `${SET}; Secure`;
+const CLEARED = `${SIGNED_IN_HINT_COOKIE.name}=; Path=/; SameSite=Lax; Max-Age=0`;
+const CLEARED_SECURE = `${CLEARED}; Secure`;
+
+test('the hint cookie follows the token: set at start, on sign-in and after another tab signs in; cleared on every sign-out', async () => {
+    // A stored token sets it at start, before GitHub has answered; a rejection clears it.
+    const rejecting = setup(fakeGitHub({ scopes: ALL_SCOPES, rejectToken: true }), {
+        [TOKEN_KEY]: 'gho_revoked',
+        [VIEWER_KEY]: JSON.stringify(VIEWER),
+    });
+    expect(rejecting.browser.cookies).toEqual([SET_SECURE]);
+    await rejecting.auth.refreshViewer();
+    expect(rejecting.browser.cookies).toEqual([SET_SECURE, CLEARED_SECURE]);
+
+    // No token: cleared at start; signing in sets it, signing out clears it.
+    const signedOut = setup(fakeGitHub({ scopes: ALL_SCOPES }));
+    expect(signedOut.browser.cookies).toEqual([CLEARED_SECURE]);
+    await signedOut.auth.signInWithToken('gho_new');
+    expect(signedOut.browser.cookies).toEqual([CLEARED_SECURE, SET_SECURE]);
+    signedOut.auth.signOut();
+    expect(signedOut.browser.cookies).toEqual([CLEARED_SECURE, SET_SECURE, CLEARED_SECURE]);
+
+    // Another tab signs in, then out.
+    const followed = setup(fakeGitHub({ scopes: ALL_SCOPES }));
+    followed.browser.fromAnotherTab({ [TOKEN_KEY]: 'gho_ok', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+    expect(followed.browser.cookies).toEqual([CLEARED_SECURE, SET_SECURE]);
+    followed.browser.fromAnotherTab({ [TOKEN_KEY]: null, [VIEWER_KEY]: null });
+    expect(followed.browser.cookies).toEqual([CLEARED_SECURE, SET_SECURE, CLEARED_SECURE]);
+});
+
+test('a failed sign-in, and a token whose user is being fetched, leave the cookie alone', async () => {
+    const failing = setup(fakeGitHub({ scopes: ALL_SCOPES, rejectToken: true }));
+    await failing.auth.signInWithToken('gho_bad');
+    expect(failing.browser.cookies).toEqual([CLEARED_SECURE]);
+
+    // Not signed in yet (no stored user), but the token is stored: the cookie is set and stays so.
+    const fetching = setup(fakeGitHub({ scopes: ALL_SCOPES }), { [TOKEN_KEY]: 'gho_ok' });
+    expect(fetching.auth.signedIn).toBe(false);
+    await fetching.auth.ready();
+    expect(fetching.browser.cookies).toEqual([SET_SECURE]);
+});
+
+test('the hint cookie carries neither the token nor the user, and is Secure exactly on https', async () => {
+    const https = setup(fakeGitHub({ scopes: ALL_SCOPES }), {}, 'https://githq.dev');
+    await https.auth.signInWithToken('gho_secret');
+    https.auth.signOut();
+    expect(https.browser.cookies).toEqual([`${CLEARED}; Secure`, `${SET}; Secure`, `${CLEARED}; Secure`]);
+
+    const http = setup(fakeGitHub({ scopes: ALL_SCOPES }), {}, 'http://localhost:8787');
+    await http.auth.signInWithToken('gho_secret');
+    expect(http.browser.cookies).toEqual([CLEARED, SET]);
+
+    for (const cookie of [...https.browser.cookies, ...http.browser.cookies]) {
+        expect(cookie).not.toContain('gho_');
+        expect(cookie).not.toContain(VIEWER.login);
+    }
+});

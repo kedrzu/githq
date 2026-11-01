@@ -1,0 +1,32 @@
+eyebrow:
+  en: Why githq
+titleLine1:
+  en: The best of both.
+titleLine2:
+  en: Without the second tool.
+github:
+  en: github.com
+tracker:
+  en: A dedicated tracker
+nextToCode:
+  en: Your work lives next to your code
+instant:
+  en: Instant — no spinner on navigation
+keyboard:
+  en: Everything from the keyboard
+allRepositories:
+  en: All your repositories in one view
+nothingToSync:
+  en: Nothing to import or keep in sync
+price:
+  en: Price for your team
+yes:
+  en: 'Yes'
+no:
+  en: 'No'
+partly:
+  en: Partly
+free:
+  en: Free
+perSeat:
+  en: Per seat

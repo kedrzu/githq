@@ -524,6 +524,7 @@ async function setup(github: FakeGitHub, login: string) {
         onOnlineChange: listener => {
             onlineListeners.push(listener);
         },
+        writeCookie: () => {},
         estimateStorage: () => Promise.resolve(null),
         ...createTestTabs().open(),
     };

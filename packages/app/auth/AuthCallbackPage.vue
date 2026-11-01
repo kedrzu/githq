@@ -1,4 +1,4 @@
-<!-- `/auth/callback`: where GitHub sends the browser back. Finishes the sign-in (`AuthStore.completeSignIn`) and goes on to where the user was heading, or back to sign-in with the reason in its address (`/login?failed=…`), which it explains — after a reload too. -->
+<!-- `/auth/callback`: where GitHub sends the browser back. Finishes the sign-in (`AuthStore.completeSignIn`) and goes on to where the user was heading, or back to the landing page with the reason in its address (`/?failed=…`), which its banner explains — after a reload too. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
@@ -10,7 +10,7 @@ import { useRoute, useRouter } from 'vue-router';
 import * as l from './AuthCallbackPage.loc.js';
 import { AuthStore } from './AuthStore.js';
 import type { SignInResult } from './AuthStore.js';
-import { SIGN_IN_PATH } from './routeAccess.js';
+import { HOME_PATH } from './routeAccess.js';
 
 const auth = useService(AuthStore);
 const route = useRoute();
@@ -22,7 +22,7 @@ onMounted(async () => {
   const result = await completeSignIn();
 
   // `replace`: the callback's address, with its one-time code, does not stay in the history.
-  await router.replace(result.ok ? result.returnTo : { path: SIGN_IN_PATH, query: { failed: result.failure } });
+  await router.replace(result.ok ? result.returnTo : { path: HOME_PATH, query: { failed: result.failure } });
 });
 
 /** The sign-in's end; whatever goes wrong, a failure — the page must never stay on "Signing in…". */

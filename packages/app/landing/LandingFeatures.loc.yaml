@@ -1,0 +1,74 @@
+instantKicker:
+  en: Instant
+instantTitle:
+  en: |-
+    Instant isn’t a feature.
+    It’s the whole point.
+instantBody:
+  en: githq keeps a copy of your GitHub work in the browser and refreshes it in the background. Screens open from that copy and edits land before GitHub even answers. There is no spinner between you and the next issue.
+instantLocalCopy:
+  en: Every screen opens from a local copy
+instantEdits:
+  en: Edits show at once, written to GitHub behind the scenes
+instantRefresh:
+  en: Background refresh on GitHub’s free “not modified” answers
+instantAlt:
+  en: A project board in githq, its issues in Todo, In progress and In review columns.
+instantToast:
+  en: Status → In progress · saved to GitHub
+myWorkKicker:
+  en: My work
+myWorkTitle:
+  en: |-
+    Everything that’s yours.
+    Every repo. One screen.
+myWorkBody:
+  en: Issues assigned to you, your pull requests with their CI and review state, the reviews waiting on you, the projects you track. A pull request that closes your issue sits right under it, so the same work never shows up twice.
+myWorkAssigned:
+  en: Assigned issues across every repository
+myWorkPullRequests:
+  en: 'Your PRs: checks, reviews, draft, mergeable'
+myWorkReviews:
+  en: Reviews requested from you, front and center
+myWorkAlt:
+  en: githq’s “My work” list, grouped into reviews requested from you, your pull requests and the issues assigned to you.
+keyboardKicker:
+  en: Keyboard
+keyboardTitle:
+  en: |-
+    Your hands never
+    leave the keyboard.
+keyboardBody:
+  en: ⌘K finds any issue, repository or action. A single key sets the status, assignee or labels of whatever is selected — one item or twenty. Another opens it on github.com when it’s time to read the diff.
+keyboardKeys:
+  en: Shortcuts
+keyCommandMenu:
+  en: Command menu
+keyNewIssue:
+  en: New issue
+keySetStatus:
+  en: Set status
+keyAssignee:
+  en: Assignee
+keyLabels:
+  en: Labels
+keyOpenOnGitHub:
+  en: Open on GitHub
+keyboardAlt:
+  en: githq’s command menu open over a list, finding projects, repositories, issues and actions for “plat”.
+faithfulKicker:
+  en: Faithful to GitHub
+faithfulTitle:
+  en: |-
+    GitHub’s model.
+    Linear’s feel.
+faithfulBody:
+  en: If your project has a Status field, githq shows that Status. Custom fields, iterations, list or board — whatever your GitHub Project defines, and nothing githq made up. Change it here and it’s changed on github.com. And the other way round.
+faithfulFields:
+  en: Projects (v2) fields, views and iterations
+faithfulTwoWay:
+  en: Two-way by design — GitHub is the source of truth
+faithfulAddresses:
+  en: Every githq address is a GitHub address
+faithfulAlt:
+  en: An issue open in githq, with its assignees, labels, milestone, sub-issues and the fields of two GitHub Projects.

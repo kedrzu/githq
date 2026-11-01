@@ -7,6 +7,9 @@ export default [
         '**/dist/**',
         '**/.output/**',
         '**/.nuxt/**',
+        // The local build's (`build:local`), the server-rendered landing page's chunks included.
+        '**/.output-local/**',
+        '**/.nuxt-local/**',
         '**/storybook-static/**',
         '**/playwright-report/**',
         '**/*.loc.ts',

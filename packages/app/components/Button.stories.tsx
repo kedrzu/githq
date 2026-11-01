@@ -1,6 +1,6 @@
 import { Form } from '@nzyme/vue-forms/components/Form.jsx';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ArrowUpRight, Github, ListFilter, LogOut, Plus, Rows3, Search } from 'lucide-vue-next';
+import { ArrowUpRight, Github, ListFilter, LogOut, Plus, Rows3, Search, Star } from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow, StorySection } from '@/.storybook/StoryLayout.jsx';
@@ -28,6 +28,23 @@ export const Gallery: Story = {
                         kbd="Enter"
                     >
                         Sign in with GitHub
+                    </Button>
+                </StoryRow>
+            </StorySection>
+            <StorySection title="The landing page's hero — light and secondary, extra large">
+                <StoryRow>
+                    <Button
+                        variant="light"
+                        size="xl"
+                        icon={Github}
+                    >
+                        Sign in with GitHub
+                    </Button>
+                    <Button
+                        size="xl"
+                        icon={Star}
+                    >
+                        Star on GitHub
                     </Button>
                 </StoryRow>
             </StorySection>

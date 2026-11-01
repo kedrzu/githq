@@ -14,7 +14,7 @@ test('a GitHub request the test did not mock never reaches GitHub, and fails the
     const github = new GitHubMock();
     await github.install(context);
     const page = await context.newPage();
-    await page.goto('/login');
+    await page.goto('/');
 
     const outcomes = await page.evaluate(async () => {
         const requests = [
@@ -57,7 +57,7 @@ test('the token exchange is never left to the Worker, which would ask GitHub', a
     const github = new GitHubMock();
     await github.install(context);
     const page = await context.newPage();
-    await page.goto('/login');
+    await page.goto('/');
 
     const status = await page.evaluate(async () => {
         const response = await fetch('/api/auth/token', {
@@ -95,7 +95,7 @@ test('a search the GitHub world does not know is unrouted, naming its query', as
     await github.install(context);
     new GitHubWorld('octocat').install(github);
     const page = await context.newPage();
-    await page.goto('/login');
+    await page.goto('/');
 
     const outcomes = await page.evaluate(async () => {
         const queries = ['is:open is:pr author:@me archived:false', 'is:open is:pr author:@me'];

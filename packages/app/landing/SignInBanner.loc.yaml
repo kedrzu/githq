@@ -1,0 +1,18 @@
+didntFinish:
+  en: Sign-in didn't finish.
+cancelled:
+  en: Access was cancelled on GitHub's screen, so nothing was shared with githq.
+failed:
+  en: Something went wrong on the way back from GitHub, so githq isn't signed in.
+missingScopesTitle:
+  en: githq didn't get the access it needs.
+missingScopes:
+  en: GitHub granted less than githq asked for, and without repositories, projects and organisations it can't show your work.
+tokenRejectedTitle:
+  en: You were signed out.
+tokenRejected:
+  en: GitHub no longer accepts githq's access — it was revoked or has expired.
+tryAgain:
+  en: Try again
+dismiss:
+  en: Dismiss

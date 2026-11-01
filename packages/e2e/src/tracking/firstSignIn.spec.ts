@@ -4,7 +4,7 @@ import { expect, test } from '../fixtures.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
-import { SignInScreenHarness } from '../harnesses/SignInScreen.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
 
 import { answerEmptyRepositories, answerTrackingCandidates } from './answerTracking.js';
@@ -33,8 +33,8 @@ test('a first sign-in chooses what to track: the own repositories chosen, not th
         body: "githq's OAuth App on GitHub",
     }));
 
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
 
     const choice = new FirstSignInHarness(page);
     await expect(page).toHaveURL('/settings/tracking/new');
@@ -76,8 +76,8 @@ test('"Track these" goes on to the first download: My work opens as soon as it i
         organizations: [{ login: 'acme', repositories: [{ nameWithOwner: 'acme/api' }] }],
     });
 
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.repository(`${LOGIN}/app`)).toBeChecked();
     await page.keyboard.press('ControlOrMeta+Enter');
@@ -115,8 +115,8 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     sample.world.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
 
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.repository(SAMPLE_REPOSITORY)).toBeChecked();
     await expect(firstSignIn.project(SAMPLE_PROJECT)).toBeChecked();
