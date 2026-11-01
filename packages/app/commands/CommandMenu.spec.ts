@@ -157,7 +157,7 @@ test("E5: the letters typed are marked in a title, a detail and a reference, and
     await userEvent.clear(field);
     await userEvent.keyboard('portal#1187');
     const inReference = page.getByRole('option', {
-        name: 'Calendar shows wrong timezone for recurring visits portal#1187',
+        name: 'Calendar shows wrong timezone for recurring bookings portal#1187',
         exact: true,
     });
     await expect.element(inReference).toBeInTheDocument();
