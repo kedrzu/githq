@@ -45,6 +45,7 @@ type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
     | { readonly key: 'sync'; readonly value: Partial<Record<SyncLoop, SyncLoopState>> }
     | { readonly key: 'viewerProjects'; readonly value: ViewerProjects }
+    /** The tracking choice of an older githq: read only to take it over into `localStorage` (`TrackingStore`). */
     | { readonly key: 'tracking'; readonly value: Tracking };
 
 /** A tracked repository's or project's sync state, by `repository:<owner/name>` or `project:<id>`. */
@@ -70,7 +71,7 @@ interface LocalDatabase extends DBSchema {
 
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
- * (memberships, sync state, the viewer's projects, the tracking choice), `details` (by item id), `repositories`
+ * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
  * (by `owner/name`), `projects` (by id), `projectItems` (by project item id) and `trackedSync` (each tracked
  * repository's and project's sync state). One object for the interfaces it is set as: they share the
  * connection.
@@ -94,7 +95,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         saveRepository,
         saveViewerProjects,
         loadTracking,
-        saveTracking,
         saveSyncState,
         deleteSyncState,
         loadProjects,
@@ -228,11 +228,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
             tracking: tracking?.key === 'tracking' ? tracking.value : null,
             syncStates: syncStates.map(record => record.state),
         };
-    }
-
-    async function saveTracking(login: string, tracking: Tracking) {
-        const db = await getOpen(login);
-        await db.put('meta', { key: 'tracking', value: tracking });
     }
 
     async function saveSyncState(login: string, state: TrackedSyncState) {

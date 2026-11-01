@@ -50,6 +50,8 @@ export interface CreateTestSessionParams {
      * opened in it; a browser of its own without it (the only tab).
      */
     readonly tabs?: TestTabs;
+    /** The `localStorage` of an earlier session (its `localStorage`), as a reloaded tab finds it; its own without it. */
+    readonly localStorage?: Map<string, string>;
 }
 
 /** A moment of the tests' fake clock: a Friday afternoon. */
@@ -63,7 +65,7 @@ export const TEST_START = Date.UTC(2026, 9, 30, 13, 0, 0);
  * each with its own clock and GitHub, so what each tab asked is told apart.
  */
 export function createTestSession(params: CreateTestSessionParams) {
-    const local = new Map<string, string>();
+    const local = params.localStorage ?? new Map<string, string>();
     if (params.login !== null) {
         local.set(TOKEN_KEY, `gho_${params.login}`);
         local.set(VIEWER_KEY, JSON.stringify(viewerOf(params.login)));
@@ -137,6 +139,8 @@ export function createTestSession(params: CreateTestSessionParams) {
         clock,
         github,
         openedTabs,
+        /** What this tab's `localStorage` holds, by key: give it to a later session to reload the tab. */
+        localStorage: local,
         /** This tab: close it, or freeze it. */
         tab,
         /** The operations GitHub received, in order. */
