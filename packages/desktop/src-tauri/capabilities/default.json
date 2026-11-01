@@ -10,6 +10,8 @@
         "allow-token-delete",
         "allow-device-start",
         "allow-device-finish",
-        "allow-open-external"
+        "allow-open-external",
+        "allow-update-status",
+        "allow-update-restart"
     ]
 }

@@ -38,6 +38,12 @@ export interface DeviceGrant {
 export type DeviceSignInError = 'expired' | 'denied' | 'offline' | 'superseded' | 'failed';
 
 /**
+ * Why `update_restart` did not restart: `notReady` — no update is ready; `failed` — the installer could not be started
+ * (Windows).
+ */
+export type UpdateRestartError = 'notReady' | 'failed';
+
+/**
  * The desktop app's native commands (`packages/desktop/src-tauri/src/lib.rs`), one method each. A command that fails
  * rejects with its error code, a bare string.
  */
@@ -60,14 +66,25 @@ export interface NativeBridgeShape {
      * {@link DeviceSignInError}.
      */
     finishDeviceSignIn(): Promise<DeviceGrant>;
+    /**
+     * Calls `listener` with the version each time the native side says an update is ready (the `update-ready`
+     * event); resolves once it listens. Then ask {@link updateStatus}: an update readied before is not told again.
+     */
+    onUpdateReady(listener: (version: string) => void): Promise<void>;
+    /** `update_status`: the version of the update ready to run, if any; never rejects. */
+    updateStatus(): Promise<string | null>;
+    /**
+     * `update_restart`: restarts into the ready update — on Windows the installer quits the app, so it never resolves
+     * there; rejects with an {@link UpdateRestartError}.
+     */
+    restartToUpdate(): Promise<void>;
 }
 
 /**
  * The native side of the desktop app, through what Tauri injects into its window — the only code that touches it.
  * Resolving it anywhere else (a browser) throws rather than let the app run half working.
- *
- * Native events (Tauri's `listen`, through the event plugin's `plugin:event|listen` command and `transformCallback`)
- * come with their first user, the updater.
+ * Native events are listened to as Tauri's own `listen` does: the event plugin's `plugin:event|listen` command, with
+ * a callback registered by `transformCallback`.
  */
 export const NativeBridge = defineInterface<NativeBridgeShape>({
     name: 'NativeBridge',
@@ -78,6 +95,14 @@ export const NativeBridge = defineInterface<NativeBridgeShape>({
 interface TauriInternals {
     /** Runs a command; resolves with what it returns, rejects with its error. */
     invoke<T>(command: string, args?: Record<string, unknown>): Promise<T>;
+    /** Registers a callback the native side can call; answers its id. */
+    transformCallback(callback: (message: unknown) => void, once?: boolean): number;
+}
+
+/** What a native event's callback receives. */
+interface TauriEventMessage {
+    readonly event: string;
+    readonly payload: unknown;
 }
 
 function createTauriBridge(): NativeBridgeShape {
@@ -93,7 +118,27 @@ function createTauriBridge(): NativeBridgeShape {
         },
         startDeviceSignIn: () => tauri.invoke<DeviceCode>('device_start'),
         finishDeviceSignIn: () => tauri.invoke<DeviceGrant>('device_finish'),
+        onUpdateReady: listener =>
+            listen('update-ready', payload => {
+                if (isUpdateReady(payload)) {
+                    listener(payload.version);
+                }
+            }),
+        updateStatus: () => tauri.invoke<string | null>('update_status'),
+        restartToUpdate: async () => {
+            await tauri.invoke<null>('update_restart');
+        },
     };
+
+    /** Calls `handler` with the payload of each `event` the native side emits; resolves once it listens. */
+    async function listen(event: string, handler: (payload: unknown) => void) {
+        const callback = tauri.transformCallback(message => {
+            if (isEventMessage(message) && message.event === event) {
+                handler(message.payload);
+            }
+        });
+        await tauri.invoke<number>('plugin:event|listen', { event, target: { kind: 'Any' }, handler: callback });
+    }
 }
 
 function readTauriInternals(): TauriInternals {
@@ -106,5 +151,28 @@ function readTauriInternals(): TauriInternals {
 }
 
 function isTauriInternals(value: unknown): value is TauriInternals {
-    return typeof value === 'object' && value !== null && 'invoke' in value && typeof value.invoke === 'function';
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'invoke' in value &&
+        typeof value.invoke === 'function' &&
+        'transformCallback' in value &&
+        typeof value.transformCallback === 'function'
+    );
+}
+
+function isEventMessage(value: unknown): value is TauriEventMessage {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        'event' in value &&
+        typeof value.event === 'string' &&
+        'payload' in value
+    );
+}
+
+function isUpdateReady(payload: unknown): payload is { version: string } {
+    return (
+        typeof payload === 'object' && payload !== null && 'version' in payload && typeof payload.version === 'string'
+    );
 }

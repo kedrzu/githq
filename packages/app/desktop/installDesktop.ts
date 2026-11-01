@@ -2,8 +2,10 @@ import type { Container } from '@nzyme/ioc/Container.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 
 import { TokenVault } from '@/auth/TokenVault.js';
+import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
 
+import { createDesktopAppUpdate } from './DesktopAppUpdate.js';
 import { createDesktopTokenVault } from './DesktopTokenVault.js';
 import { interceptExternalLinks, withExternalLinks } from './externalLinks.js';
 import type { ExternalLinksOptions } from './externalLinks.js';
@@ -11,9 +13,9 @@ import { NativeBridge } from './NativeBridge.js';
 
 /**
  * Prepares the app for the desktop app's window (`packages/desktop`) before any of its services start: the token
- * from the OS credential store, and pages outside the app opened in the system browser. The one way in for the
- * desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`, `plugins/iocPlugin.ts`), so the web
- * builds drop it with everything it imports.
+ * from the OS credential store, pages outside the app opened in the system browser, and the app's updates. The one
+ * way in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`, `plugins/iocPlugin.ts`),
+ * so the web builds drop it with everything it imports.
  */
 export async function installDesktop(container: Container) {
     // Throws outside the desktop app, before anything starts.
@@ -34,4 +36,6 @@ export async function installDesktop(container: Container) {
     };
     container.set(Browser, withExternalLinks(container.resolve(Browser), external));
     interceptExternalLinks(document, external);
+
+    container.set(AppUpdate, createDesktopAppUpdate({ bridge, logger }));
 }

@@ -24,12 +24,14 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
- * window, and the command the token is read with. The production build must have none; the desktop build must have
- * all (`checkDesktopBuild.ts`).
+ * window, the command the token is read with, and the update notice with the command it restarts with. The
+ * production build must have none; the desktop build must have all (`checkDesktopBuild.ts`).
  */
 export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: '__TAURI_INTERNALS__', what: "Tauri's native side" },
     { text: 'token_load', what: "the desktop app's token vault" },
+    { text: 'update_restart', what: "the desktop app's updater" },
+    { text: 'UpdateSegment', what: "the desktop app's update notice" },
 ];
 
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */

@@ -3,12 +3,14 @@
 mod credentials;
 mod device_flow;
 mod external;
+mod updater;
 
 use tauri::webview::NewWindowResponse;
 use tauri::{AppHandle, Url, WebviewUrl, WebviewWindowBuilder};
 
 use credentials::Credentials;
 use device_flow::DeviceFlow;
+use updater::Updates;
 
 /// The address `nuxt dev` serves the app on, which `tauri dev` loads (`build.devUrl` in `tauri.conf.json`).
 const DEV_SERVER_PORT: u16 = 8787;
@@ -17,8 +19,10 @@ const DEV_SERVER_PORT: u16 = 8787;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Credentials::os())
         .manage(DeviceFlow::github())
+        .manage(Updates::default())
         // Each one is also listed in `build.rs` and allowed for the window in `capabilities/default.json`.
         .invoke_handler(tauri::generate_handler![
             credentials::token_load,
@@ -27,9 +31,12 @@ pub fn run() {
             device_flow::device_start,
             device_flow::device_finish,
             external::open_external,
+            updater::update_status,
+            updater::update_restart,
         ])
         .setup(|app| {
             open_main_window(app.handle())?;
+            updater::start(app.handle());
             Ok(())
         })
         .run(tauri::generate_context!())

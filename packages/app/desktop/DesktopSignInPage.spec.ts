@@ -106,6 +106,9 @@ function mount() {
             finishes.push(finish);
             return finish.promise;
         },
+        onUpdateReady: () => Promise.reject(new Error('Not expected')),
+        updateStatus: () => Promise.reject(new Error('Not expected')),
+        restartToUpdate: () => Promise.reject(new Error('Not expected')),
     });
 
     const host = document.createElement('div');

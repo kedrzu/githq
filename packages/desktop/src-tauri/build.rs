@@ -9,6 +9,8 @@ fn main() {
             "device_start",
             "device_finish",
             "open_external",
+            "update_status",
+            "update_restart",
         ]),
     ))
     .expect("the Tauri build step failed");

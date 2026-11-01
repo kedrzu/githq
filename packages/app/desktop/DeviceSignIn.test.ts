@@ -192,6 +192,9 @@ function createFakeNative(): FakeNative {
                 native.finishes.push(finish);
                 return finish.promise;
             },
+            onUpdateReady: () => Promise.reject(new Error('Not expected')),
+            updateStatus: () => Promise.reject(new Error('Not expected')),
+            restartToUpdate: () => Promise.reject(new Error('Not expected')),
         },
         finishes: [],
         startAnswer: null,
