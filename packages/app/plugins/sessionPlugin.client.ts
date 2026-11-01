@@ -17,12 +17,23 @@ export default defineNuxtPlugin({
         const auth = nuxtApp.vueApp.runWithContext(() => useService(AuthStore));
         const router = useRouter();
 
+        // Hooks run in order, and Nuxt's router plugin makes the first guarded navigation in its own `app:created`
+        // (`router.isReady()` is too early: it follows an earlier navigation, made before any guard exists).
+        const firstNavigation = new Promise<void>(resolve => {
+            nuxtApp.hooks.hookOnce('app:created', () => resolve());
+        });
+
         watch(
             () => auth.signedIn,
-            signedIn => {
+            async signedIn => {
+                // Not while the first navigation is under way: its guard, still waiting, reads the session itself. A
+                // second navigation finishing first would clear Nuxt's mark of being in a guard, which turns that
+                // guard's redirect into a failed navigation, and on the first render into the error page.
+                await firstNavigation;
+
                 const route = router.currentRoute.value;
                 if (route.meta.auth === 'home' || (route.meta.auth === 'signedIn' && !signedIn)) {
-                    void router.replace({ path: route.path, query: route.query, hash: route.hash, force: true });
+                    await router.replace({ path: route.path, query: route.query, hash: route.hash, force: true });
                 }
             },
         );
