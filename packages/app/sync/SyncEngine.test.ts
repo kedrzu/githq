@@ -521,6 +521,7 @@ async function setup(github: FakeGitHub, login: string) {
         onVisibilityChange: listener => {
             visibilityListeners.push(listener);
         },
+        onFocus: () => {},
         isOnline: () => online,
         onOnlineChange: listener => {
             onlineListeners.push(listener);
@@ -542,7 +543,6 @@ async function setup(github: FakeGitHub, login: string) {
     // Nothing tracked: the loops of tracked repositories and projects have nothing to ask.
     container.set(TrackingPersistence, {
         loadTracking: () => Promise.resolve({ tracking: null, syncStates: [] }),
-        saveTracking: async () => {},
         saveSyncState: async () => {},
         deleteSyncState: async () => {},
     });

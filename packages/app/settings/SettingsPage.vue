@@ -1,4 +1,4 @@
-<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). "Saving to GitHub" shows nothing yet. A section's controls go into the header from the section itself (`SettingsView`). -->
+<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). A section's controls go into the header from the section itself (`SettingsView`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -8,10 +8,13 @@ import AccountSection from '@/account/AccountSection.vue';
 import TrackingSection from '@/tracking/TrackingSection.vue';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
+import SavingSection from './SavingSection.vue';
 import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
 import SettingsView from './SettingsView.vue';
+import { SettingsSync } from './sync/SettingsSync.js';
 
 const tracking = useService(TrackingStore);
+const sync = useService(SettingsSync);
 const route = useRoute();
 const router = useRouter();
 
@@ -27,10 +30,12 @@ const section = computed({
     v-model:section="section"
     :repositories="tracking.repositories.length"
     :projects="tracking.projects.length"
+    :saving-stopped="sync.state.state === 'stopped'"
   >
     <AccountSection v-if="section === 'account'" />
+    <SavingSection v-else-if="section === 'saving'" />
     <TrackingSection
-      v-else-if="section !== 'saving'"
+      v-else
       :tab="section"
       :initial-search="search"
     />

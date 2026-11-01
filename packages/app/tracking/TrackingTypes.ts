@@ -20,8 +20,8 @@ export interface TrackedProject {
 }
 
 /**
- * What one account tracks, in the user's order — the sidebar's order, and D12's precedence for the row field.
- * Kept in the account's local copy.
+ * What one account tracks, in the user's order — the sidebar's order, and D12's precedence for the row field: the
+ * tracked entries of the user's settings document (`SettingsDocument`).
  */
 export interface Tracking {
     /** The user went through the choice (G2) at least once; until then the app offers it. */

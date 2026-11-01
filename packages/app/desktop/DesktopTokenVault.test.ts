@@ -112,6 +112,7 @@ function setup(options: SetupOptions) {
         onLocalStorageChange: () => {},
         isVisible: () => true,
         onVisibilityChange: () => {},
+        onFocus: () => {},
         isOnline: () => true,
         onOnlineChange: () => {},
         estimateStorage: () => Promise.resolve(null),
