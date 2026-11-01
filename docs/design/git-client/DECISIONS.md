@@ -38,3 +38,35 @@ does not already show, because it is a copy of the remote, not of the user's loc
   token through our server, and the result still holds nothing that is not on GitHub.
 - Opening the user's real local clone in the browser through the File System Access API — Chromium only, no
   SSH or credential helpers, no hooks; the desktop app does this properly.
+
+## D2
+
+**The desktop app reads and writes local repositories by running the system `git` CLI.** (2026-11-01, owner:
+"rather yes" to the design agent's proposal)
+
+**Why.** It is the user's own git, with their SSH keys, credential helpers, hooks, configuration, and full
+worktree support, so anything githq does behaves exactly like the same command in the terminal.
+
+**Rejected.**
+- An embedded library (libgit2 through `git2`, or gitoxide) in the Tauri backend — a second git implementation
+  that can disagree with the user's configuration, hooks and credentials, and lags behind git on newer
+  features such as worktrees. Would win if spawning `git` turned out too slow for reading the graph; then a
+  library could serve reads only.
+
+## D3
+
+**The commit graph is per repository. There is no cross-repository view of branches.** (2026-11-01, owner:
+"I don't see the point of branches across all repositories")
+
+**Why.** A graph is a property of one repository; the cross-repository views githq already has (your pull
+requests, your reviews) cover the work across repositories.
+
+**Rejected.**
+- A view of your branches across every tracked repository — the owner sees no use for it.
+
+## D4
+
+**An agent orchestrator built into githq is out of scope of this design.** (2026-11-01, design agent's
+proposal after the owner mentioned it as a possibility)
+
+**Why.** It is a product of its own size; this design only has to leave room for it, not shape it.

@@ -8,3 +8,7 @@ Append-only; one line per turn that settled something.
   have no CORS; GraphQL has refs, history and parents. Proposed D1 (graph from the API on the web, local clone
   overlay on desktop, no browser clone) — not confirmed. Folded into README: opening (why still missing) and
   the data-source section.
+- 2026-11-01 — Owner: the goal is one fast app for git, GitHub, review and tasks, maybe with a built-in agent
+  orchestrator (Conductor/Paseo-like); graph per repository, not across repositories (D3); system git on the
+  desktop "rather yes" (D2). Proposed D4 (orchestrator out of scope). README: why and scope written.
+  Next open: how a GitHub repository, its local clones and their worktrees relate.
