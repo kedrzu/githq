@@ -33,6 +33,13 @@ list share one entry](DECISIONS.md#d3). Without grouping, or grouped by reposito
 by status, a stack spread over two columns has an entry in each, saying "2 of 4", and a single pull request left alone in
 a column is an ordinary row marked as part of a stack. So nothing needs to decide whether a view can group.
 
+## Going through a stack
+
+A stack's entry starts collapsed, so [the list stays short](DECISIONS.md#d10). `Enter` [opens a pull request, with a map of the
+whole stack next to it](DECISIONS.md#d9), and there is no screen for a stack as such. `O` takes that pull request to
+github.com, where review still happens for now. Back in githq, the keys that already walk a list go through the stack's pull
+requests one by one and carry on into the next stack.
+
 ## Reading order
 
 Pull requests are listed [from the first to the last](DECISIONS.md#d6), since that is the order you read them in.

@@ -122,3 +122,40 @@ merges along. Also closes the open question in the merge brief, `⌘Enter` befor
 
 > **Checked 2026-11-01, not found:** an API for it (OpenAPI, the stacks page, GraphQL mutations). The website button or
 > `gh stack rebase` only. Not found: how `updatePullRequestBranch` behaves on a stacked pull request.
+
+## D9
+
+**`Enter` on a stack's entry opens a pull request, with a map of the whole stack beside its content; there is no separate
+screen for a stack. `O` takes that pull request to github.com, and moving through pull requests and stacks happens in
+githq.** (2026-11-01, owner, on the design agent's proposal; review itself is to come to githq later)
+
+**Why.** A stack has no content of its own beyond its pull requests, and the collapsed entry already says how it stands.
+This keeps working when review moves into githq.
+
+**Proposed by the design agent, unconfirmed:** the pull request opened is the first open one not yet approved, otherwise the
+first open one. `J` and `K` in the opened item walk the list's pull requests one by one, so the last of one stack is followed
+by the first of the next, and no new key is needed.
+
+> **Checked 2026-11-01:** `J`/`K` step through `ItemList.ids`, the ids the list shows in its order
+> (`packages/app/item/ItemNavigation.ts:13`), so it only has to hand over a collapsed stack's members too. `Shift+J` and
+> `Shift+K` extend the selection in a list (`packages/app/lists/ListView.vue:251`). GitHub uses them to walk a stack
+> ([changelog](https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available)).
+
+**Rejected.**
+
+- `O` on the entry going straight to github.com, walking the stack with GitHub's keys — nothing to look at in githq first, and
+  it would have to be redone when review comes here.
+- A screen for the stack — it would only repeat the entry; it wins only with something like a combined diff, which GitHub does
+  not provide.
+
+## D10
+
+**A stack's entry is collapsed by default.** (2026-11-01, owner)
+
+**Why.** That is what shortens the list. The cost is that trouble in the third pull request shows only through the stack's
+state ([D5](#d5)), so the state has to make it plain.
+
+**Rejected.**
+
+- Expanded by default, as in GitHub's proposal ([discussion](https://github.com/github/gh-stack/discussions/474)) — the rows stay
+  as many as before.
