@@ -25,13 +25,20 @@ its aspect, and a new aspect gets a new frame:
 - **`Desktop · …`**: screens only the desktop app has.
 - **`Landing — …`**: the landing page, desktop and mobile, and its motion storyboard.
 - **Brand**: `Logo — git/hq`, app icons, OpenGraph images.
-- **Archive**: `Archive · Direction A/B/C` and the logo exploration. Rejected work: don't build from it.
+
+Repeated UI is built from components, so change the component, not a copy. The shared ones are in
+**"App · Components"**: the sidebar, item sections, list rows (`List row / …`, `Table row / …`), list and group
+headers, project parts, and whole panes (`List pane / …`, `Project pane / …`). Components that belong to one
+aspect sit in a **`Components · …`** frame at the top of that aspect's frame (merging, stacks, workflows,
+settings, first sign-in). A new screen uses instances of them and overrides only what differs; a copied
+screen stays light that way.
+
+The rejected Directions A–C and the logo exploration were removed from the file; they are in git history.
 
 The logo is settled. The brandbook is the frame **"Logo — git/hq"** in `githq.pen` (frame `S5J7kt`): the
 wordmark `git/hq` and the sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the
 slash alone. Use one of them in a given place, never both side by side. Place them through the components
-`Brand / Wordmark` and `Brand / Sygnet`. The frame "Logo — exploration archive (DO NOT USE)" holds rejected
-directions: never take a symbol, typeface or colour from it.
+`Brand / Wordmark` and `Brand / Sygnet`.
 
 Nothing in these files prescribes layout or visual style. Where a file lists what a screen must show, that
 is content and priority, not placement.
