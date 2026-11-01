@@ -83,7 +83,7 @@ const tracked = computed((): SidebarTracked => ({
       to: getRepositoryPath(repository.nameWithOwner),
       target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
-      isPrivate: trackedItems.isPrivate(repository.nameWithOwner),
+      isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
     };
   }),
 }));

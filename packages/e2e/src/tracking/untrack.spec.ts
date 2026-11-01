@@ -32,3 +32,50 @@ test('untracking a repository drops its items that nothing else keeps: those in 
     await shell.tracked(SAMPLE_PROJECT).click();
     await expect(new ProjectScreenHarness(page).row('Document the setup')).toBeVisible();
 });
+
+test("someone else's repository, named in the address, is tracked with `T` and untracked with ⌫; typing does neither", async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await page.goto('/settings?q=acme%2Fweb');
+
+    const tracking = new TrackingScreenHarness(page);
+    await expect(tracking.notTracked('acme/web')).toBeVisible();
+
+    await tracking.search.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('t');
+    await page.keyboard.press('Backspace');
+    await expect(tracking.search).toHaveValue('acme/web');
+    await expect(tracking.notTracked('acme/web')).toBeVisible();
+
+    await page.keyboard.press('ArrowDown');
+    await expect(tracking.notTracked('acme/web').getByRole('button', { name: /^Track/ })).toBeFocused();
+    await page.keyboard.press('t');
+    await expect(tracking.tracked('acme/web')).toBeVisible();
+    await expect(shell.tracked('acme/web')).toBeVisible();
+
+    await tracking.tracked('acme/web').getByRole('link', { name: 'acme/web' }).focus();
+    await page.keyboard.press('Backspace');
+    await expect(tracking.tracked('acme/web')).toHaveCount(0);
+    await expect(shell.tracked('acme/web')).toHaveCount(0);
+    await expect(tracking.notTracked('acme/web')).toBeVisible();
+});
+
+test('the owner filter narrows to what the owner has, and nothing to offer says so only for a search', async ({
+    page,
+    github,
+}) => {
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await page.goto('/settings?q=nope');
+
+    const tracking = new TrackingScreenHarness(page);
+    await expect(tracking.root.getByText('Nothing you can see matches “nope”.')).toBeVisible();
+
+    await tracking.search.fill('');
+    await tracking.ownerFilter.click();
+    await page.getByRole('menuitemradio', { name: SAMPLE_REPOSITORY.split('/')[0] }).click();
+    await expect(tracking.ownerFilter).toHaveText(SAMPLE_REPOSITORY.split('/')[0] ?? '');
+    await expect(tracking.tracked(SAMPLE_REPOSITORY)).toBeVisible();
+});

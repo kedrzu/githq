@@ -47,10 +47,19 @@ export const TrackedItems = defineService({
 
             return names;
         });
+        const latestByRepository = computed(() => {
+            const latest = new Map<string, number>();
+            for (const item of items.all) {
+                const name = item.repository.nameWithOwner;
+                latest.set(name, Math.max(latest.get(name) ?? 0, Date.parse(item.updatedAt)));
+            }
+
+            return latest;
+        });
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, evict, getOpenCount, isPrivate };
+        return { keeps, evict, getOpenCount, isPrivate, getActiveAt };
 
         /** Whether the local copy keeps the item: "my work" has it, or a tracked repository or project; reactive. */
         function keeps(item: Item) {
@@ -103,9 +112,18 @@ export const TrackedItems = defineService({
             return count;
         }
 
-        /** Whether the repository is private, as its kept items tell; `false` while none are kept. Reactive. */
+        /** Whether the repository is private, as its kept items tell; `null` while none are kept. Reactive. */
         function isPrivate(nameWithOwner: string) {
-            return privateRepositories.value.has(nameWithOwner);
+            if (privateRepositories.value.has(nameWithOwner)) {
+                return true;
+            }
+
+            return latestByRepository.value.has(nameWithOwner) ? false : null;
+        }
+
+        /** The latest change of an item kept of the repository (epoch ms); `null` while none are kept. Reactive. */
+        function getActiveAt(nameWithOwner: string) {
+            return latestByRepository.value.get(nameWithOwner) ?? null;
         }
 
         function dropUntracked(target: TrackedTarget) {

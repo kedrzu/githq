@@ -5,6 +5,7 @@ import { ArrowUpRight, EyeOff } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import Button from '@/components/Button.vue';
 import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
@@ -76,7 +77,10 @@ const groups = computed((): ListGroup<Item>[] =>
 
 <template>
   <div :class="css.untrackedView">
-    <header :class="css.untrackedView_header">
+    <header
+      :class="css.untrackedView_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <component
         :is="icon"
         :class="css.untrackedView_headerIcon"

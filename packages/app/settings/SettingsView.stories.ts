@@ -29,5 +29,10 @@ export const Repositories: Story = {};
 /** T4: on a section with no count. */
 export const SavingToGitHub: Story = { args: { section: 'saving' } };
 
+/** A narrow window: the tabs keep the room, the keys hint gone. */
+export const NarrowWindow: Story = {
+    decorators: [() => ({ template: '<div style="width: 560px"><story /></div>' })],
+};
+
 /** Nothing tracked yet: the counts say so. */
 export const NothingTracked: Story = { args: { repositories: 0, projects: 0 } };
