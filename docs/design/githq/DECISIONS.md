@@ -155,7 +155,8 @@ user asked to apply all corrections (2026-10-12):
   > not included: `vitejs/vite` has `bug_report.yml`, `feature_request.yml`, `docs.yml` in
   > `.github/ISSUE_TEMPLATE/` and `issueTemplates` returns `[]`. Forms must be read through the contents
   > API and parsed by githq; the first version may render a form as a pre-filled markdown body.
-- **Merging a PR is not**: like code review ([D6](#d6)), it happens on github.com. githq shows mergeability.
+- **Merging a PR was not**: like code review ([D6](#d6)), it was to happen on github.com. Superseded 2026-11-01 by the
+  owner: githq merges, see [the merging design](../pr-merge/DECISIONS.md#d1).
 - **No actor on project field changes** ("moved by sofiab") until it's verified that the field value's
   `creator` is the last person to set it ([D9](#d9) evidence). Show when it changed, not who.
 

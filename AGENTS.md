@@ -14,11 +14,11 @@ A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects 
 - **Keyboard-first.** Command palette, single-key shortcuts, everything reachable without the mouse.
 - **Calm, minimal UI.** Dense but readable lists, few colors, no chrome that doesn't earn its place.
 - **Faithful to GitHub.** Map onto GitHub concepts rather than inventing parallel ones, so changes made here and on github.com stay consistent in both directions.
-- **Respect API limits.** GraphQL for fetching and writing, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
+- **Respect API limits.** GraphQL for fetching and writing whenever it can do the job, REST where it can't, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
 
 ## Status
 
-Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`).
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`.
 
 ## Stack & commands
 

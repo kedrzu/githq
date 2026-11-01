@@ -55,8 +55,7 @@ These rules are settled. The screens must agree with them, including every count
      state.
    - **Branches**: source into target. Whether it is a draft.
    - **Mergeability**: ready, blocked by failing checks, blocked by missing reviews, or has conflicts.
-     githq does not merge. "Open on GitHub" is the action here, and it is the most prominent action of a
-     PR that is ready.
+     A PR that is ready is merged from here: [the merging brief](../../pr-merge/ui/merge-a-pull-request.md).
    - **Size**: lines added and removed, files changed.
    - **Issues this PR closes.**
    - **Code review** happens on github.com. One key opens the PR's "Files changed" there.
@@ -73,7 +72,7 @@ These rules are settled. The screens must agree with them, including every count
    Right-clicking an item, or a selection, opens a context menu with the actions that fit it (designed in
    L1–L4): an issue gets its project fields, assignees, labels, milestone, type and close as completed or
    not planned; a PR gets request review, draft or ready for review, "Review files on GitHub", copy branch
-   name and close, never merge. The menu offers only what the user may do in that repository and says in
+   name, merge and close. The menu offers only what the user may do in that repository and says in
    one line what is missing and why. For a selection it offers only what applies to every selected item.
    Every entry shows its single-key shortcut, so the menu also teaches the keyboard.
    An opened item offers the same menu from its reference in the toolbar (`fitloop/webapp #1187 ▾`
