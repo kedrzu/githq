@@ -393,11 +393,22 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   right end of the status bar (`githq.pen`, "Desktop · Update ready", U1). Nothing restarts on its own. On macOS
   and Linux the download is installed at once and runs from the next launch. On Windows the installer runs on
   Restart.
-- **Releases:** a tag `vX.Y.Z` runs `.github/workflows/release.yml` on GitHub-hosted runners for all three OSes
-  (the repository is public, so they are free) and fills a draft release that the owner publishes by hand. A tag
-  with `-` (`v0.2.0-rc.1`) becomes a prerelease. GitHub never makes a prerelease "latest", and the updater reads
-  `releases/latest/download/latest.json`, so prereleases never reach installed apps. Windows ships as an NSIS
-  installer only: WiX takes no version with a non-numeric prerelease part. How-to: `docs/desktop/RELEASING.md`.
+- **Releases:** a manually dispatched action, `.github/workflows/release.yml`, with a mode: `preview` prints the
+  next version and notes and releases nothing; `candidate` and `stable` tag `main`, create a draft release with the
+  generated notes, and build on GitHub-hosted runners for all three OSes (the repository is public, so they are
+  free). The owner publishes the draft by hand. The version and the notes come from the Conventional Commit titles
+  of the PRs since the last stable tag, by a small tested script, `packages/app/scripts/releasePlan.ts`: `feat`
+  bumps minor, `fix` and `perf` patch, `!` is breaking (minor while 0.x), and a `web` or `cloud` scope keeps a change
+  out of the desktop version and notes. A tag `-rc.N` (`v0.2.0-rc.1`) becomes a prerelease. GitHub never makes a
+  prerelease "latest", and the updater reads `releases/latest/download/latest.json`, so prereleases never reach
+  installed apps. Windows ships as an NSIS installer only: WiX takes no version with a non-numeric prerelease part.
+  Owner, 2026-11-01: on demand, the changelog lives in GitHub Releases with no `CHANGELOG.md`, and the scopes are
+  `web` and `cloud`. Rejected: release-please (a bot PR rewritten on every push, version commits on `main` that
+  also deploy the web, and it needs PR rights for Actions and a separate token, because tags made with the default
+  token start no workflow); git-cliff (no documented `-rc.N` numbering, and the desktop-only exclusions would still
+  need our own logic); a schedule (undecided drafts and tags would pile up, and a release is a decision). Not yet
+  possible: forcing a version, so 1.0.0 needs a small PR adding an input to the action. How-to:
+  `docs/desktop/RELEASING.md`.
 - **Signing:** macOS with the owner's Developer ID, bought by the owner; until then ad-hoc (`signingIdentity: "-"`), so
   Apple Silicon says "unidentified developer" rather than "damaged". Windows through SignPath Foundation (free
   code signing for open source), in a follow-up once the project is accepted; until then unsigned. Rejected:

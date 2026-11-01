@@ -1,49 +1,70 @@
 # Releasing the desktop app
 
-The desktop app (`packages/desktop`, decision [D23](../design/githq/DECISIONS.md#d23)) is released from a version
-tag. CI builds every platform into a draft GitHub release, and you publish it by hand. Installed apps update from
-the release GitHub marks "latest".
+The desktop app (`packages/desktop`, decision [D23](../design/githq/DECISIONS.md#d23)) is released on demand by
+the Release action. It works out the version from the PR titles, tags `main`, and CI builds every platform into a
+draft GitHub release; you publish it by hand. Installed apps update from the release GitHub marks "latest".
+
+## When to release
+
+The web deploys on every push to `main`. The desktop app is released on demand, when a release is worth a restart
+to its users.
 
 ## Releasing a version
 
-1. On an up-to-date `main`, tag and push:
+1. See what the next release would be. On GitHub, Actions → Release → Run workflow (or from the terminal):
 
    ```sh
-   git switch main && git pull
-   git tag v0.2.0 && git push origin v0.2.0
+   gh workflow run release.yml -f mode=preview
    ```
 
-   The version comes from the tag only: CI writes it into `tauri.conf.json` before building. The committed
-   `version` there is just for local builds.
+   `preview` is the default. It releases nothing: the run's summary page shows the next version and its notes.
+   With nothing user-visible since the last stable tag it says so.
 
-2. The tag runs `.github/workflows/release.yml`:
+2. Release it, from `main` (other branches are refused):
+
+   ```sh
+   gh workflow run release.yml -f mode=stable
+   ```
+
+   The version is worked out from the PR titles since the last stable tag, and the first one is 0.1.0. While 0.x
+   a breaking change bumps minor, from 1.0 major; `feat` bumps minor, `fix` and `perf` patch. The scopes `web` and
+   `cloud` (see the `git-workflow` skill) do not count. With nothing user-visible since the last stable tag,
+   `stable` and `candidate` fail with a clear message and make no tag. The version comes from the tag only: CI
+   writes it into `tauri.conf.json` before building, and the committed `version` there is just for local builds. A
+   tag pushed by hand builds nothing.
+
+3. The run (`.github/workflows/release.yml`) has these jobs:
+   - `prepare` works out the version and the notes, creates the tag at the commit the run started on, and a draft
+     release `githq v0.2.0` with the generated notes, marked as a prerelease when the tag has a `-`;
    - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with the repository
      variable `GITHQ_GITHUB_CLIENT_ID`), and fails if the variable is missing;
-   - `draft` creates the draft release `githq v0.2.0`, marked as a prerelease when the tag has a `-`;
    - `bundle` builds on GitHub-hosted runners: macOS Apple Silicon and Intel (`.dmg`, `.app.tar.gz`), Windows x64
      (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
      (`.sig`) and adds itself to the release's `latest.json`;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
      update.
 
-3. Check the draft under [Releases](https://github.com/kedrzu/githq/releases):
+4. Check the draft under [Releases](https://github.com/kedrzu/githq/releases):
    - the installers for every platform, each updater bundle with its `.sig`;
    - `latest.json` with the right `version` and the platforms `darwin-aarch64`, `darwin-x86_64`, `windows-x86_64`
      and `linux-x86_64`;
    - if you can, install it on your Mac and launch it.
 
-4. Write the release notes and **publish** the draft. Published and not a prerelease, it becomes GitHub's
-   "latest". Installed apps read `releases/latest/download/latest.json` at launch and every 4 hours, so they pick
-   it up within hours.
+5. Edit the release notes if you want to: they are generated from the PR titles, and editable until you publish.
+   Then **publish** the draft. Published and not a prerelease, it becomes GitHub's "latest". Installed apps read
+   `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
 
-A failed run can be re-run from the Actions tab: it finds the draft its first run made. To start over, delete the
-draft release and the tag (`git push origin :refs/tags/v0.2.0`), then tag again.
+If a build fails, use "Re-run failed jobs" on the run; it continues with the tag and the draft the first attempt
+made. "Re-run all jobs" is refused, because it would work out a new version. To start over, delete the draft release
+and the tag (`git push origin :refs/tags/v0.2.0`), then run the action again.
+
+There is no way yet to force a version. When 1.0 is near, 1.0.0 needs a small PR that adds an input to the action.
 
 ### Prereleases for testing
 
-Tag `v0.2.0-rc.1`, `v0.2.0-rc.2`, …: the same workflow makes a draft **prerelease**. Publish it to share the
-installers. GitHub never marks a prerelease "latest", so installed apps are never offered it. Delete the
-prerelease and its tag once the real version is out.
+Run the action with `mode=candidate`: it tags `v0.2.0-rc.1`, then `-rc.2`, and so on, and makes a draft
+**prerelease**. Publish it to share the installers. GitHub never marks a prerelease "latest", so installed apps are
+never offered it. Delete the prerelease and its tag once the real version is out.
 
 ## Local development
 

@@ -1,6 +1,6 @@
 # Deploys githq to https://githq.dev on every push to main, once the checks of the full verify protocol
 # (`.claude/skills/verify/SKILL.md`, all but the Storybook build) have passed on that commit, the desktop app's
-# Rust checks among them. The desktop app itself is released by tags (`release.yml`).
+# Rust checks among them. The desktop app itself is released on demand by the action in `release.yml`.
 # The Cloudflare API token is a secret of the `production` environment; the account is in `wrangler.jsonc`.
 name: Deploy
 

@@ -122,8 +122,8 @@ This policy covers the githq desktop app published on this repository's
 **Signing status.** Windows builds are not signed yet. The project plans to apply to the SignPath Foundation for
 free code signing for open-source projects. macOS builds will be signed and notarized with the owner's Apple
 Developer ID once it is set up. Until then they are ad-hoc signed, which identifies no publisher. Every build is
-made by GitHub Actions on GitHub-hosted runners, from a version tag in this repository
-([the release workflow](.github/workflows/release.yml)). Every release is published by hand after review.
+made by GitHub Actions on GitHub-hosted runners, from a version tag that
+[the release workflow](.github/workflows/release.yml) creates in this repository. Every release is published by hand after review.
 Updates are signed with the project's updater key, and the app refuses an update whose signature doesn't verify.
 
 **Team roles.**

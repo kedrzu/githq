@@ -1,9 +1,13 @@
-# Builds the desktop app (packages/desktop) for macOS (Apple Silicon and Intel), Windows and Linux when a
-# version tag is pushed (`v0.1.0`, `v0.1.0-rc.1`), and uploads the installers, the signed updater bundles and
-# the updater's `latest.json` to a draft GitHub release for that tag. Publishing the draft is done by hand; the
-# installed apps look for updates at `releases/latest/download/latest.json` (`tauri.conf.json`), so a release
-# reaches them once it is published and GitHub's "latest". A tag with a `-` is a prerelease, which GitHub never
-# makes "latest": release candidates are never offered as updates.
+# Releases the desktop app (packages/desktop). A manually dispatched action, run from main, with a `mode`:
+# `preview` only prints the version and release notes the commits since the last stable tag would give and
+# releases nothing; `candidate` (`v0.2.0-rc.1`) and `stable` (`v0.2.0`) do. The version and the notes come from
+# the Conventional Commits since the last stable tag (`packages/app/scripts/release.ts`). A release creates the
+# tag on the commit it ran on and a draft GitHub release, builds macOS (Apple Silicon and Intel), Windows and
+# Linux, and uploads the installers, the signed updater bundles and the updater's `latest.json` to the draft.
+# Publishing the draft is done by hand; the installed apps look for updates at
+# `releases/latest/download/latest.json` (`tauri.conf.json`), so a release reaches them once it is published and
+# GitHub's "latest". A tag with a `-` is a prerelease, which GitHub never makes "latest": release candidates are
+# never offered as updates.
 #
 # Secrets: `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` sign the updater bundles (the
 # public half is `plugins.updater.pubkey` in `tauri.conf.json`). The Apple ones (`APPLE_CERTIFICATE`,
@@ -14,20 +18,89 @@
 name: Release
 
 on:
-  push:
-    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: preview only prints the version and notes; candidate and stable tag and build a draft release
+        type: choice
+        options: [preview, candidate, stable]
+        default: preview
+        required: true
 
-# One run per tag; a second push of the same tag waits rather than racing the first for the same release.
+# One release at a time: a tag made by one run is an input to the next run's version.
 concurrency:
-  group: release-${{ github.ref }}
+  group: release
   cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
+  # Works out the version and the notes, and (except in a preview) makes the tag and the draft release once before
+  # the platforms build: if each build created the draft, two finishing at once would make two drafts.
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      release-id: ${{ steps.release.outputs.id }}
+    steps:
+      # A release is cut from main only. And never re-run as a whole: a second attempt would compute a new version
+      # for a commit the first already released.
+      - name: Refuse a branch other than main and a re-run
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Releases are cut from main; this run is on $GITHUB_REF"
+            exit 1
+          fi
+          if [ "$GITHUB_RUN_ATTEMPT" != "1" ]; then
+            echo "::error::Do not re-run the whole release: use \"Re-run failed jobs\", or delete the tag this run left and start a new run"
+            exit 1
+          fi
+
+      # The plan reads the tags and the whole history.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      # Writes `tag` to GITHUB_OUTPUT unless this is a preview.
+      - name: Plan the release
+        id: plan
+        run: bun packages/app/scripts/release.ts plan --mode "$MODE" --notes "$RUNNER_TEMP/notes.md"
+        env:
+          MODE: ${{ inputs.mode }}
+
+      # The tag first: tauri-action looks the release up by it. An existing tag fails the step.
+      - name: Create the tag and the draft release
+        id: release
+        if: steps.plan.outputs.tag != ''
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" \
+            -f sha="$GITHUB_SHA"
+          release_id=$(gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f tag_name="$TAG" \
+            -f name="githq $TAG" \
+            -F body=@"$RUNNER_TEMP/notes.md" \
+            -F draft=true \
+            -F prerelease="$PRERELEASE" \
+            --jq .id)
+          echo "id=$release_id" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          PRERELEASE: ${{ contains(steps.plan.outputs.tag, '-') }}
+
   # The app the desktop window loads, built once for every platform: it is the same static files everywhere.
   spa:
+    needs: prepare
+    if: needs.prepare.outputs.tag != ''
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -59,38 +132,8 @@ jobs:
           path: packages/app/.output-desktop/public
           if-no-files-found: error
 
-  # The draft release, created once before the platforms build: if each build created it, two finishing at once
-  # would make two drafts.
-  draft:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    outputs:
-      release-id: ${{ steps.release.outputs.id }}
-    steps:
-      - name: Create the draft release
-        id: release
-        run: |
-          # A re-run finds the draft its first run made.
-          release_id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
-            --jq ".[] | select(.tag_name == \"$GITHUB_REF_NAME\") | .id" | head -n 1)
-          if [ -z "$release_id" ]; then
-            release_id=$(gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
-              -f tag_name="$GITHUB_REF_NAME" \
-              -f name="githq $GITHUB_REF_NAME" \
-              -f body="Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](https://github.com/$GITHUB_REPOSITORY#code-signing-policy)." \
-              -F draft=true \
-              -F prerelease="$PRERELEASE" \
-              --jq .id)
-          fi
-          echo "id=$release_id" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PRERELEASE: ${{ contains(github.ref_name, '-') }}
-
   bundle:
-    needs: [spa, draft]
+    needs: [prepare, spa]
     permissions:
       contents: write
     strategy:
@@ -147,11 +190,13 @@ jobs:
         shell: bash
         run: |
           config=packages/desktop/src-tauri/tauri.conf.json
-          jq --arg version "${GITHUB_REF_NAME#v}" \
+          jq --arg version "${TAG#v}" \
             '.version = $version | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = true' \
             "$config" > "$RUNNER_TEMP/tauri.conf.json"
           mv "$RUNNER_TEMP/tauri.conf.json" "$config"
           echo "cli=$(jq -r '.devDependencies["@tauri-apps/cli"]' packages/desktop/package.json)" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
 
       # Apple signing and notarization only with the secrets set: an empty `APPLE_CERTIFICATE` in the environment
       # counts as present and fails the bundle (tauri-apps/tauri-action#234). The heredoc form keeps a multi-line
@@ -193,9 +238,9 @@ jobs:
           projectPath: packages/desktop
           tauriScript: npx --yes @tauri-apps/cli@${{ steps.configure.outputs.cli }}
           args: ${{ matrix.args }}
-          releaseId: ${{ needs.draft.outputs.release-id }}
+          releaseId: ${{ needs.prepare.outputs.release-id }}
           # Names the release in `latest.json`'s download URLs.
-          tagName: ${{ github.ref_name }}
+          tagName: ${{ needs.prepare.outputs.tag }}
           releaseDraft: true
           includeUpdaterJson: true
           updaterJsonPreferNsis: true
@@ -203,7 +248,7 @@ jobs:
   # Each platform adds itself to the release's `latest.json`; two finishing at once could drop one. An app on a
   # platform missing there would never update, so the release fails instead.
   updater-json:
-    needs: [draft, bundle]
+    needs: [prepare, bundle]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # Drafts are visible only with write access.
@@ -228,4 +273,4 @@ jobs:
           done
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_ID: ${{ needs.draft.outputs.release-id }}
+          RELEASE_ID: ${{ needs.prepare.outputs.release-id }}
