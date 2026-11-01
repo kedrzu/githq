@@ -109,3 +109,30 @@ branches in one graph and a choice of clone behind every local action.
 
 **Rejected.**
 - Several clones per repository — too much complexity for too little gain (owner).
+
+## D8
+
+**Commit history is fetched in pages of 100 with only immutable fields (oid, headline, author, date, parents)
+and cached for good; the pull request (`associatedPullRequests(first: 1)`) and CI state
+(`statusCheckRollup.state`) are fetched separately, only for the rows on screen, through `nodes(ids:)`, and
+refreshed.** (2026-11-01, owner agreed to the rows carrying pull request and CI state; the split is the
+design agent's proposal)
+
+**Why.** Rate-limit points are not what separates the options: every variant costs 1–2 points of 5,000 an
+hour. Latency is: adding pull request and CI state to a page of 100 commits takes it from about 1 s to
+2–4 s. And the two halves have different lifetimes: commits never change, pull request and CI state do.
+
+> **Checked 2026-11-01:** measured against `nuxt/nuxt` with `gh api graphql`, three runs each, history of the
+> default branch, `first: 100`:
+> - immutable fields only: cost 1, 0.89–1.04 s, 30.5 kB;
+> - plus `statusCheckRollup { state }`: cost 1, 1.47–3.27 s;
+> - plus `associatedPullRequests(first: 1) { nodes { number state } }`: cost 2, 1.74–2.84 s;
+> - both: cost 2, 1.69–4.47 s, 40.4 kB;
+> - pull request and CI state for 30 commits by node ID (`nodes(ids:)`): cost 1, 0.73–0.97 s.
+>
+> GraphQL limit for the account: 5,000 points an hour (`gh api rate_limit`).
+
+**Rejected.**
+- Fetching pull request and CI state with every page of history — two to three times slower per page, and it
+  caches mutable state next to immutable commits.
+- Rows without pull request and CI state — the integration with GitHub is the point of the view (owner).

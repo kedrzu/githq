@@ -19,3 +19,6 @@ Append-only; one line per turn that settled something.
 - 2026-11-01 — Owner: one clone per repository, worktrees for parallel work, deliberately opinionated (D7).
   Proposed: adding a worktree folder adds its clone; adding a second clone offers replacement. Folded into
   README. Next: the first version (graph from GitHub's API) — row content, navigation, loading history.
+- 2026-11-01 — Owner: rows carry pull request and CI state; check the cost. Measured on nuxt/nuxt: points
+  negligible, latency 1 s vs 2-4 s per page. Proposed D8 (immutable pages cached for good, PR/CI for visible
+  rows separately). Folded into README.

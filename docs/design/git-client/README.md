@@ -66,3 +66,15 @@ Each worktree shows up in two places: as a marker at the commit it has checked o
 count of its uncommitted changes, and in the list of branches beside the graph, on the branch it has checked
 out. From either place you can act on the worktree itself, for a start by revealing its folder in Finder (or
 the file manager of the platform). [Worktrees in the graph and the branch list](DECISIONS.md#d6).
+
+## What a row of the graph shows
+
+A row is a commit: its message headline, author, date, and the branches, tags and worktrees that point at it.
+Next to that it shows what only githq knows: the pull request the commit came from and the state of its CI.
+That is what a plain git client cannot show, and without it the graph would be a git client in a browser.
+
+The two halves behave differently. A commit never changes, so once fetched it is kept for good. Its pull
+request and CI state do change — a check finishes, a pull request is merged — and asking for them along
+with every commit makes each page of history two to three times slower. So githq fetches commits in pages
+on their own, and asks for the pull request and CI state only of the rows on screen, in a separate request
+it can repeat to refresh them. [How the graph is fetched](DECISIONS.md#d8).
