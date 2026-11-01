@@ -42,11 +42,14 @@ owner's repositories do not keep parallel lines.
 
 ## D2
 
-**Workflow state is read per repository: conditional REST to detect a change, then the latest runs of each
-workflow; no new OAuth scope.** (2026-11-01, proposal of the design agent, not confirmed by the owner)
+**Workflow state is read per repository over REST only: a conditional request on the repository's runs detects a
+change, then conditional requests per workflow on `actions/workflows/{id}/runs` read the runs of the refs that
+count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope.** (2026-11-01,
+design agent, not confirmed by the owner)
 
-**Why.** There is no cross-repository listing, and a 304 costs nothing, so polling tracked repositories at the
-existing 60s interval costs only when something changed.
+**Why.** There is no cross-repository listing, and a 304 costs nothing against the primary allowance. REST is the
+only API that can see which ref a run was on, and [D1](#d1) needs that. It departs from the project's "GraphQL
+for fetching" principle because GraphQL cannot answer the question here.
 
 > **Checked 2026-11-01:** run listing is per repository only —
 > [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs). The repo events API has no workflow
@@ -54,13 +57,12 @@ existing 60s interval costs only when something changed.
 
 > **Checked 2026-11-01 (live):** `GET /repos/kedrzu/githq/actions/runs?per_page=30` with `If-None-Match` →
 > `304`, `core` remaining 4916 before and after two requests. A full answer is 362,166 bytes for 30 runs,
-> about 12 KB per run, so a changed repository is heavy to re-read over REST.
+> about 12 KB per run, so the change-detecting request should ask for a small page.
 
-> **Checked 2026-11-01 (live):** GraphQL `Repository` has no workflow or run field, but
-> `node(id: <workflow node id>) { ... on Workflow { runs(first: n) { ... } } }` works, and two workflows in one
-> query cost 1 point. Workflow node ids come from `GET /repos/{o}/{r}/actions/workflows`. `checkSuite.branch`
-> is `null` for a run on a tag, and the latest run can be `IN_PROGRESS`, so `first: 1` is not enough to find the
-> latest finished one.
+> **Checked 2026-11-01 (live):** `actions/workflows/402954726/runs?branch=main&per_page=3` returned 3 runs in
+> 43,788 bytes including headers, and its 304 left `core` unchanged. `branch=v0.1.0-rc.3` also matches the tag, with
+> the tag name in `head_branch`. `branch=` is an exact match, so a wildcard pattern means filtering in the client
+> and paging.
 
 > **Checked 2026-11-01:** listing runs, reading job logs and re-running failed jobs need only `repo`, which
 > githq already requests — [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs),
@@ -68,6 +70,11 @@ existing 60s interval costs only when something changed.
 > scopes in `packages/github/src/oauth.ts:40`.
 
 **Rejected.**
+- GraphQL `node(id:) { ... on Workflow { runs(first: n) } }` for reading runs: `runs` takes only paging and
+  `orderBy`, and `WorkflowRun` has no head ref (`packages/github` schema; `checkSuite.branch` is `null` on a tag),
+  so it cannot match a pattern. In a live read of CLA's latest 30 runs only 2 were on `main`, so the default
+  branch's verdict falls out of the window ([history](history/DECISIONS.md#d2)).
+- Storing a verdict per workflow and pattern: changing a pattern would have to invalidate it, and it can be computed.
 - GitHub notifications as the source: the `ci_activity` reason covers only "A GitHub Actions workflow run that
   you triggered", which is the gap this design exists to close, and the endpoints are documented for classic
   personal tokens only ([notifications](https://docs.github.com/en/rest/activity/notifications), checked
@@ -120,16 +127,15 @@ in the repository's settings.** (2026-11-01, owner)
 Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
 repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
 
-**Open.** Where patterns are stored: see the check below.
+**Patterns live in a settings store the app treats as a black box: synchronised or local, per repository.**
+(2026-11-01, owner) That store is being designed separately (branch `design/settings-sync-gist`); this design only
+reads and writes settings through it and depends on nothing else about it.
 
 **Rejected.**
 - Default branch, `release`, `release/*` and all tags as the default: the owner says few people work that way.
 
-> **Checked 2026-11-01:** the tracked list lives in the `meta` store of the local database
-> (`packages/app/store/IndexedDbPersistence.ts:233`), which is deleted and rebuilt on any schema version change
-> (`:24-29`, `:323`), and it does not follow the user to another device. Patterns kept there would be lost the
-> same way. Repository view options are also "kept on this device" (`packages/app/repository/RepositoryPage.vue:1`);
-> where those live was not checked.
+> **Checked 2026-11-01:** the local database is no place for them: it is deleted and rebuilt on any schema version
+> change (`packages/app/store/IndexedDbPersistence.ts:24-29`, `:323`).
 
 ## D6
 
@@ -165,8 +171,7 @@ checks are not tied to a commit you would look at, so finding them means going t
 **Why.** The owner's call for now. With workflows only in their own tab, a long-broken one costs a red marker and
 a higher total, not space on the list of issues.
 
-**Open.** Whether a workflow disabled on GitHub still counts. Proposal of the design agent, not confirmed: it does
-not, because it no longer runs and could never go green.
+**A workflow disabled on GitHub does not count.** (2026-11-01, owner) It no longer runs and could never go green.
 
 **Rejected.**
 - A mute setting in githq, kept locally: not wanted now.
@@ -184,8 +189,7 @@ not, because it no longer runs and could never go green.
 ## D11
 
 **When a workflow turns red, githq reads its failed jobs and their logs ahead of time and keeps them locally, as
-low-priority work that gives way to everything else.** (2026-11-01, owner, for reading ahead at low priority; how
-priority works is open)
+low-priority work.** (2026-11-01, owner)
 
 **Why.** Opening a failure without waiting is the point of the screen, but the owner expects a lot of sync running
 in time, so this must not compete with it.
@@ -206,5 +210,9 @@ in time, so this must not compete with it.
 **Rejected.**
 - Reading the log only on opening: every failure starts with a wait.
 
-**Open.** Proposal of the design agent, not confirmed: a separate background reader built like `DetailPrefetch`,
-with its own floor on `core`, and no shared scheduler until two kinds of work actually compete for one bucket.
+**How priority works: a separate background reader built like `DetailPrefetch`, with its own floor on `core`.**
+(2026-11-01, owner)
+
+**Also rejected.**
+- A shared queue with priorities for all sync work: a rebuild of `SyncEngine`, with no two kinds of work competing
+  for one bucket yet. Reopen when there is such a pair.

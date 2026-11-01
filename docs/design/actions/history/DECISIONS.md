@@ -60,3 +60,38 @@ this tab until it passes. Proposal: no setting in githq; a workflow disabled on 
 - Workflows as rows mixed among the items: see Why.
 - All failures including runs from pull requests: bots and contributors' branches would fill the top of the tab,
   and those stay visible in the Workflows tab.
+
+## D2
+
+Retired 2026-11-01, replaced by the current [D2](../DECISIONS.md#d2): GraphQL cannot see a run's ref.
+
+**Workflow state is read per repository: conditional REST to detect a change, then the latest runs of each
+workflow; no new OAuth scope.** (2026-11-01, proposal of the design agent, not confirmed by the owner)
+
+**Why.** There is no cross-repository listing, and a 304 costs nothing, so polling tracked repositories at the
+existing 60s interval costs only when something changed.
+
+> **Checked 2026-11-01:** run listing is per repository only —
+> [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs). The repo events API has no workflow
+> or check event types — [event types](https://docs.github.com/en/rest/using-the-rest-api/github-event-types).
+
+> **Checked 2026-11-01 (live):** `GET /repos/kedrzu/githq/actions/runs?per_page=30` with `If-None-Match` →
+> `304`, `core` remaining 4916 before and after two requests. A full answer is 362,166 bytes for 30 runs,
+> about 12 KB per run, so a changed repository is heavy to re-read over REST.
+
+> **Checked 2026-11-01 (live):** GraphQL `Repository` has no workflow or run field, but
+> `node(id: <workflow node id>) { ... on Workflow { runs(first: n) { ... } } }` works, and two workflows in one
+> query cost 1 point. Workflow node ids come from `GET /repos/{o}/{r}/actions/workflows`. `checkSuite.branch`
+> is `null` for a run on a tag, and the latest run can be `IN_PROGRESS`, so `first: 1` is not enough to find the
+> latest finished one.
+
+> **Checked 2026-11-01:** listing runs, reading job logs and re-running failed jobs need only `repo`, which
+> githq already requests — [workflow runs](https://docs.github.com/en/rest/actions/workflow-runs),
+> [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs),
+> scopes in `packages/github/src/oauth.ts:40`.
+
+**Rejected.**
+- GitHub notifications as the source: the `ci_activity` reason covers only "A GitHub Actions workflow run that
+  you triggered", which is the gap this design exists to close, and the endpoints are documented for classic
+  personal tokens only ([notifications](https://docs.github.com/en/rest/activity/notifications), checked
+  2026-11-01; not tried with an OAuth App token).

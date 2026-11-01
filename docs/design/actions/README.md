@@ -24,12 +24,12 @@ version. Looking at the latest commit misses it too, because that commit's check
 each workflow rather than about runs or commits.
 
 The same workflow can run on `main` and on a feature branch, and a pass on the branch says nothing about `main`.
-So state is kept per workflow and per group of refs. A group rather than a single ref, because a release tag runs
+So state is worked out per workflow and per group of refs. A group rather than a single ref, because a release tag runs
 only once: if `v1.0-rc.1` fails and `v1.0-rc.3` passes, the release is fine again. A cancelled run says nothing
 either way. [The rule and the runs it was tested on](DECISIONS.md#d1).
 
 By default only the repository's default branch lights the counters. A repository's settings can add others,
-with wildcards, for example `release/*` or `v*`.
+with wildcards, for example `release/*` or `v*`. A workflow disabled on GitHub does not count.
 That setting only affects counters: every workflow and run stays visible in the repository, so a wrong pattern
 cannot hide a failure from someone looking for it. [What this setting does, and what is still open
 about it](DECISIONS.md#d5).
@@ -55,7 +55,9 @@ failed step, scrolled to GitHub's error marker with the lines above it, since th
 command in the command menu, deliberately not a single key. [Why](DECISIONS.md#d10).
 
 So that this opens without waiting, githq reads the failed jobs' logs as soon as a workflow turns red, at low
-priority so that it never gets in the way of other syncing. [How that could work](DECISIONS.md#d11).
+priority: a separate background reader that takes one log at a time, pauses between them, stops when the API
+allowance runs low and does nothing while the tab is hidden. [Why not a shared queue for all
+syncing](DECISIONS.md#d11).
 
 ## How it fits what GitHub allows
 
@@ -71,5 +73,4 @@ open, so this design does not promise that.
 
 ## How far this goes
 
-Not settled yet. To be decided with the owner: how background work is prioritised, where a repository's patterns
-are stored, and whether a workflow disabled on GitHub counts.
+Being settled: the design is about to be reviewed for anything bigger than its problem.
