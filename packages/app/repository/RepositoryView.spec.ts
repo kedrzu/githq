@@ -3,7 +3,8 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, h, ref, shallowRef } from 'vue';
+import { createApp, defineComponent, h, ref, shallowRef } from 'vue';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
@@ -87,12 +88,16 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     expect(view.state.value).toBe('all');
 });
 
-test('J3: not tracked, it lists what concerns the user and asks to be tracked', async () => {
+test('J3: not tracked, it lists what concerns the user and points to Settings, with no offer to track', async () => {
     const view = mount({ tracked: false });
+    const lines = page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` });
 
     await expect
-        .element(page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` }))
-        .toHaveTextContent(/only has what concerns you here: 6 items/);
+        .element(lines)
+        .toHaveTextContent(`githq only has what concerns you in ${SAMPLE_REPOSITORY}: 5 issues and 1 pull request.`);
+    await expect
+        .element(lines.getByRole('link', { name: 'Settings' }))
+        .toHaveAttribute('href', `/settings?q=${encodeURIComponent(SAMPLE_REPOSITORY)}`);
     await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
 
     // The kind tabs narrow it as they do a tracked one's (`/owner/name/pulls`).
@@ -103,8 +108,9 @@ test('J3: not tracked, it lists what concerns the user and asks to be tracked', 
         .element(page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' }))
         .not.toBeInTheDocument();
 
-    await userEvent.click(page.getByRole('button', { name: `Track ${SAMPLE_REPOSITORY}` }));
-    expect(view.tracks).toBe(1);
+    // The line counts what concerns the user, not what the tab narrows it to.
+    await expect.element(lines).toHaveTextContent('5 issues and 1 pull request');
+    await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
 });
 
 interface MountOptions {
@@ -116,7 +122,7 @@ function mount({ tracked = true }: MountOptions = {}) {
     const options = shallowRef<ListViewOptions<RepositoryGrouping, ItemSort>>(REPOSITORY_VIEW_DEFAULTS);
     const kind = ref<RepositoryKind>('all');
     const state = ref<RepositoryState>('open');
-    const view = { options, kind, state, tracks: 0 };
+    const view = { options, kind, state };
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -155,10 +161,16 @@ function mount({ tracked = true }: MountOptions = {}) {
                 'onUpdate:kind': (value: RepositoryKind) => {
                     kind.value = value;
                 },
-                onTrack: () => view.tracks++,
             }),
     });
     app.use(IocPlugin, { container });
+    // The Settings link of an untracked repository is a `RouterLink`.
+    app.use(
+        createRouter({
+            history: createMemoryHistory(),
+            routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+        }),
+    );
     app.mount(host);
     onTestFinished(() => {
         app.unmount();

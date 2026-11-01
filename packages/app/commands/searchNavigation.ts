@@ -26,7 +26,7 @@ export interface NavigationPlace {
 /** What the menu finds places and items in: the local copy, nothing read from GitHub (instant). */
 export interface NavigationData {
     readonly places: readonly NavigationPlace[];
-    /** The tracked repositories (`owner/name`): one typed that is not opens its own screen to track it (J3). */
+    /** The tracked repositories (`owner/name`): one typed that is not opens its own screen (J3). */
     readonly trackedRepositories: readonly string[];
     readonly items: readonly Item[];
 }
@@ -35,7 +35,7 @@ export interface NavigationData {
 export type NavigationResult =
     | { readonly kind: 'place'; readonly score: number; readonly place: NavigationPlace }
     | { readonly kind: 'item'; readonly score: number; readonly item: Item }
-    /** `owner/name` typed of a repository not tracked: its screen offers to track it (J3). */
+    /** `owner/name` typed of a repository not tracked: its screen (J3). */
     | { readonly kind: 'repository'; readonly score: number; readonly nameWithOwner: string };
 
 /** How many items the menu lists at most. */

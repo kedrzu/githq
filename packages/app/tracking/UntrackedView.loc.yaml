@@ -1,0 +1,12 @@
+notTracked:
+  en: not tracked
+notTracking:
+  en: You're not tracking {name}
+openOnGitHub:
+  en: Open on GitHub
+concernsYou:
+  en: Concerns you
+youCanTrackIt:
+  en: You can track it in
+settings:
+  en: Settings

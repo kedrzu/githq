@@ -18,9 +18,19 @@ export function readSettingsSection(tab: LocationQuery[string] | undefined): Set
 }
 
 /**
- * The address of a section of Settings; the first is Settings' own.
+ * The address of a section of Settings, the first being Settings' own, with `search` already in its search field.
  * @__NO_SIDE_EFFECTS__
  */
-export function getSettingsPath(section: SettingsSection) {
-    return section === 'repositories' ? SETTINGS_PATH : `${SETTINGS_PATH}?tab=${section}`;
+export function getSettingsPath(section: SettingsSection, search?: string) {
+    const query = new URLSearchParams();
+    if (section !== 'repositories') {
+        query.set('tab', section);
+    }
+
+    if (search) {
+        query.set('q', search);
+    }
+
+    const params = query.toString();
+    return params ? `${SETTINGS_PATH}?${params}` : SETTINGS_PATH;
 }

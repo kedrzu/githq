@@ -28,6 +28,8 @@ const SUGGESTED = 8;
 defineProps<{
   /** Which of the two sections it is. */
   tab: TrackingTab;
+  /** What its search field holds when it opens (`?q=`, from an untracked repository's or project's screen). */
+  initialSearch?: string;
 }>();
 
 const tracking = useService(TrackingStore);
@@ -140,6 +142,7 @@ function track(candidate: CandidateProject | CandidateRepository) {
 <template>
   <TrackingView
     :tab="tab"
+    :initial-search="initialSearch"
     :tracked="tracked"
     :suggested="suggested"
     :candidates="tracking.candidates"

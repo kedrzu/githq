@@ -68,23 +68,23 @@ nothingTitle:
   en: Nothing here
 nothingDetail:
   en: No issue or pull request of this repository matches. Try another state or kind.
-notTracked:
-  en: not tracked
-openOnGitHub:
-  en: Open on GitHub
-notTrackedTitle:
-  en: You're not tracking {name}
-notTrackedDetail:
+onlyWhatConcerns:
+  en: 'githq only has what concerns you in {name}: {what}.'
+nothingConcerns:
+  en: Nothing in {name} concerns you, so githq has none of it.
+issueCount:
   plural: count
   en:
-    zero: githq has nothing of it that concerns you. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.
-    one: 'githq only has what concerns you here: 1 item. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.'
-    many: 'githq only has what concerns you here: {count} items. Track the repository to copy its open issues and pull requests; it takes a moment, and they appear as they arrive.'
-track:
-  en: Track {name}
-notFound:
-  en: GitHub shows you no such repository.
-concernsYou:
-  en: Concerns you
-othersAfterTracking:
-  en: The rest of {name}'s open issues and pull requests appear here once it is tracked. Until then, search only finds what's above.
+    one: 1 issue
+    many: '{count} issues'
+pullRequestCount:
+  plural: count
+  en:
+    one: 1 pull request
+    many: '{count} pull requests'
+issuesAndPullRequests:
+  en: '{issues} and {pullRequests}'
+othersOnGitHub:
+  en: Its other open issues and pull requests are on GitHub. Search and ⌘K only find what's here.
+allOnGitHub:
+  en: Its open issues and pull requests are on GitHub. Search and ⌘K only find what's here.

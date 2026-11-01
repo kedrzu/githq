@@ -50,7 +50,6 @@ const meta = {
         selectedId: null,
         'onUpdate:options': fn(),
         'onUpdate:selectedId': fn(),
-        onTrack: fn(),
         onMove: fn(),
     },
     // As tall as the window, like in the app.
@@ -85,7 +84,7 @@ export const BoardByLabel: Story = {
 /** Nothing matches the state and kind chosen. */
 export const NothingMatches: Story = { args: { list: sampleList([], 'milestone'), openCount: 0, projects: [] } };
 
-/** J3: opened without being tracked — only what concerns the user is here; "Track" brings the rest. */
+/** J3: opened without being tracked — only what concerns the user is here; Settings is where tracking starts. */
 export const NotTracked: Story = {
     args: {
         nameWithOwner: 'vitejs/vite',
@@ -98,9 +97,9 @@ export const NotTracked: Story = {
     },
 };
 
-/** J3 when GitHub shows no such repository to track. */
-export const NotFound: Story = {
-    args: { nameWithOwner: 'acme/gone', isPrivate: null, tracked: false, list: sampleList([], 'none'), notFound: true },
+/** J3 with nothing of it concerning the user. */
+export const NotTrackedNothingConcerns: Story = {
+    args: { nameWithOwner: 'acme/gone', isPrivate: null, tracked: false, list: sampleList([], 'none') },
 };
 
 function sampleList(items: readonly Item[], grouping: RepositoryGrouping) {

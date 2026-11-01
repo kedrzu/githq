@@ -77,6 +77,8 @@ const props = defineProps<{
   now: number;
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   tab: TrackingTab;
+  /** What the search field holds when the section opens. */
+  initialSearch?: string;
 }>();
 
 const emit = defineEmits<{
@@ -93,7 +95,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const searchField = useTemplateRef<{ focus(): void }>('searchField');
 const lists = useTemplateRef<HTMLElement>('lists');
 
-const filter = ref('');
+const filter = ref(props.initialSearch ?? '');
 const listKeys = useFilteredListKeys({ container: lists, rows: '[data-row-focus]', filterField: searchField, filter });
 
 const approvalUrl = getApprovalUrl(browser.origin);
