@@ -128,6 +128,8 @@ $radius-landing-visual: 16px;
 // The open source section's repository card, as GitHub draws a repository's language.
 $radius-landing-card: 18px;
 $color-landing-typescript: #3178c6;
+// The outline of a dark button beside a light call to action: `border-2` melts into the page and the button looks smaller.
+$color-landing-secondary-border: rgba($color-fg-3, 0.55);
 // Screenshots lifted off the page, and the boxes laid over them.
 $shadow-landing-visual: 0 30px 80px rgb(0 0 0 / 60%);
 $shadow-landing-overlay: 0 24px 64px rgb(0 0 0 / 75%);

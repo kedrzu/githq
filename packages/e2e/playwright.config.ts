@@ -46,12 +46,12 @@ export default defineConfig({
     ],
     webServer: [
         {
-            // The local build fresh, then the Worker serving it — so the tests never run a stale build or someone
-            // else's server. `--host`: the Worker sees the app's origin as this port (`dev.host` in `wrangler.jsonc`
-            // says 8787, `bun run dev`'s), so its OAuth callback is this server's. `--env-file`: the dummy OAuth App
-            // of `worker.vars` instead of the real `.env`.
+            // The local build (fresh, or Nx's cached copy of the same sources), then the Worker serving it — so the
+            // tests never run a stale build or someone else's server. `--host`: the Worker sees the app's origin as
+            // this port (`dev.host` in `wrangler.jsonc` says 8787, `bun run dev`'s), so its OAuth callback is this
+            // server's. `--env-file`: the dummy OAuth App of `worker.vars` instead of the real `.env`.
             command: [
-                'bun --cwd ../app build:local',
+                buildApp('build:local'),
                 [
                     'bun --cwd ../worker preview',
                     `--port ${E2E_PORT}`,
@@ -68,10 +68,10 @@ export default defineConfig({
             gracefulShutdown: { signal: 'SIGINT', timeout: 5000 },
         },
         {
-            // The desktop app's build fresh, with the dummy OAuth App's client ID, then a static server — as the
-            // desktop app's window loads it, without a Worker.
+            // The desktop app's build (fresh, or cached as the local one), with the dummy OAuth App's client ID, then a
+            // static server — as the desktop app's window loads it, without a Worker.
             command: [
-                `GITHQ_GITHUB_CLIENT_ID=${E2E_CLIENT_ID} bun --cwd ../app build:desktop`,
+                `GITHQ_GITHUB_CLIENT_ID=${E2E_CLIENT_ID} ${buildApp('build:desktop')}`,
                 'bun src/desktop/serveDesktopApp.ts',
             ].join(' && '),
             url: E2E_DESKTOP_BASE_URL,
@@ -83,3 +83,12 @@ export default defineConfig({
         },
     ],
 });
+
+/**
+ * Builds a target of the app through Nx, which restores it from its cache when nothing it is built from changed
+ * since the last run (`nx.targets` in `packages/app/package.json`). `GITHQ_E2E_REBUILD=1` builds it regardless.
+ */
+function buildApp(target: string) {
+    const skipCache = process.env.GITHQ_E2E_REBUILD === '1' ? ' --skip-nx-cache' : '';
+    return `bunx nx run @githq/app:${target} --outputStyle=stream${skipCache}`;
+}
