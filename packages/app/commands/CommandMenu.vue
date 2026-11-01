@@ -10,11 +10,12 @@ import {
   Check,
   ChevronRight,
   CircleDot,
+  CloudUpload,
   Eye,
   GitPullRequest,
   Inbox,
   Layers,
-  Plus,
+  Settings,
   SquareKanban,
   Zap,
 } from 'lucide-vue-next';
@@ -83,7 +84,10 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   project: SquareKanban,
   view: Eye,
   repository: BookMarked,
-  tracking: Plus,
+  settings: Settings,
+  repositories: BookMarked,
+  projects: SquareKanban,
+  saving: CloudUpload,
   account: CircleUser,
 };
 
@@ -237,6 +241,7 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
         icon: PLACE_ICONS[place.kind],
         title: place.title,
         detail: place.detail,
+        keys: place.key?.split('+'),
         match: result.match,
         activate: go,
       };

@@ -93,8 +93,8 @@ Only the first of these is new content. The others can be small, but must exist.
   work. Calm, but visible.
 - **Nothing on my plate**, overall and for "Needs me". It's a good state, not an error.
 - **Still downloading** on the first sign-in: the groups that already arrived are usable.
-- **An item from an untracked repository** (already marked "not tracked" in D1): what "track this
-  repository" from here looks like.
+- **An item from an untracked repository** (already marked "not tracked" in D1): it opens as J3, and tracking
+  starts only in Settings.
 
 ## Inconsistencies to fix in the existing screens
 

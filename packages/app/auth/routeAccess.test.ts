@@ -22,6 +22,16 @@ test('signed out, an app route sends to the landing page with the way back', () 
     expect(resolveRouteAccess(route('/settings', 'signedIn'), SIGNED_IN)).toBeUndefined();
 });
 
+test('a section of Settings keeps its address through the guard: to the landing page, and to the first choice', () => {
+    const saving = route('/settings?tab=saving', 'signedIn', { tab: 'saving' });
+    expect(resolveRouteAccess(saving, SIGNED_OUT)).toEqual({ path: '/', query: { next: '/settings?tab=saving' } });
+    expect(resolveRouteAccess(saving, FIRST_SIGN_IN)).toEqual({
+        path: '/settings/tracking/new',
+        query: { next: '/settings?tab=saving' },
+    });
+    expect(resolveRouteAccess(saving, SIGNED_IN)).toBeUndefined();
+});
+
 test('signed out, home is the landing page, whatever its address carries — never sent on, so never a loop', () => {
     expect(resolveRouteAccess(route('/', 'home'), SIGNED_OUT)).toBeUndefined();
     expect(resolveRouteAccess(route('/?next=/pulls', 'home', { next: '/pulls' }), SIGNED_OUT)).toBeUndefined();
@@ -153,11 +163,9 @@ test('a first sign-in chooses what to track before anything else, then goes on t
     ).toBeUndefined();
 });
 
-test('signed in again with the choice kept, the app opens straight away; choosing again is the tracking page', () => {
+test('signed in again with the choice kept, the app opens straight away; choosing again is Settings', () => {
     expect(resolveRouteAccess(route('/', 'home'), SIGNED_IN)).toBeUndefined();
-    expect(resolveRouteAccess(route('/settings/tracking/new', 'signedIn', {}, 'choose'), SIGNED_IN)).toBe(
-        '/settings/tracking',
-    );
+    expect(resolveRouteAccess(route('/settings/tracking/new', 'signedIn', {}, 'choose'), SIGNED_IN)).toBe('/settings');
     expect(
         resolveRouteAccess(route('/settings/tracking/download', 'signedIn', {}, 'download'), SIGNED_IN),
     ).toBeUndefined();
