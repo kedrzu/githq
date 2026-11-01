@@ -115,6 +115,16 @@ const templateRequired = computed(
   () => templateCount.value > 0 && props.templates?.blankIssuesEnabled === false && !templateDecided.value,
 );
 const unavailable = computed(() => (props.repository.kind === 'unavailable' ? props.repository : null));
+const loading = computed(() => props.repository.kind === 'loading');
+/** Create waits for the repository's details, then goes on if it can (`createWhenLoaded`). */
+const canCreateOnceLoaded = computed(() => loading.value && props.draft.title.trim() !== '');
+/**
+ * Create or Create another (`another`), asked for while the repository's details were still loading: done once they
+ * are in, if the issue can be created then — a key pressed early is not lost.
+ */
+const createWhenLoaded = ref<{ readonly another: boolean } | null>(null);
+/** ⌥A pressed (an odd number of times) while the repository's details were still loading: applied once they are in. */
+const assignMeWhenLoaded = ref(false);
 const canCreate = computed(
   () =>
     props.repository.kind === 'ready' &&
@@ -133,6 +143,8 @@ watch(
       repositoryQuery.value = '';
       offerTemplates();
     }
+
+    forgetWhatWaitsForDetails();
   },
   { immediate: true },
 );
@@ -143,6 +155,7 @@ watch(
   ([name], previous) => {
     if (name !== previous?.[0]) {
       templateDecided.value = props.draft.form !== null;
+      forgetWhatWaitsForDetails();
     }
 
     offerTemplates();
@@ -157,6 +170,29 @@ watch(
     }
   },
 );
+
+watch(loading, async isLoading => {
+  if (isLoading) {
+    return;
+  }
+
+  const waitingCreate = createWhenLoaded.value;
+  const assignMe = assignMeWhenLoaded.value;
+  forgetWhatWaitsForDetails();
+  if (assignMe && canPush.value) {
+    toggleAssignMe();
+    await nextTick();
+  }
+
+  if (waitingCreate) {
+    createIssue(waitingCreate.another);
+  }
+});
+
+function forgetWhatWaitsForDetails() {
+  createWhenLoaded.value = null;
+  assignMeWhenLoaded.value = false;
+}
 
 /** Where blank issues are off, the repository's templates come before anything else. */
 function offerTemplates() {
@@ -210,6 +246,15 @@ async function focusTitle() {
 }
 
 function create(another: boolean) {
+  if (canCreateOnceLoaded.value) {
+    createWhenLoaded.value = { another };
+    return;
+  }
+
+  createIssue(another);
+}
+
+function createIssue(another: boolean) {
   if (!canCreate.value) {
     return;
   }
@@ -242,9 +287,15 @@ function onTitleKeydown(event: KeyboardEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (matchesCommandKey(event, 'Alt+A') && loading.value) {
+    event.preventDefault();
+    assignMeWhenLoaded.value = !assignMeWhenLoaded.value;
+    return;
+  }
+
   if (matchesCommandKey(event, 'Alt+A') && canPush.value) {
     event.preventDefault();
-    emit('update', { assignees: toggleAssignee(props.draft.assignees, props.viewerLogin) });
+    toggleAssignMe();
     return;
   }
 
@@ -258,6 +309,10 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault();
     create(event.altKey);
   }
+}
+
+function toggleAssignMe() {
+  emit('update', { assignees: toggleAssignee(props.draft.assignees, props.viewerLogin) });
 }
 
 /** Opening puts the cursor in the title — or the chooser's field, where no repository is chosen yet. */
@@ -508,7 +563,8 @@ function onEscape(event: KeyboardEvent) {
             variant="ghost"
             size="sm"
             :kbd="expanded ? 'Mod+Enter' : 'Enter'"
-            :disabled="!canCreate"
+            :disabled="!canCreate && !canCreateOnceLoaded"
+            :busy="createWhenLoaded?.another === false"
             @click="create(false)"
             >{{ t(l.create) }}</Button
           >
@@ -516,7 +572,8 @@ function onEscape(event: KeyboardEvent) {
             variant="ghost"
             size="sm"
             :kbd="expanded ? 'Alt+Mod+Enter' : 'Mod+Enter'"
-            :disabled="!canCreate"
+            :disabled="!canCreate && !canCreateOnceLoaded"
+            :busy="createWhenLoaded?.another === true"
             @click="create(true)"
             >{{ t(l.createAnother) }}</Button
           >
