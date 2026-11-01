@@ -1,0 +1,61 @@
+headline:
+  en: Everything on your plate across GitHub, one keystroke away.
+lead:
+  en: githq is a fast, keyboard-first client for GitHub Issues, pull requests and Projects. GitHub stays the only place your work lives.
+signIn:
+  en: Sign in with GitHub
+newCode:
+  en: Get a new code
+codeHeadline:
+  en: Enter this code on GitHub
+codeLead:
+  en: githq opens github.com/login/device in your browser. Paste the code there and approve githq, and this window carries on by itself.
+codeLabel:
+  en: Your code
+copyAndOpen:
+  en: Copy code and open GitHub
+cancel:
+  en: Cancel
+waiting:
+  en: Waiting for GitHub…
+codeWorksFor:
+  plural: minutes
+  en:
+    one: the code works for 1 minute
+    many: 'the code works for {minutes} minutes'
+noKeychain:
+  en: githq can't reach your system keychain, so you'll sign in again next time you open it.
+expired:
+  en: The code expired before it was used on GitHub.
+denied:
+  en: Access was cancelled on GitHub, so nothing was shared with githq.
+offline:
+  en: githq can't reach GitHub. Check your connection, then get a new code.
+failed:
+  en: Something went wrong with GitHub, so githq isn't signed in.
+missingScopes:
+  en: GitHub granted less access than githq needs, so nothing was kept.
+signedOut:
+  en: GitHub no longer accepts githq's access, so you were signed out.
+asksTitle:
+  en: What GitHub's next screen will ask for
+asksRepositories:
+  en: Full access to repositories
+asksRepositoriesDetail:
+  en: GitHub has nothing narrower for issues and pull requests. githq only reads and edits issues, pull requests, labels, milestones and comments. It never touches code, branches or settings.
+asksProjects:
+  en: Projects
+asksProjectsDetail:
+  en: To show and edit your GitHub Projects and their fields.
+asksData:
+  en: Where your data goes
+asksDataDetail:
+  en: On this computer, and nowhere else. githq has no server that stores your issues.
+asksShort:
+  en: GitHub will ask for access to your repositories.
+why:
+  en: Why?
+footerOpenSource:
+  en: Free and open source
+footerStaysOnGitHub:
+  en: Your work stays on GitHub

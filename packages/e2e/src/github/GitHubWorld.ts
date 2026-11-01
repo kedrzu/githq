@@ -90,6 +90,8 @@ export interface GitHubWorldItemParams {
     readonly closed?: boolean;
     /** The projects it is in ({@link GitHubWorld.project}), and its "Status" in each. */
     readonly projects?: readonly GitHubWorldPlacement[];
+    /** Its description as GitHub renders it (`bodyHTML`); none by default. */
+    readonly bodyHtml?: string;
 }
 
 /** An item's place in a project of the world. */
@@ -335,6 +337,7 @@ interface WorldItem {
     /** Its pull request's own state; `null` for an issue. */
     readonly pullRequest: WorldPullRequest | null;
     readonly issueType: GitHubWorldIssueType | null;
+    readonly bodyHtml: string;
     readonly foundBy: Set<MyWorkSearch>;
     /** Deleted on GitHub, while the search index still lists it. */
     deleted: boolean;
@@ -1543,6 +1546,7 @@ export class GitHubWorld {
             projectItems: [],
             pullRequest,
             issueType: issueType ?? null,
+            bodyHtml: params.bodyHtml ?? '',
             foundBy: new Set(foundBy),
             deleted: false,
         };
@@ -1604,7 +1608,7 @@ export class GitHubWorld {
         return item.pullRequest ? this.toPullRequestNode(item, item.pullRequest) : this.toIssueNode(item);
     }
 
-    /** A live item as `ItemDetail` reads it: its row, an empty body, its comments and projects. */
+    /** A live item as `ItemDetail` reads it: its row, its rendered description, its comments and projects. */
     private readDetailNode(id: string): IssueDetailFieldsFragment | PullRequestDetailFieldsFragment | undefined {
         const item = this.readItem(id);
         if (!item) {
@@ -1613,7 +1617,7 @@ export class GitHubWorld {
 
         const details = {
             body: '',
-            bodyHTML: '',
+            bodyHTML: item.bodyHtml,
             reactionGroups: [],
             commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE),
             projectItems: { nodes: item.projectItems.map(place => toProjectItemDetail(place)) },

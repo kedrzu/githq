@@ -1,6 +1,7 @@
 <!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ChevronDown, ChevronRight, Loader } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
@@ -9,6 +10,7 @@ import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
+import { Browser } from '@/services/Browser.js';
 import { followSelection } from '@/utils/followSelection.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
@@ -85,6 +87,7 @@ interface Dragged {
 }
 
 const t = useTranslate();
+const browser = useService(Browser);
 const bodyRef = useTemplateRef<HTMLElement>('body');
 const collapsed = ref<ReadonlySet<string>>(new Set());
 const selectedKey = ref<string | null>(null);
@@ -400,7 +403,7 @@ function openSelectedOnGitHub() {
   const current = key === null ? undefined : placed.value.get(key);
   const url = current ? props.getUrl(current.entry.value) : null;
   if (url) {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    browser.openInNewTab(url);
   }
 }
 

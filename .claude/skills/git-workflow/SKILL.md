@@ -23,8 +23,8 @@ Facts this rests on (checked 2026-10-31):
 - Agents never push to `main`: `.claude/git.json` lists it in `protectedBranches`, and the `git`
   plugin's hook blocks such a push.
 - Tracker: GitHub Issues in the same repository. A task may have no issue.
-- Commit messages and PR titles: English, imperative, no prefix, e.g.
-  `Show review requests first in My work`. PRs are squash-merged, so **the PR title
+- Commit messages and PR titles: English, Conventional Commits (Titles), e.g.
+  `feat: show review requests first in My work`. PRs are squash-merged, so **the PR title
   becomes the commit on `main`** (with ` (#<PR>)`).
 - PR descriptions, issues and issue comments are in English too (`AGENTS.md`): Polish is only for
   the conversation with the owner.
@@ -32,6 +32,45 @@ Facts this rests on (checked 2026-10-31):
   `design`, `docs` (`feat/12-my-work-list`).
 - `nzyme` is a git submodule (`https://github.com/kedrzu/nzyme.git`, no `branch =`); the gitlink is
   the pin.
+
+## Titles
+
+Form: `<type>[(scope)][!]: <description>`, a lowercase imperative description, in English:
+`feat: show review requests first in My work`, `fix(web): keep the landing page's layout on narrow screens`,
+`feat(cloud): rate-limit the OAuth exchange`.
+
+The **PR title** is what counts, and CI checks it (`.github/workflows/pr-title.yml`): the squash makes it the
+commit on `main`, and the desktop release reads those commits. Commits on a branch use the same form, but
+nothing enforces it, because they vanish in the squash. Update the title when the PR's scope changes.
+
+|Type|Use for|Version|Release notes|
+|-|-|-|-|
+|`feat`|something new a user can do or see|minor|yes|
+|`fix`|a user-visible defect|patch|yes|
+|`perf`|something faster for the user|patch|yes|
+|`refactor`, `docs`, `test`, `build`, `ci`, `chore`|everything else|none|no|
+
+There is no `revert` type: a revert takes the type of what it does for users (`fix: ...` for a revert that
+removes a defect).
+
+**Scopes** are only `web` and `cloud`; any other fails the check. A scope means "does not reach the desktop
+app": such a commit does not count for the desktop version and is not in its notes.
+
+- `web`: what only the website has and the desktop app does not, such as the landing page.
+- `cloud`: the Cloudflare side, the Worker and its OAuth exchange.
+- No scope is the default, because the desktop app bundles the same SPA. A change to shared app code is
+  unscoped even if it was noticed on the web, and so is a desktop-only change.
+
+`!` after the type or scope (`feat!:`, `fix(web)!:`) marks a breaking change; a `BREAKING CHANGE:` line in the
+description does nothing. A breaking change bumps the minor version while 0.x and the major from 1.0, but
+`feat(web)!` still counts for nothing, being scoped.
+
+In doubt, ask: "would someone using the desktop app want this line in the release notes?" Yes → `feat`,
+`fix` or `perf`, unscoped. The description is what the notes will say, so write it for a user.
+
+The web deploys on every push to `main` whatever the title; the title only decides the desktop release.
+Releasing is `gh workflow run release.yml -f mode=<preview|candidate|stable>`. `preview` is harmless;
+`candidate` and `stable` only on the owner's word, like Land. Details: `docs/desktop/RELEASING.md`.
 
 ## Start
 
@@ -87,7 +126,7 @@ Commit everything that belongs to the change and push:
 git add -A
 git status --short          # nothing unrelated (.env, .dev.vars, screenshots) staged
 git commit -F - <<'EOF'
-<Imperative summary>
+<type>[(scope)]: <imperative summary>
 
 <why, when the subject does not say it>
 
@@ -118,7 +157,7 @@ and its title and description are current. The pipeline supplies the texts.
 
 - **No PR for the branch** (`gh pr view` fails):
   ```bash
-  gh pr create --base main --title "<commit-style title>" --body-file - <<'EOF'
+  gh pr create --base main --title "<type>[(scope)]: <description>" --body-file - <<'EOF'
   <what changed and why>
 
   Closes #<N>

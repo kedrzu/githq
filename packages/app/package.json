@@ -13,6 +13,8 @@
         "dev": "nuxt dev --bun",
         "build": "GITHQ_TARGET=production nuxt generate --bun && bun scripts/checkProductionBuild.ts",
         "build:local": "GITHQ_TARGET=local nuxt generate --bun && bun scripts/checkLocalBuild.ts",
+        "build:desktop": "GITHQ_TARGET=desktop nuxt generate --bun && bun scripts/checkDesktopBuild.ts",
+        "dev:desktop": "GITHQ_TARGET=desktop nuxt dev --bun",
         "typecheck": "nuxi typecheck",
         "prep": "nuxt prepare",
         "storybook": "storybook dev --port 6006 --no-open",

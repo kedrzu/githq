@@ -39,6 +39,7 @@ owner's repositories do not keep parallel lines.
 > `kedrzu/slapss-app` has `release/2.0.1`, `kedrzu/cli` has `release/v4.0.0`. None has more than one.
 
 **Rejected.**
+
 - A workflow is broken when its latest finished run on any ref failed: a feature branch flips the state of
   `main` ([history](history/DECISIONS.md#d1)).
 - One state per exact ref: a tag that failed never recovers.
@@ -81,6 +82,7 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 > scopes in `packages/github/src/oauth.ts:40`.
 
 **Rejected.**
+
 - Polling every 60s like the other loops: the problem is failures missed for hours, and an active repository's
   answer changes with every run status.
 - GraphQL `node(id:) { ... on Workflow { runs(first: n) } }` for reading runs: `runs` takes only paging and
@@ -118,6 +120,7 @@ jobs because the workflow file is invalid, a log past GitHub's retention, a re-r
 marker in the log, it starts at the log's end.
 
 **Rejected.**
+
 - Check-run annotations as the pointer into the log: see the check above.
 
 ## D4
@@ -127,6 +130,7 @@ marker in the log, it starts at the log's end.
 **Why.** The owner's call. It reuses the set githq already polls (`packages/app/tracking/TrackingTypes.ts`).
 
 **Rejected.**
+
 - A separate list of repositories watched for Actions only: the owner does not need it.
 
 ## D5
@@ -149,6 +153,7 @@ repository's own Release workflow ([D1](#d1)). It is still visible in the Workfl
 reads and writes settings through it and depends on nothing else about it.
 
 **Rejected.**
+
 - Default branch, `release`, `release/*` and all tags as the default: the owner says few people work that way.
 
 > **Checked 2026-11-01:** the local database is no place for them: it is deleted and rebuilt on any schema version
@@ -166,6 +171,7 @@ repositories at all (`packages/app/shell/Sidebar.vue:276-322`), so a total is ne
 requests already exist on the same page (`packages/app/tracking/trackingRoutes.ts:14`).
 
 **Rejected.**
+
 - Broken workflows also in the repository's All tab, in a block above the items: the owner dropped it for now,
   workflows stay in their own tab ([history](history/DECISIONS.md#d8)).
 - A nested sidebar menu per repository: several rows per repository to carry one fact, on a sidebar that already
@@ -195,6 +201,7 @@ the repository to fix and can stay red for long. (2026-11-01, design agent's rec
 when closing the design)
 
 **Rejected.**
+
 - Counting only workflows with a file in `.github/workflows`: a special rule with no evidence the noise hurts, and a
   failed Pages deploy would light nothing.
 - A mute setting in githq, kept locally: not wanted now.
@@ -207,6 +214,7 @@ when closing the design)
 `repo` scope ([D2](#d2)).
 
 **Rejected.**
+
 - A single-key shortcut on the failure screen.
 
 ## D12
@@ -221,6 +229,7 @@ only wait on this screen.
 > **Checked 2026-11-01:** the tested log has 176,562 characters over 2,086 lines; see [D3](#d3).
 
 **Rejected.**
+
 - Reading failed jobs' logs in the background when a workflow turns red, at low priority: logs are too big
   ([history](history/DECISIONS.md#d11)).
 - Keeping about 200 lines before the error marker: the key information is not always there.

@@ -13,6 +13,7 @@ commits.** (2026-11-01, proposal of the design agent, not confirmed by the owner
 other workflows and after new green commits.
 
 **Rejected.**
+
 - A feed of recent failed runs: a failure scrolls away while still broken, and a failure already fixed by a
   later run stays listed.
 - The check rollup of the default branch's latest commit: a new green commit hides a broken nightly or deploy.
@@ -31,6 +32,7 @@ repositories at all (`packages/app/shell/Sidebar.vue:276-322`), so a total is ne
 requests already exist on the same page (`packages/app/tracking/trackingRoutes.ts:14`).
 
 **Rejected.**
+
 - A nested sidebar menu per repository: several rows per repository to carry one fact, on a sidebar that already
   grows with every tracked repository.
 - Issues, pull requests and workflows in columns on the repository page: a workflow has no fields, assignees or
@@ -57,6 +59,7 @@ reachable by the list's keyboard movement; no selection or bulk actions.
 this tab until it passes. Proposal: no setting in githq; a workflow disabled on GitHub does not count.
 
 **Rejected (proposed, owner has not decided).**
+
 - Workflows as rows mixed among the items: see Why.
 - All failures including runs from pull requests: bots and contributors' branches would fill the top of the tab,
   and those stay visible in the Workflows tab.
@@ -91,6 +94,7 @@ existing 60s interval costs only when something changed.
 > scopes in `packages/github/src/oauth.ts:40`.
 
 **Rejected.**
+
 - GitHub notifications as the source: the `ci_activity` reason covers only "A GitHub Actions workflow run that
   you triggered", which is the gap this design exists to close, and the endpoints are documented for classic
   personal tokens only ([notifications](https://docs.github.com/en/rest/activity/notifications), checked
@@ -120,11 +124,13 @@ in time, so this must not compete with it.
 > **Not tested 2026-11-01:** what the logs endpoint returns for a job still running; no run was in progress.
 
 **Rejected.**
+
 - Reading the log only on opening: every failure starts with a wait.
 
 **How priority works: a separate background reader built like `DetailPrefetch`, with its own floor on `core`.**
 (2026-11-01, owner)
 
 **Also rejected.**
+
 - A shared queue with priorities for all sync work: a rebuild of `SyncEngine`, with no two kinds of work competing
   for one bucket yet. Reopen when there is such a pair.

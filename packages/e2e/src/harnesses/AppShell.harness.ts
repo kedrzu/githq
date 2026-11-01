@@ -115,6 +115,21 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /^Paused until/ });
     }
 
+    /** The desktop app's notice of an update ready to run (U1), "githq 1.4.0 is ready". */
+    get updateNotice(): Locator {
+        return this.statusBar.getByText(/^githq \S+ is\sready$/);
+    }
+
+    /** "Restart" of {@link updateNotice}: into the update. */
+    get restartToUpdateButton(): Locator {
+        return this.statusBar.getByRole('button', { name: 'Restart', exact: true });
+    }
+
+    /** "Later" of {@link updateNotice}: hides it until the app next starts. */
+    get updateLaterButton(): Locator {
+        return this.statusBar.getByRole('button', { name: 'Later', exact: true });
+    }
+
     /** Why refresh is paused, opened from {@link pausedSegment}. */
     get pausedExplanation(): Locator {
         return this.page.getByTestId('refresh-paused');

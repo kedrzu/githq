@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
+import { Browser } from '@/services/Browser.js';
 import { getRepositoryPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -31,6 +32,7 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
     const router = useRouter();
     const tracking = useService(TrackingStore);
     const composer = useService(NewIssueComposer);
+    const browser = useService(Browser);
 
     return nameWithOwner => {
         const url = `${GITHUB_ORIGIN}/${nameWithOwner}`;
@@ -69,7 +71,7 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 section: 'view',
                 icon: Github,
                 keywords: [nameWithOwner],
-                run: () => void window.open(url, '_blank', 'noopener,noreferrer'),
+                run: () => browser.openInNewTab(url),
             },
             copyLink: {
                 id: 'repository.copyLink',

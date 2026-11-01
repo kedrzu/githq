@@ -14,6 +14,8 @@ export default [
         '**/playwright-report/**',
         '**/*.loc.ts',
         '**/*.loc.js',
+        // Cargo's build of the desktop app, which holds the bundled app's files compressed under `.js` names.
+        '**/target/**',
         // The nzyme submodule is linted by its own config (`lint:nzyme`); without this a directory
         // run would descend into it and pick up `nzyme/eslint.config.mjs`.
         'nzyme/**',

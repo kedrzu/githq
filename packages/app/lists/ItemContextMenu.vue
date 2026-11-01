@@ -34,6 +34,7 @@ import { getItemMenuSections } from '@/item/getItemMenuSections.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { formatShortReference, getItemPagePath, getItemReference } from '@/item/itemRoutes.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
+import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -59,6 +60,7 @@ const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 const navigation = useService(ItemNavigation);
 const clock = useService(Clock);
+const browser = useService(Browser);
 const router = useRouter();
 const editCommands = useEditCommands();
 
@@ -154,7 +156,7 @@ function getOwnCommands(): Command[] {
       detail: item ? undefined : t(l.tabs, { count: selected.value.length }),
       run: () => {
         for (const candidate of selected.value) {
-          window.open(candidate.url, '_blank', 'noopener,noreferrer');
+          browser.openInNewTab(candidate.url);
         }
       },
     },
@@ -222,7 +224,7 @@ function getOwnCommands(): Command[] {
         section: 'item',
         key: 'Shift+O',
         icon: FileDiff,
-        run: () => void window.open(`${item.url}/files`, '_blank', 'noopener,noreferrer'),
+        run: () => browser.openInNewTab(`${item.url}/files`),
       },
       {
         id: 'menu.copyBranch',

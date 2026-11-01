@@ -1,13 +1,15 @@
-<!-- The status bar along the window's bottom (D15): one segment per surface, each as wide as the surface above it. The sidebar's segment holds the API allowance — in full, or short under the rail — or, in amber, what holds the whole app back: being offline, or refresh paused until the allowance resets (K3), when it is a button opening why — reading and editing still work, only other people's changes wait — with the allowance, when refresh resumes and when it last refreshed. The rest of the segments come from the default slot (`StatusSegment`). -->
+<!-- The status bar along the window's bottom (D15): one segment per surface, each as wide as the surface above it. The sidebar's segment holds the API allowance — in full, or short under the rail — or, in amber, what holds the whole app back: being offline, or refresh paused until the allowance resets (K3), when it is a button opening why — reading and editing still work, only other people's changes wait — with the allowance, when refresh resumes and when it last refreshed. The rest of the segments come from the default slot (`StatusSegment`). In the desktop app, an update ready to run is offered at the bar's right end (`desktop/UpdateSegment.vue`, U1); the web builds drop it. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { Pause, WifiOff } from 'lucide-vue-next';
-import { computed, shallowRef, watch } from 'vue';
+import { computed, defineAsyncComponent, shallowRef, watch } from 'vue';
 
 import Popover from '@/components/Popover.vue';
 import Tooltip from '@/components/Tooltip.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { AppUpdate } from '@/services/AppUpdate.js';
 import { useNow } from '@/services/useNow.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
@@ -35,6 +37,10 @@ defineSlots<{
 /** How often "in 18 min" moves on while the explanation is open. */
 const TICK_MS = 15_000;
 const MINUTE = 60_000;
+
+// The desktop app's update notice, in the desktop build only (`__DESKTOP__`); the web builds drop it.
+const UpdateSegment = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/UpdateSegment.vue')) : null;
+const update = __DESKTOP__ ? useService(AppUpdate) : null;
 
 const t = useTranslate();
 const explained = shallowRef(false);
@@ -216,6 +222,13 @@ const text = computed(() => {
       </div>
     </Tooltip>
     <slot />
+    <component
+      :is="UpdateSegment"
+      v-if="UpdateSegment && update?.readyVersion"
+      :version="update.readyVersion"
+      @restart="update.restart()"
+      @later="update.later()"
+    />
   </footer>
 </template>
 

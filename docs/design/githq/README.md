@@ -134,3 +134,16 @@ private repositories without also asking for write access to the code, so the co
 access to repositories". And organizations that restrict OAuth apps — the default for new ones — keep their
 private repositories hidden until an owner approves githq.
 [The comparison in detail](DECISIONS.md#d3).
+
+## Desktop app
+
+githq also comes as a desktop app for macOS, Windows and Linux. It is the same app, but its files ship inside
+the installer rather than being loaded from githq.dev, so it starts without a network and runs exactly the code
+that was released. Signing in works differently: the app shows a short code, you type it on github.com in your
+browser, and GitHub hands the token straight to the app. No service of ours takes part, so the one tiny service
+described above isn't needed. The token is kept in your system's keychain, not in browser storage. The app talks
+to GitHub and nothing else, and links to github.com open in your browser.
+
+The app updates itself from the project's GitHub Releases. A new version downloads in the background and waits
+quietly in the status bar until you choose to restart. [Why a bundled app and not a window onto
+githq.dev](DECISIONS.md#d23). [The screens](ui/desktop.md).

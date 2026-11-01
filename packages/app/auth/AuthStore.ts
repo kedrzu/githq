@@ -18,6 +18,7 @@ import { Browser } from '@/services/Browser.js';
 import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
 
 import { safeNextPath } from './routeAccess.js';
+import { TokenVault } from './TokenVault.js';
 
 /** The signed-in GitHub user, as the shell shows them. */
 export interface Viewer {
@@ -49,8 +50,6 @@ export type SignInResult =
     | { readonly ok: true; readonly returnTo: string }
     | { readonly ok: false; readonly failure: SignInFailure };
 
-/** Where the token is kept (`localStorage`): githq has no server to hold it (D1). */
-export const TOKEN_KEY = 'githq.token';
 /** The signed-in user, kept so a reload shows the shell at once; refreshed in the background. */
 export const VIEWER_KEY = 'githq.viewer';
 /** The sign-in under way (`sessionStorage`): its `state` and where to return, while the user is on GitHub. */
@@ -65,9 +64,9 @@ interface PendingSignIn {
  * The GitHub session: the OAuth token and who it belongs to, signing in through GitHub's web flow (D1) and
  * signing out.
  *
- * The token and the user are kept in `localStorage`, so a reload opens the shell straight away; the user is
- * then read again from GitHub in the background, and a token GitHub rejects (401) signs the user out with
- * `failure: 'tokenRejected'`. The token is never logged.
+ * The token is kept in the {@link TokenVault} and the user in `localStorage`, so a reload opens the shell straight
+ * away; the user is then read again from GitHub in the background, and a token GitHub rejects (401) signs the user
+ * out with `failure: 'tokenRejected'`. The token is never logged.
  *
  * While a token is stored, the `githq_signed_in` cookie ({@link SIGNED_IN_HINT_COOKIE}) is set, so the Worker serves
  * the app rather than the landing page at `/`; it is cleared with the token. It carries no token and no identity.
@@ -82,9 +81,10 @@ export const AuthStore = defineService({
         browser: Browser,
         createSdk: GitHubSdkFactory,
         logger: Logger,
+        vault: TokenVault,
     },
-    setup({ browser, createSdk, logger }) {
-        const tokenRef = shallowRef<string | null>(browser.localStorage.getItem(TOKEN_KEY));
+    setup({ browser, createSdk, logger, vault }) {
+        const tokenRef = shallowRef<string | null>(vault.read());
         const viewerRef = shallowRef<Viewer | null>(tokenRef.value === null ? null : readStoredViewer());
         const failureRef = shallowRef<SignInFailure | null>(null);
 
@@ -102,11 +102,7 @@ export const AuthStore = defineService({
             flush: 'sync',
         });
 
-        browser.onLocalStorageChange(key => {
-            if (key === TOKEN_KEY || key === null) {
-                followStoredToken();
-            }
-        });
+        vault.onChange(followStoredToken);
 
         return {
             /** Whether a user is signed in; reactive. */
@@ -180,16 +176,17 @@ export const AuthStore = defineService({
         }
 
         /**
-         * Signs in with a token from elsewhere (`gh auth token`) — the development sign-in only
-         * (`DevTokenForm`). Kept once GitHub has said whose it is.
+         * Signs in with a token from elsewhere — the development sign-in's pasted one (`DevTokenForm`), or the one
+         * the desktop app's device sign-in got (`DeviceSignIn`). Kept once GitHub has said whose it is, unless
+         * `signal` aborted meanwhile: then it rejects with the abort reason and keeps nothing.
          */
-        async function signInWithToken(token: string): Promise<SignInResult> {
-            return await acceptToken(token, '/');
+        async function signInWithToken(token: string, signal?: AbortSignal): Promise<SignInResult> {
+            return await acceptToken(token, '/', signal);
         }
 
         /** Forgets the token and the user. With a `failure`, the landing page explains it. */
         function signOut(failure: SignInFailure | null = null) {
-            browser.localStorage.removeItem(TOKEN_KEY);
+            vault.remove();
             browser.localStorage.removeItem(VIEWER_KEY);
             tokenRef.value = null;
             viewerRef.value = null;
@@ -230,16 +227,18 @@ export const AuthStore = defineService({
             }
         }
 
-        async function acceptToken(token: string, returnTo: string): Promise<SignInResult> {
+        async function acceptToken(token: string, returnTo: string, signal?: AbortSignal): Promise<SignInResult> {
             let viewer: Viewer;
             try {
                 viewer = await fetchViewer(token);
             } catch (error) {
+                signal?.throwIfAborted();
                 logger.warn('GitHub did not accept the new token', { error });
                 return fail(isTokenRejected(error) ? 'tokenRejected' : 'failed');
             }
 
-            browser.localStorage.setItem(TOKEN_KEY, token);
+            signal?.throwIfAborted();
+            vault.write(token);
             tokenRef.value = token;
             storeViewer(token, viewer);
             failureRef.value = null;
@@ -264,9 +263,9 @@ export const AuthStore = defineService({
             viewerRef.value = viewer;
         }
 
-        /** Whether `token` is still the session's, in this tab and in the storage every tab shares. */
+        /** Whether `token` is still the session's, in this tab and in the vault every tab shares. */
         function isCurrentToken(token: string) {
-            return tokenRef.value === token && browser.localStorage.getItem(TOKEN_KEY) === token;
+            return tokenRef.value === token && vault.read() === token;
         }
 
         /**
@@ -275,7 +274,7 @@ export const AuthStore = defineService({
          * someone, whom this tab takes over, checking with GitHub in the background.
          */
         function followStoredToken() {
-            const stored = browser.localStorage.getItem(TOKEN_KEY);
+            const stored = vault.read();
             if (stored === tokenRef.value) {
                 return;
             }

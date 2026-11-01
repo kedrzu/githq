@@ -2,10 +2,11 @@ import type { FullConfig } from '@playwright/test';
 
 import { OAUTH_AUTHORIZE_PATH, OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
-import { E2E_CLIENT_ID } from './localApp.js';
+import { DESKTOP_PROJECT, E2E_CLIENT_ID } from './localApp.js';
 
-// Before any test, after the web server is up: proves that the tests run against the app on this machine, its
-// Worker with the dummy OAuth App of `worker.vars` and this server's callback — never a real OAuth App.
+// Before any test, after the web servers are up: proves that the tests run against the app on this machine, its
+// Worker with the dummy OAuth App of `worker.vars` and this server's callback — never a real OAuth App — and the
+// desktop app's build served the way its window loads it.
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -16,7 +17,18 @@ export default async function globalSetup(config: FullConfig) {
             throw new Error(`e2e runs against the app on this machine only; project "${project.name}" has ${baseURL}`);
         }
 
-        await checkWorker(baseURL);
+        await (project.name === DESKTOP_PROJECT ? checkDesktopServer(baseURL) : checkWorker(baseURL));
+    }
+}
+
+/** The desktop build's server answers a deep link with the app, as the desktop app's window does. */
+async function checkDesktopServer(baseURL: string) {
+    const response = await fetch(new URL('/acme/web/issues/1', baseURL));
+    const html = await response.text();
+    if (response.status !== 200 || !html.includes('id="__nuxt"')) {
+        throw new Error(
+            `The desktop build's server at ${baseURL} does not answer a deep link with the app: ${response.status} (\`src/desktop/serveDesktopApp.ts\`)`,
+        );
     }
 }
 
