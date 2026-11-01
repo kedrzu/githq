@@ -150,7 +150,8 @@ following `packages/app/auth/createAccountSlot.ts`)
 **When syncing starts on a device that already has settings, the tracked lists are combined and, for any other setting set
 on both sides, the saved one wins.** (2026-11-01, owner, on the design agent's proposal)
 
-**Why.** Nothing the user tracks is lost, and untracking afterwards is one action.
+**Why.** Nothing the user tracks is lost, and untracking afterwards is one action. A repository the file marks `tracking: false`
+([D13](#d13)) counts as set on both sides, so it ends untracked here too; only one the file doesn't mention is added.
 
 **Rejected.**
 - Replacing local settings with the saved ones — simpler, but silently removes repositories from the device along with
@@ -170,8 +171,8 @@ it happens on github.com, through a link from settings.** (2026-11-01, owner, on
 
 **One merge rule covers every case: the device keeps, next to its settings, the copy of the file it last saw and that copy's
 `sha`, in the same `localStorage` place. What differs between the two is what it has not saved yet. Merging compares the
-device's settings, the file now, and that copy: tracked items are added and removed by item, other settings by key, and when
-both sides changed the same key the file wins. Order is the file's, with new items at the end.** (2026-11-01, proposal of the
+device's settings, the file now, and that copy, key by key, matching array entries by identity; when both sides changed the same
+key the file wins. Order is the file's, with new entries at the end. Nothing is ever removed.** (2026-11-01, proposal of the
 design agent, not confirmed)
 
 **Why.** First contact ([D9](#d9)) is this rule with an empty copy. A write refused with 409 is this rule after a re-read. A
@@ -202,20 +203,22 @@ recoverable. Visibility is checked when connecting, not on every poll.
 
 **The file is `settings.json`: formatted JSON with a stable key order and a `version` number at the root, next to `repositories`
 and `projects`, arrays in the user's order. Each entry nests its own settings: a repository its list options, a project its row
-field and its options per saved view. My work's options sit at the root under `myWork`. Unknown keys are preserved when merging;
+field and its options per saved view. Whether something is tracked is one of those settings, `tracking: true`; entries are never
+removed, so untracking keeps the rest. Projects work the same way as repositories. My work's options sit at the root under `myWork`. Unknown keys are preserved when merging;
 `version` goes up only for a change an older build can't safely ignore. Repositories keep today's identity (`owner/name`, with
-the node id stored), projects their node ids.** (2026-11-01, owner for `version` and the root layout with nesting; the rest is a
-proposal of the design agent, not confirmed)
+the node id stored), projects their node ids.** (2026-11-01, owner for `version`, the root layout with nesting and `tracking` on a
+repository; the rest is a proposal of the design agent, not confirmed)
 
 ```json
 {
   "version": 1,
   "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "list": { "layout": "board", "sort": "updated" } }
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true, "list": { "layout": "board", "sort": "updated" } },
+    { "nameWithOwner": "acme/api", "tracking": false, "list": { "sort": "created" } }
   ],
   "projects": [
     {
-      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap",
+      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true,
       "rowField": "PVTF_…",
       "views": { "PVTV_…": { "grouping": "status" } }
     }
@@ -226,13 +229,15 @@ proposal of the design agent, not confirmed)
 
 **Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs.
 
-**Consequence of nesting, not confirmed.** Settings exist in the file only for what is tracked. Today options are kept for any
-repository page, tracked or not (`packages/app/repository/RepositoryPage.vue:66`). The agent's proposal: those of an untracked
-repository stay local; tracking moves them into the file; untracking removes them with the entry. If one device untracks while
-another edits that entry's settings, the removal wins.
+**Consequences.** A repository gets an entry when it is tracked or when one of its options changes, so options of untracked
+repositories travel too (`packages/app/repository/RepositoryPage.vue:66` keeps them for any repository page today), and the file
+grows only by repositories someone adjusted. `id` is optional, because a repository page doesn't always know it. A repository
+tracked again returns to its old place in the sidebar, which is the entries that have `tracking: true`, in order.
 
 **Rejected.**
 - A separate `tracked` object with settings in a flat `lists` map by key ([history](history/DECISIONS.md#d13)) — owner.
+- Entries only for tracked repositories, removed on untrack, with other options local ([history](history/DECISIONS.md#d13)) —
+  untracking would throw settings away (owner).
 - Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
   display options, which is what happens today.
 
@@ -242,13 +247,11 @@ another edits that entry's settings, the removal wins.
 
 From the failure sweep of 2026-11-01:
 
-- Turning syncing on brings back a repository untracked elsewhere while this device was off, because combining lists keeps no
-  record of removals. The user untracks it again.
-- Untracking by mistake and re-tracking moves the item to the end of the list, and the other device has already discarded
-  its copy and downloads it again.
+- A repository untracked in the file long ago and tracked here since, with syncing off, ends untracked when syncing is turned on.
+- Untracking by mistake: the other device has already discarded its copy, and downloads it again after re-tracking.
 - Revoking githq's access on github.com ends in the existing sign-out on 401, which clears local settings
   (`packages/app/auth/AuthStore.ts:224-226`). Without syncing they are gone, as today.
-- A renamed repository loses its display options and stays tracked under the old name until re-tracked.
+- A renamed repository stays in the file under its old name, with its options, and the new name starts with defaults.
 
 ### Project views' local changes now travel
 
