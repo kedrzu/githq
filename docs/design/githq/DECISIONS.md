@@ -127,7 +127,7 @@ in basically any way". Revisit if real use shows lost edits.
 
 ### D9
 
-UI direction: "Direction D — Synthesis" in `githq.pen` (frame `I7akNj`), chosen by user 2026-10-12. One app
+UI direction: Direction D in `githq.pen` (overview frame `I7akNj`, screens in the `App · …` frames), chosen by user 2026-10-12. One app
 with three independent switches: sidebar expanded or collapsed to a rail; every list (my work, a project, a
 repository) shown as List or Board with the same toolbar; an item opened in a panel, modal or full page, all
 rendering the same item view. As drawn, it settles two questions left to the visuals, pending the user's
@@ -248,7 +248,7 @@ current"). What a surface can be, from the sync model ([D7](#d7)):
 - **own edits on the way**: the user's changes are shown but not yet confirmed by GitHub; or one failed.
   An opened item may also have parts fetched separately (see [Q8](#q8)), so its freshness can differ from its
   list's. Visual form: a status bar along the bottom of the window, one segment per surface (sidebar, list,
-  item), dim when fresh and coloured when not — chosen in `githq.pen` (Direction D, section Freshness).
+  item), dim when fresh and coloured when not — chosen in `githq.pen` (frame "App · Freshness").
 
 ### D16
 
