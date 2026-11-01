@@ -224,7 +224,7 @@ export function createTrackingWorld(): TrackingWorld {
             }
         }
 
-        return entries.length > 0 ? { id, entries: { nodes: entries } } : null;
+        return entries.length > 0 ? { id, entries: { totalCount: entries.length, nodes: entries } } : null;
     }
 
     function projectNode() {

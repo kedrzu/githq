@@ -62,7 +62,7 @@ export const TrackedItems = defineService({
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, evict, getOpenCount, isPrivate };
+        return { keeps, keepsForItself, evict, getOpenCount, isPrivate };
 
         /**
          * Whether the local copy keeps the item: "my work" has it, a tracked repository or project, or it is a pull
@@ -75,6 +75,10 @@ export const TrackedItems = defineService({
             );
         }
 
+        /**
+         * Whether the local copy keeps the item for itself — "my work" has it, a tracked repository or project — rather
+         * than only for its stack, whose pull requests nothing else re-reads.
+         */
         function keepsForItself(item: Item) {
             const { membership } = items;
             return (

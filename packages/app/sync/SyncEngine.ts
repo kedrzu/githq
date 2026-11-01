@@ -40,6 +40,7 @@ import { TabChannel } from './TabChannel.js';
 import type { TabMessage } from './TabChannel.js';
 import { PROJECT_PROBE_INTERVAL_MS, TrackingSync } from './TrackingSync.js';
 import type { TrackingSyncContext } from './TrackingSync.js';
+import { isNodeGone } from './utils/isNodeGone.js';
 
 /**
  * What the status bar's sidebar segment says for the whole app, rather than for one surface: the browser is
@@ -679,6 +680,8 @@ export const SyncEngine = defineService({
                 }
             }
 
+            // Those copied for their stack only whose `updatedAt` moved: nothing else re-reads the rest of their row.
+            const moved: string[] = [];
             for (const ids of splitIntoChunks([...open], NODES_BATCH_SIZE)) {
                 checkAllowance('graphql');
                 const errors: GitHubGraphQLErrorEntry[] = [];
@@ -705,10 +708,19 @@ export const SyncEngine = defineService({
                     const item = items.getStored(node.id);
                     if (item?.kind === 'pullRequest') {
                         updated.push({ ...item, ...toPullRequestStatus(node) });
+                        if (node.updatedAt !== item.updatedAt && !trackedItems.keepsForItself(item)) {
+                            moved.push(item.id);
+                        }
                     }
                 }
 
                 items.upsertMany(updated);
+            }
+
+            for (const ids of splitIntoChunks(moved, NODES_BATCH_SIZE)) {
+                if (!(await readItems(current, ids))) {
+                    return;
+                }
             }
 
             await readIncompleteStacks(current);
@@ -717,7 +729,9 @@ export const SyncEngine = defineService({
         /**
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
          * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7). Once the copy
-         * holds them all, nothing is asked.
+         * holds them all, nothing is asked. The answer is what the stack holds: a held pull request it does not list
+         * has left the stack — all of them when the stack is gone — which moves no `updated_at`, so nothing else
+         * would tell a closed one.
          */
         async function readIncompleteStacks(current: Session) {
             const held = new Map<string, { size: number; positions: Set<number> }>();
@@ -753,23 +767,51 @@ export const SyncEngine = defineService({
                 }
 
                 const read: Item[] = [];
-                for (const node of nodes) {
-                    // A stack gone: its pull requests' next statuses say so.
+                for (const [index, [id]] of batch.entries()) {
+                    const node = nodes[index] ?? null;
+                    const nodeErrors = errors.filter(error => error.path?.[0] === 'nodes' && error.path[1] === index);
                     if (node === null || !('entries' in node)) {
+                        if (isNodeGone(nodeErrors)) {
+                            read.push(...leaveStack(id, new Set()));
+                        }
+
                         continue;
                     }
 
+                    const listed = new Set<string>();
                     for (const entry of node.entries.nodes ?? []) {
                         const item = toItem(entry?.pullRequest ?? null);
                         if (item) {
                             read.push(item);
+                            listed.add(item.id);
                         }
+                    }
+
+                    // Only a whole answer tells who left: not one cut by `first`, or with an entry GitHub refused.
+                    if (nodeErrors.length === 0 && listed.size === node.entries.totalCount) {
+                        read.push(...leaveStack(id, listed));
                     }
                 }
 
                 items.upsertMany(read);
                 logger.debug('Pull request stacks read whole', { stacks: batch.length, read: read.length });
             }
+        }
+
+        /**
+         * The held pull requests of stack `id` but those `listed`, out of it — as stored, so a change of the user's
+         * still on its way does not become part of them.
+         */
+        function leaveStack(id: string, listed: ReadonlySet<string>) {
+            const left: PullRequestItem[] = [];
+            for (const { id: itemId } of items.all) {
+                const item = items.getStored(itemId);
+                if (item?.kind === 'pullRequest' && item.stack?.id === id && !listed.has(itemId)) {
+                    left.push({ ...item, stack: null });
+                }
+            }
+
+            return left;
         }
 
         /** Throws a pause instead of asking GitHub while `bucket` is used up — but for what is kept for edits. */

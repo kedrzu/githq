@@ -209,6 +209,92 @@ test('a pull request copied for its stack stays while another of the stack is in
     expect(items.get('PR_3')).toBeUndefined();
 });
 
+test('a held pull request a stack read no longer lists has left the stack, and the stack is not asked again', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_4', 4, 4);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [
+        stackedNode('PR_1', 1, 4, 'MERGED'),
+        stackedNode('PR_2', 2, 4, 'CLOSED'),
+        stackedNode('PR_3', 3, 4),
+        mine,
+    ]);
+    const { items, clock } = await setup(github, 'alice');
+    expect(items.get('PR_2')).toMatchObject({ state: 'CLOSED', stack: { id: 'ST_1', position: 2, size: 4 } });
+    // "My work" held from here on, so nothing drops what the stack no longer keeps — as a tracked repository would
+    // keep its closed pull request.
+    github.holdSearch = createPromise().promise;
+
+    // The closed one taken out of the stack, which moves no `updated_at`: only the open ones' statuses say so.
+    const left = [stackedNode('PR_1', 1, 3, 'MERGED'), stackedNode('PR_3', 2, 3), stackedNode('PR_4', 3, 3)];
+    github.stacks.set('ST_1', left);
+    for (const node of left) {
+        github.statuses.set(node.id, node);
+    }
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_2')).toMatchObject({ state: 'CLOSED', stack: null });
+    expect(items.get('PR_1')).toMatchObject({ stack: { id: 'ST_1', position: 1, size: 3 } });
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+});
+
+test('a stack gone is asked once, its pull requests out of it; one GitHub refuses keeps them', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+    // "My work" held from here on, so nothing drops what the stack no longer keeps — as a tracked repository would
+    // keep its pull requests.
+    github.holdSearch = createPromise().promise;
+
+    // Dissolved: the open ones' statuses say so, the merged one still says it is in the stack.
+    github.stacks.delete('ST_1');
+    github.statuses.set('PR_2', pullRequestNode('PR_2', MONDAY));
+    github.statuses.set('PR_3', pullRequestNode('PR_3', MONDAY));
+    github.refused.set('ST_1', { type: 'FORBIDDEN', message: 'Resource protected by organization SAML enforcement.' });
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_1')).toMatchObject({ stack: { id: 'ST_1', position: 1, size: 3 } });
+
+    github.refused.delete('ST_1');
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(items.get('PR_1')).toMatchObject({ state: 'MERGED', stack: null });
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+});
+
+test('a pull request copied for its stack is read again whole when its `updatedAt` moved, and only then', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+
+    // Renamed: its status read brings the new `updatedAt`, the title only its row.
+    const renamed = { ...stackedNode('PR_3', 3, 3), updatedAt: TUESDAY, title: 'Renamed' };
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, renamed]);
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('ItemsByIds')).toEqual([['PR_3']]);
+    expect(items.get('PR_3')).toMatchObject({ title: 'Renamed', updatedAt: TUESDAY });
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_2', 'PR_3']]);
+    expect(github.graphql('ItemsByIds')).toEqual([]);
+});
+
 test('after signing out nothing more is asked of GitHub', async () => {
     const github = fakeGitHub();
     const { auth, clock } = await setup(github, 'alice');
@@ -456,11 +542,25 @@ function fakeGitHub(): FakeGitHub {
         }
 
         if (name === 'PullRequestStacks') {
-            const nodes = ids.map(id => {
+            const errors: GitHubGraphQLErrorEntry[] = [];
+            const nodes = ids.map((id, index) => {
+                const refused = github.refused.get(id);
+                if (refused) {
+                    errors.push({ ...refused, path: ['nodes', index] });
+                    return null;
+                }
+
                 const members = github.stacks.get(id);
-                return members ? { id, entries: { nodes: members.map(pullRequest => ({ pullRequest })) } } : null;
+                return members
+                    ? {
+                          id,
+                          entries: { totalCount: members.length, nodes: members.map(pullRequest => ({ pullRequest })) },
+                      }
+                    : null;
             });
-            return Response.json({ data: { nodes } }, { headers: graphqlHeaders });
+            return Response.json(errors.length > 0 ? { data: { nodes }, errors } : { data: { nodes } }, {
+                headers: graphqlHeaders,
+            });
         }
 
         // As GitHub answers: `null` for a node it cannot give, with an error pointing at it.
@@ -492,12 +592,12 @@ function fakeGitHub(): FakeGitHub {
                 });
             }
 
-            if (name !== 'PullRequestStatuses') {
-                return node;
-            }
-
             // A pull request copied for its stack, which no search found.
             const stacked = [...github.stacks.values()].flat().find(member => member.id === id);
+            if (name !== 'PullRequestStatuses') {
+                return node ?? stacked ?? null;
+            }
+
             return github.statuses.get(id) ?? node ?? stacked ?? null;
         });
         return Response.json(errors.length > 0 ? { data: { nodes }, errors } : { data: { nodes } }, {
@@ -762,7 +862,7 @@ function issueNode(id: string, updatedAt: string): IssueFieldsFragment {
 }
 
 /** A pull request at `position` of the stack `ST_1` of `size` pull requests. */
-function stackedNode(id: string, position: number, size: number, state: 'OPEN' | 'MERGED' = 'OPEN') {
+function stackedNode(id: string, position: number, size: number, state: 'OPEN' | 'MERGED' | 'CLOSED' = 'OPEN') {
     return {
         ...pullRequestNode(id, MONDAY),
         state,

@@ -869,11 +869,12 @@ export class GitHubWorld {
                     return null;
                 }
 
-                const entries = stack.entries.filter(entry => !entry.item.deleted).slice(0, Number(variables.first));
+                const entries = stack.entries.filter(entry => !entry.item.deleted);
                 return {
                     id,
                     entries: {
-                        nodes: entries.map(entry => ({
+                        totalCount: entries.length,
+                        nodes: entries.slice(0, Number(variables.first)).map(entry => ({
                             pullRequest: this.toPullRequestNode(entry.item, entry.pullRequest),
                         })),
                     },

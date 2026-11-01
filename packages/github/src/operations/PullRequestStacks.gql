@@ -5,6 +5,8 @@ query PullRequestStacks($ids: [ID!]!, $first: Int!) {
         ... on PullRequestStack {
             id
             entries(first: $first) {
+                # Tells a whole answer from a cut one: only a whole one says who left the stack.
+                totalCount
                 nodes {
                     pullRequest {
                         ...PullRequestFields

@@ -2252,6 +2252,7 @@ export type PullRequestStacksQuery = {
         | {
               id: string;
               entries: {
+                  totalCount: number;
                   nodes: Array<{
                       pullRequest: {
                           __typename: 'PullRequest';
@@ -9575,6 +9576,7 @@ export const PullRequestStacksDocument = new TypedDocumentString(`
     ... on PullRequestStack {
       id
       entries(first: $first) {
+        totalCount
         nodes {
           pullRequest {
             ...PullRequestFields
