@@ -75,14 +75,14 @@ export interface StackFactsViewModel {
     readonly count: string;
     /** A share's own pull requests, drawn in their state; `null` for the whole stack's entry. */
     readonly filled: ReadonlySet<string> | null;
-    /** Up to three faces, and how many more there are. */
-    readonly people: { readonly faces: readonly ItemUser[]; readonly more: number };
+    /** Up to three faces, and "+N" for the rest; `null` when none are left out. */
+    readonly people: { readonly faces: readonly ItemUser[]; readonly more: string | null };
     readonly age: string;
     readonly state: StackStateFact;
     /** Their lines added and removed, summed. */
     readonly size: string;
-    /** The labels all of them carry, and how many others any of them does (D15). */
-    readonly labels: { readonly shared: readonly ItemLabel[]; readonly more: number };
+    /** The labels all of them carry, and "+N" for the others any of them does (D15); `null` when there are none. */
+    readonly labels: { readonly shared: readonly ItemLabel[]; readonly more: string | null };
     /** The milestone all share, "2 milestones" when they differ, `null` when some have none. */
     readonly milestone: string | null;
     readonly projectField: StackProjectFieldFact | null;
@@ -137,7 +137,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
         }
 
         const all = [...byLogin.values()];
-        return { faces: all.slice(0, MAX_PEOPLE), more: all.length - MAX_PEOPLE };
+        return { faces: all.slice(0, MAX_PEOPLE), more: formatMore(all.length - MAX_PEOPLE) };
     });
     const age = computed(() => formatAge(Date.parse(description.value.updatedAt), now.value));
     const stateFact = computed(() => getStateFact(description.value, entry.value.share?.state ?? null));
@@ -158,7 +158,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
             others.every(pr => pr.labels.some(other => other.name === label.name)),
         );
         const names = new Set(entry.value.pullRequests.flatMap(pr => pr.labels.map(label => label.name)));
-        return { shared, more: names.size - shared.length };
+        return { shared, more: formatMore(names.size - shared.length) };
     });
     // D15: the milestone when all share it, else how many there are among them.
     const milestone = computed(() => {
@@ -226,6 +226,11 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
         projectField,
         members,
     });
+
+    /** "+N", or `null` when nothing is left out. */
+    function formatMore(left: number): string | null {
+        return left > 0 ? t(l.more, { count: left }) : null;
+    }
 
     function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
         const fact = share ? getShareStateFact(share) : getOpenStateFact(stack);

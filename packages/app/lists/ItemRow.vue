@@ -1,7 +1,7 @@
 <!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter; one of a stack with a header of its own under an issue one step further (D23). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, Check, Layers, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { ArrowUpRight, Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
@@ -13,7 +13,7 @@ import type { StackDescription } from '@/store/stacks/describeStack.js';
 import type { ItemProperty } from './ItemProperty.js';
 import * as l from './ItemRow.loc.js';
 import type { ListStack } from './ListTypes.js';
-import StackPips from './StackPips.vue';
+import StackMarker from './StackMarker.vue';
 import StackSummary from './StackSummary.vue';
 import { useItemFacts } from './useItemFacts.js';
 
@@ -73,19 +73,6 @@ const facts = useItemFacts({
   people: () => props.people,
 });
 const shown = computed(() => new Set(props.properties));
-/** The marker's pull request alone in its state, the stack's other open ones hollow (SP24), and its place (SP13). */
-const marker = computed(() => {
-  const { item, stack } = props;
-  if (!stack || item.kind !== 'pullRequest' || !item.stack) {
-    return null;
-  }
-
-  return {
-    pips: stack.pips,
-    filled: new Set([item.id]),
-    place: t(l.stackPlace, { position: item.stack.position, size: stack.size }),
-  };
-});
 </script>
 
 <template>
@@ -124,22 +111,11 @@ const marker = computed(() => {
       </div>
       <div :class="css.itemRow_line">
         <span :class="css.itemRow_reference">{{ facts.reference }}</span>
-        <span
-          v-if="marker"
+        <StackMarker
           :class="css.itemRow_stack"
-        >
-          <Layers
-            :class="css.itemRow_stackIcon"
-            role="img"
-            :aria-label="t(l.inStack)"
-          />
-          <StackPips
-            :pips="marker.pips"
-            :filled="marker.filled"
-            :current="item.id"
-          />
-          <span :class="css.itemRow_stackPlace">{{ marker.place }}</span>
-        </span>
+          :item="item"
+          :stack="stack"
+        />
         <StackSummary
           v-if="header"
           :stack="header"
@@ -345,19 +321,6 @@ const marker = computed(() => {
 .itemRow_stack {
   display: inline-flex;
   flex: none;
-  gap: $spacing-5;
-  align-items: center;
-}
-
-.itemRow_stackIcon {
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.itemRow_stackPlace {
-  font-family: $font-family-mono;
-  color: $color-fg-dim;
 }
 
 .itemRow_status {

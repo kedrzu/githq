@@ -12,6 +12,7 @@ import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
 import {
+    sampleStack,
     STACK_UNDER_ISSUE_ITEMS,
     STACK_UNDER_ISSUE_MEMBERSHIP,
     STACKED_MY_WORK_ITEMS,
@@ -398,6 +399,43 @@ test('stacked PRs D12: on the board the stack is a card under the issue it close
  * Mounts the view over `initial` and the groups of `arrived` (all of D1 by default), holding its filter and
  * selection like the page does.
  */
+/** A stack of the user's whose first two landed: its third, the last open one, in "My pull requests". */
+const TAIL_STACK = sampleStack({
+    id: 'S_tail',
+    number: 40,
+    members: [{ state: 'MERGED', merged: true }, { state: 'MERGED', merged: true }, { title: 'The last of the stack' }],
+});
+const TAIL_MEMBERSHIP = sampleMembership({
+    reviewRequested: [...(D1_MEMBERSHIP.reviewRequested ?? [])],
+    authored: [...(D1_MEMBERSHIP.authored ?? []), 'PR_S_tail_3'],
+    assigned: [...(D1_MEMBERSHIP.assigned ?? [])],
+    mentioned: [...(D1_MEMBERSHIP.mentioned ?? [])],
+});
+
+test('stacked PRs D16, SP13: the last open pull request of a stack is a plain row, marked as part of the stack', async () => {
+    mount([...D1_ITEMS, ...TAIL_STACK], TAIL_MEMBERSHIP);
+
+    const row = page
+        .getByRole('region', { name: 'My pull requests' })
+        .getByRole('listitem')
+        .filter({ hasText: 'The last of the stack' });
+    await expect.element(row.getByRole('img', { name: 'In a stack' })).toBeInTheDocument();
+    await expect.element(row).toHaveTextContent('3 of 3');
+    // No other row of my work carries the marker.
+    expect(page.getByRole('img', { name: 'In a stack' }).elements()).toHaveLength(1);
+});
+
+test('stacked PRs D16, SP13: on the board the last open pull request of a stack is a plain card with the marker', async () => {
+    mount([...D1_ITEMS, ...TAIL_STACK], TAIL_MEMBERSHIP, { layout: 'board' });
+
+    const card = page
+        .getByRole('region', { name: 'My pull requests' })
+        .getByRole('listitem')
+        .filter({ hasText: 'The last of the stack' });
+    await expect.element(card.getByRole('img', { name: 'In a stack' })).toBeInTheDocument();
+    await expect.element(card).toHaveTextContent('3 of 3');
+});
+
 function mount(
     initial: readonly Item[],
     arrived: MyWorkMembership = D1_MEMBERSHIP,

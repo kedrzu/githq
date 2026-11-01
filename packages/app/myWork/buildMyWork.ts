@@ -51,6 +51,11 @@ export interface MyWorkRow {
      */
     readonly unmatched?: ReadonlySet<string> | null;
     /**
+     * On a pull request of a stack listed as a plain row — the last open one of its stack (D16, SP13): the whole stack,
+     * for the row's marker.
+     */
+    readonly stackMarker?: PullRequestStack | null;
+    /**
      * On an assigned issue: the entries of the user's stacks with a pull request closing it (stacked PRs D12), each whole,
      * in the order their best sorted pull requests give them.
      */
@@ -79,7 +84,8 @@ export interface BuildMyWorkParams {
  * A stack with two open pull requests or more is one entry, whole (stacked PRs D3, D7): in the first group any of its
  * pull requests is in, nesting every open pull request of the stack — those in no group too (someone else's, on a stack
  * my review was asked on) — and none of them is a row anywhere else. The entry takes the place its best sorted pull
- * request the filter matches would. A stack with one open pull request left is a plain row.
+ * request the filter matches would. A stack with one open pull request left is a plain row, marked as part of its stack
+ * (`stackMarker`, D16, SP13).
  *
  * A stack of mine whose entry would be in "My pull requests", with any open pull request closing an issue in "Assigned to
  * me", goes under that issue instead — the first in the list, as a plain pull request — whole, and nowhere else (stacked
@@ -196,8 +202,13 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
                 continue;
             }
 
-            if (stackId === undefined || !members) {
+            if (stackId === undefined) {
                 rows.push(row);
+                continue;
+            }
+
+            if (!members) {
+                rows.push({ ...row, stackMarker: params.stacks.get(stackId) ?? null });
                 continue;
             }
 

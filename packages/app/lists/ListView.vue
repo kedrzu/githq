@@ -13,6 +13,7 @@ import ContextMenu from '@/components/ContextMenu.vue';
 import { Browser } from '@/services/Browser.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
+import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
@@ -306,7 +307,7 @@ onWindowEvent('keydown', event => {
       return;
     case ' ':
       // On the board ←/→ step between columns: Space expands or collapses the selected stack's card.
-      if (board && !isControl(event.target) && toggleSelectedStack()) {
+      if (board && !isActivatableTarget(event.target) && toggleSelectedStack()) {
         event.preventDefault();
       }
 
@@ -316,7 +317,7 @@ onWindowEvent('keydown', event => {
       openSelectedOnGitHub();
       return;
     case 'Enter':
-      if (!isControl(event.target)) {
+      if (!isActivatableTarget(event.target)) {
         const id = currentOpenId();
         if (id !== null) {
           event.preventDefault();
@@ -923,11 +924,6 @@ function findKey(keys: readonly string[], id: string) {
     keys.find(key => placed.value.get(key)?.walked.includes(id)) ??
     null
   );
-}
-
-/** A button or a link, which Enter and Space press themselves. */
-function isControl(target: EventTarget | null) {
-  return target instanceof HTMLButtonElement || target instanceof HTMLAnchorElement;
 }
 
 /** The row of the item nested under the entry `parentKey`. */

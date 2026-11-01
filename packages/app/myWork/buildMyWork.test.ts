@@ -275,13 +275,18 @@ test("a stack's entry takes the place of its best sorted pull request", () => {
     expect(rowIds(work).authored).toEqual(['PR_newer', 'S_1', 'PR_between', 'PR_older']);
 });
 
-test('a stack with one open pull request left is a plain row', () => {
+test('a stack with one open pull request left is a plain row, marked as part of its stack (D16, SP13)', () => {
     const stack = sampleStack({ id: 'S_1', number: 10, members: [{ state: 'MERGED', merged: true }, {}] });
+    const plain = pr('PR_plain');
 
-    const work = build(stack, { authored: ['PR_S_1_2'] });
+    const work = build([...stack, plain], { authored: ['PR_S_1_2', plain.id] });
 
-    expect(rowIds(work).authored).toEqual(['PR_S_1_2']);
-    expect(work.groups.find(group => group.group === 'authored')?.rows[0]?.stack).toBeNull();
+    const rows = work.groups.find(group => group.group === 'authored')?.rows ?? [];
+    const last = rows.find(row => row.item.id === 'PR_S_1_2');
+    expect(rows).toHaveLength(2);
+    expect(last?.stack).toBeNull();
+    expect(last?.stackMarker?.id).toBe('S_1');
+    expect(rows.find(row => row.item.id === plain.id)?.stackMarker).toBeUndefined();
 });
 
 test('D12: my stack with a pull request closing an assigned issue goes under it, whole, and nowhere else; a plain one still nests', () => {

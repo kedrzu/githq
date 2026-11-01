@@ -10,9 +10,8 @@ import type { Item } from '@/store/ItemTypes.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
-import StackPips from './StackPips.vue';
 import * as l from './StackRow.loc.js';
-import * as facts from './useStackFacts.loc.js';
+import StackState from './StackState.vue';
 import { useStackFacts } from './useStackFacts.js';
 
 const props = withDefaults(
@@ -94,9 +93,9 @@ const nameWithOwner = computed(() => {
             size="xs"
           />
           <span
-            v-if="stackFacts.people.more > 0"
+            v-if="stackFacts.people.more"
             :class="css.stackRow_more"
-            >{{ t(facts.more, { count: stackFacts.people.more }) }}</span
+            >{{ stackFacts.people.more }}</span
           >
         </template>
         <time
@@ -112,18 +111,11 @@ const nameWithOwner = computed(() => {
           :class="css.stackRow_repository"
           >{{ nameWithOwner }}</span
         >
-        <StackPips
+        <StackState
           :pips="description.pips"
           :filled="stackFacts.filled"
+          :state="stackFacts.state"
         />
-        <span :class="[css.stackRow_state, css[`stackRow_state_${stackFacts.state.tone}`]]">
-          <component
-            :is="stackFacts.state.icon"
-            :class="css.stackRow_stateIcon"
-            aria-hidden="true"
-          />
-          {{ stackFacts.state.text }}
-        </span>
         <span
           v-if="shown.has('size')"
           :class="css.stackRow_size"
@@ -164,9 +156,9 @@ const nameWithOwner = computed(() => {
             :color="label.color"
           />
           <span
-            v-if="stackFacts.labels.more > 0"
+            v-if="stackFacts.labels.more"
             :class="css.stackRow_more"
-            >{{ t(facts.more, { count: stackFacts.labels.more }) }}</span
+            >{{ stackFacts.labels.more }}</span
           >
         </template>
       </div>
@@ -262,42 +254,6 @@ const nameWithOwner = computed(() => {
 .stackRow_age {
   flex: none;
   color: $color-fg-dim;
-}
-
-.stackRow_state {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-5;
-  align-items: center;
-}
-
-.stackRow_state_danger {
-  color: $color-red;
-}
-
-.stackRow_state_warning {
-  color: $color-amber;
-}
-
-.stackRow_state_success {
-  color: $color-green;
-}
-
-.stackRow_state_done {
-  color: $color-purple;
-}
-
-.stackRow_state_muted {
-  color: $color-fg-2;
-}
-
-.stackRow_state_dim {
-  color: $color-fg-dim;
-}
-
-.stackRow_stateIcon {
-  width: 12.5px;
-  height: 12.5px;
 }
 
 .stackRow_field {

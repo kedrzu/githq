@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CloudOff, ListFilter } from 'lucide-vue-next';
@@ -22,6 +22,7 @@ import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
+import type { PullRequestStack } from '@/store/stacks/groupStacks.js';
 
 import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
@@ -199,7 +200,11 @@ function repositoryOf(group: ListGroup<Item>) {
 /** A row as the engine lists it: a stack's entry or a plain row, with the stacks nested under an issue (D12). */
 function toListRow(row: MyWorkRow): ListRow<Item> {
   if (!row.stack) {
-    return { ...toListItem(row.item, row.nested), stacks: (row.stacks ?? []).map(toListRow) };
+    return {
+      ...toListItem(row.item, row.nested),
+      stacks: (row.stacks ?? []).map(toListRow),
+      stackMarker: row.stackMarker ? describe(row.stackMarker) : null,
+    };
   }
 
   const id = `stack:${row.stack.id}`;
@@ -209,12 +214,16 @@ function toListRow(row: MyWorkRow): ListRow<Item> {
     id,
     stack: {
       id: row.stack.id,
-      description: describeStack({ stack: row.stack, viewerLogin: props.viewerLogin, getItem: props.getItem }),
+      description: describe(row.stack),
       open: row.item.id,
       pullRequests: row.nested,
       unmatched: row.unmatched ?? null,
     },
   };
+}
+
+function describe(stack: PullRequestStack) {
+  return describeStack({ stack, viewerLogin: props.viewerLogin, getItem: props.getItem });
 }
 
 function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
@@ -261,7 +270,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"
     >
-      <template #row="{ entry, parent, group: listGroup, checked, halfChecked, stack, header, depth }">
+      <template #row="{ entry, parent, group: listGroup, checked, halfChecked, stack, stackMarker, header, depth }">
         <StackRow
           v-if="stack"
           :stack="stack"
@@ -287,6 +296,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :now="now"
           :checked="checked"
           :undone="undone.get(entry.id)"
+          :stack="stackMarker"
         />
       </template>
       <template
@@ -297,6 +307,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           checked,
           halfChecked,
           stack,
+          stackMarker,
           expanded,
           selectedMember,
           toggleStack,
@@ -329,6 +340,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :now="now"
           :checked="checked"
           :undone="undone.get(entry.id)"
+          :stack="stackMarker"
         />
       </template>
       <template #empty>

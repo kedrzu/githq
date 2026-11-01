@@ -241,27 +241,18 @@ const groups = computed(() => {
   }
 
   const matched = selected.value;
-  const build = (shown: readonly ProjectEntry[]) =>
-    buildProjectList({
-      project: current,
-      entries: shown,
-      grouping: grouping.value,
-      sort: options.options.sort,
-      texts: texts.value,
-      today: today.value,
-    });
   // D3, SP25: a stack any of whose pull requests the filter matches shows them all, in the groups the filter alone gives.
   const shown = withStackMembers({
     matched,
     all: entries.value.filter(entry => !entry.item.isArchived),
     getPullRequest,
   });
-  const built = build(matched);
+  const built = buildGroups(current, matched);
   const keys = new Set(built.map(group => group.key));
   // D3: a stack's pull requests in a group share an entry — described from the whole stack, which the local copy holds
   // even where the project does not.
   return foldStacks({
-    groups: shown === matched ? built : build(shown).filter(group => keys.has(group.key)),
+    groups: shown === matched ? built : buildGroups(current, shown).filter(group => keys.has(group.key)),
     getPullRequest,
     stacks: groupStacks(items.all),
     describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
@@ -341,6 +332,17 @@ watch(
 watch([owner, number], () => {
   notFound.value = false;
 });
+
+function buildGroups(current: Project, shown: readonly ProjectEntry[]) {
+  return buildProjectList({
+    project: current,
+    entries: shown,
+    grouping: grouping.value,
+    sort: options.options.sort,
+    texts: texts.value,
+    today: today.value,
+  });
+}
 
 function getPullRequest(entry: ProjectEntry) {
   return entry.content?.kind === 'pullRequest' ? entry.content : null;

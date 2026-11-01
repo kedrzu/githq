@@ -9,8 +9,7 @@ import Avatar from '@/components/Avatar.vue';
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackCard.loc.js';
-import StackPips from './StackPips.vue';
-import * as facts from './useStackFacts.loc.js';
+import StackState from './StackState.vue';
 import { useStackFacts } from './useStackFacts.js';
 
 const props = withDefaults(
@@ -93,9 +92,9 @@ const nameWithOwner = computed(() => {
             size="xs"
           />
           <span
-            v-if="stackFacts.people.more > 0"
+            v-if="stackFacts.people.more"
             :class="css.stackCard_more"
-            >{{ t(facts.more, { count: stackFacts.people.more }) }}</span
+            >{{ stackFacts.people.more }}</span
           >
         </template>
       </span>
@@ -117,18 +116,12 @@ const nameWithOwner = computed(() => {
     </div>
     <span :class="css.stackCard_title">{{ stack.description.name.title }}</span>
     <div :class="css.stackCard_state">
-      <StackPips
+      <StackState
         :pips="stack.description.pips"
         :filled="stackFacts.filled"
+        :state="stackFacts.state"
+        compact
       />
-      <span :class="[css.stackCard_sentence, css[`stackCard_tone_${stackFacts.state.tone}`]]">
-        <component
-          :is="stackFacts.state.icon"
-          :class="css.stackCard_stateIcon"
-          aria-hidden="true"
-        />
-        {{ stackFacts.state.text }}
-      </span>
     </div>
     <ul
       v-if="expanded"
@@ -256,15 +249,6 @@ const nameWithOwner = computed(() => {
   line-height: 18px;
   color: $color-fg;
   -webkit-box-orient: vertical;
-}
-
-.stackCard_sentence {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
 .stackCard_stateIcon {

@@ -1,7 +1,7 @@
 <!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Check, Layers, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
@@ -11,7 +11,7 @@ import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import * as l from './ItemCard.loc.js';
 import type { ItemProperty } from './ItemProperty.js';
-import StackPips from './StackPips.vue';
+import StackMarker from './StackMarker.vue';
 import { useItemFacts } from './useItemFacts.js';
 
 const props = withDefaults(
@@ -61,19 +61,6 @@ const status = computed(() => (shown.value.has('status') ? facts.status : null))
 const projectField = computed(() => (shown.value.has('projectField') ? facts.projectField : null));
 const milestone = computed(() => (shown.value.has('milestone') ? props.item.milestone : null));
 const labels = computed(() => (shown.value.has('labels') ? props.item.labels : []));
-/** The marker's pull request alone in its state, the stack's other open ones hollow (SP24), and its place (SP13). */
-const marker = computed(() => {
-  const { item, stack } = props;
-  if (!stack || item.kind !== 'pullRequest' || !item.stack) {
-    return null;
-  }
-
-  return {
-    pips: stack.pips,
-    filled: new Set([item.id]),
-    place: t(l.stackPlace, { position: item.stack.position, size: stack.size }),
-  };
-});
 const hasFooter = computed(
   () =>
     status.value !== null ||
@@ -116,22 +103,11 @@ const hasFooter = computed(
       </span>
     </div>
     <span :class="css.itemCard_title">{{ item.title }}</span>
-    <div
-      v-if="marker"
+    <StackMarker
       :class="css.itemCard_stack"
-    >
-      <Layers
-        :class="css.itemCard_stackIcon"
-        role="img"
-        :aria-label="t(l.inStack)"
-      />
-      <StackPips
-        :pips="marker.pips"
-        :filled="marker.filled"
-        :current="item.id"
-      />
-      <span :class="css.itemCard_stackPlace">{{ marker.place }}</span>
-    </div>
+      :item="item"
+      :stack="stack"
+    />
     <div
       v-if="hasFooter"
       :class="css.itemCard_footer"
@@ -271,20 +247,6 @@ const hasFooter = computed(
 
 .itemCard_stack {
   display: flex;
-  gap: $spacing-5;
-  align-items: center;
-}
-
-.itemCard_stackIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.itemCard_stackPlace {
-  font-family: $font-family-mono;
-  color: $color-fg-dim;
 }
 
 .itemCard_people {
