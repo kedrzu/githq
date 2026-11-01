@@ -27,7 +27,28 @@ export default defineNuxtConfig({
     // Pinned instead of left to Nuxt's guess: Nuxt switches `srcDir` to `app/` as soon as that folder holds
     // anything besides `router.options.ts`.
     srcDir: '.',
-    ssr: false,
+    // Server rendering exists only to prerender the landing page at `/` (signed out) into `_landing.html`,
+    // which the Worker serves to a visitor without the signed-in hint. Every other route, and `index.html` —
+    // the shell every deep link loads — stays a SPA (`routeRules`). `nuxt dev` is a SPA throughout
+    // (`$development`). So is the desktop build: its window has no landing page in front of the sign-in (D21), and
+    // `/` is `index.html`, the shell.
+    ssr: !DESKTOP,
+    // `/**` matches `/` too (Nitro merges every matching rule), so `/` needs a rule of its own.
+    routeRules: DESKTOP
+        ? {}
+        : {
+              '/**': { ssr: false },
+              '/': { ssr: true },
+          },
+    experimental: {
+        // The prerendered page carries its payload inline; the browser never asks for `_payload.json`.
+        payloadExtraction: false,
+    },
+    features: {
+        // Linked, not inlined: Nuxt inlines the global styles into server-rendered pages only and then leaves
+        // them out of the SPA shell (`index.html`) altogether.
+        inlineStyles: false,
+    },
     devtools: { enabled: true },
     // The port the app is opened on in development; the Worker runs next to it on 8788 (`$development`).
     devServer: {
@@ -70,13 +91,32 @@ export default defineNuxtConfig({
     },
     // The local and desktop builds go to folders of their own: their output, so a production deploy can never
     // pick it up, and their build files, so each can run while `nuxt dev` (which uses `.nuxt`) is up.
-    ...(LOCAL_BUILD ? { buildDir: '.nuxt-local', nitro: { output: { dir: '.output-local' } } } : {}),
-    ...(DESKTOP ? { buildDir: '.nuxt-desktop', nitro: { output: { dir: '.output-desktop' } } } : {}),
+    ...(LOCAL_BUILD ? { buildDir: '.nuxt-local' } : {}),
+    ...(DESKTOP ? { buildDir: '.nuxt-desktop' } : {}),
+    nitro: {
+        ...(LOCAL_BUILD ? { output: { dir: '.output-local' } } : {}),
+        ...(DESKTOP ? { output: { dir: '.output-desktop' } } : {}),
+        // `/` is the landing page. `index.html` is the shell: with `ssr: true` Nuxt adds it to the prerendered routes
+        // only when told to, and renders it with no server rendering whatever the route rules say. The desktop build
+        // is a SPA, whose `index.html` is the shell anyway.
+        prerender: DESKTOP ? {} : { routes: ['/', '/index.html'], crawlLinks: false },
+        hooks: DESKTOP
+            ? {}
+            : {
+                  // The landing page goes to `_landing.html`, leaving `index.html` to the shell.
+                  'prerender:generate'(route) {
+                      if (route.route === '/') {
+                          route.fileName = '/_landing.html';
+                      }
+                  },
+              },
+    },
     // The app builds to static files only (`nuxt generate` → `.output/public`), which Cloudflare serves as the
     // assets of the githq Worker (`packages/worker/wrangler.jsonc`) without running any code. The API is that
     // Worker, on the same domain: the app calls `/api/...`, and under `nuxt dev` those calls go to the Worker in
     // `wrangler dev` (`bun --cwd packages/worker dev`, port 8788), `/api` prefix kept.
     $development: {
+        ssr: false,
         nitro: {
             routeRules: {
                 // `redirect: 'manual'` hands the Worker's redirects to the browser: by default the proxy

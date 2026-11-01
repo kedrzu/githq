@@ -1,4 +1,4 @@
-<!-- The desktop app's `/login`, which `auth/SignInPage.vue` picks in the desktop build only: the device sign-in (`DeviceSignIn`) on its screen. "Copy code and open GitHub" copies the code and opens GitHub's page in the system browser. Leaving the page abandons the attempt under way. Signed in, the session plugin (`plugins/sessionPlugin.ts`) moves on to `next`. -->
+<!-- The desktop app's home signed out, which `home/HomePage.vue` picks in the desktop build only: the device sign-in (`DeviceSignIn`) on its screen. "Copy code and open GitHub" copies the code and opens GitHub's page in the system browser. Leaving the page abandons the attempt under way. Signed in, the session plugin (`plugins/sessionPlugin.client.ts`) opens home again, which goes on to `next`. -->
 <script lang="ts" setup>
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';

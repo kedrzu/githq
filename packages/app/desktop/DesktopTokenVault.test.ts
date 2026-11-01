@@ -107,6 +107,7 @@ function setup(options: SetupOptions) {
         },
         navigate: () => {},
         replaceLocation: () => {},
+        writeCookie: () => {},
         openInNewTab: () => {},
         onLocalStorageChange: () => {},
         isVisible: () => true,

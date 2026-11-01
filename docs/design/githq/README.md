@@ -43,8 +43,9 @@ The first version is the daily loop and nothing around it:
 - working inside a tracked project, with whatever fields that project defines;
 - a command palette, and the keyboard for everything.
 
-Code review and merging stay on github.com: githq shows whether a pull request is ready and opens it there
-with one key, because reviewing a diff is a product of its own and GitHub does it well enough. Creating pull requests and a notifications inbox
+Code review stays on github.com for now: githq opens a pull request there with one key. Merging happens here, as
+[its own design](../pr-merge/README.md) describes, because the aim is one place to run all your GitHub projects and
+repositories day to day, as fast as Linear, repository settings aside; review is meant to follow. Creating pull requests and a notifications inbox
 are not in the first version either. When an edit fails, or someone changed the same thing on github.com,
 the first version keeps it simple: the failed edit is undone with an error, and otherwise the last write
 wins.
@@ -145,4 +146,4 @@ to GitHub and nothing else, and links to github.com open in your browser.
 
 The app updates itself from the project's GitHub Releases. A new version downloads in the background and waits
 quietly in the status bar until you choose to restart. [Why a bundled app and not a window onto
-githq.dev](DECISIONS.md#d21). [The screens](ui/desktop.md).
+githq.dev](DECISIONS.md#d23). [The screens](ui/desktop.md).

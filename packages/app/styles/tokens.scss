@@ -8,9 +8,9 @@
 // Colors — surfaces and lines
 // ---------------------------------------------------------------------------------------------------
 
-// The window: the list, the sign-in page, fields set into the sidebar.
+// The window: the list, the landing page, fields set into the sidebar.
 $color-bg: #0e1013;
-// The sidebar, the status bar, boxes on the sign-in page.
+// The sidebar, the status bar, boxes on the landing page.
 $color-bg-2: #131519;
 // A hovered or current row in the sidebar, keyboard hints.
 $color-bg-3: #1a1d22;
@@ -110,8 +110,81 @@ $list-header-height: 48px;
 $item-panel-width: 560px;
 
 // ---------------------------------------------------------------------------------------------------
+// The landing page (`landing/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The hero's headline is lit from below: a vertical gradient from the top to the bottom of the text.
+$color-landing-headline-top: #8a919b;
+$color-landing-headline-bottom: #f5f6f8;
+// The widest the page's content gets; the design's frame is 1440 wide with 120 on each side.
+$landing-content-width: 1200px;
+// The screenshots of features, as the design sizes them on a wide page (the images are twice that).
+$landing-visual-width: 640px;
+$landing-visual-height: 560px;
+$landing-visual-height-mobile: 400px;
+$radius-landing-visual: 16px;
+// The open source section's repository card, as GitHub draws a repository's language.
+$radius-landing-card: 18px;
+$color-landing-typescript: #3178c6;
+// Screenshots lifted off the page, and the boxes laid over them.
+$shadow-landing-visual: 0 30px 80px rgb(0 0 0 / 60%);
+$shadow-landing-overlay: 0 24px 64px rgb(0 0 0 / 75%);
+$shadow-landing-toast: 0 12px 32px rgb(0 0 0 / 67%);
+
+// ---------------------------------------------------------------------------------------------------
 // Mixins
 // ---------------------------------------------------------------------------------------------------
+
+// The landing page's layouts follow the page's width (the `landing` container of `LandingScreen`), so a story
+// of a narrow page shows the phone layout without resizing the browser. `narrow`: the features stack and the
+// navigation folds into a menu; `mobile`: the design's phone frame (390 wide).
+@mixin landing-narrow {
+    @container landing (width < 1080px) {
+        @content;
+    }
+}
+
+@mixin landing-mobile {
+    @container landing (width < 720px) {
+        @content;
+    }
+}
+
+// A full-width band of the landing page with its content in the middle: 120 on each side at the design's 1440,
+// down to 20 on a phone, and never wider than `$landing-content-width`.
+@mixin landing-gutter {
+    padding-inline: max(clamp(20px, 8.33cqi, 120px), calc((100% - #{$landing-content-width}) / 2));
+
+    // The phone frame's 20: the scale above would still give 32 at 390.
+    @include landing-mobile {
+        padding-inline: 20px;
+    }
+}
+
+// The landing page's motion: calm, like the app — under 400 ms, ease-out, and none at all for a visitor who asked
+// for reduced motion.
+$landing-motion-duration: 320ms;
+// A section's copy fades up by this much as it scrolls into view, its visual this much later.
+$landing-reveal-distance: 12px;
+$landing-reveal-stagger: 80ms;
+
+// A part of a landing section that fades up the first time the section scrolls into view (`useReveal` sets the
+// section's `data-reveal`). Hidden only while the section waits below the viewport after mount, so the prerendered
+// page shows it; moved by `transform` only, so the layout never shifts.
+@mixin landing-reveal($delay: 0ms) {
+    @media (prefers-reduced-motion: no-preference) {
+        [data-reveal='waiting'] & {
+            opacity: 0;
+            transform: translateY($landing-reveal-distance);
+        }
+
+        [data-reveal='revealed'] & {
+            transition:
+                opacity $landing-motion-duration ease-out $delay,
+                transform $landing-motion-duration ease-out $delay;
+        }
+    }
+}
 
 // The focus ring for keyboard users only.
 @mixin focus-ring {

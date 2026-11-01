@@ -5,8 +5,9 @@ one thing a user does in the app. Nothing outside this folder is needed.
 
 ## Where the design stands
 
-The exploration round is done. The owner chose **"Direction D — Synthesis"** in `githq.pen` (frame
-`I7akNj`). It is one app with three independent switches:
+The exploration round is done. The owner chose **Direction D** in `githq.pen`: its overview is the frame
+**"App · Overview — Direction D"** (`I7akNj`), and each aspect of the app has its own frame named `App · …`.
+It is one app with three independent switches:
 
 - the sidebar is expanded, or collapsed to a rail;
 - every list (my work, a project, a repository) can be shown as List or Board, with the same toolbar;
@@ -15,6 +16,16 @@ The exploration round is done. The owner chose **"Direction D — Synthesis"** i
 Work from here builds on Direction D. Keep its components and its feel. Within it you are still free to
 explore. Where a new screen has more than one reasonable shape, show two or three variants side by side,
 and the owner will pick.
+
+`githq.pen` is laid out top to bottom, one top-level frame per aspect, so a new screen goes into the frame of
+its aspect, and a new aspect gets a new frame:
+
+- **`App · …`**: overview, components, toolbar; My work, project, repository, pull request; the menus; first
+  sign-in, creating an issue, states, freshness.
+- **`Desktop · …`**: screens only the desktop app has.
+- **`Landing — …`**: the landing page, desktop and mobile, and its motion storyboard.
+- **Brand**: `Logo — git/hq`, app icons, OpenGraph images.
+- **Archive**: `Archive · Direction A/B/C` and the logo exploration. Rejected work: don't build from it.
 
 The logo is settled. The brandbook is the frame **"Logo — git/hq"** in `githq.pen` (frame `S5J7kt`): the
 wordmark `git/hq` and the sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the
@@ -128,8 +139,8 @@ The things in the app, and what GitHub gives us about each.
 - **GitHub has an hourly API allowance.** If it runs out, background refresh pauses until the allowance
   resets. Everything already loaded still works, and so do edits. The user should be able to tell that
   refresh is paused.
-- **Code review and merging are not in the app.** Diffs, line comments and the merge button stay on
-  github.com. githq shows whether a PR can be merged, and one key opens the PR there.
+- **Code review is not in the app yet.** Diffs and line comments stay on github.com, and one key opens the PR there.
+  Merging is in the app: [its brief](../../pr-merge/ui/merge-a-pull-request.md).
 - **There is no notifications inbox** in the first version.
 
 ## The paths

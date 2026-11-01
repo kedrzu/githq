@@ -18,9 +18,10 @@ getting in my way."
 
 ## Signing in with a code
 
-1. **Before signing in (S1).** The same screen as on the web (G1b): what githq is and what GitHub will ask for,
-   with one difference in the copy about where data goes: "On this computer, and nowhere else". The action is
-   "Sign in with GitHub" (↵).
+1. **Before signing in (S1).** The desktop app's own screen: the web has no such screen and goes from the landing
+   page straight to GitHub ([D21](../DECISIONS.md#d21)), and the desktop app has no landing page, so it opens here
+   signed out, whatever address it opens at. It says what githq is and what GitHub will ask for, and that the data
+   stays "On this computer, and nowhere else". The action is "Sign in with GitHub" (↵).
 2. **The code (S2).** githq asks GitHub for a short code and shows it large, in the monospace font, with a label.
    The main action "Copy code and open GitHub" (↵) copies it and opens github.com/login/device in the system
    browser, where the user pastes it and approves githq. "Cancel" (Esc) abandons the code. A quiet line says
@@ -32,7 +33,8 @@ getting in my way."
 ## States
 
 - **Failed (S3).** The code expired, the user declined on GitHub, GitHub can't be reached, or something else
-  went wrong. One line says which, and the action becomes "Get a new code". The user is never left on "Waiting".
+  went wrong. One line says which, the action becomes "Get a new code", and what GitHub will ask for waits behind
+  "Why?". The user is never left on "Waiting".
 - **Less access than needed.** GitHub granted fewer scopes than githq asks for: nothing is kept, and the screen
   says so.
 - **No keychain (S4).** The system keychain can't be reached (a Linux desktop without a Secret Service, a refused
@@ -56,4 +58,4 @@ getting in my way."
 - **Links leave the app.** Every link to github.com or anywhere else opens in the system browser, and the app
   stays where it was. This includes "open on GitHub", links in an issue's text, and the organisation-approval
   link.
-- **No sign-in step through githq.dev.** The desktop app never talks to githq's own servers ([D21](../DECISIONS.md#d21)).
+- **No sign-in step through githq.dev.** The desktop app never talks to githq's own servers ([D23](../DECISIONS.md#d23)).

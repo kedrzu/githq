@@ -22,7 +22,11 @@ const CALLBACK = `${ORIGIN}${OAUTH_CALLBACK_PATH}`;
 const STATE = 'q3V9-x_2LmZtR8wKpY4sNa';
 const CODE = 'c0de4f1e2d3c4b5a6978';
 const TOKEN = 'gho_TheAccessToken0123456789';
-const ENV: WorkerEnv = { GITHUB_CLIENT_ID: 'Iv1.client-id', GITHUB_CLIENT_SECRET: 'the-client-secret-value' };
+const ENV: WorkerEnv = {
+    ASSETS: { fetch: () => Promise.resolve(new Response('asset')) },
+    GITHUB_CLIENT_ID: 'Iv1.client-id',
+    GITHUB_CLIENT_SECRET: 'the-client-secret-value',
+};
 
 let github: Mock<typeof fetch>;
 let logged: string[];
@@ -106,7 +110,7 @@ test('GET /api/auth/approval redirects to GitHub’s page of the OAuth App, wher
 
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe('https://github.com/settings/connections/applications/Iv1.client-id');
-    expect((await call(new Request(`${ORIGIN}${OAUTH_APPROVAL_PATH}`), {})).status).toBe(500);
+    expect((await call(new Request(`${ORIGIN}${OAUTH_APPROVAL_PATH}`), { ASSETS: ENV.ASSETS })).status).toBe(500);
     expect(github).not.toHaveBeenCalled();
 });
 
@@ -218,9 +222,9 @@ describe('POST /api/auth/token', () => {
 
 test('without the OAuth App’s credentials both endpoints answer 500 not_configured', async () => {
     for (const env of [
-        {},
-        { GITHUB_CLIENT_ID: 'Iv1.client-id' },
-        { GITHUB_CLIENT_SECRET: 'x', GITHUB_CLIENT_ID: '' },
+        { ASSETS: ENV.ASSETS },
+        { ASSETS: ENV.ASSETS, GITHUB_CLIENT_ID: 'Iv1.client-id' },
+        { ASSETS: ENV.ASSETS, GITHUB_CLIENT_SECRET: 'x', GITHUB_CLIENT_ID: '' },
     ]) {
         for (const request of [
             new Request(`${ORIGIN}${OAUTH_AUTHORIZE_PATH}?state=${STATE}`),
@@ -240,4 +244,25 @@ test('answers an unknown API path with a JSON 404', async () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: 'not_found' } satisfies OAuthErrorBody);
+});
+
+describe('the landing page and the app at /', () => {
+    // The assets answer by path, as the real ones do: `/` is the shell, `/_landing` the landing.
+    const env: WorkerEnv = {
+        ...ENV,
+        ASSETS: {
+            fetch: request =>
+                Promise.resolve(new Response(new URL(request.url).pathname === '/' ? 'shell' : 'landing')),
+        },
+    };
+
+    test('routes / by the signed-in cookie', async () => {
+        expect(await (await call(new Request(`${ORIGIN}/?utm_source=x`), env)).text()).toBe('landing');
+        const signedIn = new Request(`${ORIGIN}/`, { headers: { cookie: 'githq_signed_in=1' } });
+        expect(await (await call(signedIn, env)).text()).toBe('shell');
+    });
+
+    test('never answers the landing at /_landing', async () => {
+        expect(await (await call(new Request(`${ORIGIN}/_landing`), env)).text()).toBe('shell');
+    });
 });

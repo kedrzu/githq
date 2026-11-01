@@ -1,0 +1,26 @@
+eyebrow:
+  en: Open source
+titleLine1:
+  en: Built in the open.
+titleLine2:
+  en: On GitHub, obviously.
+body:
+  en: Every line of githq, every design decision and every issue is public. It’s planned in GitHub Issues — and worked from githq itself. Read the code, open an issue, send a pull request.
+owner:
+  en: kedrzu /
+name:
+  en: githq
+public:
+  en: Public
+description:
+  en: A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects — the Linear experience, free, with GitHub as the only backend.
+language:
+  en: TypeScript
+stack:
+  en: Nuxt · Cloudflare
+site:
+  en: githq.dev
+star:
+  en: Star on GitHub
+source:
+  en: github.com/kedrzu/githq

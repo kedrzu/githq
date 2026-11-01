@@ -16,8 +16,8 @@ import type { LucideIcon } from 'lucide-vue-next';
  */
 export type ButtonVariant = 'danger' | 'field' | 'ghost' | 'light' | 'link' | 'outline' | 'primary' | 'secondary';
 
-/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action. */
-export type ButtonSize = 'lg' | 'md' | 'sm';
+/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action, `xl` the landing page's hero. */
+export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the look. */
 export const ButtonProps = {
@@ -171,6 +171,22 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 .button_lg {
   padding: 9px 15px;
   font-size: $font-size-lg;
+}
+
+.button_xl {
+  padding: 13px 21px;
+  font-size: 16px;
+  line-height: 20px;
+  border-radius: $radius-xl;
+
+  .button_content {
+    gap: $spacing-10;
+  }
+
+  .button_icon {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .button_primary {

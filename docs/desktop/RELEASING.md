@@ -1,6 +1,6 @@
 # Releasing the desktop app
 
-The desktop app (`packages/desktop`, decision [D21](../design/githq/DECISIONS.md#d21)) is released from a version
+The desktop app (`packages/desktop`, decision [D23](../design/githq/DECISIONS.md#d23)) is released from a version
 tag. CI builds every platform into a draft GitHub release, and you publish it by hand. Installed apps update from
 the release GitHub marks "latest".
 
@@ -104,9 +104,9 @@ update the macOS line in the root README's download section and its Code signing
 ### Windows signing through SignPath Foundation (follow-up)
 
 SignPath Foundation signs open-source projects for free, with a certificate issued to the foundation. Its
-conditions are at [signpath.org/terms](https://signpath.org/terms.html), summarised in D21.
+conditions are at [signpath.org/terms](https://signpath.org/terms.html), summarised in D23.
 
-1. Before applying, settle the licensing question in D21: SignPath requires a license "without commercial
+1. Before applying, settle the licensing question in D23: SignPath requires a license "without commercial
    dual-licensing", and the root README offers a commercial license.
 2. Publish the first public (unsigned) release: SignPath signs only software already released in that form.
 3. Make sure the root README's **Code signing policy** is current: the team roles, the privacy statement, and how

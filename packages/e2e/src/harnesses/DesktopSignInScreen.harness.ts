@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for the desktop app's sign-in page (`/login`, `DesktopSignIn.vue` — S1–S4): "Sign in with
+ * Playwright harness for the desktop app's sign-in (home signed out, `DesktopSignIn.vue` — S1–S4): "Sign in with
  * GitHub", then the device code with "Copy code and open GitHub".
  */
 export class DesktopSignInScreenHarness {

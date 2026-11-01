@@ -5,7 +5,7 @@ import { stringifyQuery } from 'vue-router';
 import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
 import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
-import { SIGN_IN_PATH, TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
+import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
 import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
 import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -21,7 +21,7 @@ import {
 // sit in the shell (`meta.layout: 'shell'`, `layouts/shell.vue`).
 //
 // Every address is GitHub's: swap the host and the same thing opens on github.com, and the other way round. The
-// app's own pages sit under first segments GitHub reserves (`/login`, `/settings/…`), so none is ever an owner's
+// app's own pages sit under first segments GitHub reserves (`/settings/…`), so none is ever an owner's
 // or a repository's address, and an address githq does not show is handed off to github.com
 // (`shell/GitHubHandOffPage.vue`). A static first segment outranks a parameter, so `/orgs/acme` is never taken
 // for a repository.
@@ -39,22 +39,29 @@ export function stringifyGitHubQuery(query: LocationQueryRaw | undefined) {
     return stringifyQuery(query ?? {}).replaceAll('|', '%7C');
 }
 
+/** One function for every home route, so moving between them keeps the page (`key: 'my-work'`). */
+function HomePage() {
+    return import('@/home/HomePage.vue');
+}
+
 function* getRoutes(): Generator<RouteRecordRaw> {
-    // "My work", and narrowed to one of its groups at GitHub's dashboard address of that list — `/pulls/mentioned`
-    // too, for the mentioned group holds pull requests as well; one page instance for all (`key`).
+    // Home: "My work", and narrowed to one of its groups at GitHub's dashboard address of that list —
+    // `/pulls/mentioned` too, for the mentioned group holds pull requests as well; one page instance for all (`key`).
+    // Signed out, `/` is the landing page (the desktop app's sign-in in its build, `home/HomePage.vue`). The guard sets the layout (`middleware/auth.global.ts`): the shell
+    // signed in, none for the landing page — which is also what the server renders.
     yield {
-        path: '/',
+        path: HOME_PATH,
         name: 'my-work',
-        component: () => import('@/myWork/MyWorkPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: 'my-work' },
+        component: HomePage,
+        meta: { auth: 'home', layout: false, key: 'my-work' },
     };
     for (const group of MY_WORK_GROUPS) {
         yield {
             path: MY_WORK_GROUP_PATHS[group],
             alias: group === 'mentioned' ? ['/pulls/mentioned'] : [],
             name: `my-work-${group}`,
-            component: () => import('@/myWork/MyWorkPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: 'my-work', myWorkGroup: group },
+            component: HomePage,
+            meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group },
         };
     }
     // An item on a page of its own, at GitHub's address of it; one page instance for both (`key`), so stepping
@@ -117,11 +124,11 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             meta: { auth: 'signedIn', layout: 'shell' },
         };
     }
+    // GitHub's sign-in address leads home — the landing page, or the app signed in — keeping where to go after
+    // signing in (`next`, GitHub's `return_to`) and why the last sign-in failed.
     yield {
         path: SIGN_IN_PATH,
-        name: 'sign-in',
-        component: () => import('@/auth/SignInPage.vue'),
-        meta: { auth: 'signedOut' },
+        redirect: getSignInRedirect,
     };
     // Where GitHub sends the browser back; open to everyone, it finishes the sign-in itself.
     yield {
@@ -143,6 +150,18 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         name: 'github',
         component: () => import('@/shell/GitHubHandOffPage.vue'),
     };
+}
+
+function getSignInRedirect(to: RouteLocation): RouteLocationRaw {
+    const query: LocationQueryRaw = {};
+    for (const key of ['next', 'return_to', 'failed']) {
+        const value = to.query[key];
+        if (value !== undefined) {
+            query[key] = value;
+        }
+    }
+
+    return { path: HOME_PATH, query };
 }
 
 function getItemPageRedirect(to: RouteLocation, name: string): RouteLocationRaw {

@@ -23,6 +23,13 @@ export default defineNuxtPlugin({
         const container = createContainer();
         nuxtApp.vueApp.use(IocPlugin, { container });
 
+        container.register(AppLanguageContext);
+        // The server only prerenders the landing page, signed out: nothing below — the desktop code, the local copy
+        // in IndexedDB, the sync — has anything to do there, and all of it needs the browser.
+        if (import.meta.server) {
+            return undefined;
+        }
+
         // The desktop app's code, in the desktop build only (`__DESKTOP__`); the web builds drop it. It asks the native
         // side for the token first; Nuxt waits for it before the next plugin and the first route.
         if (__DESKTOP__) {
@@ -30,12 +37,12 @@ export default defineNuxtPlugin({
         }
 
         startServices(container);
+        return undefined;
     },
 });
 
 /** Registers the app's services and starts those that work from the start. */
 function startServices(container: Container) {
-    container.register(AppLanguageContext);
     // One local copy per user, its parts kept through one connection.
     const persistence = createIndexedDbPersistence();
     container.set(ItemPersistence, persistence);

@@ -4,7 +4,7 @@ Copy everything below the line into the design agent.
 
 ---
 
-We're continuing work on **githq** in `/Users/kedrzu/Dev/githq/githq.pen`, Direction D (frame `I7akNj`). The
+We're continuing work on **githq** in `/Users/kedrzu/Dev/githq/githq.pen`, Direction D (the `App · …` frames). The
 brief in `/Users/kedrzu/Dev/githq/docs/design/githq/ui/` has been updated. Re-read `README.md` there,
 especially "Where the data comes from": it has two new points, **how fresh is what I see** and
 **permissions are known up front**.
@@ -67,7 +67,7 @@ The states a surface can be in (details in the brief's README):
 An opened item may be fresher or older than the list it came from, because parts of it, such as comments or
 the list of checks, may be fetched when it's opened.
 
-**Draw three distinct directions** for this, side by side, in a new group "Freshness" inside `I7akNj`. Label
+**Draw three distinct directions** for this, side by side, in the frame "App · Freshness". Label
 them so the owner can pick one. In each direction, show:
 
 - the list (use D1 "My work") and an opened item (use the panel from D1, or F1);

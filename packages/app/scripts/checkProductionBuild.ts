@@ -1,10 +1,12 @@
 import path from 'node:path';
 
+import { checkPrerenderedPages } from './checkPrerenderedPages.js';
 import { readBuiltFiles } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
-// what the Worker will serve has nothing of local development or of the desktop app in it. The sign-in with a
-// pasted token is in `nuxt dev` and the local build only — the sign-in page imports it under
+// what the Worker will serve has nothing of local development or of the desktop app in it — the prerendered landing
+// page (`_landing.html`) included — and that it has the SPA shell and the landing page (`checkPrerenderedPages.ts`).
+// The sign-in with a pasted token is in `nuxt dev` and the local build only — the landing page imports it under
 // `import.meta.dev || __LOCAL_BUILD__`, which the production build turns into `false`; the desktop code is in the
 // desktop build only, behind `__DESKTOP__`.
 
@@ -40,7 +42,7 @@ export const APP_MARKER = '/api/auth/authorize';
 async function checkProductionBuild() {
     const files = await readBuiltFiles(OUTPUT);
 
-    const problems: string[] = [];
+    const problems = checkPrerenderedPages(files);
     for (const file of files) {
         for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...DESKTOP_MARKERS]) {
             if (file.content.includes(text)) {
@@ -59,7 +61,9 @@ async function checkProductionBuild() {
         );
     }
 
-    console.info(`Production build checked: ${files.length} files, no development sign-in, no desktop code.`);
+    console.info(
+        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code.`,
+    );
 }
 
 if (import.meta.main) {

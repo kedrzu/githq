@@ -1,0 +1,12 @@
+headline:
+  en: |-
+    Your GitHub issues,
+    at the speed of thought.
+subhead:
+  en: githq is a keyboard-first task manager on top of GitHub Issues and Projects. Linear’s speed, GitHub’s data — free, open source, and nothing to keep in sync.
+reassuranceSetup:
+  en: No install · No new tracker
+reassuranceStorage:
+  en: Nothing stored outside GitHub
+heroAlt:
+  en: githq’s “My work” list, with the issues and pull requests that need you across GitHub.

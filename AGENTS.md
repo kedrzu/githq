@@ -14,15 +14,17 @@ A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects 
 - **Keyboard-first.** Command palette, single-key shortcuts, everything reachable without the mouse.
 - **Calm, minimal UI.** Dense but readable lists, few colors, no chrome that doesn't earn its place.
 - **Faithful to GitHub.** Map onto GitHub concepts rather than inventing parallel ones, so changes made here and on github.com stay consistent in both directions.
-- **Respect API limits.** GraphQL for fetching and writing, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
+- **Respect API limits.** GraphQL for fetching and writing whenever it can do the job, REST where it can't, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
 
 ## Status
 
-Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`).
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`.
 
 ## Stack & commands
 
 Chosen, replicating the author's Cookery app (`~/Dev/cook-app`): bun workspaces + Nx, nzyme as a git submodule (`nzyme/`, deps as `workspace:*`), Nuxt 4 SPA (`ssr: false`, static build), one Cloudflare Worker serving the SPA and the OAuth token exchange, IndexedDB-backed in-memory store, GitHub GraphQL via graphql-codegen (pattern of `healedcare/healed` `packages/healthie`). Details: `docs/design/githq/DECISIONS.md` D16–D19.
+
+One exception to the SPA: `/` is prerendered signed out into `_landing.html` (Nuxt hybrid; `index.html` stays the shell, both build checks assert it), and the Worker also runs for `/` and `/_landing`, serving the shell to a browser with the signed-in hint cookie `githq_signed_in=1` (written only by `AuthStore`) and the landing to everyone else. `nuxt dev` never server-renders. Why: `docs/decisions/prerendered-landing-and-signed-in-hint.md`.
 
 Commands (from the repo root; checks and their order are in the `verify` skill):
 
@@ -36,7 +38,7 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run deploy` — build the SPA and deploy both Workers by hand: `githq` on https://githq.dev and
   `githq-www` redirecting www (Cloudflare account of kedrzu@gmail.com; the OAuth App "githq" credentials are
   Worker secrets). Every push to `main` deploys by itself once the checks pass (`.github/workflows/deploy.yml`).
-- `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D21) against `nuxt dev`; sign-in uses the
+- `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D23) against `nuxt dev`; sign-in uses the
   Device Flow with `.env`'s `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
 - Desktop releases: push a tag `vX.Y.Z` from `main` (`-rc.N` for a prerelease the updater never offers); CI fills a
@@ -55,6 +57,12 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   lands in the repo or on GitHub is in **English**: code, names in code, comments, docs and design documents,
   commit messages, branch names, PR titles and descriptions, issues and their comments, review comments.
   When a document quotes the owner, translate the quote.
+
+## Design
+
+Before changing the design file (`githq.pen`), read and follow `DESIGN.md`, in whichever client you run. When told
+that a design changelog is on a worktree, read `.context/design/` there and follow "Implementing from a changelog"
+in `DESIGN.md`.
 
 ## Worktrees and pull requests
 

@@ -95,6 +95,14 @@ test('"Needs me" and "Waiting on others" keep what each says, the sidebar still 
     ]);
 
     await expect(shell.myWorkCount('My work')).toHaveText('7');
+
+    // "My work" and its groups are one page: the filter stays on moving between them.
+    await shell.myWorkLink('My pull requests').click();
+    await expect(page).toHaveURL('/pulls');
+    await expect(myWork.filter('Waiting on others')).toHaveAttribute('aria-pressed', 'true');
+    await shell.myWorkLink('My work').click();
+    await expect(page).toHaveURL('/');
+    await expect(myWork.filter('Waiting on others')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('"Needs me" with nothing for me points at what waits on others', async ({ page, github }) => {

@@ -1,0 +1,38 @@
+eyebrow:
+  en: The details
+titleLine1:
+  en: Small things that add up
+titleLine2:
+  en: to a tool you keep open.
+swapTitle:
+  en: Swap the host, keep the page
+swapBody:
+  en: Change github.com to githq.dev in any link and the same issue, pull request or list opens in githq. Anything githq doesn’t show hands you straight back to github.com.
+swapBefore:
+  en: The address on GitHub
+swapAfter:
+  en: The same address in githq
+freeTitle:
+  en: Free. Actually free.
+freeBody:
+  en: No seats, no plans, no trial that runs out. GitHub is the backend, so there is nothing for us to charge you for.
+serverTitle:
+  en: No server holds your work
+serverBody:
+  en: You sign in with GitHub and that’s it. Your work lives on GitHub and in your browser — githq has no database of its own.
+limitTitle:
+  en: Gentle on your API limit
+limitBody:
+  en: Change checks use GitHub’s conditional requests. When nothing changed, they don’t count against your hourly allowance.
+installTitle:
+  en: Installs like an app
+installBody:
+  en: Add githq to your dock or home screen. It opens straight into your work, in its own window.
+anywhereTitle:
+  en: Anywhere on GitHub
+anywhereBody:
+  en: The pull request you opened on someone else’s open-source project shows up too. If it concerns you, it’s in your work — no matter whose repository.
+reviewsTitle:
+  en: Reviews stay where diffs belong
+reviewsBody:
+  en: 'githq tells you when a pull request is ready: checks, reviews, mergeable. One key opens it on github.com for the review.'

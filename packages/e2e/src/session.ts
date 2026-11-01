@@ -5,7 +5,7 @@ import type { GitHubMock } from './github/GitHubMock.js';
 import { SAMPLE_TOKEN, SAMPLE_VIEWER } from './github/sampleViewer.js';
 import { AppShellHarness } from './harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from './harnesses/FirstSignIn.harness.js';
-import { SignInScreenHarness } from './harnesses/SignInScreen.harness.js';
+import { LandingHarness } from './harnesses/Landing.harness.js';
 import { answerTrackingCandidates } from './tracking/answerTracking.js';
 
 /** Where the app keeps the token (`TOKEN_KEY` in `packages/app/auth/TokenVault.ts`). */
@@ -23,8 +23,8 @@ export async function readStoredToken(page: Page): Promise<string | null> {
 export async function signIn(page: Page, github: GitHubMock): Promise<AppShellHarness> {
     github.graphql('Viewer', SAMPLE_VIEWER);
     answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });
-    await page.goto('/login');
-    await new SignInScreenHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
     await new FirstSignInHarness(page).continueButton.click();
 
     const shell = new AppShellHarness(page);

@@ -127,7 +127,7 @@ in basically any way". Revisit if real use shows lost edits.
 
 ### D9
 
-UI direction: "Direction D — Synthesis" in `githq.pen` (frame `I7akNj`), chosen by user 2026-10-12. One app
+UI direction: Direction D in `githq.pen` (overview frame `I7akNj`, screens in the `App · …` frames), chosen by user 2026-10-12. One app
 with three independent switches: sidebar expanded or collapsed to a rail; every list (my work, a project, a
 repository) shown as List or Board with the same toolbar; an item opened in a panel, modal or full page, all
 rendering the same item view. As drawn, it settles two questions left to the visuals, pending the user's
@@ -141,7 +141,7 @@ objection: a PR that closes an assigned issue is shown nested under that issue i
 > means evaluating that query language locally.
 > Field values (e.g. `ProjectV2ItemFieldSingleSelectValue`) carry `creator: Actor` and `updatedAt`;
 > `ProjectV2Item` has `isArchived`. Whether `creator` is the last person to set the value (needed for
-> "moved by olam") is untested.
+> "moved by sofiab") is untested.
 
 ### D10
 
@@ -155,8 +155,9 @@ user asked to apply all corrections (2026-10-12):
   > not included: `vitejs/vite` has `bug_report.yml`, `feature_request.yml`, `docs.yml` in
   > `.github/ISSUE_TEMPLATE/` and `issueTemplates` returns `[]`. Forms must be read through the contents
   > API and parsed by githq; the first version may render a form as a pre-filled markdown body.
-- **Merging a PR is not**: like code review ([D6](#d6)), it happens on github.com. githq shows mergeability.
-- **No actor on project field changes** ("moved by olam") until it's verified that the field value's
+- **Merging a PR was not**: like code review ([D6](#d6)), it was to happen on github.com. Superseded 2026-11-01 by the
+  owner: githq merges, see [the merging design](../pr-merge/DECISIONS.md#d1).
+- **No actor on project field changes** ("moved by sofiab") until it's verified that the field value's
   `creator` is the last person to set it ([D9](#d9) evidence). Show when it changed, not who.
 
 ### D11
@@ -248,7 +249,7 @@ current"). What a surface can be, from the sync model ([D7](#d7)):
 - **own edits on the way**: the user's changes are shown but not yet confirmed by GitHub; or one failed.
   An opened item may also have parts fetched separately (see [Q8](#q8)), so its freshness can differ from its
   list's. Visual form: a status bar along the bottom of the window, one segment per surface (sidebar, list,
-  item), dim when fresh and coloured when not — chosen in `githq.pen` (Direction D, section Freshness).
+  item), dim when fresh and coloured when not — chosen in `githq.pen` (frame "App · Freshness").
 
 ### D16
 
@@ -316,8 +317,37 @@ Variants picked among the round-2 screens drawn side by side (user, 2026-10-30, 
 **H1** — creating an issue starts as a quick capture (repository, title, optional chips), which expands into
 the full form (H3). Rejected: G1a (permission explained only on demand), G3 (no tracking step, suggestions
 later), G7 (straight into the app while downloading), H4 (one full form).
+The G1b part is superseded by [D21](#d21).
 
 ### D21
+
+There is no sign-in screen of our own on the web: "Sign in with GitHub" on the landing page (githq.dev) goes
+straight to GitHub's consent screen. Supersedes G1b in [D20](#d20) (user, 2026-10-31: the landing page now
+says what githq is, so a screen between it and GitHub only adds a click). What G1b explained moves:
+
+- one line under each "Sign in with GitHub" on the landing page warns that GitHub will ask for full
+  repository access and that githq only touches issues, pull requests and projects, linking to a "Why?"
+  that lives on the Privacy page (scopes, why nothing narrower exists, where the data goes);
+- coming back from GitHub with the sign-in cancelled or failed lands on the landing page with a one-line,
+  dismissible banner and "Try again" (screen G1, formerly G1c);
+- a visitor who already holds a token goes from githq.dev straight into the app.
+
+The desktop app keeps its own screen before signing in (S1): it has no landing page in front of the Device
+Flow.
+
+### D22
+
+"My work" can also be grouped by **repository** (user, 2026-10-31), next to the default grouping by reason
+([D11](#d11)). The groups are the tracked repositories in the sidebar's order, each holding the items of
+that repository; a row then drops the repository from its reference (`#482`, not `fitloop/api#482`). Items
+from repositories the user doesn't track (a PR of theirs in an open-source project, a mention elsewhere)
+fall into one last group, **Other repositories**, marked "not tracked", whose rows keep the full
+`owner/repo#number`. Inside a group the rows keep the reason order (review requested → my PRs → assigned →
+mentioned); the row's status line still says why the item is there. The nesting rule and the counts of
+[D11](#d11) hold: a PR that closes an assigned issue stays nested under it, and the group counts sum to the
+"My work" total. The sidebar's per-reason counts don't change with the grouping. Screen D6.
+
+### D23
 
 githq also ships as a Tauri v2 desktop app for macOS (Apple Silicon and Intel), Windows (x64) and Linux (x64),
 which bundles the built SPA locally and updates itself from GitHub Releases with signed updates. User,
@@ -338,11 +368,16 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   app (the token passes through our server); a loopback web flow (needs the client secret embedded in the app);
   reusing `gh auth token` (gh's default token lacks `project` and carries broader scopes such as `gist` and
   `workflow`).
+- **Its own screen before signing in (S1).** The desktop app has no landing page in front of the Device Flow
+  ([D21](#d21)), so S1 stands on its own rather than reusing a web screen, which no longer exists: its explanation,
+  layout and copy live in `desktop/DesktopSignIn.vue`. The desktop build prerenders nothing, so `/` in its window is
+  `index.html`, the app shell, and signed out home shows S1 at `/`, with `/login` and every other address of the
+  app leading there as on the web.
 - **Architecture "A — minimal interface"** (owner, at planning). The SPA builds for a third target,
   `GITHQ_TARGET=desktop` (define `__DESKTOP__`, output `.output-desktop`), and the web builds drop the desktop
   code entirely (`checkProductionBuild.ts` asserts it). All desktop code lives in `packages/app/desktop/` and comes
-  in through one gate, `installDesktop` from `plugins/iocPlugin.ts`, plus four `__DESKTOP__` choices (the sign-in
-  page, the status bar's update segment, the organisation-approval URL and the GitHub hand-off page). The native
+  in through one gate, `installDesktop` from `plugins/iocPlugin.ts`, plus four `__DESKTOP__` choices (the signed-out
+  home page, the status bar's update segment, the organisation-approval URL and the GitHub hand-off page). The native
   bridge (`desktop/NativeBridge.ts`) talks to `window.__TAURI_INTERNALS__` directly, with no `@tauri-apps/*`
   packages in the SPA. The Device Flow, the keychain, opening links and the updater are Rust commands in
   `packages/desktop/src-tauri`. The token reaches `AuthStore` through a `TokenVault` seam: `localStorage` on the

@@ -19,7 +19,6 @@ test("signing in shows a device code, opens GitHub's device page in the system b
     answerTrackingCandidates(github, { login: LOGIN });
 
     await page.goto('/');
-    await expect(page).toHaveURL('/login?next=/');
     const signIn = new DesktopSignInScreenHarness(page);
     await signIn.signInButton.click();
     await expect(signIn.deviceCode).toHaveText('WDJB-MJHT');
@@ -28,7 +27,7 @@ test("signing in shows a device code, opens GitHub's device page in the system b
     await expect.poll(() => native.opened).toEqual(['https://github.com/login/device']);
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('WDJB-MJHT');
     // The window stays on the code, waiting for GitHub.
-    await expect(page).toHaveURL('/login?next=/');
+    await expect(page).toHaveURL('/');
     await expect(signIn.deviceCode).toBeVisible();
 
     native.approveDeviceSignIn(SAMPLE_TOKEN);
@@ -39,6 +38,32 @@ test("signing in shows a device code, opens GitHub's device page in the system b
 
     expect(githqRequests).toEqual([]);
     expect(page.context().pages()).toHaveLength(1);
+});
+
+test('signed out, the app opens on its own sign-in, never on the landing page: at home, at a deep link and at `/login` after GitHub rejected the token', async ({
+    page,
+}) => {
+    const signIn = new DesktopSignInScreenHarness(page);
+    const landingHeading = page.getByRole('heading', { name: /Your GitHub issues/ });
+
+    await page.goto('/');
+    await expect(signIn.signInButton).toBeVisible();
+    await expect(page).toHaveURL('/');
+    await expect(signIn.root.getByRole('heading', { name: "What GitHub's next screen will ask for" })).toBeVisible();
+    await expect(landingHeading).toBeHidden();
+
+    await page.goto('/octo/hello/issues/1');
+    await expect(signIn.signInButton).toBeVisible();
+    await expect(page).toHaveURL('/?next=/octo/hello/issues/1');
+    await expect(landingHeading).toBeHidden();
+
+    await page.goto('/login?failed=tokenRejected');
+    await expect(signIn.signInButton).toBeVisible();
+    await expect(page).toHaveURL('/?failed=tokenRejected');
+    await expect(
+        signIn.root.getByText("GitHub no longer accepts githq's access, so you were signed out."),
+    ).toBeVisible();
+    await expect(landingHeading).toBeHidden();
 });
 
 test('the token is kept in the OS keychain, never in web storage — signed in after a reload — and signing out deletes it', async ({
@@ -57,7 +82,6 @@ test('the token is kept in the OS keychain, never in web storage — signed in a
     expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
 
     await shell.signOut(LOGIN);
-    await expect(page).toHaveURL(/^[^?]*\/login\?next=/);
     await expect(new DesktopSignInScreenHarness(page).signInButton).toBeVisible();
     await expect.poll(() => native.keychain).toBeNull();
     expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));

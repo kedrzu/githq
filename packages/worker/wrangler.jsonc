@@ -1,8 +1,9 @@
 // The githq Worker — the whole app on one domain (D16). Cloudflare serves the SPA (the static build of
-// `packages/app`) straight from its assets, without running any Worker code; the Worker runs only for
-// `/api/*`, where it trades GitHub's OAuth code for a token (D1, `src/githubOAuth.ts`) — GitHub's token
+// `packages/app`) straight from its assets, without running any Worker code; the Worker runs only for `/`
+// and `/_landing` (the landing page for a visitor without the signed-in cookie, the app for one with it —
+// `src/home.ts`) and for `/api/*`, where it trades GitHub's OAuth code for a token (D1, `src/githubOAuth.ts`) — GitHub's token
 // endpoint answers no CORS and needs the client secret, so a browser cannot do it alone. The Worker is
-// stateless: no bindings, no storage, no task data. Deploy with `bun run deploy`
+// stateless: no storage, no task data. Deploy with `bun run deploy`
 // from the repo root, which builds the SPA first.
 //
 // Secrets: the OAuth App's `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, set once with
@@ -20,10 +21,15 @@
         "directory": "../app/.output/public",
         // A path with no file behind it (a deep link) gets `index.html` with a 200.
         "not_found_handling": "single-page-application",
-        // Only these paths run the Worker; every other request is answered from the assets, unbilled. The
-        // list form also turns off the `Sec-Fetch-Mode: navigate` heuristic, so `/api/...` reaches the
-        // Worker even when typed into the address bar.
-        "run_worker_first": ["/api/*"],
+        // The Worker's way to the assets: `/` is answered from `index.html` (the app) or `_landing.html` (the
+        // prerendered landing page), chosen by the cookie. Fetching through the binding does not run the Worker again.
+        "binding": "ASSETS",
+        // Only these paths run the Worker; every other request is answered from the assets, unbilled. `/` matches
+        // the pathname alone, so `/?utm_source=x` too. `/_landing` is reserved for the Worker's own fetch of the
+        // landing: from outside it answers the app, so the landing has no address of its own. The list form
+        // also turns off the `Sec-Fetch-Mode: navigate` heuristic, so `/api/...` reaches the Worker even when
+        // typed into the address bar.
+        "run_worker_first": ["/api/*", "/", "/_landing"],
     },
     // Production lives on githq.dev only. A Custom Domain: Cloudflare creates the DNS record and the certificate
     // on deploy, given the githq.dev zone is in this account. No `*.workers.dev` or preview URLs — the OAuth

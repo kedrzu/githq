@@ -122,6 +122,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         requestLock: tab.requestLock,
         openChannel: tab.openChannel,
         onPageLifecycle: tab.onPageLifecycle,
+        writeCookie: () => {},
         estimateStorage: () => Promise.resolve(null),
     };
 
