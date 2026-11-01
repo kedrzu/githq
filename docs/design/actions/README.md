@@ -37,11 +37,15 @@ about it](DECISIONS.md#d5).
 
 Only repositories you already track are covered. [The owner's call](DECISIONS.md#d4).
 
-A repository's page gets a third tab next to issues and pull requests, listing its workflows one per row with
-their recent runs, unlike GitHub's single feed where every workflow's runs are mixed together. A repository
-with something broken gets a red marker in the sidebar. And because you may not know which repository to look
-in, one sidebar entry gives the total and opens everything broken across repositories.
-[How this was chosen, still a proposal](DECISIONS.md#d6).
+A repository's page gets a Workflows tab next to issues and pull requests. It lists all the workflows, passing
+ones too, one per row with their recent runs, unlike GitHub's single feed where every workflow's runs are mixed
+together. The broken ones also appear at the top of the repository's All tab, in a block of their own, because
+a workflow has no milestone or assignee to be grouped by among the issues.
+[What the block does](DECISIONS.md#d8).
+
+A repository with something broken gets a red marker in the sidebar. And because you may not know which repository
+to look in, one sidebar entry gives the total and opens everything broken across repositories.
+[Why not nested menus or columns](DECISIONS.md#d6).
 
 ## How it fits what GitHub allows
 
@@ -57,5 +61,4 @@ open, so this design does not promise that.
 
 ## How far this goes
 
-Not settled yet. To be decided with the owner: where things appear in the sidebar, the default refs before any
-configuration, and what the failure screen does that GitHub's does not.
+Not settled yet. To be decided with the owner: the default refs before any configuration, whether a workflow can be silenced, and what the failure screen does that GitHub's does not.
