@@ -286,6 +286,7 @@ const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 
 .landingOpenSource_actions > .landingOpenSource_source {
   font-family: $font-family-mono;
+  border-color: $color-landing-secondary-border;
   font-size: $font-size-lg;
 
   svg {

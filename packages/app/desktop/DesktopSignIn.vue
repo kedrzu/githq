@@ -151,6 +151,7 @@ function runMainAction() {
                 {{ t(l.copyAndOpen) }}
               </Button>
               <Button
+                size="lg"
                 kbd="Escape"
                 aria-keyshortcuts="Escape"
                 @click="emit('cancel')"

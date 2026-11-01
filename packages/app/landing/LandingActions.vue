@@ -54,7 +54,8 @@ const t = useTranslate();
   }
 }
 
-// Over the button's own look (one class deeper): the design's heavier label and glow, the quieter star.
+// Over the button's own look (one class deeper): the design's heavier label and glow, the quieter star — its
+// outline brighter than `border-2`, or beside the glow it reads as the smaller button.
 .landingActions > .landingActions_signIn {
   font-weight: $font-weight-semibold;
   box-shadow: 0 0 32px rgba($color-accent, 0.4);
@@ -62,6 +63,7 @@ const t = useTranslate();
 
 .landingActions > .landingActions_star {
   background: $color-bg-2;
+  border-color: $color-landing-secondary-border;
 
   svg {
     width: 16px;
