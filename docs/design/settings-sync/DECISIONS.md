@@ -194,21 +194,45 @@ never writes to the file, says why once and in settings, and offers to try again
 agent, not confirmed)
 
 **Why.** The reasons need no rule of their own: the repository was deleted (404), it exists without our file, so it isn't
-ours, it is public when connecting, the file is unreadable or hand-edited into something invalid, its format is newer than this
+ours, it is public when connecting, the file is unreadable or hand-edited into something invalid, its `version` is newer than this
 build understands, creating it or writing to it is refused. Refusing to write to a file it cannot read means the file stays
 recoverable. Visibility is checked when connecting, not on every poll.
 
 ## D13
 
-**The file is `settings.json`, formatted JSON with a stable key order, carrying a `format` number. Unknown keys are preserved
-when merging; the number goes up only for a change an older build can't safely ignore. Repositories keep today's keys
-(`owner/name`), projects their node ids.** (2026-11-01, proposal of the design agent, not confirmed)
+**The file is `settings.json`: formatted JSON with a stable key order and a `version` number at the root, next to `repositories`
+and `projects`, arrays in the user's order. Each entry nests its own settings: a repository its list options, a project its row
+field and its options per saved view. My work's options sit at the root under `myWork`. Unknown keys are preserved when merging;
+`version` goes up only for a change an older build can't safely ignore. Repositories keep today's identity (`owner/name`, with
+the node id stored), projects their node ids.** (2026-11-01, owner for `version` and the root layout with nesting; the rest is a
+proposal of the design agent, not confirmed)
 
-**Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs. Tracked
-repositories also store their node id (`packages/app/tracking/TrackingTypes.ts:4-9`), so moving keys to ids later is a
-one-way mapping if renames turn out to matter.
+```json
+{
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "list": { "layout": "board", "sort": "updated" } }
+  ],
+  "projects": [
+    {
+      "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap",
+      "rowField": "PVTF_…",
+      "views": { "PVTV_…": { "grouping": "status" } }
+    }
+  ],
+  "myWork": { "grouping": "repository" }
+}
+```
+
+**Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs.
+
+**Consequence of nesting, not confirmed.** Settings exist in the file only for what is tracked. Today options are kept for any
+repository page, tracked or not (`packages/app/repository/RepositoryPage.vue:66`). The agent's proposal: those of an untracked
+repository stay local; tracking moves them into the file; untracking removes them with the entry. If one device untracks while
+another edits that entry's settings, the removal wins.
 
 **Rejected.**
+- A separate `tracked` object with settings in a flat `lists` map by key ([history](history/DECISIONS.md#d13)) — owner.
 - Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
   display options, which is what happens today.
 

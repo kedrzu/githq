@@ -21,3 +21,19 @@ Retired 2026-11-01, narrowed in [D3](../DECISIONS.md#d3).
 create them and start syncing.** (2026-11-01, owner)
 
 **Why.** Owner's brief.
+
+## D13
+
+Retired 2026-11-01, layout changed in [D13](../DECISIONS.md#d13).
+
+**The file is `settings.json`, formatted JSON with a stable key order, carrying a `format` number. Unknown keys are preserved
+when merging; the number goes up only for a change an older build can't safely ignore. Repositories keep today's keys
+(`owner/name`), projects their node ids.** (2026-11-01, proposal of the design agent, not confirmed)
+
+**Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs. Tracked
+repositories also store their node id (`packages/app/tracking/TrackingTypes.ts:4-9`), so moving keys to ids later is a
+one-way mapping if renames turn out to matter.
+
+**Rejected.**
+- Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
+  display options, which is what happens today.
