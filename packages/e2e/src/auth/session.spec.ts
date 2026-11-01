@@ -36,6 +36,23 @@ test('signing out in one tab signs out the others too', async ({ page, context, 
     await expect(new LandingHarness(otherTab).signInButton).toBeVisible();
 });
 
+test('a token GitHub rejects while the app is still starting on a slow device signs out to the banner, not an error page', async ({
+    page,
+    github,
+}) => {
+    await signIn(page, github);
+
+    // Slowed down, GitHub's answer arrives while the route guard of the first navigation is still waiting.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 8 });
+    github.graphql('Viewer', new GitHubHttpError(401, 'Bad credentials'));
+    await page.reload();
+
+    const landing = new LandingHarness(page);
+    await expect(page).toHaveURL('/?failed=tokenRejected');
+    await expect(landing.banner).toContainText('You were signed out.', { timeout: 15_000 });
+});
+
 test('a token GitHub stops accepting while "my work" is open signs out to the landing page, saying why; dismissed, the banner stays away', async ({
     page,
     github,
