@@ -35,6 +35,12 @@ interface SampleStackEntry {
 /** In a group between two rows: the stack S_1 of p1–p3, Enter opening p2. */
 const STACKED: Columns = [['todo', ['a1', { stack: 'S_1', members: ['p1', 'p2', 'p3'], open: 'p2' }, 'a2']]];
 
+/** A board with the stack S_1 as one card between two others, and a column to move it into. */
+const STACKED_BOARD: Columns = [
+    ['todo', ['a1', { stack: 'S_1', members: ['p1', 'p2', 'p3'], open: 'p2' }, 'a2']],
+    ['done', ['c1']],
+];
+
 const BOARD: Columns = [
     ['todo', ['a1', 'a2', 'a3']],
     ['empty', []],
@@ -110,7 +116,7 @@ test('⇧→/⇧← move the card into the next column that takes it; a card tha
 
     await userEvent.keyboard('j{Shift>}{ArrowRight}{/Shift}');
     // "empty" takes it too: the next column is the one it goes to.
-    expect(view.moves).toEqual([{ id: 'a1', from: 'todo', to: 'empty' }]);
+    expect(view.moves).toEqual([{ ids: ['a1'], from: 'todo', to: 'empty' }]);
 
     await userEvent.keyboard('{ArrowRight}{Shift>}{ArrowRight}{/Shift}');
     await expect.poll(selectedCard).toBe('b1');
@@ -125,8 +131,65 @@ test('a card is dragged into another column that takes it', async () => {
     drag(card, page.getByRole('region', { name: 'empty' }).element());
     expect(view.moves).toEqual([]);
     drag(card, page.getByRole('region', { name: 'done' }).element());
-    expect(view.moves).toEqual([{ id: 'a1', from: 'todo', to: 'done' }]);
+    expect(view.moves).toEqual([{ ids: ['a1'], from: 'todo', to: 'done' }]);
     await expect.poll(selectedCard).toBe('a1');
+});
+
+test('board: a stack is one card, j/k stepping over it whole; Space expands it to list its pull requests inside it', async () => {
+    const view = mount(STACKED_BOARD, 'board');
+    expect(view.listed.at(-1)).toEqual(['a1', 'p1', 'p2', 'p3', 'a2', 'c1']);
+
+    await userEvent.keyboard('jj');
+    await expect.poll(selectedCard).toBe('stack S_1');
+    expect(view.selectedId.value).toBe('p2');
+
+    // Expanded, it is still one card: its pull requests are inside it, not cards j steps onto.
+    await userEvent.keyboard(' ');
+    await expect.poll(rowTexts).toEqual(['a1', 'stack S_1p1[p2]p3', 'a2', 'c1']);
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a2');
+
+    // A click on one inside it selects the card on it and opens it.
+    await userEvent.click(page.getByRole('button', { name: 'p3' }));
+    expect(view.opened).toEqual(['p3']);
+    await expect.poll(selectedCard).toBe('stack S_1p1p2[p3]');
+
+    await userEvent.keyboard(' ');
+    await expect.poll(rowTexts).toEqual(['a1', 'stack S_1', 'a2', 'c1']);
+});
+
+test('board: with an item open, j/k walk a stack card’s pull requests one by one, expanded or not', async () => {
+    const view = mount(STACKED_BOARD, 'board', { followOpened: true });
+
+    await userEvent.keyboard('j{Enter}');
+    for (const key of ['j', 'j', 'j', 'j', 'k']) {
+        await userEvent.keyboard(key);
+    }
+
+    expect(view.opened).toEqual(['a1', 'p1', 'p2', 'p3', 'a2', 'p3']);
+    expect(selectedCard()).toBe('stack S_1');
+
+    await userEvent.keyboard(' kk');
+    expect(view.opened).toEqual(['a1', 'p1', 'p2', 'p3', 'a2', 'p3', 'p2', 'p1']);
+    await expect.poll(selectedCard).toBe('stack S_1[p1]p2p3');
+});
+
+test('board: ⇧→ or a drag of a stack card moves all its pull requests, and only when each of them may move', async () => {
+    const view = mount(STACKED_BOARD, 'board', { canMove: entry => entry.id !== 'a2' });
+
+    await userEvent.keyboard('jj{Shift>}{ArrowRight}{/Shift}');
+    expect(view.moves).toEqual([{ ids: ['p1', 'p2', 'p3'], from: 'todo', to: 'done' }]);
+
+    const card = page.getByText('stack S_1').element().closest('li');
+    drag(card, page.getByRole('region', { name: 'done' }).element());
+    expect(view.moves.at(-1)).toEqual({ ids: ['p1', 'p2', 'p3'], from: 'todo', to: 'done' });
+    expect(view.moves).toHaveLength(2);
+
+    view.unmount();
+    const held = mount(STACKED_BOARD, 'board', { canMove: entry => entry.id !== 'p2' });
+    await userEvent.keyboard('jj{Shift>}{ArrowRight}{/Shift}');
+    expect(held.moves).toEqual([]);
+    expect(page.getByText('stack S_1').element().closest('li')?.getAttribute('draggable')).toBeNull();
 });
 
 test('list: ←/→ move nothing, ↓ crosses into the next group', async () => {
@@ -307,6 +370,16 @@ function drag(card: Element | null, column: Element) {
     card?.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer }));
 }
 
+/** What the test's card is drawn from: `ListView`'s card slot props it uses. */
+interface CardProps {
+    readonly entry: ListEntry<string>;
+    readonly stack: ListStack | null;
+    readonly nested: readonly ListEntry<string>[];
+    readonly expanded: boolean;
+    readonly selectedMember: string | null;
+    readonly openMember: (id: string) => void;
+}
+
 interface MountOptions {
     readonly canMove?: (entry: ListEntry<string>, from: string, to: string) => boolean;
     /** Gives the list a context menu naming the ids it is drawn for, with an "Open" button. */
@@ -390,7 +463,29 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 {
                     row: ({ entry, stack }: { entry: ListEntry<string>; stack: ListStack | null }) =>
                         h('span', stack ? `stack ${stack.id}` : entry.value),
-                    card: ({ entry }: { entry: ListEntry<string> }) => h('span', entry.value),
+                    card: (props: CardProps) =>
+                        props.stack
+                            ? h('span', [
+                                  `stack ${props.stack.id}`,
+                                  ...(props.expanded
+                                      ? props.nested.map(member =>
+                                            h(
+                                                'button',
+                                                {
+                                                    type: 'button',
+                                                    // As `StackCard`'s: they take no focus, and the click opens nothing else.
+                                                    onMousedown: (event: MouseEvent) => event.preventDefault(),
+                                                    onClick: (event: MouseEvent) => {
+                                                        event.stopPropagation();
+                                                        props.openMember(member.id);
+                                                    },
+                                                },
+                                                props.selectedMember === member.id ? `[${member.value}]` : member.value,
+                                            ),
+                                        )
+                                      : []),
+                              ])
+                            : h('span', props.entry.value),
                     ...(options.contextMenu && {
                         contextMenu: ({ ids, open }: ListContextMenuProps) =>
                             h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),

@@ -231,7 +231,7 @@ test('grouped by repository on the first download: what arrived is in its reposi
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
 });
 
-test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too; on the board, plain cards', async () => {
+test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too', async () => {
     mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP);
 
     const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
@@ -262,8 +262,8 @@ test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside 
     await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
 });
 
-test("stacked PRs: on the board a stack's pull requests are plain cards, each in its own group's column, with their mark", async () => {
-    // The fourth is found by a later group's search alone: it is a card there, as on a board without stacks.
+test('stacked PRs D3: on the board a stack is one card, whole, in the first reason any of its pull requests has; its column counts it once', async () => {
+    // The fourth is found by a later group's search alone: it stays in the stack's card all the same.
     const membership = sampleMembership({
         reviewRequested: [...(STACKED_MY_WORK_MEMBERSHIP.reviewRequested ?? [])],
         authored: [...(STACKED_MY_WORK_MEMBERSHIP.authored ?? [])],
@@ -272,18 +272,21 @@ test("stacked PRs: on the board a stack's pull requests are plain cards, each in
     });
     mount(STACKED_MY_WORK_ITEMS, membership, { layout: 'board' });
 
-    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
-    await expect
-        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
-        .toHaveTextContent(/your review requested/i);
-    await expect
-        .element(review.filter({ hasText: 'Part 3 of S_webhooks' }))
-        .toHaveTextContent(/your review requested/i);
-    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).not.toBeInTheDocument();
-    expect(review.elements()).toHaveLength(4);
+    const column = page.getByRole('region', { name: 'Review requested' });
+    const review = column.getByRole('listitem');
+    const card = review.filter({ hasText: 'Retry webhooks with backoff' });
+    await expect.element(card).toHaveTextContent('Your review on 2 of 4');
+    expect(review.elements()).toHaveLength(3);
+    await expect.element(column.getByRole('heading')).toHaveTextContent(/3$/);
+    await expect.element(page.getByText('Part 2 of S_webhooks')).not.toBeInTheDocument();
 
-    const mentioned = page.getByRole('region', { name: 'Mentioned' }).getByRole('listitem');
-    await expect.element(mentioned.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
+    const mentioned = page.getByRole('region', { name: 'Mentioned' });
+    await expect.element(mentioned.getByText('Part 4 of S_webhooks')).not.toBeInTheDocument();
+
+    // Expanded, the card lists all four inside it: still one card of its column.
+    await userEvent.click(card.getByRole('button', { name: 'Expand the stack' }));
+    await expect.element(card.getByText('Part 4 of S_webhooks')).toBeInTheDocument();
+    expect(column.element().querySelectorAll('[data-entry-key]')).toHaveLength(3);
 });
 
 /**
@@ -316,7 +319,7 @@ function mount(
             h(
                 MyWorkView,
                 {
-                    work: sampleMyWork(items.value, membership.value, filter.value, display.layout),
+                    work: sampleMyWork(items.value, membership.value, filter.value),
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     waitingCount: 0,

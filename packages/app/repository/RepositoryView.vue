@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one (`StackRow`), its pull requests nested under it once expanded, and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -38,6 +38,7 @@ import type {
   ListViewOptions,
 } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
@@ -294,8 +295,21 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :stack="stackMarker"
           />
         </template>
-        <template #card="{ entry, checked }">
+        <template #card="{ entry, checked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }">
+          <StackCard
+            v-if="stack"
+            :stack="stack"
+            :properties="properties"
+            :repository="nameWithOwner"
+            :now="now"
+            :checked="checked"
+            :expanded="expanded"
+            :selected-member="selectedMember"
+            @toggle="toggleStack"
+            @open="openMember"
+          />
           <ItemCard
+            v-else
             :item="entry.value"
             :properties="properties"
             people="assignees"
@@ -304,6 +318,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :now="now"
             :checked="checked"
             :undone="undone.get(entry.id)"
+            :stack="stackMarker"
           />
         </template>
         <template #empty>

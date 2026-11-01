@@ -66,11 +66,11 @@ test('on the board a card is dragged into another column, or moved with ⇧→: 
         .filter({ hasText: 'Crash on Android' });
 
     drag(card.element(), page.getByRole('region', { name: 'Done' }).element());
-    expect(view.moves.at(-1)).toEqual({ id: 'I_91', from: 'opt_todo', to: 'opt_done' });
+    expect(view.moves.at(-1)).toEqual({ ids: ['I_91'], from: 'opt_todo', to: 'opt_done' });
 
     await userEvent.click(card);
     await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
-    expect(view.moves.at(-1)).toEqual({ id: 'I_91', from: 'opt_todo', to: 'opt_progress' });
+    expect(view.moves.at(-1)).toEqual({ ids: ['I_91'], from: 'opt_todo', to: 'opt_progress' });
 });
 
 test('a draft is written at the bottom of a column, with its value', async () => {

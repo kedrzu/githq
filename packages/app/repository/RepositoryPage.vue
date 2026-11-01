@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. In the list, the pull requests of one stack in a group share an entry (`foldStacks`, D3). Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository offers to track it; its copy then arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -101,13 +101,9 @@ const repositoryList = computed(() =>
     texts: texts.value,
   }),
 );
-/** The list as shown: a stack's pull requests folded into its entries in the list layout (not tracked, always one). */
+/** The list as shown: a stack's pull requests folded into its entries. */
 const shownList = computed(() => {
   const built = repositoryList.value;
-  if (tracked.value && view.options.layout !== 'list') {
-    return built;
-  }
-
   return {
     ...built,
     groups: foldStacks({
@@ -197,10 +193,10 @@ function canMove(entry: ListEntry<Item>, from: string, to: string) {
   }
 }
 
-function move({ id, from, to }: ListMove) {
+function move({ ids, from, to }: ListMove) {
   const request = getMoveRequest(from, to);
   if (request) {
-    void editor.edit([id], request);
+    void editor.edit(ids, request);
   }
 }
 

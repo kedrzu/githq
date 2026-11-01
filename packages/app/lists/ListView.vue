@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20). On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -37,7 +37,10 @@ const props = withDefaults(
     openedId?: string | null;
     /** The entry's page on GitHub, for `o`; `null` when it has none (a draft issue). */
     getUrl?: (value: T) => string | null;
-    /** Whether the entry may be moved from one group into another (the user may set that value of it). */
+    /**
+     * Whether the entry may be moved from one group into another (the user may set that value of it); a stack's entry
+     * may when each of its pull requests may.
+     */
     canMove?: (entry: ListEntry<T>, from: string, to: string) => boolean;
   }>(),
   { openedId: null, getUrl: () => null, canMove: () => false },
@@ -87,6 +90,14 @@ interface ListSlotProps<TValue> {
   stackMarker: StackDescription | null;
   /** The entries nested under it, shown or not: a stack entry's pull requests. */
   nested: readonly ListEntry<TValue>[];
+  /** A stack's entry is expanded: on the board, its card lists its pull requests inside it. */
+  expanded: boolean;
+  /** On the selected stack's entry, the pull request selected in it; else `null`. */
+  selectedMember: string | null;
+  /** Expands or collapses a stack's entry (its card's chevron). */
+  toggleStack: () => void;
+  /** Selects one of a stack card's pull requests and opens it (a click on it inside the expanded card). */
+  openMember: (id: string) => void;
 }
 
 /** An entry where the list shows it. */
@@ -103,11 +114,14 @@ interface Placed {
   readonly ids: readonly string[];
   /** The item Enter opens. */
   readonly openId: string;
+  /** What moving it into another group moves: itself, a stack entry's pull requests, none for a nested entry. */
+  readonly moved: readonly ListEntry<T>[];
 }
 
 /** An entry being dragged. */
 interface Dragged {
-  readonly entry: ListEntry<T>;
+  readonly key: string;
+  readonly moved: readonly ListEntry<T>[];
   readonly from: string;
 }
 
@@ -144,6 +158,7 @@ const placed = computed(() => {
         stack,
         ids: stack ? row.nested.map(nested => nested.id) : [row.id],
         openId: stack ? stack.open : row.id,
+        moved: getMoved(row),
       });
       for (const nested of getNestedShown(row)) {
         entries.set(nested.key, {
@@ -154,6 +169,7 @@ const placed = computed(() => {
           stack: null,
           ids: [nested.id],
           openId: nested.id,
+          moved: [],
         });
       }
     }
@@ -275,12 +291,19 @@ onWindowEvent('keydown', event => {
       }
 
       return;
+    case ' ':
+      // On the board ←/→ step between columns: Space expands or collapses the selected stack's card.
+      if (board && !isControl(event.target) && toggleSelectedStack()) {
+        event.preventDefault();
+      }
+
+      return;
     case 'o':
       event.preventDefault();
       openSelectedOnGitHub();
       return;
     case 'Enter':
-      if (!(event.target instanceof HTMLButtonElement || event.target instanceof HTMLAnchorElement)) {
+      if (!isControl(event.target)) {
         const id = currentOpenId();
         if (id !== null) {
           event.preventDefault();
@@ -337,13 +360,12 @@ function getKeyCommands(): Command[] {
     );
   }
 
-  if (props.layout === 'list' && [...placed.value.values()].some(({ stack }) => stack !== null)) {
+  if ([...placed.value.values()].some(({ stack }) => stack !== null)) {
     commands.push({
       id: 'list.toggleStack',
       title: t(l.toggleStack),
       section: 'view',
-      key: 'ArrowRight',
-      otherKeys: ['ArrowLeft'],
+      ...(props.layout === 'list' ? { key: 'ArrowRight', otherKeys: ['ArrowLeft'] } : { key: 'Space' }),
       menu: false,
     });
   }
@@ -360,7 +382,7 @@ function step(by: 1 | -1) {
 
   const index = selectedKey.value === null ? -1 : keys.indexOf(selectedKey.value);
   const next = index === -1 ? 0 : Math.min(Math.max(index + by, 0), keys.length - 1);
-  if (props.layout === 'list' && index !== -1 && props.openedId != null) {
+  if (index !== -1 && props.openedId != null) {
     return stepOpened(keys, index, next, by);
   }
 
@@ -383,11 +405,12 @@ watch(
 /**
  * With an item open over the list: its pull requests one by one (D9) — through a collapsed stack's entry member by
  * member, the entry staying selected, into one from above at its first and from below at its last; an expanded one's
- * entry is passed over, its rows being its pull requests.
+ * entry is passed over, its rows being its pull requests. On the board a stack's card, expanded or not, is walked as a
+ * collapsed entry: its pull requests are inside it.
  */
 function stepOpened(keys: readonly string[], index: number, next: number, by: 1 | -1) {
   const openedId = walking.at(-1) ?? props.openedId ?? null;
-  const members = getCollapsedMembers(keys[index]);
+  const members = getWalkedMembers(keys[index]);
   const inside = openedId === null ? -1 : members.indexOf(openedId);
   const sibling = inside === -1 ? undefined : members[inside + by];
   if (sibling !== undefined) {
@@ -398,7 +421,7 @@ function stepOpened(keys: readonly string[], index: number, next: number, by: 1 
   const past = next + by;
   const target = !isExpandedEntry(keys[next]) ? next : keys[past] === undefined ? index : past;
   const key = keys[target] ?? null;
-  const entered = getCollapsedMembers(key);
+  const entered = getWalkedMembers(key);
   const member = by === 1 ? entered[0] : entered.at(-1);
   if (target !== index && member !== undefined) {
     return openInEntry(key, member);
@@ -409,16 +432,19 @@ function stepOpened(keys: readonly string[], index: number, next: number, by: 1 
   return go(key);
 }
 
-/** The pull requests of a collapsed stack's entry, in order; none for any other entry. */
-function getCollapsedMembers(key: string | null | undefined): readonly string[] {
+/**
+ * The pull requests of a stack's entry walked inside it, in order: a collapsed one's, or on the board any; none for any
+ * other entry.
+ */
+function getWalkedMembers(key: string | null | undefined): readonly string[] {
   const current = key == null ? undefined : placed.value.get(key);
-  return current?.stack && !expandedStacks.has(current.stack.id) ? current.ids : [];
+  return current?.stack && !isExpandedEntry(key ?? undefined) ? current.ids : [];
 }
 
-/** A stack's entry shown expanded, its rows under it. */
+/** A stack's entry in the list shown expanded, its rows under it. */
 function isExpandedEntry(key: string | undefined) {
   const current = key === undefined ? undefined : placed.value.get(key);
-  return current?.stack != null && expandedStacks.has(current.stack.id);
+  return props.layout === 'list' && current?.stack != null && expandedStacks.has(current.stack.id);
 }
 
 /** Selects the entry `key` with `id`, one of the items it stands for, and opens that item. */
@@ -470,7 +496,7 @@ function go(key: string | null) {
   return id;
 }
 
-/** `⇧←`/`⇧→` on the board: the selected entry into the next column that takes it. */
+/** `⇧←`/`⇧→` on the board: the selected entry into the next column that takes it — a stack's card all its pull requests. */
 function moveSelected(by: 1 | -1) {
   const key = selectedKey.value;
   const current = key === null ? undefined : placed.value.get(key);
@@ -480,8 +506,8 @@ function moveSelected(by: 1 | -1) {
 
   for (let column = current.column + by; column >= 0 && column < props.groups.length; column += by) {
     const group = props.groups[column];
-    if (group && canDrop(current.entry, current.group.key, group)) {
-      emit('move', { id: current.entry.id, from: current.group.key, to: group.key });
+    if (group && canDrop(current.moved, current.group.key, group)) {
+      emit('move', { ids: current.moved.map(entry => entry.id), from: current.group.key, to: group.key });
       return;
     }
   }
@@ -529,13 +555,39 @@ function expandSelected(expand: boolean) {
   return false;
 }
 
+/** Space on the board: expands or collapses the selected stack's card; whether it was one. */
+function toggleSelectedStack() {
+  const key = selectedKey.value;
+  const stack = key === null ? null : (placed.value.get(key)?.stack ?? null);
+  if (stack) {
+    toggleStack(stack);
+  }
+
+  return stack !== null;
+}
+
 function toggleStack(stack: ListStack) {
   expandedStacks.set(stack.id, !expandedStacks.has(stack.id));
 }
 
-/** The rows nested under the row the list shows: none of a collapsed stack's entry. */
+/**
+ * The rows nested under the row the list shows: none of a collapsed stack's entry, and none of a stack's card on the
+ * board — it lists them inside it.
+ */
 function getNestedShown(row: ListRow<T>) {
-  return row.stack && !expandedStacks.has(row.stack.id) ? [] : row.nested;
+  return row.stack && (props.layout === 'board' || !expandedStacks.has(row.stack.id)) ? [] : row.nested;
+}
+
+/** On a stack's card, one of its pull requests clicked: the card selected on it, and it opened. */
+function openMember(key: string, id: string) {
+  selectedKey.value = key;
+  selectedId.value = id;
+  emit('open', id);
+}
+
+/** The pull request selected in a stack's entry, when it is the selected one. */
+function getSelectedMember(row: ListRow<T>) {
+  return row.stack && selectedKey.value === row.key ? selectedId.value : null;
 }
 
 /** All the items the entry stands for are among those edited together. */
@@ -616,25 +668,37 @@ function toggleGroup(key: string) {
   collapsed.value = next;
 }
 
-function isDraggable(entry: ListEntry<T>, group: ListGroup<T>) {
-  return props.layout === 'board' && props.groups.some(other => canDrop(entry, group.key, other));
+/** What moving a row moves (D3): the row itself, or a stack's entry's pull requests. */
+function getMoved(row: ListRow<T>): readonly ListEntry<T>[] {
+  return row.stack ? row.nested : [row];
 }
 
-function canDrop(entry: ListEntry<T>, from: string, group: ListGroup<T>) {
-  return group.droppable && group.key !== from && props.canMove(entry, from, group.key);
+function isDraggable(row: ListRow<T>, group: ListGroup<T>) {
+  return props.layout === 'board' && props.groups.some(other => canDrop(getMoved(row), group.key, other));
 }
 
-function startDrag(event: DragEvent, entry: ListEntry<T>, group: ListGroup<T>) {
-  dragged.value = { entry, from: group.key };
+/** Whether the group takes what is moved: every entry of it, so a stack's card moves whole or not at all. */
+function canDrop(moved: readonly ListEntry<T>[], from: string, group: ListGroup<T>) {
+  return (
+    group.droppable &&
+    group.key !== from &&
+    moved.length > 0 &&
+    moved.every(entry => props.canMove(entry, from, group.key))
+  );
+}
+
+function startDrag(event: DragEvent, row: ListRow<T>, group: ListGroup<T>) {
+  const moved = getMoved(row);
+  dragged.value = { key: row.key, moved, from: group.key };
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', entry.id);
+    event.dataTransfer.setData('text/plain', moved.map(entry => entry.id).join('\n'));
   }
 }
 
 function dragOver(event: DragEvent, group: ListGroup<T>) {
   const drag = dragged.value;
-  if (drag && canDrop(drag.entry, drag.from, group)) {
+  if (drag && canDrop(drag.moved, drag.from, group)) {
     event.preventDefault();
     dropTarget.value = group.key;
   }
@@ -643,10 +707,10 @@ function dragOver(event: DragEvent, group: ListGroup<T>) {
 function drop(event: DragEvent, group: ListGroup<T>) {
   const drag = dragged.value;
   endDrag();
-  if (drag && canDrop(drag.entry, drag.from, group)) {
+  if (drag && canDrop(drag.moved, drag.from, group)) {
     event.preventDefault();
-    select(drag.entry.key);
-    emit('move', { id: drag.entry.id, from: drag.from, to: group.key });
+    select(drag.key);
+    emit('move', { ids: drag.moved.map(entry => entry.id), from: drag.from, to: group.key });
   }
 }
 
@@ -693,6 +757,11 @@ function findKey(keys: readonly string[], id: string) {
     keys.find(key => placed.value.get(key)?.ids.includes(id)) ??
     null
   );
+}
+
+/** A button or a link, which Enter and Space press themselves. */
+function isControl(target: EventTarget | null) {
+  return target instanceof HTMLButtonElement || target instanceof HTMLAnchorElement;
 }
 
 /** The row of the item nested under the entry `parentKey`. */
@@ -822,6 +891,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                     :stack="parent ? null : (row.stack ?? null)"
                     :stack-marker="parent ? null : (row.stackMarker ?? null)"
                     :nested="parent ? [] : row.nested"
+                    :expanded="!parent && !!row.stack && expandedStacks.has(row.stack.id)"
+                    :selected-member="parent ? null : getSelectedMember(row)"
+                    :toggle-stack="() => row.stack && toggleStack(row.stack)"
+                    :open-member="(id: string) => openMember(row.key, id)"
                   />
                 </li>
               </template>
@@ -888,13 +961,13 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   parent && css.listView_card_nested,
                   selectedKey === entry.key && css.listView_card_selected,
                   isChecked(entry.key) && css.listView_card_checked,
-                  dragged?.entry.key === entry.key && css.listView_card_dragged,
+                  dragged?.key === entry.key && css.listView_card_dragged,
                 ]"
                 :aria-current="selectedKey === entry.key ? 'true' : undefined"
                 :data-entry-key="entry.key"
-                :draggable="!parent && isDraggable(entry, group) ? 'true' : undefined"
+                :draggable="!parent && isDraggable(row, group) ? 'true' : undefined"
                 @click="openEntry(entry.key)"
-                @dragstart="startDrag($event, entry, group)"
+                @dragstart="startDrag($event, row, group)"
                 @dragend="endDrag"
               >
                 <slot
@@ -906,6 +979,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :stack="parent ? null : (row.stack ?? null)"
                   :stack-marker="parent ? null : (row.stackMarker ?? null)"
                   :nested="parent ? [] : row.nested"
+                  :expanded="!parent && !!row.stack && expandedStacks.has(row.stack.id)"
+                  :selected-member="parent ? null : getSelectedMember(row)"
+                  :toggle-stack="() => row.stack && toggleStack(row.stack)"
+                  :open-member="(id: string) => openMember(row.key, id)"
                 />
               </li>
             </template>

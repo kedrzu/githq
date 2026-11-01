@@ -53,10 +53,7 @@ export interface BuildMyWorkParams {
     readonly membership: MyWorkMembership;
     /** An item of the local copy by id; `undefined` when it is not there (yet). */
     readonly getItem: (id: string) => Item | undefined;
-    /**
-     * The stacks of the local copy, by id (`groupStacks`): whole, with pull requests in no group of my work too. Empty
-     * for the board, until it draws stacks: each pull request a plain row of its own group.
-     */
+    /** The stacks of the local copy, by id (`groupStacks`): whole, with pull requests in no group of my work too. */
     readonly stacks: ReadonlyMap<string, PullRequestStack>;
     readonly filter: MyWorkFilter;
     /** The order of the rows, and of the pull requests nested under one. */

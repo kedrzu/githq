@@ -109,6 +109,14 @@ export const Stacks: Story = {
     args: { work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all') },
 };
 
+/** SP26 in my work: each stack one card, whole, in the first reason any of its pull requests has (D3). */
+export const StacksOnBoard: Story = {
+    args: {
+        work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all'),
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+};
+
 /** Stacks grouped by repository: each entry whole in its repository's group. */
 export const StacksByRepository: Story = {
     args: {

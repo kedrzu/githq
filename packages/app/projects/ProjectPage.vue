@@ -1,4 +1,4 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). A project still arriving says so; one not tracked offers to track it. -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board; moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A project still arriving says so; one not tracked offers to track it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -246,12 +246,8 @@ const groups = computed(() => {
     texts: texts.value,
     today: today.value,
   });
-  if (options.options.layout !== 'list') {
-    return built;
-  }
-
-  // D3: in the list, a stack's pull requests in a group share an entry — described from the whole stack, which the
-  // local copy holds even where the project does not.
+  // D3: a stack's pull requests in a group share an entry — described from the whole stack, which the local copy holds
+  // even where the project does not.
   return foldStacks({
     groups: built,
     getPullRequest: entry => (entry.content?.kind === 'pullRequest' ? entry.content : null),
@@ -394,15 +390,26 @@ function canMove(entry: ListEntry<ProjectEntry>) {
   );
 }
 
-function move({ id, to }: ListMove) {
+function move({ ids, to }: ListMove) {
   const current = project.value;
-  const entry = findEntry(id);
   const field = current ? getGroupingField(current, grouping.value) : undefined;
-  if (!current || !entry || !field) {
+  const [id, ...others] = ids;
+  if (!current || !field || id === undefined) {
     return;
   }
 
   const value = toFieldInput(field.kind, to);
+  if (others.length > 0) {
+    // A stack's card (D3): the field of each pull request's own place, as for the items edited together.
+    void editor.edit(ids, { kind: 'projectFieldInProject', projectId: current.id, fieldId: field.id, value });
+    return;
+  }
+
+  const entry = findEntry(id);
+  if (!entry) {
+    return;
+  }
+
   if (entry.content) {
     void editor.edit([entry.content.id], {
       kind: 'projectField',

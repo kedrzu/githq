@@ -90,9 +90,10 @@ export interface ListGroup<T> {
     readonly droppable: boolean;
 }
 
-/** An entry moved from one group into another: the list's owner turns it into an edit. */
+/** An entry moved from one group into another: the list's owner turns it into an edit of each of its items. */
 export interface ListMove {
-    readonly id: string;
+    /** The items moved: the entry's own, or a stack entry's pull requests (D3) — never the entry's own id. */
+    readonly ids: readonly string[];
     /** The group keys. */
     readonly from: string;
     readonly to: string;

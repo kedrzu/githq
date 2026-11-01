@@ -214,7 +214,7 @@ test('a stack is one entry, whole, in the first group any of its pull requests i
     expect(work.counts).toEqual({ reviewRequested: 1, authored: 1, assigned: 0, mentioned: 0, total: 2 });
 });
 
-test('without stacks (the board) each pull request of a stack is a plain row of the first group its search found', () => {
+test('without its stack in the copy each pull request of a stack is a plain row of the first group its search found', () => {
     const stack = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}, {}] });
     const plain = pr('PR_plain');
     const items = [...stack, plain];
