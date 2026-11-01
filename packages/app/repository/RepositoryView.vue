@@ -39,6 +39,7 @@ import type {
 } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { Item } from '@/store/ItemTypes.js';
 
 import type { RepositoryKind, RepositoryList, RepositoryState } from './buildRepositoryList.js';
@@ -313,7 +314,10 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
     </template>
 
     <template v-else>
-      <header :class="css.repositoryView_header">
+      <header
+        :class="css.repositoryView_header"
+        v-bind="WINDOW_DRAG_REGION"
+      >
         <BookMarked
           :class="css.repositoryView_headerIcon"
           aria-hidden="true"

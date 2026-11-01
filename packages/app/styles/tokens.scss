@@ -108,6 +108,8 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
+// The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
+$window-controls-height: 36px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)

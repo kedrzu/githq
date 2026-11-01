@@ -24,6 +24,7 @@ import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { ProjectIteration } from '@/store/ItemDetailTypes.js';
@@ -559,7 +560,10 @@ async function track() {
     v-if="!project"
     :class="css.projectPage"
   >
-    <header :class="css.projectPage_header">
+    <header
+      :class="css.projectPage_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h1 :class="css.projectPage_title">{{ name }}</h1>
     </header>
     <EmptyState

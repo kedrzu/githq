@@ -10,6 +10,7 @@ import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -140,7 +141,10 @@ function formatBytes(bytes: number) {
 
 <template>
   <div :class="css.accountView">
-    <header :class="css.accountView_header">
+    <header
+      :class="css.accountView_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h1 :class="css.accountView_title">{{ t(l.title) }}</h1>
     </header>
     <div :class="css.accountView_body">
