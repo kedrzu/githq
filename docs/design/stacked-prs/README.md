@@ -80,15 +80,7 @@ target branch moves. githq says why the stack cannot merge and links to the butt
 Creating pull requests, reading code in githq, a combined diff and branching stacks. Review is meant to come here later, and opening
 a stack on a pull request is what it would build on.
 
-## What gets built first
-
-1. A test on a real open stack: whether GitHub's mergeability fields already count earlier pull requests, whether joining a stack
-   moves `updated_at`, what a partway failure leaves behind, and whether a `repo` token can write to stacks.
-2. Seeing: stack data on rows, the whole stack in the copy, entries in lists, the map, walking with `J` and `K`.
-3. Merging through the panel.
-4. Managing.
-
 ## Where this stands
 
 The design is closed. The screens are drawn and the owner has picked among the variants: [the brief lists them](ui/work-through-a-stack.md#the-screens).
-Then comes the build in the order above.
+Seeing stacks is being built first; merging and managing follow.
