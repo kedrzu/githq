@@ -12,11 +12,11 @@ The product and its stack are decided in [the githq design](../githq/DECISIONS.m
 
 ## D1
 
-**Settings are stored in the user's own GitHub account, with no backend of ours and nothing retained by
-us.** (2026-11-01, owner)
+**Settings are stored in the user's own GitHub account, with no backend of ours. "Zero data retention" means nothing about
+the user is held on our side; the data is the user's, in their repository.** (2026-11-01, owner)
 
 **Why.** It follows the rule that GitHub is the only backend. The object that holds them is
-[a private repository](#d6).
+[a private repository](#d6). The history of writes in that repository is the user's own and is not in conflict with this.
 
 ## D2
 
@@ -34,11 +34,16 @@ through the redirect in `packages/app/auth/routeAccess.ts:105-120`.
 
 ## D3
 
-**After sign-in githq looks for saved settings. If it finds them it offers to load them; if not, it offers to
-create them and start syncing.** (2026-11-01, owner)
+**After sign-in, on a device with no settings of its own, githq looks for saved settings and offers to load them if they
+exist. The repository is created only when the user ticks the option to keep settings there, on the first-setup screen or
+in settings, and both places explain it the same way.** (2026-11-01, owner)
 
-**Why.** Owner's brief. How "offers to create" reads now that syncing is off by default is
-[still open](#open-questions).
+**Why.** Follows from syncing being off by default ([D2](#d2)): nothing happens in someone's account without their asking.
+A device that has local settings and syncing off is never interrupted; it looks for the repository when syncing is turned on.
+
+**Rejected.**
+- Proactively offering to create the repository when none is found ([history](history/DECISIONS.md#d3)) — it no longer
+  fits a default of staying local.
 
 ## D4
 
@@ -140,29 +145,106 @@ following `packages/app/auth/createAccountSlot.ts`)
 > the choice. Sign-out also deletes `createAccountSlot` keys (`packages/app/auth/createAccountSlot.ts:46-48`), so with
 > syncing off, signing out still forgets the settings, as it does today.
 
+## D9
+
+**When syncing starts on a device that already has settings, the tracked lists are combined and, for any other setting set
+on both sides, the saved one wins.** (2026-11-01, owner, on the design agent's proposal)
+
+**Why.** Nothing the user tracks is lost, and untracking afterwards is one action.
+
+**Rejected.**
+- Replacing local settings with the saved ones — simpler, but silently removes repositories from the device along with
+  their local copy.
+
+## D10
+
+**Turning syncing off stops syncing on this device, keeps the settings locally and leaves the repository in place. Removing
+it happens on github.com, through a link from settings.** (2026-11-01, owner, on the design agent's proposal)
+
+**Why.** The data is the user's ([D1](#d1)), and githq cannot delete a repository ([D6](#d6)).
+
+**Rejected.**
+- Asking for the `delete_repo` scope for a button in githq — it would widen the consent screen for everyone.
+
+## D11
+
+**One merge rule covers every case: the device keeps, next to its settings, the copy of the file it last saw and that copy's
+`sha`, in the same `localStorage` place. What differs between the two is what it has not saved yet. Merging compares the
+device's settings, the file now, and that copy: tracked items are added and removed by item, other settings by key, and when
+both sides changed the same key the file wins. Order is the file's, with new items at the end.** (2026-11-01, proposal of the
+design agent, not confirmed)
+
+**Why.** First contact ([D9](#d9)) is this rule with an empty copy. A write refused with 409 is this rule after a re-read. A
+response lost after a successful write merges to no change. A leader tab that closes loses nothing, because the next leader
+finds the same difference on disk, so no queue of changes is needed. No device clock takes part. Any tab may change settings;
+the leader tab writes, about 5 seconds after the last change (a guess, to be tuned), and asks about the file in its own sync
+loop at the usual 60 s visible and 300 s hidden (`packages/app/sync/SyncEngine.ts:54-61`). Signing out tries to write first.
+
+> **Checked 2026-11-01:** the app has no way to reorder tracked items (`packages/app/tracking/TrackingStore.ts:118-130`), so
+> a reorder cannot conflict with an add today.
+
+**Rejected.**
+- Recording changes as a list of operations — a second structure that has to survive tab closes, for what the difference
+  already gives.
+
+## D12
+
+**Anything that prevents syncing puts the device into one state, "syncing stopped": it keeps working from local settings,
+never writes to the file, says why once and in settings, and offers to try again.** (2026-11-01, proposal of the design
+agent, not confirmed)
+
+**Why.** The reasons need no rule of their own: the repository was deleted (404), it exists without our file, so it isn't
+ours, it is public when connecting, the file is unreadable or hand-edited into something invalid, its format is newer than this
+build understands, creating it or writing to it is refused. Refusing to write to a file it cannot read means the file stays
+recoverable. Visibility is checked when connecting, not on every poll.
+
+## D13
+
+**The file is `settings.json`, formatted JSON with a stable key order, carrying a `format` number. Unknown keys are preserved
+when merging; the number goes up only for a change an older build can't safely ignore. Repositories keep today's keys
+(`owner/name`), projects their node ids.** (2026-11-01, proposal of the design agent, not confirmed)
+
+**Why.** A reader on github.com gets a readable diff per change, and new optional settings don't stop older tabs. Tracked
+repositories also store their node id (`packages/app/tracking/TrackingTypes.ts:4-9`), so moving keys to ids later is a
+one-way mapping if renames turn out to matter.
+
+**Rejected.**
+- Keying everything by node id now — a repository page knows its name, not always its id, and all a rename costs is a list's
+  display options, which is what happens today.
+
 ## Open questions
 
-### When is creating the repository offered
+### Accepted risks, pending the owner's word
 
-The agent's proposal: only an unticked checkbox on the first-setup screen and a switch in settings, with no prompt
-elsewhere. githq looks for the repository when the device has no settings of its own, and when the user turns syncing
-on. A device that already has local settings and syncing off is never interrupted.
+From the failure sweep of 2026-11-01:
 
-### First contact when both sides have settings
+- Turning syncing on brings back a repository untracked elsewhere while this device was off, because combining lists keeps no
+  record of removals. The user untracks it again.
+- Untracking by mistake and re-tracking moves the item to the end of the list, and the other device has already discarded
+  its copy and downloads it again.
+- Revoking githq's access on github.com ends in the existing sign-out on 401, which clears local settings
+  (`packages/app/auth/AuthStore.ts:224-226`). Without syncing they are gone, as today.
+- A renamed repository loses its display options and stays tracked under the old name until re-tracked.
 
-The laptop tracks 5 repositories, the repository holds 12 from another computer, and the user turns syncing on. The agent's
-proposal: tracked lists are combined, and for any other setting set on both sides the saved one wins. Nothing is lost,
-and the user can untrack afterwards.
+### Project views' local changes now travel
 
-### Turning syncing off and removing the data
+> **Checked 2026-11-01:** `packages/app/lists/useListViewOptions.ts:30` shows a project view as "modified locally" and documents
+> the options as local only, per D13 of [the githq design](../githq/DECISIONS.md#d13). With layout, grouping, sort and properties
+> synced ([D7](#d7)), those changes follow the user. They still never reach GitHub's project.
 
-The agent's proposal: turning off stops syncing on this device, keeps settings locally and leaves the repository in place.
-Removal is a link to the repository's settings page on github.com, because githq cannot delete it (D6). Asking for
-`delete_repo` for this one button would widen the consent screen for everyone.
+The agent's proposal: the label becomes "modified", and nothing else changes.
 
-### Not yet discussed
+### Where the last-view memory applies
 
-A repository of that name already exists and isn't ours; it was made public or deleted by hand; creating it fails, for
-instance on a managed enterprise account. Write timing, and how changes from another device arrive. The format of the
-stored file and versions of it, which is the hard part to change once written. Where the last-view memory applies
-besides the repository tab.
+The agent's proposal: the repository's tab and a project's saved view. A link with an explicit address always wins. Kept per
+account in `localStorage`, cleared at sign-out.
+
+### Order of building
+
+The agent's proposal, each step usable by itself: settings in their own place, moving the tracked list out of the cache database,
+plus the last view (no network); then loading, saving and merging behind the first-setup checkbox; then the settings screen.
+
+> **Checked 2026-11-01:** `PUT …/contents/…` initialises an empty repository, and the REST API "will return a 409 Conflict if
+> the Git repository is empty or unavailable", the latter while GitHub is still creating it —
+> [Git database](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database). Not tested live:
+> a test repository couldn't be removed afterwards, the `gh` token here has no `delete_repo`.

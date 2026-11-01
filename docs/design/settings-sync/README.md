@@ -39,8 +39,18 @@ those githq already has, and it can be found with one question.
 A repository also protects your changes. If two computers save at the same moment, GitHub refuses the second write
 instead of letting it erase the first. [The comparison, and what we tested](DECISIONS.md#d6).
 
+## When two computers disagree
+
+Each computer remembers the version of the file it last saw. What differs from that version is what it still has to save, and
+this is all it takes, even if the tab closes before the write. When it saves, it compares three things: its settings, the file as
+it is now, and the version it remembers. A repository added on one computer and another added on the other both stay. If both
+changed the same setting, what is already saved wins. [How the merge works](DECISIONS.md#d11).
+
+The same comparison runs when you first turn saving on, on a computer that already has settings, so your tracked lists are
+combined. And when anything gets in the way, such as a repository you deleted or a file edited into something unreadable, githq
+[stops syncing and says why](DECISIONS.md#d12). It keeps working from what it has and never overwrites a file it cannot read.
+
 ## What this leaves open
 
-[When creating the repository is offered, what happens when both sides already have settings, and how you
-remove the data](DECISIONS.md#open-questions) are being argued now, and the rest of this story gets written once
-they are settled.
+[Some risks we would accept, the reach of the last-view memory and the order of building](DECISIONS.md#open-questions) are
+waiting for a decision.
