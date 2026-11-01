@@ -26,3 +26,4 @@ Append-only; one line per turn that settled something.
   generalised (All/Issues/Pull requests today), UI decided by designing several directions. Measured refs,
   batched branch history and the matching-refs ETag. Proposed D9 (paging and cache); recorded D10.
   Folded into README. Open: does the graph need the repository tracked.
+- 2026-11-01 — Owner: ok to the Commits tab working without tracking (D11). Folded into README.

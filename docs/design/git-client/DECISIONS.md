@@ -194,3 +194,15 @@ filter one list and its toolbar (state, grouping, board) has nothing to offer th
 
 **Rejected.**
 - A separate top-level commits view outside the repository — the owner places it in the repository.
+
+## D11
+
+**The Commits tab works in any repository the user can see, whether githq tracks it or not.** (2026-11-01,
+design agent's proposal, owner: "ok")
+
+**Why.** Tracking exists to copy a repository's issues and pull requests in the background; the graph is
+fetched only when the tab is opened ([D9](#d9)), so tracking would add nothing to it.
+
+**Rejected.**
+- Commits only in tracked repositories — a user coming from a pull request link into someone else's
+  repository would have to track it to see its history, for no gain.

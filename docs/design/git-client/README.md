@@ -104,3 +104,7 @@ list, and a toolbar for its state, grouping and board layout. Commits is a diffe
 of whose controls apply to it, so the repository view has to become a set of sections with their own tools
 rather than one filtered list. Which UI does that best is decided by designing a few directions and
 picking one. [Commits as a tab of the repository](DECISIONS.md#d10).
+
+The tab works in every repository you can see, tracked in githq or not: the graph is fetched when the tab is
+opened and nothing about it is synced in the background, so there is nothing tracking would add.
+[Commits without tracking](DECISIONS.md#d11).
