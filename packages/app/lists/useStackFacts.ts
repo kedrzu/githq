@@ -68,7 +68,10 @@ export interface StackMemberFact extends StackLook {
 
 /** What a stack's row and card show, worked out once for both. */
 export interface StackFactsViewModel {
-    /** How many pull requests it holds: "4", "2 of 4" for a share (D16), "2 of 4 in githq" while incomplete. */
+    /**
+     * How many pull requests it holds: "4", "2 of 4" for a share (D16), "2 of 4 in githq" while incomplete, "1 of 4
+     * matches" under a filter matching some of them (D3, SP25).
+     */
     readonly count: string;
     /** A share's own pull requests, drawn in their state; `null` for the whole stack's entry. */
     readonly filled: ReadonlySet<string> | null;
@@ -112,6 +115,12 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
     const description = computed(() => entry.value.description);
     const count = computed(() => {
         const { held, size } = description.value;
+        const { unmatched, pullRequests } = entry.value;
+        if (unmatched && unmatched.size > 0) {
+            const total = pullRequests.length;
+            return t(l.matches, { count: total - unmatched.size, size: total });
+        }
+
         if (entry.value.share) {
             return t(l.share, { count: entry.value.share.count, size });
         }

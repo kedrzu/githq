@@ -175,8 +175,46 @@ test('a group without two pull requests of one stack is given back as it was', (
     expect(fold(groups, [], [])[0]).toBe(groups[0]);
 });
 
-function fold(groups: ListGroup<Item>[], items: readonly Item[], described: string[]): ListGroup<Item>[] {
+test('under a filter a stack shows whole where any of it matches, in place of the best sorted match, the others unmatched', () => {
+    const stack = sampleStack({ id: 'S_1', number: 11, members: [{}, {}, {}] });
+    const [a, b, c] = [member(stack, 0), member(stack, 1), member(stack, 2)] as const;
+    const other = sampleStack({ id: 'S_2', number: 12, members: [{}, {}] });
+    const [d, e] = [member(other, 0), member(other, 1)] as const;
+
+    const [todo, done] = fold(
+        // `a` sorts first but does not match: the entry goes where `b`, the first match, is.
+        [toGroup('todo', [a, ISSUE, b, d, e]), toGroup('done', [c])],
+        [...stack, ...other],
+        [],
+        new Set([ISSUE.id, b.id]),
+    );
+
+    expect(todo?.rows.map(row => row.id)).toEqual([ISSUE.id, 'stack:S_1']);
+    const entry = todo?.rows[1];
+    expect(entry?.nested.map(nested => nested.id)).toEqual([a.id, b.id]);
+    expect([...(entry?.stack?.unmatched ?? [])]).toEqual([a.id]);
+    // No match in the group: nothing of the stack shows there.
+    expect(done?.rows).toEqual([]);
+});
+
+test('under a filter a lone matching pull request of a stack stays a marked row, and an entry all matching has none unmatched', () => {
+    const stack = sampleStack({ id: 'S_1', number: 11, members: [{}, {}, {}] });
+    const [a, b, c] = [member(stack, 0), member(stack, 1), member(stack, 2)] as const;
+
+    const [one, both] = fold([toGroup('one', [a]), toGroup('both', [b, c])], stack, [], new Set([a.id, b.id, c.id]));
+
+    expect(one?.rows.map(row => row.stackMarker?.size ?? null)).toEqual([3]);
+    expect(both?.rows[0]?.stack?.unmatched).toBeNull();
+});
+
+function fold(
+    groups: ListGroup<Item>[],
+    items: readonly Item[],
+    described: string[],
+    matched: ReadonlySet<string> | null = null,
+): ListGroup<Item>[] {
     return foldStacks({
+        matched,
         groups,
         getPullRequest: item => (item.kind === 'pullRequest' ? item : null),
         stacks: groupStacks(items),

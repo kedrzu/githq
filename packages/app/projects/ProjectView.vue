@@ -512,13 +512,14 @@ function addDraft(title: string, group: string | null) {
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, stack, stackMarker, nested }">
+        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker, nested }">
           <StackRow
             v-if="stack"
             :stack="stack"
             :properties="itemProperties"
             :now="now"
             :checked="checked"
+            :half-checked="halfChecked"
           >
             <template #fields>
               <ProjectEntryFields
@@ -555,13 +556,16 @@ function addDraft(title: string, group: string | null) {
             :checked="checked"
           />
         </template>
-        <template #card="{ entry, checked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }">
+        <template
+          #card="{ entry, checked, halfChecked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }"
+        >
           <StackCard
             v-if="stack"
             :stack="stack"
             :properties="itemProperties"
             :now="now"
             :checked="checked"
+            :half-checked="halfChecked"
             :expanded="expanded"
             :selected-member="selectedMember"
             @toggle="toggleStack"

@@ -37,7 +37,8 @@ export interface ListContextMenuProps {
 /**
  * A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. A
  * stack's entry (D2, D3) has a synthetic `id` (`stack:<stack id>`, never an item's), its `stack`, the member `Enter`
- * opens as its `value`, and the stack's pull requests in its group as `nested`, shown only while it is expanded.
+ * opens as its `value`, and the stack's pull requests in its group as `nested`, shown only while it is expanded — under a
+ * filter, all of them when any matches (`ListStack.unmatched`).
  */
 export interface ListRow<T> extends ListEntry<T> {
     readonly nested: readonly ListEntry<T>[];
@@ -61,6 +62,11 @@ export interface ListStack {
     readonly pullRequests: readonly PullRequestItem[];
     /** Set when they are a share of the stack's open pull requests, the others in other groups (D3, D16): "2 of 4". */
     readonly share?: StackShare | null;
+    /**
+     * Set when the list's filter matches only some of its pull requests (D3, SP25): the ids of those it does not, shown
+     * because another of the entry does — de-emphasised, and the entry says "1 of 4 matches".
+     */
+    readonly unmatched?: ReadonlySet<string> | null;
 }
 
 /** What a group's header shows before its name. */

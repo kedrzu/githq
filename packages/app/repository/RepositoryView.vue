@@ -272,7 +272,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, stack, stackMarker }">
+        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
           <StackRow
             v-if="stack"
             :stack="stack"
@@ -280,6 +280,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :repository="nameWithOwner"
             :now="now"
             :checked="checked"
+            :half-checked="halfChecked"
           />
           <ItemRow
             v-else
@@ -295,7 +296,9 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :stack="stackMarker"
           />
         </template>
-        <template #card="{ entry, checked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }">
+        <template
+          #card="{ entry, checked, halfChecked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }"
+        >
           <StackCard
             v-if="stack"
             :stack="stack"
@@ -303,6 +306,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :repository="nameWithOwner"
             :now="now"
             :checked="checked"
+            :half-checked="halfChecked"
             :expanded="expanded"
             :selected-member="selectedMember"
             @toggle="toggleStack"
@@ -413,13 +417,14 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           @open="emit('open', $event)"
           @listed="emit('listed', $event)"
         >
-          <template #row="{ entry, parent, checked, stack, stackMarker }">
+          <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
             <StackRow
               v-if="stack"
               :stack="stack"
               :properties="properties"
               :now="now"
               :checked="checked"
+              :half-checked="halfChecked"
             />
             <ItemRow
               v-else

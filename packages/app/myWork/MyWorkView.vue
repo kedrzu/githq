@@ -212,6 +212,7 @@ function toListRow(row: MyWorkRow): ListRow<Item> {
       description: describeStack({ stack: row.stack, viewerLogin: props.viewerLogin, getItem: props.getItem }),
       open: row.item.id,
       pullRequests: row.nested,
+      unmatched: row.unmatched ?? null,
     },
   };
 }
@@ -260,7 +261,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"
     >
-      <template #row="{ entry, parent, group: listGroup, checked, stack }">
+      <template #row="{ entry, parent, group: listGroup, checked, halfChecked, stack }">
         <StackRow
           v-if="stack"
           :stack="stack"
@@ -270,6 +271,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
+          :half-checked="halfChecked"
         />
         <ItemRow
           v-else
@@ -285,7 +287,18 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
         />
       </template>
       <template
-        #card="{ entry, parent, group: listGroup, checked, stack, expanded, selectedMember, toggleStack, openMember }"
+        #card="{
+          entry,
+          parent,
+          group: listGroup,
+          checked,
+          halfChecked,
+          stack,
+          expanded,
+          selectedMember,
+          toggleStack,
+          openMember,
+        }"
       >
         <StackCard
           v-if="stack"
@@ -296,6 +309,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
+          :half-checked="halfChecked"
           :expanded="expanded"
           :selected-member="selectedMember"
           @toggle="toggleStack"

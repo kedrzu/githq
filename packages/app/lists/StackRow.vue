@@ -1,7 +1,7 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon, its name and how many pull requests it holds (no number of its own), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Check, Layers, Milestone, SquareKanban } from 'lucide-vue-next';
+import { Check, Layers, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
@@ -29,6 +29,8 @@ const props = withDefaults(
     viewerLogin?: string | null;
     /** All its pull requests are in the selection several items are edited together in (`x`). */
     checked?: boolean;
+    /** Some of its pull requests are in that selection, not all (D20, SP28): a half mark. */
+    halfChecked?: boolean;
   }>(),
   { repository: null, people: 'assignees', viewerLogin: null },
 );
@@ -58,6 +60,12 @@ const nameWithOwner = computed(() => props.stack.pullRequests[0]?.repository.nam
       :class="css.stackRow_check"
       role="img"
       :aria-label="t(l.inSelection)"
+    />
+    <Minus
+      v-else-if="halfChecked"
+      :class="css.stackRow_check"
+      role="img"
+      :aria-label="t(l.partlySelected)"
     />
     <Layers
       v-else

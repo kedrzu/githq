@@ -315,6 +315,33 @@ test("a filter keeps a stack's entry, whole, when any of its pull requests match
     expect(work.counts.total).toBe(1);
 });
 
+test("under a filter a stack's entry takes the place of its best sorted matching pull request, the others unmatched", () => {
+    const at = (hour: number) => `2026-10-20T${String(hour).padStart(2, '0')}:00:00Z`;
+    const failing = { state: 'FAILURE', passing: 0, failing: 1, pending: 0 } as const;
+    const stack = sampleStack({
+        id: 'S_1',
+        number: 10,
+        // The newest of the stack does not need me; the one failing is the oldest.
+        members: [{ updatedAt: at(0), checks: failing }, { updatedAt: at(9) }],
+    });
+    const between = pr('PR_between', { updatedAt: at(3), checks: failing });
+
+    const work = build([...stack, between], { authored: [between.id, 'PR_S_1_1', 'PR_S_1_2'] }, 'needsMe');
+
+    expect(rowIds(work).authored).toEqual(['PR_between', 'S_1']);
+    const entry = work.groups.find(group => group.group === 'authored')?.rows[1];
+    expect(entry?.nested.map(member => member.id)).toEqual(['PR_S_1_1', 'PR_S_1_2']);
+    expect([...(entry?.unmatched ?? [])]).toEqual(['PR_S_1_2']);
+});
+
+test('with every pull request of a stack matching, its entry has none unmatched', () => {
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{}, {}] });
+
+    const work = build(stack, { authored: stack.map(item => item.id) });
+
+    expect(work.groups.find(group => group.group === 'authored')?.rows[0]?.unmatched).toBeNull();
+});
+
 function build(
     items: readonly Item[],
     groups: Partial<Record<MyWorkGroup, readonly string[]>>,

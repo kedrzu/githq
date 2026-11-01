@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20). On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -84,6 +84,8 @@ interface ListSlotProps<TValue> {
   group: ListGroup<TValue>;
   /** Among the items edited together; a stack's entry when all its pull requests are. */
   checked: boolean;
+  /** A stack's entry some of whose pull requests are among the items edited together, not all (D20, SP28): a half mark. */
+  halfChecked: boolean;
   /** Set on a stack's entry: draw it as one. */
   stack: ListStack | null;
   /** Set on a pull request listed alone out of its stack (`ListRow.stackMarker`): draw its marker (D16). */
@@ -373,8 +375,11 @@ function getKeyCommands(): Command[] {
   return commands;
 }
 
-/** Moves the selection `by` entries — on the board within its column; returns the entry it is on now. */
-function step(by: 1 | -1) {
+/**
+ * Moves the selection `by` entries — on the board within its column; returns the entry it is on now. With an item open
+ * it walks a stack's pull requests one by one, unless `byEntry`.
+ */
+function step(by: 1 | -1, byEntry = false) {
   const keys = selectedColumnKeys() ?? order.value;
   if (keys.length === 0) {
     return null;
@@ -382,7 +387,7 @@ function step(by: 1 | -1) {
 
   const index = selectedKey.value === null ? -1 : keys.indexOf(selectedKey.value);
   const next = index === -1 ? 0 : Math.min(Math.max(index + by, 0), keys.length - 1);
-  if (index !== -1 && props.openedId != null) {
+  if (index !== -1 && props.openedId != null && !byEntry) {
     return stepOpened(keys, index, next, by);
   }
 
@@ -524,11 +529,19 @@ function toggleChecked() {
   setChecked(ids.every(id => checked.includes(id)) ? checked.filter(id => !ids.includes(id)) : [...checked, ...ids]);
 }
 
-/** Adds the selected entry and the one `by` away, and moves there. */
+/**
+ * Adds the selected entry and the one `by` away, and moves there: over a collapsed stack's entry in one step, adding all
+ * its pull requests, over an expanded one row by row (D20).
+ */
 function extend(by: 1 | -1) {
-  const before = currentIds();
-  step(by);
-  setChecked([...checkedIds.value, ...before, ...currentIds()]);
+  const before = extendedIds();
+  step(by, true);
+  setChecked([...checkedIds.value, ...before, ...extendedIds()]);
+}
+
+/** What `⇧J`/`⇧K` add of the selected entry: nothing of an expanded stack's entry itself, its rows being walked. */
+function extendedIds() {
+  return isExpandedEntry(selectedKey.value ?? undefined) ? [] : currentIds();
 }
 
 /**
@@ -594,6 +607,17 @@ function getSelectedMember(row: ListRow<T>) {
 function isChecked(key: string) {
   const ids = placed.value.get(key)?.ids ?? [];
   return ids.length > 0 && ids.every(id => checkedIds.value.includes(id));
+}
+
+/** A stack's entry some of whose pull requests, not all, are among the items edited together. */
+function isHalfChecked(key: string) {
+  const current = placed.value.get(key);
+  return !!current?.stack && current.ids.some(id => checkedIds.value.includes(id)) && !isChecked(key);
+}
+
+/** A row of a stack's entry shown only because another of it matches the list's filter (D3, SP25). */
+function isUnmatched(entry: ListEntry<T>, parent: ListRow<T> | null) {
+  return parent?.stack?.unmatched?.has(entry.id) ?? false;
 }
 
 /** In the list's order, each once. */
@@ -862,6 +886,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                     css.listView_row,
                     selectedKey === entry.key && css.listView_row_selected,
                     isChecked(entry.key) && css.listView_row_checked,
+                    isUnmatched(entry, parent) && css.listView_row_unmatched,
                   ]"
                   :aria-current="selectedKey === entry.key ? 'true' : undefined"
                   :data-entry-key="entry.key"
@@ -888,6 +913,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                     :parent="parent"
                     :group="group"
                     :checked="isChecked(entry.key)"
+                    :half-checked="isHalfChecked(entry.key)"
                     :stack="parent ? null : (row.stack ?? null)"
                     :stack-marker="parent ? null : (row.stackMarker ?? null)"
                     :nested="parent ? [] : row.nested"
@@ -976,6 +1002,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :parent="parent"
                   :group="group"
                   :checked="isChecked(entry.key)"
+                  :half-checked="isHalfChecked(entry.key)"
                   :stack="parent ? null : (row.stack ?? null)"
                   :stack-marker="parent ? null : (row.stackMarker ?? null)"
                   :nested="parent ? [] : row.nested"
@@ -1137,6 +1164,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 .listView_row_checked,
 .listView_row_checked:hover {
   background: rgba($color-accent, 0.1);
+}
+
+.listView_row_unmatched > * {
+  opacity: 0.4;
 }
 
 .listView_column {

@@ -37,6 +37,8 @@ milestones:
     many: '{count} milestones'
 share:
   en: '{count} of {size}'
+matches:
+  en: '{count} of {size} matches'
 bothReady:
   en: Both ready
 shareHeld:

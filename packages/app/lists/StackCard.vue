@@ -1,7 +1,7 @@
-<!-- The content of a stack's card on a board (D16, SP26, SP27; the board draws the card, its selection and its handlers), as tall as an item's card and no more decorated: on its first line the stack icon, the repository when the list spans several and how many pull requests it holds — "2 of 4" for a share of the stack's open ones, the others in other columns — the people on the right and a chevron that expands it; then the stack's name; then the pips — a share's own drawn in their state, the others hollow — and the state in words (worked out as for a list's row, `useStackFacts`). Expanded, it lists its pull requests inside it, first to last, each in its own state with its number and title, the one selected in it highlighted; a click opens one. -->
+<!-- The content of a stack's card on a board (D16, SP26, SP27; the board draws the card, its selection and its handlers), as tall as an item's card and no more decorated: on its first line the stack icon — the selection's mark when all its pull requests are selected, a half mark when some are (D20, SP28) — the repository when the list spans several and how many pull requests it holds — "2 of 4" for a share of the stack's open ones, the others in other columns; "1 of 4 matches" under a filter matching some (D3, SP25) — the people on the right and a chevron that expands it; then the stack's name; then the pips — a share's own drawn in their state, the others hollow — and the state in words (worked out as for a list's row, `useStackFacts`). Expanded, it lists its pull requests inside it, first to last, each in its own state with its number and title, the one selected in it highlighted, those the filter does not match de-emphasised; a click opens one. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Check, ChevronDown, ChevronRight, Layers } from 'lucide-vue-next';
+import { Check, ChevronDown, ChevronRight, Layers, Minus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
@@ -28,6 +28,8 @@ const props = withDefaults(
     viewerLogin?: string | null;
     /** All its pull requests are in the selection several items are edited together in (`x`). */
     checked?: boolean;
+    /** Some of its pull requests are in that selection, not all (D20, SP28): a half mark. */
+    halfChecked?: boolean;
     /** Its pull requests are listed inside it. */
     expanded?: boolean;
     /** The pull request selected in it, highlighted while it is expanded. */
@@ -64,6 +66,12 @@ const nameWithOwner = computed(() => {
         :class="css.stackCard_check"
         role="img"
         :aria-label="t(l.inSelection)"
+      />
+      <Minus
+        v-else-if="halfChecked"
+        :class="css.stackCard_check"
+        role="img"
+        :aria-label="t(l.partlySelected)"
       />
       <Layers
         v-else
@@ -133,7 +141,11 @@ const nameWithOwner = computed(() => {
         <button
           type="button"
           tabindex="-1"
-          :class="[css.stackCard_member, member.pullRequest.id === selectedMember && css.stackCard_member_selected]"
+          :class="[
+            css.stackCard_member,
+            member.pullRequest.id === selectedMember && css.stackCard_member_selected,
+            stack.unmatched?.has(member.pullRequest.id) && css.stackCard_member_unmatched,
+          ]"
           :aria-current="member.pullRequest.id === selectedMember ? 'true' : undefined"
           @mousedown.prevent
           @click.stop="emit('open', member.pullRequest.id)"
@@ -325,6 +337,10 @@ const nameWithOwner = computed(() => {
   .stackCard_number {
     color: $color-fg-2;
   }
+}
+
+.stackCard_member_unmatched {
+  opacity: 0.4;
 }
 
 .stackCard_memberTitle {

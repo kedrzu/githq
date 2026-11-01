@@ -45,6 +45,11 @@ export interface MyWorkRow {
     readonly nested: readonly PullRequestItem[];
     /** Set on a stack's entry: the whole stack, whatever its pull requests' states. */
     readonly stack: PullRequestStack | null;
+    /**
+     * On a stack's entry the filter matches only some pull requests of: the ids of the others, shown de-emphasised (D3,
+     * SP25).
+     */
+    readonly unmatched?: ReadonlySet<string> | null;
 }
 
 /** What "my work" is built from. */
@@ -69,11 +74,11 @@ export interface BuildMyWorkParams {
  * A stack with two open pull requests or more is one entry, whole (stacked PRs D3, D7): in the first group any of its
  * pull requests is in, nesting every open pull request of the stack — those in no group too (someone else's, on a stack
  * my review was asked on) — and none of them is a row anywhere else. The entry takes the place its best sorted pull
- * request would. A stacked pull request is not nested under an assigned issue (D12 is still to come); a stack with
+ * request the filter matches would. A stacked pull request is not nested under an assigned issue (D12 is still to come); a stack with
  * one open pull request left is a plain row.
  *
  * The filter keeps a top-level row when it, or a pull request nested under it, matches — a stack's entry when any of
- * its pull requests would as a row of its group:
+ * its pull requests would as a row of its group, the others then de-emphasised (`unmatched`, SP25):
  *
  * - `needsMe`: every review requested from me, my pull requests with failing checks, changes requested or
  *   conflicts, every issue assigned to me — never a mention alone;
@@ -148,10 +153,28 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
     for (const group of MY_WORK_GROUPS) {
         const rows: MyWorkRow[] = [];
         for (const item of rowsByGroup.get(group) ?? []) {
-            const row = getRow(item);
-            if (row && matchesFilter(row, group, filter)) {
-                rows.push(row);
+            const stackId = item.kind === 'pullRequest' ? item.stack?.id : undefined;
+            const members = stackId === undefined ? undefined : stackMembers.get(stackId);
+            const row: MyWorkRow = { item, nested: nestedByIssue.get(item.id) ?? [], stack: null };
+            // A stack's entry is placed by the best sorted of its pull requests that matches; the others place nothing.
+            if (!matchesFilter(row, group, filter) || (stackId !== undefined && entered.has(stackId))) {
+                continue;
             }
+
+            if (stackId === undefined || !members) {
+                rows.push(row);
+                continue;
+            }
+
+            entered.add(stackId);
+            const unmatched = members.filter(member => !matchesFilter(toRow(member), group, filter));
+            rows.push({
+                // An entry has two open pull requests or more: there is always one to open.
+                item: getStackPullRequestToOpen(members) ?? item,
+                nested: members,
+                stack: params.stacks.get(stackId) ?? null,
+                unmatched: unmatched.length > 0 ? new Set(unmatched.map(member => member.id)) : null,
+            });
         }
 
         groups.push({ group, arrived: membership[group] !== undefined, rows });
@@ -160,27 +183,11 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
     }
 
     return { groups, counts: { ...counts, total } };
+}
 
-    /** The row an item gives: a stack's entry for its best sorted pull request, nothing for the rest of them. */
-    function getRow(item: Item): MyWorkRow | null {
-        const stackId = item.kind === 'pullRequest' ? item.stack?.id : undefined;
-        const members = stackId === undefined ? undefined : stackMembers.get(stackId);
-        if (stackId === undefined || !members) {
-            return { item, nested: nestedByIssue.get(item.id) ?? [], stack: null };
-        }
-
-        if (entered.has(stackId)) {
-            return null;
-        }
-
-        entered.add(stackId);
-        return {
-            // An entry has two open pull requests or more: there is always one to open.
-            item: getStackPullRequestToOpen(members) ?? item,
-            nested: members,
-            stack: params.stacks.get(stackId) ?? null,
-        };
-    }
+/** A pull request as a row of its own, as the filter judges a stack's. */
+function toRow(item: PullRequestItem): MyWorkRow {
+    return { item, nested: [], stack: null };
 }
 
 /** A stack's open pull requests in its order, as the local copy holds them now. */
@@ -211,11 +218,6 @@ function firstAssignedIssue(pr: PullRequestItem, assignedOrder: ReadonlyMap<stri
 }
 
 function matchesFilter(row: MyWorkRow, group: MyWorkGroup, filter: MyWorkFilter): boolean {
-    if (row.stack) {
-        // A stack's entry stays when any of its pull requests would, as a row of the group.
-        return row.nested.some(item => matchesFilter({ item, nested: [], stack: null }, group, filter));
-    }
-
     switch (filter) {
         case 'all':
             return true;

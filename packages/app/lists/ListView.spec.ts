@@ -361,6 +361,25 @@ test('x on a collapsed entry takes all its pull requests, on a row inside that o
     expect(view.opened.at(-1)).toBe('p2');
 });
 
+test('⇧J crosses a collapsed entry in one step adding all its pull requests, also with an item open', async () => {
+    const view = mount(STACKED, 'list', { followOpened: true });
+
+    await userEvent.keyboard('j{Enter}{Shift>}J{/Shift}');
+    expect(view.checkedIds.value).toEqual(['a1', 'p1', 'p2', 'p3']);
+    await expect.poll(selectedCard).toBe('stack S_1 (checked)');
+
+    await userEvent.keyboard('{Shift>}J{/Shift}');
+    expect(view.checkedIds.value).toEqual(['a1', 'p1', 'p2', 'p3', 'a2']);
+});
+
+test('⇧J goes through an expanded entry row by row, the entry half marked while only some of them are taken', async () => {
+    const view = mount(STACKED, 'list');
+
+    await userEvent.keyboard('jj{ArrowRight}k{Shift>}JJ{/Shift}');
+    expect(view.checkedIds.value).toEqual(['a1', 'p1']);
+    await expect.poll(rowTexts).toEqual(['a1', 'stack S_1 (half)', 'p1', 'p2', 'p3', 'a2']);
+});
+
 /** Native drag and drop of `card` onto `column`, as the browser fires it. */
 function drag(card: Element | null, column: Element) {
     const dataTransfer = new DataTransfer();
@@ -378,6 +397,19 @@ interface CardProps {
     readonly expanded: boolean;
     readonly selectedMember: string | null;
     readonly openMember: (id: string) => void;
+}
+
+/** What the test's row is drawn from: `ListView`'s row slot props it uses. */
+interface RowProps {
+    readonly entry: ListEntry<string>;
+    readonly stack: ListStack | null;
+    readonly checked: boolean;
+    readonly halfChecked: boolean;
+}
+
+/** How a stack's entry in the test says it is selected. */
+function getMark(checked: boolean, halfChecked: boolean) {
+    return checked ? ' (checked)' : halfChecked ? ' (half)' : '';
 }
 
 interface MountOptions {
@@ -461,8 +493,8 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                     onListed: (ids: readonly string[]) => listed.push(ids),
                 },
                 {
-                    row: ({ entry, stack }: { entry: ListEntry<string>; stack: ListStack | null }) =>
-                        h('span', stack ? `stack ${stack.id}` : entry.value),
+                    row: ({ entry, stack, checked, halfChecked }: RowProps) =>
+                        h('span', stack ? `stack ${stack.id}${getMark(checked, halfChecked)}` : entry.value),
                     card: (props: CardProps) =>
                         props.stack
                             ? h('span', [
