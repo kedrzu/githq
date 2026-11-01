@@ -195,20 +195,61 @@ test('the items handed over walk a stack’s pull requests one by one, never the
     expect(view.listed.at(-1)).toEqual(['a1', 'p1', 'p2', 'p3', 'a2']);
 });
 
-test('Enter or a click on an entry opens the pull request it names; with one open, moving onto it opens that one', async () => {
+test('Enter or a click on an entry opens the pull request it names', async () => {
     const view = mount(STACKED, 'list');
 
     await userEvent.keyboard('jj{Enter}');
     expect(view.opened).toEqual(['p2']);
 
-    view.openedId.value = 'p2';
-    await userEvent.keyboard('k');
-    view.openedId.value = 'a1';
     await userEvent.keyboard('j');
-    expect(view.opened).toEqual(['p2', 'a1', 'p2']);
-
     await userEvent.click(page.getByText('stack S_1'));
-    expect(view.opened.at(-1)).toBe('p2');
+    expect(view.opened).toEqual(['p2', 'p2']);
+});
+
+test('with an item open, j/k walk a collapsed entry’s pull requests one by one, entering it at its first from above and at its last from below; with none open, entry by entry', async () => {
+    const view = mount(
+        [
+            [
+                'todo',
+                [
+                    'a1',
+                    { stack: 'S_1', members: ['p1', 'p2', 'p3'], open: 'p2' },
+                    { stack: 'S_2', members: ['q1', 'q2'], open: 'q1' },
+                    'a2',
+                ],
+            ],
+        ],
+        'list',
+        { followOpened: true },
+    );
+
+    await userEvent.keyboard('j{Enter}');
+    for (const key of ['j', 'j']) {
+        await userEvent.keyboard(key);
+    }
+
+    // The entry stays selected while the opened pull request moves inside it.
+    expect(selectedCard()).toBe('stack S_1');
+    for (const key of ['j', 'j', 'j', 'j', 'k', 'k', 'k']) {
+        await userEvent.keyboard(key);
+    }
+
+    expect(view.opened).toEqual(['a1', 'p1', 'p2', 'p3', 'q1', 'q2', 'a2', 'q2', 'q1', 'p3']);
+    expect(selectedCard()).toBe('stack S_1');
+
+    view.openedId.value = null;
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('stack S_2');
+    expect(view.opened).toHaveLength(10);
+});
+
+test('keys pressed before the opened item catches up walk on from the last one they opened', async () => {
+    const view = mount(STACKED, 'list');
+    await userEvent.keyboard('jj{Enter}');
+    view.openedId.value = 'p2';
+
+    await userEvent.keyboard('jj');
+    expect(view.opened).toEqual(['p2', 'p3', 'a2']);
 });
 
 test('an item opened inside a collapsed entry selects the entry; once expanded, its row', async () => {
@@ -259,6 +300,8 @@ interface MountOptions {
     readonly contextMenu?: boolean;
     /** The app's services, shared by the lists mounted in one test; a container of its own when not given. */
     readonly container?: VueContainer;
+    /** The item opened is the one the list is told is open, as the app's item view does. */
+    readonly followOpened?: boolean;
 }
 
 test('a right-click on a row opens the context menu for it alone and selects it; on one of the items edited together, for all of them', async () => {
@@ -322,7 +365,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                         checkedIds.value = value;
                     },
                     openedId: openedId.value,
-                    onOpen: (id: string) => opened.push(id),
+                    onOpen: (id: string) => {
+                        opened.push(id);
+                        if (options.followOpened) {
+                            openedId.value = id;
+                        }
+                    },
                     onMove: (move: ListMove) => moves.push(move),
                     onListed: (ids: readonly string[]) => listed.push(ids),
                 },

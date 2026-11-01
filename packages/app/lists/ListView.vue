@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9); `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk a collapsed entry's pull requests one by one, entering it at its first from above and at its last from below; `x` and the context menu take all its pull requests (D20). The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -355,7 +355,68 @@ function step(by: 1 | -1) {
 
   const index = selectedKey.value === null ? -1 : keys.indexOf(selectedKey.value);
   const next = index === -1 ? 0 : Math.min(Math.max(index + by, 0), keys.length - 1);
+  if (props.layout === 'list' && index !== -1 && props.openedId != null) {
+    return stepOpened(keys, index, next, by);
+  }
+
   return go(keys[next] ?? null);
+}
+
+/**
+ * The items `j`/`k` opened inside collapsed entries that the opened item has not caught up with yet, oldest first:
+ * keys pressed faster than an item opens walk on from the last of them.
+ */
+const walking: string[] = [];
+watch(
+  () => props.openedId,
+  id => {
+    const caughtUp = id == null ? -1 : walking.indexOf(id);
+    walking.splice(0, caughtUp === -1 ? walking.length : caughtUp + 1);
+  },
+);
+
+/**
+ * With an item open over the list: its pull requests one by one (D9) — through a collapsed stack's entry member by
+ * member, the entry staying selected, into one from above at its first and from below at its last.
+ */
+function stepOpened(keys: readonly string[], index: number, next: number, by: 1 | -1) {
+  const openedId = walking.at(-1) ?? props.openedId ?? null;
+  const members = getCollapsedMembers(keys[index]);
+  const inside = openedId === null ? -1 : members.indexOf(openedId);
+  const sibling = inside === -1 ? undefined : members[inside + by];
+  if (sibling !== undefined) {
+    return openInEntry(keys[index] ?? null, sibling);
+  }
+
+  const key = keys[next] ?? null;
+  const entered = getCollapsedMembers(key);
+  const member = by === 1 ? entered[0] : entered.at(-1);
+  if (next !== index && member !== undefined) {
+    return openInEntry(key, member);
+  }
+
+  // Out of collapsed entries: the selected entry is what the next key steps from.
+  walking.length = 0;
+  return go(key);
+}
+
+/** The pull requests of a collapsed stack's entry, in order; none for any other entry. */
+function getCollapsedMembers(key: string | null | undefined): readonly string[] {
+  const current = key == null ? undefined : placed.value.get(key);
+  return current?.stack && !expandedStacks.has(current.stack.id) ? current.ids : [];
+}
+
+/** Selects the entry `key` with `id`, one of the items it stands for, and opens that item. */
+function openInEntry(key: string | null, id: string) {
+  selectedKey.value = key;
+  selectedId.value = id;
+  if (id !== (walking.at(-1) ?? props.openedId)) {
+    walking.push(id);
+    emit('open', id);
+  }
+
+  void nextTick(scrollToSelected);
+  return id;
 }
 
 /** On the board: to the entry at the same height in the next column that has any. */
