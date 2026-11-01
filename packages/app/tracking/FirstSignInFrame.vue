@@ -7,6 +7,7 @@ import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Stepper from '@/components/Stepper.vue';
 import Wordmark from '@/components/Wordmark.vue';
+import { WINDOW_CONTROLS_OVERLAID, WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import * as l from './FirstSignInFrame.loc.js';
 
@@ -28,8 +29,11 @@ const current = computed(() => (props.step === 'choose' ? 1 : 2));
 
 <template>
   <div :class="css.firstSignInFrame">
-    <header :class="css.firstSignInFrame_top">
-      <Wordmark />
+    <header
+      :class="css.firstSignInFrame_top"
+      v-bind="WINDOW_DRAG_REGION"
+    >
+      <Wordmark :class="WINDOW_CONTROLS_OVERLAID && css.firstSignInFrame_name_clearOfControls" />
       <Stepper
         :steps="steps"
         :current="current"
@@ -66,6 +70,11 @@ const current = computed(() => (props.step === 'choose' ? 1 : 2));
   height: 56px;
   padding: 0 $spacing-24;
   border-bottom: 1px solid $color-border;
+}
+
+// Past macOS's window controls, with the stepper still in the middle.
+.firstSignInFrame_name_clearOfControls {
+  margin-left: 56px;
 }
 
 .firstSignInFrame_account {

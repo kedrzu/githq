@@ -49,7 +49,7 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
     let navigation_app = app.clone();
     let new_window_app = app.clone();
 
-    WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
         .title("githq")
         .inner_size(1280.0, 800.0)
         .min_inner_size(900.0, 600.0)
@@ -67,8 +67,17 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         .on_new_window(move |url, _features| {
             let _ = external::open(&new_window_app, &url);
             NewWindowResponse::Deny
-        })
-        .build()?;
+        });
+
+    // On macOS the window controls sit in the sidebar instead of a bar of their own, in the strip the app leaves for
+    // them (`shell/windowControls.ts`). With no title bar, the page says what drags the window.
+    #[cfg(target_os = "macos")]
+    let window = window
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(10.0, 20.0));
+
+    window.build()?;
 
     Ok(())
 }
