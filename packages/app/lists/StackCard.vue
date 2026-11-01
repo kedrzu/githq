@@ -10,6 +10,7 @@ import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackCard.loc.js';
 import StackState from './StackState.vue';
+import StackTone from './StackTone.vue';
 import { useStackFacts } from './useStackFacts.js';
 
 const props = withDefaults(
@@ -143,11 +144,7 @@ const nameWithOwner = computed(() => {
           @mousedown.prevent
           @click.stop="emit('open', member.pullRequest.id)"
         >
-          <component
-            :is="member.icon"
-            :class="[css.stackCard_stateIcon, css[`stackCard_tone_${member.tone}`]]"
-            aria-hidden="true"
-          />
+          <StackTone :look="member" />
           <span :class="css.stackCard_number">#{{ member.pullRequest.number }}</span>
           <span :class="css.stackCard_memberTitle">{{ member.pullRequest.title }}</span>
         </button>
@@ -249,36 +246,6 @@ const nameWithOwner = computed(() => {
   line-height: 18px;
   color: $color-fg;
   -webkit-box-orient: vertical;
-}
-
-.stackCard_stateIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
-}
-
-.stackCard_tone_danger {
-  color: $color-red;
-}
-
-.stackCard_tone_warning {
-  color: $color-amber;
-}
-
-.stackCard_tone_success {
-  color: $color-green;
-}
-
-.stackCard_tone_done {
-  color: $color-purple;
-}
-
-.stackCard_tone_muted {
-  color: $color-fg-2;
-}
-
-.stackCard_tone_dim {
-  color: $color-fg-dim;
 }
 
 .stackCard_members {

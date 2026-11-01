@@ -579,9 +579,10 @@ async function track() {
         :new-issue-key="NEW_ISSUE_KEY"
       />
     </template>
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>

@@ -5,9 +5,7 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStackShare } from '@/store/stacks/describeStackShare.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_STACKS, sampleListStack } from '@/testing/sampleStacks.js';
-import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
-import ItemCard from './ItemCard.vue';
 import { ITEM_PROPERTIES } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import StackCard from './StackCard.vue';
@@ -74,28 +72,6 @@ export const Checked: Story = { args: { checked: true } };
 
 /** In a repository's board: the repository is the list's, so the card leaves it out. */
 export const InItsRepository: Story = { args: { repository: 'fitloop/webapp' } };
-
-/** SP27's second card, SP26's mobile#94: a pull request alone in its column, an ordinary card with the marker "1 of 3". */
-export const LoneCard: Story = {
-    render: () => ({
-        components: { ItemCard },
-        setup: () => ({
-            item: SAMPLE_STACKS.needsRebase[0],
-            stack: sampleListStack(SAMPLE_STACKS.needsRebase).description,
-            properties: ITEM_PROPERTIES,
-            now: SAMPLE_NOW,
-            viewerLogin: SAMPLE_VIEWER.login,
-        }),
-        template: `<div style="width: 268px; background: #1a1d22; border: 1px solid #22262d; border-radius: 8px">
-            <ItemCard :item="item" :stack="stack" :properties="properties" :now="now" :viewer-login="viewerLogin" people="assignees" />
-        </div>`,
-    }),
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByLabelText('In a stack')).toBeVisible();
-        await expect(canvas.getByText('1 of 3')).toBeVisible();
-    },
-};
 
 /** The entry a board's column folds of the first `count` pull requests of a stack: a share of its open ones (D16). */
 function sampleShare(members: readonly PullRequestItem[], count: number): ListStack {

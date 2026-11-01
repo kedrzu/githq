@@ -1,3 +1,4 @@
+import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
@@ -96,6 +97,30 @@ interface HeldTextParams {
     readonly open: number;
     readonly number: number;
 }
+
+/** What a share's held sentence names. */
+interface ShareHeldTextParams {
+    readonly number: number;
+}
+
+/** What holds a stack, as its held sentence names it: a draft, running checks, a review awaited, or that it blocks. */
+type HeldReason = 'checks' | 'draft' | 'other' | 'review';
+
+/** The stack's held sentence for each reason: "2 of 4 ready, #1206 is a draft" (SP14). */
+const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
+    draft: l.heldByDraft,
+    checks: l.heldByChecks,
+    review: l.heldByReview,
+    other: l.held,
+};
+
+/** A share's held sentence for each reason, without the stack's count: "#1206 is a draft" (SP24). */
+const SHARE_HELD_TEXTS: Readonly<Record<HeldReason, Translation<ShareHeldTextParams>>> = {
+    draft: l.shareHeldByDraft,
+    checks: l.shareHeldByChecks,
+    review: l.shareHeldByReview,
+    other: l.shareHeld,
+};
 
 /**
  * What a row or a card of a stack's entry says about it (D14, D15, D16, SP14, SP24): how many pull requests it holds,
@@ -299,41 +324,31 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     /** What holds a share, as {@link getHeldText} names it: "#1206 blocks", "#1216 checks running". */
     function getShareHeldText(blocker: StackBlocker): string {
-        const params = { number: blocker.number };
-        switch (blocker.kind) {
-            case 'draft':
-                return t(l.shareHeldByDraft, params);
-            case 'moving':
-                return t(l.shareHeldByChecks, params);
-            case 'waiting':
-                return blocker.waitingForReview ? t(l.shareHeldByReview, params) : t(l.shareHeld, params);
-            case 'broken':
-            case 'ready':
-            case 'merged':
-            case 'closed':
-                return t(l.shareHeld, params);
-            default:
-                return assertNever(blocker.kind);
-        }
+        return t(SHARE_HELD_TEXTS[getHeldReason(blocker)], { number: blocker.number });
     }
 
     /** The held sentence names what holds the stack (SP14): "#1216 checks running", "#97 waiting for review". */
     function getHeldText(blocker: StackBlocker, params: HeldTextParams): string {
-        switch (blocker.kind) {
-            case 'draft':
-                return t(l.heldByDraft, params);
-            case 'moving':
-                return t(l.heldByChecks, params);
-            case 'waiting':
-                return blocker.waitingForReview ? t(l.heldByReview, params) : t(l.held, params);
-            case 'broken':
-            case 'ready':
-            case 'merged':
-            case 'closed':
-                return t(l.held, params);
-            default:
-                return assertNever(blocker.kind);
-        }
+        return t(HELD_TEXTS[getHeldReason(blocker)], params);
+    }
+}
+
+/** What a held sentence names about the pull request holding the stack (SP14). */
+function getHeldReason(blocker: StackBlocker): HeldReason {
+    switch (blocker.kind) {
+        case 'draft':
+            return 'draft';
+        case 'moving':
+            return 'checks';
+        case 'waiting':
+            return blocker.waitingForReview ? 'review' : 'other';
+        case 'broken':
+        case 'ready':
+        case 'merged':
+        case 'closed':
+            return 'other';
+        default:
+            return assertNever(blocker.kind);
     }
 }
 

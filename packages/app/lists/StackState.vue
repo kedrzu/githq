@@ -3,6 +3,7 @@
 import type { StackPip } from '@/store/stacks/describeStack.js';
 
 import StackPips from './StackPips.vue';
+import StackTone from './StackTone.vue';
 import type { StackStateFact } from './useStackFacts.js';
 
 withDefaults(
@@ -23,63 +24,28 @@ withDefaults(
     :pips="pips"
     :filled="filled"
   />
-  <span :class="[css.stackState, compact && css.stackState_compact, css[`stackState_${state.tone}`]]">
-    <component
-      :is="state.icon"
-      :class="css.stackState_icon"
-      aria-hidden="true"
-    />
+  <StackTone
+    :look="state"
+    :class="[css.stackState, compact && css.stackState_compact]"
+  >
     {{ state.text }}
-  </span>
+  </StackTone>
 </template>
 
 <style lang="scss" module="css">
 .stackState {
-  display: inline-flex;
+  --stack-tone-icon-size: 12.5px;
+
   flex: none;
   gap: $spacing-5;
-  align-items: center;
 }
 
 .stackState_compact {
+  --stack-tone-icon-size: 12px;
+
   flex: initial;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-}
-
-.stackState_danger {
-  color: $color-red;
-}
-
-.stackState_warning {
-  color: $color-amber;
-}
-
-.stackState_success {
-  color: $color-green;
-}
-
-.stackState_done {
-  color: $color-purple;
-}
-
-.stackState_muted {
-  color: $color-fg-2;
-}
-
-.stackState_dim {
-  color: $color-fg-dim;
-}
-
-.stackState_icon {
-  flex: none;
-  width: 12.5px;
-  height: 12.5px;
-
-  .stackState_compact & {
-    width: 12px;
-    height: 12px;
-  }
 }
 </style>

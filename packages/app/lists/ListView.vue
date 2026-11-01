@@ -140,6 +140,39 @@ interface Placed {
   readonly moved: readonly ListEntry<T>[];
 }
 
+/** A top-level entry to place, in its group. */
+interface PlaceRowParams {
+  readonly row: ListRow<T>;
+  readonly group: ListGroup<T>;
+  /** On the board, the group's column. */
+  readonly column: number;
+}
+
+/** An entry to place as it is unless it is more, under its row. */
+interface BaseParams {
+  readonly entry: ListEntry<T>;
+  readonly parent: ListRow<T> | null;
+  readonly depth: number;
+}
+
+/** A stack's pull requests to place under what expands them. */
+interface PlaceMembersParams {
+  /** The entry whose `nested` they are. */
+  readonly of: ListRow<T>;
+  readonly memberOf: ListStack;
+  readonly parent: ListRow<T>;
+  readonly depth: number;
+  /** On a rail below what expands them (D12, D23). */
+  readonly rail: boolean;
+}
+
+/** The entry a row or a card is drawn for, and the top-level row and group it is under. */
+interface GetSlotPropsParams {
+  readonly current: Placed;
+  readonly row: ListRow<T>;
+  readonly group: ListGroup<T>;
+}
+
 /** An entry being dragged. */
 interface Dragged {
   readonly key: string;
@@ -164,7 +197,7 @@ const shownByRow = computed(() => {
   const shown = new Map<string, Placed[]>();
   for (const [column, group] of props.groups.entries()) {
     for (const row of group.rows) {
-      shown.set(row.key, placeRow(row, group, column));
+      shown.set(row.key, placeRow({ row, group, column }));
     }
   }
 
@@ -618,7 +651,7 @@ function toggleStack(stack: ListStack) {
  * below it while expanded (D23); then a stack's entry's pull requests while expanded, or a row's own nested ones. On
  * the board a stack's card lists its pull requests inside it.
  */
-function placeRow(row: ListRow<T>, group: ListGroup<T>, column: number): Placed[] {
+function placeRow({ row, group, column }: PlaceRowParams): Placed[] {
   const list = props.layout === 'list';
   const stacks = (row.stacks ?? []).flatMap(nested => (nested.stack ? [{ row: nested, stack: nested.stack }] : []));
   const header = list && stacks.length === 1 ? (stacks[0] ?? null) : null;
@@ -626,7 +659,7 @@ function placeRow(row: ListRow<T>, group: ListGroup<T>, column: number): Placed[
   const ids = stack ? row.nested.map(nested => nested.id) : [row.id];
   const shown: Placed[] = [
     {
-      ...base(row, null, 0),
+      ...base({ entry: row, parent: null, depth: 0 }),
       stack,
       header: header?.stack ?? null,
       nested: row.nested,
@@ -637,34 +670,34 @@ function placeRow(row: ListRow<T>, group: ListGroup<T>, column: number): Placed[
     },
   ];
   if (header) {
-    shown.push(...placeMembers(header.row, header.stack, row, 1, true));
+    shown.push(...placeMembers({ of: header.row, memberOf: header.stack, parent: row, depth: 1, rail: true }));
   } else {
     for (const nested of stacks) {
       const memberIds = nested.row.nested.map(member => member.id);
       shown.push(
         {
-          ...base(nested.row, row, 1),
+          ...base({ entry: nested.row, parent: row, depth: 1 }),
           stack: nested.stack,
           nested: nested.row.nested,
           ids: memberIds,
           walked: memberIds,
           openId: nested.stack.open,
         },
-        ...placeMembers(nested.row, nested.stack, nested.row, 2, true),
+        ...placeMembers({ of: nested.row, memberOf: nested.stack, parent: nested.row, depth: 2, rail: true }),
       );
     }
   }
 
   if (stack) {
-    shown.push(...placeMembers(row, stack, row, 1, false));
+    shown.push(...placeMembers({ of: row, memberOf: stack, parent: row, depth: 1, rail: false }));
   } else {
-    shown.push(...row.nested.map(nested => base(nested, row, 1)));
+    shown.push(...row.nested.map(nested => base({ entry: nested, parent: row, depth: 1 })));
   }
 
   return shown;
 
   /** An entry as it is placed unless it is more. */
-  function base(entry: ListEntry<T>, parent: ListRow<T> | null, depth: number): Placed {
+  function base({ entry, parent, depth }: BaseParams): Placed {
     return {
       entry,
       group,
@@ -684,23 +717,17 @@ function placeRow(row: ListRow<T>, group: ListGroup<T>, column: number): Placed[
   }
 
   /** The rows of a stack's pull requests under what expands it, while it is expanded in the list. */
-  function placeMembers(
-    of: ListRow<T>,
-    memberOf: ListStack,
-    parent: ListRow<T>,
-    depth: number,
-    rail: boolean,
-  ): Placed[] {
+  function placeMembers({ of, memberOf, parent, depth, rail }: PlaceMembersParams): Placed[] {
     if (!list || !isExpanded(memberOf)) {
       return [];
     }
 
-    return of.nested.map(member => ({ ...base(member, parent, depth), memberOf, rail }));
+    return of.nested.map(member => ({ ...base({ entry: member, parent, depth }), memberOf, rail }));
   }
 }
 
 /** What a row or a card is drawn from. */
-function getSlotProps(current: Placed, row: ListRow<T>, group: ListGroup<T>): ListSlotProps<T> {
+function getSlotProps({ current, row, group }: GetSlotPropsParams): ListSlotProps<T> {
   const key = current.entry.key;
   return {
     entry: current.entry,
@@ -1045,7 +1072,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   </button>
                   <slot
                     name="row"
-                    v-bind="getSlotProps(current, row, group)"
+                    v-bind="getSlotProps({ current, row, group })"
                   />
                 </li>
               </template>
@@ -1120,7 +1147,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
               >
                 <slot
                   name="card"
-                  v-bind="getSlotProps(current, row, group)"
+                  v-bind="getSlotProps({ current, row, group })"
                 />
               </li>
             </template>

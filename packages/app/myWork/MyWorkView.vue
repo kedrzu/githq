@@ -7,6 +7,8 @@ import { computed } from 'vue';
 import { useCommands } from '@/commands/useCommands.js';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
+import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
+import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
@@ -87,7 +89,7 @@ const options = defineModel<ListViewOptions<MyWorkGrouping, ItemSort>>('options'
 
 defineSlots<{
   /** The actions of the items edited together, while there are any. */
-  selection?(props: { ids: readonly string[] }): unknown;
+  selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
 }>();
@@ -251,6 +253,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
         v-if="checkedIds.length > 0"
         name="selection"
         :ids="checkedIds"
+        :span="getSelectionSpan(groups, checkedIds)"
       />
       <SegmentedTabs
         v-model="filter"

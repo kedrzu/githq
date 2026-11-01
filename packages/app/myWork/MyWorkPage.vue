@@ -85,9 +85,10 @@ const waitingCount = computed(() => {
     @open="list.open"
     @listed="list.setListed"
   >
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>

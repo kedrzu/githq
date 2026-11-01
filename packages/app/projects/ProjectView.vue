@@ -26,6 +26,8 @@ import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
+import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import * as propertyLabels from '@/lists/ItemProperty.loc.js';
 import ItemCard from '@/lists/ItemCard.vue';
@@ -134,7 +136,7 @@ defineSlots<{
   /** The entries of the menu the title opens (`ListToolbar`'s `titleMenu`). */
   menu?(): unknown;
   /** The actions of the items edited together, while there are any. */
-  selection?(props: { ids: readonly string[] }): unknown;
+  selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
 }>();
@@ -276,6 +278,7 @@ function addDraft(title: string, group: string | null) {
         v-if="checkedIds.length > 0"
         name="selection"
         :ids="checkedIds"
+        :span="getSelectionSpan(groups ?? [], checkedIds)"
       />
       <nav
         v-else-if="tabs.length > 0"

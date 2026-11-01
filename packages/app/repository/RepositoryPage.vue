@@ -267,9 +267,10 @@ async function track() {
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />
     </template>
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>

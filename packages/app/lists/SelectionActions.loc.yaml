@@ -5,6 +5,30 @@ selected:
   en:
     one: 1 selected
     many: '{count} selected'
+selectedInEntries:
+  en: '{selected}, in {entries}'
+selectedInEntriesAndRows:
+  en: '{selected}, in {entries} and {rows}'
+pullRequestsSelected:
+  plural: count
+  en:
+    one: 1 pull request selected
+    many: '{count} pull requests selected'
+itemsSelected:
+  plural: count
+  en:
+    one: 1 item selected
+    many: '{count} items selected'
+entries:
+  plural: count
+  en:
+    one: 1 entry
+    many: '{count} entries'
+rows:
+  plural: count
+  en:
+    one: 1 row
+    many: '{count} rows'
 assign:
   en: Assign
 assignees:
@@ -38,6 +62,11 @@ items:
   en:
     one: 1 item
     many: '{count} items'
+pullRequests:
+  plural: count
+  en:
+    one: 1 pull request
+    many: '{count} pull requests'
 closeCommand:
   plural: count
   en:
