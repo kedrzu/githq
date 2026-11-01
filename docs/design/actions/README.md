@@ -20,14 +20,28 @@ explains it, with no page loads in between.
 
 The obvious list, recent failed runs, answers the wrong question. A deploy fails at 3am, the morning brings
 twenty passing runs of other workflows, and the failure has scrolled away while production is still on the old
-version. Looking at the latest commit misses it too, because that commit's checks are green. What is actually
-broken is a workflow whose latest finished run failed, so githq asks about each workflow rather than about
-runs or commits. [The proposal and what it was tested on](DECISIONS.md#d1).
+version. Looking at the latest commit misses it too, because that commit's checks are green. So githq asks about
+each workflow rather than about runs or commits.
 
-Not every failure matters equally. Most runs in a busy repository can belong to bots and pull requests, and a
-failure on somebody's branch is that pull request's business. A release, however, runs on a tag and not on the
-default branch, so "default branch only" would hide exactly the failure you most want to see. Where to draw
-this line is still open.
+The same workflow can run on `main` and on a feature branch, and a pass on the branch says nothing about `main`.
+So state is kept per workflow and per group of refs. A group rather than a single ref, because a release tag runs
+only once: if `v1.0-rc.1` fails and `v1.0-rc.3` passes, the release is fine again. A cancelled run says nothing
+either way. [The rule and the runs it was tested on](DECISIONS.md#d1).
+
+Each repository can say, with wildcards, which refs light the counters, for example only `main` and `release/*`.
+That setting only affects counters: every workflow and run stays visible in the repository, so a wrong pattern
+cannot hide a failure from someone looking for it. [What this setting does, and what is still open
+about it](DECISIONS.md#d5).
+
+## Where you see it
+
+Only repositories you already track are covered. [The owner's call](DECISIONS.md#d4).
+
+A repository's page gets a third tab next to issues and pull requests, listing its workflows one per row with
+their recent runs, unlike GitHub's single feed where every workflow's runs are mixed together. A repository
+with something broken gets a red marker in the sidebar. And because you may not know which repository to look
+in, one sidebar entry gives the total and opens everything broken across repositories.
+[How this was chosen, still a proposal](DECISIONS.md#d6).
 
 ## How it fits what GitHub allows
 
@@ -43,5 +57,5 @@ open, so this design does not promise that.
 
 ## How far this goes
 
-Not settled yet. To be decided with the owner: where the signal appears, which failures count, which
-repositories are covered, and what the failure screen does that GitHub's does not.
+Not settled yet. To be decided with the owner: where things appear in the sidebar, the default refs before any
+configuration, and what the failure screen does that GitHub's does not.

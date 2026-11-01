@@ -10,19 +10,28 @@ knowing it was rejected is not.
 
 ## D1
 
-**A workflow is broken when its latest finished run failed; the overview lists workflows, not runs or
-commits.** (2026-11-01, proposal of the design agent, not confirmed by the owner)
+**A workflow is broken for a ref pattern when its latest run on a ref matching that pattern, with a verdict,
+failed. Runs that were cancelled or skipped give no verdict.** (2026-11-01, proposal of the design agent, not
+confirmed by the owner)
 
-**Why.** A run is one observation of a workflow. A failed nightly or deploy stays broken after later runs of
-other workflows and after new green commits.
+**Why.** A run is one observation of a workflow, and a workflow can run on many refs: a green run on a feature
+branch says nothing about `main`. Grouping by pattern and not by exact ref is what lets a one-shot tag recover.
 
 > **Checked 2026-11-01 (live, `kedrzu/githq`, last 100 runs):** CLA 74 runs (events `issue_comment`,
-> `pull_request_target`), 1 failed; Deploy 23 (`push`), 4 failed; Release 3 (`push`), 1 failed. Failed Release
-> run `41258592915` has `head_branch` `v0.1.0-rc.1`, a tag, so a default-branch filter would drop it; it was
-> followed by a successful run on a later tag. A busy bot workflow takes most of a run list, and one page of
-> runs can lose a rarely run workflow.
+> `pull_request_target`), 1 failed; Deploy 23 (`push`), 4 failed; Release 3 (`push`), 1 failed. A busy bot
+> workflow takes most of a run list, and one page of runs can lose a rarely run workflow.
+
+> **Checked 2026-11-01 (live, same repo):** Release ran on `v0.1.0-rc.1` failure, `v0.1.0-rc.2` cancelled,
+> `v0.1.0-rc.3` success. Per exact ref, rc.1 would stay red forever because a tag never runs again; per pattern
+> `v*` it recovers at rc.3. Deploy ran on both `main` and `chore/deploy-workflow`.
+
+**Known cost.** Under `release/*`, a pass on `release/1.3` hides a failure on `release/1.2`. Not yet put to the
+owner.
 
 **Rejected.**
+- A workflow is broken when its latest finished run on any ref failed: a feature branch flips the state of
+  `main` ([history](history/DECISIONS.md#d1)).
+- One state per exact ref: a tag that failed never recovers.
 - A feed of recent failed runs: a failure scrolls away while still broken, and a failure already fixed by a
   later run stays listed.
 - The check rollup of the default branch's latest commit: a new green commit hides a broken nightly or deploy.
@@ -82,3 +91,55 @@ existing 60s interval costs only when something changed.
 
 **Rejected.**
 - Check-run annotations as the pointer into the log: see the check above.
+
+## D4
+
+**Only tracked repositories are covered.** (2026-11-01, owner)
+
+**Why.** The owner's call. It reuses the set githq already polls (`packages/app/tracking/TrackingTypes.ts`).
+
+**Rejected.**
+- A separate list of repositories watched for Actions only: the owner does not need it.
+
+## D5
+
+**Each repository has ref patterns with wildcards, which decide what lights the counters and nothing else.
+Everything stays visible in the repository's workflow list.** (2026-11-01, owner for per-repository wildcards
+and for turning off counters; "counters only" as the owner's wording read by the design agent, not confirmed)
+
+**Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
+wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
+
+**Open.** The default before any configuration. Proposal: the default branch and all tags, without runs started
+by a pull request. Where patterns are stored: see the check below.
+
+> **Checked 2026-11-01:** the tracked list lives in the `meta` store of the local database
+> (`packages/app/store/IndexedDbPersistence.ts:233`), which is deleted and rebuilt on any schema version change
+> (`:24-29`, `:323`), and it does not follow the user to another device. Patterns kept there would be lost the
+> same way. Repository view options are also "kept on this device" (`packages/app/repository/RepositoryPage.vue:1`);
+> where those live was not checked.
+
+## D6
+
+**Failing workflows are reached three ways: a third tab in the repository view at `/owner/name/actions`, a red
+marker on the repository's sidebar row, and one cross-repository entry in the sidebar with a total.**
+(2026-11-01, proposal of the design agent, not confirmed by the owner)
+
+**Why.** Per-repository views answer "what is in this repository"; the owner's problem is not knowing which
+repository. With many tracked repositories a red row can sit below the fold, and the collapsed rail shows no
+repositories at all (`packages/app/shell/Sidebar.vue:276-322`), so a total is needed. Tabs for issues and pull
+requests already exist on the same page (`packages/app/tracking/trackingRoutes.ts:14`).
+
+**Rejected (proposed, owner has not decided).**
+- A nested sidebar menu per repository: several rows per repository to carry one fact, on a sidebar that already
+  grows with every tracked repository.
+- Issues, pull requests and workflows in columns on the repository page: a workflow has no fields, assignees or
+  board groups, so it shares none of the list's keyboard and view behaviour, and three lists fight for width.
+
+## D7
+
+**The repository's workflow list has one row per workflow with its recent runs, instead of GitHub's single
+chronological feed.** (2026-11-01, owner for the complaint, design agent for the shape, not confirmed)
+
+**Why.** The owner: failing workflows are buried, runs are mixed together, and failures on pull requests and
+checks are not tied to a commit you would look at, so finding them means going through the Actions tab.
