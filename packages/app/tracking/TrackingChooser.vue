@@ -1,4 +1,4 @@
-<!-- Choosing what to track (G2, D20): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. -->
+<!-- Choosing what to track (G2, D20): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). The `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -75,6 +75,18 @@ const props = defineProps<{
   approvals: Readonly<Record<string, number>>;
   /** Looks up a repository or project the user names (G10). */
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
+  /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
+  creates?: string | null;
+  /**
+   * "Track these" is under way: it and ⌘↵ do nothing until it ends. "Only my repositories" shows as disabled but keeps
+   * its focus and still emits — the page ignores it meanwhile.
+   */
+  busy?: boolean;
+}>();
+
+defineSlots<{
+  /** What the page says about saving to GitHub: the choice (G2, G12), or why it isn't offered (G13, G14). */
+  saving?(): unknown;
 }>();
 
 /** The chosen repositories, `owner/name`. */
@@ -197,6 +209,10 @@ const openToCopy = computed(() =>
     return repository ? repository.openIssues + repository.openPullRequests : 0;
   }),
 );
+const summaryDetail = computed(() => {
+  const detail = t(l.summaryDetail, { count: openToCopy.value });
+  return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
+});
 
 /** Whether the click toggling a checkbox held Shift; read in the capture phase, before the checkbox toggles. */
 let rangeClick = false;
@@ -228,7 +244,10 @@ onWindowEvent('keydown', event => {
 
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
-    emit('track');
+    if (!props.busy) {
+      emit('track');
+    }
+
     return;
   }
 
@@ -444,11 +463,13 @@ function ownerCount(group: OwnerGroup): OwnerCount {
           </Checkbox>
         </div>
       </section>
+      <slot name="saving" />
       <div>
         <Button
           variant="primary"
           kbd="Mod+Enter"
           :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+          :busy="busy"
           @click="emit('track')"
         >
           {{ t(l.continue) }}
@@ -662,30 +683,40 @@ function ownerCount(group: OwnerGroup): OwnerCount {
         </div>
       </div>
 
-      <div :class="css.trackingChooser_footer">
-        <p :class="css.trackingChooser_summary">
-          {{
-            t(l.summary, {
-              repositories: t(l.summaryRepositories, { count: repositories.length }),
-              projects: t(l.summaryProjects, { count: projects.length }),
-            })
-          }}
-        </p>
-        <p :class="css.trackingChooser_summaryDetail">{{ t(l.summaryDetail, { count: openToCopy }) }}</p>
-        <Button
-          :class="css.trackingChooser_onlyMine"
-          @click="emit('onlyMine')"
+      <div :class="css.trackingChooser_bottom">
+        <div
+          v-if="$slots.saving"
+          :class="css.trackingChooser_saving"
         >
-          {{ t(l.onlyMine) }}
-        </Button>
-        <Button
-          variant="primary"
-          kbd="Mod+Enter"
-          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
-          @click="emit('track')"
-        >
-          {{ t(l.track) }}
-        </Button>
+          <slot name="saving" />
+        </div>
+        <div :class="css.trackingChooser_footer">
+          <p :class="css.trackingChooser_summary">
+            {{
+              t(l.summary, {
+                repositories: t(l.summaryRepositories, { count: repositories.length }),
+                projects: t(l.summaryProjects, { count: projects.length }),
+              })
+            }}
+          </p>
+          <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
+          <Button
+            :class="css.trackingChooser_onlyMine"
+            :aria-disabled="busy || undefined"
+            @click="emit('onlyMine')"
+          >
+            {{ t(l.onlyMine) }}
+          </Button>
+          <Button
+            variant="primary"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :busy="busy"
+            @click="emit('track')"
+          >
+            {{ t(l.track) }}
+          </Button>
+        </div>
       </div>
     </template>
   </div>
@@ -885,9 +916,18 @@ function ownerCount(group: OwnerGroup): OwnerCount {
   color: $color-fg-dim;
 }
 
-.trackingChooser_footer {
+.trackingChooser_bottom {
   position: sticky;
   bottom: 0;
+}
+
+.trackingChooser_saving {
+  padding: 18px max(#{$spacing-24}, calc((100% - 1180px) / 2));
+  background: $color-bg;
+  border-top: 1px solid $color-border;
+}
+
+.trackingChooser_footer {
   display: flex;
   gap: 14px;
   align-items: center;

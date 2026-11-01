@@ -176,6 +176,7 @@ export const TrackingStore = defineService({
             ready,
             isTracked,
             choose,
+            markChosen,
             track,
             untrack,
             replaceDocument,
@@ -215,6 +216,14 @@ export const TrackingStore = defineService({
         function choose(choice: TrackingChoice) {
             write(kept => ({ chosen: true, document: applyChoice(kept.document, choice) }));
             changedHere();
+        }
+
+        /**
+         * Counts the choice as made (G2) without changing what is tracked: the settings saved to GitHub were taken
+         * in instead (settings-sync G11), by `SettingsSync`'s turning on.
+         */
+        function markChosen() {
+            write(kept => (kept.chosen ? null : { ...kept, chosen: true }));
         }
 
         /**

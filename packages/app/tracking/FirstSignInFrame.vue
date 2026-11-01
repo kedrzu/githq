@@ -1,4 +1,4 @@
-<!-- The frame of the first sign-in's steps (G2, G6), outside the app's shell: githq's name, where the user is among "Sign in → Choose what to track → First download", and who is signed in; the step's screen below. -->
+<!-- The frame of the first sign-in's steps (G2, G6), outside the app's shell: githq's name, where the user is among "Sign in → Choose what to track → First download" — the second step "Load your settings" while saved settings are offered (settings-sync G11) — and who is signed in; the step's screen below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -13,7 +13,8 @@ import * as l from './FirstSignInFrame.loc.js';
 
 const props = defineProps<{
   viewer: Viewer;
-  step: 'choose' | 'download';
+  /** `load`: the choosing step, offering the settings saved to GitHub instead (settings-sync G11). */
+  step: 'choose' | 'load' | 'download';
 }>();
 
 defineSlots<{
@@ -23,8 +24,12 @@ defineSlots<{
 
 const t = useTranslate();
 
-const steps = computed(() => [t(l.signIn), t(l.chooseWhatToTrack), t(l.firstDownload)]);
-const current = computed(() => (props.step === 'choose' ? 1 : 2));
+const steps = computed(() => [
+  t(l.signIn),
+  props.step === 'load' ? t(l.loadYourSettings) : t(l.chooseWhatToTrack),
+  t(l.firstDownload),
+]);
+const current = computed(() => (props.step === 'download' ? 2 : 1));
 </script>
 
 <template>

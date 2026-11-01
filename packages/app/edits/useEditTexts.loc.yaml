@@ -161,9 +161,6 @@ selectFailed:
   en:
     one: Select the failed item
     many: Select the failed items
-notifications:
-  en: Notifications
-
 subjectLabel:
   en: label “{label}”
 selectFailedCommand:

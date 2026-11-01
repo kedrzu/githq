@@ -1,4 +1,4 @@
-<!-- One item of a `Menu` or a context menu: an optional icon, the text, a dim detail ("In progress", a branch name) and its key; `select` when clicked or picked with Enter, after which the menu closes. -->
+<!-- One item of a `Menu` or a context menu: an optional icon, the text, a dim detail ("In progress", a branch name), a status at the end (`status` slot) and its key; `select` when clicked or picked with Enter, after which the menu closes. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 import { DropdownMenuItem } from 'reka-ui';
@@ -25,7 +25,11 @@ const emit = defineEmits<{
   select: [event: Event];
 }>();
 
-defineSlots<{ default(): unknown }>();
+defineSlots<{
+  default(): unknown;
+  /** Said at the end, before the key: how the place it opens is ("Syncing stopped"). */
+  status?(): unknown;
+}>();
 </script>
 
 <template>
@@ -48,6 +52,11 @@ defineSlots<{ default(): unknown }>();
         :class="[css.menuItem_detail, detailMono && css.menuItem_detail_mono]"
         >{{ detail }}</span
       >
+      <span
+        v-if="$slots.status"
+        :class="css.menuItem_status"
+        ><slot name="status"
+      /></span>
     </span>
     <MenuShortcut
       :kbd="kbd"
@@ -101,6 +110,15 @@ defineSlots<{ default(): unknown }>();
   text-overflow: ellipsis;
   font-size: $font-size-xs;
   color: $color-fg-dim;
+  white-space: nowrap;
+}
+
+.menuItem_status {
+  display: flex;
+  gap: $spacing-6;
+  align-items: center;
+  margin-left: auto;
+  font-size: $font-size-xs;
   white-space: nowrap;
 }
 

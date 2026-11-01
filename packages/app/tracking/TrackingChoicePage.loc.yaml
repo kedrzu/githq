@@ -6,3 +6,5 @@ retry:
   en: Try again
 skip:
   en: Continue to My work
+unreachable:
+  en: GitHub couldn't be reached, so nothing was saved yet. Press Track these to try again, or untick the box to go on without saving.

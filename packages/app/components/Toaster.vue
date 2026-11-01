@@ -1,21 +1,21 @@
-<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`): along the bottom of the window, above the status bar, centred under the screen. Put the `Toast`s inside it; F8 moves focus to them. -->
+<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`), the region "Notifications": along the bottom of the window, above the status bar, centred under the screen. Put the `Toast`s inside it; F8 moves focus to them. -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ToastProvider, ToastViewport } from 'reka-ui';
 
-defineProps<{
-  /** The region's name for screen readers ("Notifications"). */
-  label: string;
-}>();
+import * as l from './Toaster.loc.js';
 
 defineSlots<{
   /** The toasts. */
   default?(): unknown;
 }>();
+
+const t = useTranslate();
 </script>
 
 <template>
   <ToastProvider
-    :label="label"
+    :label="t(l.notifications)"
     swipe-direction="down"
   >
     <slot />

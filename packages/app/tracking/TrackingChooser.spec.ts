@@ -8,7 +8,7 @@ import { sampleCandidateRepository, SAMPLE_CANDIDATES } from '@/testing/sampleTr
 import * as stories from './TrackingChooser.stories.jsx';
 import type { TrackingCandidates } from './TrackingTypes.js';
 
-const { Choose, HiddenOrganisation, NothingToPick } = composeStories(stories);
+const { Choose, HiddenOrganisation, NothingToPick, NothingToPickWithSaving, SavingTicked } = composeStories(stories);
 
 const ANY = { ago: 0, open: 0 };
 
@@ -266,3 +266,38 @@ async function shiftClick(row: Locator) {
     await userEvent.click(row);
     await userEvent.keyboard('{/Shift}');
 }
+
+test('the saving choice sits above the footer; ticked, the footer says "Track these" then creates the repository', async () => {
+    const onTrack = vi.fn();
+    await SavingTicked.run({ args: { ...SavingTicked.args, onTrack } });
+
+    await expect.element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' })).toBeChecked();
+    await expect.element(page.getByText('then creates mlaine/githq-settings', { exact: false })).toBeVisible();
+    await expect.element(page.getByText('You can change this any time in Settings.', { exact: false })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Track these' }));
+    expect(onTrack).toHaveBeenCalledOnce();
+});
+
+test('with nothing to pick, the saving choice sits above "Continue to My work"; the footer creates nothing unticked', async () => {
+    await NothingToPickWithSaving.run();
+
+    await expect
+        .element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' }))
+        .not.toBeChecked();
+    await expect.element(page.getByText('then creates', { exact: false })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Continue to My work' })).toBeVisible();
+});
+
+test('busy, ⌘↵ and "Track these" do nothing, and "Only my repositories" shows as disabled but keeps its focus', async () => {
+    const onTrack = vi.fn();
+    await Choose.run({ args: { ...Choose.args, busy: true, onTrack } });
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await userEvent.click(page.getByRole('button', { name: 'Track these' }));
+    expect(onTrack).not.toHaveBeenCalled();
+
+    const onlyMine = page.getByRole('button', { name: 'Only my repositories' });
+    await expect.element(onlyMine).toHaveAttribute('aria-disabled', 'true');
+    onlyMine.element().focus();
+    await expect.element(onlyMine).toHaveFocus();
+});
