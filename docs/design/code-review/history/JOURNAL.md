@@ -34,3 +34,9 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   multi-select in the file list (Shift+click range, Cmd+click add) to mark many viewed at once, and the viewed state
   shown in the list (icon or colour to the designs) → D10. Unanswered: file list hideable as a remembered switch;
   which filters besides viewed.
+- 2026-11-02 — Owner: VS Code-style glob filter with a regex toggle → D11. Outdated threads shown in code at an
+  approximate place; threads on files gone from the diff get a file entry of their own; resolved → gone → D12 (agent
+  added: the place is computed by diffing originalCommit's file against head). Threads on hidden lines and in
+  collapsed files shown with 1–3 lines of context and a distance mark; collapsed files expand and collapse back;
+  "show comments in collapsed files" option, default on, local → D13. Per-PR state (expanded/collapsed files,
+  filters, context, position) kept in local cache → D14. Raised Q6: viewed filter vs unresolved threads.

@@ -168,6 +168,76 @@ as githq's lists.** (2026-11-02, owner; keyboard by agent)
 Marking many files viewed is many `markFileAsViewed` mutations; they go in one GraphQL request (aliases), shown at
 once, as every edit in githq.
 
+## D11
+
+**The file list is filtered by a path pattern with wildcards, as in VS Code's file filters: `*.png` or `.png` means
+the extension, `docs/**/*.png` a folder and an extension. A toggle button with an icon, as in VS Code, switches the
+pattern to a regular expression. Next to it, the viewed filter of [D9](#d9).** (2026-11-02, owner)
+
+**Why.** A familiar pattern; regular expressions are optional because not everyone is fluent in them (owner).
+
+**Rejected.**
+
+- Separate filters by extension and a plain path search (agent) — one pattern covers both.
+
+## D12
+
+**Every thread is shown with the code it belongs to, outdated ones included. An outdated thread sits where its line
+is now, marked as outdated and placed approximately. A thread on a file that is no longer in the diff — deleted, or
+created and deleted again within the pull request so that the diff shows nothing — gets an entry of its own in the
+file list and the diff, holding only its threads. Once such a thread is resolved, the entry is gone.** (2026-11-02,
+owner: "it's a big problem of mine, a thread interests me or is unresolved, but it's outdated, so I simply don't see
+it")
+
+**Why.** File comments belong with the files, consistently, rather than in the pull request's own conversation
+(owner). Where the line is now can be computed rather than guessed: githq already diffs files itself ([D6](#d6)), so
+it diffs the file at the comment's original commit against the current head and follows the line through; when the
+line itself was rewritten, the thread goes to its nearest surviving neighbour — that is the "approximate" case.
+
+> **Checked 2026-11-02:** `PullRequestReviewComment` has `originalCommit`, `originalLine`, `originalStartLine`,
+> `commit`, `line`, `outdated`, `diffHunk` (`packages/github/src/schema.graphql`, type `PullRequestReviewComment`).
+
+**Rejected.**
+
+- Outdated threads only in the pull request's conversation sidebar (agent) — file comments stay with files (owner).
+- Hiding outdated threads, as github.com mostly does — exactly the owner's complaint.
+
+## D13
+
+**A thread on a line that is not on screen — hidden context, a hidden whitespace change, a collapsed file — is shown
+with one to three lines of code around it, separated from the rest by a mark saying how far away it is, without
+expanding what lies between. A collapsed file shows such pieces under its header, marked as collapsed, and can be
+expanded whole and collapsed back. "Show comments in collapsed files" is a view option, on by default, kept in local
+preferences.** (2026-11-02, owner)
+
+**Why.** Expanding a whole file or its context only to show one comment defeats the collapsing. On github.com a
+collapsed file — generated, viewed or collapsed by hand — hides its comments, and once expanded a generated file
+stays expanded (owner).
+
+**Rejected.**
+
+- Expanding the context or the file up to the comment — renders everything in between for one comment.
+- A comment above the code with an arrow pointing to its line, without the line (owner's first thought) — a few lines
+  of code tell more.
+
+## D14
+
+**What you did in a pull request is kept for that pull request, in the local cache: which files were expanded or
+collapsed by hand, the filters, expanded context and the reading position ([D7](#d7)). Layout ([D3](#d3)),
+whitespace ([D4](#d4)), the sidebars ([D5](#d5)) and "show comments in collapsed files" ([D13](#d13)) are global
+preferences, also local.** (2026-11-02, owner: "I was halfway through a pull request, switch away and lose all of
+it")
+
+**Why.** Moving between the pull requests of a stack should cost nothing. Nothing of this goes to the synced
+settings, which hold only what is tracked ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+
+## Q6
+
+**Open: does the viewed filter hide a file that has an unresolved thread?** [D9](#d9) removes a viewed file from
+the list and the diff; [D13](#d13) keeps comments visible in collapsed files. A colleague commenting on a file you
+already marked viewed does not drop the mark (only a change to the file does), so with the filter on the comment is
+not in the diff at all.
+
 ## Q5
 
 **Open: what runs off the main thread.** Owner: github.com stutters on large pull requests, probably too much on the
