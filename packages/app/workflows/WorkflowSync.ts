@@ -18,14 +18,12 @@ import { isRunCounted } from './utils/isRunCounted.js';
 import type { IsRunCountedParams } from './utils/isRunCounted.js';
 import { mergeWorkflowRuns } from './utils/mergeWorkflowRuns.js';
 import { WorkflowStore } from './WorkflowStore.js';
-import type { RepositoryWorkflows, StoredWorkflow } from './WorkflowTypes.js';
+import type { StoredWorkflow } from './WorkflowTypes.js';
 
 /** Runs a page asks for: a run weighs about 12 KB in the answer (actions D2). */
 const RUNS_PAGE_SIZE = 10;
 /** How many pages of a workflow's runs on a ref are read, at most, looking for one with a verdict (actions D1). */
 const MAX_RUN_PAGES = 3;
-/** How long a repository whose Actions GitHub refused waits before it is asked again: a refusal costs a point. */
-const UNAVAILABLE_RETRY_MS = 60 * 60_000;
 
 /** What one read of a workflow's runs on a branch needs. */
 interface ReadBranchRunsParams {
@@ -38,13 +36,13 @@ interface ReadBranchRunsParams {
 /**
  * Keeps the tracked repositories' workflows in step with GitHub over REST (actions D2), as the sync engine's
  * `workflows` loop: per repository, its latest runs' list with the last ETag — a 304 is free and changes nothing
- * but the read time. On a 200, the default branch and the workflow list (both conditional), then the runs on the
- * counted refs of each active workflow never read on that ref, or with a run on it in that list not kept as it is
- * (conditional too); with no counted run with a verdict among them, older pages, up to {@link MAX_RUN_PAGES}. A
- * workflow gone from GitHub's list is dropped.
+ * but the read time. On a 200 — or at the first read — the default branch and the workflow list, then every active
+ * workflow's runs on the counted refs, all conditional: a run that changed may have left the latest runs' first page
+ * already, so each workflow is asked, and one that did not change answers 304 for free. With no counted run with a
+ * verdict among them, older pages, up to {@link MAX_RUN_PAGES}. A workflow gone from GitHub's list is dropped.
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
- * is marked unavailable, asked again an hour later, and does not fail the loop; only what may concern every
+ * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may concern every
  * repository does (GitHub failing, a revoked token, the allowance), as in `TrackingSync`. An answer arriving after
  * the session ended, or for a repository no longer tracked, is dropped.
  */
@@ -67,11 +65,6 @@ export const WorkflowSync = defineService({
         async function poll(context: TrackingSyncContext) {
             let failed = 0;
             for (const { nameWithOwner } of tracking.repositories) {
-                const stored = workflows.get(nameWithOwner);
-                if (stored && isUnavailableNow(stored)) {
-                    continue;
-                }
-
                 try {
                     await pollRepository(context, nameWithOwner);
                 } catch (error) {
@@ -151,7 +144,6 @@ export const WorkflowSync = defineService({
             const branches = counted.countDefaultBranch && defaultBranch !== null ? [defaultBranch] : [];
             const listed =
                 list.status === 200 ? list.workflows : (stored?.workflows.map(entry => entry.workflow) ?? []);
-            const latestRuns = changes.status === 200 ? changes.runs : [];
 
             const read: StoredWorkflow[] = [];
             for (const workflow of listed) {
@@ -162,17 +154,6 @@ export const WorkflowSync = defineService({
                     etags: pickEtags(kept?.etags ?? {}, branches),
                 };
                 for (const branch of workflow.state === 'active' ? branches : []) {
-                    const keptRuns = entry.runs;
-                    const moved = latestRuns.some(
-                        latest =>
-                            latest.workflowId === workflow.id &&
-                            latest.headBranch === branch &&
-                            !keptRuns.some(other => isSameRun(other, latest)),
-                    );
-                    if (entry.etags[branchKey(branch)] !== undefined && !moved) {
-                        continue;
-                    }
-
                     const next = await readBranchRuns(context, { nameWithOwner, entry, branch, counted });
                     if (!next) {
                         return;
@@ -254,15 +235,6 @@ export const WorkflowSync = defineService({
             return { ...entry, runs, etags };
         }
 
-        /** GitHub refused the repository's Actions lately: it is not asked again yet. */
-        function isUnavailableNow(stored: RepositoryWorkflows) {
-            return (
-                stored.unavailable !== null &&
-                stored.readAt !== null &&
-                clock.now() - stored.readAt < UNAVAILABLE_RETRY_MS
-            );
-        }
-
         /** Whether what was read of the repository may be written: the session is current and it is still tracked. */
         function isWanted(context: TrackingSyncContext, nameWithOwner: string) {
             return context.isCurrent() && tracking.isTracked({ kind: 'repository', nameWithOwner });
@@ -286,11 +258,6 @@ function pickEtags(etags: Readonly<Record<string, string>>, branches: readonly s
     }
 
     return picked;
-}
-
-/** Whether two copies of a run say the same: a run kept as GitHub has it now has not moved. */
-function isSameRun(a: GitHubWorkflowRun, b: GitHubWorkflowRun) {
-    return a.id === b.id && a.status === b.status && a.conclusion === b.conclusion;
 }
 
 /** Whether a counted run among `runs` has a verdict — what decides the workflow (actions D1). */

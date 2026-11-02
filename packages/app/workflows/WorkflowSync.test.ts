@@ -73,7 +73,7 @@ test('the first read: the latest runs, the default branch, the workflows, and ea
     ]);
 });
 
-test('while no run moves a poll costs one free request per repository and changes nothing but the read time; a run that moved is read again alone', async () => {
+test('while no run moves a poll costs one free request per repository and changes nothing but the read time; on a change every active workflow is asked, the unchanged ones for free', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows, sync } = await setup(world);
     tracking.choose(TRACK_BOTH);
@@ -91,7 +91,7 @@ test('while no run moves a poll costs one free request per repository and change
     expect({ ...after, readAt: before.readAt }).toEqual(before);
     expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
 
-    // Deploy runs again on main and passes: only its runs are read again; the default branch and the list are not.
+    // Deploy runs again on main and passes: every active workflow is asked, conditionally, and CI answers 304.
     world.actions.repository('acme/web').runs.push(run(20, DEPLOY, 'success', '2026-10-30T13:01:00Z'));
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
@@ -100,10 +100,36 @@ test('while no run moves a poll costs one free request per repository and change
         'GET /repos/acme/web conditional',
         'GET /repos/acme/web/actions/workflows per_page=100 conditional',
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
     ]);
     expect(workflows.getState('acme/web').workflows[0]).toMatchObject({ state: 'passing' });
     expect(workflows.totals.brokenCount).toBe(0);
+});
+
+test('a run that finished after newer runs pushed it out of the latest runs is still read', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    // Deploy passed, and runs again.
+    actions.runs.push(run(29, DEPLOY, 'success', '2026-10-30T11:30:00Z'));
+    actions.runs.push(run(30, DEPLOY, null, '2026-10-30T12:00:00Z'));
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(workflows.getState('acme/web').workflows[0]).toMatchObject({ state: 'passing' });
+
+    // It fails, while ten runs on pull requests' branches fill the latest runs.
+    actions.runs = actions.runs.map(entry =>
+        entry.id === 30 ? { ...entry, status: 'completed', conclusion: 'failure' } : entry,
+    );
+    for (let id = 40; id < 50; id++) {
+        actions.runs.push(
+            run(id, CI, 'success', `2026-10-30T13:${String(id).padStart(2, '0')}:00Z`, { headBranch: 'feature' }),
+        );
+    }
+
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(workflows.getState('acme/web').workflows[0]).toMatchObject({ state: 'broken' });
 });
 
 test('a workflow gone from GitHub’s list goes; one with only cancelled runs on its first page is read further back, three pages at most', async () => {
@@ -160,7 +186,7 @@ test('a workflow gone from GitHub’s list goes; one with only cancelled runs on
     ]);
 });
 
-test('a repository whose Actions GitHub refuses or turned off is said so without failing the loop, and asked again an hour later', async () => {
+test('a repository whose Actions GitHub refuses or turned off is said so without failing the loop, and asked again at every poll', async () => {
     const world = sampleWorld();
     world.actions.repository('acme/web').refusal = 403;
     world.actions.repository('acme/api').refusal = 404;
@@ -177,15 +203,16 @@ test('a repository whose Actions GitHub refuses or turned off is said so without
 
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(actionsRequests(session.github.requests)).toEqual([]);
+    expect(actionsRequests(session.github.requests)).toEqual([
+        'GET /repos/acme/web/actions/runs per_page=10',
+        'GET /repos/acme/api/actions/runs per_page=10',
+    ]);
+    expect(workflows.get('acme/web')?.unavailable).toEqual({ reason: 'refused', status: 403 });
 
-    // Turned on again: read at the first poll an hour on (the tab hidden meanwhile, so the polls are fewer).
+    // Turned on again: read at the next poll.
     world.actions.repository('acme/web').refusal = null;
     world.actions.repository('acme/api').refusal = null;
-    session.setVisible(false);
-    await session.clock.advance(60 * 60_000);
-    session.setVisible(true);
-    await session.clock.advance(0);
+    await session.clock.advance(WORKFLOWS_INTERVAL);
     expect(workflows.getState('acme/web')).toMatchObject({ status: 'read', brokenCount: 1 });
     expect(workflows.getState('acme/api').status).toBe('read');
 });
