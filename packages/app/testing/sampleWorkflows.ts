@@ -30,7 +30,7 @@ export interface SampleRun {
     readonly branch?: string | null;
     /** `push` unless given; `pull_request` for one a pull request started. */
     readonly event?: string;
-    /** Its title (the commit's or the pull request's); none unless given. */
+    /** Its title (the commit's or the pull request's); empty unless given. */
     readonly title?: string;
     /** How long it ran, in seconds, from its creation; not known unless given. */
     readonly seconds?: number;
@@ -137,11 +137,9 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             createdAt: new Date(createdAt).toISOString(),
             htmlUrl: `https://github.com/${repository}/actions/runs/${id}`,
             headSha: `${id}`.padStart(40, '0'),
-            ...(sample.title !== undefined && { displayTitle: sample.title }),
-            ...(sample.seconds !== undefined && {
-                runStartedAt: new Date(createdAt).toISOString(),
-                updatedAt: new Date(createdAt + sample.seconds * 1000).toISOString(),
-            }),
+            displayTitle: sample.title ?? '',
+            updatedAt: new Date(createdAt + (sample.seconds ?? 0) * 1000).toISOString(),
+            ...(sample.seconds !== undefined && { runStartedAt: new Date(createdAt).toISOString() }),
         };
     });
 

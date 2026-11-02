@@ -24,7 +24,7 @@ export interface WorkflowRunDescription {
 
 /**
  * How a run's line describes it (actions W3b): its mark and what it says at its end — a finished run's duration from
- * when it started running to its last change, known only for runs read with those times.
+ * when it started running to its last change, known only when GitHub says when it started.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
@@ -48,9 +48,8 @@ export function describeWorkflowRun(run: GitHubWorkflowRun, now: number): Workfl
         };
     }
 
-    const finished = run.updatedAt === undefined ? null : Date.parse(run.updatedAt);
     return {
         mark: verdict,
-        tail: started !== null && finished !== null ? { kind: 'duration', ms: finished - started } : null,
+        tail: started === null ? null : { kind: 'duration', ms: Date.parse(run.updatedAt) - started },
     };
 }

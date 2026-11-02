@@ -1,5 +1,6 @@
 import type { WorkflowRefSettings } from '../WorkflowTypes.js';
-import { matchRefPattern } from './matchRefPattern.js';
+import { getRefGroups } from './getRefGroups.js';
+import { isRefInGroup } from './isRefInGroup.js';
 
 /** What {@link isRefCounted} decides from. */
 export interface IsRefCountedParams {
@@ -17,8 +18,5 @@ export interface IsRefCountedParams {
  */
 export function isRefCounted(params: IsRefCountedParams): boolean {
     const { settings, defaultBranch, ref } = params;
-    return (
-        (settings.defaultBranch && ref === defaultBranch) ||
-        settings.refs.some(pattern => matchRefPattern(pattern, ref))
-    );
+    return getRefGroups(settings, defaultBranch).some(group => isRefInGroup(ref, group));
 }

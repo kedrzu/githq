@@ -111,6 +111,8 @@ test.each([
         'a run without its creation time',
         Response.json({ total_count: 1, workflow_runs: [{ ...RUN, created_at: null }] }),
     ],
+    ['a run without its title', Response.json({ total_count: 1, workflow_runs: [{ ...RUN, display_title: null }] })],
+    ['a run without its last change', Response.json({ total_count: 1, workflow_runs: [{ ...RUN, updated_at: null }] })],
 ])('throws on an answer that is %s', async (_, response) => {
     const rest = restAnswering([response]);
 

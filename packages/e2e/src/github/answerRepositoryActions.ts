@@ -132,6 +132,8 @@ function toRestRun(nameWithOwner: string, run: GitHubActionsRun) {
         status: run.status,
         conclusion: run.conclusion,
         created_at: run.createdAt,
+        updated_at: run.createdAt,
+        display_title: `Run ${run.id}`,
         html_url: `https://github.com/${nameWithOwner}/actions/runs/${run.id}`,
     };
 }

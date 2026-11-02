@@ -20,12 +20,12 @@ export interface GitHubWorkflowRun {
     readonly createdAt: string;
     readonly htmlUrl: string;
     readonly headSha: string;
-    /** What GitHub titles the run with: the commit's or the pull request's title. Absent from runs kept before it was read. */
-    readonly displayTitle?: string;
-    /** ISO; when this attempt started running. Absent when GitHub gives none, and from runs kept before it was read. */
+    /** What GitHub titles the run with: the commit's or the pull request's title. */
+    readonly displayTitle: string;
+    /** ISO; when this attempt started running. Absent when GitHub gives none. */
     readonly runStartedAt?: string;
-    /** ISO; when the run last changed — once completed, when it finished. Absent from runs kept before it was read. */
-    readonly updatedAt?: string;
+    /** ISO; when the run last changed — once completed, when it finished. */
+    readonly updatedAt: string;
 }
 
 /**
@@ -52,7 +52,9 @@ export function readWorkflowRuns(status: number, payload: unknown): GitHubWorkfl
             !(entry.conclusion === null || typeof entry.conclusion === 'string') ||
             typeof entry.created_at !== 'string' ||
             typeof entry.html_url !== 'string' ||
-            typeof entry.head_sha !== 'string'
+            typeof entry.head_sha !== 'string' ||
+            typeof entry.display_title !== 'string' ||
+            typeof entry.updated_at !== 'string'
         ) {
             throw malformed(status);
         }
@@ -68,9 +70,9 @@ export function readWorkflowRuns(status: number, payload: unknown): GitHubWorkfl
             createdAt: entry.created_at,
             htmlUrl: entry.html_url,
             headSha: entry.head_sha,
-            ...(typeof entry.display_title === 'string' && { displayTitle: entry.display_title }),
+            displayTitle: entry.display_title,
+            updatedAt: entry.updated_at,
             ...(typeof entry.run_started_at === 'string' && { runStartedAt: entry.run_started_at }),
-            ...(typeof entry.updated_at === 'string' && { updatedAt: entry.updated_at }),
         });
     }
 

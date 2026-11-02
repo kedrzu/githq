@@ -330,6 +330,8 @@ function run(
         createdAt,
         htmlUrl: `https://github.com/kedrzu/githq/actions/runs/${id}`,
         headSha: 'abc',
+        displayTitle: 'Run',
+        updatedAt: '2026-11-02T11:00:00Z',
         ...overrides,
     };
 }

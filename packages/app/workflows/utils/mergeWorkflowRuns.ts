@@ -20,19 +20,21 @@ export interface MergeWorkflowRunsParams {
 
 /**
  * A workflow's runs after a read: the kept and the read ones merged by id, the newest first by creation time, cut to
- * the latest {@link WORKFLOW_RUNS_KEPT} — or further back, to the oldest of the groups' latest runs with a verdict, so
- * neither a row of cancelled runs nor a busy ref elsewhere can cut off the failure that keeps a group broken (actions
- * D1).
+ * the latest {@link WORKFLOW_RUNS_KEPT} plus each group's latest run with a verdict, so neither a row of cancelled runs
+ * nor a busy ref elsewhere can cut off the failure that keeps a group broken (actions D1). What lies between goes: a
+ * break whose start is cut off with it says so ("3h+"), and no group's state changes.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function mergeWorkflowRuns(params: MergeWorkflowRunsParams): GitHubWorkflowRun[] {
     const runs = mergeRunsById([params.stored, params.read]);
-    let kept = WORKFLOW_RUNS_KEPT;
+    const decidingIds = new Set<number>();
     for (const group of params.groups) {
-        const deciding = runs.findIndex(run => getRunVerdict(run) !== null && isRunInGroup(run, group));
-        kept = Math.max(kept, deciding + 1);
+        const deciding = runs.find(run => getRunVerdict(run) !== null && isRunInGroup(run, group));
+        if (deciding) {
+            decidingIds.add(deciding.id);
+        }
     }
 
-    return runs.slice(0, kept);
+    return runs.filter((run, index) => index < WORKFLOW_RUNS_KEPT || decidingIds.has(run.id));
 }

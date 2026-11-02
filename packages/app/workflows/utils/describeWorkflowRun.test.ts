@@ -52,6 +52,8 @@ function run(fields: Partial<GitHubWorkflowRun>): GitHubWorkflowRun {
         createdAt: '2026-11-02T11:00:00Z',
         htmlUrl: 'https://github.com/kedrzu/githq/actions/runs/1',
         headSha: 'abc',
+        displayTitle: 'Run',
+        updatedAt: '2026-11-02T11:00:00Z',
         ...fields,
     };
 }

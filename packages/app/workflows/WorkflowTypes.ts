@@ -32,7 +32,7 @@ export interface StoredWorkflow {
     readonly workflow: GitHubWorkflow;
     /**
      * Its latest runs, merged by id from every query of its runs — on the default branch, and on any ref — the newest
-     * first, about 20 of them and each counted group's deciding run (`mergeWorkflowRuns`).
+     * first: the latest 20 and each counted group's deciding run (`mergeWorkflowRuns`).
      */
     readonly runs: readonly GitHubWorkflowRun[];
     /**

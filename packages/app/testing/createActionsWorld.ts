@@ -159,6 +159,8 @@ function toRestRun(run: ActionsWorldRun) {
         status: run.status,
         conclusion: run.conclusion,
         created_at: run.createdAt,
+        updated_at: run.createdAt,
+        display_title: `Run ${run.id}`,
         html_url: `https://github.com/acme/web/actions/runs/${run.id}`,
     };
 }

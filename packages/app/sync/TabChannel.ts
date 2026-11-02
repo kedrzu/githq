@@ -2,6 +2,7 @@ import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import { computed, shallowRef } from 'vue';
 
@@ -325,7 +326,7 @@ export const TabChannel = defineService({
             if (
                 known?.visible === presence.visible &&
                 isSameView(known.shownView, presence.shownView) &&
-                isSameList(known.anyRefRepositories, presence.anyRefRepositories)
+                deepEquals(known.anyRefRepositories, presence.anyRefRepositories)
             ) {
                 return;
             }
@@ -392,8 +393,4 @@ function isEnvelope(data: unknown): data is Envelope {
 
 function isSameView(a: AnsweredView | null, b: AnsweredView | null) {
     return a?.projectId === b?.projectId && a?.filter === b?.filter;
-}
-
-function isSameList(a: readonly string[], b: readonly string[]) {
-    return a.length === b.length && a.every((entry, index) => entry === b[index]);
 }

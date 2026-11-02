@@ -2,7 +2,7 @@ import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 
 import type { WorkflowRefGroup } from '../WorkflowTypes.js';
 import { isPullRequestRun } from './isPullRequestRun.js';
-import { matchRefPattern } from './matchRefPattern.js';
+import { isRefInGroup } from './isRefInGroup.js';
 
 /**
  * Whether a run counts in a group (actions D1, D5): one started by a pull request never does, whatever its ref — the
@@ -12,10 +12,5 @@ import { matchRefPattern } from './matchRefPattern.js';
  * @__NO_SIDE_EFFECTS__
  */
 export function isRunInGroup(run: GitHubWorkflowRun, group: WorkflowRefGroup): boolean {
-    const ref = run.headBranch;
-    if (ref === null || isPullRequestRun(run)) {
-        return false;
-    }
-
-    return group.kind === 'defaultBranch' ? ref === group.branch : matchRefPattern(group.pattern, ref);
+    return run.headBranch !== null && !isPullRequestRun(run) && isRefInGroup(run.headBranch, group);
 }
