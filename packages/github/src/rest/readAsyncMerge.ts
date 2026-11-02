@@ -22,5 +22,8 @@ export function readAsyncMerge(rest: GitHubRestRequester, params: ReadAsyncMerge
     const { owner, name, number, uuid } = params;
     return sendAsyncMergeRequest(rest, {
         url: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/pulls/${number}/merge-async/${encodeURIComponent(uuid)}`,
+        // GitHub marks the answer cacheable for a minute: from the browser's cache every poll would read the first
+        // `pending` again until it expires.
+        cache: 'no-store',
     });
 }

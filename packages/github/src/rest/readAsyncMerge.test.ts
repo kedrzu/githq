@@ -26,6 +26,8 @@ test('reads an enqueued merge by its uuid while it runs, then once merged', asyn
     const [input, init] = requests[0] ?? [];
     expect(input).toBe('https://api.github.com/repos/nzymejs/githq-merge-sandbox/pulls/7/merge-async/b904');
     expect(init?.method).toBe('GET');
+    // GitHub marks the answer cacheable for a minute; a poll served from the browser's cache never sees `merged`.
+    expect(init?.cache).toBe('no-store');
 });
 
 test('reads a merge that went into the merge queue', async () => {
