@@ -4,8 +4,20 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './MergePanel.stories.js';
 
-const { BeingMerged, BeingRead, MergedMeanwhile, MethodGone, NotAllowed, Ready, Refused, RequiredFailed } =
-    composeStories(stories);
+const {
+    BeingMerged,
+    BeingRead,
+    Merged,
+    MergedMeanwhile,
+    MethodGone,
+    NoAnswer,
+    NotAllowed,
+    OptionalFailed,
+    Ready,
+    Refused,
+    RequiredFailed,
+    Sending,
+} = composeStories(stories);
 
 test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub writes its default (D6)', async () => {
     await BeingRead.run();
@@ -114,6 +126,45 @@ test('PM4a: a required check that failed holds the merge — tagged and first, a
     await userEvent.keyboard('c');
     await expect.element(panel()).toHaveTextContent('Required · 5');
     await expect.element(panel()).toHaveTextContent('Others · 4');
+    // D13: the full list says the same of the one that isn't required as the folded rows do.
+    await expect
+        .element(page.getByRole('listitem').filter({ hasText: 'Vercel / preview' }))
+        .toHaveTextContent(/doesn't stop the merge/u);
+    await expect
+        .element(page.getByRole('listitem').filter({ hasText: 'ci / test (node 20)' }))
+        .not.toHaveTextContent(/doesn't stop the merge/u);
+});
+
+test("PM4a, PM38: a check that isn't required failed — the row's summary says a check fails, the panel reads ready and merges", async () => {
+    await OptionalFailed.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready to mergeApproved · required checks passed');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+});
+
+test('PM32a: sent and not answered yet, the panel stays as it was, its primary busy — it claims nothing of GitHub', async () => {
+    await Sending.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+    await expect.element(panel()).toHaveTextContent('Ready to merge');
+    await expect.element(panel()).not.toHaveTextContent('Being merged');
+    await expect.element(panel()).not.toHaveTextContent('accepted');
+    await expect.element(panel()).toHaveTextContent('Commit');
+    await expect.element(page.getByRole('button', { name: /Squash and merge/u })).toHaveAttribute('aria-busy', 'true');
+});
+
+test('PM29: sent and no answer came back — the outcome is not known, never "nothing was merged"', async () => {
+    await NoAnswer.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(panel()).toHaveTextContent("Outcome not known yetGitHub didn't answer · not shown as merged");
+    await expect.element(page.getByRole('alert')).toHaveTextContent("GitHub didn't answer");
+    await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
+    await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
 });
 
 test('PM24: reopened while being merged, it says so and offers nothing to repeat', async () => {
@@ -128,11 +179,23 @@ test('PM24: reopened while being merged, it says so and offers nothing to repeat
     expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
 });
 
-test('found merged meanwhile, the primary says merged — not that the viewer cannot merge here; without write access it does', async () => {
+test('PM26: merged from here, it says how it landed — no checks, nothing to do but close', async () => {
+    await Merged.run();
+
+    await expect.element(panel()).toHaveTextContent('MergedSquashed into main as 6dcb09b · just now');
+    await expect.element(panel()).not.toHaveTextContent('Checks');
+    await expect.element(panel()).toHaveTextContent('Close');
+    expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('found merged meanwhile, it reads merged without the method or the commit GitHub did not say — not that the viewer cannot merge here', async () => {
     await MergedMeanwhile.run();
 
-    await expect.element(page.getByRole('button', { name: 'Merged' })).toBeDisabled();
+    await expect.element(panel()).toHaveTextContent('MergedInto main · 1 minute ago');
     await expect.element(panel()).not.toHaveTextContent("You can't merge in this repository");
+    expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });

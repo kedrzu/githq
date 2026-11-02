@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the row as the local copy holds it, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
@@ -7,7 +7,7 @@ import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { useNow } from '@/services/useNow.js';
-import { ItemStore } from '@/store/ItemStore.js';
+import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 
 import MergePanel from './MergePanel.vue';
 import { MergePanelStore } from './MergePanelStore.js';
@@ -18,13 +18,13 @@ import { useMergeOptions } from './useMergeOptions.js';
 const TICK_MS = 1000;
 
 const store = useService(MergePanelStore);
-const items = useService(ItemStore);
+const details = useService(ItemDetailStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 
 const pr = computed(() => {
   const id = store.itemId;
-  const item = id === null ? undefined : items.get(id);
+  const item = id === null ? undefined : details.getItem(id);
   return item?.kind === 'pullRequest' ? item : null;
 });
 const read = useMergeOptions({ itemId: () => store.itemId });

@@ -1,3 +1,5 @@
+import type { MergeStateStatus } from '@githq/github/generated.gen.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -8,10 +10,12 @@ import {
     GitPullRequestDraft,
     Hourglass,
     Loader,
+    LoaderCircle,
 } from 'lucide-vue-next';
 import { computed, toValue } from 'vue';
 import type { ComputedRef, MaybeRefOrGetter } from 'vue';
 
+import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
@@ -33,25 +37,47 @@ export interface PullRequestVerdict {
 export interface PullRequestVerdictViewModel {
     readonly verdict: ComputedRef<PullRequestVerdict>;
     /**
-     * Approved as "my work" says, or with no review required, and GitHub would merge it now — as the row holds it,
-     * so it shows before anything is read.
+     * GitHub would merge it now. With the checks counted by whether they are required: none required failing or
+     * running, and GitHub's status says the requirements are met. Before that, as the row holds it, so it shows
+     * before anything is read: approved as "my work" says, or with no review required.
      */
     readonly mergeable: ComputedRef<boolean>;
 }
 
 /**
- * The verdict on a pull request from its row's status summary (`getPullRequestStanding`, the same as "my work"):
- * what the opened item's merge standing heads with, and the merge panel until its own read says more.
+ * The verdict on a pull request — the opened item's merge standing and the merge panel say the same (PM38). From the
+ * row's status summary (`getPullRequestStanding`, the same as "my work") until `checks` are read; then by which checks
+ * are required (merging D13): one that isn't required, failing or running, does not stop the merge.
  */
-export function usePullRequestVerdict(pr: MaybeRefOrGetter<PullRequestItem>): PullRequestVerdictViewModel {
+export function usePullRequestVerdict(
+    pr: MaybeRefOrGetter<PullRequestItem>,
+    checks: MaybeRefOrGetter<MergeCheckCounts | null> = null,
+): PullRequestVerdictViewModel {
     const t = useTranslate();
-    const standing = computed(() => getPullRequestStanding(toValue(pr)));
+    /** The checks counted, while they decide: open, not a draft, and no conflicts (which hold it whatever they say). */
+    const counted = computed(() => {
+        const current = toValue(pr);
+        const counts = toValue(checks);
+        const open = current.state === 'OPEN' && !current.isDraft;
+        return counts && open && !getPullRequestStanding(current).conflicts ? counts : null;
+    });
+    // Counted, the checks speak through the counts alone: the row's summary counts the ones not required too.
+    const standing = computed(() => {
+        const current = toValue(pr);
+        return getPullRequestStanding(counted.value ? { ...current, checks: null } : current);
+    });
     const mergeable = computed(() => {
         const current = toValue(pr);
+        const counts = counted.value;
+        if (counts) {
+            return counts.requiredFailing + counts.requiredPending === 0 && isReadyState(current.mergeStateStatus);
+        }
+
         const clean = current.mergeStateStatus === 'CLEAN' || current.mergeStateStatus === 'HAS_HOOKS';
         return (
-            standing.value.readyToMerge ||
-            (clean && !current.isDraft && current.reviewDecision === null && !standing.value.needsAuthor)
+            current.state === 'OPEN' &&
+            (standing.value.readyToMerge ||
+                (clean && !current.isDraft && current.reviewDecision === null && !standing.value.needsAuthor))
         );
     });
 
@@ -73,6 +99,22 @@ export function usePullRequestVerdict(pr: MaybeRefOrGetter<PullRequestItem>): Pu
 
         if (current.isDraft) {
             return { tone: 'muted', icon: GitPullRequestDraft, text: t(l.draft), aside: t(l.draftDetail) };
+        }
+
+        const counts = counted.value;
+        if (counts && counts.requiredFailing > 0) {
+            const aside = t(l.requiredFailed, { count: counts.requiredFailing });
+            return { tone: 'danger', icon: CircleX, text: t(l.cannotMerge), aside };
+        }
+
+        if (counts && counts.requiredPending > 0) {
+            const running = t(l.requiredRunning, { count: counts.requiredPending });
+            const aside = current.reviewDecision === 'APPROVED' ? `${running} · ${t(l.approved)}` : running;
+            return { tone: 'warning', icon: LoaderCircle, text: t(l.cannotMerge), aside };
+        }
+
+        if (counts && mergeable.value) {
+            return { tone: 'success', icon: CircleCheck, text: t(l.ready), aside: readyAside(current, counts) };
         }
 
         if (now.needsAuthor) {
@@ -126,4 +168,32 @@ export function usePullRequestVerdict(pr: MaybeRefOrGetter<PullRequestItem>): Pu
     });
 
     return { verdict, mergeable };
+
+    /** Why it is ready, with the checks counted. */
+    function readyAside(current: PullRequestItem, counts: MergeCheckCounts) {
+        if (current.reviewDecision === 'APPROVED') {
+            const allPassed = counts.otherFailing + counts.otherPending === 0;
+            return allPassed ? t(l.readyDetail) : t(l.readyRequiredPassed);
+        }
+
+        return current.reviewDecision === null ? t(l.readyNoReview) : t(l.readyNoConflicts);
+    }
+}
+
+/** What GitHub's status says when it would merge now: requirements met (an optional check may still fail). */
+function isReadyState(status: MergeStateStatus) {
+    switch (status) {
+        case 'CLEAN':
+        case 'HAS_HOOKS':
+        case 'UNSTABLE':
+            return true;
+        case 'BEHIND':
+        case 'BLOCKED':
+        case 'DIRTY':
+        case 'DRAFT':
+        case 'UNKNOWN':
+            return false;
+        default:
+            return assertNever(status);
+    }
 }

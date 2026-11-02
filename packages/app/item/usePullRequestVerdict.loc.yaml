@@ -38,4 +38,20 @@ blocked:
 beingMerged:
   en: Being merged
 beingMergedDetail:
-  en: GitHub accepted it · not merged yet
+  en: Sent to GitHub · not merged yet
+readyRequiredPassed:
+  en: Approved · required checks passed
+readyNoConflicts:
+  en: No conflicts
+requiredFailed:
+  plural: count
+  en:
+    one: A required check failed
+    many: '{count} required checks failed'
+requiredRunning:
+  plural: count
+  en:
+    one: '{count} required check running'
+    many: '{count} required checks running'
+approved:
+  en: approved

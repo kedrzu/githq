@@ -120,9 +120,9 @@ sendingFields:
     one: 'Sending 1 change: {fields}'
     many: 'Sending {count} changes: {fields}'
 mergingTo:
-  en: Merging {target}
+  en: Merge on the way · {target}
 merging:
-  en: Merging
+  en: Merge on the way
 itemCount:
   plural: count
   en:

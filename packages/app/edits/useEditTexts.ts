@@ -13,9 +13,9 @@ export interface EditTexts {
     failureTitle(failure: EditFailure): string;
     /** What happened, for its toast. */
     failureDetail(failure: EditFailure): string;
-    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merging portal#477". */
+    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merge on the way · fitloop/api#477". */
     sending(edits: readonly Edit[]): string;
-    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merging". */
+    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merge on the way". */
     sendingFields(edits: readonly Edit[]): string;
     /** The status bar after a failure: "1 change failed · label “regression” no longer exists". */
     failed(failure: EditFailure): string;
@@ -70,7 +70,7 @@ export function useEditTexts(): EditTexts {
         const items = new Set(edits.map(edit => edit.itemId));
         const [first] = edits;
         if (first && edits.length === 1 && first.subject.kind === 'merged') {
-            return t(l.mergingTo, { target: shortReference(first.reference) });
+            return t(l.mergingTo, { target: first.reference });
         }
 
         const target =

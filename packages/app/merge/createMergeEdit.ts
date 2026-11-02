@@ -42,8 +42,8 @@ const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
  * confirms it; a refusal at once is left to the merge panel to show (`quiet`) while the panel still shows it, one
- * while it runs or after the panel closed is a failed edit; with no answer in time the layer goes without a word and
- * the next sync shows what GitHub holds.
+ * while it runs or after the panel closed is a failed edit; put in a merge queue (`enqueued`), or with no answer in
+ * time, the layer goes without a word and the next sync shows what GitHub holds.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -84,7 +84,10 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
                 }
                 case 'merged':
                     onAnswer({ kind: 'accepted' });
-                    return merged(clock);
+                    return merged(answer.sha);
+                case 'enqueued':
+                    onAnswer({ kind: 'accepted' });
+                    return { kind: 'unknown' };
                 case 'pending':
                     onAnswer({ kind: 'accepted' });
                     return { kind: 'following', follow: () => follow(rest, answer.uuid) };
@@ -112,35 +115,41 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
                 continue;
             }
 
-            if (answer.status === 'merged') {
-                return merged(clock);
-            }
-
-            if (answer.status === 'failed') {
-                return { kind: 'rejected', reason: { kind: 'refused', message: answer.message } };
+            switch (answer.status) {
+                case 'merged':
+                    return merged(answer.sha);
+                case 'failed':
+                    return { kind: 'rejected', reason: { kind: 'refused', message: answer.message } };
+                case 'enqueued':
+                    return { kind: 'unknown' };
+                case 'pending':
+                    break;
+                default:
+                    return assertNever(answer);
             }
         }
 
         return { kind: 'unknown' };
     }
-}
 
-/**
- * GitHub merged it. Drawn until GitHub's own copy says so: without GitHub's time of the merge, the row keeps no
- * confirmation mark, so any copy a sync reads takes the row's place, and an older one only shows under the layer.
- */
-function merged(clock: ClockShape): EditVerdict {
-    const now = new Date(clock.now()).toISOString();
-    return {
-        kind: 'confirmed',
-        layer: {
-            item: current =>
-                current.kind === 'pullRequest'
-                    ? { ...current, state: 'MERGED', merged: true, closedAt: current.closedAt ?? now }
-                    : current,
-            supersededBy: isMerged,
-        },
-    };
+    /**
+     * GitHub merged it. Drawn until GitHub's own copy says so: without GitHub's time of the merge, the row keeps no
+     * confirmation mark, so any copy a sync reads takes the row's place, and an older one only shows under the layer.
+     */
+    function merged(sha: string): EditVerdict {
+        const now = new Date(clock.now()).toISOString();
+        const mergedAs = { method: request.method, sha };
+        return {
+            kind: 'confirmed',
+            layer: {
+                item: current =>
+                    current.kind === 'pullRequest'
+                        ? { ...current, state: 'MERGED', merged: true, closedAt: current.closedAt ?? now, mergedAs }
+                        : current,
+                supersededBy: isMerged,
+            },
+        };
+    }
 }
 
 function isMerged(item: Item) {

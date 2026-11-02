@@ -1,4 +1,4 @@
-<!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log. Before the panel's read, the row's summary alone, with nothing to open. -->
+<!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, with nothing to open. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-vue-next';
@@ -110,10 +110,19 @@ function describeCounts(): CheckSummary {
   return { state, text: parts.join(', ') };
 }
 
-/** A folded row of a check that isn't required says it doesn't stop the merge. */
-function describeAttention(check: MergeCheck) {
+/** One that isn't required, failing or running: it is grey and says it doesn't stop the merge (D13). */
+function isNotStopping(check: MergeCheck) {
+  return !check.isRequired && (check.state === 'failing' || check.state === 'pending');
+}
+
+function describeCheck(check: MergeCheck) {
   const detail = checkTexts.describe(check, props.now);
-  return check.isRequired ? detail : t(l.notStopping, { detail });
+  return isNotStopping(check) ? t(l.notStopping, { detail }) : detail;
+}
+
+/** The colour of a check's icon: grey for one that doesn't stop the merge. */
+function iconTone(check: MergeCheck): ItemCheckState {
+  return isNotStopping(check) ? 'skipped' : check.state;
 }
 </script>
 
@@ -170,11 +179,13 @@ function describeAttention(check: MergeCheck) {
           >
             <component
               :is="getCheckIcon(check.state)"
-              :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${check.state}`]]"
+              :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${iconTone(check)}`]]"
               aria-hidden="true"
             />
-            <span :class="css.mergeChecks_name">{{ checkTexts.name(check) }}</span>
-            <span :class="css.mergeChecks_detail">{{ checkTexts.describe(check, now) }}</span>
+            <span :class="[css.mergeChecks_name, isNotStopping(check) && css.mergeChecks_name_optional]">{{
+              checkTexts.name(check)
+            }}</span>
+            <span :class="css.mergeChecks_detail">{{ describeCheck(check) }}</span>
             <Button
               v-if="check.url"
               variant="link"
@@ -207,13 +218,10 @@ function describeAttention(check: MergeCheck) {
         >
           <component
             :is="getCheckIcon(check.state)"
-            :class="[
-              css.mergeChecks_icon,
-              check.isRequired ? css[`mergeChecks_icon_${check.state}`] : css.mergeChecks_icon_skipped,
-            ]"
+            :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${iconTone(check)}`]]"
             aria-hidden="true"
           />
-          <span :class="[css.mergeChecks_name, !check.isRequired && css.mergeChecks_name_optional]">{{
+          <span :class="[css.mergeChecks_name, isNotStopping(check) && css.mergeChecks_name_optional]">{{
             checkTexts.name(check)
           }}</span>
           <span
@@ -221,7 +229,7 @@ function describeAttention(check: MergeCheck) {
             :class="css.mergeChecks_tag"
             >{{ t(l.required) }}</span
           >
-          <span :class="css.mergeChecks_detail">{{ describeAttention(check) }}</span>
+          <span :class="css.mergeChecks_detail">{{ describeCheck(check) }}</span>
           <Button
             v-if="check.url"
             variant="link"

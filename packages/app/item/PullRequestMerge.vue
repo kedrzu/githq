@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives. Approvals are counted without "of N" (D14). -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). Approvals are counted without "of N" (D14). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -20,6 +20,7 @@ import { computed } from 'vue';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
@@ -40,6 +41,11 @@ const props = defineProps<{
    * says they can't, while it is open, not being merged and merges alone. `null` when not known: neither shows.
    */
   canMerge?: boolean | null;
+  /**
+   * Its checks counted by whether the base branch requires them, once the merge options are read: the verdict then
+   * weighs only the required ones, as the merge panel does (PM38). `null` until then: the row's summary decides.
+   */
+  checks?: MergeCheckCounts | null;
 }>();
 
 const emit = defineEmits<{
@@ -61,7 +67,10 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const names = new Intl.ListFormat(APP_LANGUAGE);
 
 const standing = computed(() => getPullRequestStanding(props.pr));
-const { verdict, mergeable } = usePullRequestVerdict(() => props.pr);
+const { verdict, mergeable } = usePullRequestVerdict(
+  () => props.pr,
+  () => props.checks ?? null,
+);
 const open = computed(() => props.pr.state === 'OPEN');
 const merging = computed(() => props.pr.merging !== undefined);
 /** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */

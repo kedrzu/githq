@@ -66,7 +66,12 @@ export const PullRequestFailing: Story = {
         closes: F1_CLOSES,
         position: { index: 3, count: 13 },
         // Read from the merge options: both failing checks are required (JKPLA).
-        requiredCheckIds: ['ci/test (node 20)', 'ci/e2e (chromium)'],
+        mergeChecks: F1_PULL_REQUEST_DETAIL.checks.map(check => ({
+            ...check,
+            isRequired: check.id === 'ci/test (node 20)' || check.id === 'ci/e2e (chromium)',
+            appSlug: 'github-actions',
+            workflowRunId: 1,
+        })),
     },
 };
 
@@ -89,6 +94,29 @@ export const PullRequestBeingMerged: Story = {
             ...SAMPLE_MAINTAINER_EDITING,
             permissions: { ...SAMPLE_MAINTAINER_EDITING.permissions, merge: false },
         },
+    },
+};
+
+/**
+ * PM38: approved, one check failing and one running that the base branch doesn't require — GitHub's status says the
+ * requirements are met. Once the merge options are read, the standing says what the merge panel says: ready.
+ */
+export const PullRequestOptionalFailing: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: {
+            ...F3_PULL_REQUEST,
+            mergeStateStatus: 'UNSTABLE',
+            checks: { state: 'FAILURE', passing: 7, failing: 1, pending: 1 },
+        },
+        mergeChecks: F3_PULL_REQUEST_DETAIL.checks.map(check => ({
+            ...check,
+            ...(check.name === 'Vercel' ? { state: 'failing' as const } : {}),
+            ...(check.name === 'docs' ? { state: 'pending' as const, completedAt: null } : {}),
+            isRequired: check.name !== 'Vercel' && check.name !== 'docs',
+            appSlug: 'github-actions',
+            workflowRunId: 1,
+        })),
     },
 };
 

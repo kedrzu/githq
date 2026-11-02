@@ -20,9 +20,10 @@ export interface RequestAsyncMergeParams {
 }
 
 /**
- * Asks GitHub to merge a pull request (`PUT …/pulls/{number}/merge-async`). GitHub enqueues the merge and answers
- * `pending` with the `uuid` to follow it by (`readAsyncMerge`); a pull request already merged answers `merged`, a
- * refused merge `failed`. Throws `GitHubApiError` on any other refusal.
+ * Asks GitHub to merge a pull request (`PUT …/pulls/{number}/merge-async`). GitHub takes the merge and answers
+ * `pending` with the `uuid` to follow it by (`readAsyncMerge`), also for a merge already running (409); `enqueued` when
+ * it went into a merge queue; a pull request already merged answers `merged`, a refused merge `failed`. Throws
+ * `GitHubApiError` on any other refusal.
  */
 export function requestAsyncMerge(
     rest: GitHubRestRequester,

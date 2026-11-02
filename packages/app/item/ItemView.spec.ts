@@ -15,6 +15,7 @@ const {
     PullRequestBeingMerged,
     PullRequestContributorView,
     PullRequestFailing,
+    PullRequestOptionalFailing,
     PullRequestReady,
     StackOfTenInModal,
     StackOfTenInPanel,
@@ -366,7 +367,7 @@ test('PM33: being merged never reads merged — the pill stays Open, the verdict
 
     await expect
         .element(page.getByRole('heading', { name: /^Being merged/ }))
-        .toHaveTextContent('Being mergedGitHub accepted it · not merged yet');
+        .toHaveTextContent('Being mergedSent to GitHub · not merged yet');
     await expect.element(page.getByText('Open', { exact: true })).toBeVisible();
     await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
     await expect.element(page.getByText('Waiting for GitHub')).toBeVisible();
@@ -384,4 +385,20 @@ test('JKPLA: a failing check the base branch requires is tagged "Required"; a ru
     await expect.element(tagged('ci / test (node 20)')).toBeVisible();
     await expect.element(tagged('ci / e2e (chromium)')).toBeVisible();
     await expect.element(tagged('ci / e2e (webkit)')).not.toBeInTheDocument();
+});
+
+test("PM38: with the merge options read, a check that isn't required failing or running leaves the standing ready, as the panel says", async () => {
+    await PullRequestOptionalFailing.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Ready to merge/ }))
+        .toHaveTextContent('Ready to mergeApproved · required checks passed');
+});
+
+test("PM38: before the merge options are read, the row's failing check holds the standing", async () => {
+    await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, mergeChecks: null } });
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Can't merge yet/ }))
+        .toHaveTextContent("Can't merge yet1 check failing");
 });

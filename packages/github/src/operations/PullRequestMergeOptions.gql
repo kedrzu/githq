@@ -30,7 +30,6 @@ query PullRequestMergeOptions($id: ID!) {
             statusCheckRollup {
                 # Aliased: the status's `contexts` reads only the counts.
                 contextPage: contexts(first: 100) {
-                    totalCount
                     nodes {
                         ...PullRequestCheckFields
                         ... on CheckRun {

@@ -52,6 +52,8 @@ import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { countMergeChecks } from '@/merge/countMergeChecks.js';
+import type { MergeCheck } from '@/merge/MergeTypes.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -101,8 +103,11 @@ const props = defineProps<{
   stack?: StackDescription | null;
   /** What `K` and `J` open from it: the stack's map marks those rows. */
   neighbours?: StackNeighbours | null;
-  /** A pull request's checks the base branch requires, by id, once read (merging D13): a failing one is tagged. */
-  requiredCheckIds?: readonly string[] | null;
+  /**
+   * A pull request's checks with which of them the base branch requires, once its merge options are read (merging
+   * D13): a failing required one is tagged, and the standing weighs only the required ones, as the merge panel does.
+   */
+  mergeChecks?: readonly MergeCheck[] | null;
 }>();
 
 const emit = defineEmits<{
@@ -200,6 +205,10 @@ const arrangementModel = computed({
 const pr = computed(() => (props.item.kind === 'pullRequest' ? props.item : null));
 const issueDetail = computed(() => (props.detail?.kind === 'issue' ? props.detail : null));
 const prDetail = computed(() => (props.detail?.kind === 'pullRequest' ? props.detail : null));
+const requiredCheckIds = computed(() =>
+  props.mergeChecks ? props.mergeChecks.filter(check => check.isRequired).map(check => check.id) : null,
+);
+const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
@@ -688,6 +697,7 @@ function getProjectOptions(): CommandOption[] {
               :pr="pr"
               :detail="prDetail"
               :can-merge="permissions ? permissions.mergePanel : null"
+              :checks="checkCounts"
               @merge="emit('merge')"
             />
 

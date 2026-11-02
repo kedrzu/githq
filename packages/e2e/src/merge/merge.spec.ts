@@ -11,6 +11,8 @@ import { openMyWork } from '../myWork/openMyWork.js';
 
 const FIRST = 'Redirect once after sign-in';
 const SECOND = 'Cache response headers';
+/** A pull request of acme/web the viewer may merge that my work does not list. */
+const OUTSIDE = 'Trim the access log';
 /** What GitHub proposes for the merge commit of {@link FIRST}: its branch, not the fallback the panel writes itself. */
 const PROPOSED_TITLE = 'Merge pull request #15 from acme/redirect-once';
 
@@ -40,6 +42,7 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     await expect(row).toContainText('Being merged');
     await expect(row.getByRole('img', { name: 'Open pull request' })).toBeVisible();
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
+    await expect(shell.statusBar).toContainText('Merge on the way · acme/web#15');
 
     // My work lists open work only: merged, it leaves it.
     release();
@@ -90,6 +93,39 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
     await expect(item.root).not.toContainText('Being merged');
     expect(sample.world.stateOf(sample.first).merged).toBe(true);
     await expect(shell.toasts).toHaveCount(0);
+});
+
+test('⇧M on a pull request opened by its address, outside my work, opens the panel and merges it; the status bar says the merge is on the way', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const outside = sample.world.pullRequest({
+        repository: 'acme/web',
+        number: 17,
+        title: OUTSIDE,
+        foundBy: [],
+        reviewDecision: 'APPROVED',
+        minutesAgo: 30,
+    });
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    const panel = new MergePanelHarness(page);
+    await expect(myWork.row(OUTSIDE)).toHaveCount(0);
+
+    await page.goto('/acme/web/pull/17');
+    await expect(item.title).toHaveText(OUTSIDE);
+    await expect(item.mergeButton).toBeVisible();
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Commit')).toContainText('Merge pull request #17');
+    const release = sample.world.holdMerges();
+    await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(panel.root).toBeHidden();
+    expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: sample.world.headOf(outside) }]);
+    await expect(shell.statusBar).toContainText('Merge on the way');
+    release();
+    await expect(item.statePill('Merged')).toBeVisible({ timeout: 10_000 });
 });
 
 test('PM24: ⇧M on a pull request being merged opens the panel in its being-merged state, with the method sent and no primary action', async ({

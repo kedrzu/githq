@@ -77,6 +77,17 @@ export interface PullRequestItem extends ItemBase, PullRequestStatus {
      * the merge panel reopened meanwhile says it (PM24).
      */
     readonly merging?: PullRequestMergeMethod;
+    /**
+     * How the user's own merge of it landed, as GitHub confirmed it (PM26). The app's own mark, gone with the first
+     * copy GitHub's sync brings: the row query reads neither the method nor the commit.
+     */
+    readonly mergedAs?: PullRequestMergedAs;
+}
+
+/** How a merge landed: the method it was sent with, and the commit it made on the base branch. */
+export interface PullRequestMergedAs {
+    readonly method: PullRequestMergeMethod;
+    readonly sha: string;
 }
 
 /**

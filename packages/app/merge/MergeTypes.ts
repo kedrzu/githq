@@ -30,8 +30,6 @@ export interface MergeOptions {
     readonly isMergeQueueEnabled: boolean;
     /** The checks of the head commit; empty when nothing runs. */
     readonly checks: readonly MergeCheck[];
-    /** How many checks there are; more than {@link checks} holds when GitHub cut the list (100). */
-    readonly checkCount: number;
 }
 
 /** A commit's title and message. */

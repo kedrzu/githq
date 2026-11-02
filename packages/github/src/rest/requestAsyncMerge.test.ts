@@ -76,6 +76,25 @@ test("a merge GitHub refuses with a failed answer comes back failed, in GitHub's
     });
 });
 
+test('a merge already running answers 409 with its uuid: it comes back pending, to follow', async () => {
+    const rest = restAnswering(() =>
+        Response.json(
+            { status: 'pending', details: { message: 'Merge request is in progress.', uuid: 'b904' } },
+            { status: 409 },
+        ),
+    );
+
+    expect(await requestAsyncMerge(rest, PARAMS)).toEqual({ status: 'pending', uuid: 'b904' });
+});
+
+test('a merge put in the merge queue comes back enqueued', async () => {
+    const rest = restAnswering(() =>
+        Response.json({ status: 'enqueued', details: { message: 'Added to the merge queue.' } }, { status: 202 }),
+    );
+
+    expect(await requestAsyncMerge(rest, PARAMS)).toEqual({ status: 'enqueued' });
+});
+
 test.each([
     ['a refusal of another shape', () => Response.json({ message: 'Not Found' }, { status: 404 })],
     ['a server error', () => new Response('', { status: 502 })],

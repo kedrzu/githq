@@ -2405,7 +2405,6 @@ export type PullRequestMergeOptionsQuery = {
               statusCheckRollup: {
                   state: StatusState;
                   contextPage: {
-                      totalCount: number;
                       nodes: Array<
                           | {
                                 __typename: 'CheckRun';
@@ -9917,7 +9916,6 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
       }
       statusCheckRollup {
         contextPage: contexts(first: 100) {
-          totalCount
           nodes {
             ...PullRequestCheckFields
             ... on CheckRun {

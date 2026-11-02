@@ -27,3 +27,10 @@ test('reads an enqueued merge by its uuid while it runs, then once merged', asyn
     expect(input).toBe('https://api.github.com/repos/nzymejs/githq-merge-sandbox/pulls/7/merge-async/b904');
     expect(init?.method).toBe('GET');
 });
+
+test('reads a merge that went into the merge queue', async () => {
+    const fetch: Fetch = () => Promise.resolve(Response.json({ status: 'enqueued', details: {} }));
+    const rest = createGitHubRestRequester({ getToken: () => 'gho_token', fetch });
+
+    expect(await readAsyncMerge(rest, PARAMS)).toEqual({ status: 'enqueued' });
+});

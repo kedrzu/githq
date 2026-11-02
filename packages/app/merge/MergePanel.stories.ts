@@ -1,3 +1,4 @@
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
@@ -66,11 +67,13 @@ const OPTIONS: MergeOptions = {
     viewerCanEnableAutoMerge: false,
     isMergeQueueEnabled: false,
     checks: PASSED,
-    checkCount: PASSED.length,
 };
 
-/** What GitHub answers the panel's merge with, in the harness. */
-type HarnessAnswer = 'accepted' | 'refused';
+/**
+ * What GitHub answers the panel's merge with, in the harness: `pending` is no answer yet — the pull request drawn as
+ * being merged meanwhile, as the merge's optimistic layer draws it — and `offline` none at all.
+ */
+type HarnessAnswer = 'accepted' | 'offline' | 'pending' | 'refused';
 
 /**
  * The panel as the app drives it: the merges it asks for are written out under it (`sent`), GitHub answers at once
@@ -92,6 +95,7 @@ const Harness = defineComponent({
         const arrived = ref(!props.readLater);
         const sent = ref('Nothing sent');
         const refusal = shallowRef<EditFailureReason | null>(props.refusal);
+        const sending = ref(false);
 
         return () =>
             h('div', { style: { padding: '16px' } }, [
@@ -104,20 +108,31 @@ const Harness = defineComponent({
                 h(MergePanel, {
                     open: open.value,
                     'onUpdate:open': (value: boolean) => (open.value = value),
-                    pr: props.pr,
+                    pr: sending.value ? { ...props.pr, merging: 'SQUASH' } : props.pr,
                     settings: props.settings,
                     options: arrived.value ? props.options : null,
                     reading: !arrived.value,
                     allowed: props.allowed,
-                    sending: false,
+                    sending: sending.value,
                     refusal: refusal.value,
                     now: NOW,
                     onMerge: (request: MergeRequest) => {
                         sent.value = JSON.stringify(request);
-                        if (props.answer === 'refused') {
-                            refusal.value = { kind: 'refused', message: 'Repository rule violations found' };
-                        } else {
-                            open.value = false;
+                        switch (props.answer) {
+                            case 'accepted':
+                                open.value = false;
+                                break;
+                            case 'pending':
+                                sending.value = true;
+                                break;
+                            case 'refused':
+                                refusal.value = { kind: 'refused', message: 'Repository rule violations found' };
+                                break;
+                            case 'offline':
+                                refusal.value = { kind: 'offline' };
+                                break;
+                            default:
+                                assertNever(props.answer);
                         }
                     },
                 }),
@@ -226,6 +241,41 @@ export const NotAllowed: Story = { args: { allowed: false } };
 
 /** PM25: refused at once — GitHub's reason in place; the panel and its text stay, ⌘↵ tries again. */
 export const Refused: Story = { args: { answer: 'refused' } };
+
+/** PM32a: sent, GitHub has not answered yet — the panel stays as it was, its primary busy, claiming nothing. */
+export const Sending: Story = { args: { answer: 'pending' } };
+
+/** Sent, and no answer came back (PM29's voice): it may have reached GitHub, so nothing is said to be merged or not. */
+export const NoAnswer: Story = { args: { answer: 'offline' } };
+
+/** PM26: merged from here a moment ago — how it landed, nothing else to do. */
+export const Merged: Story = {
+    args: {
+        pr: {
+            ...PR,
+            state: 'MERGED',
+            merged: true,
+            closedAt: '2026-11-02T11:59:40Z',
+            mergedAs: { method: 'SQUASH', sha: '6dcb09b5b57875f334f61aebed695e2e4193db5e' },
+        },
+    },
+};
+
+/**
+ * PM4a, PM38: a check that isn't required failed — the row's summary says a check fails, GitHub's status that the
+ * requirements are met: ready.
+ */
+export const OptionalFailed: Story = {
+    args: {
+        pr: { ...PR, mergeStateStatus: 'UNSTABLE', checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 } },
+        options: {
+            ...OPTIONS,
+            checks: PASSED.map(check =>
+                check.name === 'preview' ? { ...check, state: 'failing', completedAt: '2026-11-02T11:50:48Z' } : check,
+            ),
+        },
+    },
+};
 
 function sampleCheck(fullName: string, overrides: Partial<MergeCheck>): MergeCheck {
     const [workflow, name] = fullName.includes(' / ') ? fullName.split(' / ') : [null, fullName];

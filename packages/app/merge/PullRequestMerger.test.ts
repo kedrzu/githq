@@ -23,6 +23,7 @@ const UUID = 'b904';
 const PENDING: TestRestAnswer = { status: 202, body: { status: 'pending', details: { uuid: UUID } } };
 const STILL_PENDING: TestRestAnswer = { status: 200, body: { status: 'pending', details: { uuid: UUID } } };
 const MERGED: TestRestAnswer = { status: 200, body: { status: 'merged', details: { sha: 'merge-sha' } } };
+const ENQUEUED: TestRestAnswer = { status: 202, body: { status: 'enqueued', details: {} } };
 
 test('accepted: the panel learns at once; the row reads being merged — not merged, still open — until GitHub says merged', async () => {
     const { merger, items, queue, session, rest } = await setup();
@@ -80,7 +81,13 @@ test('merged at once: confirmed, and a sync copy read before the merge does not 
     const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
-    expect(items.get('PR_1')).toMatchObject({ merged: true, state: 'MERGED', closedAt: expect.any(String) });
+    // How it landed, for the panel (PM26): only this app's merge knows it.
+    expect(items.get('PR_1')).toMatchObject({
+        merged: true,
+        state: 'MERGED',
+        closedAt: expect.any(String),
+        mergedAs: { method: 'SQUASH', sha: 'merge-sha' },
+    });
 
     // A copy read before the merge arrives: still drawn merged.
     items.upsertMany([open()]);
@@ -163,6 +170,50 @@ test('a failed answer while it runs is a failed edit with GitHub’s words; a re
     ]);
     expect(queue.failures[0]?.toast).toBe(true);
 });
+
+test('a merge already running answers 409 with its uuid: accepted, and followed until GitHub says merged', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    rest.answers.put = {
+        status: 409,
+        body: { status: 'pending', details: { message: 'Merge request is in progress.', uuid: UUID } },
+    };
+
+    const answering = merger.merge({ item: open(), request: { method: 'MERGE' }, shown });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(items.get('PR_1')).toMatchObject({ merging: 'MERGE', merged: false });
+
+    rest.answers.read = MERGED;
+    await session.clock.advance(1000);
+
+    expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'MERGE', sha: 'merge-sha' } });
+    expect(queue.failures).toEqual([]);
+});
+
+test.each([
+    ['as it is asked', { put: ENQUEUED, read: STILL_PENDING }],
+    ['while it runs', { put: PENDING, read: { status: 200, body: { status: 'enqueued', details: {} } } }],
+])(
+    'put in the merge queue %s: accepted, being merged goes with no failure, and the sync shows the queue',
+    async (_, answers) => {
+        const { merger, items, queue, session, rest } = await setup();
+        rest.answers.put = answers.put;
+        rest.answers.read = answers.read;
+
+        const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+        await session.clock.advance(0);
+        expect(await answering).toEqual({ kind: 'accepted' });
+
+        await session.clock.advance(1000);
+
+        expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN' });
+        expect(items.get('PR_1')).not.toHaveProperty('merging');
+        expect(queue.pending).toEqual([]);
+        expect(queue.failures).toEqual([]);
+        expect(queue.undone.size).toBe(0);
+    },
+);
 
 test('no answer within the time limit: being merged goes, with no failure, and nothing is asked after', async () => {
     const { merger, items, queue, session, rest } = await setup();

@@ -1,7 +1,7 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
-import { ref, shallowRef, watch } from 'vue';
+import { ref, shallowRef, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import type { MergeOptions } from './MergeTypes.js';
@@ -11,6 +11,11 @@ import { PullRequestMerger } from './PullRequestMerger.js';
 export interface UseMergeOptionsOptions {
     /** The pull request to read them of: the one the merge panel is open for; `null` for none. */
     readonly itemId: MaybeRefOrGetter<string | null>;
+    /**
+     * Whatever its change means the read went old (the row's check counts): read again, the old options staying until
+     * the new ones arrive. Read once otherwise.
+     */
+    readonly readAgainOn?: MaybeRefOrGetter<unknown>;
 }
 
 /** A pull request's merge options as they are being read. */
@@ -22,7 +27,7 @@ export interface MergeOptionsViewModel {
 
 /**
  * The merge options of a pull request ({@link PullRequestMerger}), read fresh each time it is asked for one — the
- * merge panel as it opens, the opened item for which of its failing checks are required; kept only while asked.
+ * merge panel as it opens, the opened item for which of its checks are required; kept only while asked.
  */
 export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsViewModel {
     const merger = useService(PullRequestMerger);
@@ -31,13 +36,23 @@ export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsVi
     const reading = ref(false);
     let latest = 0;
 
-    watch(itemId, id => void load(id), { immediate: true });
+    watch(
+        [itemId, () => toValue(options.readAgainOn)],
+        ([id], previous) => {
+            // Another pull request: nothing of the last one's read shows meanwhile.
+            if (id !== previous?.[0]) {
+                read.value = null;
+            }
+
+            void load(id);
+        },
+        { immediate: true },
+    );
 
     return reactive({ options: read, reading });
 
     async function load(id: string | null) {
         const attempt = ++latest;
-        read.value = null;
         reading.value = id !== null;
         if (id === null) {
             return;

@@ -8,30 +8,22 @@ refused:
   en: GitHub refused the merge
 nothingMerged:
   en: Nothing was merged
-cannotMerge:
-  en: Can't merge yet
-ready:
-  en: Ready to merge
-readyAllPassed:
-  en: Approved · checks passed · no conflicts
-readyRequiredPassed:
-  en: Approved · required checks passed
-readyNoReview:
-  en: No review required · no conflicts
-readyNoConflicts:
-  en: No conflicts
-requiredFailed:
-  plural: count
-  en:
-    one: A required check failed
-    many: '{count} required checks failed'
-requiredRunning:
-  plural: count
-  en:
-    one: '{count} required check running'
-    many: '{count} required checks running'
-approved:
-  en: approved
+outcomeUnknown:
+  en: Outcome not known yet
+noAnswer:
+  en: GitHub didn't answer · not shown as merged
+squashedInto:
+  en: Squashed into {base}
+mergedInto:
+  en: Merge commit on {base}
+rebasedOnto:
+  en: Rebased onto {base}
+landedAs:
+  en: '{landed} as {sha}'
+into:
+  en: Into {base}
+justNow:
+  en: just now
 method:
   en: Method
 methodSquash:
@@ -94,7 +86,7 @@ nowOn:
 noneLeft:
   en: You were on {from}. No other method is left.
 reasonOffline:
-  en: GitHub could not be reached
+  en: GitHub didn't answer. The merge may have reached it — the next refresh will settle this.
 reasonNotAllowed:
   en: You can't merge this pull request
 reasonOther:

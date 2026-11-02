@@ -1028,7 +1028,7 @@ export class GitHubWorld {
                     },
                     statusCheckRollup: node.statusCheckRollup && {
                         ...node.statusCheckRollup,
-                        contextPage: { totalCount: 0, nodes: [] },
+                        contextPage: { nodes: [] },
                     },
                 },
             };

@@ -40,7 +40,6 @@ export function toMergeOptions(node: MergeOptionsNode): MergeOptions | null {
         viewerCanEnableAutoMerge: node.viewerCanEnableAutoMerge,
         isMergeQueueEnabled: node.isMergeQueueEnabled,
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], check => check && toMergeCheck(check)),
-        checkCount: node.statusCheckRollup?.contextPage.totalCount ?? 0,
     };
 }
 

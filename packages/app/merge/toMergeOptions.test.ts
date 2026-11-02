@@ -20,7 +20,6 @@ test('reads the status, the proposed texts, what the viewer may do and the check
             state: 'PENDING',
             contexts: { checkRunCountsByState: [], statusContextCountsByState: [] },
             contextPage: {
-                totalCount: 2,
                 nodes: [
                     {
                         __typename: 'CheckRun',
@@ -91,7 +90,6 @@ test('reads the status, the proposed texts, what the viewer may do and the check
                 workflowRunId: null,
             },
         ],
-        checkCount: 2,
     };
     expect(toMergeOptions(node)).toEqual(expected);
 });

@@ -15,8 +15,8 @@ export interface ReadAsyncMergeParams {
 }
 
 /**
- * Where an enqueued merge stands (`GET …/pulls/{number}/merge-async/{uuid}`): still `pending`, `merged` or
- * `failed`. Throws `GitHubApiError` on any other refusal — 404 for a `uuid` GitHub does not know.
+ * Where an enqueued merge stands (`GET …/pulls/{number}/merge-async/{uuid}`): still `pending`, `enqueued`, `merged`
+ * or `failed`. Throws `GitHubApiError` on any other refusal — 404 for a `uuid` GitHub does not know.
  */
 export function readAsyncMerge(rest: GitHubRestRequester, params: ReadAsyncMergeParams): Promise<AsyncMergeAnswer> {
     const { owner, name, number, uuid } = params;
