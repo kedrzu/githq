@@ -264,10 +264,64 @@ special case.
   in the pull request view and in its review (owner).
 - `Shift+J` / `Shift+K` extending the file selection — they belong with `J` / `K`, which here walk pull requests.
 
-## Q5
+## D17
 
-**Open: what runs off the main thread.** Owner: github.com stutters on large pull requests, probably too much on the
-main thread; should computation move to a Web Worker, or even WebAssembly? Agent's proposal: the virtualized list
-works per line, not per file, so a large file never renders at once; computing the diff and syntax highlighting —
-pure functions of the file text — run in a Web Worker; the main thread only lays out and draws the rows on screen;
-WebAssembly only where a measurement shows the JavaScript is the bottleneck.
+**A comment goes either straight to the pull request as a single comment, or into a draft review — GitHub's
+pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does; `Cmd+Shift+Enter`
+always does the other.** (2026-11-02, owner: "some prefer to write a draft review and then throw it all as one
+review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference so far —
+agent's reading, the synced settings holding only what is tracked ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+
+**Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
+review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
+stack has its own.
+
+> **Checked 2026-11-02:** `AddPullRequestReviewThreadInput` takes either `pullRequestReviewId` (into a pending
+> review) or `pullRequestId`, plus `path`, `line`, `side`, `startLine`, `startSide`, `subjectType`
+> (`packages/github/src/schema.graphql`). Whether a single comment can be posted while the user has a pending review
+> on the same pull request is open: [Q7](#q7).
+
+## D18
+
+**Writing a suggested change is supported — it is plain markdown, a ```` ```suggestion ```` block in the comment,
+prefilled with the selected lines. Applying someone's suggestion stays on github.com.** (2026-11-02, agent, on the
+owner's condition: suggestions only if GitHub's API supports them)
+
+**Why.** Writing one needs nothing from the API. Applying one has no API: githq would have to build the new file and
+commit it to the branch itself.
+
+> **Checked 2026-11-02:** the schema has no mutation for suggestions (no match for "suggest" apart from deprecated
+> topic suggestions); `createCommitOnBranch` exists (`packages/github/src/schema.graphql`).
+
+**Rejected.**
+
+- Applying suggestions through `createCommitOnBranch` — no API for it, so githq would reimplement GitHub's apply
+  (owner: skip what the API does not offer).
+
+## D19
+
+**File contents are fetched when a pull request's review is opened, not ahead of time, and kept by their blob SHA,
+which never changes. Fetching ahead for pull requests waiting on your review is an option for later.** (2026-11-02,
+owner; keeping by SHA agent's proposal)
+
+## D20
+
+**What runs where is decided by measurement, and speed is the only criterion — not effort or complexity.** The
+candidate: a Web Worker fetches file contents itself, so the text never crosses to the main thread, computes the
+diff, syntax highlighting and the placement of threads, and hands the main thread only the rows about to be drawn
+plus the row counts the scroll needs ([D7](#d7)). The list is virtualized per line, not per file. It is adopted if
+it beats doing the same on the main thread on a large pull request — time to the first drawn rows and dropped frames
+while scrolling; WebAssembly only where the JavaScript is shown to be the bottleneck. (2026-11-02, owner: "we
+optimise for speed"; the candidate is the agent's)
+
+**Why.** github.com stutters on large pull requests (owner). Fetching inside the worker removes the cost the owner
+worried about, sending texts there and back.
+
+## Q7
+
+**Open: can a single comment be posted while the same user has a pending review on that pull request?** A
+third-party guide says a new review fails with "user can only have one pending review per pull request", and that
+REST `POST …/pulls/{n}/comments` posts a standalone comment
+([guide](https://www.claudepluginhub.com/skills/mthalman-superpowers/skills%2Fgithub-pr-reviews), not primary).
+To try live on a test pull request before building [D17](#d17).
+

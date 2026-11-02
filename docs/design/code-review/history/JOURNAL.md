@@ -42,3 +42,8 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   filters, context, position) kept in local cache → D14. Raised Q6: viewed filter vs unresolved threads.
 - 2026-11-02 — Owner chose: the viewed filter keeps files with unresolved threads (header + comment pieces) → D15 (Q6 closed).
 - 2026-11-02 — Owner: J/K walk pull requests in review as in the PR view (consistency); [ / ] for files → D16. Agent's unconfirmed parts listed in D16 (route, entry key, {/} selection, thread keys, landing on first unviewed file).
+- 2026-11-02 — Owner: writing in both modes, default chosen by a setting, Cmd+Enter / Cmd+Shift+Enter → D17.
+  Suggestions only if the API allows: writing is plain markdown, applying has no API → D18 (applying on github.com).
+  No prefetch in v1, recorded as an option → D19. Worker/WASM: speed is the only criterion, decided by measurement;
+  agent's candidate (worker fetches itself, sends only drawn rows) → D20 (Q5 closed). Opened Q7: single comment while
+  a pending review exists (third-party source only).
