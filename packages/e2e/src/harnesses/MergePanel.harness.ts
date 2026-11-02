@@ -4,8 +4,9 @@ import type { Locator, Page } from '@playwright/test';
 export type MergePanelLineName = 'Commit' | 'Method';
 
 /**
- * Playwright harness for the merge panel (`MergePanel.vue`, `⇧M`), the dialog "Merge owner/name#N" over any screen:
- * its read, the methods offered, the commit text and its editor, and GitHub's refusal.
+ * Playwright harness for the merge panel (`MergePanel.vue`, `⇧M`), the dialog "Merge owner/name#N" — or "Merge the
+ * stack …" — over any screen: its read, a stack's pull requests, the methods offered, the commit text and its editor,
+ * and GitHub's refusal.
  */
 export class MergePanelHarness {
     readonly page: Page;
@@ -13,7 +14,17 @@ export class MergePanelHarness {
 
     constructor(page: Page) {
         this.page = page;
-        this.root = page.getByRole('dialog', { name: /^Merge \S+#\d+$/ });
+        this.root = page.getByRole('dialog', { name: /^Merge (\S+#\d+|the stack .+)$/ });
+    }
+
+    /** A stack's pull requests, first to last, each with what it says now. */
+    get stackMembers(): Locator {
+        return this.root.getByTestId('stack-member');
+    }
+
+    /** The row of a stack's pull request `#number`. */
+    stackMember(number: number): Locator {
+        return this.stackMembers.filter({ hasText: new RegExp(`^#${number}\\D`) });
     }
 
     /** The method buttons, while there is more than one to choose from; the chosen one is pressed. */

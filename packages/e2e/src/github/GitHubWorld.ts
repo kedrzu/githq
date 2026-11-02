@@ -410,6 +410,12 @@ interface WorldPullRequest {
     pushed: WorldCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
     readonly stack: WorldStackPlace | null;
+    /**
+     * In a stack, above its first: the head of the pull request below it — its base — as it was when this one was
+     * last rebased on it; `null` for one based on the default branch. A push to the one below leaves it behind, as on
+     * GitHub, until the stack is rebased.
+     */
+    rebasedOn: string | null;
     readonly proposedTexts: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
     /** Merged: its item is closed too, as GitHub's `state` then reads `MERGED`. */
     merged: boolean;
@@ -424,8 +430,11 @@ interface WorldCommit {
 
 /** A merge GitHub accepted ({@link GitHubWorld.holdMerges}), by the `uuid` it is followed by. */
 interface WorldMerge {
-    readonly item: WorldItem;
-    readonly pullRequest: WorldPullRequest;
+    /**
+     * The pull requests it lands, in order — the one it was sent to last: one alone, or in a stack every open one
+     * from the lowest up to it (stacked PRs D11).
+     */
+    readonly landing: readonly WorldStackEntry[];
     readonly uuid: string;
     /** What GitHub said refusing it while it ran ({@link GitHubWorld.refuseHeldMerges}); `null` while it may merge. */
     refusal: string | null;
@@ -560,7 +569,8 @@ const PROJECT_FIRST_PAGE = 100;
  * item is now. It merges pull requests as GitHub's asynchronous merge does (`PUT …/pulls/{n}/merge-async`, then
  * `GET …/merge-async/{uuid}`): refused at once when the head commit named is not the pull request's
  * ({@link headOf}) or the test said so ({@link refuseMerge}), else accepted — and kept pending while
- * {@link holdMerges} holds. And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
+ * {@link holdMerges} holds. A merge of a stacked pull request lands every open one below it too, each its own
+ * commit, and is refused while one of them sits on an old head of the one below it (a {@link push} to it). And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
  * {@link delete}, {@link push}), as GitHub does between two polls.
  */
 export class GitHubWorld {
@@ -858,7 +868,7 @@ export class GitHubWorld {
             this.mergesHeld = false;
             for (const merge of this.merges.values()) {
                 if (merge.refusal === null) {
-                    this.completeMerge(merge);
+                    completeMerge(merge);
                 }
             }
         };
@@ -871,7 +881,7 @@ export class GitHubWorld {
     refuseHeldMerges(message: string): void {
         this.mergesHeld = false;
         for (const merge of this.merges.values()) {
-            if (!merge.pullRequest.merged) {
+            if (merge.landing.some(entry => !entry.pullRequest.merged)) {
                 merge.refusal = message;
             }
         }
@@ -1877,8 +1887,10 @@ export class GitHubWorld {
 
     /**
      * Answers the merges of the pull request `item` (`PUT …/merge-async`) as GitHub does: refused at once (`400`,
-     * `failed`) when {@link refuseMerge} said so or the `sha` sent is not its head, else accepted (`202`, `pending`)
-     * with a `uuid` to ask by — merged at once, or once {@link holdMerges} lets go.
+     * `failed`) when {@link refuseMerge} said so of one it lands, the `sha` sent is not its head, or the stack must be
+     * rebased first; else accepted (`202`, `pending`) with a `uuid` to ask by — merged at once, or once
+     * {@link holdMerges} lets go. In a stack it lands every open one from the lowest up to it, in order (live,
+     * 2026-11-02).
      */
     private answerMerge(github: GitHubMock, item: WorldItem) {
         const { pullRequest } = item;
@@ -1892,15 +1904,23 @@ export class GitHubWorld {
                 return { status: 405, json: { message: 'Pull Request is not mergeable' } };
             }
 
-            const refusal = this.mergeRefusals.get(item.id);
+            const landing = getLanding({ item, pullRequest });
             const sha = isPlainObject(body) ? body.sha : undefined;
-            if (refusal !== undefined || sha !== toHeadRefOid(item)) {
-                const message = refusal ?? 'Pull request head branch was modified.';
+            let message = landing.map(entry => this.mergeRefusals.get(entry.item.id)).find(text => text !== undefined);
+            if (message === undefined && sha !== toHeadRefOid(item)) {
+                message = 'Pull request head branch was modified.';
+            }
+
+            if (message === undefined && landing.slice(1).some(entry => isBehindBelow(entry.pullRequest))) {
+                message = 'This stack must be rebased before it can be merged.';
+            }
+
+            if (message !== undefined) {
                 return { status: 400, json: { status: 'failed', details: { message } } };
             }
 
             const uuid = `merge-${slug(item.id)}-${this.merges.size + 1}`;
-            const merge: WorldMerge = { item, pullRequest, uuid, refusal: null };
+            const merge: WorldMerge = { landing, uuid, refusal: null };
             this.merges.set(merge.uuid, merge);
             github.rest('GET', `${path}/${merge.uuid}`, () => {
                 if (merge.refusal !== null) {
@@ -1915,7 +1935,7 @@ export class GitHubWorld {
                 };
             });
             if (!this.mergesHeld) {
-                this.completeMerge(merge);
+                completeMerge(merge);
             }
 
             return {
@@ -1926,20 +1946,6 @@ export class GitHubWorld {
                 },
             };
         });
-    }
-
-    /** Merges the pull request of a merge GitHub accepted, once: closed and merged, changed now. */
-    private completeMerge(merge: WorldMerge) {
-        const { item, pullRequest } = merge;
-        if (pullRequest.merged) {
-            return;
-        }
-
-        const now = new Date().toISOString();
-        pullRequest.merged = true;
-        item.state = 'CLOSED';
-        item.closedAt = now;
-        item.updatedAt = now;
     }
 
     private createPullRequest(params: GitHubWorldPullRequestParams, stack: WorldStackPlace | null): WorldStackEntry {
@@ -1955,10 +1961,13 @@ export class GitHubWorld {
             updatingBranch: false,
             pushed: null,
             stack,
+            rebasedOn: null,
             proposedTexts: params.proposedTexts ?? {},
             merged: false,
         };
         const item = this.createItem(`PR_${slug(params.repository)}_${params.number}`, params, pullRequest);
+        const below = getBelow(pullRequest);
+        pullRequest.rebasedOn = below ? toHeadRefOid(below.item) : null;
         if (this.github) {
             this.answerMerge(this.github, item);
         }
@@ -2125,6 +2134,8 @@ export class GitHubWorld {
 
         pullRequest.updatingBranch = false;
         pullRequest.behindBase = false;
+        const below = getBelow(pullRequest);
+        pullRequest.rebasedOn = below ? toHeadRefOid(below.item) : null;
         pushCommit(item, pullRequest, {
             author: this.viewer,
             headline: `Merge branch '${this.getRepository(item.repository).defaultBranch}' into ${toHeadRefName(item)}`,
@@ -2133,7 +2144,7 @@ export class GitHubWorld {
 
     private toPullRequestNode(item: WorldItem, pullRequest: WorldPullRequest): PullRequestFieldsFragment {
         const { failingChecks, reviewDecision, stack: place } = pullRequest;
-        const below = place && place.position > 1 ? place.stack.entries[place.position - 2] : undefined;
+        const below = getBelow(pullRequest);
         return {
             ...this.createItemFields(item),
             __typename: 'PullRequest',
@@ -2160,8 +2171,8 @@ export class GitHubWorld {
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
-            baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : BASE_OID,
-            baseRef: { target: { oid: BASE_OID } },
+            baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : (pullRequest.rebasedOn ?? BASE_OID),
+            baseRef: { target: { oid: below ? toHeadRefOid(below.item) : BASE_OID } },
             additions: 12 * item.number,
             deletions: 3 * item.number,
             changedFiles: 2,
@@ -2647,6 +2658,48 @@ function pushCommit(item: WorldItem, pullRequest: WorldPullRequest, commit: Omit
     pullRequest.pushed = { ...commit, oid };
     item.updatedAt = new Date().toISOString();
     return oid;
+}
+
+/** The pull request below it in its stack — its base; `undefined` for one on the default branch. */
+function getBelow(pullRequest: WorldPullRequest): WorldStackEntry | undefined {
+    const place = pullRequest.stack;
+    return place && place.position > 1 ? place.stack.entries[place.position - 2] : undefined;
+}
+
+/** In a stack, it sits on an old head of the one below it, or its base moved: the stack must be rebased (D21). */
+function isBehindBelow(pullRequest: WorldPullRequest): boolean {
+    const below = getBelow(pullRequest);
+    return pullRequest.behindBase || (below !== undefined && pullRequest.rebasedOn !== toHeadRefOid(below.item));
+}
+
+/**
+ * What a merge of `entry` lands, in order: it alone, or in a stack every open one from the lowest up to it — GitHub
+ * merges "a contiguous group starting from the lowest unmerged pull request" (stacked PRs D11).
+ */
+function getLanding(entry: WorldStackEntry): WorldStackEntry[] {
+    const place = entry.pullRequest.stack;
+    if (!place) {
+        return [entry];
+    }
+
+    return place.stack.entries
+        .slice(0, place.position)
+        .filter(other => !other.item.deleted && other.item.state === 'OPEN');
+}
+
+/** Lands the pull requests of a merge GitHub accepted, in order, each once: closed and merged, changed now. */
+function completeMerge(merge: WorldMerge) {
+    for (const { item, pullRequest } of merge.landing) {
+        if (pullRequest.merged) {
+            continue;
+        }
+
+        const now = new Date().toISOString();
+        pullRequest.merged = true;
+        item.state = 'CLOSED';
+        item.closedAt = now;
+        item.updatedAt = now;
+    }
 }
 
 /** `acme/web` → `acme_web`, for node ids. */
