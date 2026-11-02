@@ -1,0 +1,35 @@
+inGithq:
+  en: '{held} of {size} in githq'
+held:
+  en: '{ready} of {open} ready, #{number} blocks'
+heldByDraft:
+  en: '{ready} of {open} ready, #{number} is a draft'
+heldByChecks:
+  en: '{ready} of {open} ready, #{number} checks running'
+heldByReview:
+  en: '{ready} of {open} ready, #{number} waiting for review'
+landed:
+  en: '{count} landed · {state}'
+more:
+  en: '+{count}'
+size:
+  en: '+{additions} −{deletions}'
+projectField:
+  en: '{project}: {value}'
+milestones:
+  plural: count
+  en:
+    one: '{count} milestone'
+    many: '{count} milestones'
+share:
+  en: '{count} of {size}'
+matches:
+  en: '{count} of {size} matches'
+shareHeld:
+  en: '#{number} blocks'
+shareHeldByDraft:
+  en: '#{number} is a draft'
+shareHeldByChecks:
+  en: '#{number} checks running'
+shareHeldByReview:
+  en: '#{number} waiting for review'

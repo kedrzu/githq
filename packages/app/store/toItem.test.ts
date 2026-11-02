@@ -3,6 +3,8 @@ import { expect, test } from 'bun:test';
 
 import type { IssueFieldsFragment, PullRequestFieldsFragment } from '@githq/github/generated.gen.js';
 
+import { samplePullRequestNode } from '@/testing/sampleRowNodes.js';
+
 import type { IssueItem, PullRequestItem } from './ItemTypes.js';
 import { toItem } from './toItem.js';
 
@@ -173,6 +175,10 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
                 { author: null, state: 'APPROVED' },
             ],
         },
+        stack: null,
+        stackEntry: null,
+        baseRefOid: 'a1',
+        baseRef: { target: { oid: 'a1' } },
     };
 
     const expected: PullRequestItem = {
@@ -212,8 +218,35 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
             { author: 'monalisa', state: 'CHANGES_REQUESTED' },
             { author: null, state: 'APPROVED' },
         ],
+        stack: null,
+        behindBase: false,
     };
     expect(toItem(node)).toEqual(expected);
+});
+
+test('a pull request in a stack knows its place there, and is behind its base when the base branch moved past its base commit', () => {
+    const node: PullRequestFieldsFragment = {
+        ...samplePullRequestNode('PR_2', { repository: 'acme/web', number: 41, updatedAt: '2026-10-21T10:00:00Z' }),
+        stack: { id: 'PRS_1', number: 3, size: 4 },
+        stackEntry: { position: 2 },
+        baseRefOid: 'a1',
+        baseRef: { target: { oid: 'b2' } },
+    };
+
+    expect(toItem(node)).toMatchObject({
+        stack: { id: 'PRS_1', number: 3, size: 4, position: 2 },
+        behindBase: true,
+    });
+});
+
+test('a pull request whose base branch is gone is not behind it', () => {
+    const node: PullRequestFieldsFragment = {
+        ...samplePullRequestNode('PR_3', { repository: 'acme/web', number: 42, updatedAt: '2026-10-21T10:00:00Z' }),
+        baseRefOid: 'a1',
+        baseRef: null,
+    };
+
+    expect(toItem(node)).toMatchObject({ stack: null, behindBase: false });
 });
 
 test('a node GitHub returns empty or null (deleted, or no longer visible) is no item', () => {
