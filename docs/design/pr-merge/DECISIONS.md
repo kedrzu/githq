@@ -236,7 +236,10 @@ the owner 2026-11-02)
 **Why.** The second key stays one habit across every state, and the only actions with a cost nobody can take back get
 a chord that habit can't hit. Bypass is its own line above the footer, with a red outline and red words but no red
 ground, so the usual action stays the one filled button, last; its label, "Bypass rules and merge", says what it does
-without reading the line beside it.
+without reading the line beside it. The line lists every requirement not met, because GitHub only says whether the user
+may bypass (`viewerCanMergeAsAdmin`), not which rules; a rule they may not bypass comes back as a refusal in the panel
+(PM25). Bypass goes through REST, which takes no commit email, so it commits with the user's default email and the line
+names it. (owner, 2026-11-02)
 
 **Rejected.**
 
