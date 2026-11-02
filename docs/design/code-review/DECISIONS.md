@@ -96,6 +96,25 @@ extra.
 - GitHub's ready-made patches — no whitespace-free variant, no context beyond the hunk, and silently missing for
   large files.
 
+## D7
+
+**A jump lands on its target by rendering the target first and holding it in place on screen; heights that turn out
+different above the screen are absorbed into the scroll position, so what you look at does not move. "Where you
+are" is a thing with its own identity — a line of a file on one side, or a comment — plus its distance from the top
+of the screen.** (2026-11-02, agent's proposal, owner agreed)
+
+**Why.** Comments have unpredictable heights (markdown, images that load late) and lines may wrap, so no estimate of
+the content above a target is exact. Holding the target in place makes the estimate matter only for the scrollbar.
+The same position survives switching layout ([D3](#d3)), whitespace ([D4](#d4)) and expanded context ([D6](#d6)),
+and is what is remembered per pull request when moving through a stack. If the remembered line is hidden (a
+whitespace-only change after hiding whitespace), the view lands on the nearest visible line above it.
+
+**Rejected.**
+
+- Estimate, jump, measure the miss, correct and repeat (owner's first idea) — every correction is a visible jump, and
+  an image loading after the last correction moves the target again.
+- Remembering the scroll position in pixels — breaks at the first change of layout or whitespace.
+
 ## D8
 
 **Generated files start collapsed — those marked `linguist-generated` in the repository's `.gitattributes`, and
@@ -124,25 +143,6 @@ file list can be filtered as on github.com, and hiding viewed files makes the li
 
 > **Checked 2026-11-02:** `PullRequestChangedFile.viewerViewedState` and the mutations `markFileAsViewed` /
 > `unmarkFileAsViewed` (`path`, `pullRequestId`) exist ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls)).
-
-## D7
-
-**A jump lands on its target by rendering the target first and holding it in place on screen; heights that turn out
-different above the screen are absorbed into the scroll position, so what you look at does not move. "Where you
-are" is a thing with its own identity — a line of a file on one side, or a comment — plus its distance from the top
-of the screen.** (2026-11-02, agent's proposal, owner agreed)
-
-**Why.** Comments have unpredictable heights (markdown, images that load late) and lines may wrap, so no estimate of
-the content above a target is exact. Holding the target in place makes the estimate matter only for the scrollbar.
-The same position survives switching layout ([D3](#d3)), whitespace ([D4](#d4)) and expanded context ([D6](#d6)),
-and is what is remembered per pull request when moving through a stack. If the remembered line is hidden (a
-whitespace-only change after hiding whitespace), the view lands on the nearest visible line above it.
-
-**Rejected.**
-
-- Estimate, jump, measure the miss, correct and repeat (owner's first idea) — every correction is a visible jump, and
-  an image loading after the last correction moves the target again.
-- Remembering the scroll position in pixels — breaks at the first change of layout or whitespace.
 
 ## Q5
 
