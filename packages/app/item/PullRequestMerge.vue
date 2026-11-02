@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowRight, CircleHelp, CircleX, FileDiff, GitBranch, GitMerge, Github, TriangleAlert } from 'lucide-vue-next';
+import { ArrowRight, FileDiff, GitBranch, GitMerge, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
@@ -10,6 +10,8 @@ import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
+import { getReasonTitle } from '@/merge/getReasonTitle.js';
 import type { MergeRecord } from '@/merge/MergeTypes.js';
 import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
@@ -59,23 +61,26 @@ const merging = computed(() => props.pr.merging !== undefined);
 const ended = computed(() => getMergeEnd(props.record ?? null, props.pr, null));
 const verdict = computed((): PullRequestVerdict => {
   const record = ended.value;
-  switch (record?.kind) {
-    case undefined:
-      return mergeVerdict.verdict;
+  if (!record) {
+    return mergeVerdict.verdict;
+  }
+
+  const look = getMergeEndLook(record.kind);
+  switch (record.kind) {
     case 'refused': {
       const { reason } = record;
-      const aside = reason.kind === 'refused' ? (reason.message.trim().split('\n')[0] ?? null) : null;
-      return { tone: 'danger', icon: CircleX, text: t(l.refused), aside: aside || t(l.nothingMerged) };
+      const aside = reason.kind === 'refused' ? getReasonTitle(reason.message) : '';
+      return { ...look, text: t(l.refused), aside: aside || t(l.nothingMerged) };
     }
     case 'methodNotAllowed':
-      return { tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
+      return { ...look, text: t(l.refused), aside: t(l.nothingMerged) };
     case 'headMoved': {
       const author = record.commit?.author;
       const aside = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
-      return { tone: 'warning', icon: TriangleAlert, text: t(l.notMerged), aside };
+      return { ...look, text: t(l.notMerged), aside };
     }
     case 'unknown':
-      return { tone: 'muted', icon: CircleHelp, text: t(l.outcomeUnknown), aside: t(l.notAnswered) };
+      return { ...look, text: t(l.outcomeUnknown), aside: t(l.notAnswered) };
     default:
       return assertNever(record);
   }

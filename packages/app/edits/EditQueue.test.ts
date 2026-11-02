@@ -76,7 +76,8 @@ test('a value missing from GitHub’s answer is a rejection: the change is undon
 
     expect(outcome.failed.map(failed => failed.reason)).toEqual([{ kind: 'dropped' }]);
     expect(items.get('I_1')?.labels).toEqual([BUG]);
-    const expected: Partial<EditFailure> = { itemCount: 1, editCount: 1, toast: true };
+    // Dated by the queue's clock: the status bar says the newest of what it has to say.
+    const expected: Partial<EditFailure> = { itemCount: 1, editCount: 1, toast: true, at: session.clock.now() };
     expect(queue.failures).toMatchObject([expected]);
     expect(queue.undone.get('I_1')).toEqual({ kind: 'labelAdded', label: 'regression' });
 

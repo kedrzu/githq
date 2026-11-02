@@ -93,8 +93,19 @@ export type MergeRecord =
           readonly reason: EditFailureReason;
           /** Epoch ms GitHub answered: a copy of the pull request read after it says more. */
           readonly at: number;
+          /**
+           * The head commit the merge panel read after the refusal, while it is the pull request's head: who pushed
+           * it, for the rows and the opened item to say (PM27, PM37).
+           */
+          readonly headCommit?: MergeHeadCommit;
       }
-    | { readonly kind: 'unknown'; readonly sent: SentMerge; readonly at: number };
+    | {
+          readonly kind: 'unknown';
+          readonly sent: SentMerge;
+          readonly at: number;
+          /** GitHub accepted it and said no result in time (PM29); `false`: the request itself went unanswered. */
+          readonly accepted: boolean;
+      };
 
 /**
  * How the last merge that did not end merged reads, from its record and the pull request as it is now
@@ -113,7 +124,12 @@ export type MergeEnd =
           readonly commit: MergeHeadCommit | null;
       }
     | { readonly kind: 'methodNotAllowed'; readonly sent: SentMerge }
-    | { readonly kind: 'unknown'; readonly sent: SentMerge };
+    | {
+          readonly kind: 'unknown';
+          readonly sent: SentMerge;
+          /** GitHub accepted it and said no result in time; `false`: the request itself went unanswered. */
+          readonly accepted: boolean;
+      };
 
 /** How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time. */
 export type MergeLateEnd =

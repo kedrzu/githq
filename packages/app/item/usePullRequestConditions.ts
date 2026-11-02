@@ -1,5 +1,4 @@
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -10,9 +9,9 @@ import type { MaybeRefOrGetter } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
-import type { ItemCheckState } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
+import { getCheckIcon } from './getCheckIcon.js';
 import { getCheckTone } from './getCheckTone.js';
 import { useCheckTexts } from './useCheckTexts.js';
 import * as l from './usePullRequestConditions.loc.js';
@@ -54,22 +53,7 @@ export function usePullRequestConditions(pr: MaybeRefOrGetter<PullRequestItem>):
 
     function checksLine(): PullRequestCondition {
         const { state, text } = checkTexts.summarize(toValue(pr).checks);
-        return { tone: getCheckTone(state), icon: checksIcon(state), text, aside: null };
-    }
-
-    function checksIcon(state: ItemCheckState): LucideIcon {
-        switch (state) {
-            case 'skipped':
-                return CircleDashed;
-            case 'passing':
-                return CircleCheck;
-            case 'failing':
-                return CircleX;
-            case 'pending':
-                return Hourglass;
-            default:
-                return assertNever(state);
-        }
+        return { tone: getCheckTone(state), icon: getCheckIcon(state), text, aside: null };
     }
 
     function reviewsLine(): PullRequestCondition {

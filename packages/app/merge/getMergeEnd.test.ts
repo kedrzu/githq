@@ -12,7 +12,7 @@ const PR: PullRequestItem = { ...samplePullRequest('PR_1'), headRefOid: 'head-oi
 const SENT: SentMerge = { request: { method: 'MERGE' }, edited: null, head: 'head-oid' };
 const REASON: EditFailureReason = { kind: 'refused', message: 'No.' };
 const REFUSED: MergeRecord = { kind: 'refused', sent: SENT, reason: REASON, at: 1 };
-const UNKNOWN: MergeRecord = { kind: 'unknown', sent: SENT, at: 1 };
+const UNKNOWN: MergeRecord = { kind: 'unknown', sent: SENT, at: 1, accepted: true };
 const OPTIONS: MergeOptions = {
     status: PR,
     proposedTexts: { MERGE: { title: 'Merge', body: '' }, SQUASH: { title: 'Squash', body: '' } },
@@ -57,6 +57,16 @@ test('PM27: refused with the head moved since — a new commit first, whatever G
     expect(getMergeEnd(REFUSED, { ...PR, headRefOid: 'newer-head' }, OPTIONS)).toMatchObject({ commit: null });
 });
 
+test('PM37: with no read of its own — a row, the opened item — the commit noted on the refusal names it, while it is the head', () => {
+    const noted: MergeRecord = { ...REFUSED, headCommit: { oid: 'new-head', headline: 'Handle it', author: 'dkim' } };
+
+    expect(getMergeEnd(noted, { ...PR, headRefOid: 'new-head' }, null)).toMatchObject({
+        kind: 'headMoved',
+        commit: { oid: 'new-head', author: 'dkim' },
+    });
+    expect(getMergeEnd(noted, { ...PR, headRefOid: 'newer-head' }, null)).toMatchObject({ commit: null });
+});
+
 test('PM28: refused for a method the base branch’s rules, once read, don’t allow', () => {
     expect(getMergeEnd(REFUSED, PR, { ...OPTIONS, allowedMergeMethods: ['SQUASH'] })).toEqual({
         kind: 'methodNotAllowed',
@@ -69,5 +79,9 @@ test('PM28: refused for a method the base branch’s rules, once read, don’t a
 });
 
 test('PM29: no answer stays not known — the merge may still land on the head it named', () => {
-    expect(getMergeEnd(UNKNOWN, { ...PR, headRefOid: 'new-head' }, OPTIONS)).toEqual({ kind: 'unknown', sent: SENT });
+    expect(getMergeEnd(UNKNOWN, { ...PR, headRefOid: 'new-head' }, OPTIONS)).toEqual({
+        kind: 'unknown',
+        sent: SENT,
+        accepted: true,
+    });
 });

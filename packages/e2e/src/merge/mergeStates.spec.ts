@@ -1,4 +1,5 @@
 import { expect, test } from '../fixtures.js';
+import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { MergePanelHarness } from '../harnesses/MergePanel.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { selectRow } from '../myWork/selectRow.js';
@@ -164,10 +165,10 @@ test('PM27: a commit pushed after the panel read the head — GitHub refuses the
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: asked }]);
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
 
-    // The panel said it: the row says it too — told by the head it holds, not who pushed it — and no toast besides.
+    // The panel said it: the row says it too — who pushed, from the panel's read — and no toast besides.
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
-    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit');
+    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit from monalisa');
     await expect(myWork.row(FIRST_TITLE)).not.toContainText('Merge refused');
     await expect(shell.toasts).toHaveCount(0);
 
@@ -182,6 +183,31 @@ test('PM27: a commit pushed after the panel read the head — GitHub refuses the
         { merge_method: 'merge', sha: pushed },
     ]);
     await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
+});
+
+test('PM27, PM38: refused for a new commit from the opened pull request — its standing names who pushed it, and leads back to the merge', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    const panel = new MergePanelHarness(page);
+    await myWork.row(FIRST_TITLE).click();
+    await expect(item.mergeButton).toBeVisible();
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
+    sample.world.push(sample.first, 'monalisa', 'Keep the return address');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toContainText('A new commit arrived, so nothing was merged');
+    await page.keyboard.press('Escape');
+    await expect(panel.root).toBeHidden();
+
+    await expect(item.root).toContainText('Not merged');
+    await expect(item.root).toContainText('New commit from monalisa');
+    await expect(item.root.getByRole('button', { name: 'Back to the merge' })).toBeVisible();
+    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit from monalisa');
 });
 
 test('PM29: a merge GitHub accepted with no answer in time, after the user moved on, reads grey in the row and the status bar — outcome not known, not merged, not failed — with no toast', async ({

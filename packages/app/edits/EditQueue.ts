@@ -37,6 +37,8 @@ export interface EditFailure {
     readonly failed: readonly FailedEdit[];
     /** Its toast is showing. */
     readonly toast: boolean;
+    /** Epoch ms it was reported: the status bar says the newest of what it has to say. */
+    readonly at: number;
 }
 
 /** An action's edits as they ended. */
@@ -335,8 +337,9 @@ export const EditQueue = defineService({
             current.timers.add(cancel);
         }
 
-        function report(failure: Omit<EditFailure, 'id' | 'toast'>) {
-            failuresRef.value = [...failuresRef.value, { ...failure, id: nextFailureId++, toast: true }];
+        function report(failure: Omit<EditFailure, 'at' | 'id' | 'toast'>) {
+            const reported = { ...failure, id: nextFailureId++, toast: true, at: clock.now() };
+            failuresRef.value = [...failuresRef.value, reported];
         }
 
         /**

@@ -91,3 +91,13 @@ export const PartlyFailed: Story = {
         template: `<Toaster><Toast v-bind="args" :duration="Infinity">mobile#88 failed: you can read skyline-labs/mobile but not edit its labels, so that change was undone.</Toast></Toaster>`,
     }),
 };
+
+/** PM34: a merge GitHub confirmed after the user moved on — quiet, in the merged tone, and gone by itself. */
+export const MergeConfirmed: Story = {
+    args: { title: 'fitloop/api#477 merged into main', tone: 'done' },
+    render: args => ({
+        components: { Toast, Toaster },
+        setup: () => ({ args }),
+        template: `<Toaster><Toast v-bind="args" :duration="Infinity" /></Toaster>`,
+    }),
+};

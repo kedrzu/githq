@@ -102,7 +102,7 @@ export const MergeNewCommit: Story = {
 /** PM36, PM37 on a board: no answer in time — grey, neither merged nor refused. */
 export const MergeOutcomeUnknown: Story = {
     args: { item: READY },
-    decorators: [withMergeRecord({ kind: 'unknown', sent: SENT, at: AT })],
+    decorators: [withMergeRecord({ kind: 'unknown', sent: SENT, at: AT, accepted: true })],
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByText('Merge sent · outcome not known yet')).toBeVisible();
     },

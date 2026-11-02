@@ -26,6 +26,7 @@ const {
     Refused,
     RefusedReopened,
     RequiredFailed,
+    RequiredRunning,
     Sending,
     SentReopened,
 } = composeStories(stories);
@@ -252,6 +253,14 @@ test('PM4a: a required check that failed holds the merge — tagged and first, a
         .not.toHaveTextContent(/doesn't stop the merge/u);
 });
 
+test('PM4a, PM38: checks still running — the Checks line draws them as the opened item’s standing does', async () => {
+    await RequiredRunning.run();
+
+    await expect.element(panel()).toHaveTextContent("Can't merge yet");
+    const label = [...panel().element().querySelectorAll('span')].find(span => span.textContent === 'Checks');
+    expect(label?.parentElement?.querySelector('svg')?.classList.contains('lucide-loader')).toBe(true);
+});
+
 test("PM4a, PM38: a check that isn't required failed — the row's summary says a check fails, the panel reads ready and merges", async () => {
     await OptionalFailed.run();
 
@@ -282,6 +291,9 @@ test('PM29: sent and no answer came back — the outcome is not known, never "no
         .element(panel())
         .toHaveTextContent("Outcome not known yetGitHub hasn't answered · not shown as merged");
     await expect.element(page.getByRole('status')).toHaveTextContent('The next refresh will settle this');
+    // Never accepted that GitHub said so: no time limit passed, the request itself went unanswered.
+    await expect.element(page.getByRole('status')).toHaveTextContent("GitHub didn't answer the request");
+    await expect.element(page.getByRole('status')).not.toHaveTextContent('accepted');
     await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
     await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
     expect(page.getByRole('button', { name: /merge|try again/iu }).elements()).toEqual([]);
@@ -292,7 +304,9 @@ test('PM30: sent for a pull request merged already — GitHub says merged at onc
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
-    await expect.element(panel()).toHaveTextContent('MergedAlready merged · just now');
+    // The answer's time is not the merge's: no age, only the commit GitHub names.
+    await expect.element(panel()).toHaveTextContent('Already mergedGitHub says it merged · 6dcb09b');
+    await expect.element(panel()).not.toHaveTextContent('just now');
     await expect.element(panel()).not.toHaveTextContent('Squashed into main');
     expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
 });

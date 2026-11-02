@@ -7,7 +7,6 @@ import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
   ArrowUpRight,
-  CircleHelp,
   CircleX,
   Eye,
   GitBranch,
@@ -17,7 +16,6 @@ import {
   Info,
   MessageSquareWarning,
   RefreshCw,
-  TriangleAlert,
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
@@ -49,8 +47,10 @@ import { MERGE_TIME_LIMIT_MS } from './createMergeEdit.js';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import { getMergeEnd } from './getMergeEnd.js';
+import { getMergeEndLook } from './getMergeEndLook.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
+import { getReasonTitle } from './getReasonTitle.js';
 import MergeChecks from './MergeChecks.vue';
 import MergeCondition from './MergeCondition.vue';
 import * as l from './MergePanel.loc.js';
@@ -212,6 +212,13 @@ const leadsToMerge = computed(() => mergesNow.value || step.value === 'updateBra
 const verdict = computed((): PanelVerdict => {
   if (merging.value) {
     return { kind: 'merging', ...standing.verdict };
+  }
+
+  // Merged already when this panel's merge was sent: GitHub said so, and how it landed was not this merge (PM30).
+  if (props.pr.merged && props.alreadyMerged) {
+    const sha = props.pr.mergedAs?.sha.slice(0, SHORT_SHA_LENGTH);
+    const aside = sha === undefined ? t(l.githubSaysMerged) : t(l.githubSaysMergedAs, { sha });
+    return { kind: 'merged', ...standing.verdict, text: t(l.alreadyMerged), aside };
   }
 
   if (props.pr.merged) {
@@ -403,7 +410,7 @@ const band = computed((): Band | null => {
         title: commit?.author
           ? t(l.newCommitPushedBy, { author: commit.author, head })
           : t(l.newCommitPushed, { head }),
-        text: commit ? `“${commit.headline}”. ${cancelled}` : cancelled,
+        text: commit ? t(l.newCommitHeadline, { headline: commit.headline, cancelled }) : cancelled,
         link: { label: t(l.seeNewCommit), url: `${props.pr.url}/commits/${record.head}`, key: 'D' },
       };
     }
@@ -426,7 +433,7 @@ const band = computed((): Band | null => {
         tone: 'muted',
         icon: Info,
         title: t(l.nextRefreshSettles),
-        text: t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }),
+        text: record.accepted ? t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }) : t(l.noAnswer),
         link: { label: t(l.openOnGitHub), url: props.pr.url, key: 'O' },
       };
     default:
@@ -482,28 +489,25 @@ watch(proposal, text => {
  */
 function endVerdict(): PanelVerdict | null {
   const record = end.value;
-  switch (record?.kind) {
-    case undefined:
-      return null;
+  if (!record) {
+    return null;
+  }
+
+  const look = getMergeEndLook(record.kind);
+  switch (record.kind) {
     case 'refused':
-      return { kind: 'refused', tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
+      return { kind: 'refused', ...look, text: t(l.refused), aside: t(l.nothingMerged) };
     case 'headMoved':
-      return { kind: 'newCommit', tone: 'warning', icon: TriangleAlert, text: t(l.newCommitArrived), aside: null };
+      return { kind: 'newCommit', ...look, text: t(l.newCommitArrived), aside: null };
     case 'methodNotAllowed': {
       const text = t(l.methodNotAllowed, {
         method: methodName(record.sent.request.method),
         base: props.pr.baseRefName,
       });
-      return { kind: 'refused', tone: 'danger', icon: CircleX, text, aside: t(l.nothingMerged) };
+      return { kind: 'refused', ...look, text, aside: t(l.nothingMerged) };
     }
     case 'unknown':
-      return {
-        kind: 'unknown',
-        tone: 'muted',
-        icon: CircleHelp,
-        text: t(l.outcomeUnknown),
-        aside: t(l.notAnsweredYet),
-      };
+      return { kind: 'unknown', ...look, text: t(l.outcomeUnknown), aside: t(l.notAnsweredYet) };
     default:
       return assertNever(record);
   }
@@ -513,9 +517,10 @@ function endVerdict(): PanelVerdict | null {
 function refusalBand(reason: EditFailureReason): Band {
   switch (reason.kind) {
     case 'refused': {
-      const [title = '', ...rest] = reason.message.trim().split('\n');
-      const more = rest.join(' ').trim();
-      return { tone: 'danger', icon: MessageSquareWarning, title, text: more ? `“${more}”` : null, link: null };
+      const title = getReasonTitle(reason.message);
+      const more = reason.message.trim().split('\n').slice(1).join(' ').trim();
+      const text = more ? t(l.reasonMore, { more }) : null;
+      return { tone: 'danger', icon: MessageSquareWarning, title, text, link: null };
     }
     case 'notAllowed':
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonNotAllowed), text: null, link: null };
@@ -586,16 +591,13 @@ function primaryName(value: PullRequestMergeMethod) {
 
 /**
  * How it landed (PM26): "Squashed into main as 6dcb09b · just now". The method and the commit only when this app's
- * merge confirmed them (`mergedAs`); GitHub's copy of it says neither. Merged already when this panel's merge was
- * sent, it says so, and not how — that merge was not this one (PM30).
+ * merge confirmed them (`mergedAs`); GitHub's copy of it says neither.
  */
 function mergedAside() {
   const { pr } = props;
   const landed = pr.mergedAs;
   let into: string;
-  if (props.alreadyMerged) {
-    into = t(l.alreadyMerged);
-  } else if (landed) {
+  if (landed) {
     into = t(l.landedAs, {
       landed: landedName(landed.method, pr.baseRefName),
       sha: landed.sha.slice(0, SHORT_SHA_LENGTH),

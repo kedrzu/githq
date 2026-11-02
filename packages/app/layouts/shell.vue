@@ -29,6 +29,8 @@ import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
+import { getNewestEdits } from '@/shell/getNewestEdits.js';
+import type { DatedSegmentEdits } from '@/shell/getNewestEdits.js';
 import type { SegmentEdits } from '@/shell/SegmentEdits.js';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
@@ -146,20 +148,27 @@ const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.refe
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
 // The user's edits (D15): the list's segment names the item being sent, the item's the fields. A merge GitHub has not
-// said the end of is grey until the next refresh settles it (merging PM36), and said before an older failure.
+// said the end of is grey until the next refresh settles it (merging PM36); it and a failure, the newer one says it.
 const listEdits = computed((): SegmentEdits | null => {
   if (queue.pending.length > 0) {
     return { kind: 'sending', text: editTexts.sending(queue.pending) };
   }
 
-  const unanswered = mergePanel.unanswered.at(-1);
-  const pr = unanswered === undefined ? undefined : details.getItem(unanswered);
-  if (pr) {
-    const reference = `${pr.repository.nameWithOwner}#${pr.number}`;
-    return { kind: 'unanswered', text: editTexts.unanswered(reference) };
-  }
-
-  return lastFailure.value ? { kind: 'failed', text: editTexts.failed(lastFailure.value) } : null;
+  const unansweredId = mergePanel.unanswered.at(-1);
+  const pr = unansweredId === undefined ? undefined : details.getItem(unansweredId);
+  const record = unansweredId === undefined ? null : mergePanel.getRecord(unansweredId);
+  const unanswered: DatedSegmentEdits | null =
+    pr && record
+      ? {
+          edits: { kind: 'unanswered', text: editTexts.unanswered(`${pr.repository.nameWithOwner}#${pr.number}`) },
+          at: record.at,
+        }
+      : null;
+  const failure = lastFailure.value;
+  const failed: DatedSegmentEdits | null = failure
+    ? { edits: { kind: 'failed', text: editTexts.failed(failure) }, at: failure.at }
+    : null;
+  return getNewestEdits([unanswered, failed]);
 });
 const itemEdits = computed((): SegmentEdits | null => {
   const id = openedId.value;
@@ -172,12 +181,15 @@ const itemEdits = computed((): SegmentEdits | null => {
     return { kind: 'sending', text: editTexts.sendingFields(pending) };
   }
 
-  if (mergePanel.unanswered.includes(id)) {
-    return { kind: 'unanswered', text: editTexts.unanswered(null) };
-  }
-
+  const record = mergePanel.unanswered.includes(id) ? mergePanel.getRecord(id) : null;
+  const unanswered: DatedSegmentEdits | null = record
+    ? { edits: { kind: 'unanswered', text: editTexts.unanswered(null) }, at: record.at }
+    : null;
   const failure = queue.failures.findLast(candidate => candidate.failed.some(failed => failed.edit.itemId === id));
-  return failure ? { kind: 'failed', text: editTexts.failed(failure) } : null;
+  const failed: DatedSegmentEdits | null = failure
+    ? { edits: { kind: 'failed', text: editTexts.failed(failure) }, at: failure.at }
+    : null;
+  return getNewestEdits([unanswered, failed]);
 });
 // How fresh the opened item's detail is (D15); nothing for an item GitHub says does not exist.
 const itemFreshness = computed((): Freshness | null => {

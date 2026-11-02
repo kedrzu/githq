@@ -21,6 +21,8 @@ noResult:
   en:
     one: The request was accepted, then a minute passed with no result. It may still merge. Check on GitHub if you can't wait.
     many: The request was accepted, then {minutes} minutes passed with no result. It may still merge. Check on GitHub if you can't wait.
+noAnswer:
+  en: GitHub didn't answer the request. It may still merge. Check on GitHub if you can't wait.
 openOnGitHub:
   en: Open on GitHub
 newCommitArrived:
@@ -31,6 +33,8 @@ newCommitPushed:
   en: '{head} was pushed to the branch'
 newCommitCancelled:
   en: You asked to merge {asked}, so GitHub cancelled the merge, as githq asked it to. Checks will run again on the new commit.
+newCommitHeadline:
+  en: '“{headline}”. {cancelled}'
 seeNewCommit:
   en: See the new commit
 methodNotAllowed:
@@ -55,6 +59,10 @@ into:
   en: Into {base}
 alreadyMerged:
   en: Already merged
+githubSaysMergedAs:
+  en: GitHub says it merged · {sha}
+githubSaysMerged:
+  en: GitHub says it merged
 justNow:
   en: just now
 method:
@@ -118,6 +126,8 @@ nowOn:
   en: You were on {from}. It's {to} now.
 noneLeft:
   en: You were on {from}. No other method is left.
+reasonMore:
+  en: '“{more}”'
 reasonNotAllowed:
   en: You can't merge this pull request
 reasonOther:

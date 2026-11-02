@@ -211,7 +211,7 @@ const Harness = defineComponent({
                                 break;
                             }
                             case 'offline':
-                                record.value = { kind: 'unknown', sent: merge, at: NOW };
+                                record.value = { kind: 'unknown', sent: merge, at: NOW, accepted: false };
                                 break;
                             default:
                                 assertNever(props.answer);
@@ -390,7 +390,9 @@ export const MethodNotAllowed: Story = {
  * PM29: reopened for a pull request whose merge got no answer in time — grey, neither merged nor failed; nothing
  * offers a second merge, and GitHub is a key away.
  */
-export const OutcomeUnknown: Story = { args: { record: { kind: 'unknown', sent: SENT_EDITED, at: NOW } } };
+export const OutcomeUnknown: Story = {
+    args: { record: { kind: 'unknown', sent: SENT_EDITED, at: NOW, accepted: true } },
+};
 
 /** PM31: refused for a permission githq may lack — one more refusal with GitHub's reason (PM25's look). */
 export const RefusedForPermission: Story = {

@@ -114,7 +114,7 @@ test('PM25: a refusal is recorded as GitHub answers, with its reason and the edi
 });
 
 test('PM29: sent with no answer at all — it may have reached GitHub, so it is recorded as not known, never refused', async () => {
-    const { panel, session } = await setup();
+    const { panel, queue, session } = await setup();
 
     // The request never reaches GitHub, or its answer never comes back.
     session.github.holdIf = request =>
@@ -124,8 +124,26 @@ test('PM29: sent with no answer at all — it may have reached GitHub, so it is 
     await session.clock.advance(0);
 
     expect(await answering).toEqual({ kind: 'refused', reason: { kind: 'offline' } });
-    expect(panel.getRecord('PR_1')).toEqual({ kind: 'unknown', sent: SENT, at: session.clock.now() });
+    // Not accepted either: the panel says the request went unanswered, not that time ran out.
+    expect(panel.getRecord('PR_1')).toEqual({ kind: 'unknown', sent: SENT, at: session.clock.now(), accepted: false });
     expect(panel.unanswered).toEqual(['PR_1']);
+    expect(queue.failures).toEqual([]);
+});
+
+test('PM29, D15: no answer at all after the panel closed is grey too — no failed edit, no toast of a refusal', async () => {
+    const { panel, queue, session } = await setup();
+
+    session.github.holdIf = request =>
+        request.operation === MERGE ? Promise.reject(new TypeError('Failed to fetch')) : null;
+    panel.open('PR_1');
+    const answering = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED });
+    panel.close();
+    await session.clock.advance(0);
+    await answering;
+
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'unknown', accepted: false });
+    expect(queue.failures).toEqual([]);
+    expect(queue.undone.size).toBe(0);
 });
 
 test('PM30: merged at once — GitHub says so only for a pull request merged already: the panel stays, the opener does not move on, no toast', async () => {
@@ -145,6 +163,27 @@ test('PM30: merged at once — GitHub says so only for a pull request merged alr
     expect(panel.getRecord('PR_1')).toBeNull();
 });
 
+test('PM27, PM37: the head commit read after a refusal is noted on it while it is the head — for the rows to name who pushed it', async () => {
+    const { panel, merger, session, answers } = await setup();
+    const commit = { oid: 'new-head', headline: 'New', author: 'dkim' };
+
+    answers.put = REFUSED;
+    panel.open('PR_1');
+    const refused = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED });
+    await session.clock.advance(0);
+    await refused;
+
+    // A commit that is not the head now is not noted.
+    panel.noteHeadCommit('PR_1', commit);
+    expect(panel.getRecord('PR_1')).not.toHaveProperty('headCommit');
+
+    // The panel reads it again: the new head is written into the row, and its commit is noted.
+    answers.optionsHead = 'new-head';
+    await merger.readOptions('PR_1');
+    panel.noteHeadCommit('PR_1', commit);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused', headCommit: commit });
+});
+
 test('PM29: accepted, then no answer within the time limit — recorded as not known, with the text sent', async () => {
     const { panel, session, answers } = await setup();
     answers.put = PENDING;
@@ -156,7 +195,7 @@ test('PM29: accepted, then no answer within the time limit — recorded as not k
     expect(panel.getRecord('PR_1')).toBeNull();
 
     await session.clock.advance(120_000);
-    expect(panel.getRecord('PR_1')).toEqual({ kind: 'unknown', sent: SENT, at: session.clock.now() });
+    expect(panel.getRecord('PR_1')).toEqual({ kind: 'unknown', sent: SENT, at: session.clock.now(), accepted: true });
 });
 
 test('PM36: no answer in time goes once a round of the regular sync started since succeeds — not a round started before, nor one failing', async () => {

@@ -44,8 +44,8 @@ export const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
  * confirms it; a refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is
- * a failed edit otherwise; put in a merge queue (`enqueued`), or with no answer in time, the layer goes without a word
- * and the next sync shows what GitHub holds.
+ * a failed edit otherwise; put in a merge queue (`enqueued`), with no answer in time, or with the request itself
+ * unanswered, the layer goes without a word and the next sync shows what GitHub holds.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -75,7 +75,9 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
             } catch (error) {
                 const reason = toEditFailureReason(error);
                 onAnswer({ kind: 'refused', reason });
-                return { kind: 'rejected', reason, quiet: shown() };
+                // Unanswered, it may have reached GitHub all the same: neither refused nor failed — no failed edit,
+                // and the next sync shows what GitHub holds (PM29).
+                return reason.kind === 'offline' ? { kind: 'unknown' } : { kind: 'rejected', reason, quiet: shown() };
             }
 
             switch (answer.status) {

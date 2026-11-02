@@ -12,7 +12,7 @@ import type { SyncLoop } from '@/store/ItemStoreTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import { getMergeEnd } from './getMergeEnd.js';
-import type { MergeAnswer, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
+import type { MergeAnswer, MergeHeadCommit, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
 
 /** The loops of the regular sync that read pull requests again: a round of one says how a merge ended (D3). */
@@ -110,6 +110,7 @@ export const MergePanelStore = defineService({
             merge,
             getRecord,
             getSent,
+            noteHeadCommit,
             forget,
             dismissConfirmation,
         };
@@ -137,6 +138,18 @@ export const MergePanelStore = defineService({
         /** The method and text the pull request's last merge that did not end merged was sent with, for the session. */
         function getSent(itemId: string): SentMerge | null {
             return sentRef.value.get(itemId) ?? null;
+        }
+
+        /**
+         * Notes on a refusal still speaking for the pull request the head commit a read after it brought, while that is
+         * its head: the rows and the opened item, which read no merge options, then say who pushed it (PM27, PM37).
+         */
+        function noteHeadCommit(itemId: string, commit: MergeHeadCommit) {
+            const record = getRecord(itemId);
+            const pr = details.getItem(itemId);
+            if (record?.kind === 'refused' && pr?.kind === 'pullRequest' && pr.headRefOid === commit.oid) {
+                recordsRef.value = new Map(recordsRef.value).set(itemId, { ...record, headCommit: commit });
+            }
         }
 
         /**
@@ -201,7 +214,7 @@ export const MergePanelStore = defineService({
                             confirm();
                             return;
                         case 'unknown':
-                            keep({ kind: 'unknown', sent, at: clock.now() });
+                            keep({ kind: 'unknown', sent, at: clock.now(), accepted: true });
                             return;
                         case 'refused':
                             keep(toRecord(end.reason));
@@ -233,7 +246,7 @@ export const MergePanelStore = defineService({
             function toRecord(reason: EditFailureReason): MergeRecord {
                 const at = clock.now();
                 return reason.kind === 'offline'
-                    ? { kind: 'unknown', sent, at }
+                    ? { kind: 'unknown', sent, at, accepted: false }
                     : { kind: 'refused', sent, reason, at };
             }
 

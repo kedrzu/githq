@@ -189,6 +189,7 @@ export const PullRequestOutcomeUnknown: Story = {
             kind: 'unknown',
             sent: { request: { method: 'SQUASH' }, edited: null, head: F3_PULL_REQUEST.headRefOid },
             at: 0,
+            accepted: true,
         }),
     ],
 };

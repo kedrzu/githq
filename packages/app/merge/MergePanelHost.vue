@@ -71,7 +71,8 @@ watch(repository, name => {
 
 /**
  * Busy until GitHub answered — and, refused, until the panel read the pull request again, so it shows what the refusal
- * is told apart by (PM27, PM28).
+ * is told apart by (PM27, PM28). The head commit read is noted on the refusal, for the rows and the opened item to
+ * name who pushed it (PM37).
  */
 async function merge(submission: MergeSubmission) {
   const item = pr.value;
@@ -84,6 +85,10 @@ async function merge(submission: MergeSubmission) {
   const answer = await store.merge({ item, submission });
   if (answer.kind === 'refused' && store.opening === opening) {
     await read.refresh();
+    const commit = read.options?.headCommit;
+    if (commit && store.opening === opening && store.itemId === item.id) {
+      store.noteHeadCommit(item.id, commit);
+    }
   }
 
   // Opened anew meanwhile: that panel is not this one's to answer.

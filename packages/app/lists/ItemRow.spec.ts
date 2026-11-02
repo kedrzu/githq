@@ -83,7 +83,7 @@ test('PM37: refused, with its head no longer the one the merge named, the row sa
 });
 
 test('PM36, PM37: no answer in time, the row is grey — neither merged nor refused — with nothing to send again', async () => {
-    const record: MergeRecord = { kind: 'unknown', sent: SENT, at: SAMPLE_NOW };
+    const record: MergeRecord = { kind: 'unknown', sent: SENT, at: SAMPLE_NOW, accepted: true };
     mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
 
     await expect.element(page.getByText('Merge sent · outcome not known yet')).toBeVisible();

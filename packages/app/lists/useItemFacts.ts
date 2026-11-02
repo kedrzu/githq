@@ -6,7 +6,6 @@ import type { LucideIcon } from 'lucide-vue-next';
 import {
     CircleCheck,
     CircleDot,
-    CircleHelp,
     CircleSlash,
     CircleX,
     Eye,
@@ -14,13 +13,13 @@ import {
     GitPullRequestDraft,
     Hourglass,
     Loader,
-    TriangleAlert,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
@@ -190,23 +189,18 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
     /** PM37: how the last merge of it ended when it did not merge — refused, a new commit, or not known yet. */
     function getEndStatus(end: MergeEnd): ItemStatusFact {
+        const look = getMergeEndLook(end.kind);
         switch (end.kind) {
             case 'refused':
             case 'methodNotAllowed':
-                return {
-                    icon: CircleX,
-                    tone: 'danger',
-                    text: t(l.mergeRefused),
-                    readyToMerge: false,
-                    backToMerge: true,
-                };
+                return { ...look, text: t(l.mergeRefused), readyToMerge: false, backToMerge: true };
             case 'headMoved': {
                 const author = end.commit?.author;
                 const text = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
-                return { icon: TriangleAlert, tone: 'warning', text, readyToMerge: false, backToMerge: true };
+                return { ...look, text, readyToMerge: false, backToMerge: true };
             }
             case 'unknown':
-                return { icon: CircleHelp, tone: 'muted', text: t(l.outcomeUnknown), readyToMerge: false };
+                return { ...look, text: t(l.outcomeUnknown), readyToMerge: false };
             default:
                 return assertNever(end);
         }

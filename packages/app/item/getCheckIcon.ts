@@ -1,11 +1,12 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { CircleCheck, CircleSlash, CircleX, LoaderCircle } from 'lucide-vue-next';
+import { CircleCheck, CircleSlash, CircleX, Loader } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 
 import type { ItemCheckState } from '@/store/ItemDetailTypes.js';
 
 /**
- * The icon of a check in this state, as the opened item's and the merge panel's lists draw it.
+ * The icon of a check, or of checks summed up, in this state: as the opened item's checks and standing, and the merge
+ * panel, draw it (PM4a, PM38).
  *
  * @util
  * @__NO_SIDE_EFFECTS__
@@ -15,7 +16,7 @@ export function getCheckIcon(state: ItemCheckState): LucideIcon {
         case 'failing':
             return CircleX;
         case 'pending':
-            return LoaderCircle;
+            return Loader;
         case 'passing':
             return CircleCheck;
         case 'skipped':

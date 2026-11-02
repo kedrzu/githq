@@ -2,7 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { D1_ISSUE_DETAIL, F1_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
+import { D1_ISSUE_DETAIL, F1_PULL_REQUEST, F3_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './ItemView.stories.js';
@@ -399,6 +399,15 @@ test("PM38: with the merge options read, a check that isn't required failing or 
     await expect
         .element(page.getByRole('heading', { name: /^Ready to merge/ }))
         .toHaveTextContent('Ready to mergeApproved · required checks passed');
+});
+
+test('PM38: checks still running — the standing draws its Checks line with the icon the merge panel draws them with', async () => {
+    const checks = { state: 'PENDING', passing: 6, failing: 0, pending: 3 } as const;
+    await PullRequestReady.run({ args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, checks } } });
+
+    await expect.element(page.getByText('3 running', { exact: false })).toBeVisible();
+    const label = [...document.querySelectorAll('dt')].find(term => term.textContent.trim() === 'Checks');
+    expect(label?.querySelector('svg')?.classList.contains('lucide-loader')).toBe(true);
 });
 
 test("PM38: before the merge options are read, the row's failing check holds the standing", async () => {
