@@ -1,4 +1,5 @@
 import { expect, test } from '../fixtures.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
@@ -107,6 +108,21 @@ test("switched to a page of its own, the item is at GitHub's address of it: a re
     await expect(page).toHaveURL('/');
     await expect(item.root).toBeHidden();
     await expect(myWork.selectedRow).toContainText(ISSUE);
+});
+
+test("an address GitHub can't be asked about says so instead of opening for ever, and Try again asks again", async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    github.graphql('ItemByNumber', new GitHubHttpError(403, 'Forbidden'));
+
+    await page.goto('/acme/web/issues/999');
+    await expect(page.getByRole('heading', { name: "Couldn't reach GitHub" })).toBeVisible();
+
+    github.graphql('ItemByNumber', { repository: null });
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await expect(page.getByRole('heading', { name: 'No such issue or pull request' })).toBeVisible();
 });
 
 test('J and K step through the list the item was opened from, beside it and on its own page', async ({

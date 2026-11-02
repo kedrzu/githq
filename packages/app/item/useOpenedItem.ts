@@ -29,6 +29,10 @@ export interface OpenedItemViewModel {
     readonly detail: ItemDetail | null;
     /** GitHub says there is no such item, or the user may not see it. */
     readonly missing: boolean;
+    /** Its id could not be asked for: GitHub did not answer, for about half a minute, or refused. */
+    readonly failed: boolean;
+    /** Asks for its id again, after {@link failed}. */
+    tryAgain(): void;
 }
 
 /**
@@ -86,5 +90,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         item,
         detail,
         missing: computed(() => found.value === null),
+        failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),
+        tryAgain: () => void resolver.resolve(reference.value),
     });
 }

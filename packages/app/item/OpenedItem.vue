@@ -77,6 +77,14 @@ const mergeOptions = useMergeOptions({
 });
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
+/** What shows until the item does. */
+const waitingTitle = computed(() => {
+  if (opened.missing) {
+    return t(l.missing);
+  }
+
+  return opened.failed ? t(l.unreachable) : t(l.opening, { reference: referenceText.value });
+});
 const listIndex = computed(() => {
   const ids = navigation.list?.ids ?? [];
   return opened.id === null ? -1 : ids.indexOf(opened.id);
@@ -320,9 +328,21 @@ async function loadAllComments() {
     <EmptyState
       v-else
       :icon="SearchX"
-      :title="opened.missing ? t(l.missing) : t(l.opening, { reference: referenceText })"
+      :title="waitingTitle"
       :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
-    />
+    >
+      <template
+        v-if="opened.failed"
+        #action
+      >
+        <Button
+          size="sm"
+          @click="opened.tryAgain()"
+        >
+          {{ t(l.tryAgain) }}
+        </Button>
+      </template>
+    </EmptyState>
   </Dialog>
   <ItemView
     v-else-if="opened.item"
@@ -355,7 +375,7 @@ async function loadAllComments() {
   >
     <EmptyState
       :icon="SearchX"
-      :title="opened.missing ? t(l.missing) : t(l.opening, { reference: referenceText })"
+      :title="waitingTitle"
       :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
     >
       <template
@@ -367,6 +387,17 @@ async function loadAllComments() {
           @click="close"
         >
           {{ t(l.backToList) }}
+        </Button>
+      </template>
+      <template
+        v-else-if="opened.failed"
+        #action
+      >
+        <Button
+          size="sm"
+          @click="opened.tryAgain()"
+        >
+          {{ t(l.tryAgain) }}
         </Button>
       </template>
     </EmptyState>
