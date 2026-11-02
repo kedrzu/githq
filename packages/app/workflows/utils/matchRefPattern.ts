@@ -1,3 +1,5 @@
+import { escapeRegExp } from '@/utils/escapeRegExp.js';
+
 /**
  * Whether a ref's name — a branch's or a tag's alike — matches a pattern in GitHub Actions' filter syntax (actions
  * D13), whole: `*` matches anything but `/`, `**` anything; `?` makes the character before it optional and `+`
@@ -85,8 +87,4 @@ function kindOf(char: string) {
     }
 
     return char === char.toLowerCase() ? 'lower' : 'upper';
-}
-
-function escapeRegExp(text: string) {
-    return text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 }
