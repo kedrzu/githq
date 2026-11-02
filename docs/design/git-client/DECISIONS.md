@@ -234,29 +234,34 @@ owner's explicit "not yet".
 
 ## D14
 
-**The repository view becomes sections as tabs beside its title: Issues, Pull requests, Commits and Workflows, on
-`1`–`4`, each with its own toolbar on the right of the same line. All is removed; Issues and Pull requests are two
-lists with their own state, grouping, List or Board and Display. The open count beside the title and grouping by kind
-go too; the projects bar stays under Issues and Pull requests only.** (2026-11-02, design agent's proposal,
-Direction A of three drawn in `githq.pen` "App · Commits", CH1–CH9; not yet picked by the owner)
+**The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with
+its own tools, in two layouts the user chooses between in Settings · Display: tabs beside the repository's name, each
+with its toolbar on the same line (CH1–CH3), or a column of the repository's own beside the sidebar holding its
+sections, its projects and, on Commits, the branch and tag list (CH4–CH6, CH42). In both, All is removed; Issues and
+Pull requests are two lists with their own state, grouping, List or Board and Display; the open count beside the title
+and grouping by kind go too. The choice is saved with the synced settings. Both are built; after trying them the owner
+keeps the switch or one layout.** (2026-11-02, owner: "a very hard decision, both are potentially good, so let's use
+both… a setting in our settings… synced… we'll test which is better and either keep the switch or pick one"; the
+details are the design agent's)
 
-**Why.** It is the smallest change that gives every section its own tools: the tabs are already where the owner
-looks, Workflows already lives there ([actions D6](../actions/DECISIONS.md#d6)), and `1`–`4` match Settings' `1`–`3`.
-The graph keeps the full width of the pane.
+**Why.** Neither shape wins on paper: tabs keep the full width for the list and the graph, the column gives the
+repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
+decides it. The layout is a preference of the user, not of a view, so it travels with the settings
+([settings-sync D4](../settings-sync/DECISIONS.md#d4)). This adds the first synced setting beyond what is tracked, which
+[settings-sync D7](../settings-sync/DECISIONS.md#d7) does not list yet.
 
 **Rejected.**
-- A column of its own for the open repository, holding its sections and, on Commits, the branch and tag list
-  (Direction B, CH4–CH6) — 232 px off every repository screen, and branch names no longer fit in it.
-- Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows)
-  (Direction C, CH7–CH9, CH21) — keeps All but shares one grouping between issues and pull requests, and puts the
-  branch list behind a key.
+- Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows) — keeps All
+  but shares one grouping between issues and pull requests, and puts the branch list behind a key (owner, 2026-11-02;
+  the screens were CH7–CH9 and CH21, deleted).
+- Picking one layout now — owner: test both first.
 
 ## D15
 
 **The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it
 folds away and `B` opens it over the graph. The default branch is first, then branches, then tags, each newest
 first, with the pull request and CI of each branch's tip. `B` puts the cursor in its filter, and typing narrows
-both groups.** (2026-11-02, design agent's proposal; CH3, CH15–CH17)
+both groups.** (2026-11-02, design agent's proposal; CH3, CH15–CH17, CH6)
 
 **Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key; on the
 right it leaves the app's sidebar and the graph's left edge alone.
@@ -265,9 +270,12 @@ right it leaves the app's sidebar and the graph's left edge alone.
 > (`gh api graphql`, `__type(name: "RefOrderField")`). "Newest first" for branches needs each tip's
 > `committedDate` in the refs request of [D9](#d9) and a local sort.
 
+In the column layout the list is the column's lower part on Commits (CH6), and a commit's details open on the right
+of the pane instead of in the list's place (CH42).
+
 **Rejected.**
-- The list only on demand, as a picker over the graph (Direction C, CH21) — nothing on screen says where branches
-  stand.
+- The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
+  screen says where branches stand.
 
 ## D16
 
@@ -339,3 +347,13 @@ row of its own. A menu is the place a list of actions can grow without crowding 
 **Rejected.**
 - Worktrees only on the branch they have checked out (CD2) — the one on a bare commit has no row, and the rest are
   scattered by date among other branches.
+
+## D22
+
+**Settings gains a Display section, between Projects and Sync settings (`4`; Sync settings and Account move to `5` and
+`6`). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
+once, and a line under it says the choice is saved with the settings.** (2026-11-02, owner asked for the setting in "a
+tab like General or Display"; the section's name and place are the design agent's; CH43)
+
+**Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
+would collect anything.

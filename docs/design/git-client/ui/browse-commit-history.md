@@ -127,19 +127,19 @@ A worktree can have no branch at all, checked out on a bare commit, so it has no
 ## The screens
 
 In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`). The numbers are the frames'.
-Amber frames are still to be picked; Variant A of each is recommended. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
+Amber frames are still to be picked; Variant A of each is recommended. Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 
 |Question|Answer in the frame|
 |-|-|
-|1. The shape of the repository view|Three directions, each with Issues, Pull requests and Commits. A: sections as tabs on `1`–`4`, each with its own toolbar, All removed: CH1–CH3. B: a column of its own for the repository: CH4–CH6. C: Work and Code: CH7–CH9, CH21 (D14)|
-|2. Where the branch and tag list lives|A column right of the graph, always there on a wide window: CH3, CH15–CH17 (D15). In B it is the repository column (CH6); in C a picker (CH21)|
-|3. How a commit's details open|Only in a panel, in the list's place; `J`/`K` keep moving and the panel follows: CH18; as a modal: CH19; a merge: CH20 (D16)|
+|1. The shape of the repository view|Sections on `1`–`4`, All removed, in two layouts chosen in Settings · Display (CH43): tabs, CH1–CH3; a column of the repository's own, CH4–CH6, CH42. Both are built and tried; the Work and Code shape was dropped (D14, D22)|
+|2. Where the branch and tag list lives|Tabs layout: a column right of the graph, always there on a wide window: CH3, CH15–CH17. Column layout: the lower part of the repository's column: CH6 (D15)|
+|3. How a commit's details open|Only in a panel, in the list's place; `J`/`K` keep moving and the panel follows: CH18; as a modal: CH19; a merge: CH20; in the column layout, on the right of the pane: CH42 (D16)|
 |4. How much graph width a row gives up|At most six lanes, the rest folded: CH10; every lane: CH11 (D17)|
 |5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI in fixed columns, red dot and red CI mark for a failure: CH12; other treatments CH13, CH14 (D18)|
 |6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
 |7. A Worktrees section in the list|Yes, above the branches: CD1; worktrees on their branches only: CD2 (D21)|
 
-The repository view, in the brief's order on Direction A: CH1–CH3. The graph: few branches CH3, many CH10. The list: CH15–CH17. A
+The repository view: CH1–CH3 and CH4–CH6, the setting CH43. The graph: few branches CH3, many CH10. The list: CH15–CH17. A
 commit's details: CH18, CH20. Desktop second step: CD1, worktree actions CD3, adding a folder CD4, CD5.
 
 States: opened before CH31; first open, the first second CH32, branches filling in CH33; pull request and CI not known yet CH34;
@@ -149,7 +149,9 @@ deleted CH41; no tracked repository for a folder CD6; a second clone CD7.
 
 Still open, not settled by the screens:
 
-- **The direction (D14) and every amber variant** wait for the owner.
+- **Which layout stays (D14)** is decided by trying both; **every amber variant** waits for the owner.
+- **Settings sync's D7** lists only what is tracked as synced; the repository layout is the first other synced setting, and that
+  design's decisions should say so.
 - **Data the screens need that [D8](../DECISIONS.md#d8) and [D9](../DECISIONS.md#d9) don't fetch yet:**
   - the pull request and CI of each branch's tip in the list (CH3): the rows on screen in the list need the same
     `nodes(ids:)` request as the graph's rows, or a tracked repository's pull requests by head branch;
@@ -160,7 +162,7 @@ Still open, not settled by the screens:
 - **A clone of an untracked repository (CD6).** [D5](../DECISIONS.md#d5) matches a folder to a tracked repository only,
   while [D11](../DECISIONS.md#d11) lets Commits work without tracking. CD6 follows D5 and offers to track; the owner may
   prefer to add the clone to the untracked repository's Commits.
-- **Workflows in an untracked repository** (the tab is drawn in CH10, CH37): the actions design doesn't say whether it
+- **Workflows in an untracked repository** (the section is drawn in CH10, CH37): the actions design doesn't say whether it
   works there.
 - **The pull request opened from a commit (CH29)** uses the shared pull request panel unchanged; its content is the
   component's sample, not #1228's.

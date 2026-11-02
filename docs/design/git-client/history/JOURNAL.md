@@ -38,3 +38,6 @@ Append-only; one line per turn that settled something.
 - 2026-11-02 — Design agent drew the commit history in `githq.pen`: "App · Commits" (CH1–CH41) and "Desktop ·
   Commits" (CD1–CD7). Three directions for the repository view's shape, Variant A recommended (D14); proposals
   D15–D21. Open with the owner: the direction, the variants, and the data questions in the brief's "The screens".
+- 2026-11-02 — Owner kept both the tabs and the column layouts behind a synced setting in Settings · Display, to try
+  both; Work and Code dropped. D14 rewritten as the owner's decision, D22 added; CH7–CH9 and CH21 deleted, CH42 and
+  CH43 drawn.
