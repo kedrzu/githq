@@ -30,3 +30,7 @@ Append-only; one line per turn that settled something.
 - 2026-11-02 — Owner agreed: branch list scrolls to the tip (D12), commit details without files or diff (D13);
   graph line layout left to implementation; asked to close. README: branch list, commit details, first
   version and what follows. Next: rightsize before closing.
+- 2026-11-02 — rightsize (three passes). Owner chose the simpler version of all four items put to the owner: no
+  date gate on drawing (D9), refs checked by one GraphQL request instead of REST ETags (D9), an unloaded ref
+  opens its commit's details (D12), a second clone is refused (D7). Prior forms in history/DECISIONS.md.
+  Design closed by the owner.

@@ -100,15 +100,17 @@ view can show, and the folder is the first thing you want to reach from it.
 
 **A GitHub repository has at most one local clone in githq; parallel work goes through that clone's
 worktrees. Adding a worktree's folder adds its clone (resolved with `git rev-parse --git-common-dir`);
-adding a second separate clone of the same repository offers to replace the first.** (2026-11-01, owner:
-"we support only one clone per repo… opinionated, but so be it"; the handling of the two add cases is the
-design agent's proposal)
+adding a second separate clone of the same repository is refused with a message naming the folder already
+added, and a way to remove it.** (2026-11-01, owner: "we support only one clone per repo… opinionated, but so
+be it"; the refusal chosen by the owner 2026-11-02 over the design agent's replace prompt)
 
 **Why.** With worktrees a second clone gains almost nothing, and supporting it means several sets of local
 branches in one graph and a choice of clone behind every local action.
 
 **Rejected.**
 - Several clones per repository — too much complexity for too little gain (owner).
+- Asking whether to replace the existing clone — a flow of its own for a case meant to be rare; removing
+  and adding does the same ([history](history/DECISIONS.md#d7)).
 
 ## D8
 
@@ -140,33 +142,30 @@ hour. Latency is: adding pull request and CI state to a page of 100 commits take
 ## D9
 
 **History is paged and kept like this** (2026-11-01, owner asked for the caching and paging design; the
-mechanism is the design agent's proposal):
+mechanism is the design agent's proposal, simplified by the owner 2026-11-02):
 
 - **Kept:** commits (immutable fields of [D8](#d8)) per repository in IndexedDB, for good; refs (branches and
   tags with their target oid) as last seen. Everything is a rebuildable cache, as for the rest of githq.
-- **Opening a repository seen before:** draw from the cache, then check refs with REST conditional requests
-  (`GET /repos/{owner}/{repo}/git/matching-refs/heads` and `…/tags` with `If-None-Match`); only if they
-  changed, fetch the moved refs' new commits.
+- **Opening a repository seen before:** draw from the cache, then fetch the refs with one GraphQL request in
+  the background and compare them with the kept ones; fetch new commits only for refs that moved.
 - **Opening a repository the first time:** one GraphQL request for the branches, the tags and the default
   branch's first 100 commits; draw them. Then, for every branch tip not among known commits, fetch
   `history(first: 20)` in one batched request, and repeat deeper only for branches still not joined to known
   commits.
 - **Scrolling down:** the frontier is the set of parents of loaded commits that are not loaded themselves;
   fetch `history(first: 100)` from the newest frontier commit and drop commits already known.
-- **What is drawn:** rows ordered by committer date across all refs (`git log --date-order`), down to the
-  newest date any loaded branch's frontier has reached — never past it, so a commit loaded later can never
-  appear above rows already shown.
+- **What is drawn:** every loaded commit, ordered by committer date across all refs (`git log
+  --date-order`). A commit loaded later may land between rows already on screen.
 
-**Why.** It keeps every open after the first one free of network waits and costs nothing when nothing moved;
-a first open shows rows after one request of about a second.
+**Why.** Every open after the first draws without waiting for the network; a first open shows rows after one
+request of about a second. The ref check is one request of 1 point when the tab opens, so a second code path
+for free `304`s would save next to nothing.
 
 > **Checked 2026-11-01:** measured with `gh api`:
 > - branches and tags (`refs(first: 100)` twice, oids only): cost 1, 0.83–0.86 s on `nuxt/nuxt` (67 branches,
 >   339 tags, so tags need paging), 0.49–0.82 s on `kedrzu/githq`;
 > - 100 branches × `history(first: 20)` in one request on `nuxt/nuxt`: cost 21, 3.06 s — the reason to fetch
->   only branches that are not yet joined;
-> - `GET repos/nuxt/nuxt/git/matching-refs/heads` repeated with its `ETag` in `If-None-Match`: `304 Not
->   Modified`.
+>   only branches that are not yet joined.
 >
 > Size: a page of 100 commits with the fields of D8 was 30.5 kB of JSON, about 300 bytes a commit, so even
 > 30,000 commits fully scrolled would be roughly 9 MB (estimate from that one measurement).
@@ -176,8 +175,11 @@ a first open shows rows after one request of about a second.
   scrolls to.
 - Fetching every branch's history up front, joined or not — cost and latency grow with the branch count
   (21 points and 3 s for 100 branches) for branches that mostly share the default branch's history.
-- Drawing commits as they arrive regardless of other branches' depth — rows would jump as later branches
-  load.
+- Checking refs with REST conditional requests (`matching-refs` with `If-None-Match`, which does answer
+  `304`, checked 2026-11-01) — a second code path and an ETag per page of tags, to save one point per open
+  ([history](history/DECISIONS.md#d9)).
+- Drawing a commit only once every branch is loaded down to its date, so rows never move — the owner chose
+  the simpler drawing ([history](history/DECISIONS.md#d9)).
 
 ## D10
 
@@ -209,14 +211,17 @@ fetched only when the tab is opened ([D9](#d9)), so tracking would add nothing t
 
 ## D12
 
-**Choosing a branch or tag in the list beside the graph scrolls the graph to the commit it points at.**
-(2026-11-02, design agent's proposal, owner agreed)
+**Choosing a branch or tag in the list beside the graph scrolls the graph to the commit it points at when
+that commit is loaded, and otherwise opens the commit's details without loading history down to it.**
+(2026-11-02, design agent's proposal, owner agreed; the unloaded case chosen by the owner)
 
 **Why.** It is the simplest behaviour that answers "where is this branch", and keeps one graph on screen.
 
 **Rejected.**
 - Narrowing the graph to the chosen branch's history — more to build and a second mode of the view; may come
   later.
+- Loading history down to an old tag to scroll to it — dozens of requests for a tag years back in a large
+  repository.
 
 ## D13
 

@@ -1,6 +1,6 @@
 # Commit history and, later, a git client in githq
 
-> Draft, design in progress (started 2026-11-01).
+> Closed 2026-11-02, ready to build the first version.
 
 githq today is a client for GitHub's issues, pull requests and projects. This design adds the code side of a
 repository, starting with the smallest piece: a view of a repository's commit history drawn as a graph, with
@@ -59,7 +59,8 @@ A fork, whose `origin` is your fork and whose `upstream` is the original, gets n
 A repository has at most one clone in githq; parallel work happens in its worktrees. This is a deliberate
 opinion: a second clone of the same repository would mix two sets of local branches in one graph, and
 worktrees already give everything a second clone would. Adding the folder of a worktree adds the clone it
-belongs to. Adding a second, separate clone of a repository that already has one asks whether to replace it.
+belongs to. Adding a second, separate clone of a repository that already has one is refused, naming the folder already
+added.
 [One clone per repository](DECISIONS.md#d7).
 
 Each worktree shows up in two places: as a marker at the commit it has checked out in the graph, with the
@@ -82,8 +83,9 @@ it can repeat to refresh them. [How the graph is fetched](DECISIONS.md#d8).
 ## Opening a repository's history without waiting
 
 The graph opens from what githq already has: commits seen before are kept in the browser for good, and
-the branches and tags as last seen. Only then does githq ask GitHub whether the branches and tags have
-moved, a check that costs nothing when they have not. So a repository opened before shows its graph at once.
+the branches and tags as last seen. Only then does githq ask GitHub, in the background, where the branches
+and tags point now, and fetches new commits for those that moved. So a repository opened before shows its
+graph at once.
 
 The first time, there is nothing kept yet. One request returns every branch and tag together with the
 first hundred commits of the default branch, in about a second, and those are shown straight away. Then
@@ -92,9 +94,9 @@ commits ahead, and fetches a short stretch of each one's history, going deeper o
 have not met a commit it knows.
 
 Scrolling down asks for more: the next hundred commits from wherever the loaded history stops. The rows
-are ordered by date across all branches, as in `git log --date-order`, so githq only shows a commit once
-every branch has been loaded at least down to that commit's date. Otherwise a commit from a branch loaded
-later could turn up above rows already on screen. [How history is paged and kept](DECISIONS.md#d9).
+are ordered by date across all branches, as in `git log --date-order`, and show everything loaded so far; a
+commit of a branch loaded later can appear between rows already on screen, which was judged a fair price
+for the simpler drawing. [How history is paged and kept](DECISIONS.md#d9).
 
 ## Where the graph lives in the app
 
@@ -113,7 +115,8 @@ opened and nothing about it is synced in the background, so there is nothing tra
 
 Beside the graph is the list of the repository's branches and tags (on the desktop, later, also local
 branches and worktrees). Choosing one scrolls the graph to the commit it points at; it does not narrow the
-graph to that branch's history. [The branch list scrolls](DECISIONS.md#d12).
+graph to that branch's history. If that commit is not loaded yet — an old tag, say — its details open
+instead, rather than loading years of history to reach it. [The branch list scrolls](DECISIONS.md#d12).
 
 Choosing a commit opens its details: the full message, the author, its parents (each a way to that commit),
 the branches and tags that point at it, its pull request and CI state, and a way to open it on GitHub. No
