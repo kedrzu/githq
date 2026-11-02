@@ -102,7 +102,6 @@ const selection = useRowSelection({
   chosenKey: selected,
   open: openSelected,
 });
-const selectedRow = computed(() => rows.value.find(row => row.key === selection.selectedKey) ?? null);
 /** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain. */
 const emptyState = computed(() => {
   const { list, nameWithOwner } = props;
@@ -160,10 +159,10 @@ useCommands(() => [
     section: 'view',
     key: 'ArrowRight',
     menu: false,
-    when: () => selectedRow.value?.kind === 'workflow' && props.unfolded?.key !== selectedRow.value.key,
+    when: () => selection.selectedRow?.kind === 'workflow' && props.unfolded?.key !== selection.selectedRow.key,
     run: () => {
-      if (selectedRow.value?.kind === 'workflow') {
-        emit('unfold', selectedRow.value.key);
+      if (selection.selectedRow?.kind === 'workflow') {
+        emit('unfold', selection.selectedRow.key);
       }
     },
   },
@@ -193,7 +192,7 @@ useCommands(() => [
     key: 'P',
     when: () => props.list.status === 'read' && props.list.groups.length > 0,
     run: () => {
-      const row = selectedRow.value;
+      const row = selection.selectedRow;
       emit('settings', row?.kind === 'workflow' && row.entry.standing?.kind === 'noAlerts');
     },
   },
@@ -217,9 +216,7 @@ onMounted(() => {
   root.value?.focus({ preventScroll: true });
   // Back on a row the user had moved to: it is in sight again.
   if (selected.value !== null) {
-    root.value
-      ?.querySelector(`[data-workflow-key="${CSS.escape(selected.value)}"]`)
-      ?.scrollIntoView({ block: 'nearest' });
+    selection.reveal();
   }
 });
 
@@ -403,12 +400,12 @@ function describeGroup(group: RepositoryWorkflowGroup) {
 .repositoryWorkflowsView_message {
   display: flex;
   justify-content: center;
-  padding: 96px $spacing-16 48px;
+  padding: $spacing-96 $spacing-16 $spacing-48;
 }
 
 // The last known rows follow: the message keeps less room above them.
 .repositoryWorkflowsView_message_above {
-  padding: 48px $spacing-16 32px;
+  padding: $spacing-48 $spacing-16 $spacing-32;
   border-bottom: 1px solid $color-border;
 }
 

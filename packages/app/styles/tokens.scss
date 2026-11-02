@@ -100,8 +100,14 @@ $spacing-7: 7px;
 $spacing-8: 8px;
 $spacing-10: 10px;
 $spacing-12: 12px;
+// Around and between what a settings card's footer holds.
+$spacing-14: 14px;
 $spacing-16: 16px;
 $spacing-24: 24px;
+// Around a screen's empty state.
+$spacing-32: 32px;
+$spacing-48: 48px;
+$spacing-96: 96px;
 
 $radius-sm: 4px;
 $radius-md: 6px;
@@ -130,6 +136,8 @@ $workflow-name-width: 230px;
 $workflow-repository-width: 130px;
 $workflow-ref-width: 130px;
 $workflow-row-height: 34px;
+// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`).
+$workflow-run-line-height: 30px;
 // What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
 // icon and the gap after it.
 $workflow-run-indent: 41px;

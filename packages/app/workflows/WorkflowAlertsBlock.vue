@@ -80,7 +80,6 @@ const selection = useRowSelection({
     }
   },
 });
-const selectedRow = computed(() => rows.value.find(row => row.key === selection.selectedKey) ?? null);
 const addPreview = computed(() =>
   previewPatternEdit({ stored: props.stored, settings: props.settings, index: null, value: added.value }),
 );
@@ -118,7 +117,7 @@ const defaultDetail = computed(() => {
   return count > 0 ? t(l.runsOnIt, { count, names }) : t(l.noRunsSeen);
 });
 const hints = computed(() => {
-  const row = selectedRow.value;
+  const row = selection.selectedRow;
   const actions =
     row?.kind === 'pattern'
       ? [
@@ -147,7 +146,7 @@ useCommands(() => [
 ]);
 
 onWindowEvent('keydown', event => {
-  const row = selectedRow.value;
+  const row = selection.selectedRow;
   if (!row || !isScreenKey(event) || isActivatableTarget(event.target)) {
     return;
   }
@@ -640,9 +639,9 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 .workflowAlertsBlock_footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: $spacing-14;
   align-items: center;
-  padding: $spacing-8 14px;
+  padding: $spacing-8 $spacing-14;
   background: $color-bg;
   border-top: 1px solid $color-border;
 }

@@ -29,11 +29,15 @@ export interface UseRowSelectionOptions<T> {
 }
 
 /** The selection of a list the keys move through. */
-export interface RowSelectionViewModel {
+export interface RowSelectionViewModel<T> {
     /** The selected row's key; `null` with nothing selected. */
     readonly selectedKey: string | null;
+    /** The selected row; `null` with nothing selected. */
+    readonly selectedRow: T | null;
     /** Selects a row, as the keys would (a click on it). */
     select(key: string): void;
+    /** Scrolls the selected row into sight. */
+    reveal(): void;
 }
 
 /**
@@ -43,7 +47,7 @@ export interface RowSelectionViewModel {
  * screen has them ({@link isScreenKey}).
  * @util
  */
-export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel {
+export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel<T> {
     /** The row the user moved to; `null` until they do. */
     const chosenKey = options.chosenKey ?? ref<string | null>(null);
 
@@ -88,7 +92,7 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
     });
 
-    return reactive<RowSelectionViewModel>({ selectedKey, select });
+    return reactive<RowSelectionViewModel<T>>({ selectedKey, selectedRow, select, reveal });
 
     function select(key: string) {
         chosenKey.value = key;
@@ -103,10 +107,14 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
 
         chosenKey.value = next;
-        void nextTick(() => {
+        void nextTick(reveal);
+    }
+
+    function reveal() {
+        if (selectedKey.value !== null) {
             toValue(options.root)
-                ?.querySelector(`[${options.keyAttribute}="${CSS.escape(next)}"]`)
+                ?.querySelector(`[${options.keyAttribute}="${CSS.escape(selectedKey.value)}"]`)
                 ?.scrollIntoView({ block: 'nearest' });
-        });
+        }
     }
 }

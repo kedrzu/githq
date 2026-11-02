@@ -287,7 +287,7 @@ function pick(name: string | null) {
   gap: $spacing-8;
   align-items: center;
   width: 100%;
-  height: 30px;
+  height: $workflow-run-line-height;
   padding: 0 $spacing-16 0 $workflow-run-indent;
   font: inherit;
   font-size: $font-size-xs;
