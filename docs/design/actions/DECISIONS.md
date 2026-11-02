@@ -139,10 +139,19 @@ Everything stays visible in the repository's workflow list.** (2026-11-01, owner
 and for turning off counters; "counters only" as the design agent's reading, accepted when closing the design)
 
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
-wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
+wrong pattern only silences a counter, it cannot hide a failure from someone looking for it. Asked again on
+2026-11-02 whether failures on pull request branches should also disappear from the Workflows tab, the owner
+kept "counters only".
 
 **Default: the repository's default branch only, without runs started by a pull request. Anything else is added
 in the repository's settings.** (2026-11-01, owner)
+
+**The default branch is whatever GitHub reports for the repository, never a stored name, so renaming `master` to
+`main` changes nothing in githq. It can be switched off; with it off and no patterns, the repository lights
+nothing, and its workflows are still listed in the tab.** (2026-11-02, owner)
+
+> **Checked 2026-11-02:** githq does not read a repository's default branch yet; `defaultBranchRef` appears only in
+> `packages/github/src/schema.graphql`, in no operation.
 
 Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
 repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
@@ -234,3 +243,24 @@ only wait on this screen.
 - Keeping about 200 lines before the error marker: the key information is not always there.
 - A shared queue with priorities for all sync work: with no background log reading, nothing competes for it here.
   Reopen when two kinds of work compete for one bucket.
+
+## D13
+
+**A ref pattern uses GitHub Actions' own filter syntax and is matched against the ref's name, branch or tag alike,
+in one list: `*` matches anything except `/`, `**` matches anything.** (2026-11-02, owner, on the design agent's
+proposal)
+
+**Why.** People already write these patterns in their workflow files, and githq stays faithful to GitHub. So
+`release/*` matches `release/1.2` but not `release/1.2/hotfix`. One list is enough: `v*` matching both the tag
+`v1.0` and a branch `v2-experiment` is shown by the preview of what a pattern matches, from runs githq already
+knows.
+
+> **Checked 2026-11-02:** GitHub's filter pattern cheat sheet: `*` "Matches zero or more characters, but does not
+> match the `/` character."; `**` "Matches zero or more of any character." —
+> [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+> GitHub itself keeps branch and tag filters apart (`branches`, `tags`).
+
+**Rejected.**
+
+- Separate lists for branches and tags, as GitHub's workflow files have them: an extra choice on every pattern
+  for a collision the preview already makes visible.
