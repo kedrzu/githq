@@ -231,3 +231,111 @@ version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now"
 
 **Why.** Everything here is already fetched for the graph ([D8](#d8), [D9](#d9)); files and diffs are the
 owner's explicit "not yet".
+
+## D14
+
+**The repository view becomes sections as tabs beside its title: Issues, Pull requests, Commits and Workflows, on
+`1`–`4`, each with its own toolbar on the right of the same line. All is removed; Issues and Pull requests are two
+lists with their own state, grouping, List or Board and Display. The open count beside the title and grouping by kind
+go too; the projects bar stays under Issues and Pull requests only.** (2026-11-02, design agent's proposal,
+Direction A of three drawn in `githq.pen` "App · Commits", CH1–CH9; not yet picked by the owner)
+
+**Why.** It is the smallest change that gives every section its own tools: the tabs are already where the owner
+looks, Workflows already lives there ([actions D6](../actions/DECISIONS.md#d6)), and `1`–`4` match Settings' `1`–`3`.
+The graph keeps the full width of the pane.
+
+**Rejected.**
+- A column of its own for the open repository, holding its sections and, on Commits, the branch and tag list
+  (Direction B, CH4–CH6) — 232 px off every repository screen, and branch names no longer fit in it.
+- Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows)
+  (Direction C, CH7–CH9, CH21) — keeps All but shares one grouping between issues and pull requests, and puts the
+  branch list behind a key.
+
+## D15
+
+**The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it
+folds away and `B` opens it over the graph. The default branch is first, then branches, then tags, each newest
+first, with the pull request and CI of each branch's tip. `B` puts the cursor in its filter, and typing narrows
+both groups.** (2026-11-02, design agent's proposal; CH3, CH15–CH17)
+
+**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key; on the
+right it leaves the app's sidebar and the graph's left edge alone.
+
+> **Checked 2026-11-02:** GitHub's `RefOrderField` has only `TAG_COMMIT_DATE` (tags only) and `ALPHABETICAL`
+> (`gh api graphql`, `__type(name: "RefOrderField")`). "Newest first" for branches needs each tip's
+> `committedDate` in the refs request of [D9](#d9) and a local sort.
+
+**Rejected.**
+- The list only on demand, as a picker over the graph (Direction C, CH21) — nothing on screen says where branches
+  stand.
+
+## D16
+
+**A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page.
+`J` and `K` keep moving through the graph with the panel open and it follows; `P` goes to the first parent, `⇧P`
+to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub, `Esc`
+closes and the list comes back.** (2026-11-02, design agent's proposal; CH18–CH20, CH27–CH29)
+
+**Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
+it, which a modal or a page would hide.
+
+**Rejected.**
+- The details as a modal (CH19) — hides the graph that `J` and `K` move through.
+
+## D17
+
+**The graph takes at most six lanes (98 px); lanes beyond the sixth fold into one thicker line at its right
+edge, and their commits sit on it.** (2026-11-02, design agent's proposal; CH10, CH11)
+
+**Why.** The headline stays at the same x in every repository; in a repository with 14 branches side by side
+every lane would take 182 px, more than many of the messages.
+
+**Rejected.**
+- Every lane at full width (CH11) — exact, but the message moves with every open branch.
+
+## D18
+
+**A row reads: graph, worktree markers (desktop), branches and tags, headline, the pull request's state icon and
+number, the CI mark, author, age. The default branch's line is a lighter grey on the left; a merge is a hollow dot
+with a dimmed headline. A failing commit is red twice, its dot and its CI mark, and nothing else on the row; running
+is amber. Pull request and CI not known yet are an empty bar, never a blank.** (2026-11-02, design agent's
+proposal; CH12–CH14, CH34)
+
+**Why.** Red in two fixed columns is found by scanning either one, and the rest of the row stays calm; a blank
+would read as "no pull request" or "no checks", which are ordinary.
+
+**Rejected.**
+- CI only as the dot's colour with a red headline (CH13) — passing and "no checks" can't be told apart.
+- A red-tinted row (CH14) — competes with the selection and reads as "new".
+
+## D19
+
+**Commits loaded later on a first open appear between rows already on screen with no tint or motion, and the row
+under the cursor keeps its place; the status bar says branches are filling in.** (2026-11-02, design agent's
+proposal; CH32, CH33)
+
+**Why.** They are not news, only late; marking them would make them read as something that just happened.
+
+## D20
+
+**In an untracked repository, the explanation that it is not tracked moves into Issues and Pull requests and is
+about them only; it also says Commits needs no tracking. The "not tracked" chip stays in the header.**
+(2026-11-02, design agent's proposal; CH37, CH10)
+
+**Why.** [D11](#d11): Commits works in full without tracking, so a repository-wide warning would be wrong on it.
+
+## D21
+
+**Desktop, second step: a Worktrees section opens the list, one row per working copy (folder, uncommitted
+changes; "no branch" for one on a bare commit), above the branches. A worktree's actions are in a menu, opened
+from its marker in the graph or its row (`.`), starting with Reveal in Finder and Copy path. A clone is added
+from the Commits header ("Add a local clone") or the command menu; the two refusals of [D7](#d7) and [D5](#d5)
+are dialogs naming the folder and the way out.** (2026-11-02, design agent's proposal; `githq.pen`
+"Desktop · Commits", CD1–CD7)
+
+**Why.** Where each agent stands is the most valuable thing on the desktop, and a worktree with no branch needs a
+row of its own. A menu is the place a list of actions can grow without crowding the row.
+
+**Rejected.**
+- Worktrees only on the branch they have checked out (CD2) — the one on a bare commit has no row, and the rest are
+  scattered by date among other branches.
