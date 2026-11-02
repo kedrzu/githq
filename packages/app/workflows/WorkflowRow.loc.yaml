@@ -42,8 +42,6 @@ passedWhen:
   en: passed {when}
 lastRanWhen:
   en: last ran {when}
-ago:
-  en: '{age} ago'
 pullRequests:
   en: pull requests
 pullRequestsFailed:

@@ -8,7 +8,7 @@ import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
-import { GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
+import { getGitHubUrl, getRepositoryPath, getRepositorySettingsPath } from '@/tracking/trackingRoutes.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import type {
@@ -102,7 +102,7 @@ const selectedRow = computed(() => rows.value.find(row => row.key === selection.
 /** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain. */
 const emptyState = computed(() => {
   const { list, nameWithOwner } = props;
-  const actionsUrl = `${GITHUB_ORIGIN}/${nameWithOwner}/actions`;
+  const actionsUrl = getGitHubUrl(getRepositoryPath(nameWithOwner, 'workflows'));
   switch (list.status) {
     case 'unread':
       return {
@@ -119,7 +119,10 @@ const emptyState = computed(() => {
             title: t(l.actionsOffTitle),
             text: t(l.actionsOffText, { name: nameWithOwner }),
             detail: t(l.actionsOffDetail),
-            action: { label: t(l.openActionsSettings), url: `${GITHUB_ORIGIN}/${nameWithOwner}/settings/actions` },
+            action: {
+              label: t(l.openActionsSettings),
+              url: getGitHubUrl(`${getRepositorySettingsPath(nameWithOwner)}/actions`),
+            },
           }
         : {
             icon: PowerOff,

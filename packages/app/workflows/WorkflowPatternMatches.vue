@@ -3,7 +3,7 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { formatList } from '@/utils/formatList.js';
 
 import type { PatternMatches } from './buildWorkflowAlerts.js';
 import * as l from './WorkflowPatternMatches.loc.js';
@@ -23,7 +23,6 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
-const LIST = new Intl.ListFormat(APP_LANGUAGE);
 
 const shown = computed(() => props.matches.refs.slice(0, props.limit));
 const summary = computed(() => {
@@ -41,7 +40,7 @@ const summary = computed(() => {
     return kinds.join(', ');
   }
 
-  const names = LIST.format(workflows);
+  const names = formatList(workflows);
   const ran = t(refs.length === 1 ? l.runOnIt : l.runOnThem, { count: workflows.length, names });
   return `${kinds.join(', ')} · ${ran}`;
 });
@@ -51,7 +50,7 @@ const flag = computed(() => {
     return null;
   }
 
-  const params = { count: flagged.names.length, names: LIST.format(flagged.names) };
+  const params = { count: flagged.names.length, names: formatList(flagged.names) };
   return t(flagged.kind === 'branch' ? l.flagBranches : l.flagTags, params);
 });
 </script>

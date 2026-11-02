@@ -9,10 +9,10 @@ import { useCommands } from '@/commands/useCommands.js';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import Switch from '@/components/Switch.vue';
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import SettingsBlock from '@/settings/SettingsBlock.vue';
 import { REPOSITORY_SETTINGS_SECTIONS } from '@/tracking/trackingRoutes.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
@@ -20,6 +20,7 @@ import { useRowSelection } from '@/utils/useRowSelection.js';
 import { buildWorkflowAlerts, previewPatternEdit } from './buildWorkflowAlerts.js';
 import type { WorkflowAlertsOtherRef } from './buildWorkflowAlerts.js';
 import * as l from './WorkflowAlertsBlock.loc.js';
+import WorkflowPatternChip from './WorkflowPatternChip.vue';
 import WorkflowPatternEditor from './WorkflowPatternEditor.vue';
 import WorkflowPatternMatches from './WorkflowPatternMatches.vue';
 import WorkflowRefChip from './WorkflowRefChip.vue';
@@ -55,7 +56,6 @@ interface PatternRow {
 }
 
 const t = useTranslate();
-const LIST = new Intl.ListFormat(APP_LANGUAGE);
 const root = useTemplateRef('root');
 const addField = useTemplateRef('addField');
 
@@ -100,7 +100,7 @@ const editPreview = computed(() =>
 const defaultDetail = computed(() => {
   const { defaultBranch, read } = alerts.value;
   const count = defaultBranch.workflows.length;
-  const names = LIST.format(defaultBranch.workflows);
+  const names = formatList(defaultBranch.workflows);
   if (!defaultBranch.on) {
     if (defaultBranch.name === null) {
       return t(l.offNotRead);
@@ -349,7 +349,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
             :limit="CHIP_LIMIT"
           >
             <template #lead>
-              <code :class="css.workflowAlertsBlock_patternName">{{ entry.pattern }}</code>
+              <WorkflowPatternChip :pattern="entry.pattern" />
             </template>
           </WorkflowPatternMatches>
           <span :class="css.workflowAlertsBlock_actions">
@@ -471,7 +471,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
   outline: none;
   background: $color-bg-2;
   border: 1px solid $color-border;
-  border-radius: 10px;
+  border-radius: $radius-xl;
 }
 
 .workflowAlertsBlock_row {
@@ -532,15 +532,6 @@ function onPatternClick(event: MouseEvent, pattern: string) {
   color: $color-fg-dim;
 }
 
-.workflowAlertsBlock_patternName {
-  padding: 1px $spacing-6;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  color: $color-fg;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-sm;
-}
-
 .workflowAlertsBlock_actions {
   display: flex;
   flex: none;
@@ -561,7 +552,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
   align-items: center;
   justify-content: flex-end;
   width: 64px;
-  padding-top: 2px;
+  padding-top: $spacing-2;
   font-size: $font-size-xs;
   color: $color-fg-2;
   white-space: nowrap;
@@ -569,11 +560,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 
 .workflowAlertsBlock_marker,
 .workflowAlertsBlock_quietMarker {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  background: $color-red;
-  border-radius: 50%;
+  @include workflow-broken-marker;
 }
 
 .workflowAlertsBlock_quietMarker {
@@ -608,8 +595,8 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 .workflowAlertsBlock_others {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding: 10px $spacing-16 $spacing-12;
+  gap: $spacing-7;
+  padding: $spacing-10 $spacing-16 $spacing-12;
   border-top: 1px solid $color-border;
 }
 
@@ -621,7 +608,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 
 .workflowAlertsBlock_other {
   display: flex;
-  gap: 10px;
+  gap: $spacing-10;
   align-items: center;
   font-size: $font-size-xs;
   color: $color-fg-dim;
@@ -636,9 +623,9 @@ function onPatternClick(event: MouseEvent, pattern: string) {
 
 .workflowAlertsBlock_notRead {
   display: flex;
-  gap: 10px;
+  gap: $spacing-10;
   align-items: center;
-  padding: 10px $spacing-16 $spacing-12;
+  padding: $spacing-10 $spacing-16 $spacing-12;
   font-size: $font-size-xs;
   color: $color-fg-dim;
   border-top: 1px solid $color-border;

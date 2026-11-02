@@ -583,14 +583,7 @@ function getProjectMark(title: string) {
 
 // The entry's marker (actions W1): bright red with a break under a day old, quiet red with older ones only.
 .sidebar_brokenDot {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.sidebar_brokenDot_new {
-  background: $color-red;
+  @include workflow-broken-marker;
 }
 
 .sidebar_brokenDot_settled {

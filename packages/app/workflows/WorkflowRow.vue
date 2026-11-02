@@ -4,14 +4,15 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitBranch, GitPullRequest, Tag } from 'lucide-vue-next';
+import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest } from 'lucide-vue-next';
 import { computed, useId } from 'vue';
 
 import { formatAge } from '@/utils/formatAge.js';
-import { formatLocalDate } from '@/utils/formatLocalDate.js';
 
 import RunStrip from './RunStrip.vue';
+import { useDescribeRunWhen } from './useDescribeRunWhen.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
+import WorkflowRefLabel from './WorkflowRefLabel.vue';
 import * as l from './WorkflowRow.loc.js';
 import type { WorkflowRowRef, WorkflowRowStanding, WorkflowState } from './WorkflowTypes.js';
 
@@ -56,6 +57,7 @@ const WEEK = 7 * DAY;
 const WEEKS_FROM = 3;
 
 const t = useTranslate();
+const describeRunWhen = useDescribeRunWhen();
 const id = useId();
 
 const runs = computed(() => props.runs ?? props.workflow.lastRuns);
@@ -85,28 +87,28 @@ const look = computed((): RowLook => {
 const lastResult = computed(() => {
   const { workflow } = props;
   if (workflow.state === 'broken' && workflow.latestFailedRun) {
-    return t(l.failedWhen, { when: describeWhen(workflow.latestFailedRun.createdAt) });
+    return t(l.failedWhen, { when: describeRunWhen(workflow.latestFailedRun.createdAt, props.now) });
   }
 
   const withVerdict = workflow.state === 'disabled' ? null : runs.value.findLast(run => getRunVerdict(run) !== null);
   if (withVerdict) {
-    const when = describeWhen(withVerdict.createdAt);
+    const when = describeRunWhen(withVerdict.createdAt, props.now);
     return getRunVerdict(withVerdict) === 'failed' ? t(l.failedWhen, { when }) : t(l.passedWhen, { when });
   }
 
   const latest = runs.value.at(-1);
-  return latest ? t(l.lastRanWhen, { when: describeWhen(latest.createdAt) }) : null;
+  return latest ? t(l.lastRanWhen, { when: describeRunWhen(latest.createdAt, props.now) }) : null;
 });
 // A break's failures are news for its first day; every other failure in the strip is quiet.
 const newSince = computed(() => (props.workflow.isNew ? props.workflow.breakStartedAt : null));
-/** The ref cell's text and icon: the ref or pattern, or "pull requests" for one only pull requests ran. */
+/** The ref cell's label: the ref or pattern, or "pull requests" for one only pull requests ran. */
 const refCell = computed(() => {
   if (props.standing?.kind === 'pullRequestsOnly') {
-    return { icon: GitPullRequest, name: t(l.pullRequests), mono: false };
+    return { kind: 'pullRequests' as const, name: t(l.pullRequests), text: true };
   }
 
   const { gitRef } = props;
-  return gitRef ? { icon: gitRef.kind === 'tag' ? Tag : GitBranch, name: gitRef.name, mono: true } : null;
+  return gitRef ? { kind: gitRef.kind, name: gitRef.name, text: false } : null;
 });
 
 function getStandingLook(standing: WorkflowRowStanding): RowLook {
@@ -174,11 +176,6 @@ function withRunning(status: string) {
     age: formatAge(Date.parse(running.createdAt), props.now),
   });
 }
-
-function describeWhen(createdAt: string) {
-  const at = Date.parse(createdAt);
-  return props.now - at < DAY ? t(l.ago, { age: formatAge(at, props.now) }) : formatLocalDate(at);
-}
 </script>
 
 <template>
@@ -212,12 +209,11 @@ function describeWhen(createdAt: string) {
     >
     <span :class="css.workflowRow_refCell">
       <template v-if="refCell">
-        <component
-          :is="refCell.icon"
-          :class="css.workflowRow_refIcon"
-          aria-hidden="true"
+        <WorkflowRefLabel
+          :name="refCell.name"
+          :kind="refCell.kind"
+          :text="refCell.text"
         />
-        <span :class="[css.workflowRow_ref, !refCell.mono && css.workflowRow_ref_text]">{{ refCell.name }}</span>
         <span
           v-if="moreRefCount > 0"
           :class="css.workflowRow_moreRefs"
@@ -258,10 +254,8 @@ function describeWhen(createdAt: string) {
   }
 }
 
-.workflowRow_selected,
-.workflowRow_selected:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.workflowRow_selected {
+  @include row-selected;
 }
 
 .workflowRow_icon {
@@ -361,26 +355,6 @@ function describeWhen(createdAt: string) {
   align-items: center;
   width: $workflow-ref-width;
   min-width: 0;
-}
-
-.workflowRow_refIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.workflowRow_ref {
-  overflow: hidden;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workflowRow_ref_text {
-  font-family: inherit;
 }
 
 .workflowRow_moreRefs {

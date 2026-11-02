@@ -3,14 +3,14 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleCheck, CircleDot, CircleSlash, CircleX, GitBranch, Tag } from 'lucide-vue-next';
+import { CircleCheck, CircleDot, CircleSlash, CircleX } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { formatAge } from '@/utils/formatAge.js';
 import { formatDuration } from '@/utils/formatDuration.js';
-import { formatLocalDate } from '@/utils/formatLocalDate.js';
 
+import { useDescribeRunWhen } from './useDescribeRunWhen.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
+import WorkflowRefLabel from './WorkflowRefLabel.vue';
 import * as l from './WorkflowRunLine.loc.js';
 import type { WorkflowRowRef } from './WorkflowTypes.js';
 
@@ -37,9 +37,9 @@ const MARKS = {
   running: CircleDot,
   none: CircleSlash,
 } as const;
-const DAY = 24 * 60 * 60_000;
 
 const t = useTranslate();
+const describeRunWhen = useDescribeRunWhen();
 
 const description = computed(() => describeWorkflowRun(props.run, props.now));
 const tailText = computed(() => {
@@ -61,10 +61,7 @@ const tailText = computed(() => {
       return assertNever(tail);
   }
 });
-const when = computed(() => {
-  const at = Date.parse(props.run.createdAt);
-  return props.now - at < DAY ? t(l.ago, { age: formatAge(at, props.now) }) : formatLocalDate(at);
-});
+const when = computed(() => describeRunWhen(props.run.createdAt, props.now));
 </script>
 
 <template>
@@ -82,14 +79,11 @@ const when = computed(() => {
     />
     <span :class="css.workflowRunLine_number">#{{ run.runNumber }}</span>
     <span :class="css.workflowRunLine_refCell">
-      <template v-if="gitRef">
-        <component
-          :is="gitRef.kind === 'tag' ? Tag : GitBranch"
-          :class="css.workflowRunLine_refIcon"
-          aria-hidden="true"
-        />
-        <span :class="css.workflowRunLine_ref">{{ gitRef.name }}</span>
-      </template>
+      <WorkflowRefLabel
+        v-if="gitRef"
+        :name="gitRef.name"
+        :kind="gitRef.kind"
+      />
     </span>
     <span :class="css.workflowRunLine_event">{{ run.event }}</span>
     <span :class="css.workflowRunLine_title">{{ run.displayTitle }}</span>
@@ -109,7 +103,7 @@ const when = computed(() => {
   align-items: center;
   width: 100%;
   height: 30px;
-  padding: 0 $spacing-16 0 41px;
+  padding: 0 $spacing-16 0 $workflow-run-indent;
   font: inherit;
   color: inherit;
   text-align: left;
@@ -117,20 +111,11 @@ const when = computed(() => {
   background: none;
   border: none;
 
-  &:hover {
-    background: $color-bg-3;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include workflow-line-button;
 }
 
-.workflowRunLine_selected,
-.workflowRunLine_selected:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.workflowRunLine_selected {
+  @include row-selected;
 }
 
 .workflowRunLine_mark {
@@ -166,26 +151,8 @@ const when = computed(() => {
 .workflowRunLine_refCell {
   display: flex;
   flex: none;
-  gap: $spacing-5;
-  align-items: center;
   width: 170px;
   min-width: 0;
-}
-
-.workflowRunLine_refIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.workflowRunLine_ref {
-  overflow: hidden;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .workflowRunLine_event {

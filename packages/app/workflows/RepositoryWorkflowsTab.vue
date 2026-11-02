@@ -1,6 +1,5 @@
 <!-- `/owner/name/actions` (actions W3a): a tracked repository's Workflows tab, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, the repository's runs on any ref with them (D2), which the tab lists though they may raise no alert. A broken workflow opens its latest failed run; any other unfolds in place (W3b): its kept runs at once, older ones — on any ref, or on the ref filtered by — read on demand a page at a time (`WorkflowRunHistory`, D12), never kept. A run opens on GitHub, in a new tab, until githq has a run page of its own. P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there comes back here. -->
 <script lang="ts" setup>
-import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -12,6 +11,7 @@ import { getRepositorySettingsPath } from '@/tracking/trackingRoutes.js';
 import type { RepositoryWorkflowList } from './buildRepositoryWorkflows.js';
 import { buildUnfoldedWorkflow } from './buildUnfoldedWorkflow.js';
 import RepositoryWorkflowsView from './RepositoryWorkflowsView.vue';
+import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
 import { WorkflowRunHistory } from './WorkflowRunHistory.js';
 import type { WorkflowRunHistoryQuery } from './WorkflowRunHistory.js';
 import { WorkflowStore } from './WorkflowStore.js';
@@ -32,6 +32,7 @@ const browser = useService(Browser);
 const workflows = useService(WorkflowStore);
 const history = useService(WorkflowRunHistory);
 const router = useRouter();
+const openRun = useOpenWorkflowRun();
 
 /** The ref the unfolded workflow's runs are filtered by; `null`: every ref. */
 const refFilter = ref<string | null>(null);
@@ -73,11 +74,6 @@ watch(
   },
   { immediate: true },
 );
-
-/** Opens a run: on GitHub for now — the one place that changes once githq has a run page of its own. */
-function openRun(run: GitHubWorkflowRun) {
-  browser.openInNewTab(run.htmlUrl);
-}
 
 function readMore() {
   if (query.value) {

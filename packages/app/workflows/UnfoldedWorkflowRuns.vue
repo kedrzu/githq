@@ -212,7 +212,7 @@ function pick(name: string | null) {
   gap: $spacing-6;
   align-items: center;
   min-width: 0;
-  padding: $spacing-6 $spacing-16 $spacing-6 41px;
+  padding: $spacing-6 $spacing-16 $spacing-6 $workflow-run-indent;
   overflow: hidden;
 }
 
@@ -256,10 +256,7 @@ function pick(name: string | null) {
     color: $color-fg;
   }
 
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: 1px;
-  }
+  @include focus-ring;
 }
 
 .unfoldedWorkflowRuns_chip_ref {
@@ -274,7 +271,7 @@ function pick(name: string | null) {
 
 .unfoldedWorkflowRuns_note {
   min-height: $spacing-4;
-  padding: 0 $spacing-16 0 41px;
+  padding: 0 $spacing-16 0 $workflow-run-indent;
   margin: 0;
   font-size: $font-size-xs;
   line-height: 24px;
@@ -291,7 +288,7 @@ function pick(name: string | null) {
   align-items: center;
   width: 100%;
   height: 30px;
-  padding: 0 $spacing-16 0 41px;
+  padding: 0 $spacing-16 0 $workflow-run-indent;
   font: inherit;
   font-size: $font-size-xs;
   color: $color-fg-2;
@@ -300,20 +297,11 @@ function pick(name: string | null) {
   background: none;
   border: none;
 
-  &:hover {
-    background: $color-bg-3;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $color-focus;
-    outline-offset: -2px;
-  }
+  @include workflow-line-button;
 }
 
-.unfoldedWorkflowRuns_failed_selected,
-.unfoldedWorkflowRuns_failed_selected:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.unfoldedWorkflowRuns_failed_selected {
+  @include row-selected;
 }
 
 .unfoldedWorkflowRuns_failedIcon {

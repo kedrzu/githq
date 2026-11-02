@@ -1318,10 +1318,8 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   left: calc(42px - $spacing-16 + ($spacing-16 - 14px) / 2);
 }
 
-.listView_row_selected,
-.listView_row_selected:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.listView_row_selected {
+  @include row-selected;
 }
 
 .listView_row_checked,

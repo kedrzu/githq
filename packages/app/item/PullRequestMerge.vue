@@ -23,6 +23,7 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { formatList } from '@/utils/formatList.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
@@ -45,7 +46,6 @@ interface Line {
 
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-const names = new Intl.ListFormat(APP_LANGUAGE);
 
 const standing = computed(() => getPullRequestStanding(props.pr));
 // Ready: approved as "my work" says, or with no review required, and GitHub would merge it now.
@@ -173,8 +173,8 @@ function reviewsLine(): Line {
     return {
       tone: 'danger',
       icon: FileDiff,
-      text: t(l.changesRequestedBy, { names: names.format(authorsOf('CHANGES_REQUESTED')) }),
-      aside: approvals && `${approvals} · ${names.format(approvers)}`,
+      text: t(l.changesRequestedBy, { names: formatList(authorsOf('CHANGES_REQUESTED')) }),
+      aside: approvals && `${approvals} · ${formatList(approvers)}`,
     };
   }
 
@@ -182,7 +182,7 @@ function reviewsLine(): Line {
     return {
       tone: 'success',
       icon: CircleCheck,
-      text: t(l.approvedBy, { names: names.format(approvers) }),
+      text: t(l.approvedBy, { names: formatList(approvers) }),
       aside: approvals,
     };
   }
@@ -192,7 +192,7 @@ function reviewsLine(): Line {
     return {
       tone: 'warning',
       icon: Hourglass,
-      text: t(l.waitingFor, { names: names.format(requested) }),
+      text: t(l.waitingFor, { names: formatList(requested) }),
       aside: approvals,
     };
   }

@@ -5,8 +5,8 @@ import { CircleMinus, Plus } from 'lucide-vue-next';
 import { computed, onMounted, ref, useTemplateRef } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import type { PatternEditPreview } from './buildWorkflowAlerts.js';
 import * as l from './WorkflowPatternEditor.loc.js';
@@ -40,7 +40,6 @@ const emit = defineEmits<{
 defineExpose({ focus });
 
 const t = useTranslate();
-const LIST = new Intl.ListFormat(APP_LANGUAGE);
 const input = useTemplateRef('input');
 const focused = ref(false);
 
@@ -65,7 +64,7 @@ const effects = computed(() => {
   }
 
   if (preview.stopCounting.length > 0) {
-    const names = LIST.format(preview.stopCounting);
+    const names = formatList(preview.stopCounting);
     lines.push({
       key: 'stopCounting',
       text: t(l.stopsCounting, { count: preview.stopCounting.length, names }),
@@ -74,7 +73,7 @@ const effects = computed(() => {
   }
 
   if (preview.staysBroken.length > 0) {
-    const names = LIST.format(preview.staysBroken);
+    const names = formatList(preview.staysBroken);
     lines.push({
       key: 'staysBroken',
       text: t(l.staysBroken, { count: preview.staysBroken.length, names }),
@@ -83,7 +82,7 @@ const effects = computed(() => {
   }
 
   if (preview.stopMatching.length > 0) {
-    const refs = LIST.format(
+    const refs = formatList(
       preview.stopMatching.map(entry => t(entry.kind === 'tag' ? l.theTag : l.theBranch, { name: entry.name })),
     );
     lines.push({ key: 'stopMatching', text: t(l.noLongerCounted, { refs }), broken: false });
@@ -204,8 +203,8 @@ function onKeydown(event: KeyboardEvent) {
 .workflowPatternEditor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px $spacing-16;
+  gap: $spacing-10;
+  padding: $spacing-10 $spacing-16;
   border-top: 1px solid $color-border;
 }
 
@@ -283,7 +282,7 @@ function onKeydown(event: KeyboardEvent) {
   display: flex;
   flex-direction: column;
   gap: $spacing-6;
-  padding: 0 2px;
+  padding: 0 $spacing-2;
 }
 
 .workflowPatternEditor_label {
@@ -309,11 +308,7 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .workflowPatternEditor_marker {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  background: $color-red;
-  border-radius: 50%;
+  @include workflow-broken-marker;
 }
 
 .workflowPatternEditor_icon {

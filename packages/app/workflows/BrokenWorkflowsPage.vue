@@ -3,7 +3,6 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted } from 'vue';
 
-import { Browser } from '@/services/Browser.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
@@ -11,6 +10,7 @@ import { SyncEngine } from '@/sync/SyncEngine.js';
 import type { BrokenWorkflowEntry } from './buildBrokenWorkflows.js';
 import { buildBrokenWorkflows } from './buildBrokenWorkflows.js';
 import BrokenWorkflowsView from './BrokenWorkflowsView.vue';
+import { useOpenWorkflowRun } from './useOpenWorkflowRun.js';
 import { WorkflowStore } from './WorkflowStore.js';
 
 /** How often "broken for 3h" and "failed 14m ago" move on. */
@@ -19,7 +19,7 @@ const TICK_MS = 30_000;
 const store = useService(WorkflowStore);
 const items = useService(ItemStore);
 const sync = useService(SyncEngine);
-const browser = useService(Browser);
+const openRun = useOpenWorkflowRun();
 const now = useNow(TICK_MS);
 
 const broken = computed(() => buildBrokenWorkflows(store.repositories));
@@ -29,7 +29,7 @@ onMounted(() => sync.pollWorkflowsNow());
 function open(entry: BrokenWorkflowEntry) {
   const run = entry.workflow.latestFailedRun;
   if (run) {
-    browser.openInNewTab(run.htmlUrl);
+    openRun(run);
   }
 }
 </script>

@@ -23,6 +23,7 @@ import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
@@ -89,7 +90,6 @@ export interface ItemFactsViewModel {
 export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
     const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-    const projectList = new Intl.ListFormat(APP_LANGUAGE);
 
     const item = makeRef(options.item);
     const parent = makeRef(options.parent);
@@ -136,7 +136,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             value: first.status?.name ?? null,
             title: first.status
                 ? t(l.projectField, { project: first.title, value: first.status.name })
-                : projectList.format(projects.map(project => project.title)),
+                : formatList(projects.map(project => project.title)),
             more: others.length > 0 ? t(l.moreProjects, { count: others.length }) : null,
         };
     });

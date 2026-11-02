@@ -1,12 +1,13 @@
 <!-- The bar under a repository's Workflows tab's header (actions `Workflow / Alerts bar`, D5): which branches and tags raise alerts here — "Alerts on", the default branch as a chip with GitHub's name of it, the patterns in outlines, so a pattern never looks like the default branch — or, with nothing on, that failures here never mark the repository broken. "Alert settings" on the right, with P, opens the repository's settings on Workflow alerts. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { GitBranch } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
 
 import type { RepositoryWorkflowAlerts } from './buildRepositoryWorkflows.js';
 import * as l from './WorkflowAlertsBar.loc.js';
+import WorkflowPatternChip from './WorkflowPatternChip.vue';
+import WorkflowRefChip from './WorkflowRefChip.vue';
 
 defineProps<{
   alerts: RepositoryWorkflowAlerts;
@@ -34,25 +35,18 @@ const t = useTranslate();
       >{{ t(l.nothing) }}</span
     >
     <template v-else>
-      <span
+      <WorkflowRefChip
         v-if="alerts.defaultBranch"
-        :class="css.workflowAlertsBar_ref"
-      >
-        <GitBranch
-          :class="css.workflowAlertsBar_refIcon"
-          aria-hidden="true"
-        />
-        <span
-          :class="[css.workflowAlertsBar_refName, !alerts.defaultBranchName && css.workflowAlertsBar_refName_text]"
-          >{{ alerts.defaultBranchName ?? t(l.defaultBranch) }}</span
-        >
-      </span>
-      <code
+        :name="alerts.defaultBranchName ?? t(l.defaultBranch)"
+        kind="branch"
+        :text="!alerts.defaultBranchName"
+      />
+      <WorkflowPatternChip
         v-for="pattern in alerts.patterns"
         :key="pattern"
         :class="css.workflowAlertsBar_pattern"
-        >{{ pattern }}</code
-      >
+        :pattern="pattern"
+      />
     </template>
     <Button
       :class="css.workflowAlertsBar_settings"
@@ -94,42 +88,8 @@ const t = useTranslate();
   white-space: nowrap;
 }
 
-// `Workflow alerts / Ref`: a branch as a chip.
-.workflowAlertsBar_ref {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-4;
-  align-items: center;
-  padding: $spacing-2 $spacing-6;
-  background: $color-bg-3;
-  border-radius: $radius-sm;
-}
-
-.workflowAlertsBar_refIcon {
-  width: 11px;
-  height: 11px;
-  color: $color-fg-3;
-}
-
-.workflowAlertsBar_refName {
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-2;
-}
-
-.workflowAlertsBar_refName_text {
-  font-family: inherit;
-}
-
-// `Workflow alerts / Pattern`: typed by the user, so outlined — never like the default branch.
 .workflowAlertsBar_pattern {
   flex: none;
-  padding: 1px $spacing-6;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  color: $color-fg;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-sm;
 }
 
 .workflowAlertsBar_settings {

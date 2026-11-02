@@ -30,11 +30,11 @@ const on = defineModel<boolean>({ required: true });
   align-items: center;
   width: 28px;
   height: 16px;
-  padding: 2px;
+  padding: $spacing-2;
   cursor: pointer;
   background: $color-border-2;
   border: none;
-  border-radius: 8px;
+  border-radius: $radius-lg;
 }
 
 .switch_knob {
