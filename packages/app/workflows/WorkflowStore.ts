@@ -13,7 +13,6 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
-import { createUnreadWorkflows } from './utils/createUnreadWorkflows.js';
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
 import { WorkflowPersistence } from './WorkflowPersistence.js';
 import type { RepositoryWorkflowState, RepositoryWorkflows, WorkflowRefSettings } from './WorkflowTypes.js';
@@ -37,6 +36,8 @@ export interface WorkflowTotals {
 
 /** The refs that count while a repository's settings say nothing else (actions D5). */
 const DEFAULT_REF_SETTINGS: WorkflowRefSettings = { countDefaultBranch: true, patterns: [] };
+/** How often "broken for less than a day" is told again: a quarter of an hour late is little against a day. */
+const NOW_TICK_MS = 15 * 60_000;
 
 /** The signed-in user the workflows are kept for, captured when they signed in. */
 interface Session {
@@ -55,7 +56,8 @@ interface Session {
  *
  * Kept in the account's local copy, one record per repository, written as the sync sets it; it follows the signed-in
  * user like the other stores, and sends its changes to the user's other tabs and takes theirs into memory. "Broken
- * for less than a day" is told against the time of the latest change, so it turns at the next poll at worst.
+ * for less than a day" is told against a clock moved every quarter of an hour while signed in, not against the
+ * latest write: a poll that changes nothing writes nothing.
  */
 export type WorkflowStore = Resolved<typeof WorkflowStore>;
 export const WorkflowStore = defineService({
@@ -72,8 +74,9 @@ export const WorkflowStore = defineService({
     setup({ accounts, items, tracking, persistence, tabs, clock, logger }) {
         const storedRef = shallowRef<ReadonlyMap<string, RepositoryWorkflows>>(new Map());
         const loadedRef = shallowRef(false);
-        // When the copy last changed: what "new" is told against, so it moves with the polls.
+        // What "new" is told against: moved every quarter of an hour while signed in (`tick`).
         const nowRef = shallowRef(clock.now());
+        let cancelTick: (() => void) | null = null;
 
         const repositories = computed((): readonly TrackedRepositoryWorkflowState[] =>
             tracking.repositories.map(repo => ({
@@ -138,8 +141,11 @@ export const WorkflowStore = defineService({
 
         /** How the tracked repository's workflows stand on the refs that count; `unread` before the first read. Reactive. */
         function getState(nameWithOwner: string): RepositoryWorkflowState {
-            const stored = storedRef.value.get(nameWithOwner) ?? createUnreadWorkflows(nameWithOwner);
-            return getRepositoryWorkflowState(stored, getRefSettings(nameWithOwner), nowRef.value);
+            return getRepositoryWorkflowState(
+                storedRef.value.get(nameWithOwner),
+                getRefSettings(nameWithOwner),
+                nowRef.value,
+            );
         }
 
         /**
@@ -187,7 +193,6 @@ export const WorkflowStore = defineService({
             }
 
             storedRef.value = next;
-            nowRef.value = clock.now();
         }
 
         function deleteKept(current: Session, nameWithOwner: string) {
@@ -219,6 +224,8 @@ export const WorkflowStore = defineService({
             session = null;
             storedRef.value = new Map();
             loadedRef.value = false;
+            cancelTick?.();
+            cancelTick = null;
             if (!account) {
                 return;
             }
@@ -226,6 +233,12 @@ export const WorkflowStore = defineService({
             const current: Session = { account, ready: Promise.resolve(), inbox: createTabInbox(takeIn) };
             session = current;
             current.ready = readKept(current);
+            tick();
+        }
+
+        function tick() {
+            nowRef.value = clock.now();
+            cancelTick = clock.schedule(tick, NOW_TICK_MS);
         }
 
         /**
@@ -254,7 +267,6 @@ export const WorkflowStore = defineService({
                 }
 
                 storedRef.value = new Map([...next, ...storedRef.value]);
-                nowRef.value = clock.now();
             } catch (error) {
                 logger.warn('Could not read the kept workflows; reading them again from GitHub', { error });
             }

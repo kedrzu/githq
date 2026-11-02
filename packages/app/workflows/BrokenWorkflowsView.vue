@@ -17,6 +17,8 @@ import WorkflowRow from './WorkflowRow.vue';
 
 const props = defineProps<{
   broken: BrokenWorkflows;
+  /** When the workflows were last polled (epoch ms); `null` before the first poll. */
+  checkedAt: number | null;
   /** Epoch ms the ages are counted to. */
   now: number;
 }>();
@@ -67,7 +69,7 @@ const allGreenDetail = computed(() =>
   t(l.allGreenDetail, {
     read: props.broken.readCount,
     tracked: trackedCount.value,
-    age: props.broken.readAt === null ? '–' : formatCheckedAge(props.broken.readAt, props.now),
+    age: props.checkedAt === null ? '–' : formatCheckedAge(props.checkedAt, props.now),
   }),
 );
 
@@ -222,9 +224,9 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           />
           <span :class="css.brokenWorkflowsView_rowStatus">{{ describeUnavailable(entry).status }}</span>
           <span
-            v-if="entry.checkedAt !== null"
+            v-if="checkedAt !== null"
             :class="css.brokenWorkflowsView_rowResult"
-            >{{ t(l.checkedAgo, { age: formatCheckedAge(entry.checkedAt, now) }) }}</span
+            >{{ t(l.checkedAgo, { age: formatCheckedAge(checkedAt, now) }) }}</span
           >
         </div>
       </section>

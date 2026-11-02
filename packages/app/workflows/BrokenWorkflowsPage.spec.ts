@@ -10,7 +10,7 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
-import { sampleRepositoryWorkflows } from '@/testing/sampleWorkflows.js';
+import { sampleStoredWorkflows } from '@/testing/sampleWorkflows.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -27,11 +27,11 @@ test('opening the screen polls the workflows at once', async () => {
 
 test("Enter opens the selected workflow's latest failed run on GitHub, in a new tab", async () => {
     const { store, openInNewTab } = await open();
-    const { stored } = sampleRepositoryWorkflows({
+    const stored = sampleStoredWorkflows({
         nameWithOwner: WEB,
         workflows: [{ id: 7, name: 'Deploy', runs: [{ conclusion: 'failure', ago: '3h' }] }],
     });
-    store.set({ ...assertValue(stored), readAt: Date.now() });
+    store.set(assertValue(stored));
 
     await expect.element(page.getByRole('button', { name: 'Deploy' })).toBeVisible();
     await userEvent.keyboard('{Enter}');

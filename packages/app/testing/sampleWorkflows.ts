@@ -1,9 +1,8 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertValue } from '@nzyme/utils/assert.js';
 
-import type { BrokenWorkflowsSource } from '@/workflows/buildBrokenWorkflows.js';
-import { createUnreadWorkflows } from '@/workflows/utils/createUnreadWorkflows.js';
 import { getRepositoryWorkflowState } from '@/workflows/utils/getRepositoryWorkflowState.js';
+import type { TrackedRepositoryWorkflowState } from '@/workflows/WorkflowStore.js';
 import type {
     RepositoryWorkflows,
     StoredWorkflow,
@@ -51,11 +50,7 @@ export interface SampleWorkflowParams {
  */
 export function sampleWorkflowState(params: SampleWorkflowParams): WorkflowState {
     const repository = params.repository ?? 'fitloop/webapp';
-    const state = getRepositoryWorkflowState(
-        { ...sampleStored(repository, [params]), readAt: SAMPLE_WORKFLOWS_NOW },
-        SAMPLE_REFS,
-        SAMPLE_WORKFLOWS_NOW,
-    );
+    const state = getRepositoryWorkflowState(sampleStored(repository, [params]), SAMPLE_REFS, SAMPLE_WORKFLOWS_NOW);
 
     return assertValue(state.workflows[0]);
 }
@@ -73,24 +68,24 @@ export interface SampleRepositoryParams {
 }
 
 /**
- * A tracked repository's workflows as the cross-repository screen reads them, at {@link SAMPLE_WORKFLOWS_NOW}, read
- * 40 seconds before, counting `main` and the tags `v*`.
+ * A tracked repository's workflows as the cross-repository screen reads them, at {@link SAMPLE_WORKFLOWS_NOW},
+ * counting `main` and the tags `v*`.
  */
-export function sampleRepositoryWorkflows(params: SampleRepositoryParams): BrokenWorkflowsSource {
-    const { nameWithOwner } = params;
-    const stored: RepositoryWorkflows | undefined = params.unread
-        ? undefined
-        : {
-              ...sampleStored(nameWithOwner, params.workflows ?? []),
-              unavailable: params.unavailable ?? null,
-          };
-    const state = getRepositoryWorkflowState(
-        stored ?? createUnreadWorkflows(nameWithOwner),
-        SAMPLE_REFS,
-        SAMPLE_WORKFLOWS_NOW,
-    );
+export function sampleRepositoryWorkflows(params: SampleRepositoryParams): TrackedRepositoryWorkflowState {
+    const state = getRepositoryWorkflowState(sampleStoredWorkflows(params), SAMPLE_REFS, SAMPLE_WORKFLOWS_NOW);
+    return { nameWithOwner: params.nameWithOwner, state };
+}
 
-    return { nameWithOwner, state, stored };
+/** What `WorkflowStore` keeps of a sample tracked repository's workflows; `undefined` when `unread`. */
+export function sampleStoredWorkflows(params: SampleRepositoryParams): RepositoryWorkflows | undefined {
+    if (params.unread) {
+        return undefined;
+    }
+
+    return {
+        ...sampleStored(params.nameWithOwner, params.workflows ?? []),
+        unavailable: params.unavailable ?? null,
+    };
 }
 
 function sampleStored(repository: string, workflows: readonly SampleWorkflowParams[]): RepositoryWorkflows {
@@ -101,7 +96,6 @@ function sampleStored(repository: string, workflows: readonly SampleWorkflowPara
         runsEtag: null,
         workflowsEtag: null,
         workflows: workflows.map(params => sampleStoredWorkflow(repository, params)),
-        readAt: SAMPLE_WORKFLOWS_NOW - 40_000,
         unavailable: null,
     };
 }

@@ -1,11 +1,5 @@
 import type { TrackedRepositoryWorkflowState } from './WorkflowStore.js';
-import type { RepositoryWorkflows, WorkflowRowRef, WorkflowState, WorkflowsUnavailable } from './WorkflowTypes.js';
-
-/** A tracked repository's workflows as the screen reads them: their state, and what was kept of the last read. */
-export interface BrokenWorkflowsSource extends TrackedRepositoryWorkflowState {
-    /** What was kept of it; `undefined` before the first read. */
-    readonly stored: RepositoryWorkflows | undefined;
-}
+import type { WorkflowRowRef, WorkflowState, WorkflowsUnavailable } from './WorkflowTypes.js';
 
 /** A broken workflow on the screen: one row. */
 export interface BrokenWorkflowEntry {
@@ -24,8 +18,6 @@ export interface BrokenWorkflowEntry {
 export interface UnavailableWorkflowsEntry {
     readonly nameWithOwner: string;
     readonly unavailable: WorkflowsUnavailable;
-    /** When GitHub last said so (epoch ms). */
-    readonly checkedAt: number | null;
 }
 
 /** The screen of every broken workflow (actions W2, W2c). */
@@ -44,8 +36,6 @@ export interface BrokenWorkflows {
     readonly brokenRepositoryCount: number;
     /** The tracked repositories whose workflows were read and shown. */
     readonly readCount: number;
-    /** When the least recently read of {@link readCount} was read (epoch ms); `null` with none. */
-    readonly readAt: number | null;
 }
 
 /**
@@ -55,33 +45,26 @@ export interface BrokenWorkflows {
  * workflows, or none broken, is not listed.
  * @__NO_SIDE_EFFECTS__
  */
-export function buildBrokenWorkflows(repositories: readonly BrokenWorkflowsSource[]): BrokenWorkflows {
+export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWorkflowState[]): BrokenWorkflows {
     const broken: BrokenWorkflowEntry[] = [];
     const unread: string[] = [];
     const unavailable: UnavailableWorkflowsEntry[] = [];
     let brokenCount = 0;
     let brokenRepositoryCount = 0;
     let readCount = 0;
-    let readAt: number | null = null;
 
-    for (const { nameWithOwner, state, stored } of repositories) {
+    for (const { nameWithOwner, state } of repositories) {
         if (state.status === 'unread') {
             unread.push(nameWithOwner);
             continue;
         }
 
-        if (state.status === 'unavailable') {
-            if (stored?.unavailable) {
-                unavailable.push({ nameWithOwner, unavailable: stored.unavailable, checkedAt: stored.readAt });
-            }
-
+        if (state.unavailable) {
+            unavailable.push({ nameWithOwner, unavailable: state.unavailable });
             continue;
         }
 
         readCount += 1;
-        if (stored?.readAt != null) {
-            readAt = Math.min(readAt ?? stored.readAt, stored.readAt);
-        }
 
         brokenCount += state.brokenCount;
         if (state.brokenCount > 0) {
@@ -93,7 +76,7 @@ export function buildBrokenWorkflows(repositories: readonly BrokenWorkflowsSourc
                 continue;
             }
 
-            const branch = workflow.latestFailedRun?.headBranch ?? stored?.defaultBranch ?? null;
+            const branch = workflow.latestFailedRun?.headBranch ?? state.defaultBranch;
             broken.push({
                 key: `${nameWithOwner}#${workflow.workflow.id}`,
                 nameWithOwner,
@@ -114,6 +97,5 @@ export function buildBrokenWorkflows(repositories: readonly BrokenWorkflowsSourc
         brokenCount,
         brokenRepositoryCount,
         readCount,
-        readAt,
     };
 }

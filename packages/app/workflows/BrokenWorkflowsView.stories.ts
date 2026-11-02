@@ -74,6 +74,7 @@ const meta = {
     component: BrokenWorkflowsView,
     args: {
         now: SAMPLE_WORKFLOWS_NOW,
+        checkedAt: SAMPLE_WORKFLOWS_NOW - 40_000,
         broken: buildBrokenWorkflows([
             sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', workflows: [PROBE] }),
             sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/mdlint', workflows: [NIGHTLY] }),

@@ -2,7 +2,7 @@
 // IndexedDB for bun; every test uses its own login, so their databases never meet.
 import 'fake-indexeddb/auto';
 
-import { expect, test } from 'bun:test';
+import { expect, spyOn, test } from 'bun:test';
 
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
@@ -11,6 +11,7 @@ import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import type { IndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { TabChannel } from '@/sync/TabChannel.js';
 import type { TrackingSyncContext } from '@/sync/TrackingSync.js';
 import type { ActionsWorldRun } from '@/testing/createActionsWorld.js';
 import type { TestGraphQLRequest } from '@/testing/createTestSession.js';
@@ -73,12 +74,14 @@ test('the first read: the latest runs, the default branch, the workflows, and ea
     ]);
 });
 
-test('while no run moves a poll costs one free request per repository and changes nothing but the read time; on a change every active workflow is asked, the unchanged ones for free', async () => {
+test('while no run moves a poll costs one free request per repository and writes nothing — here, on disk or to other tabs; on a change every active workflow is asked, the unchanged ones for free', async () => {
     const world = sampleWorld();
-    const { session, tracking, workflows, sync } = await setup(world);
+    const { session, tracking, workflows, sync, persistence } = await setup(world);
     tracking.choose(TRACK_BOTH);
     await session.clock.advance(0);
     const before = storedOf(workflows, 'acme/web');
+    const saved = spyOn(persistence, 'saveWorkflows');
+    const published = spyOn(session.container.resolve(TabChannel), 'publish');
 
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
@@ -86,10 +89,10 @@ test('while no run moves a poll costs one free request per repository and change
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
     ]);
-    const after = storedOf(workflows, 'acme/web');
-    expect(after.readAt).toBe(TEST_START + WORKFLOWS_INTERVAL);
-    expect({ ...after, readAt: before.readAt }).toEqual(before);
-    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+    expect(storedOf(workflows, 'acme/web')).toBe(before);
+    expect(saved).not.toHaveBeenCalled();
+    expect(published.mock.calls.filter(([message]) => message.kind === 'workflows')).toEqual([]);
+    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'fresh', checkedAt: TEST_START + WORKFLOWS_INTERVAL });
 
     // Deploy runs again on main and passes: every active workflow is asked, conditionally, and CI answers 304.
     world.actions.repository('acme/web').runs.push(run(20, DEPLOY, 'success', '2026-10-30T13:01:00Z'));

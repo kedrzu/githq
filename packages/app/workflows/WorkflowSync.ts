@@ -7,12 +7,10 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 
-import { Clock } from '@/services/Clock.js';
 import type { TrackingSyncContext } from '@/sync/TrackingSync.js';
 import { isTargetFailure } from '@/sync/utils/isTargetFailure.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
-import { createUnreadWorkflows } from './utils/createUnreadWorkflows.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import { isRunCounted } from './utils/isRunCounted.js';
 import type { IsRunCountedParams } from './utils/isRunCounted.js';
@@ -35,16 +33,16 @@ interface ReadBranchRunsParams {
 
 /**
  * Keeps the tracked repositories' workflows in step with GitHub over REST (actions D2), as the sync engine's
- * `workflows` loop: per repository, its latest runs' list with the last ETag — a 304 is free and changes nothing
- * but the read time. On a 200 — or at the first read — the default branch and the workflow list, then every active
- * workflow's runs on the counted refs, all conditional: a run that changed may have left the latest runs' first page
- * already, so each workflow is asked, and one that did not change answers 304 for free. With no counted run with a
- * verdict among them, older pages, up to {@link MAX_RUN_PAGES}. A workflow gone from GitHub's list is dropped.
+ * `workflows` loop: per repository, its latest runs' list with the last ETag — a 304 is free and writes nothing. On
+ * a 200, or at the first read, the default branch and the workflow list, then every active workflow's runs on the
+ * counted refs, all conditional: a run that changed may have left the latest runs' first page already, so each
+ * workflow is asked, and one that did not change answers 304 for free. With no counted run with a verdict among them,
+ * older pages, up to {@link MAX_RUN_PAGES}. A workflow gone from GitHub's list is dropped.
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
- * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may concern every
- * repository does (GitHub failing, a revoked token, the allowance), as in `TrackingSync`. An answer arriving after
- * the session ended, or for a repository no longer tracked, is dropped.
+ * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may
+ * concern every repository does (GitHub failing, a revoked token, the allowance), as in `TrackingSync`. An answer
+ * arriving after the session ended, or for a repository no longer tracked, is dropped.
  */
 export type WorkflowSync = Resolved<typeof WorkflowSync>;
 export const WorkflowSync = defineService({
@@ -52,10 +50,9 @@ export const WorkflowSync = defineService({
     deps: {
         workflows: WorkflowStore,
         tracking: TrackingStore,
-        clock: Clock,
         logger: Logger,
     },
-    setup({ workflows, tracking, clock, logger }) {
+    setup({ workflows, tracking, logger }) {
         return { poll };
 
         /**
@@ -73,20 +70,7 @@ export const WorkflowSync = defineService({
                     }
 
                     if (error.status >= 400 && error.status < 500) {
-                        logger.warn('GitHub shows no workflows of a tracked repository; asking again later', {
-                            repository: nameWithOwner,
-                            status: error.status,
-                        });
-                        if (isWanted(context, nameWithOwner)) {
-                            workflows.set({
-                                ...(workflows.get(nameWithOwner) ?? createUnreadWorkflows(nameWithOwner)),
-                                readAt: clock.now(),
-                                unavailable: {
-                                    reason: error.status === 404 ? 'disabled' : 'refused',
-                                    status: error.status,
-                                },
-                            });
-                        }
+                        markUnavailable(context, nameWithOwner, error.status);
                     } else {
                         failed++;
                         logger.warn('The workflows of a tracked repository could not be polled', {
@@ -119,7 +103,10 @@ export const WorkflowSync = defineService({
             }
 
             if (changes.status === 304 && stored) {
-                workflows.set({ ...stored, readAt: clock.now(), unavailable: null });
+                if (stored.unavailable !== null) {
+                    workflows.set({ ...stored, unavailable: null });
+                }
+
                 return;
             }
 
@@ -173,7 +160,6 @@ export const WorkflowSync = defineService({
                 runsEtag: changes.status === 200 ? (changes.etag ?? null) : null,
                 workflowsEtag: list.status === 200 ? (list.etag ?? null) : (stored?.workflowsEtag ?? null),
                 workflows: read,
-                readAt: clock.now(),
                 unavailable: null,
             });
             logger.debug('Workflows of a tracked repository read', {
@@ -233,6 +219,29 @@ export const WorkflowSync = defineService({
             }
 
             return { ...entry, runs, etags };
+        }
+
+        /** Says GitHub shows nothing of the repository's workflows — once: while it keeps saying so, nothing is written. */
+        function markUnavailable(context: TrackingSyncContext, nameWithOwner: string, status: number) {
+            const stored = workflows.get(nameWithOwner);
+            if (!isWanted(context, nameWithOwner) || stored?.unavailable?.status === status) {
+                return;
+            }
+
+            logger.warn('GitHub shows no workflows of a tracked repository; asking again at the next poll', {
+                repository: nameWithOwner,
+                status,
+            });
+            workflows.set({
+                nameWithOwner,
+                defaultBranch: null,
+                repositoryEtag: null,
+                runsEtag: null,
+                workflowsEtag: null,
+                workflows: [],
+                ...stored,
+                unavailable: { reason: status === 404 ? 'disabled' : 'refused', status },
+            });
         }
 
         /** Whether what was read of the repository may be written: the session is current and it is still tracked. */

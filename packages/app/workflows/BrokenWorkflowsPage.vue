@@ -5,6 +5,7 @@ import { computed, onMounted } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
 import { useNow } from '@/services/useNow.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 
 import type { BrokenWorkflowEntry } from './buildBrokenWorkflows.js';
@@ -16,15 +17,12 @@ import { WorkflowStore } from './WorkflowStore.js';
 const TICK_MS = 30_000;
 
 const store = useService(WorkflowStore);
+const items = useService(ItemStore);
 const sync = useService(SyncEngine);
 const browser = useService(Browser);
 const now = useNow(TICK_MS);
 
-const broken = computed(() =>
-  buildBrokenWorkflows(
-    store.repositories.map(repository => ({ ...repository, stored: store.get(repository.nameWithOwner) })),
-  ),
-);
+const broken = computed(() => buildBrokenWorkflows(store.repositories));
 
 onMounted(() => sync.pollWorkflowsNow());
 
@@ -39,6 +37,7 @@ function open(entry: BrokenWorkflowEntry) {
 <template>
   <BrokenWorkflowsView
     :broken="broken"
+    :checked-at="items.getSyncState('workflows').lastSuccessAt"
     :now="now"
     @open="open"
   />

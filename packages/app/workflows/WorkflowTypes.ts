@@ -19,11 +19,6 @@ export interface RepositoryWorkflows {
     readonly workflowsEtag: string | null;
     /** In GitHub's order. */
     readonly workflows: readonly StoredWorkflow[];
-    /**
-     * When the last read finished (epoch ms) — a read GitHub refused too; `null` while nothing was read, which is not
-     * the same as healthy.
-     */
-    readonly readAt: number | null;
     /** Why GitHub shows no workflow state for the repository, while it does not. */
     readonly unavailable: WorkflowsUnavailable | null;
 }
@@ -103,8 +98,15 @@ export interface WorkflowRowRef {
 
 /** A repository's workflows' states, and what its sidebar marker and the total need. */
 export interface RepositoryWorkflowState {
-    /** `unread` before the first read, `unavailable` while GitHub shows nothing: neither is healthy nor counts. */
+    /**
+     * `unread` while nothing is stored of it, `unavailable` while GitHub shows nothing: neither is healthy nor
+     * counts.
+     */
     readonly status: 'unread' | 'unavailable' | 'read';
+    /** Why GitHub shows nothing, while `unavailable`; `null` otherwise. */
+    readonly unavailable: WorkflowsUnavailable | null;
+    /** The branch GitHub calls the default one, as last read; `null` before. */
+    readonly defaultBranch: string | null;
     /** In the stored order; empty unless `read`. */
     readonly workflows: readonly WorkflowState[];
     readonly brokenCount: number;

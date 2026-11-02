@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import { sampleRepositoryWorkflows, SAMPLE_WORKFLOWS_NOW } from '@/testing/sampleWorkflows.js';
+import { sampleRepositoryWorkflows } from '@/testing/sampleWorkflows.js';
 import type { SampleWorkflowParams } from '@/testing/sampleWorkflows.js';
 
 import { buildBrokenWorkflows } from './buildBrokenWorkflows.js';
@@ -48,7 +48,6 @@ test('broken workflows are grouped by how new the break is, not by repository, t
         [WEBAPP, 'Release'],
     ]);
     expect(broken).toMatchObject({ brokenCount: 4, brokenRepositoryCount: 2, readCount: 2 });
-    expect(broken.readAt).toBe(SAMPLE_WORKFLOWS_NOW - 40_000);
 });
 
 test('a row names the ref its latest failure ran on and is keyed by repository and workflow', () => {
@@ -84,13 +83,7 @@ test('repositories GitHub shows nothing of are under "Can\'t tell", out of the t
         }),
     ]);
 
-    expect(broken.unavailable).toEqual([
-        {
-            nameWithOwner: API,
-            unavailable: { reason: 'disabled', status: 404 },
-            checkedAt: SAMPLE_WORKFLOWS_NOW - 40_000,
-        },
-    ]);
+    expect(broken.unavailable).toEqual([{ nameWithOwner: API, unavailable: { reason: 'disabled', status: 404 } }]);
     expect(broken).toMatchObject({ fresh: [], ongoing: [], brokenCount: 0, brokenRepositoryCount: 0, readCount: 0 });
 });
 

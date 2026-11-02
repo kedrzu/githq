@@ -7,15 +7,16 @@ import type { RepositoryWorkflows, StoredWorkflow, WorkflowRefSettings } from '.
 import { getRepositoryWorkflowState } from './getRepositoryWorkflowState.js';
 
 const DEFAULT_REFS: WorkflowRefSettings = { countDefaultBranch: true, patterns: [] };
-const HOUR = 60 * 60 * 1000;
 /** 2026-11-02T12:00:00Z. */
 const NOW = Date.parse('2026-11-02T12:00:00Z');
 
 test('a repository not read yet, or one GitHub shows nothing of, is neither healthy nor counted', () => {
     const broken = [stored(workflow(1), [run(1, 'failure', '2026-11-02T11:00:00Z')])];
 
-    expect(getRepositoryWorkflowState(repository(broken, { readAt: null }), DEFAULT_REFS, NOW)).toEqual({
+    expect(getRepositoryWorkflowState(undefined, DEFAULT_REFS, NOW)).toEqual({
         status: 'unread',
+        unavailable: null,
+        defaultBranch: null,
         workflows: [],
         brokenCount: 0,
         newestBreakAt: null,
@@ -27,7 +28,13 @@ test('a repository not read yet, or one GitHub shows nothing of, is neither heal
             DEFAULT_REFS,
             NOW,
         ),
-    ).toMatchObject({ status: 'unavailable', workflows: [], brokenCount: 0 });
+    ).toMatchObject({
+        status: 'unavailable',
+        unavailable: { reason: 'refused', status: 403 },
+        defaultBranch: 'main',
+        workflows: [],
+        brokenCount: 0,
+    });
 });
 
 test('a cancelled or skipped run after a failure keeps the workflow broken', () => {
@@ -196,7 +203,6 @@ function repository(workflows: StoredWorkflow[], overrides: Partial<RepositoryWo
         runsEtag: '"runs"',
         workflowsEtag: '"workflows"',
         workflows,
-        readAt: NOW - HOUR,
         unavailable: null,
         ...overrides,
     };

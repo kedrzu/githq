@@ -17,20 +17,23 @@ const NEW_BREAK_MS = 24 * 60 * 60 * 1000;
 const STRIP_RUNS = 5;
 
 /**
- * Works out how a repository's workflows stand from what is stored (actions D1, D2): every workflow's state on the
- * refs that count, and the total, the marker and the newest break for the sidebar. A workflow GitHub does not list
- * as active never counts; the stored runs are filtered by `refs` again, so a changed pattern applies at once.
+ * Works out how a repository's workflows stand from what is stored of them — `undefined` while nothing is (actions
+ * D1, D2): every workflow's state on the refs that count, and the total, the marker and the newest break for the
+ * sidebar. A workflow GitHub does not list as active never counts; the stored runs are filtered by `refs` again, so a
+ * changed pattern applies at once.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function getRepositoryWorkflowState(
-    stored: RepositoryWorkflows,
+    stored: RepositoryWorkflows | undefined,
     refs: WorkflowRefSettings,
     now: number,
 ): RepositoryWorkflowState {
-    if (stored.unavailable !== null || stored.readAt === null) {
+    if (!stored || stored.unavailable !== null) {
         return {
-            status: stored.unavailable === null ? 'unread' : 'unavailable',
+            status: stored ? 'unavailable' : 'unread',
+            unavailable: stored?.unavailable ?? null,
+            defaultBranch: stored?.defaultBranch ?? null,
             workflows: [],
             brokenCount: 0,
             newestBreakAt: null,
@@ -53,7 +56,15 @@ export function getRepositoryWorkflowState(
         hasNewBreak ||= workflow.isNew;
     }
 
-    return { status: 'read', workflows, brokenCount, newestBreakAt, hasNewBreak };
+    return {
+        status: 'read',
+        unavailable: null,
+        defaultBranch: stored.defaultBranch,
+        workflows,
+        brokenCount,
+        newestBreakAt,
+        hasNewBreak,
+    };
 }
 
 function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, now: number): WorkflowState {
