@@ -47,6 +47,10 @@ through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts`
 
 Once, when all work is believed complete. Every step, in order, nothing skipped; zero errors each.
 
+A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` files
+and `githq.pen`, nothing can break but the format, so step 5 alone is the full protocol. The step still counts:
+unformatted design docs reaching `main` have failed the deploy's Format step and blocked every deploy after them.
+
 |#|Step|Command|Must|
 |-|-|-|-|
 |1|Codegen|`bun run codegen`|regenerates `*.loc.ts`, the GraphQL `generated.gen.ts` and tsconfigs cleanly; `git status` shows no unexpected diff in generated files|
