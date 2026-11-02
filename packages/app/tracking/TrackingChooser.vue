@@ -1,10 +1,10 @@
-<!-- Choosing what to track (G2, D20): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). The `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. -->
+<!-- Choosing what to track (G2, D20), on the first sign-in and in Settings (G8, D24): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). The `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. In Settings (`tracked` given) a tick means tracked: no heading, no footer and never G10; counts say "tracked", a group's action is "Track all"/"Untrack all", and each row's last column says what saving will do to it ("will be tracked", "will be untracked") or how a tracked one stands ("synced 14s ago"). What is tracked always shows, so it can be unticked — while the lists are read or after reading them failed (under each owner), on a page not read yet (under its owner), or of an owner GitHub doesn't list ("Elsewhere") — and never twice. A filter naming a repository or project nothing listed matches looks it up (latest wins) and offers it; ticked, it is handed on (`found`). The bar at the bottom (`PendingChanges`) shows while ticks differ from what is tracked: ⌘↵ saves, Esc discards once nothing else took it (the filter clears itself first, an open layer closes). -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ArrowDownWideNarrow, Building2, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
-import { computed, ref, useTemplateRef, watch, watchEffect } from 'vue';
+import { computed, ref, shallowRef, useTemplateRef, watch, watchEffect } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
@@ -15,26 +15,45 @@ import type { ChoiceListOption } from '@/components/ChoiceList.vue';
 import Kbd from '@/components/Kbd.vue';
 import SearchField from '@/components/SearchField.vue';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
+import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { useFilteredListKeys } from '@/utils/useFilteredListKeys.js';
 
 import CandidateRepositoryRow from './CandidateRepositoryRow.vue';
 import HiddenOrganizationNotice from './HiddenOrganizationNotice.vue';
+import PendingChanges from './PendingChanges.vue';
 import TrackByName from './TrackByName.vue';
+import TrackedRowNote from './TrackedRowNote.vue';
+import type { TrackedChange } from './TrackedRowNote.vue';
 import { getCandidateProjects, getCandidateRepositories } from './trackingCandidates.js';
 import * as l from './TrackingChooser.loc.js';
 import type {
   CandidateProject,
   CandidateRepositories,
   CandidateRepository,
+  TrackedEntries,
+  TrackedProjectEntry,
+  TrackedRepositoryEntry,
+  TrackedStatus,
   TrackingCandidates,
 } from './TrackingTypes.js';
+import { parseTrackingReference } from './utils/parseTrackingReference.js';
 import type { TrackingReference } from './utils/parseTrackingReference.js';
 
 /** How many projects the column shows of all owners' until unfolded (the chosen ones besides). */
 const FOLDED_PROJECTS = 6;
 /** How many rows a folded owner's group shows (an organisation's chosen ones besides). */
 const FOLDED_ROWS = 4;
+/** The owner of Settings' "Elsewhere" group: no login is empty. */
+const ELSEWHERE = '';
+/** How long the filter must stay as it is before what it names is looked up (Settings). */
+const LOOKUP_DELAY_MS = 300;
+
+/** A repository a row shows: offered by GitHub's lists, or (Settings) tracked yet not among what they gave so far. */
+type ListedRepository = CandidateRepository | TrackedRepositoryEntry;
+/** A project a row shows, likewise. */
+type ListedProject = CandidateProject | TrackedProjectEntry;
 
 /** An owner's group of repositories. */
 interface OwnerGroup {
@@ -44,6 +63,13 @@ interface OwnerGroup {
   readonly hidden: boolean;
   /** `null` when GitHub listed none of its repositories. */
   readonly list: CandidateRepositories | null;
+  /**
+   * Settings: the tracked, found or looked-up repositories of this group that its list has not given — on a page not
+   * read yet, of an owner GitHub doesn't list, or while nothing was read.
+   */
+  readonly extras: readonly ListedRepository[];
+  /** Settings: not an owner GitHub listed — "Elsewhere", or a tracked one's owner while nothing was read. */
+  readonly unlisted: boolean;
 }
 
 /** How many of an owner's repositories are chosen, of how many it has. */
@@ -54,9 +80,9 @@ interface OwnerCount {
 
 /** A group as the list shows it now. */
 interface ShownGroup extends OwnerGroup {
-  readonly rows: readonly CandidateRepository[];
-  /** Those of its read repositories the filter matches, best first. */
-  readonly matching: readonly CandidateRepository[];
+  readonly rows: readonly ListedRepository[];
+  /** Those of its repositories the filter matches, best first. */
+  readonly matching: readonly ListedRepository[];
   readonly selected: number;
   readonly total: number;
   /** Shown in full: its owner picked, a filter typed, or "Show all". */
@@ -66,22 +92,36 @@ interface ShownGroup extends OwnerGroup {
 }
 
 const props = defineProps<{
-  candidates: TrackingCandidates;
+  /** What the user and their organisations have; `null` (Settings only) while it is read, or when reading it failed. */
+  candidates: TrackingCandidates | null;
   /** What the rows' "active 12m ago" are counted from. */
   now: number;
-  /** Repositories and projects found by name (G10), offered besides the user's. */
+  /**
+   * Repositories and projects found by name, offered besides the user's: on sign-in through G10's field; in Settings,
+   * a looked-up one the user ticked (the `found` event), kept by the parent so saving can track it.
+   */
   found: readonly (CandidateProject | CandidateRepository)[];
   /** When the user opened GitHub's page to request each organisation's approval (epoch ms). */
   approvals: Readonly<Record<string, number>>;
-  /** Looks up a repository or project the user names (G10). */
+  /** Looks up a repository or project the user names (G10; in Settings, typed in the filter). */
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
   /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
   creates?: string | null;
   /**
    * "Track these" is under way: it and ⌘↵ do nothing until it ends. "Only my repositories" shows as disabled but keeps
-   * its focus and still emits — the page ignores it meanwhile.
+   * its focus and still emits — the page ignores it meanwhile. In Settings: saving is under way.
    */
   busy?: boolean;
+  /**
+   * Settings' form (G8, D24), when given: what is tracked now and how each stands. The ticks (`repositories`,
+   * `projects`) are then what saving will track; a tick that differs from this is a staged change, which the bar at the
+   * bottom saves (`save`) or discards (`discard`). No heading, no footer, no G10.
+   */
+  tracked?: TrackedEntries;
+  /** Settings: `candidates` are being read — the list says so under what is tracked. */
+  reading?: boolean;
+  /** What the filter holds at first (`?q=`, from an untracked repository's or project's screen). */
+  initialSearch?: string;
 }>();
 
 defineSlots<{
@@ -102,8 +142,12 @@ const emit = defineEmits<{
   /** More of the owner's repositories are needed: the next page. */
   loadMore: [owner: string];
   requestApproval: [organization: string];
-  /** Found by name: offered and chosen. */
+  /** Found by name and chosen: on sign-in through G10's field; in Settings, a looked-up one ticked. */
   found: [candidate: CandidateProject | CandidateRepository];
+  /** Settings: "Save N changes" (⌘↵) — track what the ticks say. */
+  save: [];
+  /** Settings: "Discard" (Esc) — the ticks back to what is tracked. */
+  discard: [];
 }>();
 
 const t = useTranslate();
@@ -111,12 +155,15 @@ const root = useTemplateRef<HTMLElement>('root');
 const filterField = useTemplateRef<{ focus(): void }>('filterField');
 
 const owner = ref<string>('all');
-const filter = ref('');
+const filter = ref(props.initialSearch ?? '');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const projectsUnfolded = ref(false);
 /** The repository and the project last clicked in each list: where a Shift+click's range starts. */
 const repositoryAnchor = ref<string | null>(null);
 const projectAnchor = ref<string | null>(null);
+/** Settings: what the filter names, looked up once nothing listed matches it; `null` while looking or not found. */
+const lookedUp = shallowRef<CandidateProject | CandidateRepository | null>(null);
+const lookingUp = ref(false);
 const listKeys = useFilteredListKeys({
   container: root,
   rows: '[data-tracking-row] [role="checkbox"]',
@@ -124,21 +171,102 @@ const listKeys = useFilteredListKeys({
   filter,
 });
 
-const groups = computed((): OwnerGroup[] => [
-  { login: props.candidates.login, own: true, hidden: false, list: props.candidates.repositories },
-  ...props.candidates.organizations.map(organization => ({
-    login: organization.login,
-    own: false,
-    hidden: organization.hiddenPrivate,
-    list: organization.repositories,
-  })),
-]);
+const settings = computed(() => props.tracked !== undefined);
+const trackedNames = computed(() => new Set(props.tracked?.repositories.map(entry => entry.nameWithOwner)));
+const trackedIds = computed(() => new Set(props.tracked?.projects.map(entry => entry.id)));
+const repositoryStatuses = computed(
+  () =>
+    new Map(props.tracked?.repositories.map((entry): [string, TrackedStatus] => [entry.nameWithOwner, entry.status])),
+);
+const projectStatuses = computed(
+  () => new Map(props.tracked?.projects.map((entry): [string, TrackedStatus] => [entry.id, entry.status])),
+);
+const readRepositories = computed(() => (props.candidates ? getCandidateRepositories(props.candidates) : []));
+const extraRepositories = computed(() => {
+  if (!settings.value) {
+    return [];
+  }
+
+  const read = new Set(readRepositories.value.map(repository => repository.nameWithOwner));
+  const looked = lookedUp.value && 'nameWithOwner' in lookedUp.value ? [lookedUp.value] : [];
+  const extras = new Map<string, ListedRepository>();
+  // A candidate found later tells more than what is tracked: it wins.
+  for (const repository of [...(props.tracked?.repositories ?? []), ...foundRepositories.value, ...looked]) {
+    if (!read.has(repository.nameWithOwner)) {
+      extras.set(repository.nameWithOwner, repository);
+    }
+  }
+
+  return [...extras.values()];
+});
+const groups = computed((): OwnerGroup[] => {
+  const candidates = props.candidates;
+  const listed: OwnerGroup[] = candidates
+    ? [
+        {
+          login: candidates.login,
+          own: true,
+          hidden: false,
+          list: candidates.repositories,
+          extras: [],
+          unlisted: false,
+        },
+        ...candidates.organizations.map(organization => ({
+          login: organization.login,
+          own: false,
+          hidden: organization.hiddenPrivate,
+          list: organization.repositories,
+          extras: [],
+          unlisted: false,
+        })),
+      ]
+    : [];
+  if (extraRepositories.value.length === 0) {
+    return listed;
+  }
+
+  // Under its owner when GitHub lists them; else "Elsewhere" — or, while nothing was read, under its owner's login.
+  const logins = new Set(listed.map(group => group.login));
+  const extras = new Map<string, ListedRepository[]>();
+  for (const repository of extraRepositories.value) {
+    const login = parseRepositoryName(repository.nameWithOwner).owner;
+    const key = logins.has(login) || !candidates ? login : ELSEWHERE;
+    extras.set(key, [...(extras.get(key) ?? []), repository]);
+  }
+
+  return [
+    ...listed.map(group => ({ ...group, extras: extras.get(group.login) ?? [] })),
+    ...[...extras]
+      .filter(([login]) => !logins.has(login))
+      .map(([login, rows]) => ({ login, own: false, hidden: false, list: null, extras: rows, unlisted: true })),
+  ];
+});
 const chosenRepositories = computed(() => new Set(repositories.value));
 const chosenProjects = computed(() => new Set(projects.value));
 const needle = computed(() => filter.value.trim());
-const shownGroups = computed(() =>
+const reference = computed(() => (settings.value ? parseTrackingReference(needle.value) : null));
+/** The groups of the owner picked, as the filter leaves them. */
+const filteredGroups = computed(() =>
   groups.value.filter(group => owner.value === 'all' || group.login === owner.value).map(showGroup),
 );
+// In Settings a search leaves out the owners it matches nothing of, unless more of theirs is still to read (T1).
+const shownGroups = computed(() =>
+  settings.value && needle.value !== ''
+    ? filteredGroups.value.filter(group => group.matching.length > 0 || group.list?.nextCursor != null)
+    : filteredGroups.value,
+);
+// The owners a filter looks through, the rest of their lists read a page at a time. In Settings, a filter naming an
+// owner (`acme/web`, or the tail of a login, `me/web`) reads only that one's, and one naming a project none.
+const pagedGroups = computed(() => {
+  if (needle.value === '' || reference.value?.kind === 'project') {
+    return [];
+  }
+
+  const named = reference.value?.owner.toLowerCase();
+  return filteredGroups.value.filter(
+    group => group.list?.nextCursor != null && (named === undefined || group.login.toLowerCase().endsWith(named)),
+  );
+});
 /** The repositories' rows in the order shown, which a range follows. */
 const shownRepositoryNames = computed(() =>
   empty.value
@@ -154,17 +282,19 @@ const ownerOptions = computed((): ChoiceListOption<string>[] => [
     { value: 'all', label: t(l.allOwners) },
     { selected: repositories.value.length, total: totalRepositories.value },
   ),
-  ...groups.value.map(group =>
-    ownerOption(
-      {
-        value: group.login,
-        label: group.login,
-        icon: group.hidden ? Lock : group.own ? User : Building2,
-        warning: group.hidden,
-      },
-      ownerCount(group),
+  ...groups.value
+    .filter(group => !group.unlisted)
+    .map(group =>
+      ownerOption(
+        {
+          value: group.login,
+          label: group.login,
+          icon: group.hidden ? Lock : group.own ? User : Building2,
+          warning: group.hidden,
+        },
+        ownerCount(group),
+      ),
     ),
-  ),
 ]);
 const pickedHidden = computed(() =>
   owner.value === 'all' ? null : (groups.value.find(group => group.login === owner.value && group.hidden) ?? null),
@@ -178,19 +308,37 @@ const foundProjects = computed(() =>
 const allRepositories = computed(
   () =>
     new Map(
-      [...getCandidateRepositories(props.candidates), ...foundRepositories.value].map(repository => [
-        repository.nameWithOwner,
-        repository,
-      ]),
+      [...readRepositories.value, ...foundRepositories.value].map(repository => [repository.nameWithOwner, repository]),
     ),
 );
 const totalRepositories = computed(() => sumOver(groups.value, group => group.list?.totalCount ?? 0));
 // The user's own first; within each, open before closed, the most recently updated first.
-const allProjects = computed(() =>
-  getCandidateProjects(props.candidates).toSorted(
-    (a, b) => Number(a.owner !== props.candidates.login) - Number(b.owner !== props.candidates.login),
-  ),
-);
+const candidateProjects = computed(() => {
+  const candidates = props.candidates;
+  return candidates
+    ? getCandidateProjects(candidates).toSorted(
+        (a, b) => Number(a.owner !== candidates.login) - Number(b.owner !== candidates.login),
+      )
+    : [];
+});
+// In Settings, after them the tracked, found and looked-up projects GitHub's lists don't hold.
+const extraProjects = computed(() => {
+  if (!settings.value) {
+    return [];
+  }
+
+  const read = new Set(candidateProjects.value.map(project => project.id));
+  const looked = lookedUp.value && !('nameWithOwner' in lookedUp.value) ? [lookedUp.value] : [];
+  const extras = new Map<string, ListedProject>();
+  for (const project of [...(props.tracked?.projects ?? []), ...foundProjects.value, ...looked]) {
+    if (!read.has(project.id)) {
+      extras.set(project.id, project);
+    }
+  }
+
+  return [...extras.values()];
+});
+const allProjects = computed((): ListedProject[] => [...candidateProjects.value, ...extraProjects.value]);
 // The picked owner's projects; of all owners, the first few and the chosen ones unless unfolded.
 const ownerProjects = computed(() =>
   owner.value === 'all' ? allProjects.value : allProjects.value.filter(project => project.owner === owner.value),
@@ -198,10 +346,14 @@ const ownerProjects = computed(() =>
 const shownProjects = computed(() =>
   owner.value !== 'all' || projectsUnfolded.value
     ? ownerProjects.value
-    : ownerProjects.value.filter((project, index) => index < FOLDED_PROJECTS || chosenProjects.value.has(project.id)),
+    : ownerProjects.value.filter((project, index) => index < FOLDED_PROJECTS || isProjectInSight(project)),
 );
 const empty = computed(
-  () => totalRepositories.value === 0 && allProjects.value.length === 0 && !groups.value.some(group => group.hidden),
+  () =>
+    !settings.value &&
+    totalRepositories.value === 0 &&
+    allProjects.value.length === 0 &&
+    !groups.value.some(group => group.hidden),
 );
 const openToCopy = computed(() =>
   sumOver(repositories.value, name => {
@@ -213,6 +365,47 @@ const summaryDetail = computed(() => {
   const detail = t(l.summaryDetail, { count: openToCopy.value });
   return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
 });
+/** Settings: what saving starts tracking, by name. */
+const toTrack = computed(() =>
+  settings.value
+    ? [
+        ...repositories.value.filter(name => !trackedNames.value.has(name)),
+        ...projects.value.filter(id => !trackedIds.value.has(id)).map(projectTitle),
+      ]
+    : [],
+);
+/** Settings: what saving stops tracking, by name. */
+const toUntrack = computed(() => [
+  ...(props.tracked?.repositories ?? [])
+    .filter(entry => !chosenRepositories.value.has(entry.nameWithOwner))
+    .map(entry => entry.nameWithOwner),
+  ...(props.tracked?.projects ?? []).filter(entry => !chosenProjects.value.has(entry.id)).map(entry => entry.title),
+]);
+const staged = computed(() => toTrack.value.length + toUntrack.value.length > 0);
+// What the filter names, once nothing listed matches it (Settings): not while the lists are first read, and not under
+// an owner picked that it doesn't name.
+const lookupReference = computed(() => {
+  const named = reference.value;
+  if (
+    !named ||
+    !props.candidates ||
+    (owner.value !== 'all' && owner.value.toLowerCase() !== named.owner.toLowerCase())
+  ) {
+    return null;
+  }
+
+  return isListed(named) ? null : named;
+});
+/** Settings: the filter matched nothing, nothing was found by its name, and nothing is left to read. */
+const nothingMatches = computed(
+  () =>
+    settings.value &&
+    needle.value !== '' &&
+    shownGroups.value.every(group => group.matching.length === 0) &&
+    pagedGroups.value.length === 0 &&
+    !lookingUp.value &&
+    !lookedUp.value,
+);
 
 /** Whether the click toggling a checkbox held Shift; read in the capture phase, before the checkbox toggles. */
 let rangeClick = false;
@@ -221,14 +414,8 @@ let rangeClick = false;
 // full without one, a group asks for its next page when the user does ("Show more"): an organisation may have
 // thousands.
 watchEffect(() => {
-  if (needle.value === '') {
-    return;
-  }
-
-  for (const group of shownGroups.value) {
-    if (group.list?.nextCursor != null) {
-      emit('loadMore', group.login);
-    }
+  for (const group of pagedGroups.value) {
+    emit('loadMore', group.login);
   }
 });
 
@@ -237,6 +424,26 @@ watch(filter, () => {
   repositoryAnchor.value = null;
 });
 
+// Latest wins: a change cancels the wait for the delay, and what was asked before it is dropped when it answers.
+watch(
+  lookupReference,
+  (named, _before, onCleanup) => {
+    lookedUp.value = null;
+    lookingUp.value = named !== null;
+    if (!named) {
+      return;
+    }
+
+    let stale = false;
+    const timer = setTimeout(() => void lookUp(named, () => stale), LOOKUP_DELAY_MS);
+    onCleanup(() => {
+      stale = true;
+      clearTimeout(timer);
+    });
+  },
+  { immediate: true },
+);
+
 onWindowEvent('keydown', event => {
   if (event.defaultPrevented) {
     return;
@@ -244,10 +451,23 @@ onWindowEvent('keydown', event => {
 
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
-    if (!props.busy) {
-      emit('track');
+    if (props.busy) {
+      return;
     }
 
+    if (!settings.value) {
+      emit('track');
+    } else if (staged.value) {
+      emit('save');
+    }
+
+    return;
+  }
+
+  // Settings: Esc discards, once nothing else took it — the filter clears itself first, an open layer closes.
+  if (event.key === 'Escape' && settings.value && staged.value && !props.busy && !isLayerOpen()) {
+    event.preventDefault();
+    emit('discard');
     return;
   }
 
@@ -256,6 +476,41 @@ onWindowEvent('keydown', event => {
     filterField.value?.focus();
   }
 });
+
+async function lookUp(named: TrackingReference, isStale: () => boolean) {
+  const candidate = await props.find(named);
+  if (!isStale()) {
+    lookedUp.value = candidate;
+    lookingUp.value = false;
+  }
+}
+
+/** Whether what the filter names is among the rows already: a repository by name or match, a project by address. */
+function isListed(named: TrackingReference) {
+  if (named.kind === 'project') {
+    return [...candidateProjects.value, ...foundProjects.value].some(
+      project => project.owner.toLowerCase() === named.owner.toLowerCase() && project.number === named.number,
+    );
+  }
+
+  const listed = [...readRepositories.value, ...(props.tracked?.repositories ?? []), ...foundRepositories.value];
+  return (
+    listed.some(repository => isNamed(repository)) ||
+    findMatches(
+      filter.value,
+      prepareMatchTexts(listed, repository => [repository.nameWithOwner]),
+    ).length > 0
+  );
+}
+
+/** Whether the filter names this repository by its address (`owner/name`, a URL). */
+function isNamed(repository: ListedRepository) {
+  const named = reference.value;
+  return (
+    named?.kind === 'repository' &&
+    repository.nameWithOwner.toLowerCase() === `${named.owner}/${named.name}`.toLowerCase()
+  );
+}
 
 function onFilterKeydown(event: KeyboardEvent) {
   if (matchesCommandKey(event, 'Mod+A') && needle.value !== '') {
@@ -267,32 +522,47 @@ function onFilterKeydown(event: KeyboardEvent) {
 }
 
 function showGroup(group: OwnerGroup): ShownGroup {
-  const read = group.list?.repositories ?? [];
-  const matching = findMatches(
+  const listed: ListedRepository[] = [...(group.list?.repositories ?? []), ...group.extras];
+  const matched = findMatches(
     filter.value,
-    prepareMatchTexts(read, repository => [repository.nameWithOwner]),
+    prepareMatchTexts(listed, repository => [repository.nameWithOwner]),
   ).map(({ row }) => row);
+  // A repository's address finds it too.
+  const matching = [...matched, ...listed.filter(repository => !matched.includes(repository) && isNamed(repository))];
   const unfolded = owner.value !== 'all' || needle.value !== '' || unfoldedOwners.value.has(group.login);
   const rows = unfolded
     ? matching
     : matching.filter(
-        // An organisation's chosen ones stay in sight; the user's own fold whatever they are, said under them.
+        // An organisation's chosen (or tracked) ones stay in sight; the user's own fold whatever they are, said under
+        // them. Those its list hasn't given always show.
         (repository, index) =>
-          index < FOLDED_ROWS || (!group.own && chosenRepositories.value.has(repository.nameWithOwner)),
+          index < FOLDED_ROWS ||
+          (!group.own &&
+            (chosenRepositories.value.has(repository.nameWithOwner) ||
+              trackedNames.value.has(repository.nameWithOwner))) ||
+          group.extras.includes(repository),
       );
-  const total = group.list?.totalCount ?? 0;
+  const total = group.list?.totalCount ?? group.extras.length;
   return {
     ...group,
     rows,
     matching,
-    selected: read.filter(repository => chosenRepositories.value.has(repository.nameWithOwner)).length,
+    selected: listed.filter(repository => chosenRepositories.value.has(repository.nameWithOwner)).length,
     total,
     unfolded,
-    folded: unfolded ? 0 : total - rows.length,
+    folded: unfolded ? 0 : Math.max(0, total - rows.length),
   };
 }
 
+function groupName(group: ShownGroup) {
+  return group.login === ELSEWHERE ? t(l.elsewhere) : group.login;
+}
+
 function groupDetail(group: ShownGroup) {
+  if (settings.value) {
+    return settingsGroupDetail(group);
+  }
+
   if (needle.value !== '') {
     return t(l.matching, { matching: group.matching.length, total: group.total, filter: filter.value.trim() });
   }
@@ -304,6 +574,33 @@ function groupDetail(group: ShownGroup) {
   return t(group.own ? l.yourRepositories : l.organisation, { selected: group.selected, total: group.total });
 }
 
+// T1: "organisation · 6 matches for “web” · 2 tracked"; G8: "your repositories · 11 of 12 tracked".
+function settingsGroupDetail(group: ShownGroup) {
+  const kind = group.unlisted ? [] : [t(group.own ? l.ownKind : l.organisationKind)];
+  if (needle.value !== '') {
+    const ticked = group.matching.filter(row => chosenRepositories.value.has(row.nameWithOwner)).length;
+    return [
+      ...kind,
+      t(l.matches, { count: group.matching.length, filter: needle.value }),
+      t(l.trackedCount, { count: ticked }),
+    ].join(' · ');
+  }
+
+  if (group.login === ELSEWHERE) {
+    return t(l.elsewhereDetail);
+  }
+
+  if (group.unlisted) {
+    return t(l.trackedCount, { count: group.selected });
+  }
+
+  if (group.hidden) {
+    return t(l.organisationHidden);
+  }
+
+  return [...kind, t(l.trackedOf, { selected: group.selected, total: group.total })].join(' · ');
+}
+
 function foldedText(group: ShownGroup) {
   if (!group.own) {
     return t(l.moreOfTheirs, { count: group.folded });
@@ -313,11 +610,19 @@ function foldedText(group: ShownGroup) {
     group.selected - group.rows.filter(row => chosenRepositories.value.has(row.nameWithOwner)).length;
   const selection =
     chosenFolded === group.folded
-      ? t(l.allSelected)
+      ? t(settings.value ? l.allTracked : l.allSelected)
       : chosenFolded === 0
-        ? t(l.noneSelected)
-        : t(l.someSelected, { count: chosenFolded });
+        ? t(settings.value ? l.noneTracked : l.noneSelected)
+        : t(settings.value ? l.someTracked : l.someSelected, { count: chosenFolded });
   return t(l.moreOfYours, { count: group.folded, selection });
+}
+
+function groupActionText(group: ShownGroup) {
+  if (settings.value) {
+    return t(isAllChosen(group) ? l.untrackAll : l.trackAll);
+  }
+
+  return isAllChosen(group) ? t(l.selectNone) : t(l.selectAll, { count: group.matching.length });
 }
 
 /** Whether every repository of the group the list can choose is chosen. */
@@ -373,6 +678,10 @@ function setRepositories(names: readonly string[], chosen: boolean) {
   }
 
   repositories.value = [...next];
+  const looked = lookedUp.value;
+  if (chosen && looked && 'nameWithOwner' in looked && names.includes(looked.nameWithOwner)) {
+    emit('found', looked);
+  }
 }
 
 /** Chooses a project, or with Shift the shown ones from the anchor to it. */
@@ -382,6 +691,10 @@ function setProject(id: string, chosen: boolean) {
     ? [...new Set([...projects.value, ...range])]
     : projects.value.filter(other => !range.has(other));
   projectAnchor.value = id;
+  const looked = lookedUp.value;
+  if (chosen && looked && !('nameWithOwner' in looked) && range.has(looked.id)) {
+    emit('found', looked);
+  }
 }
 
 /** The rows a click on `row` sets: with Shift, all shown from the anchor to it; else, or with no anchor shown, itself. */
@@ -396,22 +709,71 @@ function pickRange(rows: readonly string[], anchor: string | null, row: string) 
 }
 
 function ownerOption(option: ChoiceListOption<string>, count: OwnerCount): ChoiceListOption<string> {
-  return { ...option, count: t(l.ownerCount, count), countLabel: t(l.ownerCountLabel, count) };
+  return {
+    ...option,
+    count: t(l.ownerCount, count),
+    countLabel: t(settings.value ? l.ownerCountTracked : l.ownerCountLabel, count),
+  };
 }
 
 function ownerCount(group: OwnerGroup): OwnerCount {
-  const read = group.list?.repositories ?? [];
+  const listed = [...(group.list?.repositories ?? []), ...group.extras];
   return {
-    selected: read.filter(repository => chosenRepositories.value.has(repository.nameWithOwner)).length,
+    selected: listed.filter(repository => chosenRepositories.value.has(repository.nameWithOwner)).length,
     total: group.list?.totalCount ?? 0,
   };
+}
+
+/** Settings: a project the fold keeps in sight — chosen, tracked, or offered by name; on sign-in, chosen. */
+function isProjectInSight(project: ListedProject) {
+  return (
+    chosenProjects.value.has(project.id) || trackedIds.value.has(project.id) || extraProjects.value.includes(project)
+  );
+}
+
+function projectMeta(project: ListedProject) {
+  if (!('itemCount' in project)) {
+    return project.owner;
+  }
+
+  const meta = t(l.projectMeta, { owner: project.owner, count: project.itemCount });
+  return project.closed ? `${meta} · ${t(l.projectClosed)}` : meta;
+}
+
+function projectTitle(id: string) {
+  return allProjects.value.find(project => project.id === id)?.title ?? id;
+}
+
+/** Settings: what saving will do to a row whose tick differs from what is tracked. */
+function getChange(tracked: boolean, ticked: boolean): TrackedChange | null {
+  if (!settings.value || tracked === ticked) {
+    return null;
+  }
+
+  return ticked ? 'track' : 'untrack';
+}
+
+function repositoryChange(name: string) {
+  return getChange(trackedNames.value.has(name), chosenRepositories.value.has(name));
+}
+
+function projectChange(id: string) {
+  return getChange(trackedIds.value.has(id), chosenProjects.value.has(id));
+}
+
+function repositoryStatus(name: string): TrackedStatus | null {
+  return repositoryStatuses.value.get(name) ?? null;
+}
+
+function projectStatus(id: string): TrackedStatus | null {
+  return projectStatuses.value.get(id) ?? null;
 }
 </script>
 
 <template>
   <div
     ref="root"
-    :class="css.trackingChooser"
+    :class="[css.trackingChooser, settings && css.trackingChooser_settings]"
     @click.capture="onClickCapture"
     @mousedown="onMousedown"
   >
@@ -480,17 +842,22 @@ function ownerCount(group: OwnerGroup): OwnerCount {
     <template v-else>
       <div :class="css.trackingChooser_body">
         <div :class="css.trackingChooser_column">
-          <div :class="css.trackingChooser_heading">
+          <div
+            v-if="!settings"
+            :class="css.trackingChooser_heading"
+          >
             <h1 :class="css.trackingChooser_title">{{ t(l.title) }}</h1>
             <p :class="css.trackingChooser_subtitle">{{ t(l.subtitle) }}</p>
           </div>
 
           <div :class="css.trackingChooser_main">
             <ChoiceList
+              v-if="candidates"
               v-model="owner"
               :label="t(l.owners)"
               :options="ownerOptions"
             />
+            <div v-else />
 
             <section
               :class="css.trackingChooser_repositories"
@@ -502,7 +869,9 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                   v-model="filter"
                   :class="css.trackingChooser_filter"
                   :label="t(l.filterLabel)"
-                  :placeholder="t(l.filterPlaceholder, { count: totalRepositories })"
+                  :placeholder="
+                    t(l.filterPlaceholder, { count: candidates ? totalRepositories : extraRepositories.length })
+                  "
                   kbd="/"
                   @keydown="onFilterKeydown"
                 />
@@ -514,6 +883,14 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                   {{ t(l.recentActivity) }}
                 </span>
               </div>
+
+              <p
+                v-if="!candidates && reading"
+                :class="css.trackingChooser_moreText"
+                role="status"
+              >
+                {{ t(l.reading) }}
+              </p>
 
               <HiddenOrganizationNotice
                 v-if="pickedHidden"
@@ -535,12 +912,12 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                     }}</span>
                   </template>
                   <template v-else>
-                    <h2 :class="css.trackingChooser_groupName">{{ group.login }}</h2>
+                    <h2 :class="css.trackingChooser_groupName">{{ groupName(group) }}</h2>
                     <span :class="css.trackingChooser_groupDetail">{{ groupDetail(group) }}</span>
                   </template>
                   <Button
                     v-if="!group.unfolded && !group.own && group.folded > 0"
-                    variant="link"
+                    variant="framed"
                     size="sm"
                     :class="css.trackingChooser_groupAction"
                     @click="unfold(group.login)"
@@ -549,12 +926,12 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                   </Button>
                   <Button
                     v-else-if="group.matching.length > 0"
-                    variant="link"
+                    variant="framed"
                     size="sm"
                     :class="css.trackingChooser_groupAction"
                     @click="toggleGroup(group)"
                   >
-                    {{ isAllChosen(group) ? t(l.selectNone) : t(l.selectAll, { count: group.matching.length }) }}
+                    {{ groupActionText(group) }}
                   </Button>
                 </div>
 
@@ -571,6 +948,8 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                   :key="repository.nameWithOwner"
                   :repository="repository"
                   :now="now"
+                  :change="repositoryChange(repository.nameWithOwner)"
+                  :status="repositoryStatus(repository.nameWithOwner)"
                   :model-value="chosenRepositories.has(repository.nameWithOwner)"
                   @update:model-value="setRepository(repository.nameWithOwner, $event)"
                 />
@@ -607,12 +986,19 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                   {{ t(l.showMore, { count: group.total - (group.list?.repositories.length ?? 0) }) }}
                 </Button>
                 <p
-                  v-else-if="needle !== '' && group.matching.length === 0 && owner !== 'all'"
+                  v-else-if="!settings && needle !== '' && group.matching.length === 0 && owner !== 'all'"
                   :class="css.trackingChooser_moreText"
                 >
                   {{ t(l.noMatch, { filter: filter.trim() }) }}
                 </p>
               </template>
+
+              <p
+                v-if="nothingMatches"
+                :class="css.trackingChooser_moreText"
+              >
+                {{ t(l.nothingMatches, { filter: needle }) }}
+              </p>
 
               <p
                 v-if="needle !== ''"
@@ -633,7 +1019,10 @@ function ownerCount(group: OwnerGroup): OwnerCount {
               <div :class="css.trackingChooser_group">
                 <h2 :class="css.trackingChooser_groupName">{{ t(l.projects) }}</h2>
                 <span :class="css.trackingChooser_groupDetail">{{
-                  t(l.projectsSelected, { selected: projects.length, total: allProjects.length })
+                  t(settings ? l.projectsTracked : l.projectsSelected, {
+                    selected: projects.length,
+                    total: allProjects.length,
+                  })
                 }}</span>
               </div>
               <div
@@ -656,8 +1045,15 @@ function ownerCount(group: OwnerGroup): OwnerCount {
                       {{ project.title }}
                     </span>
                     <span :class="css.trackingChooser_projectMeta">
-                      {{ t(l.projectMeta, { owner: project.owner, count: project.itemCount }) }}
-                      <template v-if="project.closed"> · {{ t(l.projectClosed) }}</template>
+                      {{ projectMeta(project) }}
+                      <template v-if="projectChange(project.id) || projectStatus(project.id)">
+                        ·
+                        <TrackedRowNote
+                          :change="projectChange(project.id)"
+                          :status="projectStatus(project.id)"
+                          :now="now"
+                        />
+                      </template>
                     </span>
                   </span>
                 </Checkbox>
@@ -683,7 +1079,23 @@ function ownerCount(group: OwnerGroup): OwnerCount {
         </div>
       </div>
 
-      <div :class="css.trackingChooser_bottom">
+      <div
+        v-if="settings && staged"
+        :class="css.trackingChooser_pending"
+      >
+        <PendingChanges
+          :class="css.trackingChooser_pendingBar"
+          :to-track="toTrack"
+          :to-untrack="toUntrack"
+          :busy="busy"
+          @save="emit('save')"
+          @discard="emit('discard')"
+        />
+      </div>
+      <div
+        v-else-if="!settings"
+        :class="css.trackingChooser_bottom"
+      >
         <div
           v-if="$slots.saving"
           :class="css.trackingChooser_saving"
@@ -732,6 +1144,10 @@ function ownerCount(group: OwnerGroup): OwnerCount {
 .trackingChooser_body {
   flex: 1;
   padding: 36px $spacing-24 $spacing-24;
+}
+
+.trackingChooser_settings .trackingChooser_body {
+  padding-top: 20px;
 }
 
 .trackingChooser_column {
@@ -836,7 +1252,6 @@ function ownerCount(group: OwnerGroup): OwnerCount {
 
 .trackingChooser_groupAction {
   flex: none;
-  color: $color-fg-2;
 }
 
 .trackingChooser_more {
@@ -919,6 +1334,17 @@ function ownerCount(group: OwnerGroup): OwnerCount {
 .trackingChooser_bottom {
   position: sticky;
   bottom: 0;
+}
+
+.trackingChooser_pending {
+  position: sticky;
+  bottom: 0;
+  padding: 0 $spacing-24 $spacing-16;
+}
+
+.trackingChooser_pendingBar {
+  max-width: 1180px;
+  margin: 0 auto;
 }
 
 .trackingChooser_saving {

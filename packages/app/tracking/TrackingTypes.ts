@@ -183,3 +183,42 @@ export interface TrackingCandidates {
     readonly projects: readonly CandidateProject[];
     readonly organizations: readonly CandidateOrganization[];
 }
+
+/** How a tracked repository or project stands now, as Settings' rows say it (G8). */
+export type TrackedStatus =
+    /** `total`: what GitHub counts in the parts it started reading; `null` before the first page. */
+    | { readonly kind: 'downloading'; readonly done: number; readonly total: number | null }
+    /** GitHub does not show it to the user, so nothing of it can be read. */
+    | { readonly kind: 'hidden' }
+    /** GitHub refuses to list its changes (a 403): they are not followed until it answers again. */
+    | { readonly kind: 'refused' }
+    /**
+     * Read at `at` (epoch ms; `null`: never yet); `slower` when GitHub refuses the free check, so it is checked less
+     * often, through GraphQL.
+     */
+    | { readonly kind: 'read'; readonly at: number | null; readonly slower: boolean };
+
+/** A tracked repository as Settings knows it, whether or not GitHub's lists read so far hold it. */
+export interface TrackedRepositoryEntry {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    /** `null`: nothing tells yet — the row shows no tag. */
+    readonly isPrivate: boolean | null;
+    readonly status: TrackedStatus;
+}
+
+/** A tracked project as Settings knows it, whether or not GitHub's lists read so far hold it. */
+export interface TrackedProjectEntry {
+    /** The project's node id. */
+    readonly id: string;
+    readonly title: string;
+    /** The login of the user or organisation owning it. */
+    readonly owner: string;
+    readonly status: TrackedStatus;
+}
+
+/** What is tracked now, with how each stands: what Settings' chooser compares its ticks with (G8, D24). */
+export interface TrackedEntries {
+    readonly repositories: readonly TrackedRepositoryEntry[];
+    readonly projects: readonly TrackedProjectEntry[];
+}

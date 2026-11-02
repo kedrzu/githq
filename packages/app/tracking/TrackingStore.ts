@@ -211,10 +211,15 @@ export const TrackingStore = defineService({
         /**
          * The user's choice on the tracking screen (G2, G8): exactly these tracked — the ones tracked before keep
          * their place and their copy, one tracked earlier returns to its old place, a new one comes after the others
-         * in the order given, and the ones left out are untracked.
+         * in the order given, and the ones left out are untracked. Given as a change of what is tracked (Settings'
+         * staged ticks), it is made of what the slot the tabs share holds now — another tab's change this one has not
+         * heard of yet included.
          */
-        function choose(choice: TrackingChoice) {
-            write(kept => ({ chosen: true, document: applyChoice(kept.document, choice) }));
+        function choose(choice: TrackingChoice | ((tracking: Tracking) => TrackingChoice)) {
+            write(kept => ({
+                chosen: true,
+                document: applyChoice(kept.document, typeof choice === 'function' ? choice(toTracking(kept)) : choice),
+            }));
             changedHere();
         }
 

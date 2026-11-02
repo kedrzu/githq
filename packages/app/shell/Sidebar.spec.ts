@@ -146,7 +146,7 @@ test.each([
     ['expanded', SyncStopped],
     ['on the rail', CollapsedSyncStopped],
 ])(
-    'syncing stopped, %s: a dot on the avatar, and Settings says so, shows no key and opens Saving to GitHub',
+    'syncing stopped, %s: a dot on the avatar, and Settings says so, shows no key and opens Sync settings',
     async (_, story) => {
         await story.run();
 
@@ -162,7 +162,7 @@ test.each([
         await userEvent.click(settings);
         await expect
             .poll(() => document.querySelector('[data-route]')?.getAttribute('data-route'))
-            .toBe('/settings?tab=saving');
+            .toBe('/settings?tab=sync');
     },
 );
 

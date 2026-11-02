@@ -121,3 +121,38 @@ continue:
   en: Continue to My work
 chosen:
   en: To track
+ownerCountTracked:
+  en: '{selected} of {total} tracked'
+ownKind:
+  en: your repositories
+organisationKind:
+  en: organisation
+trackedOf:
+  en: '{selected} of {total} tracked'
+trackedCount:
+  en: '{count} tracked'
+matches:
+  plural: count
+  en:
+    one: 1 match for “{filter}”
+    many: '{count} matches for “{filter}”'
+elsewhere:
+  en: Elsewhere
+elsewhereDetail:
+  en: tracked from other owners
+trackAll:
+  en: Track all
+untrackAll:
+  en: Untrack all
+allTracked:
+  en: all tracked
+noneTracked:
+  en: none tracked
+someTracked:
+  en: '{count} tracked'
+projectsTracked:
+  en: '{selected} of {total} tracked'
+reading:
+  en: Reading your repositories…
+nothingMatches:
+  en: Nothing you can see matches “{filter}”.
