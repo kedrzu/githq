@@ -1,7 +1,10 @@
 bothReady:
   en: Both ready
 allReady:
-  en: All {count} ready
+  plural: count
+  en:
+    one: Ready
+    many: 'All {count} ready'
 needsRebase:
   en: Needs rebase · nothing can merge
 closedInside:

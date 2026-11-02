@@ -254,7 +254,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
         const { state } = stack;
-        const fact = share ? getShareStateFact(share) : getStackStateFact({ state, t, getHeldText });
+        const fact = share ? getShareStateFact(share) : getStackStateFact({ state, lang: APP_LANGUAGE, getHeldText });
         const open = state.kind !== 'merged' && state.kind !== 'closed' && state.kind !== 'incomplete';
         return open && stack.landed > 0
             ? { ...fact, text: t(l.landed, { count: stack.landed, state: fact.text }) }
@@ -265,7 +265,11 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
     function getShareStateFact(share: StackShareState): StackStateFact {
         switch (share.kind) {
             case 'ready':
-                return getStackStateFact({ state: { kind: 'ready', openCount: share.count }, t, getHeldText });
+                return getStackStateFact({
+                    state: { kind: 'ready', openCount: share.count },
+                    lang: APP_LANGUAGE,
+                    getHeldText,
+                });
             case 'held':
                 return { ...getBlockerLook(share.blocker.kind), text: getShareHeldText(share.blocker) };
             default:

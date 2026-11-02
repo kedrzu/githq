@@ -1,12 +1,33 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
-import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
+import {
+    GLYPHS_STACK,
+    SAMPLE_STACKS,
+    sampleStack,
+    sampleStackDescription,
+    SYNC_ENGINE_STACK,
+} from '@/testing/sampleStacks.js';
 
 import StackMap from './StackMap.vue';
 
 const TWO = sampleStackDescription(GLYPHS_STACK);
 const TEN = sampleStackDescription(SYNC_ENGINE_STACK);
+/** The first landed, the last one open and ready. */
+const LAST_OPEN = sampleStack({
+    id: 'S_last_open',
+    number: 70,
+    members: [{ title: 'Split the importer', state: 'MERGED', merged: true }, { title: 'Import in batches' }],
+});
+/** The copy holds the first two of three, the first landed. */
+const PARTLY_READ = sampleStack({
+    id: 'S_partly_read',
+    number: 80,
+    size: 3,
+    positions: [1, 2],
+    members: [{ title: 'Read the feed', state: 'MERGED', merged: true }, { title: 'Show the feed' }],
+});
+const REVIEW_ASKED = SAMPLE_STACKS.reviewRequested;
 
 const meta = {
     component: StackMap,
@@ -60,3 +81,34 @@ export const PageTwo: Story = { args: { arrangement: 'page' } };
 
 /** SP36: a stack of ten in a page's left column, whole. */
 export const PageTen: Story = { args: { ...PanelTen.args, arrangement: 'page' } };
+
+/** Partly merged: the last pull request open and ready — "Ready". */
+export const PanelLastOpen: Story = {
+    args: {
+        stack: sampleStackDescription(LAST_OPEN),
+        currentId: LAST_OPEN[1]?.id ?? '',
+        neighbours: { previous: LAST_OPEN[0]?.id ?? null, next: null },
+    },
+};
+
+/** While the copy is incomplete, a merged row keeps its own icon; the pips stay pale (D7). */
+export const ModalPartlyRead: Story = {
+    args: {
+        stack: sampleStackDescription(PARTLY_READ),
+        currentId: PARTLY_READ[1]?.id ?? '',
+        neighbours: null,
+        arrangement: 'modal',
+    },
+};
+
+/** Someone else's stack with the viewer's review asked: the map still says what stops it. */
+export const PanelReviewRequested: Story = {
+    args: {
+        stack: sampleStackDescription(REVIEW_ASKED),
+        currentId: REVIEW_ASKED[2]?.id ?? '',
+        neighbours: { previous: REVIEW_ASKED[1]?.id ?? null, next: REVIEW_ASKED[3]?.id ?? null },
+    },
+};
+
+/** {@link PanelReviewRequested} folded: the strip says what blocks too. */
+export const PanelReviewRequestedFolded: Story = { args: { ...PanelReviewRequested.args, folded: true } };

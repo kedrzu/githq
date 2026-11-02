@@ -6,7 +6,16 @@ import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './StackMap.stories.js';
 
-const { ModalTen, PanelFolded, PanelTen, PanelTwo } = composeStories(stories);
+const {
+    ModalPartlyRead,
+    ModalTen,
+    PanelFolded,
+    PanelLastOpen,
+    PanelReviewRequested,
+    PanelReviewRequestedFolded,
+    PanelTen,
+    PanelTwo,
+} = composeStories(stories);
 
 /** The rows' buttons, top to bottom, by their accessible names. */
 function getRowNames() {
@@ -68,4 +77,36 @@ test('SP32: folded, the map is one line â€” place, what blocks, the neighbours â
 
     await strip.click();
     expect(onUnfold).toHaveBeenCalledTimes(1);
+});
+
+test('a stack with one open pull request left reads "Ready", in the map and the folded strip', async () => {
+    await PanelLastOpen.run();
+
+    await expect.element(page.getByText('Ready', { exact: true }).last()).toBeVisible();
+    expect(document.body.textContent).not.toContain('All 1 ready');
+});
+
+test('while the copy is incomplete a merged row shows the merged icon, an open one the pale one', async () => {
+    await ModalPartlyRead.run();
+
+    await expect.element(page.getByText('Still reading this stack')).toBeVisible();
+    const merged = page.getByRole('button', { name: /#80/u }).element();
+    const open = page.getByRole('button', { name: /#81/u }).element();
+    expect(merged.querySelector('[class*="lucide-git-merge"]')).not.toBeNull();
+    expect(open.querySelector('[class*="lucide-git-merge"]')).toBeNull();
+});
+
+test("on someone else's stack asking the viewer's review the map says what stops it, not the review", async () => {
+    await PanelReviewRequested.run();
+
+    await expect.element(page.getByText('#531 is waiting for review')).toBeVisible();
+    expect(document.body.textContent).not.toContain('Your review on');
+});
+
+test("folded, the strip of someone else's stack asking the viewer's review says what blocks it", async () => {
+    await PanelReviewRequestedFolded.run();
+
+    await expect
+        .element(page.getByRole('button', { name: /^Show the stack: 3 of 4 #531 is waiting for review/u }))
+        .toBeVisible();
 });

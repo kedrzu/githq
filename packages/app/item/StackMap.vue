@@ -22,6 +22,8 @@ import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
 import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
+import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type {
   StackDescription,
@@ -29,6 +31,7 @@ import type {
   StackPip,
   StackPullRequestPip,
   StackPullRequestPipKind,
+  StackState,
 } from '@/store/stacks/describeStack.js';
 
 import { getStackMapWindow } from './getStackMapWindow.js';
@@ -117,8 +120,10 @@ const neighbourNumbers = computed(() => ({
   next: findMember(props.neighbours?.next)?.number ?? null,
 }));
 
-function getRow({ kind, pullRequest }: StackPullRequestPip): StackMapRow {
+function getRow(pip: StackPullRequestPip): StackMapRow {
+  const { pullRequest } = pip;
   const { id } = pullRequest;
+  const kind = getRowKind(pip);
   return {
     kind: 'row',
     pullRequest,
@@ -127,6 +132,15 @@ function getRow({ kind, pullRequest }: StackPullRequestPip): StackMapRow {
     current: id === props.currentId,
     key: getKey(id),
   };
+}
+
+/** Its pip's state, but a merged or closed one as it is where its pip is pale while the copy is incomplete (D7). */
+function getRowKind({ kind, pullRequest }: StackPullRequestPip): StackPullRequestPipKind {
+  if (isMergedPullRequest(pullRequest)) {
+    return 'merged';
+  }
+
+  return isClosedPullRequest(pullRequest) ? 'closed' : kind;
 }
 
 function getKey(id: string): 'J' | 'K' | null {
@@ -141,16 +155,8 @@ function getKey(id: string): 'J' | 'K' | null {
   return id === props.neighbours?.next ? 'J' : null;
 }
 
-/** A row's state in words, from the pull request itself where its pip is pale while the copy is incomplete (D7). */
-function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string | null {
-  if (pr.merged || pr.state === 'MERGED') {
-    return t(l.merged);
-  }
-
-  if (pr.state === 'CLOSED') {
-    return t(l.closed);
-  }
-
+/** A row's state in words. */
+function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string {
   const standing = getPullRequestStanding(pr);
   switch (kind) {
     case 'draft':
@@ -171,8 +177,9 @@ function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string 
     case 'waiting':
       return standing.waitingForReview ? t(l.waitingForReview) : t(l.cannotMergeYet);
     case 'merged':
+      return t(l.merged);
     case 'closed':
-      return null;
+      return t(l.closed);
     default:
       return assertNever(kind);
   }
@@ -211,7 +218,21 @@ function getFold(side: StackMapFold['side'], folded: readonly StackPullRequestPi
 
 /** What stops the stack merging, or that nothing does — worded as the list's sentence, without the counts it shows. */
 function getVerdict(stopsLater: typeof l.heldStopsLater): StackStateFact {
-  return getStackStateFact({ state: props.stack.state, t, getHeldText: state => getHeldText(state, stopsLater) });
+  return getStackStateFact({
+    state: getStopState(props.stack.state),
+    lang: APP_LANGUAGE,
+    getHeldText: state => getHeldText(state, stopsLater),
+  });
+}
+
+/** The map says what stops the stack even where the entry asks for the viewer's review (brief "work through a stack"). */
+function getStopState(state: StackState): StackState {
+  if (state.kind !== 'reviewRequested') {
+    return state;
+  }
+
+  const { blocker, openCount, readyCount } = state;
+  return blocker ? { kind: 'held', blocker, openCount, readyCount } : { kind: 'ready', openCount };
 }
 
 /** "#41 is waiting for review", "#65 stops 4 later from landing" — or, in the strip, "#65 blocks 4 later". */
