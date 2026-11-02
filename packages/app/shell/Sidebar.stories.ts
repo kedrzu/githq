@@ -105,7 +105,7 @@ export const LongLogin: Story = {
 
 /**
  * Syncing the settings stopped (settings-sync T9, T10): an amber dot on the avatar, and the menu's Settings row says
- * so and opens Saving to GitHub. The address it went to is on the wrapper's `data-route`.
+ * so and opens Sync settings. The address it went to is on the wrapper's `data-route`.
  */
 export const SyncStopped: Story = { args: { settingsSyncStopped: true }, decorators: [showingRoute()] };
 

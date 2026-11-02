@@ -372,3 +372,19 @@ make one more level than "no third level" suggests. It is rare.
 list's count.** (2026-11-01, design agent, SP8, SP3; owner accepted)
 
 **Why.** `J` steps through pull requests ([D9](#d9)), and the count of entries is for the list ([D3](#d3)).
+
+## D25
+
+**In a panel the map is a bar pinned under the toolbar that never folds: the stack's name and one numbered square per pull request, the open one
+marked, each square opening its pull request. The rows sit at the top of the content and scroll away under the bar; once they are out of view
+a chevron, which kept its place hidden, drops them over the content. The rows show every pull request, none folded, with K and J in a legend above them rather than on the neighbours.** (2026-11-02, owner, replacing the panel part of [D17](#d17); SP82–SP84.
+How a square reads, SP85–SP87, and whether the bar gets ‹ › arrows, SP88–SP89, are still to be picked)
+
+**Why.** Folding the rows into a strip changed the panel's height as soon as the content scrolled, so the whole view jumped. A bar of fixed
+height with the rows as plain content never moves anything. Pips without numbers made the place hard to read.
+
+**Rejected.**
+
+- The map folding to a one-line strip once the content scrolls (SP32) — the layout jumps on the first scroll.
+- A window of six with the rest folded (SP31) — more clicking to see the stack.
+- K and J on the neighbours' rows — they hop from row to row as you walk.

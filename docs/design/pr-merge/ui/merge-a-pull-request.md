@@ -123,12 +123,12 @@ the recommended one comes first.
 
 |Question|Answer in the frame|Variants|
 |-|-|-|
-|The panel's form|Its own surface over any screen: PM1a, PM2a|Inside the row or the standing (PM1b, PM2b), a tray (PM1c, PM2c)|
-|Required checks without noise|One line while green, a row with a tag when off: PM4a|Two lines always (PM4b); all open: PM4c|
-|"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept (PM32a) or stays (PM32b)|
+|The panel's form|Its own surface over any screen: PM1a, PM2a (chosen)||
+|Required checks without noise|One line while green, a row with a tag when off, still running: PM4a (chosen); all open after C, passed, failed or running||
+|"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
 |A late refusal|Toast, status bar and row: PM35||
-|Commit text|Title and one line: PM3a; editing: PM3d|Folded (PM3b), always open (PM3c)|
-|Bypass|Own red zone and chord: PM12a|Armed with a key (PM12b)|
+|Commit text|Title and the first lines: PM3a (chosen); editing: PM3d||
+|Bypass|Its own line, red outline, and its own chord: PM12a (chosen)||
 |Ordinary commands|Beside the reason (PM20, PM26), the palette and menus: PM39||
 
 The states: ready PM5–PM7, being read PM8–PM9, auto-merge PM10–PM11, nothing to offer PM13, queue PM14–PM16, stack
@@ -140,7 +140,7 @@ Open with the owner, and not settled by the screens:
 
 - **Stacks** have moved to [their own design](../../stacked-prs/ui/work-through-a-stack.md), which also settles `⌘Enter` before
   the read and the commit text.
-- **The commit email when bypassing.** It needs GraphQL and bypass needs REST (D5), so PM12 has none. The brief excludes it
-  only for a stack.
-- **What bypass really skips.** `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what is unmet, and GitHub can
-  still refuse a rule the user may not bypass.
+- **The commit email when bypassing** (settled 2026-11-02, D12). It needs GraphQL and bypass needs REST (D5), so a
+  bypass commits with the user's default email, and PM12a says which one in the bypass line.
+- **What bypass really skips** (settled 2026-11-02, D12). `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what
+  is unmet; GitHub can still refuse a rule the user may not bypass, and that refusal shows as PM25.
