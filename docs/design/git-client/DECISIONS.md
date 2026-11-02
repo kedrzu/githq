@@ -262,6 +262,7 @@ decides it. The layout is a preference of the user, not of a view, so it travels
 [settings-sync D7](../settings-sync/DECISIONS.md#d7) does not list yet.
 
 **Rejected.**
+
 - Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows) — keeps All
   but shares one grouping between issues and pull requests, and puts the branch list behind a key (owner, 2026-11-02;
   the screens were CH7–CH9 and CH21, deleted).
@@ -285,6 +286,7 @@ In the column layout the list is the column's lower part on Commits (CH6), and a
 of the pane instead of in the list's place (CH42).
 
 **Rejected.**
+
 - The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
   screen says where branches stand.
 
@@ -300,6 +302,7 @@ CH27–CH29)
 it, which a modal or a page would hide.
 
 **Rejected.**
+
 - The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
 
 ## D17
@@ -317,6 +320,7 @@ CH10, CH11, CH44, CH45)
 graph is worth the width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
 **Rejected.**
+
 - A fixed cap of six lanes — no control over it (owner).
 - Every lane at full width, always — the message moves with every open branch.
 
@@ -336,6 +340,7 @@ the narrow-row rule is the design agent's; CH12, CH34)
 right commit. The stripe carries the eye from a dot far to the left to its row in a wide graph.
 
 **Rejected.**
+
 - Pull request and CI in fixed columns at the right edge — read badly, far from the headline (owner).
 - A red headline or a red-tinted row for a failure (owner; the screens were CH13, CH14, deleted).
 - The author as an avatar alone (owner).
@@ -371,6 +376,7 @@ in the graph already says where each agent stands, including the one with no bra
 actions can grow without crowding the row.
 
 **Rejected.**
+
 - A Worktrees section opening the list (CD1, deleted) — owner picked CD2.
 - The worktree's name and count as a badge on the branch row — the branch name no longer fits in the list's width.
 
