@@ -185,12 +185,11 @@ state (checks, review, merged), and which ones have the user's open draft.
 
 ## The screens
 
-In `githq.pen`, frame **"App · Code review"** (`CEDLB`). The numbers are the frame's. Amber `Variants · …` frames wait
-for the owner; the recommended variant is A. Decisions: [DECISIONS](../DECISIONS.md), D24 onward.
+In `githq.pen`, frame **"App · Code review"** (`CEDLB`). The numbers are the frame's. No variants are waiting. Decisions: [DECISIONS](../DECISIONS.md), D24 onward.
 
 |Question|Answer in the frame|
 |-|-|
-|1. The open draft warning|A block in the file list's column, at its foot (A) or its top (B), in a stack and outside one: CR35–CR38; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
+|1. The open draft warning|A toolbar at the foot of the file list's column, in a stack and outside one: CR35, CR36; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
 |2. The file list hidden, and how viewed shows|⌘B, as the conversation's ⌥⌘B: CR6, CR50; files indented under their folder, an eye after a viewed file's name: CR46|
 |3. Stack and file list together|The stack's rows on top of the file list: CR47; scrolled, a thin pinned bar and the filter under it: CR48|
 |4. Code shown out of place|The distance mark: CR11; a collapsed file with only its threads: CR12, expanded CR13|
@@ -200,7 +199,7 @@ for the owner; the recommended variant is A. Decisions: [DECISIONS](../DECISIONS
 
 Reading: an opened pull request and D, CR1; large screen split with the conversation CR2, unified without it CR3;
 laptop split CR4, unified with the conversation CR5, both columns hidden CR6. Threads: CR10–CR15 (jumping between
-threads CR15). Settled by the owner: where the stack sits (CR47, CR48, D25), the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
+threads CR15). Settled by the owner: the pending review's toolbar (CR35, CR36, D28), where the stack sits (CR47, CR48, D25), the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
 once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the keys CR29. States and failures:
 files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
@@ -211,5 +210,6 @@ Still open, not settled by the screens:
 - **The keys** D (open the review), N ⇧N (threads), C (comment), ⇧S (submit) and ⌘G (suggestion) are the agent's
   (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
+- **Wording left as it was:** lists and the sidebar still say "Your draft review · 3 comments unsent" and "Unsent drafts" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72); the owner has only reworded the toolbar so far.
 - **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
   the drafts list (CR34) shows the pull requests themselves.
