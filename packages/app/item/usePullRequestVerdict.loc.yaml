@@ -5,9 +5,17 @@ closedUnmerged:
 draft:
   en: Draft
 draftDetail:
-  en: not ready for review
+  en: Mark it ready for review first
 cannotMerge:
   en: Can't merge yet
+conflicted:
+  en: Can't merge
+conflictsWith:
+  en: conflicts with {base}
+unknown:
+  en: Not known yet
+unknownDetail:
+  en: GitHub is still checking for conflicts
 ready:
   en: Ready to merge
 readyDetail:
@@ -25,14 +33,14 @@ checksFailingUncounted:
   en: checks failing
 changesRequested:
   en: changes requested
-conflicts:
-  en: conflicts
 checksRunning:
   en: checks running
 waitingForReview:
   en: waiting for review
 behind:
-  en: behind {base}
+  en: Behind {base}
+behindDetail:
+  en: '{base} requires being up to date'
 blocked:
   en: blocked by a rule
 beingMerged:
@@ -46,7 +54,7 @@ readyNoConflicts:
 requiredFailed:
   plural: count
   en:
-    one: A required check failed
+    one: a required check failed
     many: '{count} required checks failed'
 requiredRunning:
   plural: count

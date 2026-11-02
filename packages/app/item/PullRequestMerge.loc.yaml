@@ -4,27 +4,6 @@ reviews:
   en: Reviews
 conflictsLabel:
   en: Conflicts
-changesRequestedBy:
-  en: Changes requested by {names}
-approvedBy:
-  en: Approved by {names}
-reviewRequired:
-  en: Review required
-waitingFor:
-  en: Waiting for {names}
-noReviewRequired:
-  en: None required
-approvals:
-  plural: count
-  en:
-    one: '{count} approval'
-    many: '{count} approvals'
-noConflicts:
-  en: None with {base}
-conflictsWith:
-  en: Conflicts with {base}
-mergeabilityUnknown:
-  en: GitHub is still checking
 files:
   plural: count
   en:
@@ -38,6 +17,12 @@ reviewFiles:
   en: Review files
 merge:
   en: Merge…
+resolveConflicts:
+  en: Resolve on GitHub
+updateBranch:
+  en: Update branch
+markReady:
+  en: Mark ready…
 cannotMerge:
   en: You can't merge in this repository
 waitingForGitHub:

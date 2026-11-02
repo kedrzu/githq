@@ -1,3 +1,5 @@
+import type { PullRequestBranchUpdateMethod } from '@githq/github/generated.gen.js';
+
 import type { Account } from '@/auth/AccountSession.js';
 import type { ViewerProject } from '@/repos/RepositoryTypes.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
@@ -40,7 +42,9 @@ export type EditRequest =
       }
     | { readonly kind: 'addToProject'; readonly project: ViewerProject }
     | { readonly kind: 'requestReviewers'; readonly logins: readonly string[] }
-    | { readonly kind: 'draft'; readonly draft: boolean };
+    | { readonly kind: 'draft'; readonly draft: boolean }
+    /** Brings the base branch into a pull request's head, by a merge commit or a rebase (merging D12, PM20). */
+    | { readonly kind: 'updateBranch'; readonly method: PullRequestBranchUpdateMethod };
 
 /** A request as one item's edits are made of it: a project's field already resolved to the item's place there. */
 export type ItemEditRequest = Exclude<EditRequest, { readonly kind: 'projectFieldInProject' }>;
@@ -73,6 +77,7 @@ export type EditSubject =
     | { readonly kind: 'subIssueOf'; readonly parent: string }
     | { readonly kind: 'reviewRequested'; readonly login: string }
     | { readonly kind: 'draft'; readonly draft: boolean }
+    | { readonly kind: 'branchUpdated' }
     /** A pull request merged (`PullRequestMerger`). */
     | { readonly kind: 'merged' };
 

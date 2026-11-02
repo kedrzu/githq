@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
@@ -6,12 +6,14 @@ import { computed, shallowRef, watch } from 'vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
+import { Browser } from '@/services/Browser.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 
 import MergePanel from './MergePanel.vue';
+import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { MergePanelStore } from './MergePanelStore.js';
-import type { MergeRequest } from './MergeTypes.js';
+import type { MergeRequest, MergeStep } from './MergeTypes.js';
 import { useMergeOptions } from './useMergeOptions.js';
 
 /** How often a running check's time moves on. */
@@ -21,6 +23,7 @@ const store = useService(MergePanelStore);
 const details = useService(ItemDetailStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
+const browser = useService(Browser);
 
 const pr = computed(() => {
   const id = store.itemId;
@@ -32,6 +35,7 @@ const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
 const sending = shallowRef(false);
 const refusal = shallowRef<EditFailureReason | null>(null);
+const advancing = shallowRef<MergeStep | null>(null);
 const now = useNow(TICK_MS, () => pr.value !== null);
 
 const open = computed({
@@ -49,6 +53,7 @@ watch(
   () => {
     sending.value = false;
     refusal.value = null;
+    advancing.value = null;
   },
 );
 watch(repository, name => {
@@ -77,6 +82,35 @@ async function merge(request: MergeRequest) {
     refusal.value = answer.reason;
   }
 }
+
+/**
+ * A step towards the merge (merging D12): the conflicts leave for GitHub's editor; marking it ready and updating its
+ * branch are edits like any other — a refusal is reported as a failed edit — after which the panel reads the pull
+ * request again, and merging comes back when GitHub says so (PM20, PM21).
+ */
+async function takeStep(step: MergeStep) {
+  const item = pr.value;
+  if (!item) {
+    return;
+  }
+
+  if (step === 'resolveConflicts') {
+    browser.openInNewTab(getConflictEditorUrl(item));
+    return;
+  }
+
+  const opening = store.opening;
+  advancing.value = step;
+  await editor.edit(
+    [item.id],
+    step === 'markReady' ? { kind: 'draft', draft: false } : { kind: 'updateBranch', method: 'MERGE' },
+  );
+  await read.refresh();
+  // Opened anew meanwhile: that panel is not this one's to answer.
+  if (store.opening === opening) {
+    advancing.value = null;
+  }
+}
 </script>
 
 <template>
@@ -91,7 +125,9 @@ async function merge(request: MergeRequest) {
     :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
     :refusal="refusal"
+    :advancing="advancing"
     :now="now"
     @merge="merge"
+    @step="takeStep"
   />
 </template>

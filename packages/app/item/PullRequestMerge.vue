@@ -1,27 +1,14 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). Approvals are counted without "of N" (D14). -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. -->
 <script lang="ts" setup>
-import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import type { LucideIcon } from 'lucide-vue-next';
-import {
-  ArrowRight,
-  CircleCheck,
-  CircleDashed,
-  CircleX,
-  FileDiff,
-  GitBranch,
-  GitMerge,
-  Github,
-  Hourglass,
-} from 'lucide-vue-next';
+import { ArrowRight, FileDiff, GitBranch, GitMerge, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -29,9 +16,8 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
 import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
-import { useCheckTexts } from './useCheckTexts.js';
+import { usePullRequestConditions } from './usePullRequestConditions.js';
 import { usePullRequestVerdict } from './usePullRequestVerdict.js';
-import type { PullRequestVerdictTone } from './usePullRequestVerdict.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -54,24 +40,14 @@ const emit = defineEmits<{
   merge: [];
 }>();
 
-interface Line {
-  tone: PullRequestVerdictTone;
-  icon: LucideIcon;
-  text: string;
-  /** Quieter text at the end ("1 approval · pnowak"). */
-  aside?: string | null;
-}
-
 const t = useTranslate();
-const checkTexts = useCheckTexts();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-const names = new Intl.ListFormat(APP_LANGUAGE);
 
-const standing = computed(() => getPullRequestStanding(props.pr));
 const mergeVerdict = usePullRequestVerdict(
   () => props.pr,
   () => props.checks ?? null,
 );
+const lines = usePullRequestConditions(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
 const merging = computed(() => props.pr.merging !== undefined);
 /** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
@@ -87,11 +63,28 @@ const note = computed(() => {
   // Stacked on another, it merges with its stack (stacked PRs D11), not offered yet — whatever the role.
   return props.canMerge === false && !isStackedOnAnother(props.pr) ? t(l.cannotMerge) : null;
 });
+/** "Merge…" opens the panel, and says the way forward it leads to (PM38). */
+const mergeLabel = computed(() => {
+  const forward = mergeVerdict.forward;
+  switch (forward) {
+    case 'merge':
+    case null:
+      return t(l.merge);
+    case 'markReady':
+      return t(l.markReady);
+    case 'updateBranch':
+      return t(l.updateBranch);
+    case 'resolveConflicts':
+      return t(l.resolveConflicts);
+    default:
+      return assertNever(forward);
+  }
+});
 
-const conditions = computed((): { label: string; line: Line }[] => [
-  { label: t(l.checks), line: checksLine() },
-  { label: t(l.reviews), line: reviewsLine() },
-  { label: t(l.conflictsLabel), line: conflictsLine() },
+const conditions = computed(() => [
+  { label: t(l.checks), line: lines.checks },
+  { label: t(l.reviews), line: lines.reviews },
+  { label: t(l.conflictsLabel), line: lines.conflicts },
 ]);
 
 const head = computed(() => {
@@ -101,78 +94,6 @@ const head = computed(() => {
 });
 
 const filesUrl = computed(() => `${props.pr.url}/files`);
-
-function checksLine(): Line {
-  const { state, text } = checkTexts.summarize(props.pr.checks);
-  switch (state) {
-    case 'skipped':
-      return { tone: 'muted', icon: CircleDashed, text };
-    case 'passing':
-      return { tone: 'success', icon: CircleCheck, text };
-    case 'failing':
-      return { tone: 'danger', icon: CircleX, text };
-    case 'pending':
-      return { tone: 'warning', icon: Hourglass, text };
-    default:
-      return assertNever(state);
-  }
-}
-
-function reviewsLine(): Line {
-  const { pr } = props;
-  const approvers = authorsOf('APPROVED');
-  const approvals = approvers.length > 0 ? t(l.approvals, { count: approvers.length }) : null;
-  if (standing.value.changesRequested) {
-    return {
-      tone: 'danger',
-      icon: FileDiff,
-      text: t(l.changesRequestedBy, { names: names.format(authorsOf('CHANGES_REQUESTED')) }),
-      aside: approvals && `${approvals} · ${names.format(approvers)}`,
-    };
-  }
-
-  if (standing.value.approved) {
-    return {
-      tone: 'success',
-      icon: CircleCheck,
-      text: t(l.approvedBy, { names: names.format(approvers) }),
-      aside: approvals,
-    };
-  }
-
-  const requested = pr.reviewRequests.map(request => (request.kind === 'user' ? request.login : request.name));
-  if (requested.length > 0) {
-    return {
-      tone: 'warning',
-      icon: Hourglass,
-      text: t(l.waitingFor, { names: names.format(requested) }),
-      aside: approvals,
-    };
-  }
-
-  if (pr.reviewDecision === 'REVIEW_REQUIRED') {
-    return { tone: 'warning', icon: Hourglass, text: t(l.reviewRequired), aside: approvals };
-  }
-
-  return { tone: 'muted', icon: CircleDashed, text: t(l.noReviewRequired), aside: approvals };
-}
-
-function conflictsLine(): Line {
-  const { pr } = props;
-  if (standing.value.conflicts) {
-    return { tone: 'danger', icon: CircleX, text: t(l.conflictsWith, { base: pr.baseRefName }) };
-  }
-
-  if (pr.mergeable === 'UNKNOWN') {
-    return { tone: 'muted', icon: CircleDashed, text: t(l.mergeabilityUnknown) };
-  }
-
-  return { tone: 'success', icon: CircleCheck, text: t(l.noConflicts, { base: pr.baseRefName }) };
-}
-
-function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
-  return mapNotNull(props.pr.latestReviews, review => (review.state === state ? review.author : null));
-}
 </script>
 
 <template>
@@ -243,7 +164,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         :aria-keyshortcuts="EDIT_KEYS.merge"
         @click="emit('merge')"
       >
-        {{ t(l.merge) }}
+        {{ mergeLabel }}
       </Button>
       <Button
         variant="secondary"

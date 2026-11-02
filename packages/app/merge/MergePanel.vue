@@ -1,9 +1,23 @@
-<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). `⌘↵` merges at once, before the panel's read arrives too: unedited text is then GitHub's default, and only edited text is ever sent. When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused at once, it stays with the text and GitHub's reason — with no answer at all, that the outcome is not known. The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
+<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused at once, it stays with the text and GitHub's reason — with no answer at all, that the outcome is not known. The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
 <script lang="ts" setup>
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowRight, CircleHelp, CircleX, GitMerge, Info, MessageSquareWarning, RefreshCw } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CircleDashed,
+  CircleHelp,
+  CircleX,
+  Eye,
+  GitBranch,
+  GitMerge,
+  GitPullRequestArrow,
+  Info,
+  MessageSquareWarning,
+  RefreshCw,
+} from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -17,21 +31,27 @@ import TextArea from '@/components/TextArea.vue';
 import TextField from '@/components/TextField.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import PullRequestVerdictLine from '@/item/PullRequestVerdictLine.vue';
+import { usePullRequestConditions } from '@/item/usePullRequestConditions.js';
+import type { PullRequestCondition } from '@/item/usePullRequestConditions.js';
 import { usePullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import type { PullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import { countMergeChecks } from './countMergeChecks.js';
+import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
 import MergeChecks from './MergeChecks.vue';
+import MergeCondition from './MergeCondition.vue';
 import * as l from './MergePanel.loc.js';
-import type { MergeCommitText, MergeOptions, MergeRequest } from './MergeTypes.js';
+import type { MergeCommitText, MergeOptions, MergeRequest, MergeStep } from './MergeTypes.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -53,6 +73,11 @@ const props = defineProps<{
   sending: boolean;
   /** Why GitHub refused the merge sent from this panel at once (PM25). */
   refusal: EditFailureReason | null;
+  /**
+   * The step towards the merge asked for from the panel — marking it ready, updating its branch — until GitHub
+   * answered and the panel's read came back: the primary stays that step's, busy, meanwhile.
+   */
+  advancing: MergeStep | null;
   /** Epoch ms a running check's time is counted to. */
   now: number;
 }>();
@@ -60,6 +85,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** `⌘↵` or the primary: merge as shown. */
   merge: [request: MergeRequest];
+  /** `⌘↵` or the primary where it can't merge yet: the step towards the merge (merging D12). */
+  step: [step: MergeStep];
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
@@ -71,6 +98,17 @@ type PanelVerdictKind = 'blocked' | 'merged' | 'merging' | 'ready' | 'refused';
 
 interface PanelVerdict extends PullRequestVerdict {
   readonly kind: PanelVerdictKind;
+}
+
+/** A condition of the merge shown above the checks, where it holds the merge or is not known (PM13, PM19–PM22). */
+interface ConditionLine extends PullRequestCondition {
+  readonly label: string;
+}
+
+/** How the primary looks when it takes a step towards the merge in the panel. */
+interface StepButton {
+  readonly label: string;
+  readonly icon: LucideIcon;
 }
 
 /** The method the panel was on when the read took it away (PM9). */
@@ -92,6 +130,7 @@ const titleField = useTemplateRef<InstanceType<typeof TextField>>('titleField');
 const shownPr = computed(() => (props.sending ? { ...props.pr, merging: undefined } : props.pr));
 const counts = computed(() => (props.options ? countMergeChecks(props.options.checks) : null));
 const standing = usePullRequestVerdict(shownPr, counts);
+const prConditions = usePullRequestConditions(shownPr);
 
 const offered = computed(() => (props.settings ? getMergeMethods(props.settings, props.options) : null));
 const methods = computed(() => offered.value?.methods ?? []);
@@ -110,8 +149,22 @@ const checksOpen = ref(false);
 const merging = computed(() => shownPr.value.merging !== undefined);
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
-/** Whether GitHub would merge it now, from the read when it is in, else from the row (D6). */
-const ready = computed(() => !merging.value && standing.mergeable);
+/** Merging is the way forward: ⌘↵ merges (D6, D12). */
+const mergesNow = computed(() => !merging.value && standing.forward === 'merge');
+/**
+ * The step ⌘↵ takes instead of merging: the one asked for until it is done, else the way forward where it can't
+ * merge yet (D12). `null` where it merges, or nothing is left to do.
+ */
+const step = computed((): MergeStep | null => {
+  if (props.advancing) {
+    return props.advancing;
+  }
+
+  const forward = merging.value ? null : standing.forward;
+  return forward === 'merge' ? null : forward;
+});
+/** Where the way forward ends in a merge — not for a draft or conflicts (PM19, PM21): the method and the text show. */
+const leadsToMerge = computed(() => mergesNow.value || step.value === 'updateBranch');
 
 const verdict = computed((): PanelVerdict => {
   if (merging.value) {
@@ -131,8 +184,45 @@ const verdict = computed((): PanelVerdict => {
     return { kind: 'refused', tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
   }
 
-  return { kind: ready.value ? 'ready' : 'blocked', ...standing.verdict };
+  // The panel stays, and merging comes back when GitHub says so (PM20).
+  if (props.advancing === 'updateBranch') {
+    const aside = t(l.updatingDetail, { base: props.pr.baseRefName });
+    return { kind: 'ready', tone: 'warning', icon: RefreshCw, text: t(l.updating), aside };
+  }
+
+  return { kind: leadsToMerge.value ? 'ready' : 'blocked', ...standing.verdict };
 });
+
+/** What holds the merge besides the checks, or is not known yet, each in a line above them; none for a draft. */
+const conditions = computed((): ConditionLine[] => {
+  const pr = shownPr.value;
+  if (pr.isDraft) {
+    return [];
+  }
+
+  const shown: ConditionLine[] = [];
+  const now = getPullRequestStanding(pr);
+  if (now.changesRequested || now.waitingForReview) {
+    shown.push({ label: t(l.reviews), ...prConditions.reviews });
+  }
+
+  const base = pr.baseRefName;
+  if (now.conflicts) {
+    const text = t(l.conflictsWith, { base });
+    shown.push({ label: t(l.conflicts), tone: 'danger', icon: CircleX, text, aside: null });
+  } else if (isMergeabilityUnknown(pr)) {
+    shown.push({ label: t(l.conflicts), tone: 'muted', icon: CircleDashed, text: t(l.notKnownYet), aside: null });
+  }
+
+  if (pr.mergeStateStatus === 'BEHIND') {
+    const text = t(l.behind, { base });
+    shown.push({ label: t(l.branch), tone: 'warning', icon: GitBranch, text, aside: null });
+  }
+
+  return shown;
+});
+/** GitHub is still working out whether it merges (PM22): said where the read says it is on its way. */
+const computing = computed(() => isOpenPullRequest(props.pr) && !props.pr.isDraft && isMergeabilityUnknown(props.pr));
 
 const commitMethod = computed((): CommitMethod | null =>
   method.value === 'MERGE' || method.value === 'SQUASH' ? method.value : null,
@@ -169,7 +259,25 @@ const draftBody = computed({
 const peek = computed(() => peekLines(commitBody.value ?? ''));
 const bodyLineCount = computed(() => (draft.value?.body.trimEnd() ?? '').split('\n').length);
 
-const canSend = computed(() => props.allowed && ready.value && method.value !== null && !props.sending);
+const canSend = computed(
+  () => props.allowed && mergesNow.value && method.value !== null && !props.sending && props.advancing === null,
+);
+const stepButton = computed((): StepButton | null => {
+  const current = step.value;
+  switch (current) {
+    case 'markReady':
+      return { label: t(l.markReady), icon: Eye };
+    case 'updateBranch':
+      return { label: t(l.updateBranch), icon: GitPullRequestArrow };
+    // A link of its own, out of the panel.
+    case 'resolveConflicts':
+    case null:
+      return null;
+    default:
+      return assertNever(current);
+  }
+});
+const conflictsUrl = computed(() => getConflictEditorUrl(props.pr));
 const choosable = computed(() => !props.reading && methods.value.length > 1 && !editing.value && !merging.value);
 /** While being merged, the method it was sent with (PM24). */
 const shownMethod = computed(() => shownPr.value.merging ?? method.value);
@@ -196,7 +304,7 @@ const primaryLabel = computed(() => {
     return t(l.notAllowed);
   }
 
-  if (!ready.value) {
+  if (!mergesNow.value) {
     return verdict.value.kind === 'refused' ? standing.verdict.text : verdict.value.text;
   }
 
@@ -356,6 +464,16 @@ function peekLines(body: string) {
   return { lines, more: lines.length === 0 ? 0 : all.length - consumed };
 }
 
+/** `⌘↵`: the way forward — the merge, or the step towards it (D12). */
+function goForward() {
+  const next = step.value;
+  if (next === null) {
+    send();
+  } else if (props.allowed && props.advancing === null) {
+    emit('step', next);
+  }
+}
+
 function send() {
   if (!canSend.value || method.value === null) {
     return;
@@ -412,7 +530,7 @@ function backToProposal() {
 function onKeydown(event: KeyboardEvent) {
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
-    send();
+    goForward();
     return;
   }
 
@@ -488,6 +606,17 @@ function onOpenFocus(event: Event) {
           />
           {{ t(l.reading) }}
         </span>
+        <span
+          v-else-if="computing"
+          :class="css.mergePanel_reading"
+          role="status"
+        >
+          <RefreshCw
+            :class="css.mergePanel_readingIcon"
+            aria-hidden="true"
+          />
+          {{ t(l.computing) }}
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -516,15 +645,28 @@ function onOpenFocus(event: Event) {
           <span :class="css.mergePanel_bandTitle">{{ refusalText }}</span>
         </div>
 
-        <MergeChecks
+        <div
           v-if="showChecks"
           :class="css.mergePanel_checks"
-          :checks="options?.checks ?? null"
-          :summary="pr.checks"
-          :open="checksOpen"
-          :now="now"
-          @toggle="checksOpen = !checksOpen"
-        />
+        >
+          <MergeCondition
+            v-for="condition in conditions"
+            :key="condition.label"
+            :icon="condition.icon"
+            :tone="condition.tone"
+            :label="condition.label"
+            :text="condition.text"
+            :aside="condition.aside"
+          />
+          <MergeChecks
+            :checks="options?.checks ?? null"
+            :summary="pr.checks"
+            :open="checksOpen"
+            :now="now"
+            :run-again="step === 'updateBranch'"
+            @toggle="checksOpen = !checksOpen"
+          />
+        </div>
 
         <dl
           v-if="showLanding"
@@ -720,8 +862,29 @@ function onOpenFocus(event: Event) {
         >
         <span :class="css.mergePanel_spacer" />
         <template v-if="!merging && verdict.kind !== 'merged'">
+          <!-- It leaves for github.com's editor, and the icon says so (PM19). -->
           <Button
-            v-if="canSend || sending"
+            v-if="step === 'resolveConflicts' && allowed"
+            :icon="ArrowUpRight"
+            :link="conflictsUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            >{{ t(l.resolveOnGitHub) }}</Button
+          >
+          <Button
+            v-else-if="stepButton && allowed"
+            variant="primary"
+            :icon="stepButton.icon"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :busy="advancing !== null"
+            @click="goForward()"
+            >{{ stepButton.label }}</Button
+          >
+          <Button
+            v-else-if="canSend || sending"
             variant="primary"
             :icon="GitMerge"
             kbd="Mod+Enter"
@@ -822,7 +985,9 @@ function onOpenFocus(event: Event) {
 }
 
 .mergePanel_checks {
+  display: flex;
   flex: none;
+  flex-direction: column;
   padding-top: $spacing-4;
   padding-bottom: $spacing-4;
 }

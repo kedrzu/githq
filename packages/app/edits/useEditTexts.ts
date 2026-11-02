@@ -1,6 +1,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
+import { capitalize } from '@/utils/capitalize.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import type { EditFailure, FailedEdit } from './EditQueue.js';
@@ -146,6 +147,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedReviewRequested, { login: subject.login, reference });
             case 'draft':
                 return subject.draft ? t(l.failedDraft, { reference }) : t(l.failedReady, { reference });
+            case 'branchUpdated':
+                return t(l.failedBranchUpdated, { reference });
             case 'merged':
                 return t(l.failedMerged, { reference });
             default:
@@ -187,6 +190,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeReviewRequested, { login: subject.login });
             case 'draft':
                 return subject.draft ? t(l.changeDraft) : t(l.changeReady);
+            case 'branchUpdated':
+                return t(l.changeBranchUpdated);
             case 'merged':
                 return t(l.changeMerged);
             default:
@@ -238,6 +243,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.fieldReviewers);
             case 'draft':
                 return t(l.fieldDraft);
+            case 'branchUpdated':
+                return t(l.fieldBranch);
             case 'merged':
                 return t(l.fieldMerge);
             default:
@@ -288,8 +295,4 @@ export function useEditTexts(): EditTexts {
 /** `skyline-labs/portal#1187` → `portal#1187`, as the status bar names an item. */
 function shortReference(reference: string) {
     return parseRepositoryName(reference).name;
-}
-
-function capitalize(text: string) {
-    return text.charAt(0).toUpperCase() + text.slice(1);
 }

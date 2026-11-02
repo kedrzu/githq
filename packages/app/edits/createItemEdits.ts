@@ -1,3 +1,4 @@
+import type { PullRequestBranchUpdateMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { describeProjectFieldValue } from '@/projects/describeProjectFieldValue.js';
@@ -11,7 +12,7 @@ import type {
     ProjectFieldValue,
 } from '@/store/ItemDetailTypes.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
-import type { Item, ItemLabel, ItemProject, ItemUser } from '@/store/ItemTypes.js';
+import type { Item, ItemLabel, ItemProject, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import { toItemLabels, toItemProject, toItemReviewRequests, toItemUsers } from '@/store/toItem.js';
 import { toDetailProject, toDetailReviewRequests, toItemComment } from '@/store/toItemDetail.js';
 
@@ -100,6 +101,10 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
         case 'draft':
             return item.kind === 'pullRequest' && item.isDraft !== request.draft
                 ? [createDraftEdit(params, request.draft)]
+                : [];
+        case 'updateBranch':
+            return item.kind === 'pullRequest' && item.state === 'OPEN'
+                ? [createUpdateBranchEdit(item, request.method)]
                 : [];
         default:
             return assertNever(request);
@@ -537,6 +542,26 @@ function createDraftEdit(params: CreateItemEditsParams, draft: boolean): Edit {
             return confirmed(answer.updatedAt, current =>
                 current.kind === 'pullRequest' ? { ...current, isDraft: answer.isDraft } : current,
             );
+        },
+    };
+}
+
+/**
+ * Brings the base branch into the head the user saw (`expectedHeadOid`): GitHub refuses it once the branch moved
+ * since. Nothing is drawn meanwhile, and GitHub's answer says nothing of the branch it can be trusted with — it works
+ * out the new status in its own time — so whoever asked reads the pull request again once it is confirmed.
+ */
+function createUpdateBranchEdit(item: PullRequestItem, method: PullRequestBranchUpdateMethod): Edit {
+    return {
+        ...base(item, { kind: 'branchUpdated' }),
+        optimistic: UNCHANGED,
+        send: async ({ sdk }) => {
+            const { updatePullRequestBranch } = await sdk.UpdatePullRequestBranch({
+                pullRequestId: item.id,
+                expectedHeadOid: item.headRefOid,
+                updateMethod: method,
+            });
+            return updatePullRequestBranch?.pullRequest ? { kind: 'confirmed', layer: UNCHANGED } : dropped();
         },
     };
 }

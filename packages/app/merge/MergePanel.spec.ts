@@ -5,13 +5,18 @@ import { page, userEvent } from 'vitest/browser';
 import * as stories from './MergePanel.stories.js';
 
 const {
+    Behind,
     BeingMerged,
     BeingRead,
+    Conflicts,
+    Draft,
     Merged,
+    MergeabilityUnknown,
     MergedMeanwhile,
     MethodGone,
     NoAnswer,
     NotAllowed,
+    NothingToOffer,
     OptionalFailed,
     Ready,
     Refused,
@@ -204,6 +209,83 @@ test('without write access the primary says the viewer cannot merge in this repo
     await NotAllowed.run();
 
     await expect.element(page.getByRole('button', { name: "You can't merge in this repository" })).toBeDisabled();
+});
+
+test('PM13, D12: not met with nothing to offer — the panel says why, the reviews beside the checks; the primary is off and ⌘↵ does nothing', async () => {
+    await NothingToOffer.run();
+
+    await expect.element(panel()).toHaveTextContent("Can't merge yetChanges requested · a required check failed");
+    await expect.element(panel()).toHaveTextContent('ReviewsChanges requested by sofiab1 approval · dkim');
+    await expect.element(panel()).toHaveTextContent('Checks1 required failed, 8 passed');
+    await expect.element(page.getByRole('button', { name: "Can't merge yet" })).toBeDisabled();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test("PM19, D12: conflicts — ⌘↵ goes to GitHub's editor, and the primary is a link that leaves; nothing to merge with", async () => {
+    await Conflicts.run();
+
+    await expect.element(panel()).toHaveTextContent("Can't mergeConflicts with main");
+    await expect.element(panel()).toHaveTextContent("ConflictsWith main. Resolved in GitHub's editor");
+    await expect.element(panel()).not.toHaveTextContent('Method');
+    const resolve = page.getByRole('link', { name: /^Resolve on GitHub/u });
+    await expect.element(resolve).toHaveAttribute('href', 'https://github.com/fitloop/api/pull/477/conflicts');
+    await expect.element(resolve).toHaveAttribute('target', '_blank');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: resolveConflicts');
+});
+
+test('PM20, D12: behind and up to date required — ⌘↵ updates the branch, never merges; the panel stays, and merging comes back when GitHub says so', async () => {
+    await Behind.run();
+
+    await expect.element(panel()).toHaveTextContent('Behind mainmain requires being up to date');
+    await expect.element(panel()).toHaveTextContent('BranchBehind main');
+    await expect.element(panel()).toHaveTextContent('All 9 passed, will run again');
+    await expect.element(panel()).toHaveTextContent('Retry Stripe webhook delivery on 5xx (#477)');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+    await expect.element(panel()).toHaveTextContent('Updating the branch');
+    await expect.element(page.getByRole('button', { name: /^Update branch/u })).toHaveAttribute('aria-busy', 'true');
+    // Pressed again while it is on its way, nothing more is asked.
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+
+    document.querySelector<HTMLElement>('[tid="stepped"]')?.click();
+    await expect.element(panel()).toHaveTextContent('Ready to merge');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+});
+
+test('PM21, D12: a draft — ⌘↵ marks it ready for review; the method and the text wait until it is', async () => {
+    await Draft.run();
+
+    await expect.element(panel()).toHaveTextContent('DraftMark it ready for review first');
+    await expect.element(panel()).not.toHaveTextContent('Method');
+    await expect.element(panel()).not.toHaveTextContent('Commit');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
+    await expect
+        .element(page.getByRole('button', { name: /^Mark ready for review/u }))
+        .toHaveAttribute('aria-busy', 'true');
+
+    document.querySelector<HTMLElement>('[tid="stepped"]')?.click();
+    await expect.element(panel()).toHaveTextContent('Ready to merge');
+    await expect.element(panel()).toHaveTextContent('Method');
+});
+
+test('PM22, D12: mergeability not known yet — no red, GitHub is computing, and ⌘↵ still merges: GitHub enforces it', async () => {
+    await MergeabilityUnknown.run();
+
+    await expect.element(panel()).toHaveTextContent('Not known yetGitHub is still checking for conflicts');
+    await expect.element(panel()).toHaveTextContent('GitHub is computing');
+    await expect.element(panel()).toHaveTextContent('ConflictsNot known yet');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
 });
 
 function panel() {

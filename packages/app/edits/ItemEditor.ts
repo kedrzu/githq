@@ -437,6 +437,7 @@ function needsMetadata(request: EditRequest) {
         case 'projectFieldInProject':
         case 'addToProject':
         case 'draft':
+        case 'updateBranch':
             return false;
         default:
             return assertNever(request);
@@ -497,6 +498,8 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
             return permissions.reviewers;
         case 'draft':
             return permissions.draft;
+        case 'updateBranch':
+            return permissions.updateBranch;
         default:
             return assertNever(request);
     }

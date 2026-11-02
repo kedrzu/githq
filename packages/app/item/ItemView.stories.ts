@@ -120,6 +120,24 @@ export const PullRequestOptionalFailing: Story = {
     },
 };
 
+/** PM38: conflicts with its base — "Can't merge", and "Merge…" says the panel leads to GitHub's editor. */
+export const PullRequestConflicts: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: { ...F3_PULL_REQUEST, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' },
+    },
+};
+
+/** PM38: behind its base, which requires being up to date — "Merge…" says the panel updates the branch. */
+export const PullRequestBehind: Story = {
+    args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, mergeStateStatus: 'BEHIND' } },
+};
+
+/** PM38: a draft — the conditions fold, and "Merge…" says the panel marks it ready first. */
+export const PullRequestDraft: Story = {
+    args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isDraft: true, mergeStateStatus: 'DRAFT' } },
+};
+
 /** K1b: the ready pull request seen by a contributor — no "Merge…", one line says they can't. */
 export const PullRequestContributorView: Story = {
     args: { ...PullRequestReady.args, editing: SAMPLE_CONTRIBUTOR_EDITING },

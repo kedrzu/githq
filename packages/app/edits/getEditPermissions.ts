@@ -18,6 +18,8 @@ export interface EditPermissions {
     readonly reviewers: boolean;
     /** Mark a draft pull request ready for review, or turn one back into a draft. */
     readonly draft: boolean;
+    /** Bring the base branch into an open pull request's head: pushing to it, as WRITE does, or as its author. */
+    readonly updateBranch: boolean;
     /** Add it to a project (the project's own permission is the project's). */
     readonly addToProject: boolean;
     /**
@@ -50,6 +52,7 @@ export const NO_EDITS: EditPermissions = {
     state: false,
     reviewers: false,
     draft: false,
+    updateBranch: false,
     addToProject: false,
     mergePanel: false,
     merge: false,
@@ -65,6 +68,7 @@ export const NO_EDITS: EditPermissions = {
  *   the issue type — the REST docs say "only users with push access can set the type"; the roles table does not
  *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it). One stacked on another
  *   is not offered: GitHub merges it with those below it, a stack's merge githq does not make yet (stacked PRs D11).
+ *   Updating a pull request's branch pushes to it: WRITE, or its author, whose branch it is.
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
@@ -95,6 +99,7 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
         state: !merged && (triage || author),
         reviewers: pullRequest && triage,
         draft: pullRequest && !merged && item.state === 'OPEN' && (write || author),
+        updateBranch: pullRequest && item.state === 'OPEN' && (write || author),
         addToProject: true,
         mergePanel,
         merge: mergePanel && !merging,

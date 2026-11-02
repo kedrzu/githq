@@ -1,6 +1,7 @@
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
 import type { EditFailureReason } from '@/edits/EditTypes.js';
+import type { PullRequestWayForward } from '@/item/usePullRequestVerdict.js';
 import type { ItemCheck } from '@/store/ItemDetailTypes.js';
 import type { PullRequestStatus } from '@/store/ItemTypes.js';
 
@@ -64,3 +65,9 @@ export interface MergeRequest {
 export type MergeAnswer =
     | { readonly kind: 'accepted' }
     | { readonly kind: 'refused'; readonly reason: EditFailureReason };
+
+/**
+ * A step the merge panel takes towards the merge when it can't merge yet — its way forward (merging D12): mark the
+ * draft ready for review, bring the base branch in, or resolve the conflicts in GitHub's editor.
+ */
+export type MergeStep = Exclude<PullRequestWayForward, 'merge'>;

@@ -11,7 +11,7 @@ import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeOptions, MergeRequest } from './MergeTypes.js';
+import type { MergeOptions, MergeRequest, MergeStep } from './MergeTypes.js';
 
 /** When the stories happen: a running check's time is counted to it. */
 const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
@@ -70,9 +70,10 @@ const OPTIONS: MergeOptions = {
 type HarnessAnswer = 'accepted' | 'offline' | 'pending' | 'refused';
 
 /**
- * The panel as the app drives it: the merges it asks for are written out under it (`sent`), GitHub answers at once
- * (`answer`: accepted closes it, refused keeps it with the reason), and with `readLater` the panel's read is on its
- * way until the hidden `arrive` button is clicked.
+ * The panel as the app drives it: the merges and steps it asks for are written out under it (`sent`), GitHub answers
+ * a merge at once (`answer`: accepted closes it, refused keeps it with the reason), and with `readLater` the panel's
+ * read is on its way until the hidden `arrive` button is clicked. A step is on its way until the hidden `stepped`
+ * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it.
  */
 const Harness = defineComponent({
     props: {
@@ -83,6 +84,10 @@ const Harness = defineComponent({
         refusal: { type: Object as PropType<EditFailureReason | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
         allowed: { type: Boolean, default: true },
+        /** The pull request once the step asked for is done; `null` for it as it was. */
+        stepped: { type: Object as PropType<PullRequestItem | null>, default: null },
+        /** A step asked for before, still on its way. */
+        advancing: { type: String as PropType<MergeStep | null>, default: null },
     },
     setup(props) {
         const open = ref(true);
@@ -90,6 +95,8 @@ const Harness = defineComponent({
         const sent = ref('Nothing sent');
         const refusal = shallowRef<EditFailureReason | null>(props.refusal);
         const sending = ref(false);
+        const advancing = ref<MergeStep | null>(props.advancing);
+        const current = shallowRef(props.pr);
 
         return () =>
             h('div', { style: { padding: '16px' } }, [
@@ -99,17 +106,37 @@ const Harness = defineComponent({
                     { type: 'button', tid: 'arrive', hidden: true, onClick: () => (arrived.value = true) },
                     "The panel's read arrives",
                 ),
+                h(
+                    'button',
+                    {
+                        type: 'button',
+                        tid: 'stepped',
+                        hidden: true,
+                        onClick: () => {
+                            current.value = props.stepped ?? current.value;
+                            advancing.value = null;
+                        },
+                    },
+                    'The step is done',
+                ),
                 h(MergePanel, {
                     open: open.value,
                     'onUpdate:open': (value: boolean) => (open.value = value),
-                    pr: sending.value ? { ...props.pr, merging: 'SQUASH' } : props.pr,
+                    pr: sending.value ? { ...current.value, merging: 'SQUASH' } : current.value,
                     settings: props.settings,
                     options: arrived.value ? props.options : null,
                     reading: !arrived.value,
                     allowed: props.allowed,
                     sending: sending.value,
                     refusal: refusal.value,
+                    advancing: advancing.value,
                     now: NOW,
+                    onStep: (step: MergeStep) => {
+                        sent.value = `Step: ${step}`;
+                        if (step !== 'resolveConflicts') {
+                            advancing.value = step;
+                        }
+                    },
                     onMerge: (request: MergeRequest) => {
                         sent.value = JSON.stringify(request);
                         switch (props.answer) {
@@ -286,6 +313,75 @@ export const OptionalFailed: Story = {
             ),
         },
     },
+};
+
+/** Nine checks that passed but `ci / e2e (chromium)`, a required one that failed after six minutes. */
+const E2E_FAILED: MergeOptions = {
+    ...OPTIONS,
+    checks: SAMPLE_PASSED_CHECKS.map(check =>
+        check.name === 'e2e (chromium)'
+            ? { ...check, state: 'failing', startedAt: '2026-11-02T11:40:00Z', completedAt: '2026-11-02T11:46:02Z' }
+            : check,
+    ),
+};
+
+/**
+ * PM13: not met, nothing to offer — changes requested and a required check failed. The panel says why, the reviews
+ * beside the checks; the primary is off.
+ */
+export const NothingToOffer: Story = {
+    args: {
+        pr: {
+            ...PR,
+            reviewDecision: 'CHANGES_REQUESTED',
+            latestReviews: [
+                { author: 'sofiab', state: 'CHANGES_REQUESTED' },
+                { author: 'dkim', state: 'APPROVED' },
+            ],
+            mergeStateStatus: 'BLOCKED',
+            checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 },
+        },
+        options: E2E_FAILED,
+    },
+};
+
+/** PM19: conflicts — the way forward is GitHub's editor, so ⌘↵ goes there; the primary's icon says it leaves. */
+export const Conflicts: Story = {
+    args: { pr: { ...PR, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' } },
+};
+
+/** PM20: behind main, which requires being up to date — ⌘↵ updates the branch, the method and text wait meanwhile. */
+export const Behind: Story = {
+    args: {
+        pr: { ...PR, mergeStateStatus: 'BEHIND' },
+        settings: SQUASH_ONLY,
+        stepped: { ...PR, headRefOid: 'updated-head-oid', mergeStateStatus: 'CLEAN' },
+    },
+};
+
+/** PM20: the branch being updated — the panel stays and says so, its primary busy, until GitHub says it can merge. */
+export const UpdatingBranch: Story = { args: { ...Behind.args, advancing: 'updateBranch' } };
+
+/** PM21: a draft — one step before anything else: ⌘↵ marks it ready; the method and the text wait until then. */
+export const Draft: Story = {
+    args: {
+        pr: {
+            ...PR,
+            isDraft: true,
+            mergeStateStatus: 'DRAFT',
+            checks: { state: 'SUCCESS', passing: 4, failing: 0, pending: 0 },
+        },
+        options: { ...OPTIONS, checks: SAMPLE_PASSED_CHECKS.slice(0, 4) },
+        stepped: { ...PR, mergeStateStatus: 'CLEAN' },
+    },
+};
+
+/**
+ * PM22: GitHub is still working out whether it merges — no red and no spinner; ⌘↵ stays on, since GitHub enforces it
+ * and a refusal keeps the panel (PM25).
+ */
+export const MergeabilityUnknown: Story = {
+    args: { pr: { ...PR, mergeable: 'UNKNOWN', mergeStateStatus: 'UNKNOWN' }, settings: SQUASH_ONLY },
 };
 
 /** Presses a key of the panel once its keys work: the focus is on it. */

@@ -13,7 +13,10 @@ const {
     IssueSplit,
     LoadingComments,
     PullRequestBeingMerged,
+    PullRequestBehind,
+    PullRequestConflicts,
     PullRequestContributorView,
+    PullRequestDraft,
     PullRequestFailing,
     PullRequestOptionalFailing,
     PullRequestReady,
@@ -401,4 +404,38 @@ test("PM38: before the merge options are read, the row's failing check holds the
     await expect
         .element(page.getByRole('heading', { name: /^Can't merge yet/ }))
         .toHaveTextContent("Can't merge yet1 check failing");
+});
+
+test('PM38: conflicts — the verdict the panel says, and "Merge…" names the way forward it leads to and opens the panel', async () => {
+    await PullRequestConflicts.run();
+    const { onMerge } = PullRequestConflicts.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Can't merge/ }))
+        .toHaveTextContent("Can't mergeConflicts with main");
+    await expect.element(page.getByText('With main', { exact: true })).toBeVisible();
+    const forward = page.getByRole('button', { name: 'Resolve on GitHub' });
+    await expect.element(forward).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+    await userEvent.click(forward);
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM38: behind its base — "Update branch" in place of "Merge…", the conditions still shown', async () => {
+    await PullRequestBehind.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Behind main/ }))
+        .toHaveTextContent('Behind mainmain requires being up to date');
+    await expect.element(page.getByRole('button', { name: 'Update branch' })).toBeVisible();
+    await expect.element(page.getByText('Approved by olam and pnowak')).toBeVisible();
+});
+
+test('PM38: a draft — the conditions fold, and "Mark ready…" in place of "Merge…"', async () => {
+    await PullRequestDraft.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Draft/ }))
+        .toHaveTextContent('DraftMark it ready for review first');
+    await expect.element(page.getByRole('button', { name: 'Mark ready…' })).toBeVisible();
+    await expect.element(page.getByText('Approved by olam and pnowak')).not.toBeInTheDocument();
 });

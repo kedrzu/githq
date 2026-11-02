@@ -1,5 +1,6 @@
 <!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, with nothing to open. -->
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -9,6 +10,7 @@ import { compareChecks } from '@/item/compareChecks.js';
 import { getCheckIcon } from '@/item/getCheckIcon.js';
 import type { CheckSummary } from '@/item/useCheckTexts.js';
 import { useCheckTexts } from '@/item/useCheckTexts.js';
+import type { PullRequestVerdictTone } from '@/item/usePullRequestVerdict.js';
 import type { ItemCheckState } from '@/store/ItemDetailTypes.js';
 import type { ItemChecks } from '@/store/ItemTypes.js';
 
@@ -16,6 +18,7 @@ import { countMergeChecks } from './countMergeChecks.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import MergeCheckRow from './MergeCheckRow.vue';
 import * as l from './MergeChecks.loc.js';
+import MergeCondition from './MergeCondition.vue';
 import type { MergeCheck } from './MergeTypes.js';
 
 const props = defineProps<{
@@ -27,6 +30,8 @@ const props = defineProps<{
   open: boolean;
   /** Epoch ms a running check's time is counted to. */
   now: number;
+  /** They will run again: the branch is to be updated (PM20). */
+  runAgain?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -55,6 +60,21 @@ const groups = computed(() => {
 });
 
 const line = computed(() => (counts.value ? describeCounts() : checkTexts.summarize(props.summary)));
+
+function toneOf(state: ItemCheckState): PullRequestVerdictTone {
+  switch (state) {
+    case 'failing':
+      return 'danger';
+    case 'pending':
+      return 'warning';
+    case 'passing':
+      return 'success';
+    case 'skipped':
+      return 'muted';
+    default:
+      return assertNever(state);
+  }
+}
 
 function describeCounts(): CheckSummary {
   const current = counts.value;
@@ -113,19 +133,13 @@ function describeCounts(): CheckSummary {
 
 <template>
   <div :class="css.mergeChecks">
-    <div :class="css.mergeChecks_line">
-      <component
-        :is="getCheckIcon(line.state)"
-        :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${line.state}`]]"
-        aria-hidden="true"
-      />
-      <span :class="css.mergeChecks_key">{{ t(l.checks) }}</span>
-      <span :class="css.mergeChecks_text">{{ line.text }}</span>
-      <span
-        v-if="counts && counts.required > 0 && !open"
-        :class="css.mergeChecks_aside"
-        >{{ t(l.requiredCount, { count: counts.required }) }}</span
-      >
+    <MergeCondition
+      :icon="getCheckIcon(line.state)"
+      :tone="toneOf(line.state)"
+      :label="t(l.checks)"
+      :text="runAgain ? t(l.willRunAgain, { checks: line.text }) : line.text"
+      :aside="counts && counts.required > 0 && !open ? t(l.requiredCount, { count: counts.required }) : null"
+    >
       <IconButton
         v-if="checks && checks.length > 0"
         :icon="open ? ChevronDown : ChevronRight"
@@ -135,7 +149,7 @@ function describeCounts(): CheckSummary {
         aria-keyshortcuts="C"
         @click="emit('toggle')"
       />
-    </div>
+    </MergeCondition>
 
     <div
       v-if="open"
@@ -185,58 +199,6 @@ function describeCounts(): CheckSummary {
 .mergeChecks {
   display: flex;
   flex-direction: column;
-}
-
-.mergeChecks_line {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  min-height: 22px;
-  padding: 6px 10px 6px 14px;
-  font-size: $font-size-sm;
-  white-space: nowrap;
-}
-
-.mergeChecks_key {
-  flex: none;
-  width: 72px;
-  color: $color-fg-dim;
-}
-
-.mergeChecks_text {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: $color-fg;
-}
-
-.mergeChecks_aside {
-  flex: none;
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
-}
-
-.mergeChecks_icon {
-  flex: none;
-  width: 13px;
-  height: 13px;
-}
-
-.mergeChecks_icon_failing {
-  color: $color-red;
-}
-
-.mergeChecks_icon_pending {
-  color: $color-amber;
-}
-
-.mergeChecks_icon_passing {
-  color: $color-green;
-}
-
-.mergeChecks_icon_skipped {
-  color: $color-fg-3;
 }
 
 .mergeChecks_list {

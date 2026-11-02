@@ -23,6 +23,11 @@ export interface MergeOptionsViewModel {
     /** `null` until read, and when they could not be. */
     readonly options: MergeOptions | null;
     readonly reading: boolean;
+    /**
+     * Reads them again, the old ones staying until the new ones arrive (a step the panel took changed them):
+     * resolves once read, or once another read took its place.
+     */
+    refresh(): Promise<void>;
 }
 
 /**
@@ -49,7 +54,7 @@ export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsVi
         { immediate: true },
     );
 
-    return reactive({ options: read, reading });
+    return reactive<MergeOptionsViewModel>({ options: read, reading, refresh: () => load(itemId.value) });
 
     async function load(id: string | null) {
         const attempt = ++latest;

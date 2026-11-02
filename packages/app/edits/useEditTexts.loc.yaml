@@ -34,6 +34,8 @@ failedReady:
   en: "{reference} wasn't marked ready for review"
 failedMerged:
   en: "{reference} wasn't merged"
+failedBranchUpdated:
+  en: "{reference}'s branch wasn't updated"
 
 partlyLabelAdded:
   en: “{label}” added to {done} of {total} items
@@ -74,6 +76,8 @@ changeReady:
   en: ready for review
 changeMerged:
   en: merge
+changeBranchUpdated:
+  en: branch update
 
 undoneLabel:
   en: “{label}” label undone
@@ -157,6 +161,8 @@ fieldDraft:
   en: Draft
 fieldMerge:
   en: Merge
+fieldBranch:
+  en: Branch
 
 openLabels:
   en: Open labels on GitHub

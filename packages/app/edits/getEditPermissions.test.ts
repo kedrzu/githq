@@ -10,7 +10,7 @@ import { getEditPermissions, hasRole, NO_EDITS } from './getEditPermissions.js';
 
 const VIEWER = 'kedrzu';
 
-test('READ: comment on anything; close, reopen and ready for review only what the user opened', () => {
+test('READ: comment on anything; close, reopen, ready for review and update the branch only of what the user opened', () => {
     const others = permissions(sampleIssue('I_1'), 'READ');
     const expected: EditPermissions = { ...NO_EDITS, comment: true, addToProject: true };
     expect(others).toEqual(expected);
@@ -20,6 +20,7 @@ test('READ: comment on anything; close, reopen and ready for review only what th
         ...expected,
         state: true,
         draft: true,
+        updateBranch: true,
     });
 });
 
@@ -30,6 +31,14 @@ test('TRIAGE: labels, assignees, milestone, close and reviewers of anything; the
 
     expect(permissions(sampleIssue('I_1'), 'WRITE')).toMatchObject({ issueType: true });
     expect(permissions(samplePullRequest('PR_1'), 'WRITE')).toMatchObject({ draft: true, issueType: false });
+});
+
+test('updating the branch pushes to it: an open pull request, by WRITE and above or its author', () => {
+    const pr = samplePullRequest('PR_1');
+    expect(permissions(pr, 'TRIAGE')).toMatchObject({ updateBranch: false });
+    expect(permissions(pr, 'WRITE')).toMatchObject({ updateBranch: true });
+    expect(permissions({ ...pr, state: 'MERGED', merged: true }, 'ADMIN')).toMatchObject({ updateBranch: false });
+    expect(permissions(sampleIssue('I_1'), 'ADMIN')).toMatchObject({ updateBranch: false });
 });
 
 test('nothing is editable in an archived repository, one GitHub does not say the role in, or of a merged pull request’s state', () => {

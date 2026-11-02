@@ -22,6 +22,8 @@ runningNotRequired:
   en:
     one: "{count} running that isn't required"
     many: "{count} running that aren't required"
+willRunAgain:
+  en: '{checks}, will run again'
 requiredCount:
   en: '{count} required'
 requiredSection:

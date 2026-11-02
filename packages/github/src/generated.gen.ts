@@ -265,6 +265,13 @@ export type PullRequestAllowedMergeMethods =
     /** Combine all commits from the head branch into a single commit in the base branch. */
     | 'SQUASH';
 
+/** The possible methods for updating a pull request's head branch with the base branch. */
+export type PullRequestBranchUpdateMethod =
+    /** Update branch via merge */
+    | 'MERGE'
+    /** Update branch via rebase */
+    | 'REBASE';
+
 /** Represents available types of methods to use when merging a pull request. */
 export type PullRequestMergeMethod =
     /** Add all commits from the head branch to the base branch with a merge commit. */
@@ -5548,6 +5555,16 @@ export type UpdateIssueTypeMutation = {
             issueType: { id: string; name: string; color: IssueTypeColor } | null;
         } | null;
     } | null;
+};
+
+export type UpdatePullRequestBranchMutationVariables = Exact<{
+    pullRequestId: string;
+    expectedHeadOid: string;
+    updateMethod: PullRequestBranchUpdateMethod;
+}>;
+
+export type UpdatePullRequestBranchMutation = {
+    updatePullRequestBranch: { pullRequest: { id: string } | null } | null;
 };
 
 export type UpdatePullRequestMilestoneMutationVariables = Exact<{
@@ -11828,6 +11845,17 @@ export const UpdateIssueTypeDocument = new TypedDocumentString(`
   }
 }
     `);
+export const UpdatePullRequestBranchDocument = new TypedDocumentString(`
+    mutation UpdatePullRequestBranch($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $updateMethod: PullRequestBranchUpdateMethod!) {
+  updatePullRequestBranch(
+    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, updateMethod: $updateMethod}
+  ) {
+    pullRequest {
+      id
+    }
+  }
+}
+    `);
 export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
     mutation UpdatePullRequestMilestone($pullRequestId: ID!, $milestoneId: ID) {
   updatePullRequest(
@@ -12224,6 +12252,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<UpdateIssueTypeMutation>;
+        },
+        UpdatePullRequestBranch(
+            variables: UpdatePullRequestBranchMutationVariables,
+            options?: C,
+        ): Promise<UpdatePullRequestBranchMutation> {
+            return requester<UpdatePullRequestBranchMutation, UpdatePullRequestBranchMutationVariables>(
+                UpdatePullRequestBranchDocument,
+                variables,
+                options,
+            ) as Promise<UpdatePullRequestBranchMutation>;
         },
         UpdatePullRequestMilestone(
             variables: UpdatePullRequestMilestoneMutationVariables,

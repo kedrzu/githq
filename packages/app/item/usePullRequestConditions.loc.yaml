@@ -1,0 +1,21 @@
+changesRequestedBy:
+  en: Changes requested by {names}
+approvedBy:
+  en: Approved by {names}
+reviewRequired:
+  en: Review required
+waitingFor:
+  en: Waiting for {names}
+noReviewRequired:
+  en: None required
+approvals:
+  plural: count
+  en:
+    one: '{count} approval'
+    many: '{count} approvals'
+noConflicts:
+  en: None with {base}
+conflictsWith:
+  en: With {base}
+mergeabilityUnknown:
+  en: GitHub is still checking

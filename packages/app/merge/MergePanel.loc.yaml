@@ -4,6 +4,8 @@ close:
   en: Esc to close
 reading:
   en: Reading
+computing:
+  en: GitHub is computing
 refused:
   en: GitHub refused the merge
 nothingMerged:
@@ -117,3 +119,25 @@ hintCloseGoesOn:
   en: Close, it goes on
 keepWorking:
   en: You can keep working
+markReady:
+  en: Mark ready for review
+updateBranch:
+  en: Update branch
+resolveOnGitHub:
+  en: Resolve on GitHub
+updating:
+  en: Updating the branch
+updatingDetail:
+  en: Bringing {base} in · merging comes back when GitHub says so
+reviews:
+  en: Reviews
+conflicts:
+  en: Conflicts
+conflictsWith:
+  en: With {base}. Resolved in GitHub's editor
+notKnownYet:
+  en: Not known yet
+branch:
+  en: Branch
+behind:
+  en: Behind {base}
