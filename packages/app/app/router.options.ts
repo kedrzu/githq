@@ -19,6 +19,7 @@ import {
     REPOSITORY_PATH,
     REPOSITORY_SETTINGS_PATH,
 } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
 // the build if any exist). Who may open each one is its `meta.auth` (`auth/routeAccess.ts`); the app's screens
