@@ -410,6 +410,21 @@ export const RefusedForPermission: Story = {
     },
 };
 
+/**
+ * G5: refused because the organisation restricts third-party apps and has not approved githq — GitHub reads its
+ * public repositories to githq, and refuses every change there; the way out is requesting access.
+ */
+export const OrganizationRestricted: Story = {
+    args: {
+        record: {
+            kind: 'refused',
+            sent: SENT_EDITED,
+            reason: { kind: 'organizationRestricted', organization: 'fitloop' },
+            at: NOW,
+        },
+    },
+};
+
 /** PM32a: sent, GitHub has not answered yet — the panel stays as it was, its primary busy, claiming nothing. */
 export const Sending: Story = { args: { answer: 'pending' } };
 

@@ -61,6 +61,11 @@ export interface PullRequestVerdictViewModel {
      * (PM22): GitHub enforces it, and refuses what it would not merge.
      */
     readonly forward: PullRequestWayForward | null;
+    /**
+     * What `⇧M` says it leads to, wherever it is offered: "Merge…", "Mark ready…", "Update branch", "Resolve on
+     * GitHub" — "Merge…" with no way forward too, as it opens the panel all the same.
+     */
+    readonly forwardTitle: string;
 }
 
 interface Standing {
@@ -78,37 +83,44 @@ export function usePullRequestVerdict(
     pr: MaybeRefOrGetter<PullRequestItem>,
     checks: MaybeRefOrGetter<MergeCheckCounts | null> = null,
 ): PullRequestVerdictViewModel {
+    const getVerdict = usePullRequestVerdicts();
+    const decided = computed(() => getVerdict(toValue(pr), toValue(checks)));
+
+    return reactive<PullRequestVerdictViewModel>({
+        verdict: computed(() => decided.value.verdict),
+        mergeable: computed(() => decided.value.mergeable),
+        forward: computed(() => decided.value.forward),
+        forwardTitle: computed(() => decided.value.forwardTitle),
+    });
+}
+
+/**
+ * {@link usePullRequestVerdict} for any pull request, read once: what a command built for one (`⇧M`'s title) says,
+ * the same as its standing.
+ */
+export function usePullRequestVerdicts(): (
+    pr: PullRequestItem,
+    checks: MergeCheckCounts | null,
+) => PullRequestVerdictViewModel {
     const t = useTranslate();
-    /** The checks counted, while they decide: open, not a draft, and no conflicts (which hold it whatever they say). */
-    const counted = computed(() => {
-        const current = toValue(pr);
-        const counts = toValue(checks);
-        const open = current.state === 'OPEN' && !current.isDraft;
-        return counts && open && !getPullRequestStanding(current).conflicts ? counts : null;
-    });
-    // Counted, the checks speak through the counts alone: the row's summary counts the ones not required too.
-    const standing = computed(() => {
-        const current = toValue(pr);
-        return getPullRequestStanding(counted.value ? { ...current, checks: null } : current);
-    });
-    const mergeable = computed(() => {
-        const current = toValue(pr);
-        const counts = counted.value;
-        if (counts) {
-            return counts.requiredFailing + counts.requiredPending === 0 && isReadyState(current.mergeStateStatus);
-        }
 
-        const clean = current.mergeStateStatus === 'CLEAN' || current.mergeStateStatus === 'HAS_HOOKS';
-        return (
-            current.state === 'OPEN' &&
-            (standing.value.readyToMerge ||
-                (clean && !current.isDraft && current.reviewDecision === null && !standing.value.needsAuthor))
-        );
-    });
+    return (pr, checks) => {
+        // The checks counted, while they decide: open, not a draft, and no conflicts (which hold it whatever they say).
+        const open = pr.state === 'OPEN' && !pr.isDraft;
+        const counts = checks && open && !getPullRequestStanding(pr).conflicts ? checks : null;
+        // Counted, the checks speak through the counts alone: the row's summary counts the ones not required too.
+        const now = getPullRequestStanding(counts ? { ...pr, checks: null } : pr);
+        const mergeable = isMergeable(pr, now, counts);
+        const { verdict, forward } = decide(pr, now, counts, mergeable);
+        return { verdict, mergeable, forward, forwardTitle: getForwardTitle(forward) };
+    };
 
-    const decided = computed((): Standing => {
-        const current = toValue(pr);
-        const now = standing.value;
+    function decide(
+        current: PullRequestItem,
+        now: PullRequestStanding,
+        counts: MergeCheckCounts | null,
+        mergeable: boolean,
+    ): Standing {
         if (current.merged) {
             return held({ tone: 'done', icon: GitMerge, text: t(l.merged), aside: null });
         }
@@ -142,7 +154,6 @@ export function usePullRequestVerdict(
             };
         }
 
-        const counts = counted.value;
         if (counts && counts.requiredFailing > 0) {
             const failed = t(l.requiredFailed, { count: counts.requiredFailing });
             const aside = sentence(now.changesRequested ? [t(l.changesRequested), failed] : [failed]);
@@ -171,7 +182,7 @@ export function usePullRequestVerdict(
             return held({ tone: 'warning', icon: LoaderCircle, text: t(l.cannotMerge), aside });
         }
 
-        if (mergeable.value) {
+        if (mergeable) {
             const aside = counts
                 ? readyAside(current, counts)
                 : now.readyToMerge
@@ -205,13 +216,24 @@ export function usePullRequestVerdict(
         }
 
         return held({ tone: 'warning', icon: Hourglass, text: t(l.notReady), aside: sentence(parts) || null });
-    });
+    }
 
-    return reactive<PullRequestVerdictViewModel>({
-        verdict: computed(() => decided.value.verdict),
-        forward: computed(() => decided.value.forward),
-        mergeable,
-    });
+    /** What `⇧M` says it leads to: "Merge…" with no way forward too, as it still opens the panel. */
+    function getForwardTitle(forward: PullRequestWayForward | null) {
+        switch (forward) {
+            case 'merge':
+            case null:
+                return t(l.merge);
+            case 'markReady':
+                return t(l.markReady);
+            case 'updateBranch':
+                return t(l.updateBranch);
+            case 'resolveConflicts':
+                return t(l.resolveConflicts);
+            default:
+                return assertNever(forward);
+        }
+    }
 
     /** What the author has to do besides the conflicts: the checks failing, the changes requested. */
     function authorParts(now: PullRequestStanding) {
@@ -238,6 +260,22 @@ export function usePullRequestVerdict(
 
         return current.reviewDecision === null ? t(l.readyNoReview) : t(l.readyNoConflicts);
     }
+}
+
+/**
+ * GitHub would merge it now. With the checks counted: none required failing or running, and GitHub's status says the
+ * requirements are met; before that, as the row holds it.
+ */
+function isMergeable(pr: PullRequestItem, now: PullRequestStanding, counts: MergeCheckCounts | null) {
+    if (counts) {
+        return counts.requiredFailing + counts.requiredPending === 0 && isReadyState(pr.mergeStateStatus);
+    }
+
+    const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
+    return (
+        pr.state === 'OPEN' &&
+        (now.readyToMerge || (clean && !pr.isDraft && pr.reviewDecision === null && !now.needsAuthor))
+    );
 }
 
 /** A verdict with no way forward. */

@@ -101,7 +101,10 @@ export function useEditTexts(): EditTexts {
         }
 
         if (failure.editCount <= 1 && first.edit.subject.kind === 'merged') {
-            return t(l.failedMerge, { reference: first.edit.reference });
+            const { reference } = first.edit;
+            return first.reason.kind === 'organizationRestricted'
+                ? t(l.failedMergeRestricted, { reference, organization: first.reason.organization })
+                : t(l.failedMerge, { reference });
         }
 
         if (failure.editCount <= 1) {
@@ -286,6 +289,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonMissing, { repository });
             case 'offline':
                 return t(l.reasonOffline);
+            case 'organizationRestricted':
+                return t(l.reasonOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.reasonRefused, { message: failure.message.replace(/\.$/u, '') });
             default:
@@ -303,6 +308,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.shortMissing);
             case 'offline':
                 return t(l.shortOffline);
+            case 'organizationRestricted':
+                return t(l.shortOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.shortRefused);
             default:

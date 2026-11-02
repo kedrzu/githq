@@ -53,6 +53,12 @@ const REFUSED: EditFailure = {
     at: 0,
 };
 
+/** G5: refused by an organisation that restricts third-party apps and has not approved githq. */
+const RESTRICTED: EditFailure = {
+    ...REFUSED,
+    failed: [{ edit: MERGE_EDIT, reason: { kind: 'organizationRestricted', organization: 'fitloop' } }],
+};
+
 /** PM34: GitHub confirmed the merge after the user moved on. */
 const CONFIRMED: MergeConfirmation = { id: 1, itemId: PR.id, reference: REFERENCE, base: 'main' };
 
@@ -143,6 +149,9 @@ type Story = StoryObj<typeof meta>;
 
 /** PM35: a merge GitHub refused after the user moved on — it stays, and ⌥M leads back to its merge panel. */
 export const Refused: Story = { decorators: [withMerges([REFUSED], [])] };
+
+/** G5: refused by an organisation that hasn't approved githq — said plainly, with the way to request access. */
+export const OrganizationRestricted: Story = { decorators: [withMerges([RESTRICTED], [])] };
 
 /** PM34: a merge GitHub confirmed after the user moved on — quiet, and gone by itself. */
 export const Confirmed: Story = { decorators: [withMerges([], [CONFIRMED])] };

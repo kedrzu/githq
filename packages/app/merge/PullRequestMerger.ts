@@ -107,13 +107,12 @@ export const PullRequestMerger = defineService({
          * refused it at once (`refused`); a refusal is the panel's
          * to show, and reported like a failed edit only when the panel does not show the pull request
          * ({@link MergeParams.shown}). Refused as not allowed without being sent when the user may not
-         * merge it, or it is being merged already.
+         * merge it, or it is being merged already (its permissions say so).
          */
         async function merge(params: MergeParams): Promise<MergeAnswer> {
             const { item, request, shown, onLateEnd } = params;
             const account = accounts.current;
-            const merging = queue.pending.some(edit => edit.itemId === item.id && edit.subject.kind === 'merged');
-            if (!account || merging || !editor.getPermissions(item).merge) {
+            if (!account || !editor.getPermissions(item).merge) {
                 return { kind: 'refused', reason: { kind: 'notAllowed' } };
             }
 

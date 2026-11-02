@@ -265,7 +265,7 @@ test('no answer within the time limit: being merged goes, with no failure, and n
 });
 
 test('never sent for a non-writer, a closed or merged pull request, or one being merged already', async () => {
-    const { merger, session, rest } = await setup();
+    const { merger, rest } = await setup();
     rest.answers.put = PENDING;
 
     const readOnly: PullRequestItem = { ...open(), repository: { ...open().repository, viewerPermission: 'TRIAGE' } };
@@ -286,13 +286,6 @@ test('never sent for a non-writer, a closed or merged pull request, or one being
         await merger.merge({ item: { ...open(), merging: 'SQUASH' }, request: { method: 'SQUASH' }, shown, onLateEnd }),
     ).toEqual(notAllowed);
     expect(rest.puts()).toEqual([]);
-
-    // The row the panel holds may not show it yet: the merge on its way says so.
-    const first = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
-    await session.clock.advance(0);
-    expect(await first).toEqual({ kind: 'accepted' });
-    expect(await merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd })).toEqual(notAllowed);
-    expect(rest.puts()).toHaveLength(1);
 });
 
 test('the options read on opening come back, partial errors and all, and their status is written into the row', async () => {

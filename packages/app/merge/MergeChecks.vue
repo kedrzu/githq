@@ -1,4 +1,4 @@
-<!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, with nothing to open. -->
+<!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, the chevron in its place but inactive while the read is on its way. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
@@ -31,6 +31,8 @@ const props = defineProps<{
   now: number;
   /** They will run again: the branch is to be updated (PM20). */
   runAgain?: boolean;
+  /** The panel's read is on its way: the chevron is in its place, inactive, so nothing moves when it arrives. */
+  reading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -125,7 +127,8 @@ function describeCounts(): CheckSummary {
       :aside="counts && counts.required > 0 && !open ? t(l.requiredCount, { count: counts.required }) : null"
     >
       <IconButton
-        v-if="checks && checks.length > 0"
+        v-if="(checks && checks.length > 0) || (reading && !checks)"
+        :disabled="!checks"
         :icon="open ? ChevronDown : ChevronRight"
         :label="open ? t(l.fold) : t(l.showAll)"
         :aria-expanded="open"

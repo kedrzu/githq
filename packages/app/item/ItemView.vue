@@ -384,6 +384,7 @@ function getEditCommands(): Command[] {
     stateTitle: getStateTitle(),
     edit: request => emit('edit', request),
     merge: () => emit('merge'),
+    mergeChecks: checkCounts.value,
     setField: (place, field, value) =>
       emit('edit', { kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value }),
     inline: {

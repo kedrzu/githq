@@ -91,6 +91,11 @@ export type EditFailureReason =
     | { readonly kind: 'missing' }
     /** GitHub could not be reached. */
     | { readonly kind: 'offline' }
+    /**
+     * The organisation restricts third-party apps and has not approved githq (G5): GitHub lets githq read its public
+     * repositories, but refuses every change there.
+     */
+    | { readonly kind: 'organizationRestricted'; readonly organization: string }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 

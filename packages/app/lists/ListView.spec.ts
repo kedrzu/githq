@@ -12,6 +12,11 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
+import { Browser } from '@/services/Browser.js';
+import { ItemStore } from '@/store/ItemStore.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { samplePullRequest } from '@/testing/sampleItems.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import type {
     ListContextMenuProps,
@@ -524,6 +529,24 @@ test('⇧M merges the selected pull request the viewer may merge — never one t
     expect(merging.panels.map(panel => panel.id)).toEqual(['a1']);
 });
 
+test("PM38: ⇧M's title is the way forward the panel leads to, as the opened item's standing says it", async () => {
+    const container = createListContainer();
+    const store = container.resolve(ItemStore);
+    await store.ready();
+    store.upsertMany([
+        { ...samplePullRequest('a1'), mergeStateStatus: 'BEHIND' },
+        { ...samplePullRequest('a2'), isDraft: true, mergeStateStatus: 'DRAFT' },
+    ]);
+    const view = mount([['todo', ['a1', 'a2']]], 'list', { merge: sampleMerging(['a1', 'a2']).context, container });
+    const registry = view.container.resolve(CommandRegistry);
+    const title = () => registry.commands.find(command => command.id === 'list.merge')?.title;
+
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Update branch');
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Mark ready…');
+});
+
 test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected row is; once sent it is unchecked and the list moves past it', async () => {
     const merging = sampleMerging(['a2']);
     const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
@@ -673,9 +696,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     }
 }
 
+/** The app's services a list reads: the local copy, of a signed-in user, kept in IndexedDB as the app keeps it. */
 function createListContainer() {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    container.set(Browser, createSignedInBrowser());
+    setIndexedDbPersistence(container);
     return container;
 }
 

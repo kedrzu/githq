@@ -130,6 +130,12 @@ reasonMore:
   en: '“{more}”'
 reasonNotAllowed:
   en: You can't merge this pull request
+organizationRestricted:
+  en: "{organization} hasn't approved githq"
+organizationRestrictedDetail:
+  en: githq can read its public repositories but can't change anything there, merges included.
+requestAccess:
+  en: Request access on GitHub
 reasonOther:
   en: GitHub didn't take the merge
 primarySquash:

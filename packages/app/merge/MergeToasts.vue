@@ -1,4 +1,4 @@
-<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35); a merge GitHub confirmed while the panel did not show it says so, small and quiet, and goes by itself (PM34). Both act on their own pull request, never on the row selected: `⌥M`, not `⇧M`. No answer in time has no toast (PM36). -->
+<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35) — refused by an organisation that has not approved githq, it says so and links to requesting access (G5); a merge GitHub confirmed while the panel did not show it says so, small and quiet, and goes by itself (PM34). Both act on their own pull request, never on the row selected: `⌥M`, not `⇧M`. No answer in time has no toast (PM36). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -12,7 +12,9 @@ import Toast from '@/components/Toast.vue';
 import type { EditFailure } from '@/edits/EditQueue.js';
 import { EditQueue } from '@/edits/EditQueue.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
+import { Browser } from '@/services/Browser.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 
 import { isMergeFailure } from './isMergeFailure.js';
 import { MergeContext } from './MergeContext.js';
@@ -27,6 +29,7 @@ const BACK_KEY = 'Alt+M';
 const queue = useService(EditQueue);
 const store = useService(MergePanelStore);
 const details = useService(ItemDetailStore);
+const browser = useService(Browser);
 const merging = injectContext(MergeContext, { optional: true });
 const texts = useEditTexts();
 const t = useTranslate();
@@ -71,8 +74,14 @@ function backToMerge(failure: EditFailure, itemId: string) {
   merging?.open(itemId);
 }
 
-function getUrl(itemId: string) {
-  return details.getItem(itemId)?.url ?? null;
+/** The pull request on GitHub — or, refused by an organisation that has not approved githq, where to request it (G5). */
+function getLink(failure: EditFailure, itemId: string) {
+  if (failure.failed[0]?.reason.kind === 'organizationRestricted') {
+    return { url: getApprovalUrl(browser.origin), text: t(l.requestAccess) };
+  }
+
+  const url = details.getItem(itemId)?.url;
+  return url ? { url, text: t(l.openOnGitHub) } : null;
 }
 </script>
 
@@ -102,15 +111,15 @@ function getUrl(itemId: string) {
           {{ t(l.backToMerge) }}
         </Button>
         <Button
-          v-if="getUrl(itemId)"
+          v-if="getLink(failure, itemId)"
           variant="secondary"
           size="sm"
           :icon="ArrowUpRight"
-          :link="getUrl(itemId) ?? undefined"
+          :link="getLink(failure, itemId)?.url"
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ t(l.openOnGitHub) }}
+          {{ getLink(failure, itemId)?.text }}
         </Button>
       </template>
     </Toast>

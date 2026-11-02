@@ -15,14 +15,6 @@ openOnGitHub:
   en: Open on GitHub
 reviewFiles:
   en: Review files
-merge:
-  en: Merge…
-resolveConflicts:
-  en: Resolve on GitHub
-updateBranch:
-  en: Update branch
-markReady:
-  en: Mark ready…
 cannotMerge:
   en: You can't merge in this repository
 waitingForGitHub:
@@ -31,6 +23,8 @@ refused:
   en: Merge refused
 nothingMerged:
   en: Nothing was merged
+organizationRestricted:
+  en: "{organization} hasn't approved githq"
 notMerged:
   en: Not merged
 newCommitFrom:

@@ -63,3 +63,11 @@ requiredRunning:
     many: '{count} required checks running'
 approved:
   en: approved
+merge:
+  en: Merge…
+resolveConflicts:
+  en: Resolve on GitHub
+updateBranch:
+  en: Update branch
+markReady:
+  en: Mark ready…

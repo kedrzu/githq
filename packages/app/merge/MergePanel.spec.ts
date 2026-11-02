@@ -21,6 +21,7 @@ const {
     NotAllowed,
     NothingToOffer,
     OptionalFailed,
+    OrganizationRestricted,
     OutcomeUnknown,
     Ready,
     Refused,
@@ -40,6 +41,25 @@ test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub
 
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
     await expect.element(panel()).not.toBeInTheDocument();
+});
+
+test('PM8: the read arriving moves nothing — the method chips, the checks with their chevron and C, the commit lines are in place before it', async () => {
+    await BeingRead.run();
+
+    await expect.element(panel()).toHaveTextContent('Reading');
+    await expect
+        .element(page.getByRole('button', { name: 'Squash', exact: true }))
+        .toHaveAttribute('aria-pressed', 'true');
+    await expect.element(page.getByRole('button', { name: 'Show all checks' })).toBeDisabled();
+    expect(panel().element().querySelector('footer')?.textContent).toContain('Checks');
+    const before = measureRows();
+
+    document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
+    await expect.element(panel()).not.toHaveTextContent('Reading');
+    await expect.element(panel()).toHaveTextContent('Retry Stripe webhook delivery on 5xx (#477)');
+    await expect.element(page.getByRole('button', { name: 'Show all checks' })).toBeEnabled();
+
+    expect(measureRows()).toEqual(before);
 });
 
 test('PM3d: E edits; Esc leaves the field keeping the edit, a second Esc closes; only the edited title is sent', async () => {
@@ -147,6 +167,25 @@ test('PM25, D15: reopened after a refusal, GitHub’s reason in its own words, a
     await expect
         .element(page.getByTestId('sent'))
         .toHaveTextContent('"title":"Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)"');
+});
+
+test("G5: refused by an organisation that hasn't approved githq — said plainly, with the way to request access (A)", async () => {
+    await OrganizationRestricted.run();
+
+    const band = page.getByRole('alert');
+    await expect
+        .element(band)
+        .toHaveTextContent(
+            "fitloop hasn't approved githqgithq can read its public repositories but can't change anything there, merges included.",
+        );
+    await expect.element(band).not.toHaveTextContent('OAuth App access restrictions');
+    const request = band.getByRole('link', { name: 'Request access on GitHub' });
+    await expect.element(request).toHaveAttribute('aria-keyshortcuts', 'A');
+    const approval = `${window.location.origin}/api/auth/approval`;
+    await expect.element(request).toHaveAttribute('href', approval);
+
+    await userEvent.keyboard('a');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent(`Visit: ${approval}`);
 });
 
 test('PM27: a new commit arrived — nothing merged, the new commit named, and the primary goes by its state', async () => {
@@ -441,4 +480,19 @@ test('PM22, D12: mergeability not known yet — no red, GitHub is computing, and
 
 function panel() {
     return page.getByRole('dialog', { name: 'Merge fitloop/api#477' });
+}
+
+/** Where the panel's rows sit and how tall they are: each line of how it lands, the checks, the footer, the panel. */
+function measureRows() {
+    const root = panel().element();
+    const rows = [
+        root,
+        ...root.querySelectorAll('dl > div'),
+        root.querySelector('footer'),
+        page.getByRole('button', { name: 'Show all checks' }).element().parentElement,
+    ];
+    return rows.map(row => {
+        const box = row?.getBoundingClientRect();
+        return box ? { top: box.top, height: box.height } : null;
+    });
 }

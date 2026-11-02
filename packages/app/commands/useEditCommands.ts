@@ -22,6 +22,8 @@ import type { EditPermissions } from '@/edits/getEditPermissions.js';
 import type { ProjectFieldRole } from '@/edits/getProjectFieldRole.js';
 import { getProjectFieldRole } from '@/edits/getProjectFieldRole.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
+import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
+import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -98,6 +100,11 @@ export interface EditCommandsParams {
      * that moves on once the merge is sent (a list, PM32a) says so in it.
      */
     readonly merge?: (pr: PullRequestItem) => void;
+    /**
+     * The one pull request's checks counted by whether they are required, once its merge options are read: `⇧M` then
+     * says the same way forward as its standing (PM38). Without them, as its row holds it.
+     */
+    readonly mergeChecks?: MergeCheckCounts | null;
 }
 
 /** An edit made of items one by one, by the user's permission for each. */
@@ -115,6 +122,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     const t = useTranslate();
     const pickerOptions = usePickerOptions();
     const fieldOptions = useProjectFieldOptions();
+    const getVerdict = usePullRequestVerdicts();
 
     return params =>
         [
@@ -313,7 +321,8 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     /**
      * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
      * merged, for the panel to say so (PM24) — the first of the actions; never for several items, which merge one at
-     * a time.
+     * a time. Its title is the way forward the panel leads to, as the standing's button says (PM38): "Update branch",
+     * "Resolve on GitHub", "Mark ready…".
      */
     function mergeCommand(params: EditCommandsParams): Command | null {
         const pr = getOnePullRequest(params);
@@ -324,7 +333,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
         return {
             id: `${params.section}.merge`,
-            title: t(l.merge),
+            title: getVerdict(pr, params.mergeChecks ?? null).forwardTitle,
             section: params.section,
             key: EDIT_KEYS.merge,
             icon: GitMerge,

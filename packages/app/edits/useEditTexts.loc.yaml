@@ -94,6 +94,8 @@ reasonOffline:
   en: githq couldn't reach GitHub, so it was undone. Try again once you're online.
 reasonRefused:
   en: 'GitHub refused it: {message}. It was undone.'
+reasonOrganizationRestricted:
+  en: "{organization} hasn't approved githq, so githq can read its public repositories but can't change anything there."
 reasonMergeRefused:
   en: 'GitHub refused it: “{message}” Nothing changed on GitHub.'
 reasonOfItem:
@@ -114,6 +116,8 @@ shortOffline:
   en: GitHub unreachable
 shortRefused:
   en: refused by GitHub
+shortOrganizationRestricted:
+  en: "refused · {organization} hasn't approved githq"
 
 sendingTo:
   plural: count
@@ -138,6 +142,8 @@ failedOne:
   en: 1 change failed · {subject} {reason}
 failedMerge:
   en: Merge refused · {reference}
+failedMergeRestricted:
+  en: "Merge refused · {reference} · {organization} hasn't approved githq"
 unanswered:
   en: GitHub hasn't answered · the next refresh will settle it
 unansweredOf:
@@ -178,6 +184,8 @@ openMilestones:
   en: Open milestones on GitHub
 openOnGitHub:
   en: Open on GitHub
+requestAccess:
+  en: Request access on GitHub
 restoreComment:
   en: Restore comment
 selectFailed:

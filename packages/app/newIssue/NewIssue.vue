@@ -326,6 +326,8 @@ function describeRejection(reason: EditFailureReason, repository: string) {
       return t(l.rejectedRefused, { message: reason.message.replace(/\.$/u, '') });
     case 'offline':
       return t(l.rejectedOffline);
+    case 'organizationRestricted':
+      return t(l.rejectedOrganizationRestricted, { organization: reason.organization });
     case 'missing':
       return t(l.rejectedMissing, { repository });
     case 'notAllowed':

@@ -354,6 +354,37 @@ test('F3: a ready pull request leads with "Merge…" — ⇧M, its button and th
     expect(onMerge).toHaveBeenCalledTimes(3);
 });
 
+test.each([
+    ['behind its base', () => PullRequestBehind, 'Update branch'],
+    ['conflicts', () => PullRequestConflicts, 'Resolve on GitHub'],
+    ['a draft', () => PullRequestDraft, 'Mark ready…'],
+])(
+    'PM38: %s — ⇧M in the item menu says the way forward its button says, and still opens the panel',
+    async (_, story, title) => {
+        const shown = story();
+        await shown.run();
+
+        await expect.element(page.getByRole('button', { name: title })).toBeVisible();
+        await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+        const entry = page.getByRole('menuitem', { name: new RegExp(`^${title}`) });
+        await expect.element(entry).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+        await expect.element(page.getByRole('menuitem', { name: /^Merge…/ })).not.toBeInTheDocument();
+        await userEvent.click(entry);
+        expect(shown.args.onMerge).toHaveBeenCalledOnce();
+    },
+);
+
+test("PM38: with the merge options read, ⇧M's entry weighs only the required checks, as the button does", async () => {
+    // Its row counts a failing check that isn't required: alone, that would hold it with no way forward.
+    const checks = { state: 'FAILURE', passing: 7, failing: 1, pending: 1 } as const;
+    const item = { ...F3_PULL_REQUEST, mergeStateStatus: 'BEHIND', checks } as const;
+    await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, item } });
+
+    await expect.element(page.getByRole('button', { name: 'Update branch' })).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menuitem', { name: /^Update branch/ })).toBeVisible();
+});
+
 test('K1b: without write access there is no "Merge…" — no button, no key, no menu entry — and one line says so', async () => {
     await PullRequestContributorView.run();
     const { onMerge } = PullRequestContributorView.args;

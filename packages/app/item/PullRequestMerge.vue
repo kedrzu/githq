@@ -7,6 +7,7 @@ import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
+import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
@@ -68,9 +69,7 @@ const verdict = computed((): PullRequestVerdict => {
   const look = getMergeEndLook(record.kind);
   switch (record.kind) {
     case 'refused': {
-      const { reason } = record;
-      const aside = reason.kind === 'refused' ? getReasonTitle(reason.message) : '';
-      return { ...look, text: t(l.refused), aside: aside || t(l.nothingMerged) };
+      return { ...look, text: t(l.refused), aside: refusedAside(record.reason) };
     }
     case 'methodNotAllowed':
       return { ...look, text: t(l.refused), aside: t(l.nothingMerged) };
@@ -108,20 +107,7 @@ const mergeLabel = computed(() => {
     return t(l.backToMerge);
   }
 
-  const forward = mergeVerdict.forward;
-  switch (forward) {
-    case 'merge':
-    case null:
-      return t(l.merge);
-    case 'markReady':
-      return t(l.markReady);
-    case 'updateBranch':
-      return t(l.updateBranch);
-    case 'resolveConflicts':
-      return t(l.resolveConflicts);
-    default:
-      return assertNever(forward);
-  }
+  return mergeVerdict.forwardTitle;
 });
 
 const conditions = computed(() => [
@@ -137,6 +123,18 @@ const head = computed(() => {
 });
 
 const filesUrl = computed(() => `${props.pr.url}/files`);
+
+/** Why GitHub refused it, in a few words: GitHub's own title, or the organisation that has not approved githq (G5). */
+function refusedAside(reason: EditFailureReason) {
+  switch (reason.kind) {
+    case 'refused':
+      return getReasonTitle(reason.message) || t(l.nothingMerged);
+    case 'organizationRestricted':
+      return t(l.organizationRestricted, { organization: reason.organization });
+    default:
+      return t(l.nothingMerged);
+  }
+}
 </script>
 
 <template>

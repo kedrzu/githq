@@ -12,8 +12,10 @@ import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
+import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { Browser } from '@/services/Browser.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
@@ -196,6 +198,9 @@ const menuIds = shallowRef<readonly string[]>([]);
 const menuOpenId = ref<string | null>(null);
 /** Merging, where the screen offers it (merging D9). */
 const merging = injectContext(MergeContext, { optional: true });
+// Where the screen merges, the app's local copy is there: ⇧M's title reads the pull request's way forward from it.
+const items = merging ? useService(ItemStore) : null;
+const getVerdict = usePullRequestVerdicts();
 
 /** Each top-level entry and those shown nested under it, in order, by the entry's key. */
 const shownByRow = computed(() => {
@@ -387,10 +392,13 @@ function getMergeCommands(): Command[] {
   }
 
   const selection = checkedIds.value.length > 0;
+  const mergeableId = getMergeableId();
+  const pr = mergeableId === null ? undefined : items?.get(mergeableId);
   return [
     {
       id: selection ? 'selection.merge' : 'list.merge',
-      title: t(l.merge),
+      // The way forward the panel leads to, as the opened item's standing says it before its read (PM38).
+      title: pr?.kind === 'pullRequest' ? getVerdict(pr, null).forwardTitle : t(l.merge),
       section: selection ? 'selection' : 'view',
       key: EDIT_KEYS.merge,
       icon: GitMerge,
