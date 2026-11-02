@@ -375,16 +375,22 @@ list's count.** (2026-11-01, design agent, SP8, SP3; owner accepted)
 
 ## D25
 
-**In a panel the map is a bar pinned under the toolbar that never folds: the stack's name and one numbered square per pull request, the open one
-marked, each square opening its pull request. The rows sit at the top of the content and scroll away under the bar; once they are out of view
-a chevron, which kept its place hidden, drops them over the content. The rows show every pull request, none folded, with K and J in a legend above them rather than on the neighbours.** (2026-11-02, owner, replacing the panel part of [D17](#d17); SP82–SP84.
-How a square reads, SP85–SP87, and whether the bar gets ‹ › arrows, SP88–SP89, are still to be picked)
+**In a panel the map is a bar pinned under the toolbar that never folds: the stack's name and one numbered square per pull request, each square
+opening its pull request. A square has a faint tint of its state, a firmer outline and a crisp number; the open one gets a full-colour outline, a
+bold number and a short mark under it. The rows sit at the top of the content, every pull request with none folded, and scroll away under the bar;
+once they are out of view a chevron, which kept its place hidden, drops them over the content. K and J sit in a legend above the rows, in all three
+ways an item opens.** (2026-11-02, owner, replacing the panel part of [D17](#d17); SP30, SP82–SP84, SP88, SP90, SP93)
 
-**Why.** Folding the rows into a strip changed the panel's height as soon as the content scrolled, so the whole view jumped. A bar of fixed
-height with the rows as plain content never moves anything. Pips without numbers made the place hard to read.
+**Why.** Folding the rows into a strip changed the panel's height as soon as the content scrolled, so the whole view jumped. A bar of fixed height
+with the rows as plain content never moves anything. Pips without numbers made the place hard to read. A solid or strongly tinted open square lowered
+the number's contrast; the mark keeps it, and takes no room, so nothing shifts while walking.
 
 **Rejected.**
 
 - The map folding to a one-line strip once the content scrolls (SP32) — the layout jumps on the first scroll.
 - A window of six with the rest folded (SP31) — more clicking to see the stack.
 - K and J on the neighbours' rows — they hop from row to row as you walk.
+- ‹ and › around the squares (SP89) — the squares are already the buttons, and the arrows take room from the name.
+- Squares tinted, quiet or sharply outlined (SP85–SP87) — too strong, or a failing pull request stops standing out.
+- The open square with a light ring (SP91), a thicker outline (SP92), or a stronger tint and a white number (SP94) — the owner preferred the mark.
+- A one-sided accent border on the selected map row — reads as decoration; the fill alone marks it.
