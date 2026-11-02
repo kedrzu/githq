@@ -10,9 +10,6 @@ import {
   CircleX,
   FileDiff,
   GitBranch,
-  GitMerge,
-  GitPullRequestClosed,
-  GitPullRequestDraft,
   Github,
   Hourglass,
 } from 'lucide-vue-next';
@@ -26,6 +23,8 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
+import { usePullRequestVerdict } from './usePullRequestVerdict.js';
+import type { PullRequestVerdictTone } from './usePullRequestVerdict.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -33,10 +32,8 @@ const props = defineProps<{
   detail?: PullRequestDetail | null;
 }>();
 
-type Tone = 'danger' | 'done' | 'muted' | 'success' | 'warning';
-
 interface Line {
-  tone: Tone;
+  tone: PullRequestVerdictTone;
   icon: LucideIcon;
   text: string;
   /** Quieter text at the end ("1 approval · pnowak"). */
@@ -48,78 +45,8 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const names = new Intl.ListFormat(APP_LANGUAGE);
 
 const standing = computed(() => getPullRequestStanding(props.pr));
-// Ready: approved as "my work" says, or with no review required, and GitHub would merge it now.
-const mergeable = computed(() => {
-  const { pr } = props;
-  const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
-  return (
-    standing.value.readyToMerge || (clean && !pr.isDraft && pr.reviewDecision === null && !standing.value.needsAuthor)
-  );
-});
+const { verdict, mergeable } = usePullRequestVerdict(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
-
-const verdict = computed((): Line => {
-  const { pr } = props;
-  const now = standing.value;
-  if (pr.merged) {
-    return { tone: 'done', icon: GitMerge, text: t(l.merged) };
-  }
-
-  if (pr.state !== 'OPEN') {
-    return { tone: 'danger', icon: GitPullRequestClosed, text: t(l.closedUnmerged) };
-  }
-
-  if (pr.isDraft) {
-    return { tone: 'muted', icon: GitPullRequestDraft, text: t(l.draft), aside: t(l.draftDetail) };
-  }
-
-  if (now.needsAuthor) {
-    const parts: string[] = [];
-    if (now.checksFailing) {
-      parts.push(
-        now.failingChecks > 0 ? t(l.checksFailing, { count: now.failingChecks }) : t(l.checksFailingUncounted),
-      );
-    }
-
-    if (now.changesRequested) {
-      parts.push(t(l.changesRequested));
-    }
-
-    if (now.conflicts) {
-      parts.push(t(l.conflicts));
-    }
-
-    return { tone: 'danger', icon: CircleX, text: t(l.cannotMerge), aside: parts.join(' · ') };
-  }
-
-  if (mergeable.value) {
-    return {
-      tone: 'success',
-      icon: CircleCheck,
-      text: t(l.ready),
-      aside: now.readyToMerge ? t(l.readyDetail) : t(l.readyNoReview),
-    };
-  }
-
-  const parts: string[] = [];
-  if (now.checksRunning) {
-    parts.push(t(l.checksRunning));
-  }
-
-  if (now.waitingForReview) {
-    parts.push(t(l.waitingForReview));
-  }
-
-  if (parts.length === 0) {
-    if (pr.mergeStateStatus === 'BEHIND') {
-      parts.push(t(l.behind, { base: pr.baseRefName }));
-    } else if (pr.mergeStateStatus === 'BLOCKED') {
-      parts.push(t(l.blocked));
-    }
-  }
-
-  return { tone: 'warning', icon: Hourglass, text: t(l.notReady), aside: parts.join(' · ') };
-});
 
 const conditions = computed((): { label: string; line: Line }[] => [
   { label: t(l.checks), line: checksLine() },

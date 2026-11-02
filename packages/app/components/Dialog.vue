@@ -35,6 +35,8 @@ withDefaults(
     bare?: boolean;
     /** With `bare`: as tall as the content, up to the window (the command menu), instead of the window. */
     fitContent?: boolean;
+    /** Centred on the window both ways (the merge panel), instead of hanging from near its top. */
+    centered?: boolean;
   }>(),
   { description: undefined, width: 560 },
 );
@@ -69,7 +71,7 @@ const t = useTranslate();
     <DialogPortal>
       <DialogOverlay :class="css.dialog_overlay" />
       <DialogContent
-        :class="[css.dialog, bare && (fitContent ? css.dialog_fit : css.dialog_bare)]"
+        :class="[css.dialog, bare && (fitContent ? css.dialog_fit : css.dialog_bare), centered && css.dialog_centered]"
         :style="{ width: `${width}px` }"
         v-bind="description ? {} : NO_DESCRIPTION"
         @escape-key-down="emit('escapeKeyDown', $event)"
@@ -155,6 +157,11 @@ const t = useTranslate();
 .dialog_fit {
   top: 11vh;
   max-height: 78vh;
+}
+
+.dialog_centered {
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .dialog_title {

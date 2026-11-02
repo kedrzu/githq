@@ -28,7 +28,7 @@ test('accepted: the panel learns at once; the row reads being merged — not mer
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge(open(), { method: 'SQUASH' });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
 
     expect(await answering).toEqual({ kind: 'accepted' });
@@ -55,11 +55,15 @@ test('the head commit always goes with the merge, and the commit text only when 
     const { merger, session, rest } = await setup();
     rest.answers.put = MERGED;
 
-    const unedited = merger.merge(open(), { method: 'SQUASH' });
+    const unedited = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await unedited).toEqual({ kind: 'accepted' });
 
-    const edited = merger.merge(open(), { method: 'MERGE', title: 'Merge the login fix', body: '' });
+    const edited = merger.merge({
+        item: open(),
+        request: { method: 'MERGE', title: 'Merge the login fix', body: '' },
+        shown,
+    });
     await session.clock.advance(0);
     expect(await edited).toEqual({ kind: 'accepted' });
 
@@ -73,7 +77,7 @@ test('merged at once: confirmed, and a sync copy read before the merge does not 
     const { merger, items, session, rest } = await setup();
     rest.answers.put = MERGED;
 
-    const answering = merger.merge(open(), { method: 'SQUASH' });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
     expect(items.get('PR_1')).toMatchObject({ merged: true, state: 'MERGED', closedAt: expect.any(String) });
@@ -91,7 +95,7 @@ test('refused at once — a failed answer or an error — is the panel’s to sh
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = { status: 405, body: { status: 'failed', details: { message: 'Head branch was modified.' } } };
 
-    const refused = merger.merge(open(), { method: 'SQUASH' });
+    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
 
     expect(await refused).toEqual({
@@ -100,7 +104,7 @@ test('refused at once — a failed answer or an error — is the panel’s to sh
     });
 
     rest.answers.put = undefined;
-    const failed = merger.merge(open(), { method: 'SQUASH' });
+    const failed = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
 
     expect(await failed).toMatchObject({ kind: 'refused', reason: { kind: 'refused' } });
@@ -111,11 +115,32 @@ test('refused at once — a failed answer or an error — is the panel’s to sh
     expect(rest.reads()).toBe(0);
 });
 
+test('refused at once after the panel closed: the refusal is not lost — a failed edit with GitHub’s words', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    rest.answers.put = { status: 405, body: { status: 'failed', details: { message: 'Head branch was modified.' } } };
+
+    // The panel is closed (Esc) before GitHub answers the merge.
+    let panelOpen = true;
+    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown: () => panelOpen });
+    panelOpen = false;
+    await session.clock.advance(0);
+
+    expect(await refused).toEqual({
+        kind: 'refused',
+        reason: { kind: 'refused', message: 'Head branch was modified.' },
+    });
+    expect(items.get('PR_1')).not.toHaveProperty('merging');
+    expect(queue.failures.flatMap(failure => failure.failed.map(failed => failed.reason))).toEqual([
+        { kind: 'refused', message: 'Head branch was modified.' },
+    ]);
+    expect(queue.failures[0]?.toast).toBe(true);
+});
+
 test('a failed answer while it runs is a failed edit with GitHub’s words; a request failing meanwhile is asked again', async () => {
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge(open(), { method: 'SQUASH' });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -143,7 +168,7 @@ test('no answer within the time limit: being merged goes, with no failure, and n
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge(open(), { method: 'SQUASH' });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -171,17 +196,27 @@ test('never sent for a non-writer, a closed or merged pull request, or one being
 
     const readOnly: PullRequestItem = { ...open(), repository: { ...open().repository, viewerPermission: 'TRIAGE' } };
     const notAllowed: MergeAnswer = { kind: 'refused', reason: { kind: 'notAllowed' } };
-    expect(await merger.merge(readOnly, { method: 'SQUASH' })).toEqual(notAllowed);
-    expect(await merger.merge({ ...open(), state: 'CLOSED' }, { method: 'SQUASH' })).toEqual(notAllowed);
-    expect(await merger.merge({ ...open(), state: 'MERGED', merged: true }, { method: 'SQUASH' })).toEqual(notAllowed);
-    expect(await merger.merge({ ...open(), merging: true }, { method: 'SQUASH' })).toEqual(notAllowed);
+    expect(await merger.merge({ item: readOnly, request: { method: 'SQUASH' }, shown })).toEqual(notAllowed);
+    expect(await merger.merge({ item: { ...open(), state: 'CLOSED' }, request: { method: 'SQUASH' }, shown })).toEqual(
+        notAllowed,
+    );
+    expect(
+        await merger.merge({
+            item: { ...open(), state: 'MERGED', merged: true },
+            request: { method: 'SQUASH' },
+            shown,
+        }),
+    ).toEqual(notAllowed);
+    expect(await merger.merge({ item: { ...open(), merging: true }, request: { method: 'SQUASH' }, shown })).toEqual(
+        notAllowed,
+    );
     expect(rest.puts()).toEqual([]);
 
     // The row the panel holds may not show it yet: the merge on its way says so.
-    const first = merger.merge(open(), { method: 'SQUASH' });
+    const first = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
     await session.clock.advance(0);
     expect(await first).toEqual({ kind: 'accepted' });
-    expect(await merger.merge(open(), { method: 'SQUASH' })).toEqual(notAllowed);
+    expect(await merger.merge({ item: open(), request: { method: 'SQUASH' }, shown })).toEqual(notAllowed);
     expect(rest.puts()).toHaveLength(1);
 });
 
@@ -268,6 +303,11 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
 interface MergeAnswers {
     put: TestRestAnswer | undefined;
     read: TestRestAnswer | undefined;
+}
+
+/** The merge panel still shows what GitHub answers. */
+function shown() {
+    return true;
 }
 
 function open(): PullRequestItem {

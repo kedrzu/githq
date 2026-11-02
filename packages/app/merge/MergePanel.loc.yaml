@@ -1,0 +1,131 @@
+dialogTitle:
+  en: Merge {reference}
+close:
+  en: Esc to close
+reading:
+  en: Reading
+beingMerged:
+  en: Being merged
+beingMergedDetail:
+  en: GitHub accepted it · not merged yet
+refused:
+  en: GitHub refused the merge
+nothingMerged:
+  en: Nothing was merged
+cannotMerge:
+  en: Can't merge yet
+ready:
+  en: Ready to merge
+readyAllPassed:
+  en: Approved · checks passed · no conflicts
+readyRequiredPassed:
+  en: Approved · required checks passed
+readyNoReview:
+  en: No review required · no conflicts
+readyNoConflicts:
+  en: No conflicts
+requiredFailed:
+  plural: count
+  en:
+    one: A required check failed
+    many: '{count} required checks failed'
+requiredRunning:
+  plural: count
+  en:
+    one: '{count} required check running'
+    many: '{count} required checks running'
+approved:
+  en: approved
+method:
+  en: Method
+methodSquash:
+  en: Squash
+methodMerge:
+  en: Merge commit
+methodRebase:
+  en: Rebase
+methodsLabel:
+  en: Merge method
+repositoryDefault:
+  en: the repository's default
+onlyMethod:
+  en: the only method {base} allows
+noMethod:
+  en: none that {base} allows
+branchInto:
+  en: '{head} into {base}'
+commit:
+  en: Commit
+commits:
+  en: Commits
+rebaseNote:
+  en: The branch's commits land on {base} one by one, with their own messages
+proposalOnItsWay:
+  en: GitHub's proposed message is on its way
+githubDefault:
+  en: GitHub's default message
+edited:
+  en: Edited
+edit:
+  en: Edit
+moreLines:
+  plural: count
+  en:
+    one: +{count} line
+    many: +{count} lines
+titleLabel:
+  en: Commit title
+messageLabel:
+  en: Commit message
+editedLines:
+  plural: count
+  en:
+    one: Edited · {count} line
+    many: Edited · {count} lines
+proposedLines:
+  plural: count
+  en:
+    one: GitHub's text · {count} line
+    many: GitHub's text · {count} lines
+backToProposal:
+  en: Back to GitHub's text
+goneRuleset:
+  en: "{method} is gone: a ruleset on {base} doesn't allow it"
+goneLinearHistory:
+  en: '{method} is gone: {base} requires a linear history'
+nowOn:
+  en: You were on {from}. It's {to} now.
+noneLeft:
+  en: You were on {from}. No other method is left.
+reasonOffline:
+  en: GitHub could not be reached
+reasonNotAllowed:
+  en: You can't merge this pull request
+reasonOther:
+  en: GitHub didn't take the merge
+primarySquash:
+  en: Squash and merge
+primaryMerge:
+  en: Merge
+primaryRebase:
+  en: Rebase and merge
+tryAgain:
+  en: Try again
+notAllowed:
+  en: You can't merge in this repository
+nothingToOffer:
+  en: No method to merge with
+hintChecks:
+  en: Checks
+hintAllChecks:
+  en: All checks
+hintFold:
+  en: Fold
+hintLeaveField:
+  en: Leave the field
+hintClose:
+  en: Close
+hintCloseGoesOn:
+  en: Close, it goes on
+keepWorking:
+  en: You can keep working

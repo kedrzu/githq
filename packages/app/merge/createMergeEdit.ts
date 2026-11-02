@@ -24,6 +24,11 @@ export interface CreateMergeEditParams {
     readonly clock: ClockShape;
     /** Told once how GitHub took the merge at first ({@link MergeAnswer}); not told when it was never sent. */
     readonly onAnswer: (answer: MergeAnswer) => void;
+    /**
+     * Whether the merge panel still shows what GitHub answers: a refusal at once is then the panel's to show, and
+     * otherwise a failed edit, so a panel closed before GitHub answered does not lose it.
+     */
+    readonly shown: () => boolean;
 }
 
 /** The first wait before asking how a merge GitHub accepted ended; each next one doubles, up to the longest. */
@@ -36,13 +41,14 @@ const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  * The merge of a pull request as an edit (merging D3, D5, D6). It draws the pull request as being merged
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
- * confirms it; a refusal at once is left to the merge panel to show (`quiet`), one while it runs is a failed edit;
- * with no answer in time the layer goes without a word and the next sync shows what GitHub holds.
+ * confirms it; a refusal at once is left to the merge panel to show (`quiet`) while the panel still shows it, one
+ * while it runs or after the panel closed is a failed edit; with no answer in time the layer goes without a word and
+ * the next sync shows what GitHub holds.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function createMergeEdit(params: CreateMergeEditParams): Edit {
-    const { item, request, clock, onAnswer } = params;
+    const { item, request, clock, onAnswer, shown } = params;
     const target = { ...parseRepositoryName(item.repository.nameWithOwner), number: item.number };
 
     return {
@@ -67,14 +73,14 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
             } catch (error) {
                 const reason = toEditFailureReason(error);
                 onAnswer({ kind: 'refused', reason });
-                return { kind: 'rejected', reason, quiet: true };
+                return { kind: 'rejected', reason, quiet: shown() };
             }
 
             switch (answer.status) {
                 case 'failed': {
                     const reason: EditFailureReason = { kind: 'refused', message: answer.message };
                     onAnswer({ kind: 'refused', reason });
-                    return { kind: 'rejected', reason, quiet: true };
+                    return { kind: 'rejected', reason, quiet: shown() };
                 }
                 case 'merged':
                     onAnswer({ kind: 'accepted' });

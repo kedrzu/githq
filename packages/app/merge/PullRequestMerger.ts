@@ -15,6 +15,18 @@ import { createMergeEdit } from './createMergeEdit.js';
 import type { MergeAnswer, MergeOptions, MergeRequest } from './MergeTypes.js';
 import { toMergeOptions } from './toMergeOptions.js';
 
+/** A merge {@link PullRequestMerger} sends. */
+export interface MergeParams {
+    /** The pull request as shown: its head commit is the one the merge names. */
+    readonly item: PullRequestItem;
+    readonly request: MergeRequest;
+    /**
+     * Whether the merge panel still shows what GitHub answers. A refusal at once is the panel's to show only then;
+     * once it closed (or opened anew), the refusal is reported like a failed edit, so it is not lost.
+     */
+    readonly shown: () => boolean;
+}
+
 /**
  * Merges pull requests, one at a time (merging D9), for the merge panel: reads what the panel decides from when it
  * opens, and sends the merge as an edit through {@link EditQueue} — drawn as being merged until GitHub says how it
@@ -79,10 +91,12 @@ export const PullRequestMerger = defineService({
         /**
          * Merges the pull request as shown, with its head commit. Resolves once GitHub took the merge
          * (`accepted`: it runs on, drawn as being merged, and a later refusal is reported like a failed edit) or
-         * refused it at once (`refused`: for the panel to show — it is not reported elsewhere). Refused as not
-         * allowed without being sent when the user may not merge it, or it is being merged already.
+         * refused it at once (`refused`: for the panel to show — reported elsewhere only when the panel no longer
+         * shows it, {@link MergeParams.shown}). Refused as not allowed without being sent when the user may not
+         * merge it, or it is being merged already.
          */
-        async function merge(item: PullRequestItem, request: MergeRequest): Promise<MergeAnswer> {
+        async function merge(params: MergeParams): Promise<MergeAnswer> {
+            const { item, request, shown } = params;
             const account = accounts.current;
             const merging = queue.pending.some(edit => edit.itemId === item.id && edit.subject.kind === 'merged');
             if (!account || merging || !editor.getPermissions(item).merge) {
@@ -90,7 +104,7 @@ export const PullRequestMerger = defineService({
             }
 
             const answered = createPromise<MergeAnswer>();
-            const edit = createMergeEdit({ item, request, clock, onAnswer: answered.resolve });
+            const edit = createMergeEdit({ item, request, clock, shown, onAnswer: answered.resolve });
             void queue.submit({ edits: [edit], account, itemCount: 1 }).finally(() => {
                 // Never sent: another account signed in, or none, meanwhile. Settled already otherwise.
                 answered.resolve({ kind: 'refused', reason: { kind: 'notAllowed' } });

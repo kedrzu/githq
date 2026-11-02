@@ -1,0 +1,67 @@
+checks:
+  en: Checks
+noChecks:
+  en: None run
+allPassed:
+  plural: count
+  en:
+    one: Passed
+    many: All {count} passed
+requiredFailed:
+  en: '{count} required failed'
+requiredRunning:
+  en: '{count} required running'
+otherFailed:
+  en: '{count} other failed'
+otherRunning:
+  en: '{count} other running'
+failing:
+  en: '{count} failing'
+running:
+  en: '{count} running'
+passed:
+  en: '{count} passed'
+skipped:
+  en: '{count} skipped'
+failedNotRequired:
+  plural: count
+  en:
+    one: "{count} failed that isn't required"
+    many: "{count} failed that aren't required"
+runningNotRequired:
+  plural: count
+  en:
+    one: "{count} running that isn't required"
+    many: "{count} running that aren't required"
+requiredCount:
+  en: '{count} required'
+requiredSection:
+  en: Required · {count}
+othersSection:
+  en: Others · {count}
+required:
+  en: Required
+notStopping:
+  en: "{detail} · doesn't stop the merge"
+stateFailedAfter:
+  en: failed after {duration}
+stateFailed:
+  en: failed
+stateRunningFor:
+  en: running for {duration}
+stateQueued:
+  en: queued
+statePassedIn:
+  en: passed in {duration}
+statePassed:
+  en: passed
+stateSkipped:
+  en: skipped
+log:
+  en: Log
+logOf:
+  en: Log of {name}
+showAll:
+  en: Show all checks
+fold:
+  en: Fold the checks
