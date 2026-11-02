@@ -66,7 +66,7 @@ test('the first read: the latest runs, the default branch, the workflows, and ea
         ['Retired', 'disabled'],
     ]);
     expect(workflows.getState('acme/api')).toMatchObject({ status: 'read', workflows: [], brokenCount: 0 });
-    expect(workflows.totals).toEqual({ brokenCount: 1, hasNewBreak: true, hasUnread: false, hasUnavailable: false });
+    expect(workflows.totals).toEqual({ brokenCount: 1, hasNewBreak: true, hasUnread: false });
     expect(workflows.repositories.map(entry => [entry.nameWithOwner, entry.state.brokenCount])).toEqual([
         ['acme/web', 1],
         ['acme/api', 0],
@@ -171,7 +171,7 @@ test('a repository whose Actions GitHub refuses or turned off is said so without
     expect(workflows.get('acme/web')?.unavailable).toEqual({ reason: 'refused', status: 403 });
     expect(workflows.get('acme/api')?.unavailable).toEqual({ reason: 'disabled', status: 404 });
     expect(workflows.getState('acme/web')).toMatchObject({ status: 'unavailable', brokenCount: 0 });
-    expect(workflows.totals).toMatchObject({ brokenCount: 0, hasUnavailable: true });
+    expect(workflows.totals).toMatchObject({ brokenCount: 0 });
     expect(items.getSyncState('workflows').lastError).toBeNull();
     expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
 

@@ -18,7 +18,7 @@ import {
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
-import { getBrokenWorkflowsPath } from '@/workflows/workflowRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
@@ -208,7 +208,7 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositorySettingsPath('acme/web'), 'repository-settings'],
         [getProjectSettingsPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org-settings'],
         [getProjectSettingsPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }), 'project-user-settings'],
-        [getBrokenWorkflowsPath(), 'workflows'],
+        [BROKEN_WORKFLOWS_PATH, 'workflows'],
         [SETTINGS_PATH, 'settings'],
         ...SETTINGS_SECTIONS.map(section => [getSettingsPath(section), 'settings'] as const),
         [TRACKING_CHOICE_PATH, 'tracking-choice'],

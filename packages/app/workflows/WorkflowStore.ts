@@ -33,8 +33,6 @@ export interface WorkflowTotals {
     readonly hasNewBreak: boolean;
     /** Some tracked repository's workflows were never read: the total may be short. */
     readonly hasUnread: boolean;
-    /** GitHub shows no workflow state for some tracked repository. */
-    readonly hasUnavailable: boolean;
 }
 
 /** The refs that count while a repository's settings say nothing else (actions D5). */
@@ -87,15 +85,13 @@ export const WorkflowStore = defineService({
             let brokenCount = 0;
             let hasNewBreak = false;
             let hasUnread = false;
-            let hasUnavailable = false;
             for (const { state } of repositories.value) {
                 brokenCount += state.brokenCount;
                 hasNewBreak ||= state.hasNewBreak;
                 hasUnread ||= state.status === 'unread';
-                hasUnavailable ||= state.status === 'unavailable';
             }
 
-            return { brokenCount, hasNewBreak, hasUnread, hasUnavailable };
+            return { brokenCount, hasNewBreak, hasUnread };
         });
 
         let session: Session | null = null;

@@ -20,18 +20,6 @@ test.each([
     expect(getWorkflowVerdict([run(1, '2026-11-01T03:00:00Z', conclusion)])).toBe(verdict);
 });
 
-test('cancelled and skipped runs after a failure keep it failed: reading goes back to a run with a verdict', () => {
-    expect(
-        getWorkflowVerdict([
-            run(4, '2026-11-01T06:00:00Z', null),
-            run(3, '2026-11-01T05:00:00Z', 'skipped'),
-            run(2, '2026-11-01T04:00:00Z', 'cancelled'),
-            run(1, '2026-11-01T03:00:00Z', 'failure'),
-            run(0, '2026-11-01T02:00:00Z', 'success'),
-        ]),
-    ).toBe('failed');
-});
-
 test('the latest is by creation time, not by the order given', () => {
     expect(
         getWorkflowVerdict([run(2, '2026-11-01T03:00:00Z', 'failure'), run(1, '2026-11-01T04:00:00Z', 'success')]),

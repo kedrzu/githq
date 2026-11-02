@@ -32,7 +32,7 @@ import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
-import { getBrokenWorkflowsPath } from '@/workflows/workflowRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import * as l from './AppCommands.loc.js';
 import CommandMenu from './CommandMenu.vue';
@@ -187,7 +187,7 @@ function getPlaces(): NavigationPlace[] {
       group: 'goTo',
       kind: 'workflows',
       title: t(l.brokenWorkflows),
-      path: getBrokenWorkflowsPath(),
+      path: BROKEN_WORKFLOWS_PATH,
     },
   ];
   for (const project of pendingUntracks.projects) {
