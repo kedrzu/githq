@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). In the list a stack is one entry (`StackRow`, its pull requests nested under it once expanded); the board's `work` is built without stacks until it draws them, each pull request a plain card of its own group. On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CloudOff, ListFilter } from 'lucide-vue-next';
@@ -7,6 +7,8 @@ import { computed } from 'vue';
 import { useCommands } from '@/commands/useCommands.js';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
+import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
+import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
@@ -15,12 +17,14 @@ import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListChoice, ListContextMenuProps, ListGroup, ListRow, ListViewOptions } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
+import type { PullRequestStack } from '@/store/stacks/groupStacks.js';
 
 import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
@@ -85,7 +89,7 @@ const options = defineModel<ListViewOptions<MyWorkGrouping, ItemSort>>('options'
 
 defineSlots<{
   /** The actions of the items edited together, while there are any. */
-  selection?(props: { ids: readonly string[] }): unknown;
+  selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
 }>();
@@ -195,10 +199,14 @@ function repositoryOf(group: ListGroup<Item>) {
   return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
 }
 
-/** A row as the engine lists it: a stack's entry (the list's; the board's work has none) or a plain row. */
+/** A row as the engine lists it: a stack's entry or a plain row, with the stacks nested under an issue (D12). */
 function toListRow(row: MyWorkRow): ListRow<Item> {
   if (!row.stack) {
-    return toListItem(row.item, row.nested);
+    return {
+      ...toListItem(row.item, row.nested),
+      stacks: (row.stacks ?? []).map(toListRow),
+      stackMarker: row.stackMarker ? describe(row.stackMarker) : null,
+    };
   }
 
   const id = `stack:${row.stack.id}`;
@@ -208,11 +216,16 @@ function toListRow(row: MyWorkRow): ListRow<Item> {
     id,
     stack: {
       id: row.stack.id,
-      description: describeStack({ stack: row.stack, viewerLogin: props.viewerLogin, getItem: props.getItem }),
+      description: describe(row.stack),
       open: row.item.id,
       pullRequests: row.nested,
+      unmatched: row.unmatched ?? null,
     },
   };
+}
+
+function describe(stack: PullRequestStack) {
+  return describeStack({ stack, viewerLogin: props.viewerLogin, getItem: props.getItem });
 }
 
 function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
@@ -240,6 +253,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
         v-if="checkedIds.length > 0"
         name="selection"
         :ids="checkedIds"
+        :span="getSelectionSpan(groups, checkedIds)"
       />
       <SegmentedTabs
         v-model="filter"
@@ -259,8 +273,51 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"
     >
-      <template #row="{ entry, parent, group: listGroup, checked, stack }">
+      <template #row="{ entry, parent, group: listGroup, checked, halfChecked, stack, stackMarker, header, depth }">
         <StackRow
+          v-if="stack"
+          :stack="stack"
+          :properties="properties"
+          :repository="repositoryOf(listGroup)"
+          :parent="parent?.value"
+          people="author"
+          :viewer-login="viewerLogin"
+          :now="now"
+          :checked="checked"
+          :half-checked="halfChecked"
+        />
+        <ItemRow
+          v-else
+          :item="entry.value"
+          :parent="parent?.value"
+          :deep="depth > 1"
+          :header="header"
+          :properties="properties"
+          :repository="repositoryOf(listGroup)"
+          :review-requested="reviewRequestedIds.has(entry.id)"
+          :viewer-login="viewerLogin"
+          :now="now"
+          :checked="checked"
+          :undone="undone.get(entry.id)"
+          :stack="stackMarker"
+        />
+      </template>
+      <template
+        #card="{
+          entry,
+          parent,
+          group: listGroup,
+          checked,
+          halfChecked,
+          stack,
+          stackMarker,
+          expanded,
+          selectedMember,
+          toggleStack,
+          openMember,
+        }"
+      >
+        <StackCard
           v-if="stack"
           :stack="stack"
           :properties="properties"
@@ -269,8 +326,13 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
+          :half-checked="halfChecked"
+          :expanded="expanded"
+          :selected-member="selectedMember"
+          @toggle="toggleStack"
+          @open="openMember"
         />
-        <ItemRow
+        <ItemCard
           v-else
           :item="entry.value"
           :parent="parent?.value"
@@ -281,19 +343,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :now="now"
           :checked="checked"
           :undone="undone.get(entry.id)"
-        />
-      </template>
-      <template #card="{ entry, parent, group: listGroup, checked }">
-        <ItemCard
-          :item="entry.value"
-          :parent="parent?.value"
-          :properties="properties"
-          :repository="repositoryOf(listGroup)"
-          :review-requested="reviewRequestedIds.has(entry.id)"
-          :viewer-login="viewerLogin"
-          :now="now"
-          :checked="checked"
-          :undone="undone.get(entry.id)"
+          :stack="stackMarker"
         />
       </template>
       <template #empty>

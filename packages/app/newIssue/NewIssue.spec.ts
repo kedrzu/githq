@@ -7,12 +7,11 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import { VIEWER_KEY } from '@/auth/AuthStore.js';
-import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -91,7 +90,7 @@ test('a typed owner/name is offered though GitHub’s search does not rank it, a
 async function openChooser(params: ChooserParams) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(Browser, createSignedInBrowser(params.found ?? []));
+    container.set(Browser, createSignedInBrowser(answerSearch(params.found ?? [])));
     setIndexedDbPersistence(container);
 
     const tracking = container.resolve(TrackingStore);
@@ -137,39 +136,14 @@ async function openChooser(params: ChooserParams) {
     return composer;
 }
 
-/**
- * The browser with a user of their own signed in, keeping nothing between tests, and a GitHub that answers only the
- * search for repositories (`createTestSession()` runs under `bun test`, not in a browser).
- */
-function createSignedInBrowser(found: readonly FoundOnGitHub[]): BrowserShape {
-    const login = `user-${crypto.randomUUID()}`;
-    const stored = new Map([
-        [TOKEN_KEY, `gho_${login}`],
-        [VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' })],
-    ]);
-    return {
-        ...createContainer().resolve(Browser),
-        localStorage: {
-            getItem: key => stored.get(key) ?? null,
-            setItem: (key, value) => {
-                stored.set(key, value);
-            },
-            removeItem: key => {
-                stored.delete(key);
-            },
-            key: index => [...stored.keys()][index] ?? null,
-            get length() {
-                return stored.size;
-            },
-        },
-        writeCookie: () => {},
-        fetch: (_input, init) => {
-            if (typeof init?.body === 'string' && init.body.includes('query RepositorySearch')) {
-                return Promise.resolve(Response.json({ data: searchAnswer(found) }));
-            }
+/** A GitHub that answers only the search for repositories. */
+function answerSearch(found: readonly FoundOnGitHub[]): BrowserShape['fetch'] {
+    return (_input, init) => {
+        if (typeof init?.body === 'string' && init.body.includes('query RepositorySearch')) {
+            return Promise.resolve(Response.json({ data: searchAnswer(found) }));
+        }
 
-            return Promise.resolve(Response.json({ message: 'Server Error' }, { status: 502 }));
-        },
+        return Promise.resolve(Response.json({ message: 'Server Error' }, { status: 502 }));
     };
 }
 

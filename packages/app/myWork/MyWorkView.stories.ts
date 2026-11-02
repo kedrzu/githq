@@ -1,8 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMembership, SAMPLE_NOW, sampleMyWork } from '@/testing/sampleMyWork.js';
-import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
+import {
+    STACK_UNDER_ISSUE_ITEMS,
+    STACK_UNDER_ISSUE_MEMBERSHIP,
+    STACKED_MY_WORK_ITEMS,
+    STACKED_MY_WORK_MEMBERSHIP,
+    TWO_STACKS_UNDER_ISSUE_ITEMS,
+    TWO_STACKS_UNDER_ISSUE_MEMBERSHIP,
+} from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import MyWorkView from './MyWorkView.vue';
@@ -109,11 +116,72 @@ export const Stacks: Story = {
     args: { work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all') },
 };
 
+/** SP26 in my work: each stack one card, whole, in the first reason any of its pull requests has (D3). */
+export const StacksOnBoard: Story = {
+    args: {
+        work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all'),
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+};
+
 /** Stacks grouped by repository: each entry whole in its repository's group. */
 export const StacksByRepository: Story = {
     args: {
         work: sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all'),
         trackedRepositories: ['fitloop/webapp', 'fitloop/api'],
         options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'repository' },
+    },
+};
+
+/**
+ * SP21: the user's stack closing an assigned issue sits under it, whole, folded — the issue reads as any other with the
+ * stack's chevron, pips and state added (stacked PRs D12). Enter on it opens the issue.
+ */
+export const StackUnderIssueFolded: Story = {
+    args: { selectedId: 'I_12', work: sampleMyWork(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP, 'all') },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText('Background sync with conditional requests')).toBeVisible();
+        await expect(canvas.getByRole('button', { name: 'Expand the stack' })).toBeVisible();
+        await expect(canvas.queryByText('Sync: move the loop into a worker')).toBeNull();
+    },
+};
+
+/** SP20: the same, expanded — the stack's pull requests are the issue's rows, on a rail; there is no third level. */
+export const StackUnderIssue: Story = {
+    args: StackUnderIssueFolded.args,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'Expand the stack' }));
+        await expect(canvas.getByText('Sync: move the loop into a worker')).toBeVisible();
+        await expect(canvas.getByText('Sync: pause when the allowance runs out')).toBeVisible();
+    },
+};
+
+/**
+ * SP22: two stacks under one issue — each gets a header of its own one step in, its rows on a rail below it; the first
+ * expanded, the second folded (D23).
+ */
+export const TwoStacksUnderIssue: Story = {
+    args: {
+        selectedId: 'I_12',
+        work: sampleMyWork(TWO_STACKS_UNDER_ISSUE_ITEMS, TWO_STACKS_UNDER_ISSUE_MEMBERSHIP, 'all'),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const [first] = canvas.getAllByRole('button', { name: 'Expand the stack' });
+        await userEvent.click(first ?? canvasElement);
+        await expect(canvas.getByText('Sync: read conditional requests first')).toBeVisible();
+        await expect(canvas.getByText('Fail over to the second provider')).toBeVisible();
+        await expect(canvas.queryByText('Part 2 of S_failover')).toBeNull();
+    },
+};
+
+/** D12 on the board: the stack's card a smaller card under the issue's, as a pull request closing it. */
+export const StackUnderIssueOnBoard: Story = {
+    args: {
+        selectedId: 'I_12',
+        work: sampleMyWork(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP, 'all'),
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
     },
 };
