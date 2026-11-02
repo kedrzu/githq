@@ -19,7 +19,7 @@ export interface GitHubRequesterOptions {
 /** One request to GitHub, before the token is added. */
 export interface GitHubRequest {
     url: string;
-    method: 'GET' | 'POST';
+    method: 'GET' | 'POST' | 'PUT';
     headers: Record<string, string>;
     body?: string;
 }
@@ -62,10 +62,12 @@ export async function sendGitHubRequest(
     const retryAfter = readRetryAfter(response.headers);
 
     if (!response.ok && response.status !== 304) {
-        const message = readMessage(payload) ?? (body || response.statusText);
+        const githubMessage = readMessage(payload);
+        const message = githubMessage ?? (body || response.statusText);
         throw new GitHubApiError({
             status: response.status,
             message: `GitHub request failed: ${response.status} ${message}`,
+            githubMessage,
             errors: readGitHubErrors(payload),
             retryAfter,
         });

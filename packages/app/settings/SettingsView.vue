@@ -1,4 +1,4 @@
-<!-- The Settings screen (D15, G8, T4): its title, a tab for each section, with how many repositories and projects are tracked, and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. A section with controls of its own (the owner filter and the search of G8) teleports them to the end of the header, `#${SETTINGS_CONTROLS_ID}`, keeping their state and keys with its lists. -->
+<!-- The Settings screen (D15, G8, T4): its title, a tab for each section, with how many repositories and projects are tracked and an amber dot on Saving to GitHub while syncing stopped (settings-sync T7), and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. A section with controls of its own (the owner filter and the search of G8) teleports them to the end of the header, `#${SETTINGS_CONTROLS_ID}`, keeping their state and keys with its lists. -->
 <script lang="ts">
 /** The id of the place in the header a section teleports its controls to. */
 export const SETTINGS_CONTROLS_ID = 'settings-controls';
@@ -31,6 +31,8 @@ const props = defineProps<{
   repositories: number;
   /** How many projects are tracked. */
   projects: number;
+  /** Syncing the settings stopped (settings-sync T7): the Saving to GitHub tab carries an amber dot until it is fixed. */
+  savingStopped?: boolean;
 }>();
 
 const section = defineModel<SettingsSection>('section', { required: true });
@@ -43,6 +45,7 @@ const options = computed((): SegmentedTabsOption<SettingsSection>[] =>
     label: t(sectionLabels[candidate]),
     keyshortcuts: SECTION_KEYS[candidate],
     count: getCount(candidate),
+    attention: candidate === 'saving' && props.savingStopped ? t(l.savingStopped) : undefined,
   })),
 );
 
