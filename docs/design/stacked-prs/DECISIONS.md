@@ -223,6 +223,9 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 
 - One commit title and message for the stack (what the merge screens assumed, PM17) — GitHub does not say what it does.
 - Merging from an entry only what that entry holds — on a board "2 of 4" could mean pull requests that cannot merge alone.
+- Per pull request wording for how a merge ended (SP59's "Refused" and "Still open", SP60's own screen, SP62's rows) — a refused stack
+  lands nothing (checked above), and the rows of the stack read again already say what is true. One band carries GitHub's words, and
+  "Merge stopped at #N" remains for a stack that did land in part. (owner, 2026-11-02)
 
 ## D12
 
