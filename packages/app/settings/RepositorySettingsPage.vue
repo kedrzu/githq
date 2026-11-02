@@ -1,4 +1,4 @@
-<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another tab, or `1` to `4`, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14). An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it. -->
+<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another tab, or `1` to `4`, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, nextTick, watch } from 'vue';
@@ -11,6 +11,7 @@ import { getCandidateRepositories } from '@/tracking/trackingCandidates.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { getTrackedStatus } from '@/tracking/utils/getTrackedStatus.js';
 import { goBack } from '@/utils/goBack.js';
+import { useAnyRefRead } from '@/workflows/useAnyRefRead.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
 import RepositorySettingsView from './RepositorySettingsView.vue';
@@ -32,6 +33,7 @@ const router = useRouter();
 const now = useNow(TICK_MS);
 
 const nameWithOwner = computed(() => `${String(route.params.owner)}/${String(route.params.name)}`);
+useAnyRefRead(nameWithOwner);
 /** Tracked and not on its way out; `undefined` otherwise. */
 const repository = computed(() =>
   pending.repositories.find(candidate => candidate.nameWithOwner === nameWithOwner.value),

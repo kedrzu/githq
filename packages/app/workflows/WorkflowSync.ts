@@ -40,6 +40,15 @@ interface ReadRunsParams {
     readonly pageFor: readonly WorkflowRefGroup[];
 }
 
+/** What {@link WorkflowSync}'s poll of some repositories needs. */
+interface PollEachParams {
+    readonly context: TrackingSyncContext;
+    readonly names: readonly string[];
+    /** The repositories this poll read with their runs on any ref; filled as it goes. */
+    readonly readAnyRef: Set<string>;
+    readonly getAnyRefRepositories: () => ReadonlySet<string>;
+}
+
 /** What marking a repository's workflows unavailable needs. */
 interface MarkUnavailableParams {
     readonly context: TrackingSyncContext;
@@ -57,10 +66,11 @@ interface MarkUnavailableParams {
  * repository's tags and every active workflow's runs, all conditional: a run that changed may have left the latest
  * runs' first page already, so each workflow is asked, and one that did not change answers 304 for free. Its runs on
  * the default branch while that counts, older pages while none there has a verdict; and its runs on any ref while a
- * pattern counts (actions D1: `branch=` matches no wildcard) or the repository's Workflows tab asked
- * ({@link readAnyRef}) — older pages, on the first read for these patterns only, while a pattern's group has no run
- * with a verdict, since later reads go on from it. Up to {@link MAX_RUN_PAGES} pages each. A workflow gone from
- * GitHub's list is dropped.
+ * pattern counts (actions D1: `branch=` matches no wildcard) or a screen has them on screen (`SyncEngine.watchAnyRef`)
+ * — older pages, on the first read for these patterns only, while a pattern's group has no run with a verdict, since
+ * later reads go on from it. Up to {@link MAX_RUN_PAGES} pages each. A repository on screen is asked all of that at
+ * every poll, as a run off the latest runs' page may have moved, all of it conditional, and nothing is written while
+ * nothing moved. A workflow gone from GitHub's list is dropped.
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
  * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may
@@ -76,51 +86,47 @@ export const WorkflowSync = defineService({
         logger: Logger,
     },
     setup({ workflows, tracking, logger }) {
-        // The repositories whose Workflows tab asked for their workflows' runs on any ref, until their next poll.
-        const anyRefAsked = new Set<string>();
-
-        return { poll, readAnyRef };
+        return { poll };
 
         /**
-         * Polls each tracked repository's workflows, one after another, then those whose runs on any ref were asked for
-         * once the poll had passed them. One GitHub refuses is marked unavailable; one failing otherwise is logged, the
-         * others go on, and the poll fails at the end.
+         * Polls each tracked repository's workflows, one after another — with their runs on any ref for those
+         * `getAnyRefRepositories` names as the poll reaches them — then again those it came to name once the poll had
+         * passed them. One GitHub refuses is marked unavailable; one failing otherwise is logged, the others go on, and
+         * the poll fails at the end. What it names is read at every poll, so nothing is lost to a failure.
          */
-        async function poll(context: TrackingSyncContext) {
-            const failed = await pollEach(
-                context,
-                tracking.repositories.map(repo => repo.nameWithOwner),
-            );
-            if (failed === null) {
-                return;
-            }
-
-            for (const nameWithOwner of anyRefAsked) {
-                if (!tracking.isTracked({ kind: 'repository', nameWithOwner })) {
-                    anyRefAsked.delete(nameWithOwner);
+        async function poll(context: TrackingSyncContext, getAnyRefRepositories: () => ReadonlySet<string>) {
+            const readAnyRef = new Set<string>();
+            let names = tracking.repositories.map(repo => repo.nameWithOwner);
+            let failed = 0;
+            while (names.length > 0) {
+                const failedNow = await pollEach({ context, names, readAnyRef, getAnyRefRepositories });
+                if (failedNow === null) {
+                    return;
                 }
+
+                failed += failedNow;
+                names = [...getAnyRefRepositories()].filter(
+                    nameWithOwner =>
+                        !readAnyRef.has(nameWithOwner) && tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                );
             }
 
-            const failedLate = await pollEach(context, [...anyRefAsked]);
-            if (failedLate !== null && failed + failedLate > 0) {
-                throw new Error(`The workflows of ${failed + failedLate} tracked repositories could not be polled`);
+            if (failed > 0) {
+                throw new Error(`The workflows of ${failed} tracked repositories could not be polled`);
             }
-        }
-
-        /**
-         * Has the next poll of the tracked repository read its workflows' recent runs on any ref too, which its Workflows
-         * tab shows (actions D2, D7) though they may count nowhere.
-         */
-        function readAnyRef(nameWithOwner: string) {
-            anyRefAsked.add(nameWithOwner);
         }
 
         /** Polls the repositories; how many failed, or `null` once the session ended. */
-        async function pollEach(context: TrackingSyncContext, names: readonly string[]) {
+        async function pollEach({ context, names, readAnyRef, getAnyRefRepositories }: PollEachParams) {
             let failed = 0;
             for (const nameWithOwner of names) {
+                const anyRefWanted = getAnyRefRepositories().has(nameWithOwner);
+                if (anyRefWanted) {
+                    readAnyRef.add(nameWithOwner);
+                }
+
                 try {
-                    await pollRepository(context, nameWithOwner);
+                    await pollRepository(context, nameWithOwner, anyRefWanted);
                 } catch (error) {
                     if (!isTargetFailure(error)) {
                         throw error;
@@ -145,9 +151,8 @@ export const WorkflowSync = defineService({
             return failed;
         }
 
-        async function pollRepository(context: TrackingSyncContext, nameWithOwner: string) {
+        async function pollRepository(context: TrackingSyncContext, nameWithOwner: string, anyRefWanted: boolean) {
             const stored = workflows.get(nameWithOwner);
-            const anyRefWanted = anyRefAsked.delete(nameWithOwner);
             context.checkAllowance('core');
             const changes = await listRepositoryRuns(context.rest, {
                 nameWithOwner,
@@ -212,6 +217,7 @@ export const WorkflowSync = defineService({
             const listed =
                 list.status === 200 ? list.workflows : (stored?.workflows.map(entry => entry.workflow) ?? []);
             const read: StoredWorkflow[] = [];
+            let runsMoved = false;
             for (const workflow of listed) {
                 const kept = stored?.workflows.find(entry => entry.workflow.id === workflow.id);
                 // The any-ref query's ETag stays while not asked, so the tab's next read of it is free.
@@ -233,6 +239,7 @@ export const WorkflowSync = defineService({
                         return;
                     }
 
+                    runsMoved ||= next !== entry;
                     entry = next;
                 }
 
@@ -249,10 +256,23 @@ export const WorkflowSync = defineService({
                         return;
                     }
 
+                    runsMoved ||= next !== entry;
                     entry = next;
                 }
 
                 read.push(entry);
+            }
+
+            // Asked because a screen shows them, and nothing moved: nothing to write.
+            if (
+                stored?.unavailable === null &&
+                !runsMoved &&
+                changes.status === 304 &&
+                repository.status === 304 &&
+                list.status === 304 &&
+                tags.status === 304
+            ) {
+                return;
             }
 
             workflows.set({

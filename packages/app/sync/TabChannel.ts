@@ -44,10 +44,9 @@ export type TabMessage =
     /** A repository's workflows as read, or `null` once they are dropped. */
     | { readonly kind: 'workflows'; readonly nameWithOwner: string; readonly workflows: RepositoryWorkflows | null }
     /**
-     * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2),
-     * reading the runs on any ref of `anyRefOf` (`owner/name`) too when its Workflows tab opened.
+     * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2).
      */
-    | { readonly kind: 'pollWorkflows'; readonly anyRefOf: string | null };
+    | { readonly kind: 'pollWorkflows' };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;
@@ -57,10 +56,14 @@ const HEARTBEAT_MS = 30_000;
  */
 const PRESENCE_EXPIRES_MS = 75_000;
 
-/** What a tab tells the others about itself: whether it is shown, and the view GitHub answers it shows. */
+/**
+ * What a tab tells the others about itself: whether it is shown, the view GitHub answers it shows, and the repositories
+ * whose workflows' runs on any ref it has on screen (`owner/name`).
+ */
 interface TabPresence {
     readonly visible: boolean;
     readonly shownView: AnsweredView | null;
+    readonly anyRefRepositories: readonly string[];
 }
 
 /** The tabs' own conversation: one joins (and asks the others to say how they are), says how it is, or leaves. */
@@ -97,8 +100,9 @@ interface Session {
  * everything in memory and write behind, so a re-read would race the writer's pending batch, cost a full read
  * per change, and still need a message per kind of change to know what to read.
  *
- * It also keeps how the other tabs are — shown or hidden, which view GitHub answers in them — so the syncing
- * tab polls as often as the most visible tab needs, and answers the views shown anywhere. While it knows another
+ * It also keeps how the other tabs are — shown or hidden, which view GitHub answers in them, whose runs on any ref
+ * they have on screen — so the syncing tab polls as often as the most visible tab needs, answers the views shown
+ * anywhere and reads the runs shown anywhere; a tab gone takes what it asked for with it. While it knows another
  * tab, every tab says how it is again every {@link HEARTBEAT_MS}; one not heard from for
  * {@link PRESENCE_EXPIRES_MS} is forgotten — it ended without saying goodbye.
  *
@@ -118,6 +122,7 @@ export const TabChannel = defineService({
         const tabId = createTabId();
         const visibleRef = shallowRef(browser.isVisible());
         const shownViewRef = shallowRef<AnsweredView | null>(null);
+        const anyRefRepositoriesRef = shallowRef<readonly string[]>([]);
         const othersRef = shallowRef<ReadonlyMap<string, TabPresence>>(new Map());
         const messageListeners: ((message: TabMessage, login: string) => void)[] = [];
         const joinListeners: (() => void)[] = [];
@@ -134,6 +139,9 @@ export const TabChannel = defineService({
 
             return views;
         });
+        const otherAnyRefRepositories = computed(() => [
+            ...new Set([...othersRef.value.values()].flatMap(tab => tab.anyRefRepositories)),
+        ]);
 
         let session: Session | null = null;
 
@@ -165,11 +173,16 @@ export const TabChannel = defineService({
             get otherViews(): readonly AnsweredView[] {
                 return otherViews.value;
             },
+            /** The repositories whose runs on any ref the account's other tabs have on screen; reactive. */
+            get otherAnyRefRepositories(): readonly string[] {
+                return otherAnyRefRepositories.value;
+            },
             publish,
             onMessage,
             onTabJoined,
             onViewShown,
             setShownView,
+            setAnyRefRepositories,
         };
 
         /** Sends `message` to the account's other tabs; nothing while signed out. */
@@ -199,6 +212,12 @@ export const TabChannel = defineService({
         function setShownView(view: AnsweredView | null) {
             // A copy: a component's view may be reactive, which cannot be posted.
             shownViewRef.value = view && { projectId: view.projectId, filter: view.filter, term: view.term };
+            sayPresence();
+        }
+
+        /** Tells the other tabs whose workflows' runs on any ref this one has on screen. */
+        function setAnyRefRepositories(repositories: readonly string[]) {
+            anyRefRepositoriesRef.value = repositories;
             sayPresence();
         }
 
@@ -303,7 +322,11 @@ export const TabChannel = defineService({
 
             const known = othersRef.value.get(from);
             // A heartbeat that changes nothing changes nothing for those following the other tabs.
-            if (known?.visible === presence.visible && isSameView(known.shownView, presence.shownView)) {
+            if (
+                known?.visible === presence.visible &&
+                isSameView(known.shownView, presence.shownView) &&
+                isSameList(known.anyRefRepositories, presence.anyRefRepositories)
+            ) {
                 return;
             }
 
@@ -323,7 +346,11 @@ export const TabChannel = defineService({
         }
 
         function getPresence(): TabPresence {
-            return { visible: visibleRef.value, shownView: shownViewRef.value };
+            return {
+                visible: visibleRef.value,
+                shownView: shownViewRef.value,
+                anyRefRepositories: anyRefRepositoriesRef.value,
+            };
         }
 
         function post(body: TabMessage | PresenceMessage) {
@@ -365,4 +392,8 @@ function isEnvelope(data: unknown): data is Envelope {
 
 function isSameView(a: AnsweredView | null, b: AnsweredView | null) {
     return a?.projectId === b?.projectId && a?.filter === b?.filter;
+}
+
+function isSameList(a: readonly string[], b: readonly string[]) {
+    return a.length === b.length && a.every((entry, index) => entry === b[index]);
 }

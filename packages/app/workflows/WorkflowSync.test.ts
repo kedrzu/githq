@@ -16,6 +16,8 @@ import type { TrackingSyncContext } from '@/sync/TrackingSync.js';
 import type { ActionsWorldRun } from '@/testing/createActionsWorld.js';
 import type { TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
+import { createTestTabs } from '@/testing/createTestTabs.js';
+import type { TestTabs } from '@/testing/createTestTabs.js';
 import { createTrackingWorld } from '@/testing/createTrackingWorld.js';
 import type { TrackingWorld } from '@/testing/createTrackingWorld.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -339,14 +341,14 @@ test('a changed setting applies at once to what is stored, and a pattern added i
     expect(actionsRequests(session.github.requests)).toHaveLength(6);
 });
 
-test('the Workflows tab’s poll reads its repository’s runs on any ref too, which count nowhere unless a pattern says so', async () => {
+test('a screen with a repository’s runs on any ref has them read at once and at every poll, which count nowhere unless a pattern says so; let go, the regular poll does not ask them', async () => {
     const world = sampleWorld();
-    const { session, tracking, workflows, sync } = await setup(world);
+    const { session, tracking, workflows, sync, persistence } = await setup(world);
     tracking.choose(TRACK_BOTH);
     await session.clock.advance(10_000);
 
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
+    const release = sync.watchAnyRef('acme/web');
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
@@ -370,19 +372,88 @@ test('the Workflows tab’s poll reads its repository’s runs on any ref too, w
         ['Retired', 'disabled'],
     ]);
 
-    // Asked again, its runs on any ref are free while they did not move; the regular poll does not ask them.
+    // Still on screen: the next poll asks them again, free while they did not move, and writes nothing.
+    const before = storedOf(workflows, 'acme/web');
+    const saved = spyOn(persistence, 'saveWorkflows');
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
-    await session.clock.advance(0);
+    await session.clock.advance(WORKFLOWS_INTERVAL);
     expect(actionsRequests(session.github.requests)).toContain(
         `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30 conditional`,
     );
+    expect(storedOf(workflows, 'acme/web')).toBe(before);
+    expect(saved).not.toHaveBeenCalled();
+
+    release();
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
     expect(actionsRequests(session.github.requests)).toHaveLength(6);
 });
 
-test('a tab’s ask for runs on any ref made while a poll runs past its repository is read at the end of that poll', async () => {
+test('a repository on screen sees a new failure on another ref, and a pull request’s run finishing, at the next poll', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    actions.runs.push(run(6, CI, null, '2026-10-30T12:00:00Z', { headBranch: 'feature', event: 'pull_request' }));
+    const { session, tracking, workflows, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(10_000);
+    sync.watchAnyRef('acme/web');
+    await session.clock.advance(0);
+    const ciRuns = () => workflows.get('acme/web')?.workflows.find(entry => entry.workflow.id === CI)?.runs;
+    expect(ciRuns()?.find(entry => entry.id === 6)).toMatchObject({ status: 'in_progress' });
+
+    actions.runs = actions.runs.map(entry =>
+        entry.id === 6 ? { ...entry, status: 'completed', conclusion: 'success' } : entry,
+    );
+    actions.runs.push(run(7, CI, 'failure', '2026-10-30T13:00:00Z', { headBranch: 'v1.0' }));
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(ciRuns()?.find(entry => entry.id === 6)).toMatchObject({ status: 'completed', conclusion: 'success' });
+    expect(ciRuns()?.[0]).toMatchObject({ id: 7, headBranch: 'v1.0', conclusion: 'failure' });
+});
+
+test('a repository on screen before the sync starts has its runs on any ref read by the first poll', async () => {
+    const world = sampleWorld();
+    const login = uniqueLogin();
+    const first = await setup(world, { login });
+    first.tracking.choose(TRACK_BOTH);
+    await first.session.clock.advance(0);
+
+    // A reload at the address of the Workflows tab: the screen is there before the kept copy is read.
+    const second = await setup(world, {
+        login,
+        persistence: first.persistence,
+        localStorage: first.session.localStorage,
+        beforeSync: sync => {
+            sync.watchAnyRef('acme/web');
+        },
+    });
+    expect(actionsRequests(second.session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+    );
+    const ci = second.workflows.get('acme/web')?.workflows.find(entry => entry.workflow.id === CI);
+    expect(ci?.runs.map(entry => entry.id)).toEqual([4, 3]);
+});
+
+test('a failed poll loses nothing: the repository on screen has its runs on any ref read by the next one', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync, items } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(10_000);
+
+    world.failing.add('GET /repos/acme/web/actions/runs');
+    sync.watchAnyRef('acme/web');
+    await session.clock.advance(0);
+    expect(items.getSyncState('workflows').lastError).toEqual(expect.any(String));
+
+    world.failing.clear();
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+    );
+    expect(items.getSyncState('workflows').lastError).toBeNull();
+});
+
+test('a repository coming on screen while a poll runs past it is read at the end of that poll', async () => {
     const world = sampleWorld();
     const { session, tracking, sync } = await setup(world);
     tracking.choose(TRACK_BOTH);
@@ -393,13 +464,56 @@ test('a tab’s ask for runs on any ref made while a poll runs past its reposito
     session.github.requests.length = 0;
     sync.pollWorkflowsNow();
     await session.clock.advance(0);
-    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
+    sync.watchAnyRef('acme/web');
     held.resolve();
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests).filter(request => request.includes('per_page=30'))).toEqual([
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
         `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
     ]);
+});
+
+test('a tab that does not sync, with a repository on screen, has the syncing tab read its runs on any ref at once, until it closes', async () => {
+    const world = sampleWorld();
+    const browser = createTestTabs();
+    const login = uniqueLogin();
+    const syncing = await setup(world, { login, tabs: browser });
+    const persistence = syncing.persistence;
+    syncing.tracking.choose(TRACK_BOTH);
+    await syncing.session.clock.advance(10_000);
+    const other = await setup(world, {
+        login,
+        tabs: browser,
+        persistence,
+        localStorage: syncing.session.localStorage,
+    });
+    await syncing.session.clock.advance(0);
+
+    syncing.session.github.requests.length = 0;
+    other.sync.watchAnyRef('acme/web');
+    await syncing.session.clock.advance(0);
+    await other.session.clock.advance(0);
+    await syncing.session.clock.advance(0);
+    expect(actionsRequests(syncing.session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+    );
+
+    // Still there, saying so every heartbeat: asked again at the next poll.
+    syncing.session.github.requests.length = 0;
+    for (let elapsed = 0; elapsed < WORKFLOWS_INTERVAL; elapsed += 30_000) {
+        await other.session.clock.advance(30_000);
+        await syncing.session.clock.advance(30_000);
+    }
+
+    expect(actionsRequests(syncing.session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30 conditional`,
+    );
+
+    other.session.tab.close();
+    await syncing.session.clock.advance(0);
+    syncing.session.github.requests.length = 0;
+    await syncing.session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(syncing.session.github.requests)).toHaveLength(6);
 });
 
 test('a repository whose Actions GitHub refuses or turned off is said so without failing the loop, and asked again at every poll', async () => {
@@ -566,7 +680,7 @@ test('an answer on its way when the session ends, or its repository is untracked
     // The session ends while the first repository's runs are on their way.
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
-    const ended = workflowSync.poll(context.ending());
+    const ended = workflowSync.poll(context.ending(), () => new Set());
     await session.clock.advance(0);
     context.end();
     held.resolve();
@@ -579,7 +693,7 @@ test('an answer on its way when the session ends, or its repository is untracked
     const runs = createPromise();
     session.github.holdIf = request =>
         request.operation === `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs` ? runs.promise : null;
-    const untracked = workflowSync.poll(context.ending());
+    const untracked = workflowSync.poll(context.ending(), () => new Set());
     await session.clock.advance(0);
     tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/web' });
     runs.resolve();
@@ -633,6 +747,10 @@ interface SetupOptions {
     readonly persistence?: IndexedDbPersistence;
     /** The `localStorage` of an earlier session, to reload it. */
     readonly localStorage?: Map<string, string>;
+    /** The browser whose tab this is. */
+    readonly tabs?: TestTabs;
+    /** What happens before the kept copy is read, and so before the sync can start. */
+    beforeSync?(sync: SyncEngine): void;
 }
 
 /** Signs a user in against the world, with the sync running, and lets the first poll run. */
@@ -642,6 +760,7 @@ async function setup(world: TrackingWorld, options: SetupOptions = {}) {
         answer: request => world.answer(request),
         answerRest: request => world.answerRest(request),
         localStorage: options.localStorage,
+        tabs: options.tabs,
     });
     const persistence = setIndexedDbPersistence(session.container, options.persistence);
 
@@ -649,6 +768,7 @@ async function setup(world: TrackingWorld, options: SetupOptions = {}) {
     const tracking = session.container.resolve(TrackingStore);
     const workflows = session.container.resolve(WorkflowStore);
     const sync = session.container.resolve(SyncEngine);
+    options.beforeSync?.(sync);
     await items.ready();
     await workflows.ready();
     await session.clock.advance(0);

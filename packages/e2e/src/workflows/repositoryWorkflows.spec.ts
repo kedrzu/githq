@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -140,6 +141,44 @@ test('P opens the repository’s settings on Workflow alerts, and Esc there come
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.group('Passing')).toContainText('Probe');
+});
+
+test('an address opened directly reads the runs on any ref too: a workflow only pull requests run is placed, not left unknown', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'CLA',
+        runs: [{ conclusion: 'failure', minutesAgo: 40, branch: 'feature', event: 'pull_request_target' }],
+    });
+    await openTrackedWork(page, github, world);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.group('Pull requests only')).toContainText('CLA');
+});
+
+test('a repository’s settings opened on their own read the runs on any ref: other refs show, and a pattern says what it would alert on', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.tag(SAMPLE_REPOSITORY, 'v1.0-rc.1');
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Release',
+        runs: [{ conclusion: 'failure', minutesAgo: 50, branch: 'v1.0-rc.1' }],
+    });
+    await openTrackedWork(page, github, world);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts-add`);
+    const settings = new TrackedSettingsScreenHarness(page);
+    await expect(settings.workflowAlerts).toContainText(/v1\.0-rc\.1.*Release failed/u);
+    await expect(settings.addPatternField).toBeFocused();
+    await page.keyboard.type('v*');
+    await expect(settings.workflowAlerts).toContainText('Release turns broken: it failed on v1.0-rc.1');
 });
 
 test('a repository with no workflows says so, with no count on its tab', async ({ page, github }) => {
