@@ -360,6 +360,24 @@ test('a stack read again whole: its pull requests as GitHub holds them are writt
     expect(items.get('PR_0')).toMatchObject({ merged: true, state: 'MERGED' });
 });
 
+test('SK7: a stack read again tells who left it, as the sync does, and asks for no more than a stack holds', async () => {
+    const { merger, items, session } = await setup();
+    items.upsertMany([
+        { ...earlier(), stack: { id: 'S_1', number: 1, size: 2, position: 1 } },
+        { ...open(), stack: { id: 'S_1', number: 1, size: 2, position: 2 } },
+    ]);
+    stackTotalCount = 1;
+
+    const reading = merger.readStack('S_1', 250);
+    await session.clock.advance(0);
+    await reading;
+
+    expect(items.getStored('PR_1')).toMatchObject({ stack: null });
+    expect(session.github.requests.find(request => request.operation === 'PullRequestStacks')?.variables.first).toBe(
+        100,
+    );
+});
+
 test('the options read on opening come back, partial errors and all, and their status is written into the row', async () => {
     const { merger, items, session } = await setup();
 
@@ -398,6 +416,7 @@ async function setup() {
     await items.ready();
     items.upsertMany([open()]);
     lateEnds.length = 0;
+    stackTotalCount = 2;
 
     return { merger, items, queue, session, rest };
 
@@ -421,7 +440,11 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
             updatedAt: '2026-10-20T10:00:00Z',
             open: false,
         });
-        return { data: { nodes: [{ id: 'S_1', entries: { totalCount: 2, nodes: [{ pullRequest: merged }] } }] } };
+        return {
+            data: {
+                nodes: [{ id: 'S_1', entries: { totalCount: stackTotalCount, nodes: [{ pullRequest: merged }] } }],
+            },
+        };
     }
 
     if (request.operation !== 'PullRequestMergeOptions') {
@@ -471,6 +494,9 @@ interface MergeAnswers {
 function shown() {
     return true;
 }
+
+/** How many pull requests the fake GitHub says the stack holds; it lists one. */
+let stackTotalCount = 2;
 
 /** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];

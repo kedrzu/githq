@@ -1,4 +1,4 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, or needing a rebase, "Merge" or "Rebase on GitHub" (`⇧M`) follows the state where the viewer may merge it, opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -33,6 +33,8 @@ const props = withDefaults(
     people?: 'assignees' | 'author';
     /** The signed-in user: with `people: 'author'`, their own pull requests show no face. */
     viewerLogin?: string | null;
+    /** The list's selection is on it: only then a stack needing a rebase offers it (D21, SP6, SP8). */
+    selected?: boolean;
     /** All its pull requests are in the selection several items are edited together in (`x`). */
     checked?: boolean;
     /** Some of its pull requests are in that selection, not all (D20, SP28): a half mark. */
@@ -60,12 +62,12 @@ const stackFacts = useStackFacts({
 const shown = computed(() => new Set(props.properties));
 const description = computed(() => props.stack.description);
 /**
- * Where the viewer may merge it, ready or needing a rebase (SP6, SP8): the merge panel for the whole stack (D11) — the
- * pull request it opens on.
+ * Where the viewer may merge it, ready — or selected and needing a rebase (D21, SP6, SP8): the merge panel for the whole
+ * stack (D11) — the pull request it opens on.
  */
 const mergeId = computed(() => {
   const { kind } = description.value.state;
-  if (kind !== 'ready' && kind !== 'needsRebase') {
+  if (kind !== 'ready' && !(kind === 'needsRebase' && props.selected)) {
     return null;
   }
 

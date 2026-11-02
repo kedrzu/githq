@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
@@ -12,9 +12,7 @@ import { useNow } from '@/services/useNow.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
-import { describeStack } from '@/store/stacks/describeStack.js';
-import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 import { pause } from '@/utils/pause.js';
 
 import MergePanel from './MergePanel.vue';
@@ -58,15 +56,14 @@ const description = computed(() => {
     return null;
   }
 
-  const others = items.all.filter(
-    (other): other is PullRequestItem =>
-      other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
-  );
-  const members = [...others, item];
-  const found = groupStacks(sending.value ? members.map(pr => ({ ...pr, merging: undefined })) : members).get(stackId);
-  return found
-    ? describeStack({ stack: found, viewerLogin: auth.viewer?.login ?? '', getItem: id => details.getItem(id) })
-    : null;
+  return describeStackInCopy({
+    stackId,
+    item,
+    items: items.all,
+    viewerLogin: auth.viewer?.login ?? '',
+    getItem: id => details.getItem(id),
+    withoutMerging: sending.value,
+  });
 });
 /** Where the user put the line with `↑`/`↓` in this opening; `undefined` until then: where it opens (D11, D19). */
 const movedEnd = shallowRef<number | null | undefined>(undefined);
@@ -93,7 +90,7 @@ const stackView = computed((): StackMergeView | null => {
   }
 
   const outcome = getStackMergeOutcome({ record: store.getStackRecord(stackId), members: stackMembers.value });
-  return { name: stack.name.title, merge: range, outcome };
+  return { description: stack, merge: range, outcome, checks: stackChecks.value };
 });
 /**
  * The pull request the panel is for: a stack's first open one — what lands alone, its base the stack's, its rulesets
@@ -104,6 +101,35 @@ const pr = computed(() => {
   return members.find(isOpenPullRequest) ?? members.at(-1) ?? opened.value;
 });
 const read = useMergeOptions({ itemId: () => pr.value?.id ?? null });
+/** The panel's full list of the checks is open. */
+const checksOpen = shallowRef(false);
+/** Whose checks the panel shows with two or more going (D11); `null` otherwise. */
+const checksMember = computed(() => {
+  const range = stackMerge.value;
+  return range && range.going.length > 1 ? range.checksOf : null;
+});
+// Another member's checks than the panel's own read holds: read only while they are looked at — the methods and the
+// proposal stay the first open one's, whose rules the merge meets.
+const memberRead = useMergeOptions({
+  itemId: () => {
+    const member = checksMember.value;
+    return checksOpen.value && member && member.id !== pr.value?.id ? member.id : null;
+  },
+});
+const stackChecks = computed(() => {
+  const member = checksMember.value;
+  if (!member) {
+    return null;
+  }
+
+  const own = member.id === pr.value?.id;
+  return {
+    number: member.number,
+    summary: member.checks,
+    checks: (own ? read.options : memberRead.options)?.checks ?? null,
+    reading: own ? read.reading : memberRead.reading,
+  };
+});
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
 const sending = shallowRef(false);
@@ -129,6 +155,7 @@ watch(
     advancing.value = null;
     alreadyMerged.value = false;
     movedEnd.value = undefined;
+    checksOpen.value = false;
   },
 );
 watch(repository, name => {
@@ -151,16 +178,12 @@ async function merge(submission: MergeSubmission) {
   const opening = store.opening;
   sending.value = true;
   // Two or more of a stack: one merge of the top of the range lands them all (D11).
-  const range = stackMerge.value;
+  const going = stackMerge.value?.going ?? [];
+  const top = going.at(-1);
+  const stack = description.value;
   const stackId = store.stack?.id;
-  const top = range?.top;
-  const several = range && top && stackId !== undefined && range.going.length > 1;
-  const answer = await (several
-    ? store.merge({
-        item: top,
-        submission,
-        stack: { id: stackId, size: range.members.length, going: range.going },
-      })
+  const answer = await (top && stack && stackId !== undefined && going.length > 1
+    ? store.merge({ item: top, submission, stack: { id: stackId, size: stack.size, going } })
     : store.merge({ item, submission }));
   if (answer.kind === 'refused' && store.opening === opening) {
     await read.refresh();
@@ -262,13 +285,14 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     v-if="pr"
     :key="store.opening"
     v-model:open="open"
+    v-model:checks-open="checksOpen"
     :pr="pr"
     :settings="settings"
     :options="read.options"
     :reading="read.reading"
     :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
-    :record="sending || (stackMerge && !stackMerge.ordinary) ? null : store.getRecord(pr.id)"
+    :record="sending || (stackMerge && stackMerge.going.length !== 1) ? null : store.getRecord(pr.id)"
     :sent="store.getSent(pr.id)"
     :already-merged="alreadyMerged"
     :advancing="advancing"

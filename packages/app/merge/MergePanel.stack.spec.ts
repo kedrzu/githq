@@ -14,7 +14,11 @@ const {
     Incomplete,
     LineMoved,
     NeedsRebase,
+    OneGoingNewCommit,
+    OneGoingRefused,
+    OneGoingUnknown,
     OneLands,
+    PartlyMerged,
     PartwayFailure,
     Refused,
     WholeStack,
@@ -185,8 +189,87 @@ test('SP62: a new commit on one going — nothing merged, and which one has it',
     await expect.element(member(1205)).toHaveTextContent('Still open');
 });
 
+test("SC2, PM25: one going from a panel opened on a later one — refused, the merge's own ending speaks, and ⌘↵ tries again", async () => {
+    await OneGoingRefused.run();
+
+    await expect.element(primary('Squash and merge 2 of 4')).toBeVisible();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(panel()).toHaveTextContent('GitHub refused the merge');
+    await expect.element(panel()).toHaveTextContent('Nothing was merged');
+    await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
+    await expect.element(primary('Try again')).toBeVisible();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1203]');
+});
+
+test("SC2, PM29: one going from a panel opened on a later one — no answer, grey, and ⌘↵ doesn't merge again", async () => {
+    await OneGoingUnknown.run();
+
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(panel()).toHaveTextContent('Outcome not known yet');
+    await expect.element(panel()).toHaveTextContent('The next refresh will settle this');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('SC2, PM27: one going from a panel opened on a later one — a new commit, said, and nothing reads ready', async () => {
+    await OneGoingNewCommit.run();
+
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(panel()).toHaveTextContent('A new commit arrived, so nothing was merged');
+    await expect.element(panel()).not.toHaveTextContent('Ready to merge');
+    await expect.element(panel()).toHaveTextContent('See the new commit');
+});
+
+test('SS2, SP40: both hints show, and C shows the checks of the first open one, saying whose', async () => {
+    await WholeStack.run();
+
+    await expect.element(footer()).toHaveTextContent('Stop earlier');
+    await expect.element(footer()).toHaveTextContent('Checks');
+    await expect.element(panel()).not.toHaveTextContent("#310's checks");
+
+    await userEvent.keyboard('c');
+    await expect.element(panel()).toHaveTextContent("#310's checks");
+    await expect.element(panel()).not.toHaveTextContent('each lands under its own title');
+    await expect.element(footer()).toHaveTextContent('Fold');
+
+    await userEvent.keyboard('c');
+    await expect.element(panel()).not.toHaveTextContent("#310's checks");
+    await expect.element(panel()).toHaveTextContent('each lands under its own title');
+});
+
+test('SS2, SP45: held, C shows the checks of the one holding the rest', async () => {
+    await Held.run();
+
+    await expect.element(footer()).toHaveTextContent('Checks');
+    await userEvent.keyboard('c');
+    await expect.element(panel()).toHaveTextContent("#1206's checks");
+});
+
+test('SS3, SP58: partly merged, GitHub checking those left — nothing to merge yet, the button says what will', async () => {
+    await PartlyMerged.run();
+
+    await expect.element(panel()).toHaveTextContent('Not ready yet');
+    await expect.element(panel()).toHaveTextContent('1 landed · GitHub is checking the 2 left');
+    await expect.element(member(480)).toHaveTextContent('Merged');
+    await expect.element(member(481)).toHaveTextContent('Fresh checks running');
+    await expect.element(member(482)).toHaveTextContent('Fresh checks running');
+    await expect.element(footer()).toHaveTextContent('Stop earlier');
+    await expect.element(footer()).not.toHaveTextContent('Checks');
+    await expect.element(primary('Squash and merge 2')).toBeDisabled();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
 function panel() {
     return page.getByRole('dialog');
+}
+
+function footer() {
+    return page.getByRole('contentinfo');
 }
 
 function member(number: number) {

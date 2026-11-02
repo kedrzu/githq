@@ -1,12 +1,14 @@
-<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, being merged, or what a merge that did not end merged left of it — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
+<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, its checks running again after earlier ones landed (SP58), being merged, or what a merge that did not end merged left of it — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleDashed, Ellipsis, GitMerge, LoaderCircle } from 'lucide-vue-next';
+import { CircleDashed, Ellipsis, GitMerge, Loader, LoaderCircle } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
+import StackTone from '@/lists/StackTone.vue';
+import type { StackLook } from '@/lists/useStackFacts.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -21,8 +23,8 @@ const props = defineProps<{
   line: 'held' | 'stops' | null;
 }>();
 
-/** How a row's state is coloured. */
-type Tone = 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
+/** A row's state drawn with its pull request's own icon, in words alone: the others have an icon of their own. */
+type WordedState = Exclude<StackMergeRowState, { readonly kind: 'freshChecks' | 'merging' | 'notKnown' }>;
 
 /** A row as drawn: its pull request, its icon, and its state in words. */
 interface DrawnRow {
@@ -32,11 +34,11 @@ interface DrawnRow {
   readonly going: boolean;
   readonly dimmed: boolean;
   readonly icon: LucideIcon;
-  readonly iconTone: Tone | 'closed' | 'draft' | 'open';
+  readonly iconTone: StackLook['tone'] | 'closed' | 'draft' | 'open';
   /** Being merged (SP56): the spinning icon says it, the text is for screen readers alone. */
   readonly spin: boolean;
   readonly text: string;
-  readonly tone: Tone;
+  readonly tone: StackLook['tone'];
   /** The line is drawn after it. */
   readonly lineAfter: boolean;
 }
@@ -84,6 +86,17 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
         text: t(l.notKnown),
         tone: 'dim',
       };
+    // Nothing lands while they run: no mark of landing (SP58).
+    case 'freshChecks':
+      return {
+        ...base,
+        going: false,
+        icon: Loader,
+        iconTone: 'warning',
+        spin: false,
+        text: t(l.freshChecks),
+        tone: 'warning',
+      };
     default: {
       const look = getPullRequestKind(pullRequest);
       const { text, tone } = describe(state, pullRequest);
@@ -92,7 +105,7 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
   }
 }
 
-function describe(state: StackMergeRowState, pr: PullRequestItem): { text: string; tone: Tone } {
+function describe(state: WordedState, pr: PullRequestItem): { text: string; tone: StackLook['tone'] } {
   switch (state.kind) {
     case 'own':
       return describeOwn(state.pip, pr);
@@ -110,17 +123,13 @@ function describe(state: StackMergeRowState, pr: PullRequestItem): { text: strin
       return { text: t(l.notMerged), tone: 'dim' };
     case 'newCommit':
       return { text: t(l.newCommit), tone: 'warning' };
-    case 'merging':
-      return { text: t(l.beingMerged), tone: 'warning' };
-    case 'notKnown':
-      return { text: t(l.notKnown), tone: 'dim' };
     default:
       return assertNever(state);
   }
 }
 
 /** Its own state in words, as the stack's map says it. */
-function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text: string; tone: Tone } {
+function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text: string; tone: StackLook['tone'] } {
   const standing = getPullRequestStanding(pr);
   switch (kind) {
     case 'ready':
@@ -183,14 +192,15 @@ function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text
           <span :class="css.stackMergeMembers_number">#{{ item.pullRequest.number }}</span>
           <span :class="css.stackMergeMembers_title">{{ item.pullRequest.title }}</span>
         </template>
-        <span
+        <StackTone
+          :look="{ icon: item.icon, tone: item.tone }"
+          words-only
           :class="[
             css.stackMergeMembers_state,
-            css[`stackMergeMembers_state_${item.tone}`],
             item.spin && css.stackMergeMembers_hidden,
             !item.pullRequest && css.stackMergeMembers_state_missing,
           ]"
-          >{{ item.text }}</span
+          >{{ item.text }}</StackTone
         >
         <template v-if="item.going && !item.spin">
           <GitMerge
@@ -301,30 +311,6 @@ function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text
 
 .stackMergeMembers_state_missing {
   flex: 1;
-}
-
-.stackMergeMembers_state_success {
-  color: $color-green;
-}
-
-.stackMergeMembers_state_done {
-  color: $color-purple;
-}
-
-.stackMergeMembers_state_danger {
-  color: $color-red;
-}
-
-.stackMergeMembers_state_warning {
-  color: $color-amber;
-}
-
-.stackMergeMembers_state_muted {
-  color: $color-fg-2;
-}
-
-.stackMergeMembers_state_dim {
-  color: $color-fg-dim;
 }
 
 .stackMergeMembers_lands {

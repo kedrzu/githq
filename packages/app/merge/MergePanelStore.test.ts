@@ -22,6 +22,7 @@ import type { MergeSubmission } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
 
 const MERGE = 'PUT /repos/acme/web/pulls/2/merge-async';
+const FIRST_MERGE = 'PUT /repos/acme/web/pulls/1/merge-async';
 const UUID = 'b904';
 const MERGED: TestRestAnswer = { status: 200, body: { status: 'merged', details: { sha: 'merge-sha' } } };
 const REFUSED: TestRestAnswer = {
@@ -42,15 +43,13 @@ const REFUSAL = { kind: 'refused', message: 'Required status check "ci" is expec
 
 /** A stack of two: #1, then the one the merge goes to (`PR_1`, #2). */
 const STACK_TOP = { ...samplePullRequest('PR_1'), stack: { id: 'S_1', number: 1, size: 2, position: 2 } };
-const STACK = [
-    {
-        ...samplePullRequest('PR_0'),
-        number: 1,
-        headRefOid: 'earlier-head',
-        stack: { id: 'S_1', number: 1, size: 2, position: 1 },
-    },
-    STACK_TOP,
-];
+const STACK_FIRST = {
+    ...samplePullRequest('PR_0'),
+    number: 1,
+    headRefOid: 'earlier-head',
+    stack: { id: 'S_1', number: 1, size: 2, position: 1 },
+};
+const STACK = [STACK_FIRST, STACK_TOP];
 
 test('accepted: the panel leaves and the opener moves on; refused at once: it stays, nothing moves, nothing toasts', async () => {
     const { panel, queue, session, answers } = await setup();
@@ -408,6 +407,58 @@ test('a stack: opened on a pull request it takes everything up to it, from the e
     expect(panel.stack).toBeNull();
 });
 
+test("SC1: from a stack's panel opened on a later one, the first open one sent alone: accepted, the panel leaves and the opener moves on; refused, it stays, quiet (D18, PM32a)", async () => {
+    const { panel, queue, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    const sent: string[] = [];
+
+    answers.firstPut = REFUSED;
+    panel.open('PR_1', { onSent: () => sent.push('next') });
+    const refused = panel.merge({ item: STACK_FIRST, submission: EDITED });
+    await session.clock.advance(0);
+    expect(await refused).toEqual({ kind: 'refused', reason: REFUSAL });
+    expect(panel.itemId).toBe('PR_1');
+    expect(sent).toEqual([]);
+    expect(panel.getRecord('PR_0')).toMatchObject({ kind: 'refused', reason: REFUSAL });
+    // The panel shows it: GitHub's reason is its to say, not a toast's as well.
+    expect(queue.failures).toEqual([]);
+
+    answers.firstPut = PENDING;
+    const accepted = panel.merge({ item: STACK_FIRST, submission: EDITED });
+    await session.clock.advance(0);
+    expect(await accepted).toEqual({ kind: 'accepted' });
+    expect(panel.itemId).toBeNull();
+    expect(sent).toEqual(['next']);
+});
+
+test("SS4: a stack's merge confirmed after the panel left says how many landed, and where", async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = PENDING;
+
+    panel.open('PR_1', { wholeStack: true });
+    const accepted = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await accepted;
+    answers.read = MERGED;
+    await session.clock.advance(1000);
+    await session.clock.advance(0);
+
+    expect(panel.confirmations).toEqual([
+        {
+            id: 1,
+            itemId: 'PR_1',
+            reference: 'acme/web#2',
+            base: 'main',
+            stack: { repository: 'acme/web', count: 2 },
+        },
+    ]);
+});
+
 test('a stack refused at once: recorded for it with the head of every one going, the stack read again whole, said until the panel showing it closes (D11, SP61)', async () => {
     const { panel, items, session, answers } = await setup();
     items.upsertMany(STACK);
@@ -449,10 +500,12 @@ async function setup() {
     const login = `user-${crypto.randomUUID()}`;
     const answers: {
         put: TestRestAnswer | undefined;
+        /** What the merge of the stack's first one (`PR_0`, #1) is answered. */
+        firstPut: TestRestAnswer | undefined;
         read: TestRestAnswer | undefined;
         /** The head `PullRequestMergeOptions` finds. */
         optionsHead: string;
-    } = { put: undefined, read: STILL_PENDING, optionsHead: 'head-oid' };
+    } = { put: undefined, firstPut: undefined, read: STILL_PENDING, optionsHead: 'head-oid' };
     const session = createTestSession({
         login,
         answer: request => {
@@ -471,6 +524,8 @@ async function setup() {
             switch (request.operation) {
                 case MERGE:
                     return answers.put;
+                case FIRST_MERGE:
+                    return answers.firstPut;
                 case `GET /repos/acme/web/pulls/2/merge-async/${UUID}`:
                     return answers.read;
                 default:

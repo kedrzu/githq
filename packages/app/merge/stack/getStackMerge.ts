@@ -1,9 +1,9 @@
 import { assertValue } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import type { StackBlocker, StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
+import { findStackHolder, toStackBlocker } from '@/store/stacks/describeStack.js';
+import type { StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
 
 import type { StackMerge, StackMergeBlock, StackMergeForward, StackRebaseCause } from './StackMergeTypes.js';
 
@@ -32,31 +32,21 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
     const members = description.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing');
     const open = members.filter(pip => isOpenPullRequest(pip.pullRequest)).map(pip => pip.pullRequest);
     const going = open.slice(0, getEndIndex() + 1);
-    const top = going.at(-1) ?? null;
     const wholeBlock = getWholeBlock();
-
-    // The held line (SP45): from the first open one, every member until the first that cannot land — one being merged
-    // is on its way to land.
-    let canLand = 0;
-    let holder: StackPullRequestPip | undefined;
-    const firstOpen = members.findIndex(pip => isOpenPullRequest(pip.pullRequest));
-    if (!wholeBlock && firstOpen >= 0) {
-        holder = members.slice(firstOpen).find(pip => pip.kind !== 'ready' && pip.kind !== 'merging');
-        canLand = holder ? members.indexOf(holder) - firstOpen : open.length;
-    }
-
+    // The held line (SP45), as the entry reads it (D5); nothing to work out while the whole range is blocked.
+    const { canLand, holder } = wholeBlock ? { canLand: 0, holder: null } : findStackHolder(members);
     const block = wholeBlock ?? getRangeBlock();
 
     return {
         members: description.pips,
         open,
         going,
-        top,
         canLand,
-        holder: holder ? toBlocker(holder) : null,
+        holder: holder ? toStackBlocker(holder) : null,
+        checksOf: holder?.pullRequest ?? open[0] ?? null,
+        freshChecks: description.landed > 0 && canLand === 0 && holder?.kind === 'moving',
         block,
         forward: getForward(),
-        ordinary: going.length === 1,
     };
 
     function getEndIndex(): number {
@@ -95,7 +85,7 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
             return { kind: 'closed', closedNumber: holder.pullRequest.number };
         }
 
-        return { kind: 'held', blocker: toBlocker(holder) };
+        return { kind: 'held', blocker: toStackBlocker(holder) };
     }
 
     function getRebaseCause(behindNumber: number): StackRebaseCause {
@@ -108,12 +98,12 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
     }
 
     function getForward(): StackMergeForward | null {
-        if (!top) {
+        if (going.length === 0) {
             return null;
         }
 
         if (!block) {
-            return { kind: 'merge', top, count: going.length };
+            return { kind: 'merge' };
         }
 
         switch (block.kind) {
@@ -129,12 +119,4 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
                 return assertNever(block);
         }
     }
-}
-
-function toBlocker(pip: StackPullRequestPip): StackBlocker {
-    return {
-        number: pip.pullRequest.number,
-        kind: pip.kind,
-        waitingForReview: getPullRequestStanding(pip.pullRequest).waitingForReview,
-    };
 }

@@ -21,9 +21,7 @@ test('the range starts at the first open member, merged ones before it listed bu
 
     expect(merge.members.map(pip => pip.kind)).toEqual(['merged', 'ready', 'ready', 'ready']);
     expect(numbers(merge.going)).toEqual([2, 3, 4]);
-    expect(merge.top?.number).toBe(4);
-    expect(merge.forward).toMatchObject({ kind: 'merge', top: { number: 4 }, count: 3 });
-    expect(merge.ordinary).toBe(false);
+    expect(merge.forward).toEqual({ kind: 'merge' });
     // A line on a merged one moves to the first open one: the range never starts later or earlier.
     expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
 });
@@ -48,11 +46,37 @@ test('the line never sits on a closed member: it moves over it, and the range ke
     expect(numbers(getStackMerge({ description, end: 2 }).going)).toEqual([1]);
 });
 
-test('with exactly one going it is an ordinary merge (SP43)', () => {
-    const description = stackOf([MERGED, {}, {}]);
+test('SK2: a closed last member holds nothing, as the entry reads it: every open one can land', () => {
+    const description = stackOf([{}, {}, CLOSED]);
 
-    expect(getStackMerge({ description, end: 2 })).toMatchObject({ ordinary: true, going: [{ number: 2 }] });
-    expect(getStackMerge({ description, end: 3 }).ordinary).toBe(false);
+    expect(description.state.kind).toBe('ready');
+    expect(getStackMerge({ description, end: null })).toMatchObject({
+        canLand: 2,
+        holder: null,
+        block: null,
+        forward: { kind: 'merge' },
+    });
+});
+
+test('SS2: the checks with two or more going are those of the one holding the rest, else of the first open one', () => {
+    const held = stackOf([MERGED, {}, BLOCKED, {}]);
+    const ready = stackOf([MERGED, {}, {}]);
+
+    expect(getStackMerge({ description: held, end: 2 }).checksOf?.number).toBe(3);
+    expect(getStackMerge({ description: ready, end: null }).checksOf?.number).toBe(2);
+    expect(getStackMerge({ description: stackOf([MERGED, CLOSED]), end: null }).checksOf).toBe(null);
+});
+
+test('SS3: some landed and GitHub checking the first one left is fresh checks; not before anything landed, nor with one that can land (SP58)', () => {
+    const running = {
+        mergeStateStatus: 'BLOCKED',
+        checks: { state: 'PENDING', passing: 1, failing: 0, pending: 1 },
+    } as const;
+
+    expect(getStackMerge({ description: stackOf([MERGED, running, running]), end: null }).freshChecks).toBe(true);
+    expect(getStackMerge({ description: stackOf([running, running]), end: null }).freshChecks).toBe(false);
+    expect(getStackMerge({ description: stackOf([MERGED, {}, running]), end: null }).freshChecks).toBe(false);
+    expect(getStackMerge({ description: stackOf([MERGED, BLOCKED, running]), end: null }).freshChecks).toBe(false);
 });
 
 test('a default line: the whole stack from the entry, everything up to it from a pull request (D11)', () => {
@@ -70,7 +94,7 @@ test('held, the line sits at the last that can land and what holds the next one 
     expect(end).toBe(2);
 
     const merge = getStackMerge({ description, end });
-    expect(merge).toMatchObject({ canLand: 2, block: null, forward: { kind: 'merge', count: 2 } });
+    expect(merge).toMatchObject({ canLand: 2, block: null, forward: { kind: 'merge' } });
     expect(merge.holder).toEqual({ number: 3, kind: 'waiting', waitingForReview: false });
 
     // Moved past it, the range is held and nothing is sent.
@@ -107,7 +131,7 @@ test('a closed member mid-range blocks only those after it; earlier ones can lan
     expect(getStackMerge({ description, end: 2 })).toMatchObject({
         canLand: 2,
         block: null,
-        forward: { kind: 'merge', count: 2 },
+        forward: { kind: 'merge' },
     });
     expect(getStackMerge({ description, end: 4 })).toMatchObject({
         block: { kind: 'closed', closedNumber: 3 },

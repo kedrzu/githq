@@ -44,7 +44,7 @@ defineProps<{
 
 .mergeCondition_label {
   flex: none;
-  width: 72px;
+  min-width: 72px;
   color: $color-fg-dim;
 }
 

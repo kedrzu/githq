@@ -8,3 +8,5 @@ requestAccess:
   en: Request access on GitHub
 merged:
   en: '{reference} merged into {base}'
+mergedStack:
+  en: '{repository} · {count} pull requests merged into {base}'

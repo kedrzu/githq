@@ -23,8 +23,8 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS, SYNC_LOOPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup, SyncLoop } from '@/store/ItemStoreTypes.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { toItem, toPullRequestStatus } from '@/store/toItem.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
@@ -36,6 +36,7 @@ import { FRESH_SLACK_MS, getFreshness } from './Freshness.js';
 import { getAllowancePause } from './getAllowancePause.js';
 import { isRateLimitRefusal } from './isRateLimitRefusal.js';
 import { readItemsByIds } from './readItemsByIds.js';
+import { readStacksWhole } from './readStacksWhole.js';
 import { SyncLeadership } from './SyncLeadership.js';
 import { SyncPausedError } from './SyncPausedError.js';
 import type { SyncPause } from './SyncPausedError.js';
@@ -43,8 +44,6 @@ import { TabChannel } from './TabChannel.js';
 import type { TabMessage } from './TabChannel.js';
 import { PROJECT_PROBE_INTERVAL_MS, TrackingSync } from './TrackingSync.js';
 import type { TrackingSyncContext } from './TrackingSync.js';
-import { groupNodeErrors } from './utils/groupNodeErrors.js';
-import { isNodeGone } from './utils/isNodeGone.js';
 
 /**
  * What the status bar's sidebar segment says for the whole app, rather than for one surface: the browser is
@@ -79,8 +78,6 @@ const MY_WORK_SEARCHES: Readonly<Record<MyWorkGroup, string>> = {
 const SEARCH_PAGE_SIZE = 100;
 /** How many node ids one `ItemsByIds` / `PullRequestStatuses` / `PullRequestStacks` asks for. */
 const NODES_BATCH_SIZE = 50;
-/** The most pull requests a GitHub stack holds, and the most `PullRequestStacks` asks of one. */
-const STACK_MAX_SIZE = 100;
 /** How long to wait on a rate-limit refusal that says neither when to retry nor which bucket ran out. */
 const UNKNOWN_PAUSE_MS = 60_000;
 
@@ -781,9 +778,8 @@ export const SyncEngine = defineService({
         /**
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
          * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7), and those it
-         * holds too many of. Once the copy holds them all, one at each place, nothing is asked. The answer is what the stack holds: a held pull request it does not list
-         * has left the stack — all of them when the stack is gone — which moves no `updated_at`, so nothing else
-         * would tell a closed one.
+         * holds too many of ({@link readStacksWhole}). Once the copy holds them all, one at each place, nothing is
+         * asked.
          */
         async function readIncompleteStacks(current: Session) {
             const held = new Map<string, { size: number; members: number; positions: Set<number> }>();
@@ -806,70 +802,19 @@ export const SyncEngine = defineService({
             );
             for (const batch of splitIntoChunks(incomplete, NODES_BATCH_SIZE)) {
                 checkAllowance('graphql');
-                const errors: GitHubGraphQLErrorEntry[] = [];
-                const { nodes } = await current.account.sdk.PullRequestStacks(
-                    {
-                        ids: batch.map(([id]) => id),
-                        // The batch's largest stack: GitHub charges for the entries asked, not those found.
-                        first: Math.min(STACK_MAX_SIZE, Math.max(...batch.map(([, stack]) => stack.size))),
-                    },
-                    { onPartialErrors: found => errors.push(...found) },
-                );
+                const read = await readStacksWhole({
+                    sdk: current.account.sdk,
+                    stacks: batch.map(([id, stack]) => ({ id, size: stack.size })),
+                    items,
+                    logger,
+                });
                 if (!isCurrent(current)) {
                     return;
-                }
-
-                if (errors.length > 0) {
-                    logger.warn('Pull request stacks read in part', { errors });
-                }
-
-                const errorsByNode = groupNodeErrors(errors);
-                const read: Item[] = [];
-                for (const [index, [id]] of batch.entries()) {
-                    const node = nodes[index] ?? null;
-                    const nodeErrors = errorsByNode.get(index) ?? [];
-                    if (node === null || !('entries' in node)) {
-                        if (isNodeGone(nodeErrors)) {
-                            read.push(...leaveStack(id, new Set()));
-                        }
-
-                        continue;
-                    }
-
-                    const listed = new Set<string>();
-                    for (const entry of node.entries.nodes ?? []) {
-                        const item = toItem(entry?.pullRequest ?? null);
-                        if (item) {
-                            read.push(item);
-                            listed.add(item.id);
-                        }
-                    }
-
-                    // Only a whole answer tells who left: not one cut by `first`, or with an entry GitHub refused.
-                    if (nodeErrors.length === 0 && listed.size === node.entries.totalCount) {
-                        read.push(...leaveStack(id, listed));
-                    }
                 }
 
                 items.upsertMany(read);
                 logger.debug('Pull request stacks read whole', { stacks: batch.length, read: read.length });
             }
-        }
-
-        /**
-         * The held pull requests of stack `id` but those `listed`, out of it — as stored, so a change of the user's
-         * still on its way does not become part of them.
-         */
-        function leaveStack(id: string, listed: ReadonlySet<string>) {
-            const left: PullRequestItem[] = [];
-            for (const { id: itemId } of items.all) {
-                const item = items.getStored(itemId);
-                if (item?.kind === 'pullRequest' && item.stack?.id === id && !listed.has(itemId)) {
-                    left.push({ ...item, stack: null });
-                }
-            }
-
-            return left;
         }
 
         /** Throws a pause instead of asking GitHub while `bucket` is used up — but for what is kept for edits. */

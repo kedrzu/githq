@@ -68,6 +68,16 @@ export interface MergeConfirmation {
     readonly reference: string;
     /** The branch it was merged into. */
     readonly base: string;
+    /** A stack's merge of two or more: how many landed, and where (SP8). None for one pull request. */
+    readonly stack?: MergeConfirmationStack;
+}
+
+/** A stack's merge of two or more, as its toast says it. */
+export interface MergeConfirmationStack {
+    /** The repository's `owner/name`. */
+    readonly repository: string;
+    /** How many pull requests landed with the merge. */
+    readonly count: number;
 }
 
 /**
@@ -367,20 +377,26 @@ export const MergePanelStore = defineService({
                 }
             }
 
-            /** The panel shows the pull request — a stack's merge, the stack. */
+            /**
+             * The panel shows the pull request — open for a stack, its stack, whichever member it was opened on: it
+             * sends the first open one alone (stacked PRs D18).
+             */
             function isShown() {
-                return stack ? stackRef.value?.id === stack.id : itemIdRef.value === item.id;
+                return stackRef.value ? stackRef.value.id === item.stack?.id : itemIdRef.value === item.id;
             }
 
             /** Merged: said in a toast unless the panel shows it (PM34) — a stack's, into its first one's base. */
             function confirm() {
                 if (isSender() && !isShown()) {
                     const reference = `${item.repository.nameWithOwner}#${item.number}`;
-                    const confirmation = {
+                    const confirmation: MergeConfirmation = {
                         id: nextConfirmationId++,
                         itemId: item.id,
                         reference,
                         base: stack?.going[0]?.baseRefName ?? item.baseRefName,
+                        ...(stack
+                            ? { stack: { repository: item.repository.nameWithOwner, count: stack.going.length } }
+                            : {}),
                     };
                     confirmationsRef.value = [...confirmationsRef.value, confirmation];
                 }

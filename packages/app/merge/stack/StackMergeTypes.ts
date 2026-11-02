@@ -1,8 +1,15 @@
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
 import type { EditFailureReason } from '@/edits/EditTypes.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
-import type { StackBlocker, StackPip, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
+import type { ItemChecks, PullRequestItem } from '@/store/ItemTypes.js';
+import type {
+    StackBlocker,
+    StackDescription,
+    StackPip,
+    StackPullRequestPipKind,
+} from '@/store/stacks/describeStack.js';
+
+import type { MergeCheck } from '../MergeTypes.js';
 
 /**
  * A stack's merge as the panel shows it (stacked PRs D11, D18): every member, the range going — from the first open
@@ -13,32 +20,37 @@ export interface StackMerge {
     readonly members: readonly StackPip[];
     /** The open members, first to last: the range always starts at the first, and its line sits on one of them. */
     readonly open: readonly PullRequestItem[];
-    /** The open members going, from the first open one up to the line. */
-    readonly going: readonly PullRequestItem[];
     /**
-     * The last one going — the line — and the one the merge is sent to: GitHub lands it with every open one before
-     * it. `null` when nothing is open.
+     * The open members going, from the first open one up to the line. The last is the one the merge is sent to: GitHub
+     * lands it with every open one before it. Exactly one is an ordinary merge, with its commit text (SP43, D18) — with
+     * two or more each lands under its own title and none is sent (D11).
      */
-    readonly top: PullRequestItem | null;
+    readonly going: readonly PullRequestItem[];
     /**
      * How many open members, from the first, can land now (SP45): each one only together with all before it, so the
      * count stops at the first that cannot. 0 while the whole range is blocked.
      */
     readonly canLand: number;
     /**
-     * The member that holds the next one back — the first after {@link canLand} that cannot land, a closed one
-     * included — whether or not it is going; `null` when every open one can land, or the whole range is blocked.
+     * The member that holds the next one back — the first after {@link canLand} that cannot land, a closed one with
+     * open ones after it included — whether or not it is going; `null` when every open one can land, or the whole
+     * range is blocked.
      */
     readonly holder: StackBlocker | null;
+    /**
+     * Whose checks `C` shows with two or more going (SP40–SP45), checks being one pull request's: the {@link holder},
+     * else the first open one. `null` when nothing is open.
+     */
+    readonly checksOf: PullRequestItem | null;
+    /**
+     * Some landed, and GitHub is checking the first one left, rewritten by that: nothing can land until it is done
+     * (SP58).
+     */
+    readonly freshChecks: boolean;
     /** What stops the range as the line has it; `null` when every one going can land. */
     readonly block: StackMergeBlock | null;
     /** What `⌘↵` does; `null` when nothing (D7: also while the copy is incomplete). */
     readonly forward: StackMergeForward | null;
-    /**
-     * Exactly one is going: an ordinary merge of the first open one, with its commit text (SP43, D18) — with two or
-     * more each lands under its own title and none is sent (D11).
-     */
-    readonly ordinary: boolean;
 }
 
 /** What stops a stack's range. */
@@ -86,11 +98,9 @@ export interface StackHeldBlock {
 /** What `⌘↵` does for a stack's range (merging D12, extended). */
 export type StackMergeForward = StackMergeRangeForward | StackRebaseForward | StackMarkReadyForward;
 
-/** Merge the range: the merge goes to {@link top}, and lands {@link count} pull requests. */
+/** Merge the range: the merge goes to the last one going, and lands every one going. */
 export interface StackMergeRangeForward {
     readonly kind: 'merge';
-    readonly top: PullRequestItem;
-    readonly count: number;
 }
 
 /** Open the stack's top open pull request on github.com, where "Rebase stack" is (D8, D21). */
@@ -192,14 +202,16 @@ export interface StackMergeMissingRow {
 
 /**
  * What a row says of its pull request: its own state as its pip shows it; staying open below the line (SP41); held
- * by an earlier one — blocked, or green itself (SP45, SP48); being merged (SP56); not known yet (SP60); refused where
- * a merge stopped, still open after it (SP59); not merged, or the one with a new commit (SP62).
+ * by an earlier one — blocked, or green itself (SP45, SP48); its checks running again after earlier ones landed (SP58);
+ * being merged (SP56); not known yet (SP60); refused where a merge stopped, still open after it (SP59); not merged, or
+ * the one with a new commit (SP62).
  */
 export type StackMergeRowState =
     | { readonly kind: 'own'; readonly pip: StackPullRequestPipKind }
     | { readonly kind: 'staysOpen' }
     | { readonly kind: 'blocked' }
     | { readonly kind: 'heldBy'; readonly number: number }
+    | { readonly kind: 'freshChecks' }
     | { readonly kind: 'merging' }
     | { readonly kind: 'notKnown' }
     | { readonly kind: 'refused' }
@@ -209,9 +221,22 @@ export type StackMergeRowState =
 
 /** A stack's merge as the merge panel shows it (stacked PRs D11). */
 export interface StackMergeView {
-    /** The stack's name (D4): its header's title. */
-    readonly name: string;
+    /** The stack as the entry reads it: its name (D4) for the header, how many landed and how many the copy holds. */
+    readonly description: StackDescription;
     readonly merge: StackMerge;
     /** How its last merge of two or more that did not end merged reads; `null` for none. */
     readonly outcome: StackMergeOutcome | null;
+    /** The checks of {@link StackMerge.checksOf}, for two or more going; `null` otherwise. */
+    readonly checks: StackMergeChecks | null;
+}
+
+/** One member's checks in a stack's merge panel: the checks of a range are those of whoever it comes down to. */
+export interface StackMergeChecks {
+    /** The pull request's number: the panel says whose they are. */
+    readonly number: number;
+    /** The row's summary of them, until the read arrives. */
+    readonly summary: ItemChecks | null;
+    /** As read for the panel; `null` until they arrive, or when they could not be read. */
+    readonly checks: readonly MergeCheck[] | null;
+    readonly reading: boolean;
 }

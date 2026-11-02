@@ -23,6 +23,7 @@ import * as l from './useStackFacts.loc.js';
 import { getHeldReason } from './utils/getHeldReason.js';
 import type { HeldReason } from './utils/getHeldReason.js';
 import { getBlockerLook } from './utils/getBlockerLook.js';
+import { getHeldByText } from './utils/getHeldByText.js';
 import { getItemPeople } from './utils/getItemPeople.js';
 import { getPullRequestLook } from './utils/getPullRequestLook.js';
 import { getStackStateFact } from './utils/getStackStateFact.js';
@@ -96,25 +97,12 @@ interface HeldTextParams {
     readonly number: number;
 }
 
-/** What a share's held sentence names. */
-interface ShareHeldTextParams {
-    readonly number: number;
-}
-
 /** The stack's held sentence for each reason: "2 of 4 ready, #1206 is a draft" (SP14). */
 const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
     draft: l.heldByDraft,
     checks: l.heldByChecks,
     review: l.heldByReview,
     other: l.held,
-};
-
-/** A share's held sentence for each reason, without the stack's count: "#1206 is a draft" (SP24). */
-const SHARE_HELD_TEXTS: Readonly<Record<HeldReason, Translation<ShareHeldTextParams>>> = {
-    draft: l.shareHeldByDraft,
-    checks: l.shareHeldByChecks,
-    review: l.shareHeldByReview,
-    other: l.shareHeld,
 };
 
 /**
@@ -279,7 +267,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     /** What holds a share, as {@link getHeldText} names it: "#1206 blocks", "#1216 checks running". */
     function getShareHeldText(blocker: StackBlocker): string {
-        return t(SHARE_HELD_TEXTS[getHeldReason(blocker)], { number: blocker.number });
+        return getHeldByText({ blocker, lang: APP_LANGUAGE, otherwise: l.shareHeld });
     }
 
     /** The held sentence names what holds the stack (SP14): "2 of 4 ready, #1216 checks running". */

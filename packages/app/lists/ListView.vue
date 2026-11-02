@@ -91,6 +91,8 @@ interface ListSlotProps<TValue> {
   /** The entry it is nested under. */
   parent: ListEntry<TValue> | null;
   group: ListGroup<TValue>;
+  /** The list's selection is on it. */
+  selected: boolean;
   /** Among the items edited together; a stack's entry when all its pull requests are. */
   checked: boolean;
   /** A stack's entry some of whose pull requests are among the items edited together, not all (D20, SP28): a half mark. */
@@ -477,16 +479,16 @@ function getStackMergeTitle(description: StackDescription): string {
   }
 
   const end = getStackMergeEnd({ description, openedOn: null });
-  const { forward, open } = getStackMerge({ description, end });
+  const { forward, going, open } = getStackMerge({ description, end });
   switch (forward?.kind) {
     case 'merge':
-      if (forward.count === 1) {
+      if (going.length === 1) {
         return t(l.merge);
       }
 
-      return forward.count === open.length
-        ? t(l.mergeStack, { count: forward.count })
-        : t(l.mergeStackPart, { count: forward.count });
+      return going.length === open.length
+        ? t(l.mergeStack, { count: going.length })
+        : t(l.mergeStackPart, { count: going.length });
     case 'rebaseOnGitHub':
       return t(l.rebaseOnGitHub);
     case 'markReady':
@@ -906,6 +908,7 @@ function getSlotProps({ current, row, group }: GetSlotPropsParams): ListSlotProp
     entry: current.entry,
     parent: current.parent,
     group,
+    selected: selectedKey.value === key,
     checked: isChecked(key),
     halfChecked: isHalfChecked(key),
     stack: current.stack,

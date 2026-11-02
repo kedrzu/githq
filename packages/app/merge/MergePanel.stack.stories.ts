@@ -3,11 +3,12 @@ import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
 import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 import { sampleStack, sampleStackDescription, SAMPLE_STACKS } from '@/testing/sampleStacks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeOptions, MergeStep, MergeSubmission } from './MergeTypes.js';
+import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
 import { getStackMergeOutcome } from './stack/getStackMergeOutcome.js';
@@ -23,6 +24,9 @@ const SQUASH_FIRST: MergeSettings = {
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
 };
+
+/** What {@link CALENDAR}'s first one was last sent with, alone. */
+const FIRST_SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: 'head-oid' };
 
 /** SP41–SP43: four ready, "Migrate class calendar to new date picker". */
 const CALENDAR = sampleStack({
@@ -62,6 +66,8 @@ const Harness = defineComponent({
         /** The stack as the read after a refusal finds it. */
         reread: { type: Array as PropType<readonly PullRequestItem[] | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
+        /** The first open one's last merge that did not end merged: as the host, it speaks only with it going alone. */
+        ownRecord: { type: Object as PropType<MergeRecord | null>, default: null },
     },
     setup(props) {
         const open = ref(true);
@@ -152,15 +158,24 @@ const Harness = defineComponent({
                         reading: !arrived.value,
                         allowed: true,
                         sending: sending.value,
-                        record: null,
+                        record: merge.value.going.length === 1 ? props.ownRecord : null,
                         sent: null,
                         alreadyMerged: false,
                         advancing: advancing.value,
                         now: NOW,
                         stack: {
-                            name: description.value.name.title,
+                            description: description.value,
                             merge: merge.value,
                             outcome: getStackMergeOutcome({ record: record.value, members: members.value }),
+                            checks:
+                                merge.value.going.length > 1 && merge.value.checksOf
+                                    ? {
+                                          number: merge.value.checksOf.number,
+                                          summary: merge.value.checksOf.checks,
+                                          checks: SAMPLE_PASSED_CHECKS,
+                                          reading: false,
+                                      }
+                                    : null,
                         },
                         onMove: (direction: 'earlier' | 'later') => {
                             movedEnd.value = moveStackMergeEnd(merge.value, direction);
@@ -176,7 +191,8 @@ const Harness = defineComponent({
         };
 
         function onMerge(submission: MergeSubmission) {
-            const { going, top } = merge.value;
+            const { going } = merge.value;
+            const top = going.at(-1);
             sent.value = JSON.stringify({
                 request: submission.request,
                 top: top?.number,
@@ -325,6 +341,38 @@ export const HeadMoved: Story = {
             reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
             partway: false,
             read: true,
+        },
+    },
+};
+
+/** PM25, D18: opened on #1204, `↑` to the first, whose last merge alone GitHub refused: its own ending speaks. */
+export const OneGoingRefused: Story = {
+    args: {
+        members: CALENDAR,
+        openedOn: 1204,
+        ownRecord: { kind: 'refused', sent: FIRST_SENT, reason: STOPPED, at: NOW },
+    },
+};
+
+/** PM29, D18: as {@link OneGoingRefused}, GitHub not having said how it ended: nothing to send again. */
+export const OneGoingUnknown: Story = {
+    args: {
+        members: CALENDAR,
+        openedOn: 1204,
+        ownRecord: { kind: 'unknown', sent: FIRST_SENT, at: NOW, accepted: true },
+    },
+};
+
+/** PM27, D18: as {@link OneGoingRefused}, refused for a new commit on the first since it was sent. */
+export const OneGoingNewCommit: Story = {
+    args: {
+        members: CALENDAR,
+        openedOn: 1204,
+        ownRecord: {
+            kind: 'refused',
+            sent: { ...FIRST_SENT, head: 'older-head' },
+            reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
+            at: NOW,
         },
     },
 };

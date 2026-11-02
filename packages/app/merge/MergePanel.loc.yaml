@@ -204,12 +204,10 @@ stackCanLand:
   en: '{count} of {open} can land'
 stackNotReadyYet:
   en: Not ready yet
-stackHeldByDraft:
-  en: '#{number} is a draft'
-stackHeldByChecks:
-  en: '#{number} checks running'
-stackHeldByReview:
-  en: '#{number} waiting for review'
+stackCheckingLeft:
+  en: '{landed} landed · GitHub is checking the {left} left'
+stackChecksOf:
+  en: "#{number}'s checks"
 stackHeldByOther:
   en: '#{number} holds the rest'
 stackClosed:

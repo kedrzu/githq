@@ -32,6 +32,15 @@ test('held: the one holding says its own state, those after it are blocked or gr
     ]);
 });
 
+test('partly merged: those left whose checks run again read so, also past the first of them (SP58)', () => {
+    const running = {
+        mergeStateStatus: 'BLOCKED',
+        checks: { state: 'PENDING', passing: 1, failing: 0, pending: 1 },
+    } as const;
+    const rows = rowsOf([{ state: 'MERGED', merged: true }, running, running, {}], { end: null });
+    expect(summary(rows)).toEqual(['1 own:merged', '2 going freshChecks', '3 going freshChecks', '4 going heldBy:2']);
+});
+
 test('being merged: every one going reads so (SP56)', () => {
     const members = sampleStack({ id: 'S_1', number: 1, members: [{}, {}] }).map(pr => ({
         ...pr,

@@ -11,7 +11,7 @@ import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { toItem } from '@/store/toItem.js';
+import { readStacksWhole } from '@/sync/readStacksWhole.js';
 
 import { createMergeEdits } from './createMergeEdits.js';
 import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
@@ -147,19 +147,14 @@ export const PullRequestMerger = defineService({
                 return;
             }
 
-            const read: Item[] = [];
+            let read: Item[];
             try {
-                const { nodes } = await account.sdk.PullRequestStacks(
-                    { ids: [stackId], first: size },
-                    { onPartialErrors: errors => logger.debug('Stack read in part', { stackId, errors }) },
-                );
-                const node = nodes[0];
-                for (const entry of node && 'entries' in node ? (node.entries.nodes ?? []) : []) {
-                    const item = toItem(entry?.pullRequest ?? null);
-                    if (item) {
-                        read.push(item);
-                    }
-                }
+                read = await readStacksWhole({
+                    sdk: account.sdk,
+                    stacks: [{ id: stackId, size }],
+                    items,
+                    logger,
+                });
             } catch (error) {
                 logger.warn('The stack was not read again', { stackId, error });
                 return;

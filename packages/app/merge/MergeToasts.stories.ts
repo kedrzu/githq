@@ -62,6 +62,12 @@ const RESTRICTED: EditFailure = {
 /** PM34: GitHub confirmed the merge after the user moved on. */
 const CONFIRMED: MergeConfirmation = { id: 1, itemId: PR.id, reference: REFERENCE, base: 'main' };
 
+/** SS4: a stack's merge of three confirmed after the user moved on: how many, not only the top one. */
+const CONFIRMED_STACK: MergeConfirmation = {
+    ...CONFIRMED,
+    stack: { repository: 'fitloop/api', count: 3 },
+};
+
 /**
  * The toasts over a screen whose edit queue lists `failures` and whose merge panel store lists `confirmations`: the
  * stores the toasts read are replaced by ones holding just that, and the screen may open the merge panel (`⌥M`).
@@ -157,3 +163,6 @@ export const OrganizationRestricted: Story = { decorators: [withMerges([RESTRICT
 
 /** PM34: a merge GitHub confirmed after the user moved on — quiet, and gone by itself. */
 export const Confirmed: Story = { decorators: [withMerges([], [CONFIRMED])] };
+
+/** SS4: a stack's merge GitHub confirmed after the user moved on: how many landed, and where. */
+export const ConfirmedStack: Story = { decorators: [withMerges([], [CONFIRMED_STACK])] };

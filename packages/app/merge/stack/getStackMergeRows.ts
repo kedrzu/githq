@@ -33,9 +33,8 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
     const holderIndex = merge.members.findIndex(
         pip => pip.kind !== 'missing' && pip.pullRequest.number === holder?.number,
     );
-    const lastGoingIndex = merge.members.findIndex(
-        pip => pip.kind !== 'missing' && pip.pullRequest.id === merge.top?.id,
-    );
+    const top = merge.going.at(-1);
+    const lastGoingIndex = merge.members.findIndex(pip => pip.kind !== 'missing' && pip.pullRequest.id === top?.id);
     // Where a merge that did not end merged stopped, or the one with a new commit: those after it are still open.
     const stopNumber = getStopNumber();
     const stopIndex = merge.members.findIndex(pip => pip.kind !== 'missing' && pip.pullRequest.number === stopNumber);
@@ -98,6 +97,10 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
 
         if (pullRequest.merging) {
             return { kind: 'merging' };
+        }
+
+        if (merge.freshChecks && pip.kind === 'moving') {
+            return { kind: 'freshChecks' };
         }
 
         if (holder && holderIndex >= 0 && index > holderIndex) {

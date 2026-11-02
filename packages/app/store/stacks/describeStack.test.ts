@@ -4,8 +4,8 @@ import { expect, test } from 'bun:test';
 import type { Item, ItemReviewRequest, PullRequestItem } from '@/store/ItemTypes.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
 
-import type { StackDescription, StackPip } from './describeStack.js';
-import { describeStack } from './describeStack.js';
+import type { StackDescription, StackPip, StackPullRequestPip } from './describeStack.js';
+import { describeStack, findStackHolder } from './describeStack.js';
 import { groupStacks } from './groupStacks.js';
 
 test('the name is the title of the first issue in the copy that the stack closes, by position then by order', () => {
@@ -222,6 +222,27 @@ test('a closed one at the top does not hold the open ones before it', () => {
     const description = describeMembers([pr(1), pr(2), pr(3, { state: 'CLOSED' })]);
 
     expect(description.state).toEqual({ kind: 'ready', openCount: 2 });
+});
+
+test('SK2: the entry and the merge panel read the same holder: a closed last one holds nothing, a closed one before open ones does, wherever it is', () => {
+    const held = (...members: PullRequestItem[]) => {
+        const { pips } = describeMembers(members);
+        return findStackHolder(pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'));
+    };
+
+    expect(held(pr(1), pr(2), pr(3, { state: 'CLOSED' }))).toEqual({ canLand: 2, holder: null });
+    expect(held(pr(1), pr(2, { state: 'CLOSED' }), pr(3))).toMatchObject({
+        canLand: 1,
+        holder: { kind: 'closed', pullRequest: { number: 102 } },
+    });
+    expect(held(pr(1, { state: 'CLOSED' }), pr(2), pr(3))).toMatchObject({
+        canLand: 0,
+        holder: { kind: 'closed', pullRequest: { number: 101 } },
+    });
+    expect(held(pr(1, { state: 'MERGED', merged: true }), pr(2, { isDraft: true }), pr(3))).toMatchObject({
+        canLand: 0,
+        holder: { kind: 'draft', pullRequest: { number: 102 } },
+    });
 });
 
 test('a stack with nothing open and not all merged reads closed', () => {

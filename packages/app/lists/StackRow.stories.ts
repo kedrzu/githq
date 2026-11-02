@@ -120,10 +120,19 @@ export const Mergeable: Story = {
 
 /** SP8: needing a rebase, the same key hands off to github.com — "Rebase on GitHub" opens the panel, which says why. */
 export const RebaseHandOff: Story = {
-    args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase) },
+    args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase), selected: true },
     decorators: [withMerging],
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByRole('button', { name: matchText('Rebase on GitHub') })).toBeVisible();
+    },
+};
+
+/** SP6, D21: not selected, a stack needing a rebase offers nothing — its state says it, and "Merge" stays for ready ones. */
+export const RebaseNotSelected: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase) },
+    decorators: [withMerging],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).queryByRole('button')).toBeNull();
     },
 };
 

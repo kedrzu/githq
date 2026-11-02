@@ -33,6 +33,8 @@ const props = defineProps<{
   runAgain?: boolean;
   /** The panel's read is on its way: the chevron is in its place, inactive, so nothing moves when it arrives. */
   reading?: boolean;
+  /** Whose they are, where it isn't plain ("#1206's checks"); else "Checks". */
+  label?: string;
 }>();
 
 const emit = defineEmits<{
@@ -122,7 +124,7 @@ function describeCounts(): CheckSummary {
     <MergeCondition
       :icon="getCheckIcon(line.state)"
       :tone="getCheckTone(line.state)"
-      :label="t(l.checks)"
+      :label="label ?? t(l.checks)"
       :text="runAgain ? t(l.willRunAgain, { checks: line.text }) : line.text"
       :aside="counts && counts.required > 0 && !open ? t(l.requiredCount, { count: counts.required }) : null"
     >
@@ -146,7 +148,7 @@ function describeCounts(): CheckSummary {
         v-for="group in groups"
         :key="group.key"
         :class="css.mergeChecks_group"
-        :aria-label="group.heading ?? t(l.checks)"
+        :aria-label="group.heading ?? label ?? t(l.checks)"
       >
         <h3
           v-if="group.heading"

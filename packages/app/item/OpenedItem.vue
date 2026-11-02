@@ -24,9 +24,8 @@ import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { describeStack } from '@/store/stacks/describeStack.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
-import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -101,20 +100,14 @@ const stack = computed((): StackDescription | null => {
     return null;
   }
 
-  const stackId = item.stack.id;
-  const others = items.all.filter(
-    other => other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
-  );
-  const found = groupStacks([...others, item]).get(stackId);
-  if (!found || found.members.length < 2) {
-    return null;
-  }
-
-  return describeStack({
-    stack: found,
+  const description = describeStackInCopy({
+    stackId: item.stack.id,
+    item,
+    items: items.all,
     viewerLogin: auth.viewer?.login ?? '',
     getItem: id => details.getItem(id),
   });
+  return description && description.held >= 2 ? description : null;
 });
 const closes = computed((): Item[] => {
   const { item } = opened;

@@ -24,5 +24,5 @@ export function getStackMergeEnd(params: GetStackMergeEndParams): number | null 
         return held.number;
     }
 
-    return merge.top?.number ?? null;
+    return merge.going.at(-1)?.number ?? null;
 }

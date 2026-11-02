@@ -44,6 +44,8 @@ blocked:
   en: Blocked
 heldBy:
   en: 'Green itself, held by #{number}'
+freshChecks:
+  en: Fresh checks running
 beingMerged:
   en: Being merged
 notKnown:

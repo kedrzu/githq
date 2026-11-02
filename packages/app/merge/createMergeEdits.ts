@@ -11,7 +11,8 @@ import type { Edit, EditAnswer, EditFailureReason, EditVerdict } from '@/edits/E
 import { toEditFailureReason } from '@/edits/toEditFailureReason.js';
 import { getItemReference } from '@/item/itemRoutes.js';
 import type { ClockShape } from '@/services/Clock.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
+import type { Item, PullRequestItem, PullRequestMergedAs } from '@/store/ItemTypes.js';
 import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
@@ -105,10 +106,7 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
             itemId: member.id,
             reference: `${member.repository.nameWithOwner}#${member.number}`,
             subject: { kind: 'merged' },
-            optimistic: {
-                item: current => (current.kind === 'pullRequest' ? { ...current, merging: request.method } : current),
-                supersededBy: isMerged,
-            },
+            optimistic: getBeingMergedLayer(request.method),
             send: () =>
                 Promise.resolve({
                     kind: 'following',
@@ -123,17 +121,7 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
             return { kind: 'unknown' };
         }
 
-        const now = new Date(clock.now()).toISOString();
-        return {
-            kind: 'confirmed',
-            layer: {
-                item: current =>
-                    current.kind === 'pullRequest'
-                        ? { ...current, state: 'MERGED', merged: true, closedAt: current.closedAt ?? now }
-                        : current,
-                supersededBy: isMerged,
-            },
-        };
+        return { kind: 'confirmed', layer: getMergedLayer(clock.now()) };
     }
 }
 
@@ -153,11 +141,7 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         itemId: item.id,
         reference: `${item.repository.nameWithOwner}#${item.number}`,
         subject: { kind: 'merged' },
-        optimistic: {
-            item: current => (current.kind === 'pullRequest' ? { ...current, merging: request.method } : current),
-            // GitHub's own copy says it is merged.
-            supersededBy: isMerged,
-        },
+        optimistic: getBeingMergedLayer(request.method),
         send: async ({ rest }) => {
             let answer: AsyncMergeAnswer;
             try {
@@ -243,19 +227,34 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
      * confirmation mark, so any copy a sync reads takes the row's place, and an older one only shows under the layer.
      */
     function merged(sha: string): EditVerdict {
-        const now = new Date(clock.now()).toISOString();
-        const mergedAs = { method: request.method, sha };
-        return {
-            kind: 'confirmed',
-            layer: {
-                item: current =>
-                    current.kind === 'pullRequest'
-                        ? { ...current, state: 'MERGED', merged: true, closedAt: current.closedAt ?? now, mergedAs }
-                        : current,
-                supersededBy: isMerged,
-            },
-        };
+        return { kind: 'confirmed', layer: getMergedLayer(clock.now(), { method: request.method, sha }) };
     }
+}
+
+/** Drawn as being merged until GitHub's own copy says it is merged. */
+function getBeingMergedLayer(method: PullRequestMergeMethod): ItemOverlayLayer {
+    return {
+        item: current => (current.kind === 'pullRequest' ? { ...current, merging: method } : current),
+        supersededBy: isMerged,
+    };
+}
+
+/** Drawn as merged until GitHub's own copy says so; `mergedAs` for the one whose commit GitHub named. */
+function getMergedLayer(at: number, mergedAs?: PullRequestMergedAs): ItemOverlayLayer {
+    const now = new Date(at).toISOString();
+    return {
+        item: current =>
+            current.kind === 'pullRequest'
+                ? {
+                      ...current,
+                      state: 'MERGED',
+                      merged: true,
+                      closedAt: current.closedAt ?? now,
+                      ...(mergedAs ? { mergedAs } : {}),
+                  }
+                : current,
+        supersededBy: isMerged,
+    };
 }
 
 function isMerged(item: Item) {

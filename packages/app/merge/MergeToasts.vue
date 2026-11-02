@@ -1,4 +1,4 @@
-<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35) — refused by an organisation that has not approved githq, it says so and links to requesting access (G5); a merge GitHub confirmed while the panel did not show it says so, small and quiet, and goes by itself (PM34). Both act on their own pull request, never on the row selected: `⌥M`, not `⇧M`. No answer in time has no toast (PM36). -->
+<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35) — refused by an organisation that has not approved githq, it says so and links to requesting access (G5); a merge GitHub confirmed while the panel did not show it says so, small and quiet — a stack's merge how many landed — and goes by itself (PM34). Both act on their own pull request, never on the row selected: `⌥M`, not `⇧M`. No answer in time has no toast (PM36). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -18,6 +18,7 @@ import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 
 import { isMergeFailure } from './isMergeFailure.js';
 import { MergeContext } from './MergeContext.js';
+import type { MergeConfirmation } from './MergePanelStore.js';
 import { MergePanelStore } from './MergePanelStore.js';
 import * as l from './MergeToasts.loc.js';
 
@@ -74,6 +75,13 @@ function backToMerge(failure: EditFailure, itemId: string) {
   merging?.open(itemId);
 }
 
+/** How much landed where: a stack's merge says how many (SP8). */
+function getConfirmationTitle({ reference, base, stack }: MergeConfirmation) {
+  return stack
+    ? t(l.mergedStack, { repository: stack.repository, count: stack.count, base })
+    : t(l.merged, { reference, base });
+}
+
 /** The pull request on GitHub — or, refused by an organisation that has not approved githq, where to request it (G5). */
 function getLink(failure: EditFailure, itemId: string) {
   if (failure.failed[0]?.reason.kind === 'organizationRestricted') {
@@ -127,7 +135,7 @@ function getLink(failure: EditFailure, itemId: string) {
   <Toast
     v-for="confirmation in store.confirmations"
     :key="`merged-${confirmation.id}`"
-    :title="t(l.merged, { reference: confirmation.reference, base: confirmation.base })"
+    :title="getConfirmationTitle(confirmation)"
     tone="done"
     :duration="CONFIRMED_MS"
     @update:open="!$event && store.dismissConfirmation(confirmation.id)"
