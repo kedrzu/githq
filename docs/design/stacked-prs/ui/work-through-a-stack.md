@@ -131,7 +131,7 @@ are gone from the frame and listed in [DECISIONS](../DECISIONS.md), D14 onward.
 |An entry against a pull request and an issue|Two lines, stack icon, pips: SP10, SP11|
 |Properties that differ|Union of assignees, shared labels and milestone, +N: SP12|
 |The lone marker and "2 of 4"|SP13, SP26, SP27|
-|The map in a panel|A bar pinned under the toolbar, rows at the top of the content: SP82; scrolled, the rows under the bar: SP83; dropped on the chevron: SP84 (D25; SP30–SP32 are the earlier folding map)|
+|The map in a panel|A bar pinned under the toolbar, rows at the top of the content: SP30, ten: SP82; scrolled, the rows under the bar: SP83; dropped on the chevron: SP84; the squares: SP88, SP90, SP93 (D25)|
 |The map in a modal|Top of the side column: SP33, SP34|
 |The map on a full page|Its own column on the left: SP35, SP36|
 |Choosing how far|A line moved with `↑` and `↓`: SP41, SP42|

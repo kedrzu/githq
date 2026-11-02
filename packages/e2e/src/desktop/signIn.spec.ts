@@ -44,7 +44,7 @@ test('signed out, the app opens on its own sign-in, never on the landing page: a
     page,
 }) => {
     const signIn = new DesktopSignInScreenHarness(page);
-    const landingHeading = page.getByRole('heading', { name: /Your GitHub issues/ });
+    const landingHeading = page.getByRole('heading', { name: /All your repositories/ });
 
     await page.goto('/');
     await expect(signIn.signInButton).toBeVisible();

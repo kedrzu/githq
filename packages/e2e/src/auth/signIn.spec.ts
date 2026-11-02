@@ -20,7 +20,7 @@ test('signed out, home is the landing page, saying what GitHub will ask for', as
 
     await expect(page).toHaveURL('/');
     const landing = new LandingHarness(page);
-    await expect(landing.root.getByRole('heading', { level: 1 })).toContainText('Your GitHub issues,');
+    await expect(landing.root.getByRole('heading', { level: 1 })).toContainText('All your repositories');
     await expect(landing.root).toContainText('GitHub will ask for full repository access.');
     await expect(landing.signInButton).toBeVisible();
     await expect(landing.banner).toBeHidden();

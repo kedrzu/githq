@@ -1,6 +1,6 @@
 # githq
 
-A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects — the Linear experience, free, with GitHub as the only backend.
+All your repositories in one place, no separate tracker: a fast, keyboard-first command center for GitHub Issues, Projects, pull requests and Actions across every repository — the Linear experience, free, with GitHub as the only backend. How we describe it: `docs/design/positioning/`.
 
 ## What this is
 
