@@ -1,9 +1,11 @@
-<!-- A stack's icon in its tone (`StackLook`), and the words after it in the same colour when given (the default slot): the state in words (`StackState`) and each pull request inside an expanded stack's card. The icon is decoration — the words, here or beside it, say the same. Its size is `--stack-tone-icon-size` (12px unless the parent sets it). -->
+<!-- A stack's icon in its tone (`StackLook`), and the words after it in the same colour when given (the default slot): the state in words (`StackState`) and each pull request inside an expanded stack's card; `wordsOnly`, the words alone (a stack map's row, its icon at the row's start). The icon is decoration — the words, here or beside it, say the same. Its size is `--stack-tone-icon-size` (12px unless the parent sets it). -->
 <script lang="ts" setup>
 import type { StackLook } from './useStackFacts.js';
 
 defineProps<{
   look: StackLook;
+  /** The words without the icon. */
+  wordsOnly?: boolean;
 }>();
 </script>
 
@@ -11,6 +13,7 @@ defineProps<{
   <span :class="[css.stackTone, css[`stackTone_${look.tone}`]]">
     <component
       :is="look.icon"
+      v-if="!wordsOnly"
       :class="css.stackTone_icon"
       aria-hidden="true"
     />

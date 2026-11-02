@@ -3,10 +3,20 @@ import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { D1_ISSUE_DETAIL, F1_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
+import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './ItemView.stories.js';
 
-const { ContributorView, IssueInPanel, IssueSplit, LoadingComments, PullRequestFailing } = composeStories(stories);
+const {
+    ContributorView,
+    IssueInPanel,
+    IssueSplit,
+    LoadingComments,
+    PullRequestFailing,
+    StackOfTenInModal,
+    StackOfTenInPanel,
+    StackOfTwoOnPage,
+} = composeStories(stories);
 
 test("the body and comments show GitHub's rendering only, never the markdown as HTML; their links leave for a new tab; a comment on its way shows as the text typed", async () => {
     await IssueInPanel.run({
@@ -226,4 +236,76 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
     await userEvent.keyboard('l');
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
     expect(ContributorView.args.onEdit).not.toHaveBeenCalled();
+});
+
+test('D17: in a panel the stack map folds to one line once the content scrolls down, and unfolds on a click or at the top', async () => {
+    await StackOfTenInPanel.run();
+    const rows = page.getByRole('list', { name: 'Pull requests of the stack' });
+    await expect.element(rows).toBeVisible();
+    const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
+    if (!scroll) {
+        throw new Error('The content has no scrolling column.');
+    }
+
+    scroll.scrollTop = 200;
+    scroll.dispatchEvent(new Event('scroll'));
+    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10/u });
+    await expect.element(strip).toBeVisible();
+    expect(rows.query()).toBeNull();
+
+    await strip.click();
+    await expect.element(rows).toBeVisible();
+
+    scroll.scrollTop = 400;
+    scroll.dispatchEvent(new Event('scroll'));
+    await expect.element(strip).toBeVisible();
+    scroll.scrollTop = 0;
+    scroll.dispatchEvent(new Event('scroll'));
+    await expect.element(rows).toBeVisible();
+});
+
+test('D17: content that fits once the map folds keeps it folded — the browser clamping it to the top does not unfold it, and the end shows', async () => {
+    await StackOfTenInPanel.run();
+    const rows = page.getByRole('list', { name: 'Pull requests of the stack' });
+    await expect.element(rows).toBeVisible();
+    const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
+    const frame = scroll?.closest<HTMLElement>('[style*="100vh"]');
+    if (!scroll || !frame) {
+        throw new Error('The content has no scrolling column in a frame.');
+    }
+
+    // The content overflows by 40px, less than the height the fold frees.
+    const overflow = scroll.scrollHeight - scroll.clientHeight;
+    frame.style.height = `${frame.clientHeight + overflow - 40}px`;
+    await expect.poll(() => scroll.scrollHeight - scroll.clientHeight).toBe(40);
+
+    scroll.scrollTop = 40;
+    scroll.dispatchEvent(new Event('scroll'));
+    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10/u });
+    await expect.element(strip).toBeVisible();
+    await expect.poll(() => scroll.scrollTop).toBe(0);
+    scroll.dispatchEvent(new Event('scroll'));
+    await new Promise<void>(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+
+    await expect.element(strip).toBeVisible();
+    expect(rows.query()).toBeNull();
+    expect(scroll.scrollHeight).toBeLessThanOrEqual(scroll.clientHeight);
+});
+
+test('a row of the stack map opens its pull request in place of this one', async () => {
+    await StackOfTenInModal.run();
+    const { onOpenInPlace } = StackOfTenInModal.args;
+
+    await page.getByRole('button', { name: /#62/u }).click();
+    expect(onOpenInPlace).toHaveBeenCalledExactlyOnceWith(SYNC_ENGINE_STACK[2]!.id);
+});
+
+test('the stack map shows only for a pull request in a stack: on a page in its own column', async () => {
+    await StackOfTwoOnPage.run();
+    await expect.element(page.getByRole('region', { name: 'The stack' })).toBeVisible();
+
+    await PullRequestFailing.run();
+    expect(page.getByRole('region', { name: 'The stack' }).query()).toBeNull();
 });

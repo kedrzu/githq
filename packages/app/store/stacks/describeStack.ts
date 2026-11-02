@@ -1,4 +1,6 @@
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
+import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -109,6 +111,11 @@ export interface StackReviewRequestedState {
     readonly openCount: number;
     /** How many open pull requests can merge, counted from the lowest open one ({@link StackHeldState.readyCount}). */
     readonly readyCount: number;
+    /**
+     * The first open pull request that cannot merge ({@link StackHeldState.blocker}), `null` when every one can: the
+     * entry asks for the review, an opened pull request's map says what stops the stack (D17).
+     */
+    readonly blocker: StackBlocker | null;
 }
 
 /** Every open pull request can merge. */
@@ -177,7 +184,7 @@ export function describeStack(params: DescribeStackParams): StackDescription {
         held: members.length,
         pips,
         state: getState(),
-        landed: members.filter(isMerged).length,
+        landed: members.filter(isMergedPullRequest).length,
         updatedAt,
     };
 
@@ -186,7 +193,7 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             return { kind: 'incomplete' };
         }
 
-        if (members.every(isMerged)) {
+        if (members.every(isMergedPullRequest)) {
             return { kind: 'merged' };
         }
 
@@ -195,7 +202,7 @@ export function describeStack(params: DescribeStackParams): StackDescription {
         }
 
         const closedIndex = members.findIndex(
-            (pr, index) => isClosed(pr) && members.slice(index + 1).some(isOpenPullRequest),
+            (pr, index) => isClosedPullRequest(pr) && members.slice(index + 1).some(isOpenPullRequest),
         );
         const closed = members[closedIndex];
         if (closed) {
@@ -219,27 +226,26 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             readyCount++;
         }
 
+        const firstStuck = open[readyCount];
+        const blocker: StackBlocker | null = firstStuck
+            ? {
+                  number: firstStuck.number,
+                  kind: getPipKind(firstStuck),
+                  waitingForReview: getPullRequestStanding(firstStuck).waitingForReview,
+              }
+            : null;
+
         const requestedCount = open.filter(pr => isReviewRequestedOf(pr, params.viewerLogin)).length;
         const viewerAuthors = members.some(pr => pr.author?.login === params.viewerLogin);
         if (requestedCount > 0 && !viewerAuthors) {
-            return { kind: 'reviewRequested', requestedCount, openCount: open.length, readyCount };
+            return { kind: 'reviewRequested', requestedCount, openCount: open.length, readyCount, blocker };
         }
 
-        const blocker = open[readyCount];
         if (!blocker) {
             return { kind: 'ready', openCount: open.length };
         }
 
-        return {
-            kind: 'held',
-            readyCount,
-            openCount: open.length,
-            blocker: {
-                number: blocker.number,
-                kind: getPipKind(blocker),
-                waitingForReview: getPullRequestStanding(blocker).waitingForReview,
-            },
-        };
+        return { kind: 'held', readyCount, openCount: open.length, blocker };
     }
 }
 
@@ -297,11 +303,11 @@ function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
 
 /** A pull request's own state, as its pip shows it. */
 function getPipKind(pr: PullRequestItem): StackPullRequestPipKind {
-    if (isMerged(pr)) {
+    if (isMergedPullRequest(pr)) {
         return 'merged';
     }
 
-    if (isClosed(pr)) {
+    if (isClosedPullRequest(pr)) {
         return 'closed';
     }
 
@@ -339,12 +345,4 @@ function canMerge(pr: PullRequestItem): boolean {
         default:
             return false;
     }
-}
-
-function isMerged(pr: PullRequestItem): boolean {
-    return pr.merged || pr.state === 'MERGED';
-}
-
-function isClosed(pr: PullRequestItem): boolean {
-    return pr.state === 'CLOSED' && !pr.merged;
 }

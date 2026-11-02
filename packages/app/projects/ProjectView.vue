@@ -523,6 +523,7 @@ function addDraft(title: string, group: string | null) {
             :now="now"
             :checked="checked"
             :half-checked="halfChecked"
+            :opened-id="openedId"
           >
             <template #fields>
               <ProjectEntryFields
@@ -569,6 +570,7 @@ function addDraft(title: string, group: string | null) {
             :now="now"
             :checked="checked"
             :half-checked="halfChecked"
+            :opened-id="openedId"
             :expanded="expanded"
             :selected-member="selectedMember"
             @toggle="toggleStack"

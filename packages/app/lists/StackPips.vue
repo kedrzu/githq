@@ -1,4 +1,4 @@
-<!-- A stack's pips (D6, D14, D16): one per pull request, first to last, each in its own state — a missing one hollow while the copy is incomplete. Beside an entry holding a share of the stack's open pull requests, or on a lone row's marker, only those of the entry or the row are drawn in their state: the stack's other open ones are hollow (SP24). The pip of the row's own pull request is tall (SP13). Narrower beyond 12. Decoration: the words beside them say how the stack stands. -->
+<!-- A stack's pips (D6, D14, D16): one per pull request, first to last, each in its own state — a missing one hollow while the copy is incomplete. Beside an entry holding a share of the stack's open pull requests, or on a lone row's marker, only those of the entry or the row are drawn in their state: the stack's other open ones are hollow (SP24). The pip of the row's own pull request is tall (SP13), and so is that of the one opened over the list (D14). Narrower beyond 12. Decoration: the words beside them say how the stack stands. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 

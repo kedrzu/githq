@@ -22,7 +22,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** SP14 "Ready": every open pull request can merge — green pips, "All 3 ready"; the label and the person all share. */
-export const Ready: Story = {};
+export const Ready: Story = {
+    play: async ({ canvasElement }) => {
+        // Nothing opened over the list: no pip is tall (D14).
+        await expect(getPipHeights(canvasElement)).toEqual([4, 4, 4]);
+    },
+};
 
 /**
  * SP14 "Held", SP12: the third fails its checks and blocks the fourth, which reads grey on its own pip; three people,
@@ -91,6 +96,14 @@ export const HalfChecked: Story = {
     },
 };
 
+/** D14: the second of its pull requests is opened over the list — its pip alone is tall. */
+export const Opened: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.held), openedId: SAMPLE_STACKS.held[1]?.id ?? null },
+    play: async ({ canvasElement }) => {
+        await expect(getPipHeights(canvasElement)).toEqual([4, 10, 4, 4]);
+    },
+};
+
 /** SP25: the list's filter matches one of its four pull requests — "1 of 4 matches". */
 export const Filtered: Story = {
     args: {
@@ -143,4 +156,10 @@ function sampleProject(title: string, status: string): ItemProject {
         status: { name: status, color: 'YELLOW', optionId: null },
         updatedAt: '2026-10-29T10:00:00Z',
     };
+}
+
+/** The heights of the pips drawn, first to last. */
+function getPipHeights(canvasElement: HTMLElement) {
+    const pips = canvasElement.querySelector('[aria-hidden="true"]:has(> span)')?.children ?? [];
+    return [...pips].map(pip => pip.getBoundingClientRect().height);
 }

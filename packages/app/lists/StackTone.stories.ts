@@ -29,6 +29,20 @@ export const WithWords: Story = {
     },
 };
 
+/** The words alone, without the icon: a stack map's row in a panel (SP30, SP31). */
+export const WordsOnly: Story = {
+    args: { look: { icon: Hourglass, tone: 'muted' }, wordsOnly: true },
+    render: args => ({
+        components: { StackTone },
+        setup: () => ({ args }),
+        template: '<StackTone v-bind="args">Waiting for review</StackTone>',
+    }),
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Waiting for review')).toBeVisible();
+        await expect(canvasElement.querySelector('svg')).toBeNull();
+    },
+};
+
 /** Checks running. */
 export const Warning: Story = { args: { look: { icon: Loader, tone: 'warning' } } };
 

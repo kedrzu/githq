@@ -285,6 +285,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :now="now"
           :checked="checked"
           :half-checked="halfChecked"
+          :opened-id="openedId"
         />
         <ItemRow
           v-else
@@ -292,6 +293,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :parent="parent?.value"
           :deep="depth > 1"
           :header="header"
+          :opened-id="openedId"
           :properties="properties"
           :repository="repositoryOf(listGroup)"
           :review-requested="reviewRequestedIds.has(entry.id)"
@@ -327,6 +329,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :now="now"
           :checked="checked"
           :half-checked="halfChecked"
+          :opened-id="openedId"
           :expanded="expanded"
           :selected-member="selectedMember"
           @toggle="toggleStack"
