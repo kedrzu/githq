@@ -48,6 +48,9 @@ $color-on-light: #0e1013;
 $color-accent: #7b87f7;
 $color-green: #3fb950;
 $color-red: #f0545c;
+// A failure that isn't news (actions): a workflow broken for over a day, a run on a ref that doesn't count. Marks
+// only, never text.
+$color-red-quiet: #a6474c;
 $color-amber: #d6a23a;
 $color-purple: #a57bf5;
 

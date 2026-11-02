@@ -67,6 +67,7 @@ test('the break starts at the oldest failure after the last pass, and is new for
     expect(state.workflows[0]).toMatchObject({
         state: 'broken',
         breakStartedAt: Date.parse('2026-11-02T08:00:00Z'),
+        breakStartKnown: true,
         isNew: true,
         latestFailedRun: latestFailure,
     });
@@ -85,7 +86,11 @@ test('with no pass stored, the break starts at the oldest failure stored, and af
         NOW,
     );
 
-    expect(state.workflows[0]).toMatchObject({ breakStartedAt: Date.parse('2026-10-30T10:00:00Z'), isNew: false });
+    expect(state.workflows[0]).toMatchObject({
+        breakStartedAt: Date.parse('2026-10-30T10:00:00Z'),
+        breakStartKnown: false,
+        isNew: false,
+    });
     expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
 });
 

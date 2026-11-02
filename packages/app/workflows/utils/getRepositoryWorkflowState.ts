@@ -68,7 +68,14 @@ function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, no
     };
 
     if (workflow.state !== 'active') {
-        return { ...base, state: 'disabled', breakStartedAt: null, isNew: false, latestFailedRun: null };
+        return {
+            ...base,
+            state: 'disabled',
+            breakStartedAt: null,
+            breakStartKnown: false,
+            isNew: false,
+            latestFailedRun: null,
+        };
     }
 
     const verdict = getWorkflowVerdict(runs);
@@ -77,13 +84,15 @@ function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, no
             ...base,
             state: verdict === 'passed' ? 'passing' : 'unknown',
             breakStartedAt: null,
+            breakStartKnown: false,
             isNew: false,
             latestFailedRun: null,
         };
     }
 
     // The runs after the last passed one, all of them when none passed: the break is what failed among them.
-    const breakRuns = runs.slice(runs.findLastIndex(run => getRunVerdict(run) === 'passed') + 1);
+    const lastPass = runs.findLastIndex(run => getRunVerdict(run) === 'passed');
+    const breakRuns = runs.slice(lastPass + 1);
     const firstFailure = breakRuns.find(run => getRunVerdict(run) === 'failed');
     const latestFailure = breakRuns.findLast(run => getRunVerdict(run) === 'failed');
     const breakStartedAt = firstFailure ? Date.parse(firstFailure.createdAt) : null;
@@ -91,6 +100,7 @@ function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, no
         ...base,
         state: 'broken',
         breakStartedAt,
+        breakStartKnown: lastPass >= 0,
         isNew: breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
         latestFailedRun: latestFailure ?? null,
     };

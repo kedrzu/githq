@@ -79,6 +79,11 @@ export interface WorkflowState {
      * of the oldest failure stored when no pass is. `null` unless broken.
      */
     readonly breakStartedAt: number | null;
+    /**
+     * A pass is stored before the break, so it started at `breakStartedAt`; otherwise it started then or earlier, past
+     * the runs stored ("Broken for 4+ days"). `false` unless broken.
+     */
+    readonly breakStartKnown: boolean;
     /** Broken for less than a day. */
     readonly isNew: boolean;
     /** The latest 5 runs that count, oldest first, any verdict or none. */
