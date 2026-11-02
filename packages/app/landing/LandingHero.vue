@@ -101,7 +101,7 @@ onBeforeUnmount(() => clearInterval(timer));
           :class="css.landingHero_image"
           src="/landing/hero-my-work.webp"
           width="2400"
-          height="1501"
+          height="1500"
           fetchpriority="high"
           :alt="t(l.heroAlt)"
         />
