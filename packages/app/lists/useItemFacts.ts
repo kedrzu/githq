@@ -25,6 +25,7 @@ import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import * as l from './useItemFacts.loc.js';
+import { getItemPeople } from './utils/getItemPeople.js';
 
 /** Which item and how it is listed. */
 export interface UseItemFactsOptions {
@@ -107,14 +108,9 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             ? `#${number}`
             : `${nameWithOwner}#${number}`;
     });
-    const people = computed((): readonly ItemUser[] => {
-        const listed = item.value;
-        if (peopleShown.value === 'assignees') {
-            return listed.assignees;
-        }
-
-        return listed.author && listed.author.login !== viewerLogin.value ? [listed.author] : [];
-    });
+    const people = computed(() =>
+        getItemPeople({ item: item.value, shown: peopleShown.value, viewerLogin: viewerLogin.value }),
+    );
     const age = computed(() => formatAge(Date.parse(item.value.updatedAt), now.value));
     const status = computed(() => {
         const listed = item.value;

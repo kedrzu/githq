@@ -1,0 +1,18 @@
+# Reads whole stacks, so the copy holds every pull request of a stack it holds one of (stacked PRs, D7) — merged
+# and closed ones too. `first` is the largest stack asked: GitHub charges for the entries asked, not those found.
+query PullRequestStacks($ids: [ID!]!, $first: Int!) {
+    nodes(ids: $ids) {
+        ... on PullRequestStack {
+            id
+            entries(first: $first) {
+                # Tells a whole answer from a cut one: only a whole one says who left the stack.
+                totalCount
+                nodes {
+                    pullRequest {
+                        ...PullRequestFields
+                    }
+                }
+            }
+        }
+    }
+}

@@ -11,8 +11,8 @@ export interface MyWorkRepositoryGroup {
  * "My work" grouped by repository (D22): a group per tracked repository in `trackedRepositories`' order (the
  * sidebar's), then one of everything from repositories not tracked; groups without rows are left out. Inside a
  * group the rows keep the order of `groups` — reason by reason, each in its own order. A pull request nested
- * under the issue it closes stays under it, in the issue's group, so every row and the counts stay those of
- * `groups`.
+ * under the issue it closes stays under it, in the issue's group, and a stack's entry stays whole (all its pull requests
+ * are of one repository), so every row and the counts stay those of `groups`.
  *
  * @__NO_SIDE_EFFECTS__
  */

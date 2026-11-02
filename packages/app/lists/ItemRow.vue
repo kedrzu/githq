@@ -175,7 +175,7 @@ const shown = computed(() => new Set(props.properties));
 .itemRow {
   display: flex;
   gap: $spacing-10;
-  padding: 7px $spacing-16;
+  padding: $spacing-7 $spacing-16;
 }
 
 .itemRow_nested {
@@ -186,8 +186,8 @@ const shown = computed(() => new Set(props.properties));
   flex: none;
   width: 15px;
   height: 15px;
-  padding: 2px;
-  margin-top: 2px;
+  padding: $spacing-2;
+  margin-top: $spacing-2;
   color: $color-on-light;
   background: $color-accent;
   border-radius: $radius-sm;
@@ -196,7 +196,7 @@ const shown = computed(() => new Set(props.properties));
 .itemRow_undone {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
   padding: 1px 7px;
   color: $color-red;
@@ -208,7 +208,7 @@ const shown = computed(() => new Set(props.properties));
   flex: none;
   width: 15px;
   height: 15px;
-  margin-top: 2px;
+  margin-top: $spacing-2;
 
   .itemRow_nested & {
     width: 13px;
@@ -236,7 +236,7 @@ const shown = computed(() => new Set(props.properties));
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 5px;
+  gap: $spacing-5;
   min-width: 0;
 }
 
@@ -260,7 +260,7 @@ const shown = computed(() => new Set(props.properties));
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13.5px;
+  font-size: $font-size-row-title;
   font-weight: $font-weight-medium;
   line-height: 18px;
   color: $color-fg;
@@ -287,7 +287,7 @@ const shown = computed(() => new Set(props.properties));
 .itemRow_status {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
 }
 
@@ -327,7 +327,7 @@ const shown = computed(() => new Set(props.properties));
 .itemRow_field {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
   color: $color-fg-2;
 }

@@ -5,6 +5,9 @@ import type { Logger } from '@nzyme/logging/Logger.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { toItem } from '@/store/toItem.js';
 
+import { groupNodeErrors } from './utils/groupNodeErrors.js';
+import { isNodeGone } from './utils/isNodeGone.js';
+
 /** What {@link readItemsByIds} reads. */
 export interface ReadItemsByIdsParams {
     readonly sdk: GitHubSdk;
@@ -41,7 +44,7 @@ export async function readItemsByIds(params: ReadItemsByIdsParams): Promise<Read
             if (nodeErrors.length > 0) {
                 logger.warn('Item read without the fields GitHub refused', { id, errors: nodeErrors });
             }
-        } else if (nodeErrors.length === 0 || nodeErrors.some(isNodeNotFound)) {
+        } else if (isNodeGone(nodeErrors)) {
             gone.add(id);
         } else {
             logger.warn('Item could not be read; its kept copy stays', { id, errors: nodeErrors });
@@ -49,26 +52,4 @@ export async function readItemsByIds(params: ReadItemsByIdsParams): Promise<Read
     }
 
     return { read, gone };
-}
-
-/** The errors of a partial `nodes(ids:)` answer by the index of the node they belong to; others are left out. */
-function groupNodeErrors(errors: readonly GitHubGraphQLErrorEntry[]) {
-    const byNode = new Map<number, GitHubGraphQLErrorEntry[]>();
-    for (const error of errors) {
-        const [field, index] = error.path ?? [];
-        if (field !== 'nodes' || typeof index !== 'number') {
-            continue;
-        }
-
-        const nodeErrors = byNode.get(index) ?? [];
-        nodeErrors.push(error);
-        byNode.set(index, nodeErrors);
-    }
-
-    return byNode;
-}
-
-/** GitHub saying the node itself does not exist (any more) or is not visible: `NOT_FOUND` at `nodes[i]`. */
-function isNodeNotFound(error: GitHubGraphQLErrorEntry) {
-    return error.type === 'NOT_FOUND' && error.path?.length === 2;
 }

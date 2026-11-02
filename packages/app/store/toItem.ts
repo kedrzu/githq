@@ -82,6 +82,16 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
             node.latestOpinionatedReviews?.nodes ?? [],
             (review): ItemReview | null => review && { author: review.author?.login ?? null, state: review.state },
         ),
+        stack:
+            node.stack && node.stackEntry
+                ? {
+                      id: node.stack.id,
+                      number: node.stack.number,
+                      size: node.stack.size,
+                      position: node.stackEntry.position,
+                  }
+                : null,
+        behindBase: node.baseRef?.target != null && node.baseRef.target.oid !== node.baseRefOid,
     };
 }
 

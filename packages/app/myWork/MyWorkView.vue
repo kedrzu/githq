@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). In the list a stack is one entry (`StackRow`, its pull requests nested under it once expanded); the board's `work` is built without stacks until it draws them, each pull request a plain card of its own group. On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CloudOff, ListFilter } from 'lucide-vue-next';
@@ -15,9 +15,12 @@ import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListChoice, ListContextMenuProps, ListGroup, ListRow, ListViewOptions } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
+import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
 
 import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
@@ -36,6 +39,8 @@ const props = withDefaults(
     group?: MyWorkGroup | null;
     /** The signed-in user. */
     viewerLogin: string;
+    /** An item of the local copy by id: the issue a stack's entry may be named after. */
+    getItem?: (id: string) => Item | undefined;
     /** Epoch ms the rows' ages are counted to. */
     now: number;
     /** How many of the user's pull requests wait on others, for the empty "Needs me". */
@@ -49,7 +54,14 @@ const props = withDefaults(
     /** The view options differ from the defaults: the display options offer a reset. */
     modified?: boolean;
   }>(),
-  { group: null, openedId: null, undone: () => new Map(), modified: false, trackedRepositories: () => [] },
+  {
+    group: null,
+    getItem: () => undefined,
+    openedId: null,
+    undone: () => new Map(),
+    modified: false,
+    trackedRepositories: () => [],
+  },
 );
 
 const emit = defineEmits<{
@@ -102,11 +114,22 @@ const properties = computed(() => {
   return ITEM_PROPERTIES.filter((property): property is ItemProperty => shown.includes(property));
 });
 
-/** The rows there because the user's review is asked: they say so whatever group they are drawn in. */
+/**
+ * The rows there because the user's review is asked: they say so whatever group they are drawn in. A stack's entry says
+ * it itself ("Your review on 2 of 4"); its pull requests asking it say so as rows once it is expanded.
+ */
 const reviewRequestedIds = computed(
   () =>
     new Set(
-      props.work.groups.flatMap(entry => (entry.group === 'reviewRequested' ? entry.rows.map(row => row.item.id) : [])),
+      props.work.groups.flatMap(entry =>
+        entry.group === 'reviewRequested'
+          ? entry.rows.flatMap(row =>
+              row.stack
+                ? row.nested.filter(pr => isReviewRequestedOf(pr, props.viewerLogin)).map(pr => pr.id)
+                : [row.item.id],
+            )
+          : [],
+      ),
     ),
 );
 /** The reason groups shown: the narrowed one alone, or all four. */
@@ -172,12 +195,32 @@ function repositoryOf(group: ListGroup<Item>) {
   return options.value.grouping === 'repository' && group.key !== OTHER_REPOSITORIES ? group.key : null;
 }
 
+/** A row as the engine lists it: a stack's entry (the list's; the board's work has none) or a plain row. */
 function toListRow(row: MyWorkRow): ListRow<Item> {
+  if (!row.stack) {
+    return toListItem(row.item, row.nested);
+  }
+
+  const id = `stack:${row.stack.id}`;
   return {
-    key: row.item.id,
-    id: row.item.id,
-    value: row.item,
-    nested: row.nested.map(nested => ({ key: nested.id, id: nested.id, value: nested })),
+    ...toListItem(row.item, row.nested),
+    key: id,
+    id,
+    stack: {
+      id: row.stack.id,
+      description: describeStack({ stack: row.stack, viewerLogin: props.viewerLogin, getItem: props.getItem }),
+      open: row.item.id,
+      pullRequests: row.nested,
+    },
+  };
+}
+
+function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
+  return {
+    key: item.id,
+    id: item.id,
+    value: item,
+    nested: nested.map(entry => ({ key: entry.id, id: entry.id, value: entry })),
   };
 }
 </script>
@@ -216,8 +259,19 @@ function toListRow(row: MyWorkRow): ListRow<Item> {
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"
     >
-      <template #row="{ entry, parent, group: listGroup, checked }">
+      <template #row="{ entry, parent, group: listGroup, checked, stack }">
+        <StackRow
+          v-if="stack"
+          :stack="stack"
+          :properties="properties"
+          :repository="repositoryOf(listGroup)"
+          people="author"
+          :viewer-login="viewerLogin"
+          :now="now"
+          :checked="checked"
+        />
         <ItemRow
+          v-else
           :item="entry.value"
           :parent="parent?.value"
           :properties="properties"

@@ -13,8 +13,9 @@ import type { TrackedTarget } from './TrackingTypes.js';
 
 /**
  * Which items the local copy keeps, and what each tracked repository and project holds: an item stays while
- * "my work" has it, its repository is tracked, or a tracked project holds it (D4). When the user stops tracking
- * a repository or project, its items go — those nothing else keeps.
+ * "my work" has it, its repository is tracked, or a tracked project holds it (D4) — and a pull request while
+ * another of its stack stays for one of those (stacked PRs, D7). When the user stops tracking a repository or
+ * project, its items go — those nothing else keeps.
  */
 export type TrackedItems = Resolved<typeof TrackedItems>;
 export const TrackedItems = defineService({
@@ -47,13 +48,38 @@ export const TrackedItems = defineService({
 
             return names;
         });
+        // The stacks with a pull request kept for itself: the rest of each is kept with it.
+        const keptStacks = computed(() => {
+            const ids = new Set<string>();
+            for (const item of items.all) {
+                if (item.kind === 'pullRequest' && item.stack && keepsForItself(item)) {
+                    ids.add(item.stack.id);
+                }
+            }
+
+            return ids;
+        });
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, evict, getOpenCount, isPrivate };
+        return { keeps, keepsForItself, evict, getOpenCount, isPrivate };
 
-        /** Whether the local copy keeps the item: "my work" has it, or a tracked repository or project; reactive. */
+        /**
+         * Whether the local copy keeps the item: "my work" has it, a tracked repository or project, or it is a pull
+         * request of a stack another of which one of those has; reactive.
+         */
         function keeps(item: Item) {
+            return (
+                keepsForItself(item) ||
+                (item.kind === 'pullRequest' && item.stack !== null && keptStacks.value.has(item.stack.id))
+            );
+        }
+
+        /**
+         * Whether the local copy keeps the item for itself — "my work" has it, a tracked repository or project — rather
+         * than only for its stack, whose pull requests nothing else re-reads.
+         */
+        function keepsForItself(item: Item) {
             const { membership } = items;
             return (
                 MY_WORK_GROUPS.some(group => membership[group]?.has(item.id)) ||
@@ -62,21 +88,36 @@ export const TrackedItems = defineService({
             );
         }
 
-        /** Removes from the item store those of `ids` nothing keeps any more; returns their ids. */
+        /**
+         * Removes from the item store those of `ids` nothing keeps any more, and the rest of their stacks kept only
+         * with them; returns their ids.
+         */
         function evict(ids: Iterable<string>) {
-            const left: string[] = [];
+            const left = new Set<string>();
+            const stacks = new Set<string>();
             for (const id of ids) {
                 const item = items.getStored(id);
                 if (item && !keeps(item)) {
-                    left.push(id);
+                    left.add(id);
+                    if (item.kind === 'pullRequest' && item.stack) {
+                        stacks.add(item.stack.id);
+                    }
                 }
             }
 
-            if (left.length > 0) {
+            if (stacks.size > 0) {
+                for (const item of items.all) {
+                    if (item.kind === 'pullRequest' && item.stack && stacks.has(item.stack.id) && !keeps(item)) {
+                        left.add(item.id);
+                    }
+                }
+            }
+
+            if (left.size > 0) {
                 items.remove(left);
             }
 
-            return left;
+            return [...left];
         }
 
         /**

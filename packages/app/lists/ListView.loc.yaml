@@ -24,3 +24,9 @@ nextColumn:
   en: Next or previous column
 moveToColumn:
   en: Move to the next or previous column
+toggleStack:
+  en: Expand or collapse a stack
+expandStack:
+  en: Expand the stack
+collapseStack:
+  en: Collapse the stack

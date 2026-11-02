@@ -28,6 +28,8 @@ dissolving a stack. Creating pull requests stays out, as everywhere in githq.** 
 > stated; `GET` worked live with a `repo` token, writes not tried. Unstack keeps merged and queued pull requests in the stack
 > ([managing](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/managing-stacked-pull-requests)).
 
+> **Checked 2026-11-01 (live, a scratch repository):** `POST /stacks` works with the `repo` token of `gh`.
+
 **Rejected.**
 
 - Seeing and merging only, leaving management to `gh` (the agent's first guess at what matters) — the owner wants all.
@@ -102,6 +104,10 @@ first in the list, then the pull request's title.
 ([reference](https://docs.github.com/en/pull-requests/reference/stacked-pull-requests)). Not found: whether `mergeable` or
 `mergeStateStatus` already reflect this. Needs a live test on an open stack; the computation holds either way.
 
+> **Checked 2026-11-01 (live, a scratch repository):** they do not. With the first pull request a draft, the second and third
+> still read `MERGEABLE`, `CLEAN`; GitHub refused merging them for needing a rebase while all three read `CLEAN`. githq works the
+> state out itself.
+
 **Rejected.**
 
 - A "blocked by an earlier one" mark on each row — entries start collapsed, so rows are rarely seen, and GitHub may already say
@@ -129,6 +135,9 @@ a pull request by number, so one added on top since the last refresh is simply n
 > **Checked 2026-11-01:** `PullRequest.stack`, `stackEntry.position`, `PullRequestStack.entries`
 > (`packages/github/src/schema.graphql:45321`, `:47197`, `:47247`). REST `/pulls` carries `stack` as well, with `base.sha` null on
 > merged stacks (live, #9). Not tested: whether joining a stack moves `updated_at`, which change detection relies on.
+
+> **Checked 2026-11-01 (live, a scratch repository):** joining a stack does not move `updated_at` of its pull requests, in REST
+> or GraphQL, so change detection does not see a pull request join or leave a stack.
 
 **Rejected.**
 
@@ -331,6 +340,11 @@ this", so no key is added. It is frequent, so it must not shout or reorder.
 
 > **Not found:** a field saying that a stack needs rebasing, or why ([D8](#d8)). SP46 and SP47 tell a moved target from an earlier push; they need
 > this settled in the live test.
+
+> **Checked 2026-11-01 (live, a scratch repository):** no such field, but it can be worked out. After a push to the first pull request,
+> the second one's `baseRefOid` stayed on the old commit while `baseRef.target.oid` moved, and GitHub refused merging it: "Stack needs
+> to be rebased: PR #2's branch is not a linear descendant of PR #1's branch." After rebasing the later branches the two matched again.
+> A moved target alone (the same mismatch on the first pull request) did not block: the whole stack merged with `squash`.
 
 **Rejected.**
 

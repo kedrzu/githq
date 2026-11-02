@@ -11,6 +11,7 @@ import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
+import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
@@ -230,6 +231,61 @@ test('grouped by repository on the first download: what arrived is in its reposi
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
 });
 
+test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too; on the board, plain cards', async () => {
+    mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP);
+
+    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
+    const entry = review.filter({ hasText: 'Retry webhooks with backoff' });
+    await expect.element(entry).toHaveTextContent('Your review on 2 of 4');
+    // Like my work's rows, it shows who opened its pull requests (SP1), not who they are assigned to.
+    await expect.element(entry.getByRole('img', { name: 'sbrown' })).toBeInTheDocument();
+    expect(review.elements()).toHaveLength(3);
+    await expect.element(page.getByText('Part 4 of S_webhooks')).not.toBeInTheDocument();
+
+    // Expanded, it shows all four — the two in no group of my work too; those asking the user's review say so.
+    await userEvent.click(entry.getByRole('button', { name: 'Expand the stack' }));
+    await expect.element(page.getByText('Part 4 of S_webhooks')).toBeInTheDocument();
+    expect(review.elements()).toHaveLength(7);
+    await expect
+        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect
+        .element(review.filter({ hasText: 'Part 4 of S_webhooks' }))
+        .not.toHaveTextContent(/your review requested/i);
+
+    // The user's own stack shows no face: not theirs, nor those its pull requests are assigned to.
+    const mine = page.getByRole('region', { name: 'My pull requests' });
+    const own = mine.getByRole('listitem').filter({ hasText: 'Migrate class calendar to new date picker' });
+    await expect.element(own).toBeInTheDocument();
+    await expect.element(own.getByRole('img', { name: SAMPLE_VIEWER.login })).not.toBeInTheDocument();
+    await expect.element(own.getByRole('img', { name: 'mlaine' })).not.toBeInTheDocument();
+    await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
+});
+
+test("stacked PRs: on the board a stack's pull requests are plain cards, each in its own group's column, with their mark", async () => {
+    // The fourth is found by a later group's search alone: it is a card there, as on a board without stacks.
+    const membership = sampleMembership({
+        reviewRequested: [...(STACKED_MY_WORK_MEMBERSHIP.reviewRequested ?? [])],
+        authored: [...(STACKED_MY_WORK_MEMBERSHIP.authored ?? [])],
+        assigned: [...(STACKED_MY_WORK_MEMBERSHIP.assigned ?? [])],
+        mentioned: [...(STACKED_MY_WORK_MEMBERSHIP.mentioned ?? []), 'PR_S_webhooks_4'],
+    });
+    mount(STACKED_MY_WORK_ITEMS, membership, { layout: 'board' });
+
+    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
+    await expect
+        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect
+        .element(review.filter({ hasText: 'Part 3 of S_webhooks' }))
+        .toHaveTextContent(/your review requested/i);
+    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).not.toBeInTheDocument();
+    expect(review.elements()).toHaveLength(4);
+
+    const mentioned = page.getByRole('region', { name: 'Mentioned' }).getByRole('listitem');
+    await expect.element(mentioned.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
+});
+
 /**
  * Mounts the view over `initial` and the groups of `arrived` (all of D1 by default), holding its filter and
  * selection like the page does.
@@ -260,7 +316,7 @@ function mount(
             h(
                 MyWorkView,
                 {
-                    work: sampleMyWork(items.value, membership.value, filter.value),
+                    work: sampleMyWork(items.value, membership.value, filter.value, display.layout),
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     waitingCount: 0,

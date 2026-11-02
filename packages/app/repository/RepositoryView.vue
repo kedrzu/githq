@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12). On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one (`StackRow`), its pull requests nested under it once expanded. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`). Not tracked (J3): githq has only what concerns the user here; it says so, lists that — narrowed by the same kind tabs — and offers to track the repository, after which the rest arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -38,6 +38,7 @@ import type {
   ListViewOptions,
 } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -270,9 +271,19 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, checked }">
+        <template #row="{ entry, parent, checked, stack }">
+          <StackRow
+            v-if="stack"
+            :stack="stack"
+            :properties="properties"
+            :repository="nameWithOwner"
+            :now="now"
+            :checked="checked"
+          />
           <ItemRow
+            v-else
             :item="entry.value"
+            :parent="parent?.value"
             :properties="properties"
             people="assignees"
             :repository="nameWithOwner"
@@ -386,9 +397,18 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           @open="emit('open', $event)"
           @listed="emit('listed', $event)"
         >
-          <template #row="{ entry, checked }">
+          <template #row="{ entry, parent, checked, stack }">
+            <StackRow
+              v-if="stack"
+              :stack="stack"
+              :properties="properties"
+              :now="now"
+              :checked="checked"
+            />
             <ItemRow
+              v-else
               :item="entry.value"
+              :parent="parent?.value"
               :properties="properties"
               :viewer-login="viewerLogin"
               :now="now"
