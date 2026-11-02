@@ -29,8 +29,8 @@ import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/se
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
+import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
-import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './AppCommands.loc.js';
@@ -45,7 +45,7 @@ const t = useTranslate();
 const registry = useService(CommandRegistry);
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
-const tracking = useService(TrackingStore);
+const pendingUntracks = useService(PendingUntracks);
 const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
@@ -69,7 +69,7 @@ const repository = computed(() => {
 
 const navigationData = computed((): NavigationData => ({
   places: getPlaces(),
-  trackedRepositories: tracking.repositories.map(tracked => tracked.nameWithOwner),
+  trackedRepositories: pendingUntracks.repositories.map(tracked => tracked.nameWithOwner),
   items: items.all,
 }));
 const enabledCommands = computed(() => registry.commands.filter(command => registry.isEnabled(command)));
@@ -182,7 +182,7 @@ function getPlaces(): NavigationPlace[] {
       path: getMyWorkGroupPath(group),
     })),
   ];
-  for (const project of tracking.projects) {
+  for (const project of pendingUntracks.projects) {
     places.push({
       id: `project:${project.id}`,
       group: 'projects',
@@ -204,7 +204,7 @@ function getPlaces(): NavigationPlace[] {
     }
   }
 
-  for (const tracked of tracking.repositories) {
+  for (const tracked of pendingUntracks.repositories) {
     places.push({
       id: `repository:${tracked.nameWithOwner}`,
       group: 'repositories',

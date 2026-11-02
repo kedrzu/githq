@@ -10,3 +10,5 @@ active:
   en: active {age} ago
 neverPushed:
   en: empty
+tracked:
+  en: tracked

@@ -7,8 +7,8 @@ const meta = {
     component: SettingsView,
     args: {
         section: 'repositories',
-        repositories: 15,
-        projects: 3,
+        trackedRepositories: 15,
+        trackedProjects: 2,
         'onUpdate:section': fn(),
     },
     // As tall as the window, like in the app.
@@ -23,19 +23,22 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** G8: the title, the tabs with what is tracked counted, and the keys that switch them. */
+/** G8: the title, and the tabs with what is tracked counted. */
 export const Repositories: Story = {};
 
+/** G8: on Projects. */
+export const Projects: Story = { args: { section: 'projects' } };
+
 /** T4: on a section with no count. */
-export const SavingToGitHub: Story = { args: { section: 'saving' } };
+export const SyncSettings: Story = { args: { section: 'sync' } };
 
 /** T7: syncing stopped, the tab says so with an amber dot. */
-export const SavingStopped: Story = { args: { section: 'saving', savingStopped: true } };
+export const SyncStopped: Story = { args: { section: 'sync', savingStopped: true } };
 
-/** A narrow window: the tabs keep the room, the keys hint gone. */
+/** A narrow window: the tabs keep the room. */
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 560px"><story /></div>' })],
 };
 
 /** Nothing tracked yet: the counts say so. */
-export const NothingTracked: Story = { args: { repositories: 0, projects: 0 } };
+export const NothingTracked: Story = { args: { trackedRepositories: 0, trackedProjects: 0 } };

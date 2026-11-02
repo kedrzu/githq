@@ -5,6 +5,7 @@ import { stringifyQuery } from 'vue-router';
 import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
 import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
+import HomePage from '@/home/HomePage.vue';
 import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
 import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
@@ -13,7 +14,9 @@ import {
     FIRST_DOWNLOAD_PATH,
     GITHUB_RESERVED_SEGMENTS,
     PROJECT_PATHS,
+    PROJECT_SETTINGS_PATHS,
     REPOSITORY_PATH,
+    REPOSITORY_SETTINGS_PATH,
 } from '@/tracking/trackingRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
@@ -39,16 +42,13 @@ export function stringifyGitHubQuery(query: LocationQueryRaw | undefined) {
     return stringifyQuery(query ?? {}).replaceAll('|', '%7C');
 }
 
-/** One function for every home route, so moving between them keeps the page (`key: 'my-work'`). */
-function HomePage() {
-    return import('@/home/HomePage.vue');
-}
-
 function* getRoutes(): Generator<RouteRecordRaw> {
     // Home: "My work", and narrowed to one of its groups at GitHub's dashboard address of that list —
     // `/pulls/mentioned` too, for the mentioned group holds pull requests as well; one page instance for all (`key`).
     // Signed out, `/` is the landing page (the desktop app's sign-in in its build, `home/HomePage.vue`). The guard sets the layout (`middleware/auth.global.ts`): the shell
-    // signed in, none for the landing page — which is also what the server renders.
+    // signed in, none for the landing page — which is also what the server renders. One component for every home
+    // route, so moving between them keeps the page (`key: 'my-work'`). Not a chunk of its own: it only picks the
+    // page, and each page is one (`home/HomePage.vue`), so the shell goes straight to "my work"'s chunk.
     yield {
         path: HOME_PATH,
         name: 'my-work',
@@ -119,6 +119,24 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name: index === 0 ? 'project-org' : 'project-user',
             component: () => import('@/projects/ProjectPage.vue'),
+            meta: { auth: 'signedIn', layout: 'shell' },
+        };
+    }
+    // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their
+    // settings — so the same address opens them on github.com. The static last segment outranks the hand-off of a
+    // repository's other pages (`/owner/name/:path`) and of `/orgs/…`, `/users/…`; one not tracked settles on its
+    // section of Settings (the page does, once the kept settings are read).
+    yield {
+        path: REPOSITORY_SETTINGS_PATH,
+        name: 'repository-settings',
+        component: () => import('@/settings/RepositorySettingsPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell' },
+    };
+    for (const [index, path] of PROJECT_SETTINGS_PATHS.entries()) {
+        yield {
+            path,
+            name: index === 0 ? 'project-org-settings' : 'project-user-settings',
+            component: () => import('@/settings/ProjectSettingsPage.vue'),
             meta: { auth: 'signedIn', layout: 'shell' },
         };
     }

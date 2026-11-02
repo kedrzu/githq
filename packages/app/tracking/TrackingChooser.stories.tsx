@@ -1,12 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn, userEvent, within } from 'storybook/test';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, shallowRef } from 'vue';
 
 import SavingChoice from '@/settings/SavingChoice.vue';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
-import { EMPTY_CANDIDATES, SAMPLE_CANDIDATES, SAMPLE_OWN_CHOICE } from '@/testing/sampleTracking.js';
+import {
+    EMPTY_CANDIDATES,
+    SAMPLE_CANDIDATES,
+    SAMPLE_OWN_CHOICE,
+    SAMPLE_PICKER_CANDIDATES,
+    SAMPLE_TRACKED,
+    sampleCandidateRepository,
+} from '@/testing/sampleTracking.js';
 
 import TrackingChooser from './TrackingChooser.vue';
+import type { TrackingCandidates } from './TrackingTypes.js';
 
 /** The chooser's props, as a story passes them. */
 type ChooserArgs = InstanceType<typeof TrackingChooser>['$props'];
@@ -73,6 +81,96 @@ export const NothingToPickWithSaving: Story = {
     args: { candidates: EMPTY_CANDIDATES, repositories: [], projects: [] },
     render: args => renderChooser(args, true),
 };
+
+/**
+ * T18: the picker — the user's twelve all tracked, folded to their header; skyline-labs with what is tracked and two
+ * picked in sight, no projects, no heading, no footer (its dialog has one).
+ */
+export const Picker: Story = {
+    args: {
+        candidates: SAMPLE_PICKER_CANDIDATES,
+        tracked: SAMPLE_TRACKED,
+        repositories: ['skyline-labs/mobile', 'skyline-labs/payments'],
+        projects: [],
+    },
+    render: args => renderPicker(args),
+};
+
+/** T1: the picker searching "web" — every owner narrowed, tracked and untracked alike. */
+export const PickerSearching: Story = {
+    args: { ...Picker.args, filter: 'web', repositories: [] },
+    render: args => renderPicker(args),
+};
+
+/** The picker while what the user and their organisations have is read. */
+export const PickerReading: Story = {
+    args: { ...Picker.args, candidates: null, reading: true, repositories: [] },
+    render: args => renderPicker(args),
+};
+
+/** The picker after reading that failed: a repository can still be looked up by name. */
+export const PickerNotRead: Story = {
+    args: { ...Picker.args, candidates: null, reading: false, repositories: [] },
+    render: args => renderPicker(args),
+};
+
+/**
+ * The picker with its own picks and filter, as its dialog keeps them; the next page of an organisation asked for arrives
+ * at once — the rest of skyline-labs, with `skyline-labs/legacy-billing`.
+ */
+function renderPicker({ onLoadMore, ...args }: ChooserArgs) {
+    return defineComponent({
+        setup() {
+            const repositories = ref(args.repositories);
+            const filter = ref(args.filter ?? '');
+            const candidates = shallowRef(args.candidates);
+            function loadMore(owner: string) {
+                onLoadMore?.(owner);
+                candidates.value = candidates.value && readNextPage(candidates.value, owner);
+            }
+
+            return () => (
+                <div style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <TrackingChooser
+                        {...args}
+                        candidates={candidates.value}
+                        repositories={repositories.value}
+                        filter={filter.value}
+                        onUpdate:repositories={value => (repositories.value = value)}
+                        onUpdate:filter={value => (filter.value = value)}
+                        onLoadMore={loadMore}
+                    />
+                </div>
+            );
+        },
+    });
+}
+
+/** The candidates with the owner's last page read: one more repository, nothing left to read. */
+function readNextPage(candidates: TrackingCandidates, owner: string): TrackingCandidates {
+    return {
+        ...candidates,
+        organizations: candidates.organizations.map(organization =>
+            organization.login === owner && organization.repositories?.nextCursor != null
+                ? {
+                      ...organization,
+                      repositories: {
+                          ...organization.repositories,
+                          repositories: [
+                              ...organization.repositories.repositories,
+                              sampleCandidateRepository(`${owner}/legacy-billing`, {
+                                  ago: 400 * 86_400_000,
+                                  open: 3,
+                                  isPrivate: true,
+                              }),
+                          ],
+                          nextCursor: null,
+                      },
+                  }
+                : organization,
+        ),
+    };
+}
 
 /** The chooser with its own choice; with `saving`, the saving choice in its band, ticked as `creates` says. */
 function renderChooser(args: ChooserArgs, saving: boolean) {

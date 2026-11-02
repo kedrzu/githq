@@ -1,6 +1,8 @@
 import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { ProjectTrackingScreenHarness } from '../harnesses/ProjectTrackingScreen.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
@@ -58,10 +60,10 @@ test('J3: an untracked repository shows what concerns the user; Settings opens w
     await expect(page).toHaveURL('/settings?q=acme%2Fweb');
     const tracking = new TrackingScreenHarness(page);
     await expect(tracking.search).toHaveValue('acme/web');
-    await expect(tracking.notTracked('acme/web')).toBeVisible();
+    await expect(tracking.row('acme/web')).not.toBeChecked();
 });
 
-test('J4: an untracked project shows what concerns the user; Settings opens on Projects with its address searched, and offers it', async ({
+test('J4: an untracked project shows what concerns the user; Settings opens on Projects with its address, and offers it', async ({
     page,
     github,
 }) => {
@@ -88,7 +90,13 @@ test('J4: an untracked project shows what concerns the user; Settings opens on P
 
     const address = `https://github.com/users/${SAMPLE_VIEWER.viewer.login}/projects/7`;
     await expect(page).toHaveURL(`/settings?tab=projects&q=${encodeURIComponent(address)}`);
-    const tracking = new TrackingScreenHarness(page);
+    const tracking = new ProjectTrackingScreenHarness(page);
     await expect(tracking.search).toHaveValue(address);
-    await expect(tracking.notTracked('Mobile launch')).toBeVisible();
+    await expect(tracking.row('Mobile launch')).not.toBeChecked();
+
+    // Esc clears the filter, then closes the picker over the Projects section.
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(tracking.dialog).toHaveCount(0);
+    await expect(new SettingsScreenHarness(page).section('Projects')).toHaveAttribute('aria-pressed', 'true');
 });

@@ -18,10 +18,10 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
 /** The landing page's headline as the server renders it (as `checkPrerenderedPages` looks for it). */
-const LANDING_HEADING = '>Your GitHub issues,';
+const LANDING_HEADING = '>All your repositories';
 
 /** The headline's text, as the browser shows it. */
-const LANDING_HEADING_TEXT = 'Your GitHub issues,';
+const LANDING_HEADING_TEXT = 'All your repositories';
 
 /** The `Cookie` header of a browser holding the hint. */
 const HINT_HEADER = `${SIGNED_IN_HINT_COOKIE.name}=${SIGNED_IN_HINT_COOKIE.value}`;

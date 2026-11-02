@@ -1,0 +1,68 @@
+owners:
+  en: Owners
+allOwners:
+  en: All owners
+ownerCount:
+  en: '{selected} / {total}'
+ownerCountTracked:
+  en: '{selected} of {total} tracked'
+hiddenCount:
+  en: – / –
+hiddenCountLabel:
+  en: projects can't be listed
+filterLabel:
+  en: Filter projects
+filterPlaceholder:
+  plural: count
+  en:
+    zero: Filter projects…
+    one: Filter 1 project…
+    many: Filter {count} projects…
+recentlyUpdated:
+  en: Recently updated
+note:
+  en: A tracked project brings all its items with it, including those in repositories you don't track. Its views, fields and iterations come along.
+projects:
+  en: Projects
+ownKind:
+  en: your projects
+organisationKind:
+  en: organisation
+projectsHidden:
+  en: organisation · projects hidden
+noProjects:
+  en: no projects
+allTracked:
+  en: all {count} tracked
+trackedOf:
+  en: '{selected} of {total} tracked'
+trackedCount:
+  en: '{count} tracked'
+pickedCount:
+  en: '{count} picked'
+matches:
+  plural: count
+  en:
+    one: 1 match for “{filter}”
+    many: '{count} matches for “{filter}”'
+show:
+  en: Show
+selectAll:
+  en: Select all
+selectNone:
+  en: Select none
+closedHidden:
+  plural: count
+  en:
+    one: '1 closed project hidden: {names}'
+    many: '{count} closed projects hidden: {names}'
+closedName:
+  en: '{title} (#{number})'
+showClosed:
+  en: Show closed
+reading:
+  en: Reading your projects…
+notRead:
+  en: GitHub didn't list your projects. Paste one's address, or owner/number, to find it.
+nothingMatches:
+  en: Nothing you can see matches “{filter}”.

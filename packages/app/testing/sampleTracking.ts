@@ -2,6 +2,7 @@ import type {
     CandidateProject,
     CandidateRepositories,
     CandidateRepository,
+    TrackedRepositoryEntry,
     TrackingCandidates,
 } from '@/tracking/TrackingTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -150,3 +151,39 @@ export const SAMPLE_OWN_CHOICE = {
     repositories: OWN.map(repository => repository.nameWithOwner),
     projects: ['PVT_kedrzu_1'],
 };
+
+/** skyline-labs's web repositories (T1), read in the picker's sample besides the first page. */
+const SKYLINE_WEB = [
+    sampleCandidateRepository('skyline-labs/webapp', { ago: 30 * MINUTE, open: 142, isPrivate: true }),
+    sampleCandidateRepository('skyline-labs/web-admin', { ago: 4 * HOUR, open: 88, isPrivate: true }),
+    sampleCandidateRepository('skyline-labs/webhooks', { ago: DAY, open: 214, isPrivate: true }),
+    sampleCandidateRepository('skyline-labs/website', { ago: 14 * DAY, open: 31 }),
+];
+
+/** What the picker offers in the mockups (T18, T1): the sample's, skyline-labs's web repositories read too. */
+export const SAMPLE_PICKER_CANDIDATES: TrackingCandidates = {
+    ...SAMPLE_CANDIDATES,
+    organizations: SAMPLE_CANDIDATES.organizations.map(organization =>
+        organization.login === 'skyline-labs' && organization.repositories
+            ? {
+                  ...organization,
+                  repositories: {
+                      ...organization.repositories,
+                      repositories: [...organization.repositories.repositories, ...SKYLINE_WEB],
+                  },
+              }
+            : organization,
+    ),
+};
+
+/**
+ * What the picker's sample tracks (T18): the user's twelve repositories; skyline-labs's portal and webapp, and
+ * `skyline-labs/legacy-billing`, on a page not read yet; someone else's, which the picker leaves out.
+ */
+export const SAMPLE_TRACKED: readonly TrackedRepositoryEntry[] = [
+    ...OWN.map(repository => ({ nameWithOwner: repository.nameWithOwner, isPrivate: false })),
+    { nameWithOwner: 'skyline-labs/portal', isPrivate: true },
+    { nameWithOwner: 'skyline-labs/webapp', isPrivate: true },
+    { nameWithOwner: 'skyline-labs/legacy-billing', isPrivate: null },
+    { nameWithOwner: 'vitejs/vite', isPrivate: false },
+];

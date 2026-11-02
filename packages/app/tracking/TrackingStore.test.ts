@@ -119,6 +119,42 @@ test('what localStorage keeps wins over an older choice still in the local copy'
     expect(second.tracking.document.repositories).toEqual([{ ...WEB, tracking: false }]);
 });
 
+test('a sync state left by an untrack the closing page cut off goes when the settings are read, so tracking it again downloads it', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    const target = { kind: 'repository', nameWithOwner: 'acme/web' } as const;
+    const stillTracked = { kind: 'repository', nameWithOwner: 'acme/api' } as const;
+    const first = await open({ login });
+    first.tracking.choose({ repositories: [WEB, API], projects: [] });
+    await first.tracking.updateSyncState(target, { phase: 'done' });
+    await first.tracking.updateSyncState(stillTracked, { phase: 'done' });
+    // Untracked in the slot, written at once; the sync state's delete never reached the local copy.
+    const kept = JSON.parse(first.localStorage.get(`githq.settings.${login}`) ?? 'null') as {
+        document: SettingsDocument;
+    };
+    first.localStorage.set(
+        `githq.settings.${login}`,
+        JSON.stringify({
+            ...kept,
+            document: {
+                ...kept.document,
+                repositories: kept.document.repositories.map(entry =>
+                    entry.nameWithOwner === WEB.nameWithOwner ? { ...entry, tracking: false } : entry,
+                ),
+            },
+        }),
+    );
+
+    const second = await open({ login, localStorage: first.localStorage });
+    expect(second.tracking.getSyncState(target)).toBeUndefined();
+    expect(second.tracking.getSyncState(stillTracked)?.phase).toBe('done');
+    second.tracking.track({ repository: WEB });
+
+    // Gone from the local copy too, not only from this tab's memory.
+    const third = await open({ login, localStorage: first.localStorage });
+    expect(third.tracking.isTracked(target)).toBe(true);
+    expect(third.tracking.getSyncState(target)).toBeUndefined();
+});
+
 test('a slot this build does not understand is not replaced by an older choice in the local copy', async () => {
     const login = `user-${crypto.randomUUID()}`;
     await keepOlderChoice(login, { chosen: true, repositories: [WEB], projects: [] });
@@ -179,6 +215,27 @@ test('a tab that has not heard of another tab’s change yet writes on top of it
     expect(JSON.parse(first.localStorage.get(key) ?? 'null')).toMatchObject({
         saving: { state: 'stopped', reason: { kind: 'deleted' } },
     });
+});
+
+test('a choice made as a change of what is tracked is made of what the shared slot holds, another tab’s change included', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    // One localStorage, no broadcast between them: the second tab never hears what the first one sends.
+    const first = await open({ login });
+    const second = await open({ login, localStorage: first.localStorage });
+    second.tracking.choose({ repositories: [WEB, API], projects: [] });
+    const untracked: TrackedTarget[] = [];
+    second.tracking.onUntrack(target => untracked.push(target));
+
+    first.tracking.track({ repository: DOCS });
+    second.tracking.choose(({ repositories, projects }) => ({
+        repositories: repositories.filter(repository => repository.nameWithOwner !== 'acme/api'),
+        projects: [...projects, ROADMAP],
+    }));
+
+    expect(second.tracking.repositories).toEqual([WEB, DOCS]);
+    expect(second.tracking.projects).toEqual([ROADMAP]);
+    // Only what the change untracked is dropped here.
+    expect(untracked).toEqual([{ kind: 'repository', nameWithOwner: 'acme/api' }]);
 });
 
 test('settings loaded instead of choosing count as the choice, what they track kept as it is', async () => {

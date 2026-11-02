@@ -1,0 +1,14 @@
+synced:
+  en: synced {age} ago
+neverRead:
+  en: not read yet
+slower:
+  en: '{read} · checked every 5 min: GitHub refuses the free check'
+waiting:
+  en: waiting
+downloading:
+  en: downloading {done} of {total}
+hidden:
+  en: Not shown to githq
+refused:
+  en: GitHub refuses its changes · asking again hourly

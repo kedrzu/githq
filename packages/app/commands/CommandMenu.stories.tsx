@@ -71,11 +71,11 @@ const NAVIGATION: NavigationData = {
             path: '/settings?tab=projects',
         },
         {
-            id: 'settings:saving',
+            id: 'settings:sync',
             group: 'goTo',
-            kind: 'saving',
-            title: 'Settings: Saving to GitHub',
-            path: '/settings?tab=saving',
+            kind: 'sync',
+            title: 'Settings: Sync settings',
+            path: '/settings?tab=sync',
         },
         {
             id: 'settings:account',

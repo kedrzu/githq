@@ -12,8 +12,10 @@ import {
     FIRST_DOWNLOAD_PATH,
     getGitHubUrl,
     getProjectPath,
+    getProjectSettingsPath,
     getRepositoryKind,
     getRepositoryPath,
+    getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
 
@@ -45,8 +47,13 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3', 'project-org'],
     ['/orgs/acme/projects/3/views/2', 'project-org'],
     ['/users/kedrzu/projects/7', 'project-user'],
+    // A tracked repository's and project's settings, at GitHub's addresses of them.
+    ['/acme/web/settings', 'repository-settings'],
+    ['/my-org/web.js/settings', 'repository-settings'],
+    ['/orgs/acme/projects/3/settings', 'project-org-settings'],
+    ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
     ['/settings', 'settings'],
-    ['/settings?tab=saving', 'settings'],
+    ['/settings?tab=sync', 'settings'],
     ['/settings/tracking/new', 'tracking-choice'],
     ['/settings/tracking/download', 'first-download'],
     ['/auth/callback', 'auth-callback'],
@@ -71,6 +78,10 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web.js/tree/main/src', 'github'],
     ['/acme/web/actions', 'github'],
     ['/acme/web/issues/new', 'github'],
+    ['/acme/web/settings/branches', 'github'],
+    ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],
+    ['/orgs/acme/projects/settings', 'github-orgs'],
+    ['/orgs/acme/settings', 'github-orgs'],
     ['/account', 'github-account'],
     ['/sign-in', 'github'],
     ['/tracking', 'github'],
@@ -111,7 +122,7 @@ test("tracking's old address settles on Settings, keeping the section, and never
     expect(settle('/settings/tracking?tab=projects#top')).toBe('/settings?tab=projects#top');
 });
 
-test("Settings' section is its `?tab=`; none or an unknown one is the first", () => {
+test("Settings' section is its `?tab=`; none, an unknown or an old one is the first", () => {
     for (const section of SETTINGS_SECTIONS) {
         expect(readSettingsSection(router.resolve(getSettingsPath(section)).query.tab)).toBe(section);
     }
@@ -120,6 +131,10 @@ test("Settings' section is its `?tab=`; none or an unknown one is the first", ()
     expect(readSettingsSection(undefined)).toBe('repositories');
     expect(readSettingsSection('unknown')).toBe('repositories');
     expect(readSettingsSection(['account'])).toBe('repositories');
+    // The sections an old address names are gone into the first, with no alias.
+    for (const old of ['tracking', 'saving']) {
+        expect(readSettingsSection(old)).toBe('repositories');
+    }
 });
 
 test('home and every group of "my work" are one page instance', () => {
@@ -185,6 +200,9 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
+        [getRepositorySettingsPath('acme/web'), 'repository-settings'],
+        [getProjectSettingsPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org-settings'],
+        [getProjectSettingsPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }), 'project-user-settings'],
         [SETTINGS_PATH, 'settings'],
         ...SETTINGS_SECTIONS.map(section => [getSettingsPath(section), 'settings'] as const),
         [TRACKING_CHOICE_PATH, 'tracking-choice'],

@@ -13,7 +13,11 @@ ownerCountLabel:
 filterLabel:
   en: Filter repositories
 filterPlaceholder:
-  en: Filter {count} repositories…
+  plural: count
+  en:
+    zero: Filter repositories…
+    one: Filter 1 repository…
+    many: Filter {count} repositories…
 recentActivity:
   en: Recent activity
 repositories:
@@ -121,3 +125,30 @@ continue:
   en: Continue to My work
 chosen:
   en: To track
+ownerCountTracked:
+  en: '{selected} of {total} tracked'
+ownKind:
+  en: your repositories
+organisationKind:
+  en: organisation
+trackedOf:
+  en: '{selected} of {total} tracked'
+trackedCount:
+  en: '{count} tracked'
+matches:
+  plural: count
+  en:
+    one: 1 match for “{filter}”
+    many: '{count} matches for “{filter}”'
+reading:
+  en: Reading your repositories…
+nothingMatches:
+  en: Nothing you can see matches “{filter}”.
+notRead:
+  en: GitHub didn't list your repositories. Type one's name, owner/name, to find it.
+show:
+  en: Show
+allTracked:
+  en: all {count} tracked
+pickedCount:
+  en: '{count} picked'

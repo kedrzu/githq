@@ -1,11 +1,12 @@
-<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). A section's controls go into the header from the section itself (`SettingsView`). -->
+<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). `?q=` opens the Repositories or Projects section's picker with that search (`TrackedRepositoriesSection.vue`, `TrackedProjectsSection.vue`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AccountSection from '@/account/AccountSection.vue';
-import TrackingSection from '@/tracking/TrackingSection.vue';
+import TrackedProjectsSection from '@/tracking/TrackedProjectsSection.vue';
+import TrackedRepositoriesSection from '@/tracking/TrackedRepositoriesSection.vue';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import SavingSection from './SavingSection.vue';
@@ -28,15 +29,18 @@ const section = computed({
 <template>
   <SettingsView
     v-model:section="section"
-    :repositories="tracking.repositories.length"
-    :projects="tracking.projects.length"
+    :tracked-repositories="tracking.repositories.length"
+    :tracked-projects="tracking.projects.length"
     :saving-stopped="sync.state.state === 'stopped'"
   >
     <AccountSection v-if="section === 'account'" />
-    <SavingSection v-else-if="section === 'saving'" />
-    <TrackingSection
+    <SavingSection v-else-if="section === 'sync'" />
+    <TrackedProjectsSection
+      v-else-if="section === 'projects'"
+      :initial-search="search"
+    />
+    <TrackedRepositoriesSection
       v-else
-      :tab="section"
       :initial-search="search"
     />
   </SettingsView>

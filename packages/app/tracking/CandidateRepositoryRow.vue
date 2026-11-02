@@ -1,4 +1,4 @@
-<!-- A repository the tracking screens offer (G2, G4, G5): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. -->
+<!-- A repository the tracking screens offer (G2, G4, G5, T18): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. In the picker (T18) a tracked one shows a grey, fixed tick and "tracked" instead of its activity; one GitHub's lists have not given shows only what is known of it — no tag when its privacy is unknown, no open count. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
@@ -9,14 +9,17 @@ import { formatAge } from '@/utils/formatAge.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './CandidateRepositoryRow.loc.js';
-import type { CandidateRepository } from './TrackingTypes.js';
+import type { CandidateRepository, TrackedRepositoryEntry } from './TrackingTypes.js';
 
 /** A push within this long reads as recent activity, brighter. */
 const RECENT_MS = 7 * 24 * 60 * 60_000;
 
 const props = defineProps<{
-  repository: CandidateRepository;
+  /** Offered by GitHub's lists, or (the picker) tracked yet not among what they gave so far. */
+  repository: CandidateRepository | TrackedRepositoryEntry;
   now: number;
+  /** The picker: already tracked, so its tick is fixed and it can't be picked. */
+  tracked?: boolean;
 }>();
 
 const selected = defineModel<boolean>({ required: true });
@@ -24,21 +27,24 @@ const selected = defineModel<boolean>({ required: true });
 const t = useTranslate();
 
 const parts = computed(() => parseRepositoryName(props.repository.nameWithOwner));
-const pushedAt = computed(() => (props.repository.pushedAt === null ? null : Date.parse(props.repository.pushedAt)));
+const candidate = computed(() => ('openIssues' in props.repository ? props.repository : null));
+const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date.parse(candidate.value.pushedAt)));
 </script>
 
 <template>
   <div
-    :class="css.candidateRepositoryRow"
+    :class="[css.candidateRepositoryRow, tracked && css.candidateRepositoryRow_tracked]"
     data-tracking-row
   >
     <Checkbox
-      v-model="selected"
+      :model-value="tracked || selected"
+      :readonly="tracked"
       :class="css.candidateRepositoryRow_label"
+      @update:model-value="selected = $event"
     >
       <span :class="css.candidateRepositoryRow_name">
         <component
-          :is="repository.isPrivate ? Lock : BookMarked"
+          :is="repository.isPrivate === true ? Lock : BookMarked"
           :class="css.candidateRepositoryRow_icon"
           aria-hidden="true"
         />
@@ -46,18 +52,30 @@ const pushedAt = computed(() => (props.repository.pushedAt === null ? null : Dat
           <span :class="css.candidateRepositoryRow_owner">{{ parts.owner }}/</span
           ><span :class="css.candidateRepositoryRow_repo">{{ parts.name }}</span>
         </span>
-        <span :class="css.candidateRepositoryRow_pill">{{ t(repository.isPrivate ? l.private : l.public) }}</span>
         <span
-          v-if="repository.isArchived"
+          v-if="repository.isPrivate !== null"
+          :class="css.candidateRepositoryRow_pill"
+          >{{ t(repository.isPrivate ? l.private : l.public) }}</span
+        >
+        <span
+          v-if="candidate?.isArchived"
           :class="css.candidateRepositoryRow_meta"
           >{{ t(l.archived) }}</span
         >
       </span>
     </Checkbox>
-    <span :class="css.candidateRepositoryRow_meta">{{
-      t(l.open, { count: repository.openIssues + repository.openPullRequests })
-    }}</span>
     <span
+      v-if="candidate"
+      :class="css.candidateRepositoryRow_meta"
+      >{{ t(l.open, { count: candidate.openIssues + candidate.openPullRequests }) }}</span
+    >
+    <span
+      v-if="tracked"
+      :class="css.candidateRepositoryRow_active"
+      >{{ t(l.tracked) }}</span
+    >
+    <span
+      v-else-if="candidate"
       :class="[
         css.candidateRepositoryRow_active,
         pushedAt !== null && now - pushedAt < RECENT_MS && css.candidateRepositoryRow_active_recent,
@@ -141,7 +159,7 @@ const pushedAt = computed(() => (props.repository.pushedAt === null ? null : Dat
 
 .candidateRepositoryRow_active {
   flex: none;
-  width: 110px;
+  min-width: 110px;
   font-size: $font-size-xs;
   color: $color-fg-dim;
   text-align: right;
@@ -150,5 +168,19 @@ const pushedAt = computed(() => (props.repository.pushedAt === null ? null : Dat
 
 .candidateRepositoryRow_active_recent {
   color: $color-fg-2;
+}
+
+// A fixed tick, grey rather than the readonly checkbox's dimmed accent, with the row's name quieter.
+.candidateRepositoryRow.candidateRepositoryRow_tracked {
+  [role='checkbox'] {
+    color: $color-fg-3;
+    background: $color-bg-3;
+    border-color: $color-border-2;
+    opacity: 1;
+  }
+
+  .candidateRepositoryRow_repo {
+    color: $color-fg-2;
+  }
 }
 </style>

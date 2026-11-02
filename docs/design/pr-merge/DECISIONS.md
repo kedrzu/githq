@@ -210,34 +210,56 @@ design)
 
 ## D11
 
-**The panel's form, the commit text and what happens after `⌘Enter` are the owner's pick among the variants in
-`githq.pen`; the design agent's recommendation is its own surface over any screen (PM1a, PM2a), the title with one line
-of the message (PM3a), and the panel leaving once GitHub accepts (PM32a).** (2026-11-01, design agent; open until the
-owner picks)
+**The merge panel is its own surface over any screen (PM1a, PM2a); it shows the commit title and the first lines of the
+message (PM3a); and it leaves once GitHub accepts (PM32a).** (2026-11-01, design agent's proposal; chosen by the owner
+2026-11-02)
 
 **Why.** Its own surface is the only form that is the same two keys on a list, a board and an opened item. A title and
-one line show what lands in the history in no extra room, against a 38-line message. Leaving at the `202` keeps an
+the first lines show what lands in the history in little room, against a 38-line message. Leaving at the `202` keeps an
 immediate refusal in the panel with its text ([D6](#d6)) and costs no key on the usual merge.
 
-**Rejected.** Nothing yet: PM1b, PM1c, PM2b, PM2c, PM3b, PM3c and PM32b stand until the owner picks.
+**Rejected.**
+
+- Opening inside the row or the standing (PM1b, PM2b), or a tray at the corner (PM1c, PM2c) — neither is the same two
+  keys everywhere.
+- The commit text folded to one line (PM3b) or always open (PM3c) — too little, or a 38-line message in the way of
+  every merge.
+- The panel staying until the outcome (PM32b) — holds the user for a merge that takes seconds to minutes.
 
 ## D12
 
 **`⌘Enter` is always the way forward of the state, and never bypass; bypass answers to `⌥⌘Enter`, jumping the queue to
 `⇧⌘Enter`.** The way forward is merge, enable auto-merge, add to queue, update branch, mark ready, resolve on GitHub or
-turn auto-merge off. When there is none the primary is off. (2026-11-01, design agent; bypass's shape, PM12a or PM12b,
-is the owner's pick)
+turn auto-merge off. When there is none the primary is off. (2026-11-01, design agent; bypass's shape, PM12a, chosen by
+the owner 2026-11-02)
 
 **Why.** The second key stays one habit across every state, and the only actions with a cost nobody can take back get
-a chord that habit can't hit. Bypass in red, below the usual action, says what it skips.
+a chord that habit can't hit. Bypass is its own line above the footer, with a red outline and red words but no red
+ground, so the usual action stays the one filled button, last; its label, "Bypass rules and merge", says what it does
+without reading the line beside it. The line lists every requirement not met, because GitHub only says whether the user
+may bypass (`viewerCanMergeAsAdmin`), not which rules; a rule they may not bypass comes back as a refusal in the panel
+(PM25). Bypass goes through REST, which takes no commit email, so it commits with the user's default email and the line
+names it. (owner, 2026-11-02)
+
+**Rejected.**
+
+- Bypass armed with a key, B, after which `⌘Enter` bypasses (PM12b) — the one state where the habit key does the costly
+  thing.
+- A red zone below the footer (PM12a's first draft) — it outshone the usual action.
 
 ## D13
 
 **Required checks stay out of sight while green: one line, with "5 required" as a quiet aside. A failed check becomes a
 row; one that blocks carries a "Required" tag, and one that does not is grey and says it does not stop the merge.**
-(2026-11-01, design agent; PM4b is the alternative)
+While checks still run, the required ones that run become tagged rows with how long they have run, and the merge
+offers auto-merge; when only optional ones run the line stays one and the panel reads ready. C opens every check,
+required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 
 **Why.** The usual merge has nothing to read here. Colour alone can't carry the difference, because both kinds failed.
+
+**Rejected.**
+
+- Two lines always, Required and Others (PM4b) — more to read when everything is green.
 
 ## D14
 

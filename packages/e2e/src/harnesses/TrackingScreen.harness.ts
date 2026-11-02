@@ -1,46 +1,59 @@
 import type { Locator, Page } from '@playwright/test';
 
+import { escapeRegExp } from '../utils/escapeRegExp.js';
+
 /**
- * Playwright harness for Settings' Repositories and Projects sections (`TrackingView.vue` — G8): what is tracked, each row
- * with "Untrack" while it is hovered or focused, and what is not, each with "Track". The search and the owner filter
- * sit in the Settings header.
+ * Playwright harness for picking repositories to track (T18): Settings' Repositories section with its "Track
+ * repositories" button (`TrackedRepositoriesSection.vue`), and the dialog it opens (`TrackRepositoriesDialog.vue` over
+ * `TrackingChooser.vue`) — the owners on the left, the filter above the rows, a checkbox on each repository, fixed and
+ * ticked on a tracked one, and the footer's "Track N repositories".
  */
 export class TrackingScreenHarness {
     readonly page: Page;
-    readonly root: Locator;
+    /** The dialog "Track repositories". */
+    readonly dialog: Locator;
 
     constructor(page: Page) {
         this.page = page;
-        this.root = page.getByRole('main');
+        this.dialog = page.getByRole('dialog', { name: 'Track repositories' });
     }
 
-    /** The search field, in the header. */
+    /** The Repositories section's button opening the dialog. */
+    get openButton(): Locator {
+        return this.page.getByRole('main').getByRole('button', { name: 'Track repositories' });
+    }
+
+    /** The dialog's filter, above the repositories. */
     get search(): Locator {
-        return this.root.getByRole('textbox', { name: 'Find something to track' });
+        return this.dialog.getByRole('textbox', { name: 'Filter repositories' });
     }
 
-    /** The owner filter, in the header. */
-    get ownerFilter(): Locator {
-        return this.root.getByRole('button', { name: /^Owner: / });
+    /** An owner in the dialog's owners list on the left, by login. */
+    owner(login: string): Locator {
+        return this.dialog
+            .getByRole('radiogroup', { name: 'Owners' })
+            .getByRole('radio', { name: new RegExp(`^${escapeRegExp(login)} `, 'u') });
     }
 
-    /** The repository (`owner/name`) or project (its title) offered under "Not tracked". */
-    notTracked(name: string): Locator {
-        return this.root.getByRole('region', { name: 'Not tracked' }).getByRole('listitem').filter({ hasText: name });
+    /** The checkbox of a repository (`owner/name`) in the dialog: ticked while it is tracked or picked. */
+    row(nameWithOwner: string): Locator {
+        return this.dialog
+            .getByRole('region', { name: 'Repositories', exact: true })
+            .getByRole('checkbox', { name: new RegExp(`^${escapeRegExp(nameWithOwner)}(?: |$)`, 'u') });
     }
 
-    /** The tracked repository (`owner/name`) or project (its title) of the section shown. */
-    tracked(name: string): Locator {
-        return this.root
-            .getByRole('region', { name: 'Tracked', exact: true })
-            .getByRole('listitem')
-            .filter({ has: this.page.getByRole('link', { name, exact: true }) });
+    /** The footer's "Track N repositories". */
+    get trackButton(): Locator {
+        return this.dialog.getByRole('button', { name: /^Track (?:\d+ )?repositor(?:y|ies)$/u });
     }
 
-    /** Untracks a repository or project with its row's "Untrack", which shows while the row is hovered. */
-    async untrack(name: string): Promise<void> {
-        const row = this.tracked(name);
-        await row.hover();
-        await row.getByRole('button', { name: /^Untrack/ }).click();
+    /** Tracks repositories (`owner/name`) in the open dialog: ticks them and confirms. */
+    async track(...names: string[]): Promise<void> {
+        for (const name of names) {
+            await this.row(name).check();
+        }
+
+        await this.trackButton.click();
+        await this.dialog.waitFor({ state: 'hidden' });
     }
 }

@@ -4,8 +4,9 @@
     "compilerOptions": {
         "noUncheckedIndexedAccess": true
     },
-    // `./**/*` skips dot-folders, so Storybook's config is listed on its own.
-    "include": ["./.nuxt/nuxt.d.ts", "./**/*", "./.storybook/**/*"],
+    // `./**/*` skips dot-folders, so Storybook's config is listed on its own, and so are Nuxt's generated types:
+    // `nuxt.node.d.ts` holds the config keys modules add to `nuxt.config.ts` (`image`).
+    "include": ["./.nuxt/nuxt.d.ts", "./.nuxt/nuxt.node.d.ts", "./**/*", "./.storybook/**/*"],
     // Replaces the list from `.nuxt/tsconfig.json`; of its entries only `dist` exists here. Build output is
     // JavaScript that `allowJs` would otherwise pull in.
     "exclude": ["./dist", "./storybook-static"]

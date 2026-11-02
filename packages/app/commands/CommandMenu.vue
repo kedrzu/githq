@@ -87,7 +87,7 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   settings: Settings,
   repositories: BookMarked,
   projects: SquareKanban,
-  saving: CloudUpload,
+  sync: CloudUpload,
   account: CircleUser,
 };
 

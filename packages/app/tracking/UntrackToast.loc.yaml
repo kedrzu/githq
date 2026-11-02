@@ -1,0 +1,8 @@
+title:
+  en: Stopped tracking {name}
+description:
+  en: Its copy in this browser goes when this closes.
+undo:
+  en: Undo
+undoCommand:
+  en: Undo stopped tracking
