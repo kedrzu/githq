@@ -16,7 +16,7 @@ export class SettingsScreenHarness {
     }
 
     /** A section's tab, by the start of its name (a count may follow it). */
-    section(name: 'Account' | 'Projects' | 'Repositories' | 'Saving to GitHub'): Locator {
+    section(name: 'Account' | 'Sync settings' | 'What to track'): Locator {
         return this.root
             .getByRole('group', { name: 'Settings sections' })
             .getByRole('button', { name: new RegExp(`^${name}`, 'u') });

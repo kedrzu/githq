@@ -1,16 +1,10 @@
-<!-- The Settings screen (D15, G8, T4): its title, a tab for each section, with how many repositories and projects are tracked and an amber dot on Saving to GitHub while syncing stopped (settings-sync T7), and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. A section with controls of its own (the owner filter and the search of G8) teleports them to the end of the header, `#${SETTINGS_CONTROLS_ID}`, keeping their state and keys with its lists. -->
-<script lang="ts">
-/** The id of the place in the header a section teleports its controls to. */
-export const SETTINGS_CONTROLS_ID = 'settings-controls';
-</script>
-
+<!-- The Settings screen (D15, G8, T4): its title and a tab for each section, with how many repositories and projects are tracked on What to track and an amber dot on Sync settings while syncing stopped (settings-sync T7), and `1` to `3` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { useCommands } from '@/commands/useCommands.js';
-import Kbd from '@/components/Kbd.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 
@@ -20,18 +14,15 @@ import type { SettingsSection } from './settingsRoutes.js';
 import * as l from './SettingsView.loc.js';
 
 const SECTION_KEYS: Readonly<Record<SettingsSection, string>> = {
-  repositories: '1',
-  projects: '2',
-  saving: '3',
-  account: '4',
+  tracking: '1',
+  sync: '2',
+  account: '3',
 };
 
 const props = defineProps<{
-  /** How many repositories are tracked. */
-  repositories: number;
-  /** How many projects are tracked. */
-  projects: number;
-  /** Syncing the settings stopped (settings-sync T7): the Saving to GitHub tab carries an amber dot until it is fixed. */
+  /** How many repositories and projects are tracked, together: the count on What to track. */
+  tracked: number;
+  /** Syncing the settings stopped (settings-sync T7): the Sync settings tab carries an amber dot until it is fixed. */
   savingStopped?: boolean;
 }>();
 
@@ -44,8 +35,8 @@ const options = computed((): SegmentedTabsOption<SettingsSection>[] =>
     value: candidate,
     label: t(sectionLabels[candidate]),
     keyshortcuts: SECTION_KEYS[candidate],
-    count: getCount(candidate),
-    attention: candidate === 'saving' && props.savingStopped ? t(l.savingStopped) : undefined,
+    count: candidate === 'tracking' ? props.tracked : undefined,
+    attention: candidate === 'sync' && props.savingStopped ? t(l.savingStopped) : undefined,
   })),
 );
 
@@ -61,17 +52,6 @@ useCommands(() =>
     },
   })),
 );
-
-function getCount(candidate: SettingsSection) {
-  switch (candidate) {
-    case 'repositories':
-      return props.repositories;
-    case 'projects':
-      return props.projects;
-    default:
-      return undefined;
-  }
-}
 </script>
 
 <template>
@@ -85,20 +65,6 @@ function getCount(candidate: SettingsSection) {
         v-model="section"
         :label="t(l.sections)"
         :options="options"
-      />
-      <span :class="css.settingsView_spacer" />
-      <!-- Hidden from screen readers: each tab names its key in `aria-keyshortcuts`. -->
-      <span
-        :class="css.settingsView_keys"
-        aria-hidden="true"
-      >
-        <Kbd :keys="SECTION_KEYS.repositories" />
-        {{ t(l.keysTo) }}
-        <Kbd :keys="SECTION_KEYS.account" />
-      </span>
-      <div
-        :id="SETTINGS_CONTROLS_ID"
-        :class="css.settingsView_controls"
       />
     </header>
     <div :class="css.settingsView_section">
@@ -117,7 +83,6 @@ function getCount(candidate: SettingsSection) {
 }
 
 .settingsView_header {
-  container-type: inline-size;
   display: flex;
   flex: none;
   gap: $spacing-10;
@@ -133,42 +98,6 @@ function getCount(candidate: SettingsSection) {
   padding-right: $spacing-12;
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
-}
-
-.settingsView_spacer {
-  flex: 1;
-}
-
-.settingsView_keys {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-4;
-  align-items: center;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-
-  // In a narrow screen the tabs need the room; each still names its key to the help sheet.
-  @container (max-width: 580px) {
-    display: none;
-  }
-}
-
-// Takes the free room before the spacer does, up to its full width (the owner menu and the 280px search of G8), and
-// gives it back first when there is none.
-.settingsView_controls {
-  display: flex;
-  flex: 1000 1 226px;
-  gap: $spacing-10;
-  align-items: center;
-  justify-content: flex-end;
-  max-width: 386px;
-  min-width: 0;
-  // Wrapped to a line of their own, they stay at the right.
-  margin-left: auto;
-
-  &:empty {
-    display: none;
-  }
 }
 
 .settingsView_section {
