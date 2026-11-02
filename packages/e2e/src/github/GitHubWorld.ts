@@ -20,6 +20,7 @@ import type {
     ProjectViewFieldsFragment,
     PullRequestDetailFieldsFragment,
     PullRequestFieldsFragment,
+    PullRequestMergeMethod,
     PullRequestReviewDecision,
     RepositoryPermission,
     TrackingProjectFieldsFragment,
@@ -129,6 +130,21 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly reviewRequests?: readonly string[];
     /** Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip). */
     readonly behindBase?: boolean;
+    /**
+     * The commit texts GitHub proposes to the viewer for a merge commit and a squash (`viewerMergeHeadlineText`,
+     * `viewerMergeBodyText`); GitHub's usual ones by default — for a merge commit "Merge pull request #N from
+     * owner/branch" over its title, for a squash its title with "(#N)" over no message.
+     */
+    readonly proposedTexts?: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
+}
+
+/** The merge methods that make a commit of their own, with a text GitHub proposes for it. */
+export type GitHubWorldCommitMethod = Exclude<PullRequestMergeMethod, 'REBASE'>;
+
+/** A commit's title and message. */
+export interface GitHubWorldCommitText {
+    readonly title: string;
+    readonly body: string;
 }
 
 /** A stack of open pull requests of the world, as GitHub links them: in one repository, each on the one below. */
@@ -159,6 +175,15 @@ export interface GitHubWorldRepositoryParams {
     readonly issuesDisabled?: boolean;
     /** Its issue templates and forms; none (blank issues allowed) by default. */
     readonly templates?: GitHubWorldTemplates;
+    /** The merge methods its settings allow; all three by default. */
+    readonly mergeMethods?: readonly PullRequestMergeMethod[];
+    /** The method its merges start on for the viewer (`viewerDefaultMergeMethod`); `MERGE` by default. */
+    readonly defaultMergeMethod?: PullRequestMergeMethod;
+    /**
+     * The merge methods a ruleset on its base branch allows (a pull request rule's `allowedMergeMethods`); no
+     * ruleset by default. Only the merge panel's read (`PullRequestMergeOptions`) sees it, as on GitHub.
+     */
+    readonly rulesetMergeMethods?: readonly PullRequestMergeMethod[];
 }
 
 /** What a repository of the world asks a new issue to start from. */
@@ -269,6 +294,8 @@ export interface GitHubWorldItemState {
     readonly comments: readonly string[];
     /** Whose review a pull request asks for (logins). */
     readonly reviewRequests: readonly string[];
+    /** A pull request was merged. */
+    readonly merged: boolean;
     /** Its "Status" in each project it is in, by the project's title; `null` when empty. */
     readonly projects: Readonly<Record<string, GitHubWorldStatus | null>>;
 }
@@ -283,6 +310,9 @@ interface WorldRepository {
     isArchived: boolean;
     issuesDisabled: boolean;
     templates: GitHubWorldTemplates;
+    mergeMethods: readonly PullRequestMergeMethod[];
+    defaultMergeMethod: PullRequestMergeMethod;
+    rulesetMergeMethods: readonly PullRequestMergeMethod[] | null;
 }
 
 interface WorldProject {
@@ -331,6 +361,16 @@ interface WorldPullRequest {
     readonly behindBase: boolean;
     /** Its place in a stack; `null` for a pull request in none. */
     readonly stack: WorldStackPlace | null;
+    readonly proposedTexts: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
+    /** Merged: its item is closed too, as GitHub's `state` then reads `MERGED`. */
+    merged: boolean;
+}
+
+/** A merge GitHub accepted ({@link GitHubWorld.holdMerges}), by the `uuid` it is followed by. */
+interface WorldMerge {
+    readonly item: WorldItem;
+    readonly pullRequest: WorldPullRequest;
+    readonly uuid: string;
 }
 
 /** A stack of pull requests, bottom first. */
@@ -396,6 +436,8 @@ const CHECK_COUNT = 5;
 const BASE_OID = '0000000000000000000000000000000000000001';
 /** Where a pull request behind its base branch was last rebased on. */
 const STALE_BASE_OID = '0000000000000000000000000000000000000002';
+/** The commit a merge of the world makes on the base branch. */
+const MERGE_COMMIT_OID = '0000000000000000000000000000000000000003';
 /** A connection the world answers whole: no page after it. */
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
@@ -456,7 +498,10 @@ const PROJECT_FIRST_PAGE = 100;
  * It answers the app's edits as GitHub does: each mutation changes the world and answers with the state it
  * then has — unless the test said GitHub fails it ({@link failEdit}). {@link holdEdits} keeps their answers
  * back, to see an edit before GitHub confirms it; {@link edits} lists what the app sent, {@link stateOf} what an
- * item is now. And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
+ * item is now. It merges pull requests as GitHub's asynchronous merge does (`PUT …/pulls/{n}/merge-async`, then
+ * `GET …/merge-async/{uuid}`): refused at once when the head commit named is not the pull request's
+ * ({@link headOf}) or the test said so ({@link refuseMerge}), else accepted — and kept pending while
+ * {@link holdMerges} holds. And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
  * {@link delete}), as GitHub does between two polls.
  */
 export class GitHubWorld {
@@ -469,6 +514,11 @@ export class GitHubWorld {
     private readonly failures = new Map<string, GitHubWorldFailure>();
     private readonly received: GitHubWorldEdit[] = [];
     private heldEdits: Promise<void> | null = null;
+    private readonly mergeRefusals = new Map<string, string>();
+    /** The merges GitHub accepted, by their `uuid`. */
+    private readonly merges = new Map<string, WorldMerge>();
+    /** Whether merges GitHub accepts stay pending ({@link holdMerges}). */
+    private mergesHeld = false;
     /** The mock it answers for, once installed: a repository or project added later is answered too. */
     private github: GitHubMock | null = null;
 
@@ -491,6 +541,9 @@ export class GitHubWorld {
         repository.isArchived = params.isArchived ?? repository.isArchived;
         repository.issuesDisabled = params.issuesDisabled ?? repository.issuesDisabled;
         repository.templates = params.templates ?? repository.templates;
+        repository.mergeMethods = params.mergeMethods ?? repository.mergeMethods;
+        repository.defaultMergeMethod = params.defaultMergeMethod ?? repository.defaultMergeMethod;
+        repository.rulesetMergeMethods = params.rulesetMergeMethods ?? repository.rulesetMergeMethods;
     }
 
     /** The issue of `repository` titled `title`, as GitHub has it now; `undefined` when there is none. */
@@ -602,8 +655,14 @@ export class GitHubWorld {
             milestone: item.milestone,
             comments: item.comments.map(comment => comment.body),
             reviewRequests: [...(item.pullRequest?.reviewRequests ?? [])],
+            merged: item.pullRequest?.merged ?? false,
             projects,
         };
+    }
+
+    /** The head commit of a pull request: the `sha` a merge of it must name. */
+    headOf(id: string): string {
+        return toHeadRefOid(this.get(id));
     }
 
     /** Renames an item, which moves its `updated_at` to now. */
@@ -667,6 +726,29 @@ export class GitHubWorld {
     }
 
     /**
+     * Makes GitHub refuse every merge of the pull request `id` at once from now on, as it refuses a merge it will not
+     * make (`400`, `failed`), saying `message`.
+     */
+    refuseMerge(id: string, message: string): void {
+        this.get(id);
+        this.mergeRefusals.set(id, message);
+    }
+
+    /**
+     * Keeps the merges GitHub accepts pending — the pull request still open — until the returned function is
+     * called, which merges them: to see a pull request being merged before GitHub says it is.
+     */
+    holdMerges(): () => void {
+        this.mergesHeld = true;
+        return () => {
+            this.mergesHeld = false;
+            for (const merge of this.merges.values()) {
+                this.completeMerge(merge);
+            }
+        };
+    }
+
+    /**
      * Keeps `search` from answering until the returned function is called — a slow search on the first
      * download. The test calls it before it ends: a request still waiting when the browser closes cannot be
      * answered.
@@ -699,6 +781,10 @@ export class GitHubWorld {
         for (const project of this.projects.values()) {
             this.answerProjectPoll(github, project);
         }
+
+        for (const item of this.items.values()) {
+            this.answerMerge(github, item);
+        }
     }
 
     private installReads(github: GitHubMock) {
@@ -716,10 +802,10 @@ export class GitHubWorld {
                     viewerPermission: repository.viewerPermission,
                     isArchived: repository.isArchived,
                     hasIssuesEnabled: !repository.issuesDisabled,
-                    mergeCommitAllowed: true,
-                    squashMergeAllowed: true,
-                    rebaseMergeAllowed: true,
-                    viewerDefaultMergeMethod: 'MERGE',
+                    mergeCommitAllowed: repository.mergeMethods.includes('MERGE'),
+                    squashMergeAllowed: repository.mergeMethods.includes('SQUASH'),
+                    rebaseMergeAllowed: repository.mergeMethods.includes('REBASE'),
+                    viewerDefaultMergeMethod: repository.defaultMergeMethod,
                     autoMergeAllowed: false,
                     deleteBranchOnMerge: false,
                     viewerDefaultCommitEmail: null,
@@ -907,8 +993,9 @@ export class GitHubWorld {
                 node ? [] : [notFoundError(id, ['node'])],
             );
         });
-        // Read by the opened item of a pull request with failing checks, for which are required: no rules on the base
-        // branch and no check listed, as `ItemDetail` lists none.
+        // Read by the merge panel, and by the opened item of a pull request with failing checks for which are required:
+        // the texts GitHub proposes, the base branch's ruleset if its repository has one, and no check listed, as
+        // `ItemDetail` lists none.
         github.graphql('PullRequestMergeOptions', ({ variables }) => {
             const id = String(variables.id);
             const item = this.readItem(id);
@@ -919,17 +1006,26 @@ export class GitHubWorld {
             }
 
             const node = this.toPullRequestNode(item, item.pullRequest);
+            const texts = toProposedTexts(item, item.pullRequest);
+            const allowed = this.getRepository(item.repository).rulesetMergeMethods;
+            const rules = allowed
+                ? [{ type: 'PULL_REQUEST' as const, parameters: { allowedMergeMethods: [...allowed] } }]
+                : [];
             const answer: PullRequestMergeOptionsQuery = {
                 node: {
                     ...node,
-                    mergeHeadline: `Merge pull request #${item.number}`,
-                    mergeBody: item.title,
-                    squashHeadline: `${item.title} (#${item.number})`,
-                    squashBody: '',
+                    mergeHeadline: texts.MERGE.title,
+                    mergeBody: texts.MERGE.body,
+                    squashHeadline: texts.SQUASH.title,
+                    squashBody: texts.SQUASH.body,
                     viewerCanMergeAsAdmin: false,
                     viewerCanEnableAutoMerge: false,
                     isMergeQueueEnabled: false,
-                    baseRef: { target: node.baseRef?.target ?? null, rules: { nodes: [] }, branchProtectionRule: null },
+                    baseRef: {
+                        target: node.baseRef?.target ?? null,
+                        rules: { nodes: rules },
+                        branchProtectionRule: null,
+                    },
                     statusCheckRollup: node.statusCheckRollup && {
                         ...node.statusCheckRollup,
                         contextPage: { totalCount: 0, nodes: [] },
@@ -1626,6 +1722,66 @@ export class GitHubWorld {
         });
     }
 
+    /**
+     * Answers the merges of the pull request `item` (`PUT …/merge-async`) as GitHub does: refused at once (`400`,
+     * `failed`) when {@link refuseMerge} said so or the `sha` sent is not its head, else accepted (`202`, `pending`)
+     * with a `uuid` to ask by — merged at once, or once {@link holdMerges} lets go.
+     */
+    private answerMerge(github: GitHubMock, item: WorldItem) {
+        const { pullRequest } = item;
+        if (!pullRequest) {
+            return;
+        }
+
+        const path = `/repos/${item.repository}/pulls/${item.number}/merge-async`;
+        github.rest('PUT', path, ({ body }) => {
+            if (item.deleted || item.state !== 'OPEN') {
+                return { status: 405, json: { message: 'Pull Request is not mergeable' } };
+            }
+
+            const refusal = this.mergeRefusals.get(item.id);
+            const sha = isPlainObject(body) ? body.sha : undefined;
+            if (refusal !== undefined || sha !== toHeadRefOid(item)) {
+                const message = refusal ?? 'Pull request head branch was modified.';
+                return { status: 400, json: { status: 'failed', details: { message } } };
+            }
+
+            const merge: WorldMerge = { item, pullRequest, uuid: `merge-${slug(item.id)}-${this.merges.size + 1}` };
+            this.merges.set(merge.uuid, merge);
+            github.rest('GET', `${path}/${merge.uuid}`, () => ({
+                status: 200,
+                json: pullRequest.merged
+                    ? { status: 'merged', details: { message: 'Pull request was merged.', sha: MERGE_COMMIT_OID } }
+                    : { status: 'pending', details: { message: 'Merge request is in progress.', uuid: merge.uuid } },
+            }));
+            if (!this.mergesHeld) {
+                this.completeMerge(merge);
+            }
+
+            return {
+                status: 202,
+                json: {
+                    status: 'pending',
+                    details: { message: 'Merge request enqueued.', uuid: merge.uuid, expected_head_sha: sha },
+                },
+            };
+        });
+    }
+
+    /** Merges the pull request of a merge GitHub accepted, once: closed and merged, changed now. */
+    private completeMerge(merge: WorldMerge) {
+        const { item, pullRequest } = merge;
+        if (pullRequest.merged) {
+            return;
+        }
+
+        const now = new Date().toISOString();
+        pullRequest.merged = true;
+        item.state = 'CLOSED';
+        item.closedAt = now;
+        item.updatedAt = now;
+    }
+
     private createPullRequest(params: GitHubWorldPullRequestParams, stack: WorldStackPlace | null): WorldStackEntry {
         const pullRequest: WorldPullRequest = {
             isDraft: params.isDraft ?? false,
@@ -1636,8 +1792,14 @@ export class GitHubWorld {
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             stack,
+            proposedTexts: params.proposedTexts ?? {},
+            merged: false,
         };
         const item = this.createItem(`PR_${slug(params.repository)}_${params.number}`, params, pullRequest);
+        if (this.github) {
+            this.answerMerge(this.github, item);
+        }
+
         return { item, pullRequest };
     }
 
@@ -1696,6 +1858,9 @@ export class GitHubWorld {
                 isArchived: false,
                 issuesDisabled: false,
                 templates: {},
+                mergeMethods: ['MERGE', 'SQUASH', 'REBASE'],
+                defaultMergeMethod: 'MERGE',
+                rulesetMergeMethods: null,
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {
@@ -1791,9 +1956,9 @@ export class GitHubWorld {
         return {
             ...this.createItemFields(item),
             __typename: 'PullRequest',
-            state: item.state,
+            state: pullRequest.merged ? 'MERGED' : item.state,
             isDraft: pullRequest.isDraft,
-            merged: false,
+            merged: pullRequest.merged,
             reviewDecision,
             mergeable: pullRequest.conflicts ? 'CONFLICTING' : 'MERGEABLE',
             mergeStateStatus: getMergeStateStatus(pullRequest),
@@ -2247,10 +2412,24 @@ function parseCursor(value: unknown): number | undefined {
     return match?.[1] === undefined ? undefined : Number(match[1]);
 }
 
-/** `acme/web` → `acme_web`, for node ids. */
 /** The branch a pull request of the world is opened from. */
 function toHeadRefName(item: WorldItem) {
     return `change-${item.number}`;
+}
+
+/** The commit texts GitHub proposes for a pull request: the test's, else GitHub's usual ones. */
+function toProposedTexts(
+    item: WorldItem,
+    pullRequest: WorldPullRequest,
+): Readonly<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>> {
+    const [owner = ''] = item.repository.split('/');
+    return {
+        MERGE: pullRequest.proposedTexts.MERGE ?? {
+            title: `Merge pull request #${item.number} from ${owner}/${toHeadRefName(item)}`,
+            body: item.title,
+        },
+        SQUASH: pullRequest.proposedTexts.SQUASH ?? { title: `${item.title} (#${item.number})`, body: '' },
+    };
 }
 
 /** The head commit of a pull request: one of its own, so a merge naming another one can be told apart. */
@@ -2258,6 +2437,7 @@ function toHeadRefOid(item: WorldItem) {
     return item.number.toString(16).padStart(40, 'f');
 }
 
+/** `acme/web` → `acme_web`, for node ids. */
 function slug(text: string) {
     return text.replace(/[^\w]/g, '_');
 }

@@ -50,6 +50,11 @@ export class ItemViewHarness {
         return this.root.getByRole('note');
     }
 
+    /** "Merge…" of a pull request's standing (`⇧M`), where the user may merge it. */
+    get mergeButton(): Locator {
+        return this.root.getByRole('button', { name: 'Merge…', exact: true });
+    }
+
     /** "Add to project". */
     get addToProjectButton(): Locator {
         return this.root.getByRole('button', { name: 'Add to project' });
