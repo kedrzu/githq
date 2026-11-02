@@ -28,6 +28,7 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
+import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
 import { useCheckTexts } from './useCheckTexts.js';
 import { usePullRequestVerdict } from './usePullRequestVerdict.js';
 import type { PullRequestVerdictTone } from './usePullRequestVerdict.js';
@@ -67,7 +68,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const names = new Intl.ListFormat(APP_LANGUAGE);
 
 const standing = computed(() => getPullRequestStanding(props.pr));
-const { verdict, mergeable } = usePullRequestVerdict(
+const mergeVerdict = usePullRequestVerdict(
   () => props.pr,
   () => props.checks ?? null,
 );
@@ -175,20 +176,11 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
 </script>
 
 <template>
-  <section :class="[css.pullRequestMerge, css[`pullRequestMerge_${verdict.tone}`]]">
-    <h2 :class="css.pullRequestMerge_verdict">
-      <component
-        :is="verdict.icon"
-        :class="css.pullRequestMerge_verdictIcon"
-        aria-hidden="true"
-      />
-      <span :class="css.pullRequestMerge_verdictTitle">{{ verdict.text }}</span>
-      <span
-        v-if="verdict.aside"
-        :class="css.pullRequestMerge_verdictDetail"
-        >{{ verdict.aside }}</span
-      >
-    </h2>
+  <section :class="css.pullRequestMerge">
+    <PullRequestVerdictLine
+      :verdict="mergeVerdict.verdict"
+      tag="h2"
+    />
     <dl
       v-if="open && !pr.isDraft && !merging"
       :class="css.pullRequestMerge_conditions"
@@ -244,7 +236,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     <div :class="css.pullRequestMerge_actions">
       <Button
         v-if="canMerge && !merging"
-        :variant="mergeable ? 'light' : 'secondary'"
+        :variant="mergeVerdict.mergeable ? 'light' : 'secondary'"
         size="sm"
         :icon="GitMerge"
         :kbd="EDIT_KEYS.merge"
@@ -293,71 +285,6 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
   background: $color-bg-2;
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
-}
-
-.pullRequestMerge_verdict {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-10 $spacing-12;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-normal;
-
-  .pullRequestMerge_danger & {
-    background: rgba($color-red, 0.08);
-  }
-
-  .pullRequestMerge_success & {
-    background: rgba($color-green, 0.08);
-  }
-
-  .pullRequestMerge_warning & {
-    background: rgba($color-amber, 0.08);
-  }
-
-  .pullRequestMerge_done & {
-    background: rgba($color-purple, 0.08);
-  }
-}
-
-.pullRequestMerge_verdictIcon {
-  flex: none;
-  width: 15px;
-  height: 15px;
-
-  .pullRequestMerge_danger & {
-    color: $color-red;
-  }
-
-  .pullRequestMerge_success & {
-    color: $color-green;
-  }
-
-  .pullRequestMerge_warning & {
-    color: $color-amber;
-  }
-
-  .pullRequestMerge_done & {
-    color: $color-purple;
-  }
-
-  .pullRequestMerge_muted & {
-    color: $color-fg-3;
-  }
-}
-
-.pullRequestMerge_verdictTitle {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
-.pullRequestMerge_verdictDetail {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: $color-fg-2;
-  white-space: nowrap;
 }
 
 .pullRequestMerge_conditions {

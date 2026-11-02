@@ -8,7 +8,7 @@ openPullRequest:
   en: Open pull request
 draftPullRequest:
   en: Draft pull request
-mergedPullRequest:
+donePullRequest:
   en: Merged pull request
 closedPullRequest:
   en: Closed pull request

@@ -1,0 +1,6 @@
+notStopping:
+  en: "{detail} · doesn't stop the merge"
+log:
+  en: Log
+logOf:
+  en: Log of {name}

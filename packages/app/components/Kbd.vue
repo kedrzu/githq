@@ -114,7 +114,7 @@ const parts = computed(() => {
 
 .kbd_md {
   padding: 1px 5px;
-  font-size: 10.5px;
+  font-size: $font-size-3xs;
   // 18px with padding and border: the line of an `md` or `lg` button's label, so a hint never makes its button taller.
   line-height: 14px;
 }

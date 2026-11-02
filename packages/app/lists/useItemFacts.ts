@@ -1,4 +1,3 @@
-import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
@@ -80,14 +79,6 @@ export interface ItemFactsViewModel {
     readonly size: string | null;
     readonly projectField: ItemProjectFieldFact | null;
 }
-
-/** A pull request's kind and state read out, by the tone of its icon. */
-const PULL_REQUEST_LABELS = {
-    done: l.mergedPullRequest,
-    closed: l.closedPullRequest,
-    draft: l.draftPullRequest,
-    open: l.openPullRequest,
-} satisfies Record<ItemKindFact['tone'], Translation>;
 
 /**
  * What a row or a card of an issue or a pull request says about it: its kind and state, its reference, people,
@@ -171,7 +162,9 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         }
 
         const pullRequestKind = getPullRequestKind(listed);
-        return { ...pullRequestKind, label: t(PULL_REQUEST_LABELS[pullRequestKind.tone]) };
+        // Its kind and state read out, by the tone of its icon.
+        const key: `${ItemKindFact['tone']}PullRequest` = `${pullRequestKind.tone}PullRequest`;
+        return { ...pullRequestKind, label: t(l[key]) };
     }
 
     /** PM37: "Merged · 2m"; without GitHub's time of the merge, merged alone. */

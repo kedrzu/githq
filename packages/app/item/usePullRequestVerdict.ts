@@ -1,6 +1,7 @@
 import type { MergeStateStatus } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
     CircleCheck,
@@ -13,7 +14,7 @@ import {
     LoaderCircle,
 } from 'lucide-vue-next';
 import { computed, toValue } from 'vue';
-import type { ComputedRef, MaybeRefOrGetter } from 'vue';
+import type { MaybeRefOrGetter } from 'vue';
 
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
@@ -35,13 +36,13 @@ export interface PullRequestVerdict {
 
 /** A pull request's verdict, and whether it reads ready to merge. */
 export interface PullRequestVerdictViewModel {
-    readonly verdict: ComputedRef<PullRequestVerdict>;
+    readonly verdict: PullRequestVerdict;
     /**
      * GitHub would merge it now. With the checks counted by whether they are required: none required failing or
      * running, and GitHub's status says the requirements are met. Before that, as the row holds it, so it shows
      * before anything is read: approved as "my work" says, or with no review required.
      */
-    readonly mergeable: ComputedRef<boolean>;
+    readonly mergeable: boolean;
 }
 
 /**
@@ -167,7 +168,7 @@ export function usePullRequestVerdict(
         return { tone: 'warning', icon: Hourglass, text: t(l.notReady), aside: parts.join(' · ') || null };
     });
 
-    return { verdict, mergeable };
+    return reactive<PullRequestVerdictViewModel>({ verdict, mergeable });
 
     /** Why it is ready, with the checks counted. */
     function readyAside(current: PullRequestItem, counts: MergeCheckCounts) {

@@ -1,15 +1,17 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, screen, userEvent, waitFor } from 'storybook/test';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
+import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeCheck, MergeOptions, MergeRequest } from './MergeTypes.js';
+import type { MergeOptions, MergeRequest } from './MergeTypes.js';
 
 /** When the stories happen: a running check's time is counted to it. */
 const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
@@ -44,14 +46,6 @@ const SQUASH_BODY = [
     ...Array.from({ length: 33 }, (_, index) => `- Step ${index + 1} of the retry, described at length.`),
 ].join('\n');
 
-const REQUIRED = ['ci / test (node 20)', 'ci / lint', 'ci / typecheck', 'ci / build', 'ci / e2e (chromium)'];
-const OTHERS = ['CircleCI / nightly-smoke', 'CodeQL', 'Vercel / preview', 'codecov/patch'];
-
-const PASSED: readonly MergeCheck[] = [
-    ...REQUIRED.map(name => sampleCheck(name, { isRequired: true })),
-    ...OTHERS.map(name => sampleCheck(name, {})),
-];
-
 const OPTIONS: MergeOptions = {
     status: PR,
     proposedTexts: {
@@ -66,7 +60,7 @@ const OPTIONS: MergeOptions = {
     viewerCanMergeAsAdmin: false,
     viewerCanEnableAutoMerge: false,
     isMergeQueueEnabled: false,
-    checks: PASSED,
+    checks: SAMPLE_PASSED_CHECKS,
 };
 
 /**
@@ -158,7 +152,7 @@ export const OnlyOptionalRunning: Story = {
         settings: SQUASH_ONLY,
         options: {
             ...OPTIONS,
-            checks: PASSED.map((check, index) =>
+            checks: SAMPLE_PASSED_CHECKS.map((check, index) =>
                 index >= 7 ? { ...check, state: 'pending', completedAt: null } : check,
             ),
         },
@@ -189,7 +183,7 @@ export const RequiredFailed: Story = {
         pr: { ...PR, mergeStateStatus: 'BLOCKED', checks: { state: 'FAILURE', passing: 7, failing: 2, pending: 0 } },
         options: {
             ...OPTIONS,
-            checks: PASSED.map(check => {
+            checks: SAMPLE_PASSED_CHECKS.map(check => {
                 switch (check.name) {
                     case 'test (node 20)':
                         return { ...check, state: 'failing' };
@@ -209,7 +203,7 @@ export const RequiredRunning: Story = {
         pr: { ...PR, mergeStateStatus: 'BLOCKED', checks: { state: 'PENDING', passing: 6, failing: 0, pending: 3 } },
         options: {
             ...OPTIONS,
-            checks: PASSED.map(check => {
+            checks: SAMPLE_PASSED_CHECKS.map(check => {
                 switch (check.name) {
                     case 'test (node 20)':
                         return { ...check, state: 'pending', startedAt: '2026-11-02T11:56:48Z', completedAt: null };
@@ -222,6 +216,23 @@ export const RequiredRunning: Story = {
                 }
             }),
         },
+    },
+};
+
+/** PM4a: the full list open (`C`) — Required, then Others, the failed one that isn't required saying so. */
+export const ChecksOpen: Story = {
+    args: RequiredFailed.args,
+    play: async () => {
+        await openPanelKey('c');
+        await expect(await screen.findByText('Required · 5')).toBeVisible();
+    },
+};
+
+/** PM3d: the commit text edited (`E`) — a title and the message, its long text scrolling inside the field. */
+export const EditingCommit: Story = {
+    play: async () => {
+        await openPanelKey('e');
+        await waitFor(() => expect(screen.getByRole('textbox', { name: 'Commit title' })).toHaveFocus());
     },
 };
 
@@ -270,27 +281,15 @@ export const OptionalFailed: Story = {
         pr: { ...PR, mergeStateStatus: 'UNSTABLE', checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 } },
         options: {
             ...OPTIONS,
-            checks: PASSED.map(check =>
+            checks: SAMPLE_PASSED_CHECKS.map(check =>
                 check.name === 'preview' ? { ...check, state: 'failing', completedAt: '2026-11-02T11:50:48Z' } : check,
             ),
         },
     },
 };
 
-function sampleCheck(fullName: string, overrides: Partial<MergeCheck>): MergeCheck {
-    const [workflow, name] = fullName.includes(' / ') ? fullName.split(' / ') : [null, fullName];
-    return {
-        id: `CR_${fullName}`,
-        kind: 'checkRun',
-        name: name ?? fullName,
-        workflow: workflow ?? null,
-        state: 'passing',
-        url: `https://github.com/fitloop/api/actions/runs/1/${encodeURIComponent(fullName)}`,
-        startedAt: '2026-11-02T11:50:00Z',
-        completedAt: '2026-11-02T11:51:40Z',
-        isRequired: false,
-        appSlug: 'github-actions',
-        workflowRunId: 1,
-        ...overrides,
-    };
+/** Presses a key of the panel once its keys work: the focus is on it. */
+async function openPanelKey(key: string) {
+    await waitFor(() => expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true));
+    await userEvent.keyboard(key);
 }

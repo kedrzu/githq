@@ -1,10 +1,9 @@
 <!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, with nothing to open. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import { compareChecks } from '@/item/compareChecks.js';
 import { getCheckIcon } from '@/item/getCheckIcon.js';
@@ -15,6 +14,7 @@ import type { ItemChecks } from '@/store/ItemTypes.js';
 
 import { countMergeChecks } from './countMergeChecks.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
+import MergeCheckRow from './MergeCheckRow.vue';
 import * as l from './MergeChecks.loc.js';
 import type { MergeCheck } from './MergeTypes.js';
 
@@ -109,21 +109,6 @@ function describeCounts(): CheckSummary {
     current.requiredFailing > 0 ? 'failing' : current.requiredPending > 0 ? 'pending' : 'passing';
   return { state, text: parts.join(', ') };
 }
-
-/** One that isn't required, failing or running: it is grey and says it doesn't stop the merge (D13). */
-function isNotStopping(check: MergeCheck) {
-  return !check.isRequired && (check.state === 'failing' || check.state === 'pending');
-}
-
-function describeCheck(check: MergeCheck) {
-  const detail = checkTexts.describe(check, props.now);
-  return isNotStopping(check) ? t(l.notStopping, { detail }) : detail;
-}
-
-/** The colour of a check's icon: grey for one that doesn't stop the merge. */
-function iconTone(check: MergeCheck): ItemCheckState {
-  return isNotStopping(check) ? 'skipped' : check.state;
-}
 </script>
 
 <template>
@@ -169,36 +154,12 @@ function iconTone(check: MergeCheck): ItemCheckState {
           {{ group.heading }}
         </h3>
         <ul :class="css.mergeChecks_rows">
-          <li
+          <MergeCheckRow
             v-for="check in group.checks"
             :key="check.id"
-            :class="[
-              css.mergeChecks_check,
-              check.isRequired && check.state === 'failing' && css.mergeChecks_check_blocking,
-            ]"
-          >
-            <component
-              :is="getCheckIcon(check.state)"
-              :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${iconTone(check)}`]]"
-              aria-hidden="true"
-            />
-            <span :class="[css.mergeChecks_name, isNotStopping(check) && css.mergeChecks_name_optional]">{{
-              checkTexts.name(check)
-            }}</span>
-            <span :class="css.mergeChecks_detail">{{ describeCheck(check) }}</span>
-            <Button
-              v-if="check.url"
-              variant="link"
-              size="sm"
-              :icon="ArrowUpRight"
-              :link="check.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              :aria-label="t(l.logOf, { name: checkTexts.name(check) })"
-            >
-              {{ t(l.log) }}
-            </Button>
-          </li>
+            :check="check"
+            :now="now"
+          />
         </ul>
       </section>
     </div>
@@ -208,41 +169,13 @@ function iconTone(check: MergeCheck): ItemCheckState {
       :class="css.mergeChecks_list"
     >
       <ul :class="css.mergeChecks_rows">
-        <li
+        <MergeCheckRow
           v-for="check in attention"
           :key="check.id"
-          :class="[
-            css.mergeChecks_check,
-            check.isRequired && check.state === 'failing' && css.mergeChecks_check_blocking,
-          ]"
-        >
-          <component
-            :is="getCheckIcon(check.state)"
-            :class="[css.mergeChecks_icon, css[`mergeChecks_icon_${iconTone(check)}`]]"
-            aria-hidden="true"
-          />
-          <span :class="[css.mergeChecks_name, isNotStopping(check) && css.mergeChecks_name_optional]">{{
-            checkTexts.name(check)
-          }}</span>
-          <span
-            v-if="check.isRequired"
-            :class="css.mergeChecks_tag"
-            >{{ t(l.required) }}</span
-          >
-          <span :class="css.mergeChecks_detail">{{ describeCheck(check) }}</span>
-          <Button
-            v-if="check.url"
-            variant="link"
-            size="sm"
-            :icon="ArrowUpRight"
-            :link="check.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="t(l.logOf, { name: checkTexts.name(check) })"
-          >
-            {{ t(l.log) }}
-          </Button>
-        </li>
+          :check="check"
+          :now="now"
+          tagged
+        />
       </ul>
     </div>
   </div>
@@ -333,50 +266,5 @@ function iconTone(check: MergeCheck): ItemCheckState {
   padding-left: 0;
   margin: 0;
   list-style: none;
-}
-
-.mergeChecks_check {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  min-height: 26px;
-  padding: $spacing-4 $spacing-8;
-  font-size: $font-size-xs;
-  white-space: nowrap;
-  border-radius: $radius-md;
-}
-
-.mergeChecks_check_blocking {
-  background: $color-bg-3;
-}
-
-.mergeChecks_name {
-  flex: none;
-  max-width: 50%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: $font-family-mono;
-  color: $color-fg;
-}
-
-.mergeChecks_name_optional {
-  color: $color-fg-2;
-}
-
-.mergeChecks_tag {
-  flex: none;
-  padding: 0 5px;
-  font-size: 10.5px;
-  color: $color-fg-2;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-sm;
-}
-
-.mergeChecks_detail {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: $color-fg-dim;
 }
 </style>

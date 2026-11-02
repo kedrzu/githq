@@ -8,9 +8,9 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { Edit, EditFailureReason, EditVerdict } from '@/edits/EditTypes.js';
 import { toEditFailureReason } from '@/edits/toEditFailureReason.js';
+import { getItemReference } from '@/item/itemRoutes.js';
 import type { ClockShape } from '@/services/Clock.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeRequest } from './MergeTypes.js';
@@ -49,7 +49,7 @@ const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  */
 export function createMergeEdit(params: CreateMergeEditParams): Edit {
     const { item, request, clock, onAnswer, shown } = params;
-    const target = { ...parseRepositoryName(item.repository.nameWithOwner), number: item.number };
+    const target = getItemReference(item);
 
     return {
         itemId: item.id,

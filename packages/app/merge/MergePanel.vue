@@ -3,7 +3,6 @@
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import { ArrowRight, CircleHelp, CircleX, GitMerge, Info, MessageSquareWarning, RefreshCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
@@ -14,9 +13,12 @@ import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
+import TextArea from '@/components/TextArea.vue';
+import TextField from '@/components/TextField.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
+import PullRequestVerdictLine from '@/item/PullRequestVerdictLine.vue';
 import { usePullRequestVerdict } from '@/item/usePullRequestVerdict.js';
-import type { PullRequestVerdictTone } from '@/item/usePullRequestVerdict.js';
+import type { PullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -67,12 +69,8 @@ type CommitMethod = Exclude<PullRequestMergeMethod, 'REBASE'>;
 
 type PanelVerdictKind = 'blocked' | 'merged' | 'merging' | 'ready' | 'refused';
 
-interface PanelVerdict {
+interface PanelVerdict extends PullRequestVerdict {
   readonly kind: PanelVerdictKind;
-  readonly tone: PullRequestVerdictTone;
-  readonly icon: LucideIcon;
-  readonly text: string;
-  readonly aside: string | null;
 }
 
 /** The method the panel was on when the read took it away (PM9). */
@@ -89,11 +87,11 @@ const SHORT_SHA_LENGTH = 7;
 
 const t = useTranslate();
 const root = useTemplateRef<HTMLElement>('root');
-const titleField = useTemplateRef<HTMLInputElement>('titleField');
+const titleField = useTemplateRef<InstanceType<typeof TextField>>('titleField');
 // While the merge is sent, the panel stays as it was (PM32a): being merged is drawn elsewhere from the first moment.
 const shownPr = computed(() => (props.sending ? { ...props.pr, merging: undefined } : props.pr));
 const counts = computed(() => (props.options ? countMergeChecks(props.options.checks) : null));
-const { verdict: standingVerdict, mergeable } = usePullRequestVerdict(shownPr, counts);
+const standing = usePullRequestVerdict(shownPr, counts);
 
 const offered = computed(() => (props.settings ? getMergeMethods(props.settings, props.options) : null));
 const methods = computed(() => offered.value?.methods ?? []);
@@ -113,15 +111,15 @@ const merging = computed(() => shownPr.value.merging !== undefined);
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
 /** Whether GitHub would merge it now, from the read when it is in, else from the row (D6). */
-const ready = computed(() => !merging.value && mergeable.value);
+const ready = computed(() => !merging.value && standing.mergeable);
 
 const verdict = computed((): PanelVerdict => {
   if (merging.value) {
-    return { kind: 'merging', ...standingVerdict.value };
+    return { kind: 'merging', ...standing.verdict };
   }
 
   if (props.pr.merged) {
-    return { kind: 'merged', ...standingVerdict.value, aside: mergedAside() };
+    return { kind: 'merged', ...standing.verdict, aside: mergedAside() };
   }
 
   // Sent with no answer: it may have reached GitHub, so it reads neither merged nor refused (PM29).
@@ -133,7 +131,7 @@ const verdict = computed((): PanelVerdict => {
     return { kind: 'refused', tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
   }
 
-  return { kind: ready.value ? 'ready' : 'blocked', ...standingVerdict.value };
+  return { kind: ready.value ? 'ready' : 'blocked', ...standing.verdict };
 });
 
 const commitMethod = computed((): CommitMethod | null =>
@@ -159,6 +157,15 @@ const commitTitle = computed(() => {
     : `Merge pull request #${pr.number} from ${pr.repository.owner}/${pr.headRefName}`;
 });
 const commitBody = computed(() => (draft.value ?? proposal.value)?.body ?? null);
+/** The commit editor's fields: what is typed is the edit of the method chosen. */
+const draftTitle = computed({
+  get: () => draft.value?.title ?? '',
+  set: (title: string | null | undefined) => updateText({ title: title ?? '' }),
+});
+const draftBody = computed({
+  get: () => draft.value?.body ?? '',
+  set: (body: string | null | undefined) => updateText({ body: body ?? '' }),
+});
 const peek = computed(() => peekLines(commitBody.value ?? ''));
 const bodyLineCount = computed(() => (draft.value?.body.trimEnd() ?? '').split('\n').length);
 
@@ -190,7 +197,7 @@ const primaryLabel = computed(() => {
   }
 
   if (!ready.value) {
-    return verdict.value.kind === 'refused' ? standingVerdict.value.text : verdict.value.text;
+    return verdict.value.kind === 'refused' ? standing.verdict.text : verdict.value.text;
   }
 
   if (method.value === null) {
@@ -386,18 +393,6 @@ async function edit() {
   titleField.value?.focus();
 }
 
-function onTitleInput(event: Event) {
-  if (event.target instanceof HTMLInputElement) {
-    updateText({ title: event.target.value });
-  }
-}
-
-function onBodyInput(event: Event) {
-  if (event.target instanceof HTMLTextAreaElement) {
-    updateText({ body: event.target.value });
-  }
-}
-
 function updateText(patch: Partial<MergeCommitText>) {
   const key = commitMethod.value;
   const text = draft.value;
@@ -493,31 +488,21 @@ function onOpenFocus(event: Event) {
           />
           {{ t(l.reading) }}
         </span>
-        <button
-          type="button"
-          :class="css.mergePanel_close"
+        <Button
+          variant="ghost"
+          size="sm"
+          kbd="Escape"
           :aria-label="t(l.close)"
           aria-keyshortcuts="Escape"
           @click="open = false"
-        >
-          <Kbd keys="Escape" />
-        </button>
+        />
       </header>
 
       <div :class="css.mergePanel_body">
-        <p :class="[css.mergePanel_verdict, css[`mergePanel_verdict_${verdict.tone}`]]">
-          <component
-            :is="verdict.icon"
-            :class="css.mergePanel_verdictIcon"
-            aria-hidden="true"
-          />
-          <strong :class="css.mergePanel_verdictTitle">{{ verdict.text }}</strong>
-          <span
-            v-if="verdict.aside"
-            :class="css.mergePanel_verdictDetail"
-            >{{ verdict.aside }}</span
-          >
-        </p>
+        <PullRequestVerdictLine
+          :verdict="verdict"
+          inset="lg"
+        />
 
         <div
           v-if="refusalText"
@@ -659,19 +644,18 @@ function onOpenFocus(event: Event) {
           v-if="showLanding && editing && draft"
           :class="css.mergePanel_editor"
         >
-          <input
+          <TextField
             ref="titleField"
-            :class="css.mergePanel_titleField"
-            :value="draft.title"
-            :aria-label="t(l.titleLabel)"
+            v-model="draftTitle"
+            :label="t(l.titleLabel)"
+            label-hidden
             autocomplete="off"
-            @input="onTitleInput"
           />
-          <textarea
+          <TextArea
+            v-model="draftBody"
             :class="css.mergePanel_messageField"
-            :value="draft.body"
-            :aria-label="t(l.messageLabel)"
-            @input="onBodyInput"
+            :label="t(l.messageLabel)"
+            label-hidden
           />
           <div :class="css.mergePanel_editorFoot">
             <span :class="css.mergePanel_editorNote">{{
@@ -829,91 +813,12 @@ function onOpenFocus(event: Event) {
   height: 11px;
 }
 
-.mergePanel_close {
-  @include focus-ring;
-
-  display: inline-flex;
-  flex: none;
-  padding: 0;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: $radius-sm;
-}
-
 .mergePanel_body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-}
-
-.mergePanel_verdict {
-  display: flex;
-  flex: none;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-10 14px;
-  margin: 0;
-  font-size: $font-size-sm;
-  white-space: nowrap;
-}
-
-.mergePanel_verdict_success {
-  background: rgba($color-green, 0.08);
-}
-
-.mergePanel_verdict_danger {
-  background: rgba($color-red, 0.08);
-}
-
-.mergePanel_verdict_warning {
-  background: rgba($color-amber, 0.08);
-}
-
-.mergePanel_verdict_done {
-  background: rgba($color-purple, 0.08);
-}
-
-.mergePanel_verdictIcon {
-  flex: none;
-  width: 15px;
-  height: 15px;
-
-  .mergePanel_verdict_success & {
-    color: $color-green;
-  }
-
-  .mergePanel_verdict_danger & {
-    color: $color-red;
-  }
-
-  .mergePanel_verdict_warning & {
-    color: $color-amber;
-  }
-
-  .mergePanel_verdict_done & {
-    color: $color-purple;
-  }
-
-  .mergePanel_verdict_muted & {
-    color: $color-fg-3;
-  }
-}
-
-.mergePanel_verdictTitle {
-  flex: none;
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
-.mergePanel_verdictDetail {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: $color-fg-2;
 }
 
 .mergePanel_checks {
@@ -1101,37 +1006,17 @@ function onOpenFocus(event: Event) {
   border-top: 1px solid $color-border;
 }
 
-.mergePanel_titleField,
-.mergePanel_messageField {
-  width: 100%;
-  margin: 0;
-  color: $color-fg;
-  background: $color-bg;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-md;
-  outline: none;
-
-  &:focus {
-    border-color: $color-accent;
-  }
-}
-
-.mergePanel_titleField {
-  padding: 6px $spacing-10;
-  font-family: $font-family-sans;
-  font-size: $font-size-sm;
-}
-
-// Long text scrolls inside its field (PM3d).
-.mergePanel_messageField {
-  height: 300px;
-  max-height: 40vh;
+// Long text scrolls inside its field, which keeps one height (PM3d): over `TextArea`'s growing with its text, hence
+// the doubled class.
+.mergePanel_messageField.mergePanel_messageField textarea {
+  min-height: min(300px, 40vh);
+  max-height: min(300px, 40vh);
   padding: $spacing-8 $spacing-10;
+  overflow-y: auto;
   font-family: $font-family-mono;
   font-size: $font-size-2xs;
   line-height: 17px;
   color: $color-fg-2;
-  resize: none;
 }
 
 .mergePanel_editorFoot {

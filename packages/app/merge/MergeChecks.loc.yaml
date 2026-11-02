@@ -28,14 +28,6 @@ requiredSection:
   en: Required · {count}
 othersSection:
   en: Others · {count}
-required:
-  en: Required
-notStopping:
-  en: "{detail} · doesn't stop the merge"
-log:
-  en: Log
-logOf:
-  en: Log of {name}
 showAll:
   en: Show all checks
 fold:

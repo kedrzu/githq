@@ -12,6 +12,7 @@ import type { ItemCheckState, PullRequestDetail } from '@/store/ItemDetailTypes.
 import { compareChecks } from './compareChecks.js';
 import { getCheckIcon } from './getCheckIcon.js';
 import * as l from './PullRequestChecks.loc.js';
+import RequiredTag from './RequiredTag.vue';
 import { useCheckTexts } from './useCheckTexts.js';
 
 const props = defineProps<{
@@ -102,11 +103,7 @@ const more = computed(() => props.detail.checkCount - props.detail.checks.length
           aria-hidden="true"
         />
         <span :class="css.pullRequestChecks_name">{{ checkTexts.name(check) }}</span>
-        <span
-          v-if="check.state === 'failing' && requiredIds?.includes(check.id)"
-          :class="css.pullRequestChecks_tag"
-          >{{ t(l.required) }}</span
-        >
+        <RequiredTag v-if="check.state === 'failing' && requiredIds?.includes(check.id)" />
         <span :class="css.pullRequestChecks_detail">{{ checkTexts.describe(check, now) }}</span>
         <Button
           v-if="check.url"
@@ -257,15 +254,6 @@ const more = computed(() => props.detail.checkCount - props.detail.checks.length
   text-overflow: ellipsis;
   font-family: $font-family-mono;
   color: $color-fg;
-}
-
-.pullRequestChecks_tag {
-  flex: none;
-  padding: 0 5px;
-  font-size: 10.5px;
-  color: $color-fg-2;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-sm;
 }
 
 .pullRequestChecks_count {
