@@ -611,7 +611,7 @@ function setRowField(fieldId: string | null) {
         : t(untracked.nothingConcerns, { name })
     "
     :others="t(concerning.length > 0 ? l.othersOnGitHub : l.allOnGitHub)"
-    :settings-to="getSettingsPath('tracking', githubUrl)"
+    :settings-to="getSettingsPath('projects', githubUrl)"
     :properties="UNTRACKED_PROPERTIES"
     :viewer-login="auth.viewer.login"
     :now="list.now"

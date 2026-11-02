@@ -198,27 +198,10 @@ export type TrackedStatus =
      */
     | { readonly kind: 'read'; readonly at: number | null; readonly slower: boolean };
 
-/** A tracked repository as Settings knows it, whether or not GitHub's lists read so far hold it. */
+/** A tracked repository as the picker knows it, whether or not GitHub's lists read so far hold it. */
 export interface TrackedRepositoryEntry {
     /** `owner/name`. */
     readonly nameWithOwner: string;
     /** `null`: nothing tells yet — the row shows no tag. */
     readonly isPrivate: boolean | null;
-    readonly status: TrackedStatus;
-}
-
-/** A tracked project as Settings knows it, whether or not GitHub's lists read so far hold it. */
-export interface TrackedProjectEntry {
-    /** The project's node id. */
-    readonly id: string;
-    readonly title: string;
-    /** The login of the user or organisation owning it. */
-    readonly owner: string;
-    readonly status: TrackedStatus;
-}
-
-/** What is tracked now, with how each stands: what Settings' chooser compares its ticks with (G8, D24). */
-export interface TrackedEntries {
-    readonly repositories: readonly TrackedRepositoryEntry[];
-    readonly projects: readonly TrackedProjectEntry[];
 }

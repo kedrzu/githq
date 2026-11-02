@@ -8,7 +8,7 @@ import {
     EMPTY_CANDIDATES,
     SAMPLE_CANDIDATES,
     SAMPLE_OWN_CHOICE,
-    SAMPLE_SETTINGS_CANDIDATES,
+    SAMPLE_PICKER_CANDIDATES,
     SAMPLE_TRACKED,
     sampleCandidateRepository,
 } from '@/testing/sampleTracking.js';
@@ -34,8 +34,6 @@ const meta = {
         onLoadMore: fn(),
         onRequestApproval: fn(),
         onFound: fn(),
-        onSave: fn(),
-        onDiscard: fn(),
     },
     // The choice is the story's own, so its checkboxes work; as tall as the window, scrolling like the page.
     render: args => renderChooser(args, false),
@@ -84,70 +82,62 @@ export const NothingToPickWithSaving: Story = {
     render: args => renderChooser(args, true),
 };
 
-/** What Settings' sample tracks: its ticks before any change. */
-const TRACKED_TICKS = {
-    repositories: SAMPLE_TRACKED.repositories.map(entry => entry.nameWithOwner),
-    projects: SAMPLE_TRACKED.projects.map(entry => entry.id),
-};
-
 /**
- * G8: Settings' form — what is tracked, ticked, with how each stands (synced, downloading, not shown, refused); one
- * staged untrack (kedrzu/blog) and one staged track (skyline-labs/mobile), said on their rows and in the bar at the
- * bottom; acme-health hiding its private repositories; what GitHub's lists don't hold under its owner or "Elsewhere".
+ * T18: the picker — the user's twelve all tracked, folded to their header; skyline-labs with what is tracked and two
+ * picked in sight, no projects, no heading, no footer (its dialog has one).
  */
-export const Settings: Story = {
+export const Picker: Story = {
     args: {
-        candidates: SAMPLE_SETTINGS_CANDIDATES,
+        candidates: SAMPLE_PICKER_CANDIDATES,
         tracked: SAMPLE_TRACKED,
-        repositories: [...TRACKED_TICKS.repositories.filter(name => name !== 'kedrzu/blog'), 'skyline-labs/mobile'],
-        projects: TRACKED_TICKS.projects,
+        repositories: ['skyline-labs/mobile', 'skyline-labs/payments'],
+        projects: [],
     },
-    render: args => renderSettings(args),
+    render: args => renderPicker(args),
 };
 
-/** T1: Settings searching "web" — every owner narrowed, tracked and untracked alike. */
-export const SettingsSearching: Story = {
-    args: { ...Settings.args, initialSearch: 'web', ...TRACKED_TICKS },
-    render: args => renderSettings(args),
+/** T1: the picker searching "web" — every owner narrowed, tracked and untracked alike. */
+export const PickerSearching: Story = {
+    args: { ...Picker.args, filter: 'web', repositories: [] },
+    render: args => renderPicker(args),
 };
 
-/** Settings while what the user and their organisations have is read: what is tracked shows at once, by owner. */
-export const SettingsReading: Story = {
-    args: { ...Settings.args, candidates: null, reading: true, ...TRACKED_TICKS },
-    render: args => renderSettings(args),
+/** The picker while what the user and their organisations have is read. */
+export const PickerReading: Story = {
+    args: { ...Picker.args, candidates: null, reading: true, repositories: [] },
+    render: args => renderPicker(args),
+};
+
+/** The picker after reading that failed: a repository can still be looked up by name. */
+export const PickerNotRead: Story = {
+    args: { ...Picker.args, candidates: null, reading: false, repositories: [] },
+    render: args => renderPicker(args),
 };
 
 /**
- * Settings' form with its own ticks: "Discard" puts them back to what is tracked, as the section does, and the next page
- * of an organisation asked for arrives at once — the rest of skyline-labs, with `skyline-labs/legacy-billing`.
+ * The picker with its own picks and filter, as its dialog keeps them; the next page of an organisation asked for arrives
+ * at once — the rest of skyline-labs, with `skyline-labs/legacy-billing`.
  */
-function renderSettings({ onDiscard, onLoadMore, ...args }: ChooserArgs) {
+function renderPicker({ onLoadMore, ...args }: ChooserArgs) {
     return defineComponent({
         setup() {
             const repositories = ref(args.repositories);
-            const projects = ref(args.projects);
+            const filter = ref(args.filter ?? '');
             const candidates = shallowRef(args.candidates);
-            function discard() {
-                repositories.value = TRACKED_TICKS.repositories;
-                projects.value = TRACKED_TICKS.projects;
-                onDiscard?.();
-            }
-
             function loadMore(owner: string) {
                 onLoadMore?.(owner);
                 candidates.value = candidates.value && readNextPage(candidates.value, owner);
             }
 
             return () => (
-                <div style={{ height: '100vh', overflowY: 'auto' }}>
+                <div style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                     <TrackingChooser
                         {...args}
                         candidates={candidates.value}
                         repositories={repositories.value}
-                        projects={projects.value}
+                        filter={filter.value}
                         onUpdate:repositories={value => (repositories.value = value)}
-                        onUpdate:projects={value => (projects.value = value)}
-                        onDiscard={discard}
+                        onUpdate:filter={value => (filter.value = value)}
                         onLoadMore={loadMore}
                     />
                 </div>

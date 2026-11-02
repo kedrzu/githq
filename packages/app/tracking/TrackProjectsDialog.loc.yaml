@@ -1,0 +1,16 @@
+title:
+  en: Track projects
+description:
+  en: What you tick is copied into this browser, with every item it holds, and kept in sync from now on.
+summary:
+  plural: count
+  en:
+    zero: Nothing picked yet
+    one: '1 picked: {names}'
+    many: '{count} picked: {names}'
+track:
+  plural: count
+  en:
+    zero: Track projects
+    one: Track 1 project
+    many: Track {count} projects

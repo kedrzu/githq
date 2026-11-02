@@ -13,7 +13,9 @@ import {
     FIRST_DOWNLOAD_PATH,
     GITHUB_RESERVED_SEGMENTS,
     PROJECT_PATHS,
+    PROJECT_SETTINGS_PATHS,
     REPOSITORY_PATH,
+    REPOSITORY_SETTINGS_PATH,
 } from '@/tracking/trackingRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
@@ -119,6 +121,24 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name: index === 0 ? 'project-org' : 'project-user',
             component: () => import('@/projects/ProjectPage.vue'),
+            meta: { auth: 'signedIn', layout: 'shell' },
+        };
+    }
+    // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their
+    // settings — so the same address opens them on github.com. The static last segment outranks the hand-off of a
+    // repository's other pages (`/owner/name/:path`) and of `/orgs/…`, `/users/…`; one not tracked settles on its
+    // section of Settings (the page does, once the kept settings are read).
+    yield {
+        path: REPOSITORY_SETTINGS_PATH,
+        name: 'repository-settings',
+        component: () => import('@/settings/RepositorySettingsPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell' },
+    };
+    for (const [index, path] of PROJECT_SETTINGS_PATHS.entries()) {
+        yield {
+            path,
+            name: index === 0 ? 'project-org-settings' : 'project-user-settings',
+            component: () => import('@/settings/ProjectSettingsPage.vue'),
             meta: { auth: 'signedIn', layout: 'shell' },
         };
     }

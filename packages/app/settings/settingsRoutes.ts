@@ -4,18 +4,18 @@ import type { LocationQuery } from 'vue-router';
 export const SETTINGS_PATH = '/settings';
 
 /** The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. */
-export const SETTINGS_SECTIONS = ['tracking', 'sync', 'account'] as const;
+export const SETTINGS_SECTIONS = ['repositories', 'projects', 'sync', 'account'] as const;
 
 /** A section of Settings. */
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 
 /**
- * The section an address's `?tab=` names; none, or one not known (an old address's `repositories`, `projects` or
- * `saving` among them), is the first.
+ * The section an address's `?tab=` names; none, or one not known (an old address's `tracking` or `saving` among
+ * them), is the first.
  * @__NO_SIDE_EFFECTS__
  */
 export function readSettingsSection(tab: LocationQuery[string] | undefined): SettingsSection {
-    return SETTINGS_SECTIONS.find(section => section === tab) ?? 'tracking';
+    return SETTINGS_SECTIONS.find(section => section === tab) ?? 'repositories';
 }
 
 /**
@@ -24,7 +24,7 @@ export function readSettingsSection(tab: LocationQuery[string] | undefined): Set
  */
 export function getSettingsPath(section: SettingsSection, search?: string) {
     const query = new URLSearchParams();
-    if (section !== 'tracking') {
+    if (section !== 'repositories') {
         query.set('tab', section);
     }
 

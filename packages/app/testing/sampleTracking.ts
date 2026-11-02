@@ -2,9 +2,7 @@ import type {
     CandidateProject,
     CandidateRepositories,
     CandidateRepository,
-    TrackedEntries,
     TrackedRepositoryEntry,
-    TrackedStatus,
     TrackingCandidates,
 } from '@/tracking/TrackingTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -154,7 +152,7 @@ export const SAMPLE_OWN_CHOICE = {
     projects: ['PVT_kedrzu_1'],
 };
 
-/** skyline-labs's web repositories (T1), read in Settings' sample besides the first page. */
+/** skyline-labs's web repositories (T1), read in the picker's sample besides the first page. */
 const SKYLINE_WEB = [
     sampleCandidateRepository('skyline-labs/webapp', { ago: 30 * MINUTE, open: 142, isPrivate: true }),
     sampleCandidateRepository('skyline-labs/web-admin', { ago: 4 * HOUR, open: 88, isPrivate: true }),
@@ -162,8 +160,8 @@ const SKYLINE_WEB = [
     sampleCandidateRepository('skyline-labs/website', { ago: 14 * DAY, open: 31 }),
 ];
 
-/** What Settings offers in the mockups (G8, T1): the sample's, skyline-labs's web repositories read too. */
-export const SAMPLE_SETTINGS_CANDIDATES: TrackingCandidates = {
+/** What the picker offers in the mockups (T18, T1): the sample's, skyline-labs's web repositories read too. */
+export const SAMPLE_PICKER_CANDIDATES: TrackingCandidates = {
     ...SAMPLE_CANDIDATES,
     organizations: SAMPLE_CANDIDATES.organizations.map(organization =>
         organization.login === 'skyline-labs' && organization.repositories
@@ -178,35 +176,14 @@ export const SAMPLE_SETTINGS_CANDIDATES: TrackingCandidates = {
     ),
 };
 
-/** Read 14 seconds before {@link SAMPLE_NOW}: "synced 14s ago". */
-const SYNCED: TrackedStatus = { kind: 'read', at: SAMPLE_NOW - 14_000, slower: false };
-
 /**
- * What Settings' sample tracks (G8): the user's twelve repositories and their project; skyline-labs's portal, webapp
- * and web-admin, api still downloading, and `skyline-labs/legacy-billing`, on a page not read yet; one of acme-health's
- * it no longer shows; someone else's repository and project.
+ * What the picker's sample tracks (T18): the user's twelve repositories; skyline-labs's portal and webapp, and
+ * `skyline-labs/legacy-billing`, on a page not read yet; someone else's, which the picker leaves out.
  */
-export const SAMPLE_TRACKED: TrackedEntries = {
-    repositories: [
-        ...OWN.map(repository => trackedRepository(repository.nameWithOwner, false, SYNCED)),
-        trackedRepository('skyline-labs/portal', true, SYNCED),
-        trackedRepository('skyline-labs/api', true, { kind: 'downloading', done: 412, total: 1180 }),
-        trackedRepository('skyline-labs/webapp', true, SYNCED),
-        trackedRepository('skyline-labs/web-admin', true, SYNCED),
-        trackedRepository('skyline-labs/legacy-billing', null, { kind: 'read', at: null, slower: false }),
-        trackedRepository('acme-health/records', true, { kind: 'hidden' }),
-        trackedRepository('vitejs/vite', false, { kind: 'read', at: SAMPLE_NOW - 3 * MINUTE, slower: true }),
-    ],
-    projects: [
-        { id: 'PVT_kedrzu_1', title: 'githq Roadmap', owner: 'kedrzu', status: SYNCED },
-        { id: 'PVT_tauri-apps_2', title: 'Tauri roadmap', owner: 'tauri-apps', status: { kind: 'refused' } },
-    ],
-};
-
-function trackedRepository(
-    nameWithOwner: string,
-    isPrivate: boolean | null,
-    status: TrackedStatus,
-): TrackedRepositoryEntry {
-    return { nameWithOwner, isPrivate, status };
-}
+export const SAMPLE_TRACKED: readonly TrackedRepositoryEntry[] = [
+    ...OWN.map(repository => ({ nameWithOwner: repository.nameWithOwner, isPrivate: false })),
+    { nameWithOwner: 'skyline-labs/portal', isPrivate: true },
+    { nameWithOwner: 'skyline-labs/webapp', isPrivate: true },
+    { nameWithOwner: 'skyline-labs/legacy-billing', isPrivate: null },
+    { nameWithOwner: 'vitejs/vite', isPrivate: false },
+];

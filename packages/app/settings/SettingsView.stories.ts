@@ -6,8 +6,9 @@ import SettingsView from './SettingsView.vue';
 const meta = {
     component: SettingsView,
     args: {
-        section: 'tracking',
-        tracked: 17,
+        section: 'repositories',
+        trackedRepositories: 15,
+        trackedProjects: 2,
         'onUpdate:section': fn(),
     },
     // As tall as the window, like in the app.
@@ -22,8 +23,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** G8: the title, and the tabs with what is tracked counted (15 repositories and 2 projects). */
-export const WhatToTrack: Story = {};
+/** G8: the title, and the tabs with what is tracked counted. */
+export const Repositories: Story = {};
+
+/** G8: on Projects. */
+export const Projects: Story = { args: { section: 'projects' } };
 
 /** T4: on a section with no count. */
 export const SyncSettings: Story = { args: { section: 'sync' } };
@@ -36,5 +40,5 @@ export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 560px"><story /></div>' })],
 };
 
-/** Nothing tracked yet: the count says so. */
-export const NothingTracked: Story = { args: { tracked: 0 } };
+/** Nothing tracked yet: the counts say so. */
+export const NothingTracked: Story = { args: { trackedRepositories: 0, trackedProjects: 0 } };

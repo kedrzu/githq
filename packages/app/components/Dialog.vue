@@ -29,8 +29,8 @@ withDefaults(
     /** Width in px; it never grows past the window. 560 when not given. */
     width?: number;
     /**
-     * The content draws its own header and close button: the title is read out only, there is no padding and no
-     * close button, and the dialog is as tall as the window allows.
+     * The content draws its own header and close button: the title and description are read out only, there is no
+     * padding and no close button, and the dialog is as tall as the window allows.
      */
     bare?: boolean;
     /** With `bare`: as tall as the content, up to the window (the command menu), instead of the window. */
@@ -87,8 +87,14 @@ const t = useTranslate();
         >
           {{ title }}
         </DialogTitle>
+        <VisuallyHidden
+          v-if="description && bare"
+          as-child
+        >
+          <DialogDescription>{{ description }}</DialogDescription>
+        </VisuallyHidden>
         <DialogDescription
-          v-if="description"
+          v-else-if="description"
           :class="css.dialog_description"
         >
           {{ description }}

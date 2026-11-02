@@ -1,0 +1,12 @@
+fromOne:
+  en: from {name}
+fromSeveral:
+  en: from {count} repositories, {tracked} tracked
+draftsOnly:
+  en: drafts only
+items:
+  plural: count
+  en:
+    zero: no items
+    one: 1 item
+    many: '{formatted} items'

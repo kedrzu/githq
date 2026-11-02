@@ -1,0 +1,9 @@
+items:
+  plural: count
+  en:
+    one: 1 item
+    many: '{count} items'
+updated:
+  en: updated {age} ago
+tracked:
+  en: tracked

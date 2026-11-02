@@ -1,5 +1,7 @@
 bannerText:
   en: "{organization} hasn't approved githq, so its private repositories can't be listed."
+bannerProjects:
+  en: "{organization} hasn't approved githq, so its projects can't be listed."
 bannerPublic:
   plural: count
   en:

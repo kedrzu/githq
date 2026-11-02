@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -31,10 +31,12 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
+import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 
 defineSlots<{
@@ -49,6 +51,7 @@ const details = useService(ItemDetailStore);
 const resolver = useService(ItemResolver);
 const queue = useService(EditQueue);
 const tracking = useService(TrackingStore);
+const pendingUntracks = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
 const editTexts = useEditTexts();
@@ -73,9 +76,9 @@ const myWorkCounts = computed(() =>
       }).counts,
 );
 
-// Each tracked project and repository with its open items once they have arrived, else how far its download is.
+// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, else how far its download is.
 const tracked = computed((): SidebarTracked => ({
-  projects: tracking.projects.map(project => ({
+  projects: pendingUntracks.projects.map(project => ({
     key: `project:${project.id}`,
     label: project.title,
     to: getProjectPath(project),
@@ -85,7 +88,7 @@ const tracked = computed((): SidebarTracked => ({
       haveOpenItemsArrived(tracking.getSyncState({ kind: 'project', id: project.id })),
     ),
   })),
-  repositories: tracking.repositories.map(repository => {
+  repositories: pendingUntracks.repositories.map(repository => {
     const target: TrackedTarget = { kind: 'repository', nameWithOwner: repository.nameWithOwner };
     return {
       key: `repository:${repository.nameWithOwner}`,
@@ -236,6 +239,7 @@ function showLastFailure() {
   <Toaster v-if="auth.viewer">
     <EditToasts />
     <SyncStoppedToast :login="auth.viewer.login" />
+    <UntrackToast />
   </Toaster>
   <AppCommands v-if="auth.viewer" />
 </template>
