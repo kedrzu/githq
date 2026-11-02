@@ -106,3 +106,27 @@ test('an unknown section, or one of the old ones, shows the first', async ({ pag
         await expect(settings.section('What to track')).toHaveAttribute('aria-pressed', 'true');
     }
 });
+
+test('What to track scrolls a long list, the bar of staged changes staying in view', async ({ page, github }) => {
+    const { world } = createSampleTrackedWork();
+    const owner = SAMPLE_REPOSITORY.split('/')[0] ?? '';
+    for (let index = 1; index <= 40; index++) {
+        world.repository(`${owner}/tool-${index}`);
+    }
+
+    await openTrackedWork(page, github, world);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/settings');
+
+    const tracking = new TrackingScreenHarness(page);
+    await tracking.owner(owner).click();
+    const last = tracking.row(`${owner}/tool-40`);
+    await expect(last).toBeAttached();
+    await expect(last).not.toBeInViewport();
+
+    await tracking.row(SAMPLE_REPOSITORY).uncheck();
+    await tracking.row(SAMPLE_REPOSITORY).hover();
+    await page.mouse.wheel(0, 5000);
+    await expect(last).toBeInViewport({ ratio: 1 });
+    await expect(tracking.pending).toBeInViewport({ ratio: 1 });
+});

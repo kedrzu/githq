@@ -203,21 +203,32 @@ function pruneStaged(trackedKeys: readonly string[], staged: StagedKeys): Staged
 </script>
 
 <template>
-  <TrackingChooser
-    v-model:repositories="repositories"
-    v-model:projects="projects"
-    :tracked="tracked"
-    :reading="reading"
-    :initial-search="initialSearch"
-    :candidates="tracking.candidates"
-    :now="now"
-    :found="found"
-    :approvals="approvals.requests"
-    :find="tracking.findCandidate"
-    @save="save"
-    @discard="discard"
-    @load-more="tracking.loadMoreRepositories"
-    @request-approval="approvals.record"
-    @found="addFound"
-  />
+  <!-- The section scrolls on its own under Settings' header, the bar of staged changes sticking to its bottom. -->
+  <div :class="css.trackingSection">
+    <TrackingChooser
+      v-model:repositories="repositories"
+      v-model:projects="projects"
+      :tracked="tracked"
+      :reading="reading"
+      :initial-search="initialSearch"
+      :candidates="tracking.candidates"
+      :now="now"
+      :found="found"
+      :approvals="approvals.requests"
+      :find="tracking.findCandidate"
+      @save="save"
+      @discard="discard"
+      @load-more="tracking.loadMoreRepositories"
+      @request-approval="approvals.record"
+      @found="addFound"
+    />
+  </div>
 </template>
+
+<style lang="scss" module="css">
+.trackingSection {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+</style>
