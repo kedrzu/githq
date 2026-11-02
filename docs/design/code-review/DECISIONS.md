@@ -96,18 +96,34 @@ extra.
 - GitHub's ready-made patches — no whitespace-free variant, no context beyond the hunk, and silently missing for
   large files.
 
-## Q3
+## D8
 
-**Open: which diffs start collapsed, and how a very large one is shown.** Owner: very large diffs will "probably"
-be collapsed by default, "or we think about how to show them better". Agent: once rows are virtualized per line and
-computed off the main thread ([Q5](#q5)), size stops being a performance reason to collapse; collapse for what is not
-worth reading (generated files, lock files), and for files marked viewed. A collapsed file is neither fetched nor
-diffed until opened.
+**Generated files start collapsed — those marked `linguist-generated` in the repository's `.gitattributes`, and
+known lock files by name — and so do very large files. A collapsed file is neither fetched nor diffed until
+opened.** (2026-11-02, owner: "nobody reads lock files", collapsing is needed "not only for performance"; the
+threshold for size is not set)
+
+**Why.** Some files are simply not read, and a large pull request should cost only what you open.
 
 > **Checked 2026-11-02:** neither GraphQL `PullRequestChangedFile` (`path`, `additions`, `deletions`, `changeType`,
 > `viewerViewedState`) nor REST `pulls/{n}/files` says whether a file is generated, so githq would read
 > `.gitattributes` (`linguist-generated`) itself ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls),
 > [pulls/files](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files)).
+
+**Rejected.**
+
+- Collapsing by size alone — a small lock file still is not read (owner).
+
+## D9
+
+**The "viewed" mark is GitHub's own, read and written through the API, so it agrees with github.com both ways; the
+file list can be filtered as on github.com, and hiding viewed files makes the list shrink as you read.**
+(2026-11-02, owner)
+
+**Why.** The owner marks files as seen so they stop showing up while reading a pull request.
+
+> **Checked 2026-11-02:** `PullRequestChangedFile.viewerViewedState` and the mutations `markFileAsViewed` /
+> `unmarkFileAsViewed` (`path`, `pullRequestId`) exist ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls)).
 
 ## D7
 

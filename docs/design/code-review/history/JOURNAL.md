@@ -25,3 +25,7 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   to a Web Worker or WebAssembly (github.com stutters on large PRs) → Q5 with agent's proposal (per-line
   virtualization, diff + highlighting in a Web Worker, WASM only on measurement). Q3 updated: agent proposes
   collapsing by kind and viewed state rather than size; GitHub's APIs don't say which files are generated.
+- 2026-11-02 — Owner: generated files (lock files, .gitattributes) collapsed by default, and very large files too
+  ("not only for performance") → D8 (Q3 closed; size threshold unset). Owner wants GitHub's viewed mark and filters
+  like github.com, hiding viewed files so the list shrinks → D9. Asked: does hiding viewed act on the file list only
+  or also on the diff; which other filters.
