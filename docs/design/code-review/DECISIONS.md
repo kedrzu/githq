@@ -444,7 +444,7 @@ read like the folder icons; CR46)
 under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard… and
 Submit… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
 an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
-In the app sidebar, "Unsent drafts" with a count at the very top, above My work, only while there is at least one,
+In the app sidebar, "Draft reviews" with a count at the very top, above My work, only while there is at least one,
 opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
 red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation
 in the title, and doesn't single out one person; CR35, CR36; lists and sidebar CR33, CR34)
