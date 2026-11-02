@@ -8,11 +8,68 @@ from reviews live in [history/](history/).
 Reopening a rejected option is right when its premise changed; repeating it without knowing it was rejected is
 not.
 
-## Q1
+## D1
 
-**Open: where the diff comes from — GitHub's ready-made patches, or computed in githq from the file before and
-after.** Hiding whitespace changes (owner's requirement, remembered across pull requests) and exact scroll targets
-(owner's complaint about github.com jumping to the wrong place) both depend on it. Agent leans towards computing it.
+**githq writes reviews, not only reads them: line comments, replies, resolving threads, and submitting a review as
+a comment, an approval or a request for changes.** (2026-11-02, owner)
+
+**Why.** Reading here and commenting on github.com would mean finding the same line twice.
+
+> **Checked 2026-11-02:** GraphQL has `addPullRequestReview`, `addPullRequestReviewThread` (takes
+> `pullRequestReviewId`: "Adds a new thread to a pending Pull Request Review"), `addPullRequestReviewThreadReply`,
+> `submitPullRequestReview` ("Submits a pending pull request review"), `resolveReviewThread`,
+> `deletePullRequestReview`; `PullRequestReviewState.PENDING` exists. That leaving out `event` creates a pending
+> review is common knowledge, not documented. `PullRequestReviewThread` carries `path`, `line`, `startLine`,
+> `originalLine`, `diffSide`, `startDiffSide`, `isOutdated`, `isResolved`, `subjectType` (`LINE` | `FILE`); each
+> comment carries `diffHunk` ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls)).
+
+> **Checked 2026-11-02:** stacked pull requests expose no stack-level diff; each pull request shows "only the diff
+> for its layer" ([about stacked PRs](https://docs.github.com/en/pull-requests/get-started/about-stacked-prs)).
+
+**Rejected.**
+
+- Reading only, writing on github.com — the switch costs more than fast reading saves (agent, owner agreed).
+
+## D2
+
+**Code review is a full-screen view only; never a side panel or a modal.** (2026-11-02, owner)
+
+**Why.** A diff needs the whole width, more so split into before and after.
+
+## D3
+
+**Two layouts of the diff, as on github.com: split (before and after side by side) and unified.** (2026-11-02,
+owner)
+
+## D4
+
+**Hiding whitespace changes is a remembered choice, not reset for every pull request.** (2026-11-02, owner) It is
+kept per device, like every other view detail
+([settings-sync D7](../settings-sync/DECISIONS.md#d7)) — agent's reading, not confirmed.
+
+**Why.** On github.com it has to be unticked again on every pull request (owner).
+
+## D5
+
+**The pull request's own conversation — comments on the pull request rather than on a line, and review summaries
+— can be shown beside the diff, in a sidebar switched on and off by hand and remembered.** (2026-11-02, owner)
+
+**Why.** On github.com you cannot see it while reading the code (owner).
+
+**Rejected.**
+
+- Showing it automatically when the window is wide enough — hides it at every narrowing, and behaves differently on
+  a laptop with an external monitor (agent, owner chose the switch).
+
+## D6
+
+**githq computes the diff itself, from each file's content before and after, and shows each change with some lines
+of context above and below that can be expanded.** (2026-11-02, agent, following from the owner's whitespace and
+context requirements)
+
+**Why.** No GitHub API returns a diff without whitespace changes, so a remembered whitespace switch ([D4](#d4)) needs
+our own diff. Expanding context needs the whole file anyway, so with both versions in hand the diff costs nothing
+extra.
 
 > **Checked 2026-11-02:** no GitHub API offers a whitespace-ignoring diff. Neither `GET …/pulls/{n}/files`,
 > `GET …/pulls/{n}` with `application/vnd.github.diff`, nor `GET …/compare/{basehead}` (parameters: `basehead`,
@@ -34,19 +91,21 @@ after.** Hiding whitespace changes (owner's requirement, remembered across pull 
 > `access-control-allow-origin: *` to a live request with an `Origin` header (the latter undocumented, tried on a
 > public file only).
 
-## Q2
+**Rejected.**
 
-**Open: does the first version write a review (line comments, replies, resolving threads, approve / request
-changes), or only read?** Agent recommends writing: reading here and commenting on github.com means finding the
-same line twice.
+- GitHub's ready-made patches — no whitespace-free variant, no context beyond the hunk, and silently missing for
+  large files.
 
-> **Checked 2026-11-02:** GraphQL has `addPullRequestReview`, `addPullRequestReviewThread` (takes
-> `pullRequestReviewId`: "Adds a new thread to a pending Pull Request Review"), `addPullRequestReviewThreadReply`,
-> `submitPullRequestReview` ("Submits a pending pull request review"), `resolveReviewThread`,
-> `deletePullRequestReview`; `PullRequestReviewState.PENDING` exists. That leaving out `event` creates a pending
-> review is common knowledge, not documented. `PullRequestReviewThread` carries `path`, `line`, `startLine`,
-> `originalLine`, `diffSide`, `startDiffSide`, `isOutdated`, `isResolved`, `subjectType` (`LINE` | `FILE`); each
-> comment carries `diffHunk` ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls)).
+## Q3
 
-> **Checked 2026-11-02:** stacked pull requests expose no stack-level diff; each pull request shows "only the diff
-> for its layer" ([about stacked PRs](https://docs.github.com/en/pull-requests/get-started/about-stacked-prs)).
+**Open: which diffs start collapsed, and how a very large one is shown.** Owner: very large diffs will "probably"
+be collapsed by default, "or we think about how to show them better".
+
+## Q4
+
+**Open: how a jump lands exactly on its target (a comment, a file, a line, the remembered reading place).** Owner's
+idea: estimate the position, jump, see how far off it is, correct the estimate, repeat. Agent's proposal: anchor the
+view on the target and render it first, absorbing height changes above the viewport so the target does not move;
+estimates then only drive the scrollbar. The remembered reading place is the same anchor (a file and line, or a
+comment) plus its offset from the top of the screen, so it survives switching layout, whitespace and expanded
+context.

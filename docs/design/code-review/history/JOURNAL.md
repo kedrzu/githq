@@ -15,3 +15,9 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   limits undocumented; GraphQL changed files carry no diff text but have viewed state; all review-writing mutations
   exist incl. pending reviews; REST and raw.githubusercontent.com allow CORS. Recorded as evidence under Q1 (where
   the diff comes from) and Q2 (read only or write). Asked owner: read vs write in v1, sidebar toggle vs automatic.
+- 2026-11-02 — Owner: write reviews in v1 → D1 (Q2 closed); full screen only → D2; split + unified → D3; whitespace
+  hiding remembered → D4 (per device: agent's reading); PR conversation in a sidebar toggled by hand → D5. Owner
+  wants context lines around each change, expandable, and very large diffs probably collapsed → agent recorded
+  computing the diff ourselves as D6 (Q1 closed), large diffs open as Q3. Owner raised that jumping to a line
+  depends on what is expanded/collapsed and comments have unpredictable height; proposed estimate-and-correct.
+  Agent proposed anchoring on the target instead → open as Q4. Story not written yet.
