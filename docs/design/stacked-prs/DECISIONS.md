@@ -218,6 +218,9 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 > **Checked 2026-11-02 (live, stack #26 of #23–#25, #24's required check failing):** a `merge-async` on #25 answered `202`
 > pending, then `failed` with "Required status check "ci" is failing." — and nothing landed, #23 (ready on its own) included. A
 > stack refused for a failing requirement is all or none; a failure while landing midway was not reproduced.
+>
+> **Checked 2026-11-02 (live, the same sandbox):** `enablePullRequestAutoMerge` on a member of a stack answers UNPROCESSABLE "Auto-merge
+> is not supported for stacked pull requests.", while `viewerCanEnableAutoMerge` reads true. So githq doesn't offer it in a stack (SP52).
 
 **Rejected.**
 
