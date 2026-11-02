@@ -1430,6 +1430,16 @@
                       "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "YJnRa",
+                          "name": "Icon Review requested",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "eye",
+                          "library": "lucide",
+                          "fill": "$fg-2"
+                        },
+                        {
                           "type": "text",
                           "id": "ueVkA",
                           "name": "Label Review requested",
@@ -1474,6 +1484,16 @@
                       "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "a0Ytfb",
+                          "name": "Icon My pull requests",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "git-pull-request",
+                          "library": "lucide",
+                          "fill": "$fg-2"
+                        },
+                        {
                           "type": "text",
                           "id": "va2Qg",
                           "name": "Label My pull requests",
@@ -1517,6 +1537,16 @@
                       ],
                       "alignItems": "center",
                       "children": [
+                        {
+                          "type": "icon",
+                          "id": "C3Fri",
+                          "name": "Icon Assigned to me",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "user-check",
+                          "library": "lucide",
+                          "fill": "$fg-2"
+                        },
                         {
                           "type": "text",
                           "id": "nIT6u",
