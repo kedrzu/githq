@@ -1,4 +1,4 @@
-<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D17, SP30–SP36), read from the local copy: the stack's name and this one's place ("6 of 10"), its pull requests first to last — merged ones too — each with its number, title and state, this one highlighted and `K`/`J` on the rows those keys open, and a line saying what stops the stack. A click on a row opens that pull request in this one's place. In a panel a long stack shows a window of six lines — one before this one, two after, the rest folded into a line saying what they hold — and each row says its state in words; `folded`, it is one line (SP32): the pips with this one tall, the place, what stops the stack and the neighbours on `K` and `J`, a click unfolds it. In a modal and on a page it is whole, the icons carrying each state (SP33–SP36). No merge here: `⇧M` merges. -->
+<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D17, SP30–SP36), read from the local copy: the stack's name and this one's place ("6 of 10"), its pull requests first to last — merged ones too — each with its number, title and state, this one highlighted and `K`/`J` on the rows those keys open, and a line saying what stops the stack — being merged, every one going says so and the line that stacks take longer, none merged until GitHub confirms (SP7). A click on a row opens that pull request in this one's place. In a panel a long stack shows a window of six lines — one before this one, two after, the rest folded into a line saying what they hold — and each row says its state in words; `folded`, it is one line (SP32): the pips with this one tall, the place, what stops the stack and the neighbours on `K` and `J`, a click unfolds it. In a modal and on a page it is whole, the icons carrying each state (SP33–SP36). No merge here: `⇧M` merges. -->
 <script lang="ts">
 /** The items `K` and `J` open from the opened one, by id; `null` at either end of the list or outside one. */
 export interface StackNeighbours {
@@ -10,7 +10,7 @@ export interface StackNeighbours {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { ChevronDown, Ellipsis, Layers } from 'lucide-vue-next';
+import { ChevronDown, Ellipsis, Layers, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
@@ -180,6 +180,8 @@ function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string 
       return t(l.merged);
     case 'closed':
       return t(l.closed);
+    case 'merging':
+      return t(l.beingMerged);
     default:
       return assertNever(kind);
   }
@@ -216,8 +218,15 @@ function getFold(side: StackMapFold['side'], folded: readonly StackPullRequestPi
   };
 }
 
-/** What stops the stack merging, or that nothing does — worded as the list's sentence, without the counts it shows. */
+/**
+ * What stops the stack merging, or that nothing does — worded as the list's sentence, without the counts it shows;
+ * being merged, that it takes a while (SP7): the rows say which are going.
+ */
 function getVerdict(stopsLater: typeof l.heldStopsLater): StackStateFact {
+  if (props.stack.state.kind === 'merging') {
+    return { icon: Loader, tone: 'warning', text: t(l.takesLonger) };
+  }
+
   return getStackStateFact({
     state: getStopState(props.stack.state),
     lang: APP_LANGUAGE,

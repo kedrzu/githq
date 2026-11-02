@@ -1,7 +1,15 @@
 import type { Language } from '@nzyme/i18n/Language.js';
 import { translateToString } from '@nzyme/i18n/translateToString.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { CircleCheck, CircleDashed, Eye, GitCompareArrows, GitMerge, GitPullRequestClosed } from 'lucide-vue-next';
+import {
+    CircleCheck,
+    CircleDashed,
+    Eye,
+    GitCompareArrows,
+    GitMerge,
+    GitPullRequestClosed,
+    Loader,
+} from 'lucide-vue-next';
 
 import type { StackHeldState, StackState } from '@/store/stacks/describeStack.js';
 
@@ -52,7 +60,13 @@ export function getStackStateFact({ state, lang, getHeldText }: GetStackStateFac
         case 'incomplete':
             return { icon: CircleDashed, tone: 'dim', text: translateToString(l.incomplete, lang) };
         case 'merged':
-            return { icon: GitMerge, tone: 'done', text: translateToString(l.merged, lang) };
+            return { icon: GitMerge, tone: 'done', text: translateToString(l.merged, lang, { count: state.count }) };
+        case 'merging':
+            return {
+                icon: Loader,
+                tone: 'warning',
+                text: translateToString(l.merging, lang, { count: state.goingCount }),
+            };
         case 'reviewRequested':
             return {
                 icon: Eye,

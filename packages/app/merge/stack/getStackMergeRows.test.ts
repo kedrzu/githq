@@ -32,26 +32,19 @@ test('held: the one holding says its own state, those after it are blocked or gr
     ]);
 });
 
-test('being merged: every one going reads so; the merge just sent does not yet (SP56, PM32a)', () => {
+test('being merged: every one going reads so (SP56)', () => {
     const members = sampleStack({ id: 'S_1', number: 1, members: [{}, {}] }).map(pr => ({
         ...pr,
         merging: 'SQUASH' as const,
     }));
     const merge = getStackMerge({ description: sampleStackDescription(members), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome: null, sending: false }))).toEqual([
-        '1 going merging',
-        '2 going merging',
-    ]);
-    expect(summary(getStackMergeRows({ merge, outcome: null, sending: true }))).toEqual([
-        '1 going own:ready',
-        '2 going own:ready',
-    ]);
+    expect(summary(getStackMergeRows({ merge, outcome: null }))).toEqual(['1 going merging', '2 going merging']);
 });
 
 test('places the copy does not hold yet fold into one row (SP50)', () => {
     const members = sampleStack({ id: 'S_1', number: 1, members: [{}, {}], size: 4 });
     const merge = getStackMerge({ description: sampleStackDescription(members), end: null });
-    const rows = getStackMergeRows({ merge, outcome: null, sending: false });
+    const rows = getStackMergeRows({ merge, outcome: null });
     expect(rows.at(-1)).toEqual({ kind: 'missing', count: 2 });
     expect(rows).toHaveLength(3);
 });
@@ -60,12 +53,12 @@ test('after a merge that stopped partway: landed, refused where it stopped, stil
     const stack = sampleStack({ id: 'S_1', number: 1, members: [{ state: 'MERGED', merged: true }, {}, {}] });
     const stopped: StackMergeOutcome = { kind: 'stopped', at: stack[1]!, landed: 1, reason: REASON };
     const merge = getStackMerge({ description: sampleStackDescription(stack), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome: stopped, sending: false }))).toEqual([
+    expect(summary(getStackMergeRows({ merge, outcome: stopped }))).toEqual([
         '1 own:merged',
         '2 refused',
         '3 dimmed stillOpen',
     ]);
-    const reading = getStackMergeRows({ merge, outcome: { kind: 'reading', reason: REASON }, sending: false });
+    const reading = getStackMergeRows({ merge, outcome: { kind: 'reading', reason: REASON } });
     expect(summary(reading)).toEqual(['1 own:merged', '2 notKnown', '3 notKnown']);
 });
 
@@ -73,7 +66,7 @@ test('a head moved: earlier ones not merged, the one with the new commit, later 
     const stack = sampleStack({ id: 'S_1', number: 1, members: [{}, {}, {}] });
     const outcome: StackMergeOutcome = { kind: 'headMoved', pullRequest: stack[1]! };
     const merge = getStackMerge({ description: sampleStackDescription(stack), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome, sending: false }))).toEqual([
+    expect(summary(getStackMergeRows({ merge, outcome }))).toEqual([
         '1 notMerged',
         '2 newCommit',
         '3 dimmed stillOpen',
@@ -87,7 +80,7 @@ test('nothing marked as landing while the whole range is blocked (SP46)', () => 
 
 function rowsOf(members: readonly Partial<PullRequestItem>[], params: { end: number | null }): StackMergeRow[] {
     const description = sampleStackDescription(sampleStack({ id: 'S_1', number: 1, members }));
-    return getStackMergeRows({ merge: getStackMerge({ description, end: params.end }), outcome: null, sending: false });
+    return getStackMergeRows({ merge: getStackMerge({ description, end: params.end }), outcome: null });
 }
 
 function summary(rows: readonly StackMergeRow[]): string[] {

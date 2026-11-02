@@ -12,6 +12,7 @@ import { useNow } from '@/services/useNow.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { pause } from '@/utils/pause.js';
@@ -48,7 +49,8 @@ const opened = computed(() => {
   const item = id === null ? undefined : details.getItem(id);
   return item?.kind === 'pullRequest' ? item : null;
 });
-// The stack the panel is open for, from the local copy alone — no request (D7).
+// The stack the panel is open for, from the local copy alone — no request (D7). While its merge is sent the panel
+// stays as it was (PM32a): being merged is drawn elsewhere from the first moment.
 const description = computed(() => {
   const stackId = store.stack?.id;
   const item = opened.value;
@@ -57,9 +59,11 @@ const description = computed(() => {
   }
 
   const others = items.all.filter(
-    other => other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
+    (other): other is PullRequestItem =>
+      other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
   );
-  const found = groupStacks([...others, item]).get(stackId);
+  const members = [...others, item];
+  const found = groupStacks(sending.value ? members.map(pr => ({ ...pr, merging: undefined })) : members).get(stackId);
   return found
     ? describeStack({ stack: found, viewerLogin: auth.viewer?.login ?? '', getItem: id => details.getItem(id) })
     : null;

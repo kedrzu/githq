@@ -51,17 +51,28 @@ export interface StackMissingPip {
  * - `broken`: failing checks, conflicts or changes requested — something for its author;
  * - `moving`: checks running, or any open one of a stack that needs a rebase (D21);
  * - `waiting`: open and none of the others — waiting for a review, mostly; also every pip while the copy is
- *   incomplete (D7: pale, never ready).
+ *   incomplete (D7: pale, never ready);
+ * - `merging`: open, and a merge of it this session sent is on its way — never merged until GitHub says so
+ *   (merging D3, stacked PRs SP7).
  */
-export type StackPullRequestPipKind = 'merged' | 'closed' | 'draft' | 'ready' | 'broken' | 'moving' | 'waiting';
+export type StackPullRequestPipKind =
+    | 'merged'
+    | 'closed'
+    | 'draft'
+    | 'ready'
+    | 'broken'
+    | 'moving'
+    | 'waiting'
+    | 'merging';
 
 /**
- * How a stack stands, the first that applies in this order. Merging is not covered yet (being merged, queued,
- * auto-merge, a merge stopped partway).
+ * How a stack stands, the first that applies in this order. A merge queue, auto-merge and a merge stopped partway
+ * are not covered yet; partly merged reads as the state of the open ones, after how many landed.
  */
 export type StackState =
     | StackMergedState
     | StackIncompleteState
+    | StackMergingState
     | StackNeedsRebaseState
     | StackClosedInsideState
     | StackClosedState
@@ -72,6 +83,18 @@ export type StackState =
 /** Every pull request of the stack is merged. */
 export interface StackMergedState {
     readonly kind: 'merged';
+    /** How many pull requests landed: "Merged · all 3 landed" (SP8). */
+    readonly count: number;
+}
+
+/**
+ * Some of its open pull requests are being merged: nothing reads merged until GitHub says so (merging D3, stacked
+ * PRs SP7, SP14).
+ */
+export interface StackMergingState {
+    readonly kind: 'merging';
+    /** How many are going with the merge. */
+    readonly goingCount: number;
 }
 
 /** The copy holds fewer pull requests than the stack's size — never reads as ready while it does (D7). */
@@ -194,7 +217,12 @@ export function describeStack(params: DescribeStackParams): StackDescription {
         }
 
         if (members.every(isMergedPullRequest)) {
-            return { kind: 'merged' };
+            return { kind: 'merged', count: members.length };
+        }
+
+        const goingCount = open.filter(pr => pr.merging !== undefined).length;
+        if (goingCount > 0) {
+            return { kind: 'merging', goingCount };
         }
 
         if (behind) {
@@ -294,7 +322,9 @@ function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
 
     if (needsRebase) {
         return pips.map((pip): StackPip =>
-            pip.kind !== 'missing' && isOpenPullRequest(pip.pullRequest) ? { ...pip, kind: 'moving' } : pip,
+            pip.kind !== 'missing' && pip.kind !== 'merging' && isOpenPullRequest(pip.pullRequest)
+                ? { ...pip, kind: 'moving' }
+                : pip,
         );
     }
 
@@ -309,6 +339,10 @@ function getPipKind(pr: PullRequestItem): StackPullRequestPipKind {
 
     if (isClosedPullRequest(pr)) {
         return 'closed';
+    }
+
+    if (pr.merging !== undefined) {
+        return 'merging';
     }
 
     if (pr.isDraft) {

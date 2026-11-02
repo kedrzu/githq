@@ -10,6 +10,7 @@ const {
     ModalPartlyRead,
     ModalTen,
     PanelFolded,
+    PanelBeingMerged,
     PanelLastOpen,
     PanelReviewRequested,
     PanelReviewRequestedFolded,
@@ -109,4 +110,13 @@ test("folded, the strip of someone else's stack asking the viewer's review says 
     await expect
         .element(page.getByRole('button', { name: /^Show the stack: 3 of 4 #531 is waiting for review/u }))
         .toBeVisible();
+});
+
+test('SP7: while the stack is being merged every row going says so, none reads merged, and the map says stacks take longer', async () => {
+    await PanelBeingMerged.run();
+
+    await expect.element(page.getByRole('button', { name: /#36/u })).toHaveTextContent('Being merged');
+    await expect.element(page.getByRole('button', { name: /#41/u })).toHaveTextContent('Being merged');
+    await expect.element(page.getByText('Stacks take longer · not merged yet')).toBeVisible();
+    await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
 });

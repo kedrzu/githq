@@ -29,6 +29,10 @@ merged:
   en: Merged
 closed:
   en: Closed
+beingMerged:
+  en: Being merged
+takesLonger:
+  en: Stacks take longer · not merged yet
 draft:
   en: Draft
 ready:

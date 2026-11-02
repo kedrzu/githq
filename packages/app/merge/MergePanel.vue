@@ -121,7 +121,7 @@ const props = defineProps<{
   /**
    * Open for a stack (stacked PRs D11): `pr` is its first open pull request — what lands alone when one is going
    * (D18) — and this the stack's merge: its list, the line, and what the panel says where the stack speaks for the
-   * range. None outside a stack.
+   * range. None outside a stack. While a merge is sent, as the stack was before it: none being merged yet (PM32a).
    */
   stack?: StackMergeView | null;
 }>();
@@ -239,14 +239,10 @@ const hasAttention = computed(() => props.options !== null && getAttentionChecks
 /** Two or more going with a stack's merge: no commit text, and none sent (stacked PRs D11). */
 const several = computed(() => (props.stack?.merge.going.length ?? 0) > 1);
 const stackRows = computed(() =>
-  props.stack
-    ? getStackMergeRows({ merge: props.stack.merge, outcome: props.stack.outcome, sending: props.sending })
-    : [],
+  props.stack ? getStackMergeRows({ merge: props.stack.merge, outcome: props.stack.outcome }) : [],
 );
-/** The stack's members being merged: none while the merge is sent, as the panel stays as it was then (PM32a). */
-const stackMerging = computed(() =>
-  props.stack && !props.sending ? props.stack.merge.open.filter(pr => pr.merging !== undefined) : [],
-);
+/** The stack's members being merged; the host gives none while the merge is sent (PM32a). */
+const stackMerging = computed(() => props.stack?.merge.open.filter(pr => pr.merging !== undefined) ?? []);
 const stackSays = computed((): StackSays | null => (props.stack ? getStackSays(props.stack) : null));
 /** The line after the last one going, while later ones stay open (SP41, SP45); none otherwise. */
 const stackLine = computed((): 'held' | 'stops' | null => {

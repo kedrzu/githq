@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { Command } from '@/commands/CommandTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import type { StackShare } from '@/store/stacks/describeStackShare.js';
@@ -32,6 +33,8 @@ export interface ListContextMenuProps {
     readonly ids: readonly string[];
     /** Opens the one item it acts on, as Enter would. */
     readonly open: () => void;
+    /** On a stack's entry: merging its whole stack, as `⇧M` on it does (stacked PRs D11); `null` otherwise. */
+    readonly merge: Command | null;
 }
 
 /**

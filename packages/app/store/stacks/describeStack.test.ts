@@ -159,9 +159,34 @@ test('an incomplete copy goes before needing a rebase or being merged', () => {
             size: 2,
         },
     );
-    expect(merged.state).toEqual({ kind: 'merged' });
+    expect(merged.state).toEqual({ kind: 'merged', count: 2 });
     expect(merged.landed).toBe(2);
     expect(pipKinds(merged)).toEqual(['merged', 'merged']);
+});
+
+test('pull requests being merged read being merged on their pips and the state, never merged (D3, SP7)', () => {
+    const description = describeMembers([pr(1, { merging: 'SQUASH' }), pr(2, { merging: 'SQUASH' }), pr(3)]);
+
+    expect(description.state).toEqual({ kind: 'merging', goingCount: 2 });
+    expect(pipKinds(description)).toEqual(['merging', 'merging', 'ready']);
+    expect(description.landed).toBe(0);
+});
+
+test('being merged goes before needing a rebase, and its pips stay being merged', () => {
+    const description = describeMembers([pr(1, { merging: 'MERGE' }), pr(2, { merging: 'MERGE', behindBase: true })], {
+        size: 2,
+    });
+
+    expect(description.state).toEqual({ kind: 'merging', goingCount: 2 });
+    expect(pipKinds(description)).toEqual(['merging', 'merging']);
+});
+
+test('once GitHub confirms, the pips are merged and the stack reads merged with how many landed (SP8)', () => {
+    const merged = { state: 'MERGED', merged: true } as const;
+    const description = describeMembers([pr(1, merged), pr(2, merged), pr(3, merged)]);
+
+    expect(description.state).toEqual({ kind: 'merged', count: 3 });
+    expect(pipKinds(description)).toEqual(['merged', 'merged', 'merged']);
 });
 
 test('an open one above the lowest open one behind its base needs a rebase, and every open pip is amber (D21)', () => {

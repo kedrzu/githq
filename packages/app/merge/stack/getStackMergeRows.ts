@@ -15,8 +15,6 @@ export interface GetStackMergeRowsParams {
     readonly merge: StackMerge;
     /** How the stack's last merge that did not end merged reads; `null` for none. */
     readonly outcome: StackMergeOutcome | null;
-    /** A merge is sent and GitHub has not answered yet: the panel stays as it was (PM32a), none being merged yet. */
-    readonly sending: boolean;
 }
 
 /**
@@ -27,7 +25,7 @@ export interface GetStackMergeRowsParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRow[] {
-    const { merge, outcome, sending } = params;
+    const { merge, outcome } = params;
     // Nothing lands while the whole range is blocked (D7, D21): none is marked as going then.
     const blocked = merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase';
     const goingIds = new Set(merge.going.map(pr => pr.id));
@@ -98,7 +96,7 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
                 return own;
         }
 
-        if (pullRequest.merging && !sending) {
+        if (pullRequest.merging) {
             return { kind: 'merging' };
         }
 

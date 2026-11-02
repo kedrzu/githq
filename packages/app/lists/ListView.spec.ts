@@ -15,7 +15,11 @@ import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
 import { Browser } from '@/services/Browser.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { matchText } from '@/testing/matchText.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
+import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import type {
@@ -39,6 +43,8 @@ interface SampleStackEntry {
     readonly stack: string;
     readonly members: readonly string[];
     readonly open: string;
+    /** How it stands; ready with no pips when not given. */
+    readonly description?: StackDescription;
 }
 
 /** In a group between two rows: the stack S_1 of p1–p3, Enter opening p2. */
@@ -584,14 +590,95 @@ test('a row\'s "Merge" selects its row and opens the panel; once sent, the list 
     await expect.poll(() => view.selectedId.value).toBe('a2');
 });
 
-test("a stack's entry is not merged by ⇧M: its pull requests stand apart; without the screen's merging nothing is offered", async () => {
+test("D11, SP7: ⇧M on a stack's entry opens the panel for its whole stack; once sent the list moves past the entry and its rows", async () => {
     const merging = sampleMerging(['a1', 'p1', 'p2', 'p3']);
     mount(STACKED, 'list', { merge: merging.context });
 
     await userEvent.keyboard('jj');
     await expect.poll(selectedCard).toBe('stack S_1');
     await userEvent.keyboard('{Shift>}M{/Shift}');
-    expect(merging.panels).toEqual([]);
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('a2');
+
+    // Expanded, past its rows too: the entry is what was merged.
+    await userEvent.keyboard('k{ArrowRight}');
+    await expect.poll(rowTexts).toEqual(['a1Merge a1', 'stack S_1', 'p1Merge p1', 'p2Merge p2', 'p3Merge p3', 'a2']);
+    await expect.poll(selectedCard).toBe('stack S_1');
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([
+        ['p1', true],
+        ['p1', true],
+    ]);
+    merging.panels[1]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('a2');
+});
+
+test('D11: ⇧M on a row of an expanded stack takes everything up to it; once sent the list moves to the next row', async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    mount(STACKED, 'list', { merge: merging.context });
+
+    await userEvent.keyboard('jj{ArrowRight}jj');
+    await expect.poll(selectedCard).toBe('p2Merge p2');
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack ?? false])).toEqual([['p2', false]]);
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('p3Merge p3');
+});
+
+test("SP6: with one of an entry's pull requests open over the list, ⇧M is the opened one's (up to it), not the list's; without the screen's merging nothing is offered", async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    const view = mount(STACKED, 'list', { merge: merging.context, followOpened: true });
+    const registry = view.container.resolve(CommandRegistry);
+    const offered = () => registry.commands.some(command => command.id === 'list.merge' && registry.isEnabled(command));
+
+    await userEvent.keyboard('jj');
+    await expect.poll(offered).toBe(true);
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => view.openedId.value).toBe('p2');
+    await expect.poll(offered).toBe(false);
+    view.unmount();
+
+    const bare = mount(STACKED, 'list');
+    const bareRegistry = bare.container.resolve(CommandRegistry);
+    expect(bareRegistry.commands.some(command => command.id === 'list.merge')).toBe(false);
+});
+
+test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole stack, as the panel opening on it", async () => {
+    const members = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}] });
+    const ids = members.map(pr => pr.id);
+    const held = members.map((pr, index): PullRequestItem =>
+        index === 2 ? { ...pr, mergeStateStatus: 'BLOCKED' } : pr,
+    );
+    const rebase = members.map((pr, index): PullRequestItem => (index === 1 ? { ...pr, behindBase: true } : pr));
+    const entry = (stacked: readonly PullRequestItem[]): Columns => [
+        ['todo', [{ stack: 'S_1', members: ids, open: ids[0] ?? '', description: sampleStackDescription(stacked) }]],
+    ];
+    const merging = sampleMerging(ids);
+    const view = mount(entry(members), 'list', { merge: merging.context });
+    const registry = view.container.resolve(CommandRegistry);
+    const title = () => registry.commands.find(command => command.id === 'list.merge')?.title;
+
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Merge all 3');
+    view.columns.value = entry(held);
+    await expect.poll(title).toBe('Merge 2');
+    view.columns.value = entry(rebase);
+    await expect.poll(title).toMatch(matchText('Rebase on GitHub'));
+});
+
+test("D11: a stack's entry's context menu merges its whole stack", async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    mount(STACKED, 'list', { merge: merging.context, contextMenu: true });
+
+    await userEvent.click(page.getByText('stack S_1'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Merge…' }));
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
+
+    // A pull request's own row offers no merge of the stack.
+    await userEvent.click(page.getByText('a1'), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Open a1' })).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: 'Merge…' })).not.toBeInTheDocument();
 });
 
 /** Mounts the list over `initial`, holding its selection like a page does; every group takes moves. */
@@ -680,8 +767,10 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                           ])
                         : h('span', props.entry.value),
                 ...(options.contextMenu && {
-                    contextMenu: ({ ids, open }: ListContextMenuProps) =>
+                    contextMenu: ({ ids, open, merge }: ListContextMenuProps) => [
                         h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),
+                        merge && h(DropdownMenuItem, { onSelect: () => void merge.run?.() }, () => merge.title),
+                    ],
                 }),
             },
         );
@@ -716,7 +805,7 @@ function toRow(group: string, row: SampleStackEntry | string): ListRow<string> {
 
     const stack: ListStack = {
         id: row.stack,
-        description: {
+        description: row.description ?? {
             name: { title: row.stack, issueId: null },
             size: row.members.length,
             held: row.members.length,

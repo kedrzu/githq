@@ -149,6 +149,8 @@ function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text
       return { text: standing.checksRunning ? t(l.checksRunning) : t(l.needsRebase), tone: 'warning' };
     case 'waiting':
       return { text: standing.waitingForReview ? t(l.waitingForReview) : t(l.cannotMergeYet), tone: 'dim' };
+    case 'merging':
+      return { text: t(l.beingMerged), tone: 'warning' };
     default:
       return assertNever(kind);
   }

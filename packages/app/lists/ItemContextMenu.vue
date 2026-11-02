@@ -1,4 +1,4 @@
-<!-- The context menu of a list's rows (L1–L4): the actions that fit the item right-clicked — or the items selected together, only those that fit every one of them — under its reference ("3 issues · 2 repositories"). An issue: open it, its project fields and adding it to a project, assign, labels, milestone, type, comment, copy its link or reference, close as completed or not planned. A pull request: merge one the user may merge (`⇧M`, merging D9: one at a time, never several together; the list moves on to the next row once it is sent), open its files on GitHub, ask for reviews, draft or ready, copy its branch, close. Only what the user may do in that repository is offered, and one quiet line says what is left out and why. Every entry shows its key, so the menu also teaches the keyboard. -->
+<!-- The context menu of a list's rows (L1–L4): the actions that fit the item right-clicked — or the items selected together, only those that fit every one of them — under its reference ("3 issues · 2 repositories"). An issue: open it, its project fields and adding it to a project, assign, labels, milestone, type, comment, copy its link or reference, close as completed or not planned. A stack's entry: merge its whole stack (stacked PRs D11), as the list offers it. A pull request: merge one the user may merge (`⇧M`, merging D9: one at a time, never several together; the list moves on to the next row once it is sent), open its files on GitHub, ask for reviews, draft or ready, copy its branch, close. Only what the user may do in that repository is offered, and one quiet line says what is left out and why. Every entry shows its key, so the menu also teaches the keyboard. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -45,10 +45,15 @@ import { isPendingItem } from '@/store/isPendingItem.js';
 
 import * as l from './ItemContextMenu.loc.js';
 
-const props = defineProps<{
-  /** The items it acts on: the one right-clicked, or those selected together. */
-  ids: readonly string[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    /** The items it acts on: the one right-clicked, or those selected together. */
+    ids: readonly string[];
+    /** On a stack's entry, the list's merge of its whole stack (stacked PRs D11): offered after going to them. */
+    merge?: Command | null;
+  }>(),
+  { merge: null },
+);
 
 const emit = defineEmits<{
   /** "Open": the one item opens as Enter opens it. */
@@ -101,9 +106,13 @@ const heading = computed(() => {
   return `${what} · ${t(l.repositories, { count: repositoryCount })}`;
 });
 
-const sections = computed(() =>
-  getItemMenuSections([...getOwnCommands(), ...getEditCommands()], one.value?.kind ?? 'issue'),
-);
+const sections = computed(() => {
+  const [opening = [], ...rest] = getItemMenuSections(
+    [...getOwnCommands(), ...getEditCommands()],
+    one.value?.kind ?? 'issue',
+  );
+  return props.merge ? [opening, [props.merge], ...rest] : [opening, ...rest];
+});
 
 /** What the user may not do here, said once: the one item's repository gives them too low a role. */
 const note = computed(() => {

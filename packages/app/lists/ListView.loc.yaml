@@ -32,3 +32,11 @@ collapseStack:
   en: Collapse the stack
 merge:
   en: Merge…
+mergeStack:
+  en: Merge all {count}
+mergeStackPart:
+  en: Merge {count}
+rebaseOnGitHub:
+  en: Rebase on GitHub
+markReady:
+  en: 'Mark #{number} ready…'

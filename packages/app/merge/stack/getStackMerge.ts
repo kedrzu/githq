@@ -35,12 +35,13 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
     const top = going.at(-1) ?? null;
     const wholeBlock = getWholeBlock();
 
-    // The held line (SP45): from the first open one, every member until the first that cannot land.
+    // The held line (SP45): from the first open one, every member until the first that cannot land — one being merged
+    // is on its way to land.
     let canLand = 0;
     let holder: StackPullRequestPip | undefined;
     const firstOpen = members.findIndex(pip => isOpenPullRequest(pip.pullRequest));
     if (!wholeBlock && firstOpen >= 0) {
-        holder = members.slice(firstOpen).find(pip => pip.kind !== 'ready');
+        holder = members.slice(firstOpen).find(pip => pip.kind !== 'ready' && pip.kind !== 'merging');
         canLand = holder ? members.indexOf(holder) - firstOpen : open.length;
     }
 

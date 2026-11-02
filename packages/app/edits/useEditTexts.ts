@@ -14,7 +14,10 @@ export interface EditTexts {
     failureTitle(failure: EditFailure): string;
     /** What happened, for its toast. */
     failureDetail(failure: EditFailure): string;
-    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merge on the way · fitloop/api#477". */
+    /**
+     * The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merge on the way ·
+     * fitloop/api#477" — a stack's, "Merge on the way · mlaine/tasklet, 3 pull requests" (stacked PRs SP7).
+     */
     sending(edits: readonly Edit[]): string;
     /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merge on the way". */
     sendingFields(edits: readonly Edit[]): string;
@@ -78,6 +81,16 @@ export function useEditTexts(): EditTexts {
         const [first] = edits;
         if (first && edits.length === 1 && first.subject.kind === 'merged') {
             return t(l.mergingTo, { target: first.reference });
+        }
+
+        const repositories = new Set(edits.map(edit => edit.reference.slice(0, edit.reference.lastIndexOf('#'))));
+        const [repository] = repositories;
+        if (
+            repository !== undefined &&
+            repositories.size === 1 &&
+            edits.every(edit => edit.subject.kind === 'merged')
+        ) {
+            return t(l.mergingSeveral, { repository, count: items.size });
         }
 
         const target =

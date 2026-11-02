@@ -4,3 +4,7 @@ inSelection:
   en: Selected
 partlySelected:
   en: Partly selected
+merge:
+  en: Merge
+rebaseOnGitHub:
+  en: Rebase on GitHub

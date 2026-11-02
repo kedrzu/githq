@@ -90,6 +90,16 @@ test('held at the first open one, the line stays where it was opened and nothing
     });
 });
 
+test('pull requests being merged hold nothing back: they are on their way to land', () => {
+    const merging = { merging: 'SQUASH' } as const;
+    const merge = getStackMerge({ description: stackOf([merging, merging, {}]), end: null });
+
+    expect(merge.members.map(pip => pip.kind)).toEqual(['merging', 'merging', 'ready']);
+    expect(merge.canLand).toBe(3);
+    expect(merge.holder).toBeNull();
+    expect(merge.block).toBeNull();
+});
+
 test('a closed member mid-range blocks only those after it; earlier ones can land (SP48)', () => {
     const description = stackOf([{}, {}, CLOSED, {}]);
 

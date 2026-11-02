@@ -16,6 +16,7 @@ export function getBlockerLook(kind: StackPullRequestPipKind): StackLook {
         case 'broken':
             return { icon: CircleX, tone: 'danger' };
         case 'moving':
+        case 'merging':
             return { icon: Loader, tone: 'warning' };
         case 'draft':
             return { icon: GitPullRequestDraft, tone: 'dim' };

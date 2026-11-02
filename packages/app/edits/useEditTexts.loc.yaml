@@ -133,6 +133,8 @@ mergingTo:
   en: Merge on the way · {target}
 merging:
   en: Merge on the way
+mergingSeveral:
+  en: Merge on the way · {repository}, {count} pull requests
 itemCount:
   plural: count
   en:
