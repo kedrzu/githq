@@ -193,3 +193,29 @@ test('the first read under way: the default branch is named, nothing is matched 
     expect(alerts.defaultBranch).toMatchObject({ name: 'main', brokenCount: null });
     expect(alerts.patterns[0]?.brokenCount).toBeNull();
 });
+
+test('the first read under way: what a pattern matches of the runs read so far is not shown, on its row or in the preview (W10)', () => {
+    const stored = sampleStoredWorkflows({
+        nameWithOwner: 'fitloop/webapp',
+        workflows: [
+            { id: 1, name: 'Release', runs: [{ conclusion: 'failure', ago: '2h', branch: 'v1.0' }] },
+            { id: 2, name: 'Deploy', runs: [] },
+        ],
+    });
+    const settings = { defaultBranch: true, refs: ['v*'] };
+
+    const alerts = buildWorkflowAlerts({ stored, settings, now: SAMPLE_WORKFLOWS_NOW });
+    expect(alerts.read).toBe(false);
+    expect(alerts.patterns[0]?.matches).toEqual({
+        refs: [],
+        branchCount: 0,
+        tagCount: 0,
+        workflows: [],
+        flagged: null,
+    });
+    expect(alerts.otherRefs).toEqual([]);
+
+    const preview = previewPatternEdit({ stored, settings: DEFAULT, index: null, value: 'v*' });
+    expect(preview.kind === 'preview' && preview.matches.refs).toEqual([]);
+    expect(preview.kind === 'preview' && preview.stopMatching).toEqual([]);
+});

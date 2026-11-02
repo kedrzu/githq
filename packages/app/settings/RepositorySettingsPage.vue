@@ -1,4 +1,4 @@
-<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another tab, or `1` to `4`, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it. -->
+<!-- `/owner/name/settings` (T16): a tracked repository's settings, at GitHub's own address of them, inside Settings with Repositories chosen — another tab, or `1` to `4`, goes to that section. The arrow, "Repositories" and Esc go back where the user came from, else to Repositories. Untrack is the same as on its row in Repositories (`PendingUntracks`, the toast with Undo is the shell's), then back to Repositories; one not tracked, or on its way out, settles on Repositories too — decided only once the kept settings are read, nothing shown until then. Workflow alerts are saved as they are changed, with the rest of the settings (`TrackingStore.setWorkflowSettings`, actions D14), and read the repository's runs on any ref while shown (`useAnyRefRead`): what a pattern would match is told from them. An address naming a place on the page (`#workflow-alerts`, `#workflow-alerts-add`, `REPOSITORY_SETTINGS_SECTIONS`) brings it into view and focuses it; Esc on the add field reached so, nothing typed, goes back too. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, nextTick, watch } from 'vue';
@@ -8,7 +8,7 @@ import { useNow } from '@/services/useNow.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getCandidateRepositories } from '@/tracking/trackingCandidates.js';
-import { getRouteNameWithOwner } from '@/tracking/trackingRoutes.js';
+import { getRouteNameWithOwner, REPOSITORY_SETTINGS_SECTIONS } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { getTrackedStatus } from '@/tracking/utils/getTrackedStatus.js';
 import { goBack } from '@/utils/goBack.js';
@@ -109,6 +109,7 @@ const isPrivate = computed(() => {
       :open-count="trackedItems.getOpenCount({ kind: 'repository', nameWithOwner: repository.nameWithOwner })"
       :workflows="workflows.get(repository.nameWithOwner)"
       :workflow-settings="workflows.getRefSettings(repository.nameWithOwner)"
+      :opened-on-add-field="route.hash === `#${REPOSITORY_SETTINGS_SECTIONS.workflowAlertsAdd}`"
       @back="goBack(router, getSettingsPath('repositories'))"
       @untrack="untrack"
       @workflow-settings="tracking.setWorkflowSettings(repository.nameWithOwner, $event)"

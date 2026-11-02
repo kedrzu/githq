@@ -3,6 +3,7 @@ import { getKnownRefs } from './getKnownRefs.js';
 import type { KnownRef } from './getKnownRefs.js';
 import { getRepositoryWorkflowState } from './getRepositoryWorkflowState.js';
 import { getWorkflowPatterns } from './getWorkflowPatterns.js';
+import { getWorkflowReadProgress } from './getWorkflowReadProgress.js';
 import { isRefCounted } from './isRefCounted.js';
 import { matchRefPattern } from './matchRefPattern.js';
 
@@ -46,7 +47,8 @@ export interface PatternPreview {
  */
 export function previewWorkflowSettings(params: PreviewWorkflowSettingsParams): WorkflowSettingsPreview {
     const { stored, current, candidate } = params;
-    const known = getKnownRefs(stored);
+    // Until the first read finishes, what the runs read so far match says nothing (W10).
+    const known = stored !== undefined && getWorkflowReadProgress(stored) === null ? getKnownRefs(stored) : [];
     // How new a break is plays no part here.
     const before = getRepositoryWorkflowState(stored, current, 0).workflows;
     const after = getRepositoryWorkflowState(stored, candidate, 0).workflows;

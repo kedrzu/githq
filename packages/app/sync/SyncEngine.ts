@@ -309,6 +309,7 @@ export const SyncEngine = defineService({
             getRepositoryFreshness,
             getProjectFreshness,
             getWorkflowsFreshness,
+            getRepositoryWorkflowsFreshness,
             pollWorkflowsNow,
             watchAnyRef,
         };
@@ -350,6 +351,26 @@ export const SyncEngine = defineService({
         /** How fresh the tracked repositories' workflows are, as a screen showing them tells it; reactive. */
         function getWorkflowsFreshness(): Freshness {
             return getLoopFreshness('workflows', items.getSyncState('workflows').lastSuccessAt);
+        }
+
+        /**
+         * How fresh a tracked repository's Workflows tab is (actions W3c, W3e): `reading` during the first read of its
+         * runs, unless GitHub stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read
+         * are on screen — there is no telling since when, as the loop goes on without it —; else as its poll goes.
+         * Reactive.
+         */
+        function getRepositoryWorkflowsFreshness(nameWithOwner: string): Freshness {
+            const stored = workflows.get(nameWithOwner);
+            if (stored?.unavailable != null) {
+                return stored.workflows.length > 0
+                    ? { kind: 'stale', since: null, reason: 'refused' }
+                    : getWorkflowsFreshness();
+            }
+
+            const progress = workflows.getReadProgress(nameWithOwner);
+            return progress && notice.value === null && !statusRef.value.workflows.failing
+                ? { kind: 'reading', read: progress.read, total: progress.total }
+                : getWorkflowsFreshness();
         }
 
         /**

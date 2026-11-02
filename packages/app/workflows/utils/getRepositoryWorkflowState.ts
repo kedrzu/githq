@@ -151,7 +151,8 @@ function getGroupState({ stored, group, now, runs: all }: GetGroupStateParams): 
         state: 'broken',
         breakStartedAt,
         breakStartKnown: lastPass >= 0,
-        isNew: breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
+        // With no pass stored the break may be far older than the oldest failure kept.
+        isNew: lastPass >= 0 && breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
         latestFailedRun: latestFailure ?? null,
         failedRef: getRowRef(stored, latestFailure?.headBranch ?? null),
     };

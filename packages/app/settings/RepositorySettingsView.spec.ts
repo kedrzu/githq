@@ -240,6 +240,60 @@ test('W11: A opens the add field; the preview follows every key and says what tu
     expect(onWorkflowSettings).toHaveBeenCalledOnce();
 });
 
+test('after a click on the switch, J/K take the keys back: Enter edits the selected pattern', async () => {
+    const onWorkflowSettings = vi.fn();
+    await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });
+
+    await userEvent.click(page.getByRole('switch', { name: 'Default branch' }));
+    expect(onWorkflowSettings).toHaveBeenCalledOnce();
+    await userEvent.keyboard('jj');
+    expect(patternRow('v*')?.getAttribute('aria-current')).toBe('true');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onWorkflowSettings).toHaveBeenCalledOnce();
+    await expect.element(patternField().first()).toHaveFocus();
+    await expect.element(patternField().first()).toHaveValue('v*');
+});
+
+test('W13: arrived on the add field by its address, Esc on it empty goes back; once typed in, Esc only clears it', async () => {
+    const onBack = vi.fn();
+    await Synced.run({ args: { ...Synced.args, openedOnAddField: true, onBack } });
+    await userEvent.click(patternField());
+    await userEvent.keyboard('{Escape}');
+    expect(onBack).toHaveBeenCalledOnce();
+
+    const onBackLater = vi.fn();
+    await Synced.run({ args: { ...Synced.args, openedOnAddField: true, onBack: onBackLater } });
+    await userEvent.click(patternField());
+    await userEvent.keyboard('v{Escape}');
+    await expect.element(patternField()).toHaveValue('');
+    expect(onBackLater).not.toHaveBeenCalled();
+
+    // Then it is an add field like any other.
+    await userEvent.keyboard('a{Escape}');
+    expect(onBackLater).not.toHaveBeenCalled();
+});
+
+test('the list’s key hints leave while a field has the keys, and come back with them', async () => {
+    await WithPattern.run();
+    const listHints = () => page.getByText(/Edit\s*.*Remove/u);
+
+    await userEvent.keyboard('jj');
+    await expect.element(listHints()).toBeVisible();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(patternField().first()).toHaveFocus();
+    await expect.element(listHints()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(listHints()).toBeVisible();
+
+    await userEvent.keyboard('a');
+    await expect.element(patternField().last()).toHaveFocus();
+    await expect.element(listHints()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(listHints()).toBeVisible();
+});
+
 test('W11: a pattern already in the list says so, and Enter adds nothing', async () => {
     const onWorkflowSettings = vi.fn();
     await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });

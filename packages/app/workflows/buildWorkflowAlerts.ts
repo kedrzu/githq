@@ -102,13 +102,14 @@ export interface BuildWorkflowAlertsParams {
  */
 export function buildWorkflowAlerts(params: BuildWorkflowAlertsParams): WorkflowAlerts {
     const { stored, settings, now } = params;
-    const known = getKnownRefs(stored);
+    const read = stored !== undefined && getWorkflowReadProgress(stored) === null;
+    const known = read ? getKnownRefs(stored) : [];
     const state = getRepositoryWorkflowState(stored, settings, now);
     const defaultName = stored?.defaultBranch ?? null;
     const patterns = getWorkflowPatterns(settings);
 
     return {
-        read: stored !== undefined && getWorkflowReadProgress(stored) === null,
+        read,
         alertsOff: isWorkflowAlertsOff(settings),
         defaultBranch: {
             on: settings.defaultBranch,

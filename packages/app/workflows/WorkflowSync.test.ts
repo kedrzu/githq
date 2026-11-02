@@ -714,6 +714,71 @@ test('a fresh run on the default branch read in the same poll does not stop the 
     expect(release?.brokenGroups.map(group => group.latestFailedRun?.id)).toEqual([61]);
 });
 
+test('the Workflows tab’s freshness: the first read’s progress, then the workflows’ own poll', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    const heldCi = createPromise();
+    session.github.holdIf = request =>
+        request.operation === `GET /repos/acme/web/actions/workflows/${CI}/runs` ? heldCi.promise : null;
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual({ kind: 'reading', read: 1, total: 2 });
+
+    heldCi.resolve();
+    await session.clock.advance(0);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual(sync.getWorkflowsFreshness());
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('the Workflows tab’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
+    const world = sampleWorld();
+    world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web').kind).not.toBe('reading');
+
+    // A failed poll does not flicker the marker: said once the last success is overdue.
+    await session.clock.advance(WORKFLOWS_INTERVAL + 60_000);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+});
+
+test('the Workflows tab’s freshness: Actions refused with rows last read is stale, whatever the issues’ poll and the loop say; refused during the first read is no reading; with no rows the loop’s', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+
+    world.actions.repository('acme/web').refusal = 403;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual({ kind: 'stale', since: null, reason: 'refused' });
+
+    const refusedMidway = sampleWorld();
+    const second = await setup(refusedMidway);
+    const ci = `GET /repos/acme/web/actions/workflows/${CI}/runs`;
+    second.session.github.holdIf = request => {
+        if (request.operation === ci) {
+            refusedMidway.actions.repository('acme/web').refusal = 403;
+        }
+
+        return null;
+    };
+    second.tracking.choose(TRACK_BOTH);
+    await second.session.clock.advance(0);
+    expect(second.workflows.get('acme/web')?.unavailable).toEqual({ reason: 'refused', status: 403 });
+    expect(second.workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
+    expect(second.sync.getRepositoryWorkflowsFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'refused' });
+
+    const neverShown = sampleWorld();
+    neverShown.actions.repository('acme/web').refusal = 403;
+    const third = await setup(neverShown);
+    third.tracking.choose(TRACK_BOTH);
+    await third.session.clock.advance(0);
+    expect(third.sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual(third.sync.getWorkflowsFreshness());
+});
+
 test('a used-up core allowance pauses the loop: nothing is asked of Actions until it resets', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows, sync } = await setup(world);

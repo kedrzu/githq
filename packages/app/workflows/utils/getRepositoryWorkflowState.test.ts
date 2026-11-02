@@ -99,6 +99,17 @@ test('with no pass stored, the break starts at the oldest failure stored, and af
     expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
 });
 
+test('with no pass stored the break’s start is not known, so it never shows as new, however recent its oldest failure stored', () => {
+    const state = getRepositoryWorkflowState(
+        repository([stored(workflow(1), [run(1, 'failure', '2026-11-02T10:00:00Z')])]),
+        DEFAULT_REFS,
+        NOW,
+    );
+
+    expect(state.workflows[0]).toMatchObject({ state: 'broken', breakStartKnown: false, isNew: false });
+    expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
+});
+
 test('a pass after a failure heals the workflow; no verdict leaves it unknown', () => {
     const state = getRepositoryWorkflowState(
         repository([
@@ -188,6 +199,7 @@ test('a workflow GitHub generates counts like any other and says so', () => {
         repository([
             stored(workflow(1, { path: 'dynamic/pages/pages-build-deployment' }), [
                 run(1, 'failure', '2026-11-02T10:00:00Z'),
+                run(3, 'success', '2026-11-02T09:00:00Z'),
             ]),
             stored(workflow(2), [run(2, 'failure', '2026-11-01T10:00:00Z')]),
         ]),
@@ -241,6 +253,7 @@ test('broken in two groups: the newest break is the one shown, the other counted
         repository([
             stored(workflow(1), [
                 run(3, 'failure', '2026-11-02T10:00:00Z', { headBranch: 'v0.1.0-rc.2' }),
+                run(2, 'success', '2026-11-02T09:00:00Z', { headBranch: 'v0.1.0-rc.1' }),
                 run(1, 'failure', '2026-10-30T10:00:00Z'),
             ]),
         ]),

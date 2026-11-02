@@ -43,7 +43,7 @@ export interface RowSelectionViewModel<T> {
 /**
  * The selection of a screen's list of rows: J/K and ↓/↑ move it — from nothing selected, either way to the first
  * row — and scroll the selected row into sight, Enter opens the selected row (not from a button or a link, which do
- * what they say), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
+ * what they say; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
  * screen has them ({@link isScreenKey}).
  * @util
  */
@@ -107,6 +107,11 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
 
         chosenKey.value = next;
+        // A button clicked keeps the focus: moved off it, Enter is the selected row's again.
+        if (isActivatableTarget(document.activeElement)) {
+            toValue(options.root)?.focus({ preventScroll: true });
+        }
+
         void nextTick(reveal);
     }
 

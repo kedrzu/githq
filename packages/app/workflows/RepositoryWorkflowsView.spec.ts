@@ -125,6 +125,25 @@ test('J/K move from the first row; Enter and a click open a broken workflow’s 
     expect(settings).toHaveBeenLastCalledWith(true);
 });
 
+test('after a click, J/K take the keys back: Enter acts on the selected row, not on the button clicked', async () => {
+    const openRun = vi.fn();
+    const unfold = vi.fn();
+    await Default.run({ args: { ...Default.args, onOpenRun: openRun, onUnfold: unfold } });
+
+    await userEvent.click(page.getByRole('button', { name: 'Probe', exact: true }));
+    expect(unfold).toHaveBeenLastCalledWith('5');
+    unfold.mockClear();
+
+    await userEvent.keyboard('k');
+    const moved = selected();
+    expect(moved).not.toBe('Probe');
+    await userEvent.keyboard('{Enter}');
+
+    expect(selected()).toBe(moved);
+    expect(unfold).not.toHaveBeenCalledWith('5');
+    expect(unfold.mock.calls.length + openRun.mock.calls.length).toBe(1);
+});
+
 test('W3b: an unfolded workflow lists its runs under its row — kept ones, then older ones read — and J/K walk into them and back out', async () => {
     const openRun = vi.fn();
     const unfold = vi.fn();

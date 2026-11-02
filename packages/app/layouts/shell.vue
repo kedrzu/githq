@@ -112,7 +112,8 @@ const tracked = computed((): SidebarTracked => ({
 const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
 
 // How fresh the screen is (D15): a tracked repository's or project's own poll — a saved view GitHub answers says
-// so (K6); the broken workflows their own poll; anything else shows what "my work" holds.
+// so (K6); the broken workflows and a repository's Workflows tab their own poll; anything else shows what "my work"
+// holds.
 const screenFreshness = computed((): Freshness => {
   if (route.name === 'workflows') {
     return sync.getWorkflowsFreshness();
@@ -122,10 +123,8 @@ const screenFreshness = computed((): Freshness => {
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {
     const nameWithOwner = `${owner}/${name}`;
     if (tracking.isTracked({ kind: 'repository', nameWithOwner })) {
-      const progress =
-        getRepositoryTab(route.params.kind) === 'workflows' ? workflows.getReadProgress(nameWithOwner) : null;
-      return progress && sync.notice === null
-        ? { kind: 'reading', read: progress.read, total: progress.total }
+      return getRepositoryTab(route.params.kind) === 'workflows'
+        ? sync.getRepositoryWorkflowsFreshness(nameWithOwner)
         : sync.getRepositoryFreshness(nameWithOwner);
     }
   }

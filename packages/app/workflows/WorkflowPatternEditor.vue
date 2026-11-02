@@ -37,8 +37,6 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-defineExpose({ focus });
-
 const t = useTranslate();
 const input = useTemplateRef('input');
 const focused = ref(false);
@@ -90,6 +88,8 @@ const effects = computed(() => {
 
   return lines;
 });
+
+defineExpose({ focus, active });
 
 onMounted(() => {
   if (props.mode === 'edit') {

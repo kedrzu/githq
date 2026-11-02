@@ -26,6 +26,8 @@ const props = defineProps<{
   workflows?: RepositoryWorkflows;
   /** Which refs raise its workflow alerts. */
   workflowSettings: WorkflowRefSettings;
+  /** The page was opened on Workflow alerts' add field by its address. */
+  openedOnAddField?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -67,6 +69,8 @@ const meta = computed(() => {
       :stored="workflows"
       :settings="workflowSettings"
       :now="now"
+      :opened-on-add-field="openedOnAddField"
+      @back="emit('back')"
       @change="emit('workflowSettings', $event)"
     />
   </div>

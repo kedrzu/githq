@@ -92,6 +92,14 @@ test('a release failing on a tag lights nothing by default; P from its row and "
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts-add`);
     const settings = new TrackedSettingsScreenHarness(page);
     await expect(settings.addPatternField).toBeFocused();
+
+    // Nothing typed, Esc goes back to the row at once; P lands on the field again.
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.workflow('Release')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('p');
+    await expect(settings.addPatternField).toBeFocused();
+
     await page.keyboard.type('v*');
     await expect(settings.workflowAlerts).toContainText('Release turns broken: it failed on v1.0-rc.1');
     await page.keyboard.press('Enter');
@@ -99,7 +107,8 @@ test('a release failing on a tag lights nothing by default; P from its row and "
 
     // The sidebar follows at once, and Esc goes back to the tab.
     await expect(shell.brokenWorkflowsCount).toHaveText('1');
-    await expect(shell.workflowMarker(SAMPLE_REPOSITORY)).toHaveAttribute('data-marker', 'new');
+    // No pass on `v*` is known, so the break's start is not: it is not told as new.
+    await expect(shell.workflowMarker(SAMPLE_REPOSITORY)).toHaveAttribute('data-marker', 'settled');
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.group('Broken')).toContainText(/Release.*v\*/u);
@@ -107,8 +116,8 @@ test('a release failing on a tag lights nothing by default; P from its row and "
     // Kept with the settings: the Broken workflows screen says the same after a reload.
     await page.goto('/dashboard/workflows');
     const screen = new BrokenWorkflowsScreenHarness(page);
-    await expect(screen.group('New')).toContainText('Release');
-    await expect(screen.group('New')).toContainText('v*');
+    await expect(screen.group('Ongoing')).toContainText('Release');
+    await expect(screen.group('Ongoing')).toContainText('v*');
 
     // ⌫ removes the pattern and Space switches the default branch off: no alerts at all (W9, W14).
     await page.goto(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts`);

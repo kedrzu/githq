@@ -66,6 +66,21 @@ test('a click on a row selects it and opens it', async () => {
     expect(open.mock.calls[0]?.[0]).toMatchObject({ nameWithOwner: 'mlaine/mdlint' });
 });
 
+test('after a click, J/K take the keys back: Enter opens the selected row, not the one clicked', async () => {
+    const open = vi.fn();
+    await Everything.run({ args: { ...Everything.args, onOpen: open } });
+
+    await userEvent.click(page.getByRole('button', { name: /^CI/u }).first());
+    expect(open).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('j');
+    expect(selected()).toBe('Deploy');
+    await userEvent.keyboard('{Enter}');
+
+    expect(selected()).toBe('Deploy');
+    expect(open).toHaveBeenCalledTimes(2);
+    expect(open.mock.calls[1]?.[0]).toMatchObject({ workflow: { workflow: { name: 'Deploy' } } });
+});
+
 test('W2c: while some repositories are unread the total is "so far" and nothing claims them healthy', async () => {
     await PartlyKnown.run();
 
