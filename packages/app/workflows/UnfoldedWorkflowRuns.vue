@@ -59,16 +59,19 @@ const empty = computed(() => {
 
   return active === null ? t(l.noRuns) : t(l.noRunsOn, { ref: active });
 });
-const endVisibility = useIntersectionObserver({ element: end });
+const endVisibility = useIntersectionObserver({ element: end, onVisible: readOlder });
 
-// Older runs are read while the end is in view, a page at a time, until there are none.
+// The observer speaks only as the end crosses the edge of the view, and takes a frame to: its last word is stale when a
+// page has just come in. Asked anew, it says where the page has moved the end to, and older runs are read from there.
 watch(
-  () => [endVisibility.isIntersecting, props.unfolded.status, props.unfolded.complete] as const,
-  ([visible, status, complete]) => {
-    if (visible && status === 'idle' && !complete) {
-      emit('readMore');
+  () => props.unfolded.status,
+  status => {
+    if (status === 'idle' && end.value) {
+      endVisibility.unobserve(end.value);
+      endVisibility.observe(end.value);
     }
   },
+  { flush: 'post' },
 );
 
 useCommands(() => [
@@ -83,6 +86,13 @@ useCommands(() => [
     run: () => emit('filter', null),
   },
 ]);
+
+/** The end is in view: the next page, only one at a time, until there are none. */
+function readOlder() {
+  if (props.unfolded.status === 'idle' && !props.unfolded.complete) {
+    emit('readMore');
+  }
+}
 
 function openField() {
   typed.value = '';

@@ -623,6 +623,97 @@ test('GitHub failing for one repository fails the loop once the others are read;
     expect(items.getSyncState('workflows').lastError).toEqual(expect.any(String));
 });
 
+test('after a break in polling, a failure on a pattern’s ref behind 30 pull request runs is found, as a rebuilt cache would find it; regular polls ask one page', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    actions.workflows.push({ id: RELEASE, name: 'Release', state: 'active' });
+    actions.runs.push(run(60, RELEASE, 'success', '2026-10-28T00:00:00Z', { headBranch: 'release/2' }));
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: true, refs: ['release/*'] });
+    await session.clock.advance(0);
+    const release = () => workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === RELEASE);
+    expect(release()?.state).toBe('passing');
+
+    // Over the weekend, with githq closed.
+    actions.runs.push(run(61, RELEASE, 'failure', '2026-10-31T00:00:00Z', { headBranch: 'release/2' }));
+    pushPullRequestRuns(actions.runs, 700, 35, '2026-11-01');
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+
+    expect(releaseAnyRefRequests(session.github.requests)).toEqual([
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30 conditional',
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30 page=2',
+    ]);
+    expect(release()).toMatchObject({ state: 'broken', latestFailedRun: { id: 61 } });
+
+    // Polled regularly again: the first page reaches what is stored.
+    pushPullRequestRuns(actions.runs, 800, 2, '2026-11-02');
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(releaseAnyRefRequests(session.github.requests)).toEqual([
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30 conditional',
+    ]);
+});
+
+test('after a break in polling, a pass on a pattern’s ref behind 30 pull request runs heals what stored as broken', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    actions.workflows.push({ id: RELEASE, name: 'Release', state: 'active' });
+    actions.runs.push(run(60, RELEASE, 'failure', '2026-10-28T00:00:00Z', { headBranch: 'v1.0-rc.2' }));
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: true, refs: ['v*'] });
+    await session.clock.advance(0);
+    const release = () => workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === RELEASE);
+    expect(release()?.state).toBe('broken');
+
+    actions.runs.push(run(61, RELEASE, 'success', '2026-10-31T00:00:00Z', { headBranch: 'v1.0-rc.3' }));
+    pushPullRequestRuns(actions.runs, 700, 35, '2026-11-01');
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+
+    expect(release()?.state).toBe('passing');
+});
+
+test('after a break in polling, a failure on the default branch behind a page of cancelled runs is found', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    const ci = () => workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === CI);
+    expect(ci()?.state).toBe('passing');
+
+    actions.runs.push(run(61, CI, 'failure', '2026-10-31T00:00:00Z'));
+    for (let id = 700; id < 712; id++) {
+        actions.runs.push(run(id, CI, 'cancelled', `2026-11-01T${String(id - 700).padStart(2, '0')}:00:00Z`));
+    }
+
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+
+    expect(ci()).toMatchObject({ state: 'broken', latestFailedRun: { id: 61 } });
+});
+
+test('a fresh run on the default branch read in the same poll does not stop the any-ref read short of what it missed', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    actions.workflows.push({ id: RELEASE, name: 'Release', state: 'active' });
+    actions.runs.push(run(60, RELEASE, 'success', '2026-10-28T00:00:00Z', { headBranch: 'release/2' }));
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: true, refs: ['release/*'] });
+    await session.clock.advance(0);
+
+    actions.runs.push(run(61, RELEASE, 'failure', '2026-10-31T00:00:00Z', { headBranch: 'release/2' }));
+    pushPullRequestRuns(actions.runs, 700, 35, '2026-11-01');
+    // Newer than the oldest run of the any-ref page: stored by the branch's read just before it.
+    actions.runs.push(run(62, RELEASE, 'success', '2026-11-01T20:00:00Z'));
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+
+    const release = workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === RELEASE);
+    expect(release?.brokenGroups.map(group => group.latestFailedRun?.id)).toEqual([61]);
+});
+
 test('a used-up core allowance pauses the loop: nothing is asked of Actions until it resets', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows, sync } = await setup(world);
@@ -865,6 +956,24 @@ async function setupWithoutEngine(world: TrackingWorld) {
     };
 
     return { session, tracking, workflows, workflowSync, context };
+}
+
+/** `count` runs of Release a pull request started on the day, half an hour apart at most, as a break in polling leaves them. */
+function pushPullRequestRuns(runs: ActionsWorldRun[], firstId: number, count: number, day: string) {
+    for (let index = 0; index < count; index++) {
+        const hour = String(Math.floor(index / 2)).padStart(2, '0');
+        const createdAt = `${day}T${hour}:${index % 2 === 0 ? '00' : '30'}:00Z`;
+        runs.push(
+            run(firstId + index, RELEASE, 'success', createdAt, { headBranch: 'feature', event: 'pull_request' }),
+        );
+    }
+}
+
+/** The requests of Release's runs on any ref. */
+function releaseAnyRefRequests(requests: readonly TestGraphQLRequest[]) {
+    return actionsRequests(requests).filter(
+        request => request.includes(`/workflows/${RELEASE}/runs`) && !request.includes('branch='),
+    );
 }
 
 function storedOf(workflows: WorkflowStore, nameWithOwner: string) {

@@ -1,14 +1,14 @@
 import { assertValue } from '@nzyme/utils/assert.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { defineComponent, h } from 'vue';
+import { computed, defineComponent, h, shallowRef } from 'vue';
 
 import { SAMPLE_WORKFLOWS_NOW, sampleStoredWorkflows, sampleWorkflowRuns } from '@/testing/sampleWorkflows.js';
 import type { SampleWorkflowParams } from '@/testing/sampleWorkflows.js';
 
 import { buildUnfoldedWorkflow } from './buildUnfoldedWorkflow.js';
 import UnfoldedWorkflowRuns from './UnfoldedWorkflowRuns.vue';
-import type { WorkflowRunHistoryState } from './WorkflowRunHistory.js';
+import type { WorkflowRunHistoryState, WorkflowRunHistoryStatus } from './WorkflowRunHistory.js';
 
 const RETRY_KEY = 'retry';
 
@@ -59,6 +59,18 @@ const PROBE_OLDER = sampleWorkflowRuns({
         },
     ],
 });
+/** A page of {@link MANY_RUNS}, as GitHub would answer it. */
+const MANY_PAGE_SIZE = 30;
+/** Ten pages of Probe's runs older than its kept ones, the newest first. */
+const MANY_RUNS = sampleWorkflowRuns({
+    ...PROBE,
+    firstRun: -300,
+    runs: Array.from({ length: 10 * MANY_PAGE_SIZE }, (_, index) => ({
+        conclusion: 'success',
+        ago: `${300 - index + 3}d`,
+        title: 'An older run',
+    })),
+});
 const READ: WorkflowRunHistoryState = { runs: PROBE_OLDER, status: 'idle', complete: true };
 
 const meta = {
@@ -99,6 +111,35 @@ export const Reading: Story = {
 /** W3b: everything kept shown, older runs not asked yet. The end in view only asks the caller for them. */
 export const OlderNotAsked: Story = {
     args: { unfolded: sampleUnfolded(PROBE, { runs: [], status: 'idle', complete: false }) },
+};
+
+/** W3b: a workflow with far more runs than a screenful, whose pages come in as they are asked for. */
+export const ManyPages: Story = {
+    render: args =>
+        defineComponent({
+            setup() {
+                const pages = shallowRef(0);
+                const status = shallowRef<WorkflowRunHistoryStatus>('idle');
+                const unfolded = computed(() =>
+                    sampleUnfolded(PROBE, {
+                        runs: MANY_RUNS.slice(0, pages.value * MANY_PAGE_SIZE),
+                        status: status.value,
+                        complete: pages.value * MANY_PAGE_SIZE >= MANY_RUNS.length,
+                    }),
+                );
+
+                function readMore() {
+                    args.onReadMore?.();
+                    status.value = 'reading';
+                    setTimeout(() => {
+                        pages.value += 1;
+                        status.value = 'idle';
+                    }, 20);
+                }
+
+                return () => h(UnfoldedWorkflowRuns, { ...args, unfolded: unfolded.value, onReadMore: readMore });
+            },
+        }),
 };
 
 /** W3b: reading older runs failed: a line the tab's keys select. */

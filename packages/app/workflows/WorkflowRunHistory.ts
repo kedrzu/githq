@@ -8,7 +8,12 @@ import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
+import { Clock } from '@/services/Clock.js';
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
+import { getAllowancePause } from '@/sync/getAllowancePause.js';
+
+import { mergeRunsById } from './utils/mergeRunsById.js';
 
 /** A page of a workflow's runs asks for this many: a screenful of lines. */
 const HISTORY_PAGE_SIZE = 30;
@@ -53,15 +58,17 @@ interface ReadParams {
     /** The entry as it stood when asked. */
     readonly entry: HistoryEntry;
     readonly query: WorkflowRunHistoryQuery;
+    /** The first page is read anew, over what is known, rather than the next one. */
+    readonly anew: boolean;
 }
 
 const UNREAD: HistoryEntry = { runs: [], status: 'idle', complete: false, nextPageUrl: null };
 
 /**
- * A workflow's older runs, read from GitHub on demand (actions D12) — a page at a time as a repository's Workflows tab
- * unfolds the workflow and reaches the end of its runs (W3b) — on any ref or on one. Held in memory for the signed-in
- * user only, never kept on disk nor merged into the workflows' store: the sync's runs stay what decides a workflow's
- * state.
+ * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time a repository's
+ * Workflows tab unfolds the workflow, the next ones as it reaches the end of its runs (W3b) — on any ref or on one,
+ * nothing asked while the core allowance is used up. Held in memory for the signed-in user only, never kept on disk nor
+ * merged into the workflows' store: the sync's runs stay what decides a workflow's state.
  */
 export type WorkflowRunHistory = Resolved<typeof WorkflowRunHistory>;
 export const WorkflowRunHistory = defineService({
@@ -69,9 +76,11 @@ export const WorkflowRunHistory = defineService({
     deps: {
         accounts: AccountSession,
         createRest: GitHubRestFactory,
+        rateLimits: GitHubRateLimitStore,
+        clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, createRest, logger }) {
+    setup({ accounts, createRest, rateLimits, clock, logger }) {
         const entriesRef = shallowRef<ReadonlyMap<string, HistoryEntry>>(new Map());
         let session: HistorySession | null = null;
 
@@ -80,42 +89,55 @@ export const WorkflowRunHistory = defineService({
             session = account ? { account, rest: createRest(() => account.token) } : null;
         });
 
-        return { get, ensure, readMore };
+        return { get, refresh, readMore };
 
         /** What was read of the workflow's runs; nothing before the first page is asked. Reactive. */
         function get(query: WorkflowRunHistoryQuery): WorkflowRunHistoryState {
             return entriesRef.value.get(getKey(query)) ?? UNREAD;
         }
 
-        /** Reads the first page, unless it was read or is being read. */
-        function ensure(query: WorkflowRunHistoryQuery) {
-            const entry = get(query);
-            if (entry.runs.length === 0 && !entry.complete && entry.status === 'idle') {
-                readMore(query);
+        /**
+         * Reads the first page anew, what is known staying meanwhile: new runs join on top, those read again are told as
+         * they are now. Nothing while a page is being read.
+         */
+        function refresh(query: WorkflowRunHistoryQuery) {
+            const key = getKey(query);
+            const entry = entriesRef.value.get(key) ?? UNREAD;
+            if (session && entry.status !== 'reading') {
+                ask({ current: session, key, entry, query, anew: true });
             }
         }
 
         /** Reads the next page — or the one that failed, again; nothing while one is read or once every page is. */
         function readMore(query: WorkflowRunHistoryQuery) {
-            const current = session;
             const key = getKey(query);
             const entry = entriesRef.value.get(key) ?? UNREAD;
-            if (!current || entry.status === 'reading' || entry.complete) {
+            if (session && entry.status !== 'reading' && !entry.complete) {
+                ask({ current: session, key, entry, query, anew: false });
+            }
+        }
+
+        function ask(params: ReadParams) {
+            const { key, entry } = params;
+            if (getAllowancePause(rateLimits.get('core'), clock.now())) {
+                put(key, getNotRead(params));
                 return;
             }
 
             put(key, { ...entry, status: 'reading' });
-            void read({ current, key, entry, query });
+            void read(params);
         }
 
-        async function read({ current, key, entry, query }: ReadParams) {
+        async function read(params: ReadParams) {
+            const { current, key, entry, query, anew } = params;
+            const first = anew || entry.nextPageUrl === null;
             try {
                 const page = await listWorkflowRuns(current.rest, {
                     nameWithOwner: query.nameWithOwner,
                     workflowId: query.workflowId,
                     branch: query.ref ?? undefined,
                     perPage: HISTORY_PAGE_SIZE,
-                    pageUrl: entry.nextPageUrl ?? undefined,
+                    pageUrl: first ? undefined : (entry.nextPageUrl ?? undefined),
                 });
                 if (!isCurrent(current)) {
                     return;
@@ -128,8 +150,15 @@ export const WorkflowRunHistory = defineService({
                 }
 
                 const known = new Set(entry.runs.map(run => run.id));
+                // A first page reaching what is known joins it, and paging goes on where it was: new runs only push
+                // older ones to later pages, read twice at worst. One that does not reach it leaves a gap: it starts over.
+                if (first && page.runs.some(run => known.has(run.id))) {
+                    put(key, { ...entry, runs: mergeRunsById([entry.runs, page.runs]), status: 'idle' });
+                    return;
+                }
+
                 put(key, {
-                    runs: [...entry.runs, ...page.runs.filter(run => !known.has(run.id))],
+                    runs: first ? page.runs : mergeRunsById([entry.runs, page.runs]),
                     status: 'idle',
                     complete: page.nextPageUrl === undefined,
                     nextPageUrl: page.nextPageUrl ?? null,
@@ -137,7 +166,7 @@ export const WorkflowRunHistory = defineService({
             } catch (error) {
                 if (isCurrent(current)) {
                     logger.warn('Could not read a workflow’s runs', { error });
-                    put(key, { ...entry, status: 'failed' });
+                    put(key, getNotRead(params));
                 }
             }
         }
@@ -151,6 +180,14 @@ export const WorkflowRunHistory = defineService({
         }
     },
 });
+
+/**
+ * The entry after a read that did not happen. Reading anew over what is known is only a check: it stays as it was, and
+ * the next unfold asks again; a page the user waits for says it was not read, asking again asks it again.
+ */
+function getNotRead({ entry, anew }: ReadParams): HistoryEntry {
+    return anew && (entry.runs.length > 0 || entry.complete) ? entry : { ...entry, status: 'failed' };
+}
 
 function getKey({ nameWithOwner, workflowId, ref }: WorkflowRunHistoryQuery) {
     return JSON.stringify([nameWithOwner, workflowId, ref]);

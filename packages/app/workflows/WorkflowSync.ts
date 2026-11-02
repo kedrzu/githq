@@ -39,6 +39,11 @@ interface ReadRunsParams {
     readonly groups: readonly WorkflowRefGroup[];
     /** Older pages are read while one of these has no run with a verdict among the runs. */
     readonly pageFor: readonly WorkflowRefGroup[];
+    /**
+     * The workflow's runs as stored before this poll, the newest first: older pages are read too while a page has not
+     * reached them. Not the entry's: another query of the same poll may just have stored a newer run there.
+     */
+    readonly known: readonly GitHubWorkflowRun[];
 }
 
 /** What {@link WorkflowSync}'s poll of some repositories needs. */
@@ -77,7 +82,9 @@ interface MarkUnavailableParams {
  * the default branch while that counts, older pages while none there has a verdict; and its runs on any ref while a
  * pattern counts (actions D1: `branch=` matches no wildcard) or a screen has them on screen (`SyncEngine.watchAnyRef`)
  * — older pages, on the first read for these patterns only, while a pattern's group has no run with a verdict, since
- * later reads go on from it. Up to {@link MAX_RUN_PAGES} pages each. A repository on screen is asked all of that at
+ * later reads go on from it. Either way older pages are read while a page has not reached the newest run stored: after
+ * a break in polling, what happened meanwhile decides as it would for a rebuilt copy, and a poll in time costs nothing
+ * for it. Up to {@link MAX_RUN_PAGES} pages each. A repository on screen is asked all of that at
  * every poll, as a run off the latest runs' page may have moved, all of it conditional, and nothing is written while
  * nothing moved. A workflow gone from GitHub's list is dropped. While some workflow's runs were never read, what is
  * known is stored as it arrives — the default branch and the list first, then a workflow at a time (W3c, W10).
@@ -266,9 +273,10 @@ export const WorkflowSync = defineService({
             for (const workflow of listed) {
                 const kept = findKept(workflow.id);
                 // The any-ref query's ETag stays while not asked, so the tab's next read of it is free.
+                const known = kept?.runs ?? [];
                 let entry: StoredWorkflow = {
                     workflow,
-                    runs: kept?.runs ?? [],
+                    runs: known,
                     etags: pickEtags(kept?.etags ?? {}, [branchQuery, anyRefQuery]),
                 };
                 if (workflow.state === 'active' && defaultGroup && branchQuery !== undefined) {
@@ -279,6 +287,7 @@ export const WorkflowSync = defineService({
                         branch: defaultGroup.branch,
                         groups,
                         pageFor: [defaultGroup],
+                        known,
                     });
                     if (!next) {
                         return;
@@ -296,6 +305,7 @@ export const WorkflowSync = defineService({
                         branch: undefined,
                         groups,
                         pageFor: anyRefQuery in entry.etags ? [] : patternGroups,
+                        known,
                     });
                     if (!next) {
                         return;
@@ -343,10 +353,12 @@ export const WorkflowSync = defineService({
 
         /**
          * Reads the workflow's latest runs on `branch`, or on any ref, into its entry — further back while a group of
-         * `pageFor` has no run with a verdict; `null` when the answer is no longer wanted.
+         * `pageFor` has no run with a verdict, or a page has not reached the query's newest `known` run; `null` when the
+         * answer is no longer wanted.
          */
         async function readRuns(context: TrackingSyncContext, params: ReadRunsParams) {
-            const { nameWithOwner, entry, key, branch, groups, pageFor } = params;
+            const { nameWithOwner, entry, key, branch, groups, pageFor, known } = params;
+            const newestKnown = known.find(run => branch === undefined || run.headBranch === branch);
             context.checkAllowance('core');
             const first = await listWorkflowRuns(context.rest, {
                 nameWithOwner,
@@ -371,9 +383,12 @@ export const WorkflowSync = defineService({
 
             let runs = mergeWorkflowRuns({ stored: entry.runs, read: first.runs, groups });
             let pageUrl = first.nextPageUrl;
+            let lastPage = first.runs;
             for (
                 let pages = 1;
-                pages < MAX_RUN_PAGES && pageUrl !== undefined && pageFor.some(group => !hasVerdict(runs, group));
+                pages < MAX_RUN_PAGES &&
+                pageUrl !== undefined &&
+                (isNewerThan(lastPage, newestKnown) || pageFor.some(group => !hasVerdict(runs, group)));
                 pages++
             ) {
                 context.checkAllowance('core');
@@ -392,6 +407,7 @@ export const WorkflowSync = defineService({
 
                 runs = mergeWorkflowRuns({ stored: runs, read: older.runs, groups });
                 pageUrl = older.nextPageUrl;
+                lastPage = older.runs;
             }
 
             return { ...entry, runs, etags };
@@ -461,4 +477,10 @@ function pickEtags(etags: Readonly<Record<string, string>>, keys: readonly (stri
 /** Whether a run of the group among `runs` has a verdict — what decides the workflow there (actions D1). */
 function hasVerdict(runs: readonly GitHubWorkflowRun[], group: WorkflowRefGroup) {
     return runs.some(run => getRunVerdict(run) !== null && isRunInGroup(run, group));
+}
+
+/** Whether a page of runs, the newest first, ends short of `run`: runs may be missing between the two. */
+function isNewerThan(page: readonly GitHubWorkflowRun[], run: GitHubWorkflowRun | undefined) {
+    const oldest = page.at(-1);
+    return oldest !== undefined && run !== undefined && Date.parse(oldest.createdAt) > Date.parse(run.createdAt);
 }
