@@ -1543,7 +1543,7 @@
                           "name": "Icon Assigned to me",
                           "width": 15,
                           "height": 15,
-                          "icon": "user-check",
+                          "icon": "user",
                           "library": "lucide",
                           "fill": "$fg-2"
                         },
@@ -171503,6 +171503,120 @@
                   "fontWeight": "normal"
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "hocRs",
+              "name": "Merge / Footer · stop earlier, checks",
+              "reusable": true,
+              "width": 640,
+              "fill": "$bg",
+              "stroke": "$border",
+              "strokeWidth": {
+                "top": 1
+              },
+              "gap": 12,
+              "padding": [
+                10,
+                14
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "v0bKpA",
+                  "type": "ref",
+                  "ref": "xfbOl",
+                  "name": "Hint Stop earlier",
+                  "gap": 5,
+                  "descendants": {
+                    "m5wIG9": {
+                      "name": "Kbd ↑↓"
+                    },
+                    "m5wIG9/luKkY": {
+                      "content": "↑↓"
+                    },
+                    "IOvfA": {
+                      "name": "Label",
+                      "content": "Stop earlier"
+                    }
+                  }
+                },
+                {
+                  "id": "zGTGm",
+                  "type": "ref",
+                  "ref": "xfbOl",
+                  "name": "Hint Checks",
+                  "gap": 5,
+                  "descendants": {
+                    "m5wIG9": {
+                      "name": "Kbd C"
+                    },
+                    "m5wIG9/luKkY": {
+                      "content": "C"
+                    },
+                    "IOvfA": {
+                      "name": "Label",
+                      "content": "Checks"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "XBerd",
+                  "name": "spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "id": "L2wMIW",
+                  "type": "ref",
+                  "ref": "n73Aps",
+                  "name": "Button Squash and merge all 3",
+                  "fill": "$accent",
+                  "cornerRadius": 6,
+                  "stroke": "$accent",
+                  "gap": 6,
+                  "padding": [
+                    5,
+                    8,
+                    5,
+                    10
+                  ],
+                  "descendants": {
+                    "O9dWyI": {
+                      "name": "icon git-merge",
+                      "width": 13,
+                      "height": 13,
+                      "icon": "git-merge",
+                      "fill": "#0E1013"
+                    },
+                    "i9UKWn": {
+                      "fill": "#0E1013",
+                      "content": "Squash and merge all 3",
+                      "fontSize": 12.5,
+                      "fontWeight": "600"
+                    },
+                    "I9KkTl": {
+                      "id": "WrAtv",
+                      "type": "ref",
+                      "ref": "guh3O",
+                      "name": "Kbd ⌘↵",
+                      "fill": "#0E10131A",
+                      "stroke": "#0E101333",
+                      "descendants": {
+                        "q1SXG": {
+                          "icon": "command",
+                          "fill": "#0E1013"
+                        },
+                        "lhKUf": {
+                          "icon": "corner-down-left",
+                          "fill": "#0E1013"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -178902,118 +179016,11 @@
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "KyMbl",
+                          "id": "G2Do6n",
+                          "type": "ref",
+                          "ref": "hocRs",
                           "name": "Footer",
-                          "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 12,
-                          "padding": [
-                            10,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "grYx5",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Stop earlier",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd ↑↓"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "↑↓"
-                                },
-                                "IOvfA": {
-                                  "name": "Label",
-                                  "content": "Stop earlier"
-                                }
-                              }
-                            },
-                            {
-                              "id": "TJSUv",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Checks",
-                              "gap": 5,
-                              "descendants": {
-                                "m5wIG9": {
-                                  "name": "Kbd C"
-                                },
-                                "m5wIG9/luKkY": {
-                                  "content": "C"
-                                },
-                                "IOvfA": {
-                                  "name": "Label",
-                                  "content": "Checks"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "gWkGo",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "id": "eQSJ0",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Squash and merge all 3",
-                              "fill": "$accent",
-                              "cornerRadius": 6,
-                              "stroke": "$accent",
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon git-merge",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "git-merge",
-                                  "fill": "#FFFFFF"
-                                },
-                                "i9UKWn": {
-                                  "fill": "#FFFFFF",
-                                  "content": "Squash and merge all 3",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "600"
-                                },
-                                "I9KkTl": {
-                                  "id": "avO86",
-                                  "type": "ref",
-                                  "ref": "guh3O",
-                                  "name": "Kbd ⌘↵",
-                                  "fill": "#FFFFFF33",
-                                  "stroke": "#0E101333",
-                                  "height": 15,
-                                  "descendants": {
-                                    "q1SXG": {
-                                      "icon": "command",
-                                      "fill": "#FFFFFF"
-                                    },
-                                    "lhKUf": {
-                                      "icon": "corner-down-left",
-                                      "fill": "#FFFFFF"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          ]
+                          "width": "fill_container"
                         }
                       ]
                     }
@@ -180399,7 +180406,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The merged entry goes purple and leaves on the next refresh. J took the walk into the next stack, which needs rebasing: the rows say why and hand off to github.com with the same ⇧M.",
+                      "content": "A toast says what landed, and the status bar is back to up to date. The merged entry goes purple and leaves on the next refresh. J took the walk into the next stack, which needs rebasing: the rows say why and hand off to github.com with the same ⇧M.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -181926,27 +181933,104 @@
                       ]
                     },
                     {
-                      "id": "ZSVMh",
+                      "id": "b9gKie",
                       "type": "ref",
                       "ref": "Nopak",
                       "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "L7akR": {
-                          "name": "Segment · Merged · mlaine/tasklet, all 3"
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sRU7M",
+                      "layoutPosition": "absolute",
+                      "x": 548,
+                      "y": 826,
+                      "name": "Toast",
+                      "width": 580,
+                      "fill": "$bg-2",
+                      "cornerRadius": 10,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#000000B0",
+                        "offset": {
+                          "x": 0,
+                          "y": 14
                         },
-                        "L7akR/zYDcH": {
-                          "icon": "git-merge",
-                          "fill": "$purple"
-                        },
-                        "L7akR/unZbw": {
-                          "fill": "$purple",
-                          "content": "Merged · mlaine/tasklet, all 3"
-                        },
-                        "Q9y1K": {
-                          "name": "Segment · Item"
+                        "blur": 40
+                      },
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "S5c9nZ",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "t4C4f",
+                              "name": "Icon",
+                              "padding": [
+                                1,
+                                0,
+                                0,
+                                0
+                              ],
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "qHrzw",
+                                  "name": "icon git-merge",
+                                  "width": 15,
+                                  "height": 15,
+                                  "icon": "git-merge",
+                                  "library": "lucide",
+                                  "fill": "$purple"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qRPap",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "cr3mO",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "mlaine/tasklet · 3 pull requests merged into main",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "a7hri",
+                              "name": "icon x",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "x",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            }
+                          ]
                         }
-                      }
+                      ]
                     }
                   ]
                 }
@@ -184371,7 +184455,7 @@
                           "fill": "$amber"
                         },
                         "SOUoU/k6THbK": {
-                          "name": "Status 1 landed · fresh checks running on 2"
+                          "name": "Status 1 landed · 0 of 2 ready, #471 checks running"
                         },
                         "SOUoU/k6THbK/muoMv": {
                           "name": "icon loader",
@@ -184380,7 +184464,7 @@
                         },
                         "SOUoU/k6THbK/uYfBa": {
                           "fill": "$amber",
-                          "content": "1 landed · fresh checks running on 2"
+                          "content": "1 landed · 0 of 2 ready, #471 checks running"
                         }
                       }
                     },
@@ -204426,118 +204510,11 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "c9JQag",
+                      "id": "O8LyH",
+                      "type": "ref",
+                      "ref": "hocRs",
                       "name": "Footer",
-                      "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 12,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "Q1j9Kn",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Stop earlier",
-                          "gap": 5,
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd ↑↓"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "↑↓"
-                            },
-                            "IOvfA": {
-                              "name": "Label",
-                              "content": "Stop earlier"
-                            }
-                          }
-                        },
-                        {
-                          "id": "fWWWM",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Checks",
-                          "gap": 5,
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd C"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "C"
-                            },
-                            "IOvfA": {
-                              "name": "Label",
-                              "content": "Checks"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "ypyRB",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "psJR9",
-                          "type": "ref",
-                          "ref": "n73Aps",
-                          "name": "Button Squash and merge all 3",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            5,
-                            8,
-                            5,
-                            10
-                          ],
-                          "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "git-merge",
-                              "fill": "#FFFFFF"
-                            },
-                            "i9UKWn": {
-                              "fill": "#FFFFFF",
-                              "content": "Squash and merge all 3",
-                              "fontSize": 12.5,
-                              "fontWeight": "600"
-                            },
-                            "I9KkTl": {
-                              "id": "uy5mN",
-                              "type": "ref",
-                              "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#FFFFFF33",
-                              "stroke": "#0E101333",
-                              "height": 15,
-                              "descendants": {
-                                "q1SXG": {
-                                  "icon": "command",
-                                  "fill": "#FFFFFF"
-                                },
-                                "lhKUf": {
-                                  "icon": "corner-down-left",
-                                  "fill": "#FFFFFF"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -204640,7 +204617,7 @@
                   "name": "Merge panel",
                   "descendants": {
                     "oKBCP": {
-                      "content": "#1204 and the 1 earlier"
+                      "content": "2 land · 2 stay open"
                     },
                     "orgGz/Umorz": {
                       "fill": "$fg",
@@ -205435,14 +205412,124 @@
                           ]
                         },
                         {
-                          "type": "text",
-                          "id": "tZrih",
-                          "name": "Method",
-                          "fill": "$fg",
-                          "content": "Rebase",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
+                          "type": "frame",
+                          "id": "FvfnV",
+                          "name": "Method choice",
+                          "gap": 2,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SXJwO",
+                              "name": "Method Squash",
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                3,
+                                6,
+                                3,
+                                9
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Us2s0",
+                                  "name": "Label",
+                                  "fill": "$fg-2",
+                                  "content": "Squash",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kZRP2",
+                                  "name": "Key",
+                                  "fill": "$fg-3",
+                                  "content": "1",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 10.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "S05z6",
+                              "name": "Method Merge commit",
+                              "cornerRadius": 6,
+                              "gap": 6,
+                              "padding": [
+                                3,
+                                6,
+                                3,
+                                9
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "K8lZU2",
+                                  "name": "Label",
+                                  "fill": "$fg-2",
+                                  "content": "Merge commit",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "KK07e",
+                                  "name": "Key",
+                                  "fill": "$fg-3",
+                                  "content": "2",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 10.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "y4zGT",
+                              "name": "Method Rebase",
+                              "fill": "$bg-3",
+                              "cornerRadius": 6,
+                              "stroke": "$border-2",
+                              "strokeWidth": 1,
+                              "gap": 6,
+                              "padding": [
+                                3,
+                                6,
+                                3,
+                                9
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "fjNJF",
+                                  "name": "Label",
+                                  "fill": "$fg",
+                                  "content": "Rebase",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "CpNPb",
+                                  "name": "Key",
+                                  "fill": "$fg-3",
+                                  "content": "3",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 10.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
                         },
                         {
                           "type": "text",
@@ -205474,118 +205561,19 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "N3Pg5V",
+                      "id": "fwL4L",
+                      "type": "ref",
+                      "ref": "hocRs",
                       "name": "Footer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 12,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "dwhGN",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Method",
-                          "gap": 5,
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd M"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "1 2 3"
-                            },
-                            "IOvfA": {
-                              "name": "Label",
-                              "content": "Method"
-                            }
-                          }
+                      "descendants": {
+                        "L2wMIW": {
+                          "name": "Button Rebase and merge all 3"
                         },
-                        {
-                          "id": "LsnUS",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Stop earlier",
-                          "gap": 5,
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd ↑↓"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "↑↓"
-                            },
-                            "IOvfA": {
-                              "name": "Label",
-                              "content": "Stop earlier"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "uMxEu",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "QIZpi",
-                          "type": "ref",
-                          "ref": "n73Aps",
-                          "name": "Button Rebase and merge all 3",
-                          "fill": "$accent",
-                          "cornerRadius": 6,
-                          "stroke": "$accent",
-                          "gap": 6,
-                          "padding": [
-                            5,
-                            8,
-                            5,
-                            10
-                          ],
-                          "descendants": {
-                            "O9dWyI": {
-                              "name": "icon git-merge",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "git-merge",
-                              "fill": "#FFFFFF"
-                            },
-                            "i9UKWn": {
-                              "fill": "#FFFFFF",
-                              "content": "Rebase and merge all 3",
-                              "fontSize": 12.5,
-                              "fontWeight": "600"
-                            },
-                            "I9KkTl": {
-                              "id": "QKNPJ",
-                              "type": "ref",
-                              "ref": "guh3O",
-                              "name": "Kbd ⌘↵",
-                              "fill": "#FFFFFF33",
-                              "stroke": "#0E101333",
-                              "height": 15,
-                              "descendants": {
-                                "q1SXG": {
-                                  "icon": "command",
-                                  "fill": "#FFFFFF"
-                                },
-                                "lhKUf": {
-                                  "icon": "corner-down-left",
-                                  "fill": "#FFFFFF"
-                                }
-                              }
-                            }
-                          }
+                        "L2wMIW/i9UKWn": {
+                          "content": "Rebase and merge all 3"
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -205923,35 +205911,28 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "PaQJf",
-                      "name": "Reason",
+                      "id": "NYat1",
+                      "type": "ref",
+                      "ref": "i7gsTn",
+                      "name": "Band",
                       "width": "fill_container",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "layout": "vertical",
-                      "gap": 4,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "AVO8V",
-                          "name": "main moved 40 minutes ago. Reb",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "main moved 40 minutes ago. Rebuilding the stack on it only exists on github.com. Checks will run again, and githq picks it up at the next refresh.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
+                      "fill": "#D6A23A14",
+                      "descendants": {
+                        "XrRek": {
+                          "name": "icon git-branch",
+                          "icon": "git-branch",
+                          "fill": "$amber"
+                        },
+                        "Jlqru": {
+                          "content": "main moved"
+                        },
+                        "f2lHDi": {
+                          "content": "Rebuilding the stack on it only exists on github.com. Checks will run again, and githq picks it up at the next refresh."
+                        },
+                        "f07Rn": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     },
                     {
                       "type": "frame",
@@ -205992,10 +205973,10 @@
                           ],
                           "descendants": {
                             "O9dWyI": {
-                              "name": "icon github",
+                              "name": "icon arrow-up-right",
                               "width": 13,
                               "height": 13,
-                              "icon": "github"
+                              "icon": "arrow-up-right"
                             },
                             "i9UKWn": {
                               "content": "Rebase stack on GitHub",
@@ -206057,7 +206038,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same, with the other cause. Which one it was is only known if GitHub says so; see the open question in the brief.",
+                      "content": "The same, with the other cause. GitHub doesn't say which one it was: githq works it out from the read, #95's base commit staying behind #94's head (D21).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -206209,8 +206190,8 @@
                           "name": "Member #94"
                         },
                         "wK3hm": {
-                          "name": "icon git-commit-horizontal",
-                          "icon": "git-commit-horizontal",
+                          "name": "icon git-compare-arrows",
+                          "icon": "git-compare-arrows",
                           "fill": "$amber"
                         },
                         "tnNH2": {
@@ -206224,7 +206205,7 @@
                         },
                         "KAl0I": {
                           "fill": "$amber",
-                          "content": "New commit 12m ago"
+                          "content": "Needs rebase"
                         },
                         "IWJ0M": {
                           "name": "Member #95"
@@ -206267,35 +206248,28 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "Ws4HO",
-                      "name": "Reason",
+                      "id": "RLOdt",
+                      "type": "ref",
+                      "ref": "i7gsTn",
+                      "name": "Band",
                       "width": "fill_container",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "layout": "vertical",
-                      "gap": 4,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "zmryK",
-                          "name": "#94 has a new commit, so #95 a",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "#94 has a new commit, so #95 and #97 no longer sit on top of it.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
+                      "fill": "#D6A23A14",
+                      "descendants": {
+                        "XrRek": {
+                          "name": "icon git-commit-horizontal",
+                          "icon": "git-commit-horizontal",
+                          "fill": "$amber"
+                        },
+                        "Jlqru": {
+                          "content": "#94 has a new commit"
+                        },
+                        "f2lHDi": {
+                          "content": "The ones after it no longer sit on top of it. Rebasing the stack only exists on github.com."
+                        },
+                        "f07Rn": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     },
                     {
                       "type": "frame",
@@ -206336,10 +206310,10 @@
                           ],
                           "descendants": {
                             "O9dWyI": {
-                              "name": "icon github",
+                              "name": "icon arrow-up-right",
                               "width": 13,
                               "height": 13,
-                              "icon": "github"
+                              "icon": "arrow-up-right"
                             },
                             "i9UKWn": {
                               "content": "Rebase stack on GitHub",
@@ -206401,7 +206375,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Everything later is blocked. What comes before can still land. Dissolving and linking again is the way forward, and it's in githq, so it's the next action.",
+                      "content": "Everything later is blocked. What comes before can still land. Dissolving and linking again isn't in githq yet, so the band says so and O opens GitHub.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -206694,33 +206668,47 @@
                       ]
                     },
                     {
-                      "id": "pgXHH",
+                      "id": "fIOhx",
+                      "type": "ref",
+                      "ref": "i7gsTn",
+                      "name": "Band",
+                      "width": "fill_container",
+                      "fill": "#00000000",
+                      "descendants": {
+                        "XrRek": {
+                          "name": "icon info",
+                          "icon": "info",
+                          "fill": "$fg-3"
+                        },
+                        "Jlqru": {
+                          "content": "Dissolving the stack and linking it again isn't in githq yet"
+                        },
+                        "f2lHDi": {
+                          "content": "On GitHub, rebuild the stack without #490."
+                        },
+                        "Ihagy": {
+                          "name": "Button Open on GitHub"
+                        }
+                      }
+                    },
+                    {
+                      "id": "o0473",
+                      "type": "ref",
+                      "ref": "wD0Ae",
+                      "name": "How it lands",
+                      "width": "fill_container",
+                      "descendants": {
+                        "P58fm": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "ulHAp",
                       "type": "ref",
                       "ref": "wKwA4",
                       "name": "Footer",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Ln185": {
-                          "name": "Hint Dissolve…"
-                        },
-                        "Ln185/m5wIG9": {
-                          "id": "W85tQ0",
-                          "type": "ref",
-                          "ref": "L44zw",
-                          "name": "Kbd ⌘K",
-                          "descendants": {
-                            "pINSd": {
-                              "icon": "command"
-                            },
-                            "Q8v43": {
-                              "content": "K"
-                            }
-                          }
-                        },
-                        "Ln185/IOvfA": {
-                          "content": "Dissolve…"
-                        }
-                      }
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -206759,7 +206747,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Blocks what comes after it, as any unready one. Marking it ready is an ordinary command, right there.",
+                      "content": "Blocks what comes after it, as any unready one. Marking it ready is an ordinary command, right there beside the merge: ⌘K.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -207096,33 +207084,142 @@
                       ]
                     },
                     {
-                      "id": "m2F5nF",
-                      "type": "ref",
-                      "ref": "wKwA4",
+                      "type": "frame",
+                      "id": "Wp03U",
                       "name": "Footer",
                       "width": "fill_container",
-                      "descendants": {
-                        "Ln185": {
-                          "name": "Hint Mark #102 ready"
-                        },
-                        "Ln185/m5wIG9": {
-                          "id": "MQjnz",
+                      "fill": "$bg",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "usKZj",
                           "type": "ref",
-                          "ref": "L44zw",
-                          "name": "Kbd ⌘K",
+                          "ref": "xfbOl",
+                          "name": "Hint Checks",
+                          "gap": 5,
                           "descendants": {
-                            "pINSd": {
-                              "icon": "command"
+                            "m5wIG9": {
+                              "name": "Kbd C"
                             },
-                            "Q8v43": {
-                              "content": "K"
+                            "m5wIG9/luKkY": {
+                              "content": "C"
+                            },
+                            "IOvfA": {
+                              "name": "Label",
+                              "content": "Checks"
                             }
                           }
                         },
-                        "Ln185/IOvfA": {
-                          "content": "Mark #102 ready"
+                        {
+                          "type": "frame",
+                          "id": "t3wJdD",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "id": "voNkP",
+                          "type": "ref",
+                          "ref": "n73Aps",
+                          "name": "Button Mark #102 ready",
+                          "fill": "#00000000",
+                          "stroke": "#00000000",
+                          "cornerRadius": 6,
+                          "gap": 6,
+                          "padding": [
+                            5,
+                            8,
+                            5,
+                            10
+                          ],
+                          "descendants": {
+                            "O9dWyI": {
+                              "name": "icon eye",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "eye",
+                              "fill": "$fg-2"
+                            },
+                            "i9UKWn": {
+                              "content": "Mark #102 ready",
+                              "fontSize": 12.5
+                            },
+                            "I9KkTl": {
+                              "id": "N0OTdK",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⌘K",
+                              "height": 15,
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "command"
+                                },
+                                "Q8v43": {
+                                  "content": "K"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "id": "aKVTU",
+                          "type": "ref",
+                          "ref": "n73Aps",
+                          "name": "Button Squash and merge",
+                          "fill": "$accent",
+                          "cornerRadius": 6,
+                          "stroke": "$accent",
+                          "gap": 6,
+                          "padding": [
+                            5,
+                            8,
+                            5,
+                            10
+                          ],
+                          "descendants": {
+                            "O9dWyI": {
+                              "name": "icon git-merge",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "git-merge",
+                              "fill": "#0E1013"
+                            },
+                            "i9UKWn": {
+                              "fill": "#0E1013",
+                              "content": "Squash and merge",
+                              "fontSize": 12.5,
+                              "fontWeight": "600"
+                            },
+                            "I9KkTl": {
+                              "id": "XlgZR",
+                              "type": "ref",
+                              "ref": "guh3O",
+                              "name": "Kbd ⌘↵",
+                              "fill": "#0E10131A",
+                              "stroke": "#0E101333",
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command",
+                                  "fill": "#0E1013"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left",
+                                  "fill": "#0E1013"
+                                }
+                              }
+                            }
+                          }
                         }
-                      }
+                      ]
                     }
                   ]
                 }
@@ -207598,6 +207695,35 @@
                           "height": 1
                         },
                         {
+                          "type": "frame",
+                          "id": "O2vQik",
+                          "name": "Reading",
+                          "gap": 5,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "I2fIWN",
+                              "name": "icon refresh-cw",
+                              "width": 11,
+                              "height": 11,
+                              "icon": "refresh-cw",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "G4i6E",
+                              "name": "Reading label",
+                              "fill": "$fg-3",
+                              "content": "Reading",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
                           "id": "db0Bo",
                           "type": "ref",
                           "ref": "w9kS9",
@@ -207648,7 +207774,7 @@
                           "id": "vtAPt",
                           "name": "Verdict detail",
                           "fill": "$fg-2",
-                          "content": "All 3 · checking for changes",
+                          "content": "All 3 land, first to last",
                           "fontFamily": "$font",
                           "fontSize": 12.5,
                           "fontWeight": "normal"
@@ -207766,7 +207892,17 @@
                           "id": "CqONF",
                           "name": "Method note",
                           "fill": "$fg-3",
-                          "content": "reading allowed methods",
+                          "content": "the repository's default",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RFIdd",
+                          "name": "Method note, stack",
+                          "fill": "$fg-3",
+                          "content": "each lands under its own title",
                           "fontFamily": "$font",
                           "fontSize": 12,
                           "fontWeight": "normal"
@@ -207791,31 +207927,11 @@
                       ]
                     },
                     {
-                      "id": "D0m6d",
+                      "id": "bFjU1",
                       "type": "ref",
-                      "ref": "wKwA4",
+                      "ref": "hocRs",
                       "name": "Footer",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Ln185": {
-                          "name": "Hint Stop earlier"
-                        },
-                        "Ln185/m5wIG9": {
-                          "name": "Kbd ↑↓"
-                        },
-                        "Ln185/m5wIG9/luKkY": {
-                          "content": "↑↓"
-                        },
-                        "Ln185/IOvfA": {
-                          "content": "Stop earlier"
-                        },
-                        "Wycr9": {
-                          "name": "Button Squash and merge all 3"
-                        },
-                        "Wycr9/i9UKWn": {
-                          "content": "Squash and merge all 3"
-                        }
-                      }
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -209485,9 +209601,9 @@
                           "opacity": 1,
                           "descendants": {
                             "zWFAL": {
-                              "name": "icon git-merge",
-                              "icon": "git-merge",
-                              "fill": "$purple"
+                              "name": "icon loader-circle",
+                              "icon": "loader-circle",
+                              "fill": "$amber"
                             },
                             "iV7tI": {
                               "name": "#15",
@@ -209498,7 +209614,8 @@
                             },
                             "uFPnZ": {
                               "fill": "$purple",
-                              "content": "Merged"
+                              "content": "Merged",
+                              "enabled": false
                             }
                           }
                         },
@@ -209513,10 +209630,10 @@
                             {
                               "type": "icon",
                               "id": "hMlKm",
-                              "name": "icon loader",
+                              "name": "icon loader-circle",
                               "width": 13,
                               "height": 13,
-                              "icon": "loader",
+                              "icon": "loader-circle",
                               "library": "lucide",
                               "fill": "$amber"
                             },
@@ -209560,10 +209677,10 @@
                             {
                               "type": "icon",
                               "id": "t67je3",
-                              "name": "icon loader",
+                              "name": "icon loader-circle",
                               "width": 13,
                               "height": 13,
-                              "icon": "loader",
+                              "icon": "loader-circle",
                               "library": "lucide",
                               "fill": "$amber"
                             },
@@ -209633,6 +209750,16 @@
                               "content": "Close, it goes on"
                             }
                           }
+                        },
+                        {
+                          "type": "text",
+                          "id": "y1wV6",
+                          "name": "Footer note",
+                          "fill": "$fg-3",
+                          "content": "You can keep working",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "frame",
@@ -209943,7 +210070,7 @@
                           "id": "wKPML",
                           "type": "ref",
                           "ref": "JOjbe",
-                          "name": "Button Done",
+                          "name": "Button Close",
                           "cornerRadius": 6,
                           "gap": 6,
                           "padding": [
@@ -209954,7 +210081,7 @@
                           ],
                           "descendants": {
                             "KpHhX": {
-                              "content": "Done",
+                              "content": "Close",
                               "fontSize": 12.5
                             }
                           }
