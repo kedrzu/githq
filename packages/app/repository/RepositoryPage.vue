@@ -66,15 +66,9 @@ const kind = computed({
   },
 });
 
-// Coming back to a repository at its own address opens the tab it was left on (D5); an address naming a tab is obeyed.
+// The tab shown is remembered, so the links to this repository open it next time; the address always names it.
 const repositoryName = nameWithOwner.value;
-const lastTab = tabs.get(repositoryName);
-if (kind.value === 'all' && lastTab !== null) {
-  kind.value = lastTab;
-} else {
-  tabs.remember(repositoryName, kind.value);
-}
-
+tabs.remember(repositoryName, kind.value);
 // Leaving, the address already names another repository or none, and this page's tab is not theirs.
 watch(kind, value => {
   if (nameWithOwner.value === repositoryName) {

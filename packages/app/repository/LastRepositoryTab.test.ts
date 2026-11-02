@@ -24,3 +24,16 @@ test('a repository keeps its own tab, for the user on it, until they sign out', 
     session.signInFromAnotherTab('octocat');
     expect(tabs.get('octocat/app')).toBeNull();
 });
+
+test("a repository's link opens the tab it was left on, its own address before it has one", () => {
+    const session = createTestSession({ login: 'octocat', answer: () => undefined });
+    const tabs = session.container.resolve(LastRepositoryTab);
+
+    expect(tabs.getPath('octocat/app')).toBe('/octocat/app');
+    tabs.remember('octocat/app', 'issues');
+    expect(tabs.getPath('octocat/app')).toBe('/octocat/app/issues');
+    tabs.remember('octocat/app', 'pullRequests');
+    expect(tabs.getPath('octocat/app')).toBe('/octocat/app/pulls');
+    tabs.remember('octocat/app', 'all');
+    expect(tabs.getPath('octocat/app')).toBe('/octocat/app');
+});
