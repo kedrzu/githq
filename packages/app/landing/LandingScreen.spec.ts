@@ -75,7 +75,7 @@ test('every way off the page goes to githq on GitHub, and every link within it l
     const sections = links.filter(href => href.startsWith('#'));
     expect(sections).toEqual([
         '#features',
-        '#keyboard',
+        '#compare',
         '#how-it-works',
         '#open-source',
         '#features',
@@ -130,7 +130,7 @@ test('the hero screenshot loads first; the rest wait for the reader, with their 
     expect(hero?.getAttribute('src')).toBe('/landing/hero-my-work.webp');
     expect(hero?.getAttribute('fetchpriority')).toBe('high');
     expect(hero?.getAttribute('loading')).toBeNull();
-    expect(rest).toHaveLength(7);
+    expect(rest).toHaveLength(6);
     for (const image of rest) {
         expect(image.getAttribute('loading')).toBe('lazy');
         expect(image.getAttribute('decoding')).toBe('async');
@@ -144,7 +144,7 @@ test('on a phone the sections are behind a menu, which a chosen section closes',
 
     const menuButton = page.getByRole('button', { name: 'Menu' });
     const header = page.getByRole('banner');
-    await expect.element(header.getByRole('link', { name: 'Keyboard' })).not.toBeInTheDocument();
+    await expect.element(header.getByRole('link', { name: 'Compare' })).not.toBeInTheDocument();
     await expect.element(menuButton).toHaveAttribute('aria-expanded', 'false');
 
     await userEvent.click(menuButton);
@@ -154,7 +154,7 @@ test('on a phone the sections are behind a menu, which a chosen section closes',
 
     // Following the link would scroll the test runner's own page away.
     document.addEventListener('click', event => event.preventDefault(), { once: true });
-    await userEvent.click(menu.getByRole('link', { name: 'Keyboard' }));
+    await userEvent.click(menu.getByRole('link', { name: 'Compare' }));
     await expect.element(menuButton).toHaveAttribute('aria-expanded', 'false');
     await expect.element(menu).not.toBeInTheDocument();
 });

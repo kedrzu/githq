@@ -140,6 +140,9 @@ $color-landing-headline-top: #8a919b;
 $color-landing-headline-bottom: #f5f6f8;
 // The widest the page's content gets; the design's frame is 1440 wide with 120 on each side.
 $landing-content-width: 1200px;
+// The pinned navigation's height without its bottom border (`LandingNav`).
+$landing-nav-height: 68px;
+$landing-nav-height-mobile: 66px;
 // The screenshots of features, as the design sizes them on a wide page (the images are twice that).
 $landing-visual-width: 640px;
 $landing-visual-height: 560px;

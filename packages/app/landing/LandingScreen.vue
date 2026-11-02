@@ -1,4 +1,4 @@
-<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — "Sign in with GitHub" straight to GitHub's consent screen (D21) — with the banner of a sign-in that didn't finish (G1) above it and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, the statement, the four features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
+<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — "Sign in with GitHub" straight to GitHub's consent screen (D21) — with the banner of a sign-in that didn't finish (G1) above it and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, three features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
 import LandingComparison from './LandingComparison.vue';
 import LandingDetails from './LandingDetails.vue';
@@ -9,7 +9,6 @@ import LandingHero from './LandingHero.vue';
 import LandingNav from './LandingNav.vue';
 import LandingOnePlace from './LandingOnePlace.vue';
 import LandingOpenSource from './LandingOpenSource.vue';
-import LandingStatement from './LandingStatement.vue';
 import LandingStrip from './LandingStrip.vue';
 import LandingWhyNow from './LandingWhyNow.vue';
 
@@ -50,7 +49,6 @@ defineSlots<{
       <LandingComparison />
       <LandingWhyNow />
       <LandingStrip />
-      <LandingStatement />
       <LandingFeatures />
       <LandingDetails />
       <LandingOpenSource />
@@ -67,6 +65,15 @@ defineSlots<{
   min-height: 100%;
   container: landing / inline-size;
   background: $color-bg;
+}
+
+// A section a link lands on starts under the pinned navigation, its top border behind the navigation's.
+.landingScreen [id] {
+  scroll-margin-top: $landing-nav-height;
+
+  @include landing-mobile {
+    scroll-margin-top: $landing-nav-height-mobile;
+  }
 }
 
 .landingScreen_banner {

@@ -32,7 +32,7 @@ anywhereTitle:
   en: Anywhere on GitHub
 anywhereBody:
   en: The pull request you opened on someone else’s open-source project shows up too. If it concerns you, it’s in your work — no matter whose repository.
-reviewsTitle:
-  en: Reviews stay where diffs belong
-reviewsBody:
-  en: 'githq tells you when a pull request is ready: checks, reviews, mergeable. One key opens it on github.com for the review.'
+stacksTitle:
+  en: Stacks read as one
+stacksBody:
+  en: A stack of pull requests is one entry in every list. Open any of them and the whole stack is beside it, each pull request with its checks and reviews.
