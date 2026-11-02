@@ -33,6 +33,7 @@ does not already show, because it is a copy of the remote, not of the user's loc
 > ([commits](https://docs.github.com/en/graphql/reference/commits), [git](https://docs.github.com/en/graphql/reference/git)).
 
 **Rejected.**
+
 - A git clone in the browser (isomorphic-git over OPFS or IndexedDB) to give web and desktop one code path —
   every clone and fetch would stream through a proxy on our Worker, putting repository contents and the user's
   token through our server, and the result still holds nothing that is not on GitHub.
@@ -48,6 +49,7 @@ does not already show, because it is a copy of the remote, not of the user's loc
 worktree support, so anything githq does behaves exactly like the same command in the terminal.
 
 **Rejected.**
+
 - An embedded library (libgit2 through `git2`, or gitoxide) in the Tauri backend — a second git implementation
   that can disagree with the user's configuration, hooks and credentials, and lags behind git on newer
   features such as worktrees. Would win if spawning `git` turned out too slow for reading the graph; then a
@@ -62,6 +64,7 @@ worktree support, so anything githq does behaves exactly like the same command i
 requests, your reviews) cover the work across repositories.
 
 **Rejected.**
+
 - A view of your branches across every tracked repository — the owner sees no use for it.
 
 ## D4
@@ -82,6 +85,7 @@ thing that works. Matching by `origin` alone is the simplest rule; a fork clone 
 fork matches the fork if that is tracked, and nothing otherwise.
 
 **Rejected.**
+
 - Only scanning the disk for clones — slower and intrusive as the only way in; may come later next to
   adding a folder.
 - Matching by any remote (so a fork clone joins the upstream repository and the graph shows both remotes) —
@@ -108,6 +112,7 @@ be it"; the refusal chosen by the owner 2026-11-02 over the design agent's repla
 branches in one graph and a choice of clone behind every local action.
 
 **Rejected.**
+
 - Several clones per repository — too much complexity for too little gain (owner).
 - Asking whether to replace the existing clone — a flow of its own for a case meant to be rare; removing
   and adding does the same ([history](history/DECISIONS.md#d7)).
@@ -126,6 +131,7 @@ hour. Latency is: adding pull request and CI state to a page of 100 commits take
 
 > **Checked 2026-11-01:** measured against `nuxt/nuxt` with `gh api graphql`, three runs each, history of the
 > default branch, `first: 100`:
+>
 > - immutable fields only: cost 1, 0.89–1.04 s, 30.5 kB;
 > - plus `statusCheckRollup { state }`: cost 1, 1.47–3.27 s;
 > - plus `associatedPullRequests(first: 1) { nodes { number state } }`: cost 2, 1.74–2.84 s;
@@ -135,6 +141,7 @@ hour. Latency is: adding pull request and CI state to a page of 100 commits take
 > GraphQL limit for the account: 5,000 points an hour (`gh api rate_limit`).
 
 **Rejected.**
+
 - Fetching pull request and CI state with every page of history — two to three times slower per page, and it
   caches mutable state next to immutable commits.
 - Rows without pull request and CI state — the integration with GitHub is the point of the view (owner).
@@ -154,14 +161,14 @@ mechanism is the design agent's proposal, simplified by the owner 2026-11-02):
   commits.
 - **Scrolling down:** the frontier is the set of parents of loaded commits that are not loaded themselves;
   fetch `history(first: 100)` from the newest frontier commit and drop commits already known.
-- **What is drawn:** every loaded commit, ordered by committer date across all refs (`git log
-  --date-order`). A commit loaded later may land between rows already on screen.
+- **What is drawn:** every loaded commit, ordered by committer date across all refs (`git log --date-order`). A commit loaded later may land between rows already on screen.
 
 **Why.** Every open after the first draws without waiting for the network; a first open shows rows after one
 request of about a second. The ref check is one request of 1 point when the tab opens, so a second code path
 for free `304`s would save next to nothing.
 
 > **Checked 2026-11-01:** measured with `gh api`:
+>
 > - branches and tags (`refs(first: 100)` twice, oids only): cost 1, 0.83–0.86 s on `nuxt/nuxt` (67 branches,
 >   339 tags, so tags need paging), 0.49–0.82 s on `kedrzu/githq`;
 > - 100 branches × `history(first: 20)` in one request on `nuxt/nuxt`: cost 21, 3.06 s — the reason to fetch
@@ -171,6 +178,7 @@ for free `304`s would save next to nothing.
 > 30,000 commits fully scrolled would be roughly 9 MB (estimate from that one measurement).
 
 **Rejected.**
+
 - Fetching the whole history on first open — seconds to minutes for a large repository, for rows nobody
   scrolls to.
 - Fetching every branch's history up front, joined or not — cost and latency grow with the branch count
@@ -195,6 +203,7 @@ filter one list and its toolbar (state, grouping, board) has nothing to offer th
 > `:117`, `:140`.
 
 **Rejected.**
+
 - A separate top-level commits view outside the repository — the owner places it in the repository.
 
 ## D11
@@ -206,6 +215,7 @@ design agent's proposal, owner: "ok")
 fetched only when the tab is opened ([D9](#d9)), so tracking would add nothing to it.
 
 **Rejected.**
+
 - Commits only in tracked repositories — a user coming from a pull request link into someone else's
   repository would have to track it to see its history, for no gain.
 
@@ -218,6 +228,7 @@ that commit is loaded, and otherwise opens the commit's details without loading 
 **Why.** It is the simplest behaviour that answers "where is this branch", and keeps one graph on screen.
 
 **Rejected.**
+
 - Narrowing the graph to the chosen branch's history — more to build and a second mode of the view; may come
   later.
 - Loading history down to an old tag to scroll to it — dozens of requests for a tag years back in a large

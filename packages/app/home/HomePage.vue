@@ -5,10 +5,15 @@ import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { readSignInFailure } from '@/auth/routeAccess.js';
-import LandingPage from '@/landing/LandingPage.vue';
-import MyWorkPage from '@/myWork/MyWorkPage.vue';
 import { isHydratingServerHtml } from '@/utils/isHydratingServerHtml.js';
 
+// Each page is a chunk of its own, loaded only when shown: the prerendered landing page preloads the chunks its
+// server render used — the landing page's, never "my work"'s —, and the shell imports "my work"'s alone.
+const LandingPage = defineAsyncComponent(() => import('@/landing/LandingPage.vue'));
+// Not suspensible: on the app's first render Nuxt's root `Suspense` would hold the whole app, the shell included,
+// outside the document until the chunk came, and the shell's splitter, set up on mount, finds its panels in the
+// document — its edges would not resize. The shell mounts at once; "my work" follows into it.
+const MyWorkPage = defineAsyncComponent({ loader: () => import('@/myWork/MyWorkPage.vue'), suspensible: false });
 // In the desktop build only (`__DESKTOP__`); the web builds drop it with the native side.
 const DesktopSignInPage = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/DesktopSignInPage.vue')) : null;
 

@@ -49,6 +49,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
   against a mocked GitHub.
 - `bun run lint`, `bun run format`.
+- `bun run lighthouse [url]` — Lighthouse with PageSpeed Insights' settings (mobile and desktop, medians of 3 runs);
+  by default against `bun run preview` on 8787, or e.g. `https://githq.dev/`.
 
 `zsh setup.sh` prepares a checkout or worktree (Paseo runs it via `paseo.json`); until the first package exists it does no build.
 

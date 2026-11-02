@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -12,6 +12,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import { usePanelWidth } from '@/components/usePanelWidth.js';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
@@ -56,6 +57,8 @@ const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
+// The modal's width, resized by dragging its left or right edge.
+const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
 const now = useNow(TICK_MS);
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
@@ -228,6 +231,15 @@ function edit(request: EditRequest) {
   }
 }
 
+/**
+ * Opened, the modal takes focus itself rather than its first button (the item menu's), which would show a focus ring
+ * no one asked for; the window's title is read out, and Tab goes on into it.
+ */
+function focusModal(event: Event) {
+  event.preventDefault();
+  (event.target as HTMLElement).focus();
+}
+
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
@@ -255,11 +267,15 @@ async function loadAllComments() {
 <template>
   <Dialog
     v-if="arrangement === 'modal'"
+    v-model:width="modalWidth.current"
     :open="true"
     :title="opened.item?.title ?? referenceText"
-    :width="1100"
+    :min-width="modalWidth.min"
+    :resize-label="t(l.resizeModal)"
     bare
     @update:open="close"
+    @open-auto-focus="focusModal"
+    @resized="modalWidth.save()"
   >
     <ItemView
       v-if="opened.item"

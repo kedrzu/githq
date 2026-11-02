@@ -9,7 +9,8 @@ export interface PanelWidthOptions {
     readonly key: string;
     readonly default: number;
     readonly min: number;
-    readonly max: number;
+    /** None: as wide as there is room for, which is the caller's to keep. */
+    readonly max?: number;
 }
 
 /**
@@ -48,6 +49,6 @@ export function usePanelWidth(options: PanelWidthOptions) {
     });
 
     function clamp(width: number) {
-        return Math.min(options.max, Math.max(options.min, width));
+        return Math.min(options.max ?? Infinity, Math.max(options.min, width));
     }
 }

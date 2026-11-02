@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { checkPrerenderedPages } from './checkPrerenderedPages.js';
-import { readBuiltFiles } from './readBuiltFiles.js';
+import { readBuiltFiles, readBuiltPaths } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
 // what the Worker will serve has nothing of local development or of the desktop app in it — the prerendered landing
@@ -41,8 +41,9 @@ export const APP_MARKER = '/api/auth/authorize';
 
 async function checkProductionBuild() {
     const files = await readBuiltFiles(OUTPUT);
+    const paths = new Set(await readBuiltPaths(OUTPUT));
 
-    const problems = checkPrerenderedPages(files);
+    const problems = checkPrerenderedPages(files, paths);
     for (const file of files) {
         for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...DESKTOP_MARKERS]) {
             if (file.content.includes(text)) {

@@ -4,6 +4,7 @@ const LOOP_EVERY = 12_000;
 </script>
 
 <script lang="ts" setup>
+import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
@@ -97,11 +98,12 @@ onBeforeUnmount(() => clearInterval(timer));
         :class="css.landingHero_shot"
         :data-swap="shotState"
       >
-        <img
+        <NuxtImg
           :class="css.landingHero_image"
           src="/landing/hero-my-work.webp"
           width="2400"
           height="1500"
+          sizes="320:134vw 720:84vw 1080:84vw 1440:1200px"
           fetchpriority="high"
           :alt="t(l.heroAlt)"
         />
@@ -227,6 +229,7 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
 
 .landingHero_shot {
   position: relative;
+  width: 100%;
   overflow: hidden;
   border: 1px solid $color-border-2;
   border-radius: 14px;

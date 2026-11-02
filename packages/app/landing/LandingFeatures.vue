@@ -1,5 +1,6 @@
 <!-- The landing page's four features (githq.pen "Landing — githq.dev", Feature 01–04): Instant — with the toast of an edit saved to GitHub —, My work, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides. As a feature first scrolls into view, Instant's toast slides up after its screenshot, and Keyboard presses ⌘K — the command menu opens — then S. The navigation's "Features" and "Keyboard" land here. -->
 <script lang="ts" setup>
+import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowLeftRight,
@@ -112,9 +113,10 @@ const keys = [
       </template>
       <template #overlay>
         <div :class="css.landingFeatures_scrim" />
-        <img
+        <NuxtImg
           :class="css.landingFeatures_commandMenu"
           src="/landing/command-menu.webp"
+          sizes="600px"
           width="1202"
           height="828"
           loading="lazy"
