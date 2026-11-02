@@ -129,7 +129,7 @@ A worktree can have no branch at all, checked out on a bare commit, so it has no
 In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`); the two layouts with Issues and Pull
 requests (CH1, CH2, CH4, CH5) are in **"App · Repository"** (`N1wdc`), and Settings · Display (CH43) in **"App · Settings"**
 (`i3VkT`). The numbers are the frames'.
-Amber frames are still to be picked; Variant A of each is recommended. Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
+Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 
 |Question|Answer in the frame|
 |-|-|
@@ -139,10 +139,10 @@ Amber frames are still to be picked; Variant A of each is recommended. Screens o
 |4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|
 |5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI right after it, author and age at the right, a faint stripe; a failure is a red dot and a red ✕: CH12 (D18)|
 |6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
-|7. A Worktrees section in the list|Yes, above the branches: CD1; worktrees on their branches only: CD2 (D21)|
+|7. A Worktrees section in the list|No: a worktree is a row nested under its branch; one on a bare commit is in the graph only: CD2 (D21)|
 
 The repository view: CH1–CH3 and CH4–CH6, the setting CH43. The graph: few branches CH3, many CH10. The list: CH15–CH17. A
-commit's details: CH18, CH20. Desktop second step: CD1, worktree actions CD3, adding a folder CD4, CD5.
+commit's details: CH18, CH20. Desktop second step: CD2, worktree actions CD3, adding a folder CD4, CD5.
 
 States: opened before CH31; first open, the first second CH32, branches filling in CH33; pull request and CI not known yet CH34;
 scrolling past what is loaded CH35; the beginning of the history CH36; an old tag not loaded CH16; untracked CH37 (Issues) and CH10,
@@ -151,7 +151,7 @@ deleted CH41; no tracked repository for a folder CD6; a second clone CD7.
 
 Still open, not settled by the screens:
 
-- **Which layout stays (D14)** is decided by trying both; **every amber variant** waits for the owner.
+- **Which layout stays (D14)** is decided by trying both.
 - **Settings sync's D7** lists only what is tracked as synced; the repository layout is the first other synced setting, and that
   design's decisions should say so.
 - **Data the screens need that [D8](../DECISIONS.md#d8) and [D9](../DECISIONS.md#d9) don't fetch yet:**

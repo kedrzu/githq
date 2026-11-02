@@ -44,3 +44,4 @@ Append-only; one line per turn that settled something.
 - 2026-11-02 — Owner on the graph: a draggable divider instead of a fixed cap (D17); pull request and CI right after the
   headline, author with name, a faint stripe, failure as red dot and ✕ only (D18). CH13, CH14 deleted; CH44, CH45 drawn.
 - 2026-11-02 — Owner picked CH18: a commit's details open in a panel in the list's place (D16); CH19 deleted.
+- 2026-11-02 — Owner picked CD2: worktrees on their branches, no Worktrees section (D21); CD1 deleted. No variants left open.

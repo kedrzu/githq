@@ -242187,18 +242187,14 @@
         },
         {
           "type": "frame",
-          "id": "bv5pa",
-          "name": "Variants · How a commit's details open",
-          "fill": "#D6A23A1A",
-          "stroke": "#D6A23A",
-          "strokeWidth": 2,
+          "id": "QhuJ0",
+          "name": "Row of screens · Details",
           "gap": 80,
-          "padding": 24,
           "children": [
             {
               "type": "frame",
               "id": "PwA3H",
-              "name": "Slot · CH18 · Variant A · In the list's place",
+              "name": "Slot · CH18 · In the list's place",
               "width": 1440,
               "layout": "vertical",
               "gap": 14,
@@ -242216,7 +242212,7 @@
                       "id": "eay0d",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CH18 · Variant A · In the list's place",
+                      "content": "CH18 · In the list's place",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -242228,7 +242224,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Recommended. The panel takes the place of the branch and tag list, so the graph keeps its width and the selected row stays in view beside it. A failing commit: the dot, the CI line and the pull request all say red.",
+                      "content": "The panel takes the place of the branch and tag list, so the graph keeps its width and the selected row stays in view beside it. A failing commit: the dot, the CI line and the pull request all say red.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -242239,7 +242235,7 @@
                 {
                   "type": "frame",
                   "id": "KvETZ",
-                  "name": "CH18 · Variant A · In the list's place",
+                  "name": "CH18 · In the list's place",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -242586,403 +242582,6 @@
                           "content": "Up to date"
                         }
                       }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "dF1zK",
-              "name": "Slot · CH19 · Variant B · As a modal",
-              "width": 1440,
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "tDb4A",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "Mp0tm",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "CH19 · Variant B · As a modal",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "LmEhl",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The details over a dimmed graph, as an item can open. Roomier for a long message, but it hides the graph that J and K move through, which is what a commit is read against.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ioy8N",
-                  "name": "CH19 · Variant B · As a modal",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "qZC0o",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "VrR9c",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "w7B2q": {
-                              "fill": "$bg-3"
-                            },
-                            "j1VWpL": {
-                              "fill": "$fg"
-                            },
-                            "y14orI": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Z4ddv",
-                          "name": "Pane",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "D05G4",
-                              "name": "Header",
-                              "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 10,
-                              "padding": [
-                                0,
-                                20
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "S2VoQK",
-                                  "name": "icon lock",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "lock",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "mFoDb",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/webapp",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "B4zF0J",
-                                  "name": "Meta",
-                                  "fill": "$fg-3",
-                                  "content": "private",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "ORMQg",
-                                  "name": "Sections",
-                                  "gap": 2,
-                                  "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    12
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "KQTg8",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Issues",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Issues",
-                                          "name": "Issues",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "118"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "rDdAl",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Pull requests",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Pull requests",
-                                          "name": "Pull requests",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "24"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "CbrhE",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Commits",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Commits",
-                                          "name": "Commits"
-                                        },
-                                        "prKB9": {
-                                          "enabled": false
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "sabuS",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Workflows",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Workflows",
-                                          "name": "Workflows",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "2"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "m17K7",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "hS3X1",
-                                  "type": "ref",
-                                  "ref": "XJXsm",
-                                  "name": "Tool Branches and tags",
-                                  "descendants": {
-                                    "rgTry": {
-                                      "icon": "git-branch"
-                                    },
-                                    "deogH": {
-                                      "content": "Branches and tags"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Glm15",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd B",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "B"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "tKCYJ",
-                                  "name": "Freshness",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "ellipse",
-                                      "id": "GTkxL",
-                                      "name": "dot",
-                                      "fill": "$green",
-                                      "width": 6,
-                                      "height": 6
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "DEhd3",
-                                      "name": "Synced 14s ago",
-                                      "fill": "$fg-3",
-                                      "content": "Synced 14s ago",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "zhU4j",
-                                  "name": "github",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "KM1oh",
-                                      "name": "icon github",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "github",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "T7tsH6",
-                              "name": "Body",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "u33GSv",
-                                  "name": "Graph column",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": "fill_container",
-                                  "layout": "vertical",
-                                  "children": [
-                                    {
-                                      "id": "wn29U",
-                                      "type": "ref",
-                                      "ref": "Hg7DR",
-                                      "name": "Graph",
-                                      "width": "fill_container",
-                                      "height": "fill_container",
-                                      "descendants": {
-                                        "D8n9Va": {
-                                          "fill": "$sel"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "LpBnx",
-                                  "type": "ref",
-                                  "ref": "JCWhs",
-                                  "name": "Branches and tags",
-                                  "height": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "l2LBfT",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD/unZbw": {
-                          "content": "Up to date"
-                        }
-                      }
-                    },
-                    {
-                      "type": "frame",
-                      "id": "uA4pF",
-                      "layoutPosition": "absolute",
-                      "x": 0,
-                      "y": 0,
-                      "name": "Scrim",
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "#00000080",
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "id": "GQxAG",
-                          "type": "ref",
-                          "ref": "CKaTw",
-                          "name": "Commit details",
-                          "width": 620,
-                          "height": 700,
-                          "cornerRadius": 10,
-                          "stroke": "$border-2"
-                        }
-                      ]
                     }
                   ]
                 }
@@ -252904,7 +252503,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "The second step, desktop only, not built yet: the same Commits section once the user has added the folder of a local clone. Drawn to prove that the first version's layout (the tabs layout) holds it: local branches and how far they are ahead of GitHub, worktrees as markers in the graph and entries in the list, actions on a worktree, and adding a folder. Nothing here writes to the repository.",
+              "content": "The second step, desktop only, not built yet: the same Commits section once the user has added the folder of a local clone. Drawn to prove that the first version's layout (the tabs layout) holds it: local branches and how far they are ahead of GitHub, worktrees as markers in the graph and on their branches in the list, actions on a worktree, and adding a folder. Nothing here writes to the repository.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -253121,881 +252720,14 @@
         },
         {
           "type": "frame",
-          "id": "wjVRB",
-          "name": "Variants · Where worktrees sit in the list",
-          "fill": "#D6A23A1A",
-          "stroke": "#D6A23A",
-          "strokeWidth": 2,
+          "id": "EYTU2",
+          "name": "Row of screens · Worktrees",
           "gap": 80,
-          "padding": 24,
           "children": [
             {
               "type": "frame",
-              "id": "rrjxU",
-              "name": "Slot · CD1 · Variant A · A Worktrees section",
-              "width": 1440,
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "ot3Bp",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "QEVQk",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "CD1 · Variant A · A Worktrees section",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "qOV1S",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Recommended. The list opens with the worktrees, one row each: its folder, what it has checked out and its uncommitted changes. It answers the most valuable question on the desktop, where each agent stands, before anything else, and gives quiet-heron, which has no branch, a row of its own. ↵ on a worktree scrolls the graph to its commit, as a branch does; its menu (CD3) opens from here or from the marker.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "rVMfb",
-                  "name": "CD1 · Variant A · A Worktrees section",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "XsisP",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "Fokdu",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "w7B2q": {
-                              "fill": "$bg-3"
-                            },
-                            "j1VWpL": {
-                              "fill": "$fg"
-                            },
-                            "y14orI": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "bSNb2",
-                          "name": "Pane",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "C583bf",
-                              "name": "Header",
-                              "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 10,
-                              "padding": [
-                                0,
-                                20
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "BCevC",
-                                  "name": "icon lock",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "lock",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "mdHao",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/webapp",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "MoJ5d",
-                                  "name": "Meta",
-                                  "fill": "$fg-3",
-                                  "content": "private",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "aR6p8",
-                                  "name": "Sections",
-                                  "gap": 2,
-                                  "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    12
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "zIuB6",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Issues",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Issues",
-                                          "name": "Issues",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "118"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "J2Rejv",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Pull requests",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Pull requests",
-                                          "name": "Pull requests",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "24"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "ZHBbv",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Commits",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Commits",
-                                          "name": "Commits"
-                                        },
-                                        "prKB9": {
-                                          "enabled": false
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "B992F",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Workflows",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Workflows",
-                                          "name": "Workflows",
-                                          "fill": "$fg-2"
-                                        },
-                                        "prKB9": {
-                                          "content": "2"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "oy69D",
-                                  "name": "spacer",
-                                  "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "Co76v",
-                                  "type": "ref",
-                                  "ref": "XJXsm",
-                                  "name": "Tool ~/Dev/webapp",
-                                  "descendants": {
-                                    "rgTry": {
-                                      "icon": "hard-drive"
-                                    },
-                                    "deogH": {
-                                      "content": "~/Dev/webapp"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "vqAOg",
-                                  "type": "ref",
-                                  "ref": "XJXsm",
-                                  "name": "Tool Branches and tags",
-                                  "descendants": {
-                                    "rgTry": {
-                                      "icon": "git-branch"
-                                    },
-                                    "deogH": {
-                                      "content": "Branches and tags"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "mn2dX",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd B",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "B"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "Z7HOk",
-                                  "name": "Freshness",
-                                  "gap": 6,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "ellipse",
-                                      "id": "Ekesp",
-                                      "name": "dot",
-                                      "fill": "$green",
-                                      "width": 6,
-                                      "height": 6
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "r2Wzv",
-                                      "name": "Synced 14s ago",
-                                      "fill": "$fg-3",
-                                      "content": "Synced 14s ago",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "l1qx3",
-                                  "name": "github",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
-                                  "padding": [
-                                    4,
-                                    8
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "JTrGD",
-                                      "name": "icon github",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "github",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "M8dpeg",
-                              "name": "Body",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "l3yVC",
-                                  "name": "Graph column",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": "fill_container",
-                                  "layout": "vertical",
-                                  "children": [
-                                    {
-                                      "id": "V6cR9",
-                                      "type": "ref",
-                                      "ref": "u0mgp4",
-                                      "name": "Graph",
-                                      "width": "fill_container",
-                                      "height": "fill_container"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "M5Vbh",
-                                  "name": "Branches and tags",
-                                  "clip": true,
-                                  "width": 280,
-                                  "height": "fill_container",
-                                  "fill": "$bg",
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "left": 1
-                                  },
-                                  "layout": "vertical",
-                                  "children": [
-                                    {
-                                      "id": "Bq4Yu",
-                                      "type": "ref",
-                                      "ref": "rTiW8",
-                                      "name": "Filter",
-                                      "width": "fill_container"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "caghg",
-                                      "name": "Refs",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "padding": [
-                                        0,
-                                        6,
-                                        8,
-                                        6
-                                      ],
-                                      "children": [
-                                        {
-                                          "id": "b2kYK",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref main",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "main"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "default"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "icon": "circle-check",
-                                              "fill": "#3FB950B0"
-                                            },
-                                            "jFGjA": {
-                                              "content": "1h"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "KEy4Y",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Worktrees",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Worktrees"
-                                            },
-                                            "MhbFt": {
-                                              "content": "5"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "uncommitted"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "s7KVA",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref calm-otter",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "calm-otter"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "wNad2",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref swift-fox",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "swift-fox"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "5"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "NX2Qu",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref brave-lynx",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "brave-lynx"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "12"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "XQa2X",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref quiet-heron",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "quiet-heron"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "no branch"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "TNZUr",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref webapp",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "webapp"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "gskG9",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Branches",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Branches"
-                                            },
-                                            "MhbFt": {
-                                              "content": "10"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "newest first"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "UzRbL",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref feat/calendar-sync",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "feat/calendar-sync"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "↑1"
-                                            },
-                                            "tsytt": {
-                                              "content": "#1231"
-                                            },
-                                            "jFGjA": {
-                                              "content": "2m"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "z7och",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref feat/waitlist-ui",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "feat/waitlist-ui"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "local"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "5m"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "CCICz",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref fix/booking-tz",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "fix/booking-tz"
-                                            },
-                                            "tsytt": {
-                                              "content": "#1228"
-                                            },
-                                            "KA0q4": {
-                                              "icon": "circle-x",
-                                              "fill": "$red"
-                                            },
-                                            "jFGjA": {
-                                              "content": "38m"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "WsBvD",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref release/4.2",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "release/4.2"
-                                            },
-                                            "kdsag": {
-                                              "icon": "git-merge",
-                                              "fill": "$purple"
-                                            },
-                                            "tsytt": {
-                                              "content": "#1209"
-                                            },
-                                            "KA0q4": {
-                                              "icon": "circle-check",
-                                              "fill": "#3FB950B0"
-                                            },
-                                            "jFGjA": {
-                                              "content": "2d"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "uF49K",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref spike/redis-queue",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "spike/redis-queue"
-                                            },
-                                            "kdsag": {
-                                              "icon": "git-pull-request-closed",
-                                              "fill": "$fg-3"
-                                            },
-                                            "tsytt": {
-                                              "content": "#1177"
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "6d"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "tbb6Z",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref renovate/vite-6.x",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "lEmLh": {
-                                              "content": "renovate/vite-6.x"
-                                            },
-                                            "tsytt": {
-                                              "content": "#1162"
-                                            },
-                                            "KA0q4": {
-                                              "icon": "circle-check",
-                                              "fill": "#3FB950B0"
-                                            },
-                                            "jFGjA": {
-                                              "content": "2w"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "ye688",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Tags",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Tags"
-                                            },
-                                            "MhbFt": {
-                                              "content": "41"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "newest first"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "FLbyA",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref v4.3.0-rc.1",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "tag"
-                                            },
-                                            "lEmLh": {
-                                              "content": "v4.3.0-rc.1"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "1d"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "JI5d8",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref v4.2.1",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "tag"
-                                            },
-                                            "lEmLh": {
-                                              "content": "v4.2.1"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "2d"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "B7NafQ",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref v4.2.0",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "tag"
-                                            },
-                                            "lEmLh": {
-                                              "content": "v4.2.0"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "6d"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "mLyc5",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD/unZbw": {
-                          "content": "Up to date"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
               "id": "mVs7s",
-              "name": "Slot · CD2 · Variant B · On their branches only",
+              "name": "Slot · CD2 · Worktrees on their branches",
               "width": 1440,
               "layout": "vertical",
               "gap": 14,
@@ -254013,7 +252745,7 @@
                       "id": "T1kfQl",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CD2 · Variant B · On their branches only",
+                      "content": "CD2 · Worktrees on their branches",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -254025,7 +252757,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "No section: a worktree shows on the branch it has checked out, by name and count. Shorter, but a worktree on a bare commit has no row and is found only in the graph, and the worktrees are scattered among other branches by date.",
+                      "content": "A worktree shows in the list on the branch it has checked out, by name and count of uncommitted changes, and in the graph as a marker on its commit. The list stays one list of branches and tags. A worktree on a bare commit (quiet-heron) has no branch, so it is found in the graph only, where its marker sits on the commit it has checked out.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -254036,7 +252768,7 @@
                 {
                   "type": "frame",
                   "id": "s4xOq",
-                  "name": "CD2 · Variant B · On their branches only",
+                  "name": "CD2 · Worktrees on their branches",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -254335,7 +253067,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "KsY7F",
+                                  "id": "G3WjR",
                                   "name": "Branches and tags",
                                   "clip": true,
                                   "width": 280,
@@ -254348,7 +253080,7 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "vwWOy",
+                                      "id": "VFLWb",
                                       "type": "ref",
                                       "ref": "rTiW8",
                                       "name": "Filter",
@@ -254356,7 +253088,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "YLuHQ",
+                                      "id": "zsRfC",
                                       "name": "Refs",
                                       "width": "fill_container",
                                       "layout": "vertical",
@@ -254368,7 +253100,7 @@
                                       ],
                                       "children": [
                                         {
-                                          "id": "BmmFc",
+                                          "id": "O7UaQ",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref main",
@@ -254379,7 +253111,7 @@
                                             },
                                             "z0JaU8": {
                                               "enabled": true,
-                                              "content": "webapp"
+                                              "content": "default"
                                             },
                                             "kdsag": {
                                               "enabled": false
@@ -254397,7 +253129,50 @@
                                           }
                                         },
                                         {
-                                          "id": "CLKrC",
+                                          "type": "frame",
+                                          "id": "ZtMcg",
+                                          "name": "Worktree of main",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "BTiXh",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref webapp",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "webapp",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "clean"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "WmUjF",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Branches",
@@ -254416,7 +253191,7 @@
                                           }
                                         },
                                         {
-                                          "id": "rd692",
+                                          "id": "vaR8r",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/calendar-sync",
@@ -254427,7 +253202,7 @@
                                             },
                                             "z0JaU8": {
                                               "enabled": true,
-                                              "content": "calm-otter · 3"
+                                              "content": "↑1"
                                             },
                                             "tsytt": {
                                               "content": "#1231"
@@ -254438,7 +253213,50 @@
                                           }
                                         },
                                         {
-                                          "id": "OBB0a",
+                                          "type": "frame",
+                                          "id": "qWj5a",
+                                          "name": "Worktree of feat/calendar-sync",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "QFX5h",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref calm-otter",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "calm-otter",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "3 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "n15pDx",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/waitlist-ui",
@@ -254449,7 +253267,7 @@
                                             },
                                             "z0JaU8": {
                                               "enabled": true,
-                                              "content": "swift-fox · 5"
+                                              "content": "local"
                                             },
                                             "kdsag": {
                                               "enabled": false
@@ -254466,7 +253284,50 @@
                                           }
                                         },
                                         {
-                                          "id": "l38Tt",
+                                          "type": "frame",
+                                          "id": "H9RY4",
+                                          "name": "Worktree of feat/waitlist-ui",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "wAd28",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref swift-fox",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "swift-fox",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "5 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "FTCYB",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
@@ -254474,10 +253335,6 @@
                                           "descendants": {
                                             "lEmLh": {
                                               "content": "fix/booking-tz"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "brave-lynx · 12"
                                             },
                                             "tsytt": {
                                               "content": "#1228"
@@ -254492,7 +253349,50 @@
                                           }
                                         },
                                         {
-                                          "id": "BssYa",
+                                          "type": "frame",
+                                          "id": "xpbNi",
+                                          "name": "Worktree of fix/booking-tz",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "I8gLM",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref brave-lynx",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "brave-lynx",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "12 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "njKbX",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref release/4.2",
@@ -254518,7 +253418,7 @@
                                           }
                                         },
                                         {
-                                          "id": "ooq1o",
+                                          "id": "G9fHnk",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref spike/redis-queue",
@@ -254543,7 +253443,7 @@
                                           }
                                         },
                                         {
-                                          "id": "Ln86T",
+                                          "id": "xbgXo",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref renovate/vite-6.x",
@@ -254565,7 +253465,7 @@
                                           }
                                         },
                                         {
-                                          "id": "sOXRr",
+                                          "id": "o07FR0",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Tags",
@@ -254584,7 +253484,7 @@
                                           }
                                         },
                                         {
-                                          "id": "soM42",
+                                          "id": "k5wa4",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.3.0-rc.1",
@@ -254611,7 +253511,7 @@
                                           }
                                         },
                                         {
-                                          "id": "WnYwf",
+                                          "id": "IbL8j",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.1",
@@ -254638,7 +253538,7 @@
                                           }
                                         },
                                         {
-                                          "id": "M9Q3A",
+                                          "id": "eDuju",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.0",
@@ -254781,7 +253681,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "On brave-lynx's row in the list, . opens its menu; a click on the marker in the graph opens the same one. Reveal in Finder (Explorer, Files on other platforms) is the first action, Copy path beside it. The folder's path and state head the menu so it is clear which working copy it acts on. Later actions join this menu, not the row.",
+                      "content": "On fix/booking-tz's row, which carries the worktree brave-lynx, . opens the worktree's menu; a click on the marker in the graph opens the same one, and it is the only way in for a worktree with no branch. Reveal in Finder (Explorer, Files on other platforms) is the first action, Copy path beside it. The folder's path and state head the menu so it is clear which working copy it acts on. Later actions join this menu, not the row.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -255096,7 +253996,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "GpXLK",
+                                  "id": "FP0pk",
                                   "name": "Branches and tags",
                                   "clip": true,
                                   "width": 280,
@@ -255109,7 +254009,7 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "EYCOF",
+                                      "id": "TdO05",
                                       "type": "ref",
                                       "ref": "rTiW8",
                                       "name": "Filter",
@@ -255117,7 +254017,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "h0OL9",
+                                      "id": "en41z",
                                       "name": "Refs",
                                       "width": "fill_container",
                                       "layout": "vertical",
@@ -255129,7 +254029,7 @@
                                       ],
                                       "children": [
                                         {
-                                          "id": "vynjX",
+                                          "id": "DqQRI",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref main",
@@ -255158,165 +254058,50 @@
                                           }
                                         },
                                         {
-                                          "id": "e6Jqk",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Worktrees",
+                                          "type": "frame",
+                                          "id": "NWWrK",
+                                          "name": "Worktree of main",
                                           "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Worktrees"
-                                            },
-                                            "MhbFt": {
-                                              "content": "5"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "uncommitted"
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "ANFN2",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref webapp",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "webapp",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "clean"
+                                                }
+                                              }
                                             }
-                                          }
+                                          ]
                                         },
                                         {
-                                          "id": "S9FNc",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref calm-otter",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "calm-otter"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "Oo0ru",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref swift-fox",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "swift-fox"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "5"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "n0MIkW",
-                                          "type": "ref",
-                                          "ref": "eVXEC",
-                                          "name": "Ref brave-lynx",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "brave-lynx"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "12"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "IfJNO",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref quiet-heron",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "quiet-heron"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "no branch"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "zJi2g",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref webapp",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "webapp"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "aWbae",
+                                          "id": "LMOH4",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Branches",
@@ -255335,7 +254120,7 @@
                                           }
                                         },
                                         {
-                                          "id": "p5beV",
+                                          "id": "SPZDS",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/calendar-sync",
@@ -255357,7 +254142,50 @@
                                           }
                                         },
                                         {
-                                          "id": "HiR2t",
+                                          "type": "frame",
+                                          "id": "LuZBs",
+                                          "name": "Worktree of feat/calendar-sync",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "NTkAo",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref calm-otter",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "calm-otter",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "3 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "JD3CA",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/waitlist-ui",
@@ -255385,7 +254213,50 @@
                                           }
                                         },
                                         {
-                                          "id": "OFDn9",
+                                          "type": "frame",
+                                          "id": "W43Pc",
+                                          "name": "Worktree of feat/waitlist-ui",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "Xzr6c",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref swift-fox",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "swift-fox",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "5 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "X3dUvG",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
@@ -255407,7 +254278,50 @@
                                           }
                                         },
                                         {
-                                          "id": "Dd6o1",
+                                          "type": "frame",
+                                          "id": "k2Jf8y",
+                                          "name": "Worktree of fix/booking-tz",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "qX7lP",
+                                              "type": "ref",
+                                              "ref": "eVXEC",
+                                              "name": "Ref brave-lynx",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "brave-lynx",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "12 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "efTVf",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref release/4.2",
@@ -255433,7 +254347,7 @@
                                           }
                                         },
                                         {
-                                          "id": "V6Eja",
+                                          "id": "qioXU",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref spike/redis-queue",
@@ -255458,7 +254372,7 @@
                                           }
                                         },
                                         {
-                                          "id": "uqdJM",
+                                          "id": "A7F3t",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref renovate/vite-6.x",
@@ -255480,7 +254394,7 @@
                                           }
                                         },
                                         {
-                                          "id": "cym2f",
+                                          "id": "toMrk",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Tags",
@@ -255499,7 +254413,7 @@
                                           }
                                         },
                                         {
-                                          "id": "oYpE4",
+                                          "id": "AZmWV",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.3.0-rc.1",
@@ -255526,7 +254440,7 @@
                                           }
                                         },
                                         {
-                                          "id": "BT8wk",
+                                          "id": "OLkTy",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.1",
@@ -255553,7 +254467,7 @@
                                           }
                                         },
                                         {
-                                          "id": "P8u6SH",
+                                          "id": "Sl73q",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.0",
@@ -256572,7 +255486,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "YNgmN",
+                                  "id": "wGdut",
                                   "name": "Branches and tags",
                                   "clip": true,
                                   "width": 280,
@@ -256585,7 +255499,7 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "c8CKCy",
+                                      "id": "N2x9qP",
                                       "type": "ref",
                                       "ref": "rTiW8",
                                       "name": "Filter",
@@ -256593,7 +255507,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "WqvYb",
+                                      "id": "jyMiC",
                                       "name": "Refs",
                                       "width": "fill_container",
                                       "layout": "vertical",
@@ -256605,7 +255519,7 @@
                                       ],
                                       "children": [
                                         {
-                                          "id": "sExgx",
+                                          "id": "HbCZv",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref main",
@@ -256634,165 +255548,50 @@
                                           }
                                         },
                                         {
-                                          "id": "PUu2h",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Worktrees",
+                                          "type": "frame",
+                                          "id": "r1xASw",
+                                          "name": "Worktree of main",
                                           "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Worktrees"
-                                            },
-                                            "MhbFt": {
-                                              "content": "5"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "uncommitted"
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "OPrdY",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref webapp",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "webapp",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "clean"
+                                                }
+                                              }
                                             }
-                                          }
+                                          ]
                                         },
                                         {
-                                          "id": "x8XUZ",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref calm-otter",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "calm-otter"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "ycCUk",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref swift-fox",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "swift-fox"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "5"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "xyETI",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref brave-lynx",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "brave-lynx"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "12"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "rT7SX",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref quiet-heron",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "quiet-heron"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "no branch"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "EsWIn",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref webapp",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "webapp"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "GDIpF",
+                                          "id": "bY6Bd",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Branches",
@@ -256811,7 +255610,7 @@
                                           }
                                         },
                                         {
-                                          "id": "NnU86",
+                                          "id": "pskIQ",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/calendar-sync",
@@ -256833,7 +255632,50 @@
                                           }
                                         },
                                         {
-                                          "id": "d3OgX",
+                                          "type": "frame",
+                                          "id": "znSxK",
+                                          "name": "Worktree of feat/calendar-sync",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "jFmNv",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref calm-otter",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "calm-otter",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "3 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "b3FeAv",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/waitlist-ui",
@@ -256861,7 +255703,50 @@
                                           }
                                         },
                                         {
-                                          "id": "l8upe",
+                                          "type": "frame",
+                                          "id": "uRcVd",
+                                          "name": "Worktree of feat/waitlist-ui",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "FJp2u",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref swift-fox",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "swift-fox",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "5 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "vxEuE",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
@@ -256883,7 +255768,50 @@
                                           }
                                         },
                                         {
-                                          "id": "H6pzrE",
+                                          "type": "frame",
+                                          "id": "k98hm",
+                                          "name": "Worktree of fix/booking-tz",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "TCWPe",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref brave-lynx",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "brave-lynx",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "12 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "EqYCW",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref release/4.2",
@@ -256909,7 +255837,7 @@
                                           }
                                         },
                                         {
-                                          "id": "F9tK10",
+                                          "id": "uYXlL",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref spike/redis-queue",
@@ -256934,7 +255862,7 @@
                                           }
                                         },
                                         {
-                                          "id": "RZ3mQ",
+                                          "id": "c7r7a",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref renovate/vite-6.x",
@@ -256956,7 +255884,7 @@
                                           }
                                         },
                                         {
-                                          "id": "Qg1ce",
+                                          "id": "Ep656",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Tags",
@@ -256975,7 +255903,7 @@
                                           }
                                         },
                                         {
-                                          "id": "i9lZgn",
+                                          "id": "WABsf",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.3.0-rc.1",
@@ -257002,7 +255930,7 @@
                                           }
                                         },
                                         {
-                                          "id": "A6s5ll",
+                                          "id": "uBHxC",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.1",
@@ -257029,7 +255957,7 @@
                                           }
                                         },
                                         {
-                                          "id": "y4xsq",
+                                          "id": "Vh7bB",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.0",
@@ -257898,7 +256826,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "J4piPz",
+                                  "id": "M4vgZj",
                                   "name": "Branches and tags",
                                   "clip": true,
                                   "width": 280,
@@ -257911,7 +256839,7 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "xMSqe",
+                                      "id": "F6BBPS",
                                       "type": "ref",
                                       "ref": "rTiW8",
                                       "name": "Filter",
@@ -257919,7 +256847,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "L3mYiS",
+                                      "id": "Fd4dV",
                                       "name": "Refs",
                                       "width": "fill_container",
                                       "layout": "vertical",
@@ -257931,7 +256859,7 @@
                                       ],
                                       "children": [
                                         {
-                                          "id": "F2f5PG",
+                                          "id": "OPoFB",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref main",
@@ -257960,165 +256888,50 @@
                                           }
                                         },
                                         {
-                                          "id": "OE3at",
-                                          "type": "ref",
-                                          "ref": "O0IBWH",
-                                          "name": "Section Worktrees",
+                                          "type": "frame",
+                                          "id": "E3a3D",
+                                          "name": "Worktree of main",
                                           "width": "fill_container",
-                                          "descendants": {
-                                            "db6WW": {
-                                              "content": "Worktrees"
-                                            },
-                                            "MhbFt": {
-                                              "content": "5"
-                                            },
-                                            "aKo9W": {
-                                              "enabled": true,
-                                              "content": "uncommitted"
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "Kd09y",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref webapp",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "webapp",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "clean"
+                                                }
+                                              }
                                             }
-                                          }
+                                          ]
                                         },
                                         {
-                                          "id": "leldo",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref calm-otter",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "calm-otter"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "H9zWi",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref swift-fox",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "swift-fox"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "5"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "VgFEv",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref brave-lynx",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "brave-lynx"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "12"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "ZESW4",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref quiet-heron",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "quiet-heron"
-                                            },
-                                            "z0JaU8": {
-                                              "enabled": true,
-                                              "content": "no branch"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "qYnzD",
-                                          "type": "ref",
-                                          "ref": "Bcpzl",
-                                          "name": "Ref webapp",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "BXJd5": {
-                                              "icon": "folder-git-2"
-                                            },
-                                            "lEmLh": {
-                                              "content": "webapp"
-                                            },
-                                            "kdsag": {
-                                              "enabled": false
-                                            },
-                                            "tsytt": {
-                                              "enabled": false
-                                            },
-                                            "KA0q4": {
-                                              "enabled": false
-                                            },
-                                            "jFGjA": {
-                                              "content": "–"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "hT0XN",
+                                          "id": "KnUnw",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Branches",
@@ -258137,7 +256950,7 @@
                                           }
                                         },
                                         {
-                                          "id": "a23al",
+                                          "id": "KI8tC",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/calendar-sync",
@@ -258159,7 +256972,50 @@
                                           }
                                         },
                                         {
-                                          "id": "fhYjA",
+                                          "type": "frame",
+                                          "id": "Jb9tW",
+                                          "name": "Worktree of feat/calendar-sync",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "Oy5qJ",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref calm-otter",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "calm-otter",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "3 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "nmA09",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref feat/waitlist-ui",
@@ -258187,7 +257043,50 @@
                                           }
                                         },
                                         {
-                                          "id": "Dw684",
+                                          "type": "frame",
+                                          "id": "W0Tqi",
+                                          "name": "Worktree of feat/waitlist-ui",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "vQ1pC",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref swift-fox",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "swift-fox",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "5 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "k0JrpY",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref fix/booking-tz",
@@ -258209,7 +257108,50 @@
                                           }
                                         },
                                         {
-                                          "id": "f5olc8",
+                                          "type": "frame",
+                                          "id": "Z91GGq",
+                                          "name": "Worktree of fix/booking-tz",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            18
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "PEaiZ",
+                                              "type": "ref",
+                                              "ref": "Bcpzl",
+                                              "name": "Ref brave-lynx",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "BXJd5": {
+                                                  "icon": "folder-git-2",
+                                                  "fill": "$accent"
+                                                },
+                                                "lEmLh": {
+                                                  "content": "brave-lynx",
+                                                  "fill": "$fg"
+                                                },
+                                                "kdsag": {
+                                                  "enabled": false
+                                                },
+                                                "tsytt": {
+                                                  "enabled": false
+                                                },
+                                                "KA0q4": {
+                                                  "enabled": false
+                                                },
+                                                "jFGjA": {
+                                                  "content": "12 changed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "jrfwv",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref release/4.2",
@@ -258235,7 +257177,7 @@
                                           }
                                         },
                                         {
-                                          "id": "cHqpb",
+                                          "id": "UR3jd",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref spike/redis-queue",
@@ -258260,7 +257202,7 @@
                                           }
                                         },
                                         {
-                                          "id": "IJVur",
+                                          "id": "pwcdd",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref renovate/vite-6.x",
@@ -258282,7 +257224,7 @@
                                           }
                                         },
                                         {
-                                          "id": "JiYGI",
+                                          "id": "M9jxN",
                                           "type": "ref",
                                           "ref": "O0IBWH",
                                           "name": "Section Tags",
@@ -258301,7 +257243,7 @@
                                           }
                                         },
                                         {
-                                          "id": "r48jI3",
+                                          "id": "wb3xV",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.3.0-rc.1",
@@ -258328,7 +257270,7 @@
                                           }
                                         },
                                         {
-                                          "id": "h7cdxE",
+                                          "id": "cgoeK",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.1",
@@ -258355,7 +257297,7 @@
                                           }
                                         },
                                         {
-                                          "id": "hit5f",
+                                          "id": "OgMg8",
                                           "type": "ref",
                                           "ref": "Bcpzl",
                                           "name": "Ref v4.2.0",

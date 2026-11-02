@@ -358,19 +358,21 @@ about them only; it also says Commits needs no tracking. The "not tracked" chip 
 
 ## D21
 
-**Desktop, second step: a Worktrees section opens the list, one row per working copy (folder, uncommitted
-changes; "no branch" for one on a bare commit), above the branches. A worktree's actions are in a menu, opened
-from its marker in the graph or its row (`.`), starting with Reveal in Finder and Copy path. A clone is added
-from the Commits header ("Add a local clone") or the command menu; the two refusals of [D7](#d7) and [D5](#d5)
-are dialogs naming the folder and the way out.** (2026-11-02, design agent's proposal; `githq.pen`
-"Desktop · Commits", CD1–CD7)
+**Desktop, second step: a worktree shows in the branch and tag list as a row nested under the branch it has checked
+out (its folder's name and its count of uncommitted changes), and in the graph as a marker on its commit; there is no
+Worktrees section. A worktree on a bare commit has no row and is found in the graph only. A worktree's actions are in a
+menu, opened from its row (`.`) or its marker, starting with Reveal in Finder and Copy path. A clone is added from the
+Commits header ("Add a local clone") or the command menu; the two refusals of [D7](#d7) and [D5](#d5) are dialogs naming
+the folder and the way out.** (2026-11-02, owner picked worktrees on their branches, CD2, over a Worktrees section, CD1;
+the nested row, the menu and the dialogs are the design agent's; `githq.pen` "Desktop · Commits", CD2–CD7)
 
-**Why.** Where each agent stands is the most valuable thing on the desktop, and a worktree with no branch needs a
-row of its own. A menu is the place a list of actions can grow without crowding the row.
+**Why.** The list stays one list of branches and tags, and each worktree sits next to the branch it works on. The marker
+in the graph already says where each agent stands, including the one with no branch. A menu is the place a list of
+actions can grow without crowding the row.
 
 **Rejected.**
-- Worktrees only on the branch they have checked out (CD2) — the one on a bare commit has no row, and the rest are
-  scattered by date among other branches.
+- A Worktrees section opening the list (CD1, deleted) — owner picked CD2.
+- The worktree's name and count as a badge on the branch row — the branch name no longer fits in the list's width.
 
 ## D22
 
