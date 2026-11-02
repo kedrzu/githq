@@ -1,0 +1,6 @@
+# Journal
+
+Append-only.
+
+- 2026-11-02 — Brief from owner: the product grew past "issue tracker on GitHub" (Actions, commits, merging, code review later); how should githq describe itself across landing, README and the rest? Ideas: "HQ for your git"; avoid a separate tracker per project; an operational overview of all development, especially when managing many agents; GitHub's own tools lose information in noise. Agent found the landing still says "reviews stay where diffs belong", contradicting planned review. Agent proposed one loop from issue to merged-and-deployed, and agents as the example under the headline rather than in it.
+- 2026-11-02 — Owner: keep the Linear comparison (D2); "everything for GitHub" names no need; lead with the issue tracker, a need everyone has, paid or self-hosted elsewhere (D1); show somewhere that even a solo developer is now a manager of many agents with too little attention. Agent checked pricing: free tiers exist (Linear ~250 issues, Plane 12 users), recorded in D1. Agent proposed D3: the manager idea is why a tracker is needed now, and the operational features are what such a tracker must show. Folder created; story written to this point.
