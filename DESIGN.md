@@ -6,6 +6,27 @@ happens on one branch, usually by several agents at once, and coding agents on o
 How the file is organised and what the product is: `docs/design/githq/ui/README.md`. Design decisions still go
 in `docs/design/githq/DECISIONS.md` and `JOURNAL.md`; the changelog below does not replace them.
 
+## Components
+
+`githq.pen` is built from components, so a change made once reaches every screen. Keep it that way.
+
+- **Nothing drawn twice by hand.** UI that repeats becomes a component first, then gets instanced. Before
+  drawing something, look for an existing component.
+- **A hierarchy, each level made of instances of the one below:** atoms (key, avatar, label, status, button,
+  hint, chip, tab, menu section) → parts (rows, headers, menu items) → panes and panels → screens. The shared
+  ones are in "App · Components"; those of one aspect are in a `Components · …` frame at the top of its frame.
+- **Instances override content and state only:** text, icon, colour, visibility (`enabled: false`). An
+  overridden property stops following the component, so never override layout or styling (padding, gap, size,
+  font). Different styling is a different component.
+- **Variants inherit.** A component can itself be an instance of another component: make a variant that way,
+  so the base's padding, type and colours stay in one place.
+- **Names say what it is and which variant:** `Button / icon, label`, `List row / PR · checks`.
+- **A change to a component changes every screen that uses it.** Look at a few of those screens afterwards.
+- **Turning copies into instances** (when tidying): swap a copy only for an instance that resolves to the same
+  tree, overriding what differs; when the swapped node sat inside another component, move the instances'
+  overrides that pointed into it to its new path; compare the resolved trees before and after. Do the reads
+  first and the writes after: reading between writes is slow on a file this size.
+
 ## The changelog
 
 Keep a changelog of what you change, so a coding agent can build it without being told what to look for.

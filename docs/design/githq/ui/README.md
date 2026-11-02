@@ -27,7 +27,8 @@ its aspect, and a new aspect gets a new frame:
 - **Brand**: `Logo — git/hq`, app icons, OpenGraph images.
 
 Repeated UI is built from components, so change the component, not a copy. The shared ones are in
-**"App · Components"**: the sidebar, item sections, list rows (`List row / …`, `Table row / …`), list and group
+**"App · Components"**: atoms (keys, avatar, labels, status, buttons, hints, chips, tabs), the sidebar, item
+sections, list rows (`List row / …`, `Table row / …`), list and group
 headers, project parts, and whole panes (`List pane / …`, `Project pane / …`). Components that belong to one
 aspect sit in a **`Components · …`** frame at the top of that aspect's frame (merging, stacks, workflows,
 settings, first sign-in). A new screen uses instances of them and overrides only what differs; a copied
