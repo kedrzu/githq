@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal` — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7); a pull request with failing checks has its merge options read, for which of them are required (D13). Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -15,6 +15,8 @@ import EmptyState from '@/components/EmptyState.vue';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { MergePanelStore } from '@/merge/MergePanelStore.js';
+import { useMergeOptions } from '@/merge/useMergeOptions.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
@@ -51,12 +53,24 @@ const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
 const auth = useService(AuthStore);
 const drafts = useService(CommentDrafts);
+const mergePanel = useService(MergePanelStore);
 const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 const now = useNow(TICK_MS);
+// Which failing checks are required only the merge options say (merging D13): read for a pull request with failing
+// checks, once as it opens.
+const mergeOptions = useMergeOptions({
+  itemId: () => {
+    const { item } = opened;
+    return item?.kind === 'pullRequest' && item.state === 'OPEN' && (item.checks?.failing ?? 0) > 0 ? item.id : null;
+  },
+});
+const requiredCheckIds = computed(() =>
+  mergeOptions.options ? mergeOptions.options.checks.filter(check => check.isRequired).map(check => check.id) : null,
+);
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
 const listIndex = computed(() => {
@@ -173,6 +187,12 @@ watch(
   { immediate: true },
 );
 
+function merge() {
+  if (opened.id !== null) {
+    mergePanel.open(opened.id);
+  }
+}
+
 function step(delta: 1 | -1) {
   const target = delta === 1 ? neighbours.value.next : neighbours.value.previous;
   if (target !== null) {
@@ -275,7 +295,9 @@ async function loadAllComments() {
       :editing="editing"
       :stack="stack"
       :neighbours="neighbours"
+      :required-check-ids="requiredCheckIds"
       @edit="edit"
+      @merge="merge"
       @need-projects="loadViewerProjects"
       @close="close"
       @previous="step(-1)"
@@ -305,7 +327,9 @@ async function loadAllComments() {
     :editing="editing"
     :stack="stack"
     :neighbours="neighbours"
+    :required-check-ids="requiredCheckIds"
     @edit="edit"
+    @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"
     @previous="step(-1)"

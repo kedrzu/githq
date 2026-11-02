@@ -1,6 +1,14 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheck, CircleX, GitMerge, GitPullRequestClosed, GitPullRequestDraft, Hourglass } from 'lucide-vue-next';
+import {
+    CircleCheck,
+    CircleX,
+    GitMerge,
+    GitPullRequestClosed,
+    GitPullRequestDraft,
+    Hourglass,
+    Loader,
+} from 'lucide-vue-next';
 import { computed, toValue } from 'vue';
 import type { ComputedRef, MaybeRefOrGetter } from 'vue';
 
@@ -56,6 +64,11 @@ export function usePullRequestVerdict(pr: MaybeRefOrGetter<PullRequestItem>): Pu
 
         if (current.state !== 'OPEN') {
             return { tone: 'danger', icon: GitPullRequestClosed, text: t(l.closedUnmerged), aside: null };
+        }
+
+        // Never merged until GitHub says so (merging D3, PM33).
+        if (current.merging) {
+            return { tone: 'warning', icon: Loader, text: t(l.beingMerged), aside: t(l.beingMergedDetail) };
         }
 
         if (current.isDraft) {

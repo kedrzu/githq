@@ -42,3 +42,5 @@ reRequest:
   en: re-request
 together:
   en: '{count} of {total}'
+merge:
+  en: Merge…

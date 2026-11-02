@@ -38,6 +38,7 @@ const meta = {
         onArrange: fn(),
         onOpen: fn(),
         onOpenInPlace: fn(),
+        onMerge: fn(),
     },
     // As tall as the window, and as wide as the arrangement: the panel's 560px, or the window.
     render: args => ({
@@ -64,6 +65,8 @@ export const PullRequestFailing: Story = {
         detail: F1_PULL_REQUEST_DETAIL,
         closes: F1_CLOSES,
         position: { index: 3, count: 13 },
+        // Read from the merge options: both failing checks are required (JKPLA).
+        requiredCheckIds: ['ci/test (node 20)', 'ci/e2e (chromium)'],
     },
 };
 
@@ -72,9 +75,26 @@ export const PullRequestFailingPage: Story = {
     args: { ...PullRequestFailing.args, arrangement: 'page' },
 };
 
-/** F3: approved and ready — "Open on GitHub" is the one prominent action; githq doesn't merge. */
+/** F3: approved and ready — "Merge…" is the one prominent action. */
 export const PullRequestReady: Story = {
     args: { item: F3_PULL_REQUEST, detail: F3_PULL_REQUEST_DETAIL, position: { index: 4, count: 13 } },
+};
+
+/** PM33: the same pull request being merged — GitHub accepted it, it reads open until GitHub says it is merged. */
+export const PullRequestBeingMerged: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: { ...F3_PULL_REQUEST, merging: true },
+        editing: {
+            ...SAMPLE_MAINTAINER_EDITING,
+            permissions: { ...SAMPLE_MAINTAINER_EDITING.permissions, merge: false },
+        },
+    },
+};
+
+/** K1b: the ready pull request seen by a contributor — no "Merge…", one line says they can't. */
+export const PullRequestContributorView: Story = {
+    args: { ...PullRequestReady.args, editing: SAMPLE_CONTRIBUTOR_EDITING },
 };
 
 /** Opened before its detail arrived: the row's properties and the project "Status" show at once, comments load. */

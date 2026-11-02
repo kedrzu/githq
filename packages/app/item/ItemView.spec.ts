@@ -12,7 +12,10 @@ const {
     IssueInPanel,
     IssueSplit,
     LoadingComments,
+    PullRequestBeingMerged,
+    PullRequestContributorView,
     PullRequestFailing,
+    PullRequestReady,
     StackOfTenInModal,
     StackOfTenInPanel,
     StackOfTwoOnPage,
@@ -308,4 +311,76 @@ test('the stack map shows only for a pull request in a stack: on a page in its o
 
     await PullRequestFailing.run();
     expect(page.getByRole('region', { name: 'The stack' }).query()).toBeNull();
+});
+
+test('F3: a ready pull request leads with "Merge…" — ⇧M, its button and the first entry of the item menu ask for the merge panel; M still sets the milestone, Open on GitHub stays beside it', async () => {
+    await PullRequestReady.run();
+    const { onMerge } = PullRequestReady.args;
+
+    const merge = page.getByRole('button', { name: 'Merge…' });
+    await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+    // Beside it, by their text: the header has its own GitHub button, an icon alone.
+    const gitHub = page.getByRole('link', { name: 'Open on GitHub' }).filter({ hasText: 'Open on GitHub' });
+    await expect.element(gitHub).toHaveAttribute('aria-keyshortcuts', 'O');
+    await expect
+        .element(page.getByRole('link', { name: 'Review files' }))
+        .toHaveAttribute('aria-keyshortcuts', 'Shift+O');
+    await expect.element(page.getByText("githq doesn't merge")).not.toBeInTheDocument();
+
+    await userEvent.click(merge);
+    expect(onMerge).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).toHaveBeenCalledTimes(2);
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    const menu = page.getByRole('menu');
+    const entries = [...menu.element().querySelectorAll('[role="menuitem"]')].map(entry => entry.textContent ?? '');
+    const mergeAt = entries.findIndex(text => text.startsWith('Merge…'));
+    expect(mergeAt).toBeGreaterThanOrEqual(0);
+    expect(mergeAt).toBeLessThan(entries.findIndex(text => text.startsWith('Request review')));
+    await userEvent.click(page.getByRole('menuitem', { name: /^Merge…/ }));
+    expect(onMerge).toHaveBeenCalledTimes(3);
+
+    // `M` is the milestone's, as before.
+    await userEvent.keyboard('m');
+    await expect.element(page.getByRole('dialog')).toBeVisible();
+    expect(onMerge).toHaveBeenCalledTimes(3);
+});
+
+test('K1b: without write access there is no "Merge…" — no button, no key, no menu entry — and one line says so', async () => {
+    await PullRequestContributorView.run();
+    const { onMerge } = PullRequestContributorView.args;
+
+    await expect.element(page.getByText("You can't merge in this repository")).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Merge…' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: /^Merge…/ })).not.toBeInTheDocument();
+    expect(onMerge).not.toHaveBeenCalled();
+});
+
+test('PM33: being merged never reads merged — the pill stays Open, the verdict says "Being merged" and "Merge…" waits for GitHub', async () => {
+    await PullRequestBeingMerged.run();
+    const { onMerge } = PullRequestBeingMerged.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Being merged/ }))
+        .toHaveTextContent('Being mergedGitHub accepted it · not merged yet');
+    await expect.element(page.getByText('Open', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Waiting for GitHub')).toBeVisible();
+    await expect.element(page.getByText("You can't merge in this repository")).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Merge…' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).not.toHaveBeenCalled();
+});
+
+test('JKPLA: a failing check the base branch requires is tagged "Required"; a running one is not', async () => {
+    await PullRequestFailing.run();
+
+    const tagged = (name: string) => page.getByRole('listitem').filter({ hasText: name }).getByText('Required');
+    await expect.element(tagged('ci / test (node 20)')).toBeVisible();
+    await expect.element(tagged('ci / e2e (chromium)')).toBeVisible();
+    await expect.element(tagged('ci / e2e (webkit)')).not.toBeInTheDocument();
 });

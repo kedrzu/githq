@@ -1,4 +1,4 @@
-<!-- Where an opened pull request stands (F1–F4): the verdict in one line — "Can't merge yet", "Ready to merge" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the way to GitHub, where merging happens (D10). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives. Approvals are counted without "of N" (D14). -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives. Approvals are counted without "of N" (D14). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -10,11 +10,13 @@ import {
   CircleX,
   FileDiff,
   GitBranch,
+  GitMerge,
   Github,
   Hourglass,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
@@ -30,6 +32,16 @@ const props = defineProps<{
   pr: PullRequestItem;
   /** Read with the opened item; the branch's owner comes from it. */
   detail?: PullRequestDetail | null;
+  /**
+   * The viewer may merge it (`EditPermissions.merge`): "Merge…" is offered; `false` says they can't, while it is
+   * open and not being merged. `null` when not known: neither shows.
+   */
+  canMerge?: boolean | null;
+}>();
+
+const emit = defineEmits<{
+  /** "Merge…": the merge panel is wanted. */
+  merge: [];
 }>();
 
 interface Line {
@@ -47,6 +59,19 @@ const names = new Intl.ListFormat(APP_LANGUAGE);
 const standing = computed(() => getPullRequestStanding(props.pr));
 const { verdict, mergeable } = usePullRequestVerdict(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
+const merging = computed(() => props.pr.merging === true);
+/** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
+const note = computed(() => {
+  if (!open.value || props.pr.merged) {
+    return null;
+  }
+
+  if (merging.value) {
+    return t(l.waitingForGitHub);
+  }
+
+  return props.canMerge === false ? t(l.cannotMerge) : null;
+});
 
 const conditions = computed((): { label: string; line: Line }[] => [
   { label: t(l.checks), line: checksLine() },
@@ -165,7 +190,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
       >
     </h2>
     <dl
-      v-if="open && !pr.isDraft"
+      v-if="open && !pr.isDraft && !merging"
       :class="css.pullRequestMerge_conditions"
     >
       <div
@@ -218,7 +243,18 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        :variant="mergeable && open ? 'light' : 'secondary'"
+        v-if="canMerge"
+        :variant="mergeable ? 'light' : 'secondary'"
+        size="sm"
+        :icon="GitMerge"
+        :kbd="EDIT_KEYS.merge"
+        :aria-keyshortcuts="EDIT_KEYS.merge"
+        @click="emit('merge')"
+      >
+        {{ t(l.merge) }}
+      </Button>
+      <Button
+        variant="secondary"
         size="sm"
         :icon="Github"
         :link="pr.url"
@@ -242,7 +278,11 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         {{ t(l.reviewFiles) }}
       </Button>
       <span :class="css.pullRequestMerge_spacer" />
-      <span :class="css.pullRequestMerge_note">{{ t(l.noMerge) }}</span>
+      <span
+        v-if="note"
+        :class="css.pullRequestMerge_note"
+        >{{ note }}</span
+      >
     </div>
   </section>
 </template>

@@ -1,12 +1,15 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter; one of a stack with a header of its own under an issue one step further (D23). -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands — ready to merge, followed by "Merge" (`⇧M`) where the viewer may merge it, else "Open on GitHub"; "Being merged" until GitHub confirms, the open icon kept (merging D3) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter; one of a stack with a header of its own under an issue one step further (D23). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { injectContext } from '@nzyme/vue-utils/context.js';
+import { ArrowUpRight, Check, GitMerge, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 
@@ -76,6 +79,9 @@ const facts = useItemFacts({
   people: () => props.people,
 });
 const shown = computed(() => new Set(props.properties));
+const merging = injectContext(MergeContext, { optional: true });
+/** The viewer may merge it: when it is ready, "Merge" follows instead of "Open on GitHub". */
+const mergeable = computed(() => merging?.canMerge(props.item.id) === true);
 </script>
 
 <template>
@@ -137,9 +143,20 @@ const shown = computed(() => new Set(props.properties));
           />
           <span :class="css.itemRow_statusText">{{ facts.status.text }}</span>
         </span>
-        <!-- Opening it is not selecting the row. -->
+        <!-- Neither merging it nor opening it is opening the row. -->
         <Button
-          v-if="facts.status?.openOnGitHub && shown.has('status')"
+          v-if="facts.status?.readyToMerge && shown.has('status') && mergeable"
+          variant="link"
+          size="sm"
+          :icon="GitMerge"
+          :kbd="EDIT_KEYS.merge"
+          :aria-keyshortcuts="EDIT_KEYS.merge"
+          @click.stop="merging?.open(item.id)"
+        >
+          {{ t(l.merge) }}
+        </Button>
+        <Button
+          v-else-if="facts.status?.readyToMerge && shown.has('status')"
           variant="link"
           size="sm"
           :link="item.url"

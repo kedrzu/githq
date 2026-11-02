@@ -5,6 +5,7 @@ import {
     CalendarRange,
     CircleCheckBig,
     CircleDashed,
+    GitMerge,
     GitPullRequest,
     GitPullRequestDraft,
     Milestone,
@@ -44,6 +45,7 @@ export const EDIT_KEYS = {
     state: 'Shift+X',
     reviewers: 'Shift+R',
     comment: 'R',
+    merge: 'Shift+M',
 } as const;
 
 /** An edit with an action of its own here. */
@@ -91,6 +93,11 @@ export interface EditCommandsParams {
      * shown — the key then opens the menu's submenu.
      */
     readonly inline?: Partial<Record<EditCommandKind, () => boolean>>;
+    /**
+     * Opens the merge panel for the one pull request (merging D7); without it merging is not offered here. A screen
+     * that moves on once the merge is sent (a list, PM32a) says so in it.
+     */
+    readonly merge?: (pr: PullRequestItem) => void;
 }
 
 /** An edit made of items one by one, by the user's permission for each. */
@@ -111,6 +118,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
     return params =>
         [
+            mergeCommand(params),
             toggleCommand(params, 'assignees', {
                 title: t(l.assign),
                 icon: UserPlus,
@@ -299,6 +307,27 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
                         };
                     }),
             }),
+        };
+    }
+
+    /**
+     * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — the first of the
+     * actions; never for several items, which merge one at a time.
+     */
+    function mergeCommand(params: EditCommandsParams): Command | null {
+        const pr = getOnePullRequest(params);
+        const { merge } = params;
+        if (!pr || !merge || !params.getPermissions(pr).merge) {
+            return null;
+        }
+
+        return {
+            id: `${params.section}.merge`,
+            title: t(l.merge),
+            section: params.section,
+            key: EDIT_KEYS.merge,
+            icon: GitMerge,
+            run: () => merge(pr),
         };
     }
 

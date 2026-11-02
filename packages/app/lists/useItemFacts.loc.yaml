@@ -41,3 +41,5 @@ projectField:
   en: '{project}: {value}'
 moreProjects:
   en: '+{count}'
+beingMerged:
+  en: Being merged

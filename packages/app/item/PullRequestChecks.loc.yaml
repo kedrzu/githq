@@ -33,3 +33,5 @@ more:
   en:
     one: '{count} more on GitHub'
     many: '{count} more on GitHub'
+required:
+  en: Required

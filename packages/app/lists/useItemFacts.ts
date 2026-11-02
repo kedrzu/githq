@@ -56,8 +56,8 @@ export interface ItemStatusFact {
     readonly icon: LucideIcon;
     readonly tone: 'danger' | 'dim' | 'muted' | 'success' | 'warning';
     readonly text: string;
-    /** Ready to merge: "Open on GitHub" follows — githq does not merge. */
-    readonly openOnGitHub: boolean;
+    /** Ready to merge: "Merge" follows where the viewer may merge it, else "Open on GitHub". */
+    readonly readyToMerge: boolean;
 }
 
 /** The row field of the item's first project (D12) and how many more projects it is in. */
@@ -168,6 +168,11 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {
+        // Merged once GitHub says so (merging D3): until then it stays open, being merged.
+        if (pr.merging) {
+            return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
+        }
+
         const standing = getPullRequestStanding(pr);
         if (standing.needsAuthor) {
             const parts: string[] = [];
@@ -187,31 +192,31 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 parts.push(t(l.conflicts));
             }
 
-            return { icon: CircleX, tone: 'danger', text: parts.join(' · '), openOnGitHub: false };
+            return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false };
         }
 
         if (standing.checksRunning) {
-            return { icon: Loader, tone: 'warning', text: t(l.checksRunning), openOnGitHub: false };
+            return { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false };
         }
 
         if (standing.readyToMerge) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), openOnGitHub: true };
+            return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
         }
 
         if (standing.approved) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approved), openOnGitHub: false };
+            return { icon: CircleCheck, tone: 'success', text: t(l.approved), readyToMerge: false };
         }
 
         if (reviewRequested.value) {
-            return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), openOnGitHub: false };
+            return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), readyToMerge: false };
         }
 
         if (pr.isDraft) {
-            return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), openOnGitHub: false };
+            return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false };
         }
 
         if (standing.waitingForReview) {
-            return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), openOnGitHub: false };
+            return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false };
         }
 
         return null;

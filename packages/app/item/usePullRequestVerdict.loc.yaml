@@ -35,3 +35,7 @@ behind:
   en: behind {base}
 blocked:
   en: blocked by a rule
+beingMerged:
+  en: Being merged
+beingMergedDetail:
+  en: GitHub accepted it · not merged yet

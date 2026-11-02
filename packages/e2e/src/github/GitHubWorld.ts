@@ -12,6 +12,7 @@ import type {
     ProjectItemFieldResultFieldsFragment,
     ProjectItemPageFieldsFragment,
     ProjectItemRowFieldsFragment,
+    PullRequestMergeOptionsQuery,
     ProjectItemValuesFieldsFragment,
     ProjectV2FieldType,
     ProjectV2SingleSelectFieldOptionColor,
@@ -440,7 +441,8 @@ const PROJECT_FIRST_PAGE = 100;
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
  * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
- * `ItemDetail` and `MoreComments` by node id (the check list and the reviews left out); `ItemByNumber`;
+ * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
+ * out, no rules on a base branch); `ItemByNumber`;
  * `RepositoryMetadata`; `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
@@ -904,6 +906,37 @@ export class GitHubWorld {
                 { node: node ?? null },
                 node ? [] : [notFoundError(id, ['node'])],
             );
+        });
+        // Read by the opened item of a pull request with failing checks, for which are required: no rules on the base
+        // branch and no check listed, as `ItemDetail` lists none.
+        github.graphql('PullRequestMergeOptions', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item?.pullRequest) {
+                return new GitHubPartialAnswer<'PullRequestMergeOptions'>({ node: null }, [
+                    notFoundError(id, ['node']),
+                ]);
+            }
+
+            const node = this.toPullRequestNode(item, item.pullRequest);
+            const answer: PullRequestMergeOptionsQuery = {
+                node: {
+                    ...node,
+                    mergeHeadline: `Merge pull request #${item.number}`,
+                    mergeBody: item.title,
+                    squashHeadline: `${item.title} (#${item.number})`,
+                    squashBody: '',
+                    viewerCanMergeAsAdmin: false,
+                    viewerCanEnableAutoMerge: false,
+                    isMergeQueueEnabled: false,
+                    baseRef: { target: node.baseRef?.target ?? null, rules: { nodes: [] }, branchProtectionRule: null },
+                    statusCheckRollup: node.statusCheckRollup && {
+                        ...node.statusCheckRollup,
+                        contextPage: { totalCount: 0, nodes: [] },
+                    },
+                },
+            };
+            return answer;
         });
         github.graphql('MoreComments', ({ variables }) => {
             const id = String(variables.id);

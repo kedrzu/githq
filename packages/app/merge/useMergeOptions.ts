@@ -9,11 +9,11 @@ import { PullRequestMerger } from './PullRequestMerger.js';
 
 /** What {@link useMergeOptions} reads the options of. */
 export interface UseMergeOptionsOptions {
-    /** The pull request the merge panel is open for; `null` while it is closed. */
+    /** The pull request to read them of: the one the merge panel is open for; `null` for none. */
     readonly itemId: MaybeRefOrGetter<string | null>;
 }
 
-/** The merge panel's options as they are being read. */
+/** A pull request's merge options as they are being read. */
 export interface MergeOptionsViewModel {
     /** `null` until read, and when they could not be. */
     readonly options: MergeOptions | null;
@@ -21,8 +21,8 @@ export interface MergeOptionsViewModel {
 }
 
 /**
- * The merge options of the pull request the merge panel is open for, read fresh each time it opens for one
- * ({@link PullRequestMerger}); kept only while the panel is open.
+ * The merge options of a pull request ({@link PullRequestMerger}), read fresh each time it is asked for one — the
+ * merge panel as it opens, the opened item for which of its failing checks are required; kept only while asked.
  */
 export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsViewModel {
     const merger = useService(PullRequestMerger);

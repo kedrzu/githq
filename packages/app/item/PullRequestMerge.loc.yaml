@@ -49,5 +49,9 @@ openOnGitHub:
   en: Open on GitHub
 reviewFiles:
   en: Review files
-noMerge:
-  en: githq doesn't merge
+merge:
+  en: Merge…
+cannotMerge:
+  en: You can't merge in this repository
+waitingForGitHub:
+  en: Waiting for GitHub

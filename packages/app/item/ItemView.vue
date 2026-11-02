@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -102,6 +102,8 @@ const props = defineProps<{
   stack?: StackDescription | null;
   /** What `K` and `J` open from it: the stack's map marks those rows. */
   neighbours?: StackNeighbours | null;
+  /** A pull request's checks the base branch requires, by id, once read (merging D13): a failing one is tagged. */
+  requiredCheckIds?: readonly string[] | null;
 }>();
 
 const emit = defineEmits<{
@@ -117,6 +119,8 @@ const emit = defineEmits<{
   edit: [request: EditRequest];
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
+  /** "Merge…" (`⇧M`): the merge panel is wanted for the pull request. */
+  merge: [];
 }>();
 
 const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
@@ -375,6 +379,7 @@ function getEditCommands(): Command[] {
     stateOptions: stateActions.value,
     stateTitle: getStateTitle(),
     edit: request => emit('edit', request),
+    merge: () => emit('merge'),
     setField: (place, field, value) =>
       emit('edit', { kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value }),
     inline: {
@@ -684,6 +689,8 @@ function getProjectOptions(): CommandOption[] {
               v-if="pr"
               :pr="pr"
               :detail="prDetail"
+              :can-merge="permissions ? permissions.merge : null"
+              @merge="emit('merge')"
             />
 
             <!-- One column: everything in reading order. -->
@@ -701,6 +708,7 @@ function getProjectOptions(): CommandOption[] {
                   v-if="prDetail"
                   :detail="prDetail"
                   :now="now"
+                  :required-ids="requiredCheckIds"
                 />
                 <LinkedItems
                   :title="t(l.closes)"
@@ -734,6 +742,7 @@ function getProjectOptions(): CommandOption[] {
                 v-if="prDetail"
                 :detail="prDetail"
                 :now="now"
+                :required-ids="requiredCheckIds"
               />
               <LinkedItems
                 :title="t(l.closes)"

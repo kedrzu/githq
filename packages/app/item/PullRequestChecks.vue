@@ -1,4 +1,4 @@
-<!-- The checks of an opened pull request's head commit (F1–F4): failing ones first, each with how long it ran and its log on GitHub, then those still running; the ones that passed fold into one row that opens. -->
+<!-- The checks of an opened pull request's head commit (F1–F4): failing ones first, each with how long it ran and its log on GitHub — a required one tagged "Required" — then those still running; the ones that passed fold into one row that opens. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -25,6 +25,11 @@ const props = defineProps<{
   detail: PullRequestDetail;
   /** Epoch ms a running check's time is counted to. */
   now: number;
+  /**
+   * The checks the base branch requires to pass, by id: a failing one is tagged. Only the merge options say it
+   * (`PullRequestMergeOptions`); none until they are read.
+   */
+  requiredIds?: readonly string[] | null;
 }>();
 
 const ORDER: readonly ItemCheckState[] = ['failing', 'pending', 'passing', 'skipped'];
@@ -142,6 +147,11 @@ function iconOf(state: ItemCheckState) {
           aria-hidden="true"
         />
         <span :class="css.pullRequestChecks_name">{{ nameOf(check) }}</span>
+        <span
+          v-if="check.state === 'failing' && requiredIds?.includes(check.id)"
+          :class="css.pullRequestChecks_tag"
+          >{{ t(l.required) }}</span
+        >
         <span :class="css.pullRequestChecks_detail">{{ describe(check) }}</span>
         <Button
           v-if="check.url"
@@ -292,6 +302,15 @@ function iconOf(state: ItemCheckState) {
   text-overflow: ellipsis;
   font-family: $font-family-mono;
   color: $color-fg;
+}
+
+.pullRequestChecks_tag {
+  flex: none;
+  padding: 0 5px;
+  font-size: 10.5px;
+  color: $color-fg-2;
+  border: 1px solid $color-border-2;
+  border-radius: $radius-sm;
 }
 
 .pullRequestChecks_count {

@@ -30,3 +30,5 @@ expandStack:
   en: Expand the stack
 collapseStack:
   en: Collapse the stack
+merge:
+  en: Merge…
