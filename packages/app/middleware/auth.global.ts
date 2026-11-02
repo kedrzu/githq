@@ -4,7 +4,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { resolveRouteAccess } from '@/auth/routeAccess.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import { getRepositoryTab } from '@/tracking/trackingRoutes.js';
+import { getRepositoryTab, getRouteNameWithOwner } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { isHydratingServerHtml } from '@/utils/isHydratingServerHtml.js';
 
@@ -35,10 +35,7 @@ export default defineNuxtRouteMiddleware(async to => {
     if (
         to.name === 'repository' &&
         getRepositoryTab(to.params.kind) === 'workflows' &&
-        !tracking.isTracked({
-            kind: 'repository',
-            nameWithOwner: `${String(to.params.owner)}/${String(to.params.name)}`,
-        })
+        !tracking.isTracked({ kind: 'repository', nameWithOwner: getRouteNameWithOwner(to) })
     ) {
         return navigateTo(
             { name: 'github', params: { path: to.path.split('/').filter(Boolean) }, query: to.query, hash: to.hash },

@@ -6,6 +6,7 @@ import { Browser } from '@/services/Browser.js';
 /**
  * Opening a workflow's run when it is pressed: on GitHub, in a new tab, for now — the one place that changes once
  * githq has a run page of its own, apart from `RunStrip`'s ticks, which are links to the run.
+ * @util
  */
 export function useOpenWorkflowRun() {
     const browser = useService(Browser);

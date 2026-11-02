@@ -8,6 +8,7 @@ import { useNow } from '@/services/useNow.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getCandidateRepositories } from '@/tracking/trackingCandidates.js';
+import { getRouteNameWithOwner } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { getTrackedStatus } from '@/tracking/utils/getTrackedStatus.js';
 import { goBack } from '@/utils/goBack.js';
@@ -32,7 +33,7 @@ const route = useRoute();
 const router = useRouter();
 const now = useNow(TICK_MS);
 
-const nameWithOwner = computed(() => `${String(route.params.owner)}/${String(route.params.name)}`);
+const nameWithOwner = computed(() => getRouteNameWithOwner(route));
 useAnyRefRead(nameWithOwner);
 /** Tracked and not on its way out; `undefined` otherwise. */
 const repository = computed(() =>

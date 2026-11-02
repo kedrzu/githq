@@ -18,6 +18,7 @@ import {
     PROJECT_SETTINGS_PATHS,
     REPOSITORY_PATH,
     REPOSITORY_SETTINGS_PATH,
+    getRouteNameWithOwner,
 } from '@/tracking/trackingRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
@@ -121,7 +122,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: REPOSITORY_PATH,
         name: 'repository',
         component: () => import('@/repository/RepositoryPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: getRepositoryPageKey },
+        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner },
     };
     for (const [index, path] of PROJECT_PATHS.entries()) {
         yield {
@@ -192,8 +193,4 @@ function getSignInRedirect(to: RouteLocation): RouteLocationRaw {
 function getItemPageRedirect(to: RouteLocation, name: string): RouteLocationRaw {
     const { owner, name: repository, number } = to.params;
     return { name, params: { owner, name: repository, number }, query: to.query, hash: to.hash };
-}
-
-function getRepositoryPageKey(route: RouteLocation) {
-    return `${String(route.params.owner)}/${String(route.params.name)}`;
 }

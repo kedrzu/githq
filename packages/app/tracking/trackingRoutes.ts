@@ -48,6 +48,14 @@ export const REPOSITORY_SETTINGS_SECTIONS = {
 /** A section of a tracked repository's settings page. */
 export type RepositorySettingsSection = keyof typeof REPOSITORY_SETTINGS_SECTIONS;
 
+/**
+ * The `owner/name` a repository's route names.
+ * @util
+ */
+export function getRouteNameWithOwner(route: { readonly params: Readonly<Record<string, unknown>> }) {
+    return `${String(route.params.owner)}/${String(route.params.name)}`;
+}
+
 /** The origin every address githq does not show is handed off to; fixed here, never taken from an address. */
 export const GITHUB_ORIGIN = 'https://github.com';
 
