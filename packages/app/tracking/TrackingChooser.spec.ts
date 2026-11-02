@@ -3,12 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import type { Locator } from 'vitest/browser';
 
-import {
-    EMPTY_CANDIDATES,
-    sampleCandidateProject,
-    sampleCandidateRepository,
-    SAMPLE_CANDIDATES,
-} from '@/testing/sampleTracking.js';
+import { EMPTY_CANDIDATES, sampleCandidateRepository, SAMPLE_CANDIDATES } from '@/testing/sampleTracking.js';
 
 import * as stories from './TrackingChooser.stories.jsx';
 import type { CandidateProject, CandidateRepository, TrackingCandidates } from './TrackingTypes.js';
@@ -20,9 +15,10 @@ const {
     NothingToPick,
     NothingToPickWithSaving,
     SavingTicked,
-    Settings,
-    SettingsReading,
-    SettingsSearching,
+    Picker,
+    PickerNotRead,
+    PickerReading,
+    PickerSearching,
 } = composeStories(stories);
 
 const ANY = { ago: 0, open: 0 };
@@ -319,23 +315,15 @@ test('busy, ⌘↵ and "Track these" do nothing, and "Only my repositories" show
 
 type Found = CandidateProject | CandidateRepository | null;
 
-const filterField = () => page.getByRole('textbox', { name: 'Filter repositories' });
-const pending = () => page.getByRole('region', { name: 'Changes to save' });
-
 /** The row of a repository, by its full name, as the text of its checkbox starts. */
-function settingsRow(nameWithOwner: string) {
+function pickerRow(nameWithOwner: string) {
     const [owner, name] = nameWithOwner.split('/');
     return page.getByRole('checkbox', { name: new RegExp(`^${owner}/${name}(?: |$)`, 'u') });
 }
 
-/** How many rows a repository has: one, or none. */
-function rowCount(nameWithOwner: string) {
-    return settingsRow(nameWithOwner).elements().length;
-}
-
 /** The text of the row holding a repository's checkbox, its spaces plain (the translations keep a last word on its line). */
 function rowText(nameWithOwner: string) {
-    const text = settingsRow(nameWithOwner).element().closest('[data-tracking-row]')?.textContent ?? '';
+    const text = pickerRow(nameWithOwner).element().closest('[data-tracking-row]')?.textContent ?? '';
     return text.replace(/\s/gu, ' ');
 }
 
@@ -345,206 +333,160 @@ async function sleep(ms: number) {
     });
 }
 
-test('G8: ticks are what is tracked; rows say how they stand or what saving will do; counts say "tracked"', async () => {
-    await Settings.run();
+test('T18: no heading, projects or footer; owners count tracked / all, leaving out what is tracked of anyone else', async () => {
+    await Picker.run();
 
     await expect.element(page.getByRole('heading', { name: 'Which of these do you work on?' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('region', { name: 'Projects' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Track these' })).not.toBeInTheDocument();
-    await expect.element(page.getByText('your repositories · 11 of 12 tracked')).toBeInTheDocument();
-    await expect.element(page.getByText('organisation · 6 of 312 tracked')).toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: '8 more of yours, all tracked' })).toBeInTheDocument();
-    await expect.element(page.getByText('2 of 6 tracked')).toBeInTheDocument();
-
-    expect(rowText('kedrzu/githq')).toContain('synced 14s ago');
-    expect(rowText('kedrzu/blog')).toContain('will be untracked');
-    expect(rowText('skyline-labs/mobile')).toContain('will be tracked');
-    expect(rowText('skyline-labs/api')).toContain('downloading 412 of 1,180');
-    expect(rowText('skyline-labs/payments')).toContain('active 1h ago');
-    expect(rowText('acme-health/records')).toContain('Not shown to githq');
-    expect(rowText('vitejs/vite')).toContain('checked every 5 min');
-    await expect
-        .element(page.getByRole('checkbox', { name: /^Tauri roadmap/ }))
-        .toHaveAccessibleName(/GitHub refuses its changes/);
-
-    // Untracking one more: the group's action and its count follow the ticks.
-    await expect.element(page.getByRole('button', { name: 'Track all' }).first()).toBeInTheDocument();
-    await userEvent.click(settingsRow('kedrzu/blog'));
-    await expect.element(page.getByText('your repositories · 12 of 12 tracked')).toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Untrack all' }).first()).toBeInTheDocument();
+    await expect.element(page.getByRole('radio', { name: /^All owners/ })).toHaveAccessibleName(/15 of\s327 tracked/);
+    await expect.element(page.getByRole('radio', { name: /^kedrzu/ })).toHaveAccessibleName(/12 of\s12 tracked/);
+    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toHaveAccessibleName(/3 of\s312 tracked/);
+    await expect.element(page.getByRole('radio', { name: /^acme-health/ })).toHaveAccessibleName(/0 of\s3 tracked/);
 });
 
-test('the bar names the changes and saves them with ⌘↵; it is gone, and ⌘↵ does nothing, with nothing staged', async () => {
-    const onSave = vi.fn();
-    await Settings.run({ args: { ...Settings.args, onSave } });
+test('T18: an owner with everything tracked folds to its header, and Show unfolds it with nothing to select', async () => {
+    await Picker.run();
 
-    await expect
-        .element(pending())
-        .toHaveTextContent('2 changes · start tracking skyline-labs/mobile · stop tracking kedrzu/blog');
-    await expect.element(pending()).toHaveTextContent('Untracking deletes the copy in this browser.');
-    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    expect(onSave).toHaveBeenCalledOnce();
-    await userEvent.click(pending().getByRole('button', { name: 'Save 2 changes' }));
-    expect(onSave).toHaveBeenCalledTimes(2);
+    await expect.element(page.getByText('your repositories · all 12 tracked')).toBeInTheDocument();
+    await expect.element(pickerRow('kedrzu/githq')).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: 'Show', exact: true }));
+    await expect.element(pickerRow('kedrzu/githq')).toBeChecked();
+    expect(rowText('kedrzu/githq')).toContain('tracked');
+    await expect.element(page.getByRole('button', { name: 'Show', exact: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Select / }).first()).toHaveTextContent(/^Select all 3/u);
+});
 
-    // Only tracking: no word about deleting; many: the first few named, then how many more.
-    await userEvent.click(settingsRow('kedrzu/blog'));
-    await expect.element(pending()).toHaveTextContent('1 change · start tracking skyline-labs/mobile');
-    await expect.element(pending()).not.toHaveTextContent('Untracking');
-    await expect.element(pending().getByRole('button', { name: 'Save 1 change' })).toBeInTheDocument();
+test('T18: the group says tracked and picked, shows all when folded; tracked rows stay in sight, one not read yet too, and "N more" is not said', async () => {
+    await Picker.run();
+
+    await expect.element(page.getByText('organisation · 3 of 312 tracked · 2 picked')).toBeInTheDocument();
+    await expect.element(pickerRow('skyline-labs/webapp')).toBeChecked();
+    await expect.element(pickerRow('skyline-labs/legacy-billing')).toBeChecked();
+    await expect.element(page.getByText(/^\d+ more$/u)).not.toBeInTheDocument();
+
     await userEvent.click(page.getByRole('button', { name: 'Show all 312' }));
-    for (const name of ['skyline-labs/payments', 'skyline-labs/payments-worker', 'skyline-labs/service-1']) {
-        await userEvent.click(settingsRow(name));
-    }
+    await expect.element(pickerRow('skyline-labs/service-9')).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Select all \d+/u }).first()).toBeInTheDocument();
+});
 
+test('T18: a tracked row keeps its grey tick and says "tracked": Space and a click do nothing, and it is not a pick', async () => {
+    const onPick = vi.fn();
+    await Picker.run({ args: { ...Picker.args, 'onUpdate:repositories': onPick } });
+    const webapp = pickerRow('skyline-labs/webapp');
+
+    expect(rowText('skyline-labs/webapp')).toContain('tracked');
+    await expect.element(webapp).toHaveAttribute('aria-readonly', 'true');
+    await userEvent.click(webapp);
+    await expect.element(webapp).toBeChecked();
+    webapp.element().focus();
+    await userEvent.keyboard(' ');
+    await expect.element(webapp).toBeChecked();
+    await expect.element(webapp).toHaveFocus();
+    expect(onPick).not.toHaveBeenCalled();
+    await expect.element(page.getByText('organisation · 3 of 312 tracked · 2 picked')).toBeInTheDocument();
+});
+
+test('T18: a range, ⌘A and Select all skip what is tracked; Select none leaves it ticked', async () => {
+    const picks = vi.fn();
+    const web = ['skyline-labs/web-admin', 'skyline-labs/webhooks', 'skyline-labs/website'];
+    await PickerSearching.run({ args: { ...PickerSearching.args, 'onUpdate:repositories': picks } });
+    await expect.element(pickerRow('skyline-labs/webapp')).toBeChecked();
+
+    // ⌘A in the filter.
+    page.getByRole('textbox', { name: 'Filter repositories' }).element().focus();
+    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+    expect(picks).toHaveBeenLastCalledWith(web);
     await expect
-        .element(pending())
-        .toHaveTextContent(
-            '4 changes · start tracking skyline-labs/mobile, skyline-labs/payments, skyline-labs/payments-worker · +1 more',
-        );
+        .element(page.getByText('organisation · 4 matches for “web” · 1 tracked · 3 picked'))
+        .toBeInTheDocument();
 
-    const unstaged = vi.fn();
-    await SettingsSearching.run({ args: { ...SettingsSearching.args, onSave: unstaged } });
-    await expect.element(page.getByRole('region', { name: 'Changes to save' })).not.toBeInTheDocument();
-    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    expect(unstaged).not.toHaveBeenCalled();
+    // Select none, over what can be picked: the tracked row keeps its tick.
+    await userEvent.click(page.getByRole('button', { name: 'Select none' }));
+    expect(picks).toHaveBeenLastCalledWith([]);
+    await expect.element(pickerRow('skyline-labs/webapp')).toBeChecked();
+
+    // Select all counts only those.
+    await userEvent.click(page.getByRole('button', { name: 'Select all 3' }));
+    expect(picks).toHaveBeenLastCalledWith(web);
+    await userEvent.click(page.getByRole('button', { name: 'Select none' }));
+
+    // A range across the tracked row.
+    await userEvent.click(pickerRow('skyline-labs/web-admin'));
+    await shiftClick(pickerRow('skyline-labs/website'));
+    expect(picks).toHaveBeenLastCalledWith(web);
+    await expect.element(pickerRow('skyline-labs/webapp')).toBeChecked();
 });
 
-test('Esc clears the filter first, then discards; not while a layer is open, nor when something else took it', async () => {
-    const onDiscard = vi.fn();
-    await Settings.run({ args: { ...Settings.args, onDiscard } });
+test('T1: a search narrows every owner, and leaves out those it matches nothing of', async () => {
+    await PickerSearching.run();
 
-    await userEvent.keyboard('/pay');
-    await userEvent.keyboard('{Escape}');
-    await expect.element(filterField()).toHaveValue('');
-    expect(onDiscard).not.toHaveBeenCalled();
-
-    const layer = document.createElement('div');
-    layer.dataset.layer = '';
-    document.body.append(layer);
-    await userEvent.keyboard('{Escape}');
-    layer.remove();
-    expect(onDiscard).not.toHaveBeenCalled();
-
-    const takeEscape = (event: KeyboardEvent) => event.preventDefault();
-    window.addEventListener('keydown', takeEscape, { capture: true });
-    await userEvent.keyboard('{Escape}');
-    window.removeEventListener('keydown', takeEscape, { capture: true });
-    expect(onDiscard).not.toHaveBeenCalled();
-
-    await userEvent.keyboard('{Escape}');
-    expect(onDiscard).toHaveBeenCalledOnce();
-    await expect.element(settingsRow('kedrzu/blog')).toBeChecked();
-    await expect.element(settingsRow('skyline-labs/mobile')).not.toBeChecked();
-    await expect.element(pending()).not.toBeInTheDocument();
+    await expect.element(page.getByText('organisation · 4 matches for “web” · 1 tracked')).toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: 'kedrzu' })).not.toBeInTheDocument();
+    await expect.poll(repositoryNames).toEqual(['webapp', 'web-admin', 'webhooks', 'website']);
 });
 
-test('what is tracked shows once, wherever it is: under its owner before its page is read and after, else "Elsewhere"', async () => {
-    const onLoadMore = vi.fn();
-    await Settings.run({ args: { ...Settings.args, onLoadMore } });
+test('the picker starts on an owner it is told; one GitHub does not list leaves all owners', async () => {
+    await Picker.run({ args: { ...Picker.args, initialOwner: 'skyline-labs' } });
+    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toBeChecked();
+    await expect.element(page.getByRole('heading', { name: 'kedrzu' })).not.toBeInTheDocument();
 
-    // On a page not read yet: under skyline-labs, said so, and once.
-    await expect.element(settingsRow('skyline-labs/legacy-billing')).toBeChecked();
-    expect(rowCount('skyline-labs/legacy-billing')).toBe(1);
-    expect(rowText('skyline-labs/legacy-billing')).toContain('not read yet');
-    // Someone else's: under "Elsewhere"; one GitHub no longer shows: under its owner.
-    await expect.element(page.getByRole('heading', { name: 'Elsewhere' })).toBeInTheDocument();
-    await expect.element(page.getByText('tracked from other owners')).toBeInTheDocument();
-    await expect.element(settingsRow('vitejs/vite')).toBeChecked();
-    await expect.element(settingsRow('acme-health/records')).toBeChecked();
-    await expect.element(page.getByRole('checkbox', { name: /^Tauri roadmap/ })).toBeChecked();
-
-    // Its page arrives: still one row, now with what GitHub tells.
-    await userEvent.click(page.getByRole('button', { name: 'Show all 312' }));
-    await userEvent.click(page.getByRole('button', { name: /^Show more of the/ }));
-    expect(onLoadMore).toHaveBeenCalledWith('skyline-labs');
-    await expect.poll(() => rowText('skyline-labs/legacy-billing')).toContain('3 open');
-    expect(rowCount('skyline-labs/legacy-billing')).toBe(1);
-
-    // Unticked, it says what saving will do.
-    await userEvent.click(settingsRow('vitejs/vite'));
-    expect(rowText('vitejs/vite')).toContain('will be untracked');
-    await expect.element(pending()).toHaveTextContent('stop tracking kedrzu/blog, vitejs/vite');
+    await Picker.run({ args: { ...Picker.args, initialOwner: 'nuxt' } });
+    await expect.element(page.getByRole('radio', { name: /^All owners/ })).toBeChecked();
 });
 
-test('while the lists are read, what is tracked shows by owner and can be unticked; failed, it still does', async () => {
-    await SettingsReading.run();
+test('never G10: with nothing to pick, the filter is there to look up', async () => {
+    await Picker.run({ args: { ...Picker.args, candidates: EMPTY_CANDIDATES, tracked: [], repositories: [] } });
 
-    await expect.element(page.getByRole('status')).toHaveTextContent('Reading your repositories…');
-    await expect.element(page.getByRole('heading', { name: 'skyline-labs' })).toBeInTheDocument();
-    await expect.element(settingsRow('kedrzu/githq')).toBeChecked();
-    expect(rowCount('skyline-labs/api')).toBe(1);
-    expect(rowText('skyline-labs/api')).toContain('downloading 412 of 1,180');
-    await userEvent.click(settingsRow('kedrzu/githq'));
-    await expect.element(pending()).toHaveTextContent('1 change · stop tracking kedrzu/githq');
-    await expect.element(page.getByRole('checkbox', { name: /^githq Roadmap/ })).toBeChecked();
-
-    await SettingsReading.run({ args: { ...SettingsReading.args, reading: false } });
-    await expect.element(page.getByText('Reading your repositories…')).not.toBeInTheDocument();
-    await expect.element(settingsRow('skyline-labs/portal')).toBeChecked();
-});
-
-test('the settings form never offers G10, even with nothing to pick', async () => {
-    await Settings.run({
-        args: {
-            ...Settings.args,
-            candidates: EMPTY_CANDIDATES,
-            tracked: { repositories: [], projects: [] },
-            repositories: [],
-            projects: [],
-        },
-    });
-
-    await expect.element(filterField()).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox', { name: 'Filter repositories' })).toBeInTheDocument();
     await expect
         .element(page.getByRole('heading', { name: "You don't have any repositories yet" }))
         .not.toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Continue to My work' })).not.toBeInTheDocument();
 });
 
-test('T1: a search narrows every owner, tracked and not alike, and the group says how many of the matches are tracked', async () => {
-    await SettingsSearching.run();
+test('while the lists are read it says so and looks nothing up; failed, it says so and a name is still looked up', async () => {
+    const find = vi.fn(() => Promise.resolve(sampleCandidateRepository('rust-lang/rust', { ago: 60_000, open: 88 })));
+    await PickerReading.run({ args: { ...PickerReading.args, find, filter: 'rust-lang/rust' } });
+    await expect.element(page.getByRole('status')).toHaveTextContent('Reading your repositories…');
+    await sleep(400);
+    expect(find).not.toHaveBeenCalled();
 
-    await expect.element(page.getByText('organisation · 4 matches for “web” · 2 tracked')).toBeInTheDocument();
-    await expect.element(page.getByRole('heading', { name: 'kedrzu' })).not.toBeInTheDocument();
-    await expect.poll(repositoryNames).toEqual(['webapp', 'web-admin', 'webhooks', 'website']);
-    await expect.element(settingsRow('skyline-labs/webapp')).toBeChecked();
-    await expect.element(settingsRow('skyline-labs/webhooks')).not.toBeChecked();
-
-    await userEvent.click(page.getByRole('button', { name: 'Track all' }));
-    await expect.element(settingsRow('skyline-labs/website')).toBeChecked();
-    await expect.element(page.getByText('organisation · 4 matches for “web” · 4 tracked')).toBeInTheDocument();
+    await PickerNotRead.run({ args: { ...PickerNotRead.args, find, filter: 'rust-lang/rust' } });
+    await expect.element(page.getByRole('alert')).toHaveTextContent("GitHub didn't list your repositories.");
+    await expect.element(pickerRow('rust-lang/rust')).not.toBeChecked();
+    await expect.element(page.getByRole('heading', { name: 'rust-lang' })).toBeInTheDocument();
 });
 
-test("`?q=`: someone else's repository is looked up and offered; ticked, it will be tracked and is handed on", async () => {
-    const vite = sampleCandidateRepository('rust-lang/rust', { ago: 7_200_000, open: 88 });
-    const find = vi.fn(() => Promise.resolve(vite));
+test("`?q=`: someone else's repository is looked up and offered; ticked, it is picked and handed on", async () => {
+    const rust = sampleCandidateRepository('rust-lang/rust', { ago: 7_200_000, open: 88 });
+    const find = vi.fn(() => Promise.resolve(rust));
     const onFound = vi.fn();
-    await Settings.run({ args: { ...Settings.args, initialSearch: 'rust-lang/rust', find, onFound } });
+    await PickerSearching.run({
+        args: { ...PickerSearching.args, filter: 'rust-lang/rust', find, onFound },
+    });
 
-    await expect.element(settingsRow('rust-lang/rust')).not.toBeChecked();
+    await expect.element(pickerRow('rust-lang/rust')).not.toBeChecked();
     expect(find).toHaveBeenCalledWith({ kind: 'repository', owner: 'rust-lang', name: 'rust' });
     expect(rowText('rust-lang/rust')).toContain('88 open');
-    await userEvent.click(settingsRow('rust-lang/rust'));
-    expect(onFound).toHaveBeenCalledWith(vite);
-    expect(rowText('rust-lang/rust')).toContain('will be tracked');
+    await userEvent.click(pickerRow('rust-lang/rust'));
+    expect(onFound).toHaveBeenCalledWith(rust);
+    await expect.element(page.getByText('1 match for “rust-lang/rust” · 1 picked')).toBeInTheDocument();
 });
 
-test("a project's address is looked up and offered; one already listed is not looked up", async () => {
-    const project = sampleCandidateProject('Roadmap', 'vuejs', 7, 9);
-    const find = vi.fn(() => Promise.resolve(project));
-    await Settings.run({
-        args: { ...Settings.args, find, initialSearch: 'https://github.com/orgs/vuejs/projects/7/views/1' },
-    });
-    const projects = page.getByRole('region', { name: 'Projects' });
-    await expect.element(projects.getByRole('checkbox', { name: /^Roadmap/ })).not.toBeChecked();
-    expect(find).toHaveBeenCalledWith({ kind: 'project', owner: 'vuejs', ownerKind: 'org', number: 7 });
-    expect(find).toHaveBeenCalledTimes(1);
+test("someone else's repository already tracked looks up to a fixed tick; one listed is not looked up", async () => {
+    const vite = sampleCandidateRepository('vitejs/vite', { ago: 60_000, open: 5 });
+    const find = vi.fn(() => Promise.resolve(vite));
+    const onFound = vi.fn();
+    await Picker.run({ args: { ...Picker.args, filter: 'vitejs/vite', find, onFound } });
+
+    await expect.element(pickerRow('vitejs/vite')).toBeChecked();
+    await expect.element(pickerRow('vitejs/vite')).toHaveAttribute('aria-readonly', 'true');
+    await userEvent.click(pickerRow('vitejs/vite'));
+    expect(onFound).not.toHaveBeenCalled();
 
     const listed = vi.fn(() => Promise.resolve(null));
-    await Settings.run({
-        args: { ...Settings.args, find: listed, initialSearch: 'https://github.com/orgs/skyline-labs/projects/3' },
-    });
-    await expect.element(projects.getByRole('checkbox', { name: /^Bug triage/ })).toBeInTheDocument();
+    await Picker.run({ args: { ...Picker.args, filter: 'skyline-labs/portal', find: listed } });
+    await expect.element(pickerRow('skyline-labs/portal')).toBeInTheDocument();
     await sleep(400);
     expect(listed).not.toHaveBeenCalled();
 });
@@ -557,28 +499,27 @@ test('lookups cannot race: one per settled input, and a stale answer never repla
                 answers.set(reference.owner, resolve);
             }),
     );
-    await Settings.run({ args: { ...Settings.args, find } });
+    await Picker.run({ args: { ...Picker.args, find } });
 
     // Typed through: only what settled is asked for.
     await userEvent.keyboard('/first/one');
     await vi.waitFor(() => expect(find).toHaveBeenCalledTimes(1));
     expect(find).toHaveBeenCalledWith({ kind: 'repository', owner: 'first', name: 'one' });
 
-    // Esc clears the filter, and discards nothing.
     await userEvent.keyboard('{Escape}second/two');
     await vi.waitFor(() => expect(find).toHaveBeenCalledTimes(2));
 
     answers.get('second')?.(sampleCandidateRepository('second/two', { ago: 60_000, open: 1 }));
-    await expect.element(settingsRow('second/two')).toBeInTheDocument();
+    await expect.element(pickerRow('second/two')).toBeInTheDocument();
 
     answers.get('first')?.(sampleCandidateRepository('first/one', { ago: 60_000, open: 1 }));
     await sleep(50);
-    await expect.element(settingsRow('second/two')).toBeInTheDocument();
-    await expect.element(settingsRow('first/one')).not.toBeInTheDocument();
+    await expect.element(pickerRow('second/two')).toBeInTheDocument();
+    await expect.element(pickerRow('first/one')).not.toBeInTheDocument();
 });
 
 test('not found: the line says nothing matches', async () => {
-    await Settings.run({ args: { ...Settings.args, initialSearch: 'nobody/nothing' } });
+    await Picker.run({ args: { ...Picker.args, filter: 'nobody/nothing' } });
 
     await expect.element(page.getByText('Nothing you can see matches “nobody/nothing”.')).toBeInTheDocument();
 });

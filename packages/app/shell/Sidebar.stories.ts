@@ -10,6 +10,7 @@ import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import Sidebar from './Sidebar.vue';
 import type { SidebarTrackedEntry, SidebarTrackedStatus } from './Sidebar.vue';
+import type { SidebarWorkflowMarker } from './SidebarTypes.js';
 
 /** As tall as the window and as wide as the panel it has in the app. */
 const asInTheApp: Decorator = (story, { args }) => {
@@ -164,6 +165,60 @@ export const CollapsedManyProjects: Story = {
 /** The rail with nothing tracked: the way to Settings instead of the marks. */
 export const CollapsedNothingTracked: Story = {
     args: { ...NothingTracked.args, collapsed: true },
+};
+
+/** Repositories with their workflows' markers, as in W1. */
+function withMarkers(markers: readonly (SidebarWorkflowMarker | null)[]) {
+    const [first, second, third, fourth] = markers;
+    return {
+        projects: [project('Platform Q4', 'skyline-labs', 1, { kind: 'count', count: 128 })],
+        repositories: [
+            { ...repository('kedrzu/githq', { kind: 'count', count: 18 }), workflowMarker: first },
+            { ...repository('kedrzu/skills', { kind: 'count', count: 7 }), workflowMarker: second },
+            { ...repository('skyline-labs/portal', { kind: 'count', count: 142 }, true), workflowMarker: third },
+            { ...repository('skyline-labs/api', { kind: 'count', count: 96 }, true), workflowMarker: fourth },
+        ],
+    };
+}
+
+/** W1, a new break: "Broken workflows" with a red dot and a red count; markers on the repositories broken. */
+export const BrokenWorkflowsNew: Story = {
+    args: { brokenWorkflows: { count: '3', tone: 'new' }, tracked: withMarkers(['settled', null, 'new', 'settled']) },
+};
+
+/** W1, settled: every break older than a day — a quiet dot, the count back to grey. */
+export const BrokenWorkflowsSettled: Story = {
+    args: {
+        brokenWorkflows: { count: '2', tone: 'settled' },
+        tracked: withMarkers(['settled', 'settled', null, null]),
+    },
+};
+
+/** W1, partly known: 1 broken so far, two repositories still being read — hollow rings on those. */
+export const BrokenWorkflowsPartlyKnown: Story = {
+    args: {
+        brokenWorkflows: { count: '1+', tone: 'settled' },
+        tracked: withMarkers([null, 'settled', 'unread', 'unread']),
+    },
+};
+
+/** W1, not known yet: nothing known broken, so no entry; hollow rings on the repositories being read. */
+export const WorkflowsNotKnownYet: Story = {
+    args: { brokenWorkflows: null, tracked: withMarkers(['unread', 'unread', 'unread', 'unread']) },
+};
+
+/** W2b: the broken workflows' screen open with nothing broken — the entry shows, with `0`. */
+export const BrokenWorkflowsScreenOpen: Story = {
+    args: { brokenWorkflows: { count: '0', tone: 'none' } },
+    decorators: [onPage('/dashboard/workflows')],
+};
+
+/** The rail with a new break: a filled red badge. */
+export const CollapsedBrokenWorkflowsNew: Story = { args: { ...BrokenWorkflowsNew.args, collapsed: true } };
+
+/** The rail with older breaks only: an outlined badge. */
+export const CollapsedBrokenWorkflowsSettled: Story = {
+    args: { ...BrokenWorkflowsPartlyKnown.args, collapsed: true },
 };
 
 /** A decorator opening the story at an address. */

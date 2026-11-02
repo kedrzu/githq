@@ -12,12 +12,9 @@ test('untracking a repository drops its items that nothing else keeps: those in 
     github,
 }) => {
     const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
-    await page.goto('/settings');
 
-    const tracking = new TrackingScreenHarness(page);
-    await tracking.untrack(SAMPLE_REPOSITORY);
-    await expect(tracking.pending).toHaveCount(0);
-    await expect(tracking.row(SAMPLE_REPOSITORY)).not.toBeChecked();
+    const menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
+    await menu.getByRole('menuitem', { name: 'Stop tracking' }).click();
     await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveCount(0);
 
     // Assigned to the user, the issue stays in My work.
@@ -32,9 +29,15 @@ test('untracking a repository drops its items that nothing else keeps: those in 
 
     await shell.tracked(SAMPLE_PROJECT).click();
     await expect(new ProjectScreenHarness(page).row('Document the setup')).toBeVisible();
+
+    // The picker offers it again.
+    await page.goto('/settings');
+    const tracking = new TrackingScreenHarness(page);
+    await tracking.openButton.click();
+    await expect(tracking.row(SAMPLE_REPOSITORY)).not.toBeChecked();
 });
 
-test("someone else's repository, named in the search, is tracked with Space and ⌘↵ and untracked the same way; typing does neither", async ({
+test("someone else's repository, named in the search, is picked with Space and tracked with ⌘↵; typing does neither", async ({
     page,
     github,
 }) => {
@@ -50,39 +53,25 @@ test("someone else's repository, named in the search, is tracked with Space and 
     await page.keyboard.press('Backspace');
     await expect(tracking.search).toHaveValue('acme/web');
     await expect(tracking.row('acme/web')).not.toBeChecked();
-    await expect(tracking.pending).toHaveCount(0);
+    await expect(tracking.trackButton).toBeDisabled();
 
     await page.keyboard.press('ArrowDown');
     await expect(tracking.row('acme/web')).toBeFocused();
     await page.keyboard.press('Space');
-    await expect(tracking.pending).toContainText('start tracking acme/web');
+    await expect(tracking.dialog).toContainText('1 picked: acme/web');
     await expect(shell.tracked('acme/web')).toHaveCount(0);
     await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(tracking.pending).toHaveCount(0);
-    await expect(tracking.row('acme/web')).toBeChecked();
+    await expect(tracking.dialog).toBeHidden();
     await expect(shell.tracked('acme/web')).toBeVisible();
 
+    // Tracked, its tick is fixed.
+    await tracking.openButton.click();
+    await tracking.search.fill('acme/web');
+    await expect(tracking.row('acme/web')).toBeChecked();
     await tracking.row('acme/web').focus();
     await page.keyboard.press('Space');
-    await expect(tracking.pending).toContainText('stop tracking acme/web');
-    await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(tracking.pending).toHaveCount(0);
-    await expect(tracking.row('acme/web')).not.toBeChecked();
-    await expect(shell.tracked('acme/web')).toHaveCount(0);
-});
-
-test('discarding what was staged untracks nothing', async ({ page, github }) => {
-    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
-    await page.goto('/settings');
-
-    const tracking = new TrackingScreenHarness(page);
-    await tracking.row(SAMPLE_REPOSITORY).uncheck();
-    await expect(tracking.pending).toContainText(`stop tracking ${SAMPLE_REPOSITORY}`);
-    await tracking.discard();
-
-    await expect(tracking.pending).toHaveCount(0);
-    await expect(tracking.row(SAMPLE_REPOSITORY)).toBeChecked();
-    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeVisible();
+    await expect(tracking.row('acme/web')).toBeChecked();
+    await expect(tracking.trackButton).toBeDisabled();
 });
 
 test('an owner picked on the left narrows to what the owner has, and nothing to offer says so only for a search', async ({
@@ -93,10 +82,10 @@ test('an owner picked on the left narrows to what the owner has, and nothing to 
     await page.goto('/settings?q=nope');
 
     const tracking = new TrackingScreenHarness(page);
-    await expect(tracking.root.getByText('Nothing you can see matches “nope”.')).toBeVisible();
+    await expect(tracking.dialog.getByText('Nothing you can see matches “nope”.')).toBeVisible();
 
     await tracking.search.fill('');
-    await expect(tracking.root.getByText(/^Nothing you can see matches/u)).toHaveCount(0);
+    await expect(tracking.dialog.getByText(/^Nothing you can see matches/u)).toHaveCount(0);
     const owner = SAMPLE_REPOSITORY.split('/')[0] ?? '';
     await tracking.owner(owner).click();
     await expect(tracking.owner(owner)).toBeChecked();

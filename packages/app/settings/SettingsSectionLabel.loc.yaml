@@ -1,5 +1,7 @@
-tracking:
-  en: What to track
+repositories:
+  en: Repositories
+projects:
+  en: Projects
 sync:
   en: Sync settings
 account:

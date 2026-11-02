@@ -1,0 +1,6 @@
+public:
+  en: public
+private:
+  en: private
+open:
+  en: '{count} open'

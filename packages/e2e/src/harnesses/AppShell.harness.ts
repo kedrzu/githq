@@ -52,6 +52,27 @@ export class AppShellHarness {
         return this.tracked(name).locator('span').last();
     }
 
+    /**
+     * The sidebar's "Broken workflows" (actions W1), shown only while a workflow is known broken or its screen is
+     * open — on the rail too, named with its count there.
+     */
+    get brokenWorkflows(): Locator {
+        return this.sidebar.getByRole('link', { name: /^Broken workflows/u });
+    }
+
+    /** What "Broken workflows" says: the total, `1+` while some repository is not read yet. */
+    get brokenWorkflowsCount(): Locator {
+        return this.brokenWorkflows.locator('span').last();
+    }
+
+    /**
+     * The marker of its workflows on a tracked repository's icon (actions W1): its `data-marker` says which — `new`,
+     * `settled` or `unread`.
+     */
+    workflowMarker(name: string): Locator {
+        return this.tracked(name).getByTestId('workflow-marker');
+    }
+
     /** "Collapse sidebar", on the expanded sidebar only. */
     get collapseButton(): Locator {
         return this.sidebar.getByRole('button', { name: 'Collapse sidebar' });

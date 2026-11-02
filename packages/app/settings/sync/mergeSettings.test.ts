@@ -98,6 +98,20 @@ test('a write whose answer was lost merges to no change', () => {
     expect(mergeSettings({ local: written, remote: written, base })).toEqual(written);
 });
 
+test('fields this build does not know merge key by key like the known ones, and one removed on a side stays removed', () => {
+    const base = { ...documentOf([{ ...WEB, workflows: { refs: ['v*'] }, color: 'red' }], []), views: [] };
+    const local = {
+        ...documentOf([{ ...WEB, workflows: { refs: ['v*', 'release/*'] }, color: 'red' }], []),
+        views: [],
+    };
+    const remote = { ...documentOf([{ ...WEB, workflows: { refs: ['v*'] } }], []), views: ['mine'] };
+
+    expect(mergeSettings({ local, remote, base })).toEqual({
+        ...documentOf([{ ...WEB, workflows: { refs: ['v*', 'release/*'] } }], []),
+        views: ['mine'],
+    });
+});
+
 function documentOf(repositories: SettingsRepository[], projects: SettingsProject[]): SettingsDocument {
     return { version: 1, repositories, projects };
 }

@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -30,9 +30,10 @@ import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/se
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
+import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
-import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import * as l from './AppCommands.loc.js';
 import CommandMenu from './CommandMenu.vue';
@@ -46,7 +47,7 @@ const t = useTranslate();
 const registry = useService(CommandRegistry);
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
-const tracking = useService(TrackingStore);
+const pendingUntracks = useService(PendingUntracks);
 const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
@@ -70,7 +71,7 @@ const repository = computed(() => {
 
 const navigationData = computed((): NavigationData => ({
   places: getPlaces(),
-  trackedRepositories: tracking.repositories.map(tracked => tracked.nameWithOwner),
+  trackedRepositories: pendingUntracks.repositories.map(tracked => tracked.nameWithOwner),
   items: items.all,
 }));
 const enabledCommands = computed(() => registry.commands.filter(command => registry.isEnabled(command)));
@@ -182,8 +183,15 @@ function getPlaces(): NavigationPlace[] {
       detail: t(l.myWork),
       path: getMyWorkGroupPath(group),
     })),
+    {
+      id: 'workflows',
+      group: 'goTo',
+      kind: 'workflows',
+      title: t(l.brokenWorkflows),
+      path: BROKEN_WORKFLOWS_PATH,
+    },
   ];
-  for (const project of tracking.projects) {
+  for (const project of pendingUntracks.projects) {
     places.push({
       id: `project:${project.id}`,
       group: 'projects',
@@ -205,7 +213,7 @@ function getPlaces(): NavigationPlace[] {
     }
   }
 
-  for (const tracked of tracking.repositories) {
+  for (const tracked of pendingUntracks.repositories) {
     places.push({
       id: `repository:${tracked.nameWithOwner}`,
       group: 'repositories',

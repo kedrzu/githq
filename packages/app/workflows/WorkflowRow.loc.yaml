@@ -1,0 +1,46 @@
+byGitHub:
+  en: by GitHub
+passing:
+  en: Passing
+noVerdictYet:
+  en: No verdict yet
+disabled:
+  en: Disabled on GitHub
+broken:
+  en: Broken
+brokenFor:
+  en: Broken for {age}
+brokenForOrMore:
+  en: Broken for {age}+
+brokenForDays:
+  plural: count
+  en:
+    one: Broken for {count} day
+    many: Broken for {count} days
+brokenForDaysOrMore:
+  plural: count
+  en:
+    one: Broken for {count}+ day
+    many: Broken for {count}+ days
+brokenForWeeks:
+  plural: count
+  en:
+    one: Broken for {count} week
+    many: Broken for {count} weeks
+brokenForWeeksOrMore:
+  plural: count
+  en:
+    one: Broken for {count}+ week
+    many: Broken for {count}+ weeks
+withRunning:
+  en: '{status} · #{number} running {age}'
+moreRefs:
+  en: '+{count}'
+failedWhen:
+  en: failed {when}
+passedWhen:
+  en: passed {when}
+lastRanWhen:
+  en: last ran {when}
+ago:
+  en: '{age} ago'

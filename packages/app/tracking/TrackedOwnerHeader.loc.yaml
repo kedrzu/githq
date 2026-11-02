@@ -1,0 +1,14 @@
+ownRepositories:
+  en: your repositories
+ownProjects:
+  en: your projects
+organization:
+  en: organisation
+notMember:
+  en: not a member
+tracked:
+  en: '{tracked} tracked'
+trackedOf:
+  en: '{tracked} of {total} tracked'
+trackMore:
+  en: Track more

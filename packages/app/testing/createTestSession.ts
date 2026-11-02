@@ -32,6 +32,8 @@ export interface TestRestAnswer {
     /** JSON; none for a 304. */
     readonly body?: unknown;
     readonly etag?: string;
+    /** The `Link` header, which points at the next page of a list. */
+    readonly link?: string;
 }
 
 /** The parameters of {@link createTestSession}. */
@@ -210,6 +212,10 @@ export function createTestSession(params: CreateTestSessionParams) {
 
         if (answer.etag !== undefined) {
             limits.set('etag', answer.etag);
+        }
+
+        if (answer.link !== undefined) {
+            limits.set('link', answer.link);
         }
 
         return answer.status === 304

@@ -17,3 +17,9 @@
 
 /_nuxt/*.woff
   Cache-Control: public, max-age=31536000, immutable
+
+# The landing page's screenshots, resized at build time (Nuxt Image). Named by the source and the size, not by
+# content, so a day rather than for good: a screenshot replaced under the same name shows up by the next day.
+
+/_ipx/*
+  Cache-Control: public, max-age=86400

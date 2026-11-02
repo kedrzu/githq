@@ -1,4 +1,4 @@
-<!-- The Settings screen (D15, G8, T4): its title and a tab for each section, with how many repositories and projects are tracked on What to track and an amber dot on Sync settings while syncing stopped (settings-sync T7), and `1` to `3` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
+<!-- The Settings screen (D15, G8, T4): its title and a tab for each section, with how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and `1` to `4` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -14,14 +14,17 @@ import type { SettingsSection } from './settingsRoutes.js';
 import * as l from './SettingsView.loc.js';
 
 const SECTION_KEYS: Readonly<Record<SettingsSection, string>> = {
-  tracking: '1',
-  sync: '2',
-  account: '3',
+  repositories: '1',
+  projects: '2',
+  sync: '3',
+  account: '4',
 };
 
 const props = defineProps<{
-  /** How many repositories and projects are tracked, together: the count on What to track. */
-  tracked: number;
+  /** How many repositories are tracked: the count on Repositories. */
+  trackedRepositories: number;
+  /** How many projects are tracked: the count on Projects. */
+  trackedProjects: number;
   /** Syncing the settings stopped (settings-sync T7): the Sync settings tab carries an amber dot until it is fixed. */
   savingStopped?: boolean;
 }>();
@@ -30,12 +33,17 @@ const section = defineModel<SettingsSection>('section', { required: true });
 
 const t = useTranslate();
 
+const counts = computed((): Partial<Record<SettingsSection, number>> => ({
+  repositories: props.trackedRepositories,
+  projects: props.trackedProjects,
+}));
+
 const options = computed((): SegmentedTabsOption<SettingsSection>[] =>
   SETTINGS_SECTIONS.map(candidate => ({
     value: candidate,
     label: t(sectionLabels[candidate]),
     keyshortcuts: SECTION_KEYS[candidate],
-    count: candidate === 'tracking' ? props.tracked : undefined,
+    count: counts.value[candidate],
     attention: candidate === 'sync' && props.savingStopped ? t(l.savingStopped) : undefined,
   })),
 );

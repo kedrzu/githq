@@ -12,9 +12,9 @@ export type MyWorkMembership = Readonly<Partial<Record<MyWorkGroup, ReadonlySet<
 
 /**
  * A sync loop: the "my work" searches, the re-read of open pull requests' status, the polls of tracked
- * repositories and projects, and their first download.
+ * repositories and projects, their first download, and the polls of the tracked repositories' workflows.
  */
-export type SyncLoop = 'myWork' | 'pullRequestStatuses' | 'repositories' | 'projects' | 'download';
+export type SyncLoop = 'myWork' | 'pullRequestStatuses' | 'repositories' | 'projects' | 'download' | 'workflows';
 
 /** Every sync loop. */
 export const SYNC_LOOPS: readonly SyncLoop[] = [
@@ -23,6 +23,7 @@ export const SYNC_LOOPS: readonly SyncLoop[] = [
     'repositories',
     'projects',
     'download',
+    'workflows',
 ];
 
 /** How a sync loop last went — what the freshness of a screen is told from (D15). Times are epoch ms. */

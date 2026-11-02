@@ -139,17 +139,26 @@ Everything stays visible in the repository's workflow list.** (2026-11-01, owner
 and for turning off counters; "counters only" as the design agent's reading, accepted when closing the design)
 
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
-wrong pattern only silences a counter, it cannot hide a failure from someone looking for it.
+wrong pattern only silences a counter, it cannot hide a failure from someone looking for it. Asked again on
+2026-11-02 whether failures on pull request branches should also disappear from the Workflows tab, the owner
+kept "counters only".
 
 **Default: the repository's default branch only, without runs started by a pull request. Anything else is added
 in the repository's settings.** (2026-11-01, owner)
 
+**The default branch is whatever GitHub reports for the repository, never a stored name, so renaming `master` to
+`main` changes nothing in githq. It can be switched off; with it off and no patterns, the repository lights
+nothing, and its workflows are still listed in the tab.** (2026-11-02, owner)
+
+> **Checked 2026-11-02:** githq does not read a repository's default branch yet; `defaultBranchRef` appears only in
+> `packages/github/src/schema.graphql`, in no operation.
+
 Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
 repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
 
-**Patterns live in a settings store the app treats as a black box: synchronised or local, per repository.**
-(2026-11-01, owner) That store is being designed separately (branch `design/settings-sync-gist`); this design only
-reads and writes settings through it and depends on nothing else about it.
+**Patterns live in the user's settings, synchronised through GitHub when saving is on and local otherwise, the same
+way for every repository.** (2026-11-01, owner; "no per-repository choice" is the design agent's reading, 2026-11-02, not contradicted) Their place in
+the settings file is [D14](#d14).
 
 **Rejected.**
 
@@ -163,6 +172,10 @@ reads and writes settings through it and depends on nothing else about it.
 **Failing workflows are reached three ways: a Workflows tab in the repository view at `/owner/name/actions`, a
 red marker on the repository's sidebar row, and one cross-repository entry in the sidebar with a total.**
 (2026-11-01, owner)
+
+**The cross-repository entry is contextual: it is in the sidebar only while at least one workflow is known broken, and
+while its screen is open. The screen itself stays reachable from the command menu.** (2026-11-02, owner) The sidebar is
+meant to hold such contextual links and shortcuts, shown when they have something to say.
 
 **Why.** Per-repository views answer "what is in this repository"; the owner's problem is not knowing which
 repository. With many tracked repositories a red row can sit below the fold, and the collapsed rail shows no
@@ -234,3 +247,50 @@ only wait on this screen.
 - Keeping about 200 lines before the error marker: the key information is not always there.
 - A shared queue with priorities for all sync work: with no background log reading, nothing competes for it here.
   Reopen when two kinds of work compete for one bucket.
+
+## D13
+
+**A ref pattern uses GitHub Actions' own filter syntax and is matched against the ref's name, branch or tag alike,
+in one list: `*` matches anything except `/`, `**` matches anything.** (2026-11-02, owner, on the design agent's
+proposal)
+
+**Why.** People already write these patterns in their workflow files, and githq stays faithful to GitHub. So
+`release/*` matches `release/1.2` but not `release/1.2/hotfix`. One list is enough: `v*` matching both the tag
+`v1.0` and a branch `v2-experiment` is shown by the preview of what a pattern matches, from runs githq already
+knows.
+
+> **Checked 2026-11-02:** GitHub's filter pattern cheat sheet: `*` "Matches zero or more characters, but does not
+> match the `/` character."; `**` "Matches zero or more of any character." —
+> [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+> GitHub itself keeps branch and tag filters apart (`branches`, `tags`).
+
+**Rejected.**
+
+- Separate lists for branches and tags, as GitHub's workflow files have them: an extra choice on every pattern
+  for a collision the preview already makes visible.
+
+## D14
+
+**A repository's ref patterns are stored in its entry of the settings file as an optional `workflows` object:
+`defaultBranch`, whether the default branch counts, and `refs`, the patterns in the user's order. An entry without
+it means the default, `{ "defaultBranch": true, "refs": [] }`, and nothing is written until the user changes it. The
+object is one value when two devices change it: whichever side wins takes all of it.** (2026-11-02, owner for the
+optional field and its default, design agent for the shape, which the owner left as proposed)
+
+```json
+{ "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true,
+  "workflows": { "defaultBranch": true, "refs": ["v*", "release/*"] } }
+```
+
+**Why.** The default branch as a flag, not a special entry in `refs`, because a branch can be named anything, so no
+string is safe to reserve. An absent object, not a written copy of the default, so repositories nobody configured
+follow a default changed later. With saving to GitHub off, the same shape is kept locally: the settings store
+decides where, not this design ([D5](#d5)). How the file takes a new field, and what an older build does with it:
+[settings-sync D13](../settings-sync/DECISIONS.md#d13).
+
+**Rejected.**
+
+- A reserved entry such as `"@default"` in `refs`: a branch may carry that name.
+- Writing the default into every entry: entries nobody configured would keep an old default forever.
+- Merging two devices' pattern lists: no case for it, and a pattern deleted on one side would come back.
+- Raising the file's `version` for this field: the owner wants new settings to be optional fields instead.

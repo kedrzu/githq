@@ -24,6 +24,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
+import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
 import type { Freshness } from './Freshness.js';
 import type { SyncNotice } from './SyncEngine.js';
@@ -764,6 +765,11 @@ async function setup(github: FakeGitHub, login: string) {
         saveProject: async () => {},
         saveProjectItems: async () => {},
         deleteProject: async () => {},
+    });
+    container.set(WorkflowPersistence, {
+        loadWorkflows: () => Promise.resolve([]),
+        saveWorkflows: async () => {},
+        deleteWorkflows: async () => {},
     });
 
     const auth = container.resolve(AuthStore);

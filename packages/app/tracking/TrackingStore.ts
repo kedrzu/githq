@@ -211,9 +211,9 @@ export const TrackingStore = defineService({
         /**
          * The user's choice on the tracking screen (G2, G8): exactly these tracked — the ones tracked before keep
          * their place and their copy, one tracked earlier returns to its old place, a new one comes after the others
-         * in the order given, and the ones left out are untracked. Given as a change of what is tracked (Settings'
-         * staged ticks), it is made of what the slot the tabs share holds now — another tab's change this one has not
-         * heard of yet included.
+         * in the order given, and the ones left out are untracked. Given as a change of what is tracked (the pickers'),
+         * it is made of what the slot the tabs share holds now — another tab's change this one has not heard of yet
+         * included.
          */
         function choose(choice: TrackingChoice | ((tracking: Tracking) => TrackingChoice)) {
             write(kept => ({
@@ -750,7 +750,23 @@ export const TrackingStore = defineService({
             // A slot this build does not understand — a newer githq's — is left as it is: nothing is in memory, and
             // only a change the user makes here writes over it.
             savingRef.value = stored?.saving ?? SETTINGS_SAVING_OFF;
-            syncRef.value = new Map((persisted?.syncStates ?? []).map(state => [getTrackedKey(state), state]));
+            const syncStates = persisted?.syncStates ?? [];
+            const understood =
+                stored !== null || browser.localStorage.getItem(KEY_PREFIX + current.account.login) === null;
+            const kept = understood ? syncStates.filter(state => isTracked(state)) : syncStates;
+            syncRef.value = new Map(kept.map(state => [getTrackedKey(state), state]));
+            // The sync state of something no longer tracked — its untrack's delete was cut off by the page closing —
+            // would keep tracking it again from downloading it.
+            for (const state of syncStates) {
+                if (!kept.includes(state)) {
+                    persistence.deleteSyncState(current.account.login, state).catch((error: unknown) => {
+                        if (isCurrent(current)) {
+                            logger.warn('Could not delete the sync state of an untracked copy', { error });
+                        }
+                    });
+                }
+            }
+
             loadedRef.value = true;
             current.inbox.open();
         }
@@ -869,9 +885,15 @@ function applyEntries<T extends SettingsRepository | SettingsProject>(
 ): T[] {
     const chosenByKey = new Map(chosen.map(entry => [keyOf(entry), entry]));
     const known = new Set(entries.map(keyOf));
-    const next = entries.map(
-        entry => chosenByKey.get(keyOf(entry)) ?? (entry.tracking ? { ...entry, tracking: false } : entry),
-    );
+    // An entry keeps the fields this build does not know (settings-sync D13).
+    const next = entries.map(entry => {
+        const chosenEntry = chosenByKey.get(keyOf(entry));
+        if (chosenEntry) {
+            return { ...entry, ...chosenEntry };
+        }
+
+        return entry.tracking ? { ...entry, tracking: false } : entry;
+    });
     for (const entry of chosen) {
         if (!known.has(keyOf(entry))) {
             known.add(keyOf(entry));

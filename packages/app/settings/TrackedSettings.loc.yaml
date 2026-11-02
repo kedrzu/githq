@@ -1,0 +1,8 @@
+tracked:
+  en: tracked
+privateTracked:
+  en: private · tracked
+publicTracked:
+  en: public · tracked
+ownerTracked:
+  en: '{owner} · tracked'

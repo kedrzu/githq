@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ArrowUpRight } from 'lucide-vue-next';
+import { ArrowUpRight, EyeOff } from 'lucide-vue-next';
 import { defineComponent, onScopeDispose, ref } from 'vue';
 
 import { StoryPage } from '@/.storybook/StoryLayout.jsx';
@@ -99,5 +99,15 @@ export const MergeConfirmed: Story = {
         components: { Toast, Toaster },
         setup: () => ({ args }),
         template: `<Toaster><Toast v-bind="args" :duration="Infinity" /></Toaster>`,
+    }),
+};
+
+/** T20: nothing went wrong: what the user just did, with the way back. */
+export const Neutral: Story = {
+    args: { title: 'Stopped tracking fitloop/api', tone: 'neutral', icon: EyeOff },
+    render: args => ({
+        components: { Button, Toast, Toaster },
+        setup: () => ({ args }),
+        template: `<Toaster><Toast v-bind="args" :duration="Infinity">Its copy in this browser goes when this closes.<template #actions><Button variant="secondary" size="sm" kbd="Mod+Z">Undo</Button></template></Toast></Toaster>`,
     }),
 };

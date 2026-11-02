@@ -1,0 +1,67 @@
+title:
+  en: Broken workflows
+brokenIn:
+  plural: repositories
+  en:
+    one: '{broken} in {repositories} repository'
+    many: '{broken} in {repositories} repositories'
+noneIn:
+  plural: count
+  en:
+    one: none in {count} repository
+    many: none in {count} repositories
+soFarReading:
+  plural: count
+  en:
+    one: '{broken} so far · reading {count} repository'
+    many: '{broken} so far · reading {count} repositories'
+reading:
+  plural: count
+  en:
+    one: reading {count} repository
+    many: reading {count} repositories
+openFailedRun:
+  en: Open failed run
+next:
+  en: Next workflow
+previous:
+  en: Previous workflow
+fresh:
+  en: New
+freshNote:
+  en: broke in the last 24 hours
+ongoing:
+  en: Ongoing
+notKnownYet:
+  en: Not known yet
+cantTell:
+  en: Can't tell
+cantTellNote:
+  en: not in the total
+readingRow:
+  en: Reading…
+notReadYet:
+  en: not read yet
+actionsOff:
+  en: Actions turned off
+actionsRefused:
+  en: GitHub refused
+actionsOffStatus:
+  en: GitHub says Actions is disabled for this repository
+actionsRefusedStatus:
+  en: GitHub refused to show this repository's workflows ({status})
+checkedAgo:
+  en: checked {age} ago
+allGreenTitle:
+  en: All green, exit code 0
+allGreenText:
+  plural: count
+  en:
+    one: Every workflow that counts passes in the tracked repository. Nothing to fix, so go break something new. Failures on refs that don't count wait in the repository's Workflows tab.
+    many: Every workflow that counts passes in all {count} tracked repositories. Nothing to fix, so go break something new. Failures on refs that don't count wait in each repository's Workflows tab.
+allGreenDetail:
+  en: '{read}/{tracked} repositories · 0 broken · read {age} ago'
+nothingTrackedTitle:
+  en: No repositories tracked
+nothingTrackedText:
+  en: Track a repository in Settings and its broken workflows show up here.

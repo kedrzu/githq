@@ -11,6 +11,14 @@ import type { Item } from '@/store/ItemTypes.js';
 import { TrackingStore } from './TrackingStore.js';
 import type { TrackedTarget } from './TrackingTypes.js';
 
+/** What a tracked project holds in the local copy (T17's "from … · 34 items"). */
+export interface ProjectContents {
+    /** Its items, archived ones left out. */
+    readonly itemCount: number;
+    /** The repositories its issues and pull requests come from, `owner/name`; drafts come from none. */
+    readonly repositories: readonly string[];
+}
+
 /**
  * Which items the local copy keeps, and what each tracked repository and project holds: an item stays while
  * "my work" has it, its repository is tracked, or a tracked project holds it (D4) — and a pull request while
@@ -71,7 +79,7 @@ export const TrackedItems = defineService({
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, keepsForItself, evict, getOpenCount, isPrivate, getActiveAt };
+        return { keeps, keepsForItself, evict, getOpenCount, getProjectContents, isPrivate, getActiveAt };
 
         /**
          * Whether the local copy keeps the item: "my work" has it, a tracked repository or project, or it is a pull
@@ -151,6 +159,25 @@ export const TrackedItems = defineService({
             }
 
             return count;
+        }
+
+        /** A tracked project's items and where they come from, as the local copy holds them; reactive. */
+        function getProjectContents(projectId: string): ProjectContents {
+            let itemCount = 0;
+            const repositories = new Set<string>();
+            for (const place of projects.getItems(projectId)) {
+                if (place.isArchived) {
+                    continue;
+                }
+
+                itemCount++;
+                const content = place.contentId === null ? null : items.get(place.contentId);
+                if (content) {
+                    repositories.add(content.repository.nameWithOwner);
+                }
+            }
+
+            return { itemCount, repositories: [...repositories] };
         }
 
         /** Whether the repository is private, as its kept items tell; `null` while none are kept. Reactive. */

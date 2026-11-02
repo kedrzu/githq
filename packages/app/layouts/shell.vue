@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once); the toasts of failed edits and of merges the user moved on from (merging D15), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
@@ -38,11 +38,16 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
+import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
+import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
+import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
+import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
 defineSlots<{
   default(): unknown;
@@ -56,6 +61,7 @@ const details = useService(ItemDetailStore);
 const resolver = useService(ItemResolver);
 const queue = useService(EditQueue);
 const tracking = useService(TrackingStore);
+const pendingUntracks = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
 const editTexts = useEditTexts();
@@ -63,6 +69,7 @@ const registry = useService(CommandRegistry);
 const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
 const settingsSync = useService(SettingsSync);
+const workflows = useService(WorkflowStore);
 const route = useRoute();
 const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
@@ -92,9 +99,9 @@ const myWorkCounts = computed(() =>
       }).counts,
 );
 
-// Each tracked project and repository with its open items once they have arrived, else how far its download is.
+// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, else how far its download is.
 const tracked = computed((): SidebarTracked => ({
-  projects: tracking.projects.map(project => ({
+  projects: pendingUntracks.projects.map(project => ({
     key: `project:${project.id}`,
     label: project.title,
     to: getProjectPath(project),
@@ -104,7 +111,7 @@ const tracked = computed((): SidebarTracked => ({
       haveOpenItemsArrived(tracking.getSyncState({ kind: 'project', id: project.id })),
     ),
   })),
-  repositories: tracking.repositories.map(repository => {
+  repositories: pendingUntracks.repositories.map(repository => {
     const target: TrackedTarget = { kind: 'repository', nameWithOwner: repository.nameWithOwner };
     return {
       key: `repository:${repository.nameWithOwner}`,
@@ -113,13 +120,21 @@ const tracked = computed((): SidebarTracked => ({
       target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
       isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
+      workflowMarker: getSidebarWorkflowMarker(workflows.getState(repository.nameWithOwner)),
     };
   }),
 }));
 
+// The entry "Broken workflows" (actions W1): only while something is known broken, or on its own screen.
+const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
+
 // How fresh the screen is (D15): a tracked repository's or project's own poll — a saved view GitHub answers says
-// so (K6); anything else shows what "my work" holds.
+// so (K6); the broken workflows their own poll; anything else shows what "my work" holds.
 const screenFreshness = computed((): Freshness => {
+  if (route.name === 'workflows') {
+    return sync.getWorkflowsFreshness();
+  }
+
   const { owner, name, number } = route.params;
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {
     const nameWithOwner = `${owner}/${name}`;
@@ -245,6 +260,7 @@ function showLastFailure() {
     :edits="opened?.onPage ? (itemEdits ?? listEdits) : listEdits"
     :item-edits="opened?.onPage ? null : itemEdits"
     :settings-sync-stopped="settingsSync.state.state === 'stopped'"
+    :broken-workflows="brokenWorkflows"
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"
@@ -279,6 +295,7 @@ function showLastFailure() {
     <EditToasts />
     <MergeToasts />
     <SyncStoppedToast :login="auth.viewer.login" />
+    <UntrackToast />
   </Toaster>
   <AppCommands v-if="auth.viewer" />
 </template>

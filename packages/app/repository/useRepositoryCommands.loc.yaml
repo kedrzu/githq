@@ -10,5 +10,7 @@ openOnGitHub:
   en: Open on GitHub
 copyLink:
   en: Copy link
+settings:
+  en: Settings
 untrack:
   en: Stop tracking

@@ -1,6 +1,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { ProjectField, ProjectFieldValue, ProjectIteration } from '@/store/ItemDetailTypes.js';
+import { escapeRegExp } from '@/utils/escapeRegExp.js';
 
 import type { ProjectEntry } from '../ProjectTypes.js';
 import type { ProjectFilterOperator, ProjectFilterTerm, ProjectFilterValue } from './parseProjectFilter.js';
@@ -369,10 +370,7 @@ function textMatcher(
         return build(text => same(text, value.value));
     }
 
-    const pattern = value.value
-        .split('*')
-        .map(part => part.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-        .join('.*');
+    const pattern = value.value.split('*').map(escapeRegExp).join('.*');
     const regex = new RegExp(`^${pattern}$`, 'iu');
     return build(text => regex.test(text));
 }

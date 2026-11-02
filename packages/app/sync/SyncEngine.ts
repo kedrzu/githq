@@ -28,6 +28,8 @@ import { toItem, toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
+import { WorkflowStore } from '@/workflows/WorkflowStore.js';
+import { WorkflowSync } from '@/workflows/WorkflowSync.js';
 
 import type { Freshness } from './Freshness.js';
 import { FRESH_SLACK_MS, getFreshness } from './Freshness.js';
@@ -61,6 +63,8 @@ const INTERVALS: Readonly<Record<SyncLoop, { readonly visible: number; readonly 
     projects: { visible: 60_000, hidden: 300_000 },
     // A download runs until it is done; this only looks again for work it was not told about.
     download: { visible: 60_000, hidden: 300_000 },
+    // An active repository's runs change with every run's status; failures are what matters, not seconds (actions D2).
+    workflows: { visible: 180_000, hidden: 600_000 },
 };
 
 /** The "my work" searches (D11), one per group. */
@@ -105,13 +109,14 @@ export interface SyncLoopStatus {
 
 const IDLE: SyncLoopStatus = { running: false, failing: false, pausedUntil: null, pausedBucket: null };
 /** The loops a surface's freshness is told from. */
-const FRESHNESS_LOOPS: readonly SyncLoop[] = ['myWork', 'repositories', 'projects'];
+const FRESHNESS_LOOPS: readonly SyncLoop[] = ['myWork', 'repositories', 'projects', 'workflows'];
 const IDLE_LOOPS: Readonly<Record<SyncLoop, SyncLoopStatus>> = {
     myWork: IDLE,
     pullRequestStatuses: IDLE,
     repositories: IDLE,
     projects: IDLE,
     download: IDLE,
+    workflows: IDLE,
 };
 /** The buckets each loop draws on: the one that ran out is the one it waits for. */
 const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
@@ -120,11 +125,12 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
     repositories: ['core', 'graphql'],
     projects: ['core', 'graphql'],
     download: ['graphql'],
+    workflows: ['core'],
 };
 
 /**
- * Keeps the signed-in user's local copy (`ItemStore`, `ProjectStore`) in step with GitHub by polling (D4, D7),
- * in five loops:
+ * Keeps the signed-in user's local copy (`ItemStore`, `ProjectStore`, `WorkflowStore`) in step with GitHub by
+ * polling (D4, D7), in six loops:
  *
  * - `myWork`: the four "my work" searches (REST, `search` bucket — no ETag, so no free 304s), then a re-read
  *   of only the items whose `updated_at` moved (`ItemsByIds`), and each group's members;
@@ -133,7 +139,10 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   stacks the copy holds only some pull requests of are read whole (`PullRequestStacks`, stacked PRs D7);
  * - `repositories`, `projects`, `download`: the tracked repositories' and projects' change polls (free 304s)
  *   and their first download ({@link TrackingSync}), which starts once "my work" has arrived and runs again
- *   when the user tracks more.
+ *   when the user tracks more;
+ * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
+ *   every 3 minutes (actions D2), after the first download and once more when one finishes, and at once when a
+ *   screen showing them opens ({@link pollWorkflowsNow}).
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
@@ -161,6 +170,8 @@ export const SyncEngine = defineService({
         projects: ProjectStore,
         trackedItems: TrackedItems,
         trackingSync: TrackingSync,
+        workflows: WorkflowStore,
+        workflowSync: WorkflowSync,
         rateLimits: GitHubRateLimitStore,
         createRest: GitHubRestFactory,
         leadership: SyncLeadership,
@@ -177,6 +188,8 @@ export const SyncEngine = defineService({
         projects,
         trackedItems,
         trackingSync,
+        workflows,
+        workflowSync,
         rateLimits,
         createRest,
         leadership,
@@ -238,7 +251,12 @@ export const SyncEngine = defineService({
         } | null = null;
 
         watch(
-            () => [accounts.current, items.loaded && tracking.loaded && projects.loaded, leadership.isLeader] as const,
+            () =>
+                [
+                    accounts.current,
+                    items.loaded && tracking.loaded && projects.loaded && workflows.loaded,
+                    leadership.isLeader,
+                ] as const,
             ([account, loaded, leader]) => follow(loaded ? account : null, leader),
             { immediate: true },
         );
@@ -277,6 +295,8 @@ export const SyncEngine = defineService({
             },
             getRepositoryFreshness,
             getProjectFreshness,
+            getWorkflowsFreshness,
+            pollWorkflowsNow,
         };
 
         /**
@@ -311,6 +331,23 @@ export const SyncEngine = defineService({
                 state.lastSuccessAt,
                 state.refused ? Math.max(PROJECT_PROBE_INTERVAL_MS, intervalOf('projects')) : intervalOf('projects'),
             );
+        }
+
+        /** How fresh the tracked repositories' workflows are, as a screen showing them tells it; reactive. */
+        function getWorkflowsFreshness(): Freshness {
+            return getLoopFreshness('workflows', items.getSyncState('workflows').lastSuccessAt);
+        }
+
+        /**
+         * Polls the workflows now — a screen showing them opened (actions D2) — unless a poll of them is running. In a
+         * tab that does not sync, the syncing tab is asked to.
+         */
+        function pollWorkflowsNow() {
+            if (session) {
+                void run(session, 'workflows');
+            } else if (followed) {
+                tabs.publish({ kind: 'pollWorkflows' });
+            }
         }
 
         function getLoopFreshness(
@@ -375,6 +412,12 @@ export const SyncEngine = defineService({
                 case 'rateLimit':
                     rateLimits.merge(message.rateLimit);
                     break;
+                case 'pollWorkflows':
+                    if (session) {
+                        void run(session, 'workflows');
+                    }
+
+                    break;
                 default:
                     break;
             }
@@ -396,6 +439,7 @@ export const SyncEngine = defineService({
                     repositories: createLoopRun(),
                     projects: createLoopRun(),
                     download: createLoopRun(),
+                    workflows: createLoopRun(),
                 },
             };
             session = current;
@@ -555,6 +599,9 @@ export const SyncEngine = defineService({
                 case 'projects':
                     await trackingSync.pollProjects(toContext(current));
                     return { incomplete: false };
+                case 'workflows':
+                    await workflowSync.poll(toContext(current));
+                    return { incomplete: false };
                 case 'download': {
                     // "My work" first: it is what the user waits for, and small (G6).
                     if (items.getSyncState('myWork').lastSuccessAt === null) {
@@ -564,8 +611,11 @@ export const SyncEngine = defineService({
                     const downloaded = trackingSync.hasDownloadWork();
                     await trackingSync.download(toContext(current));
                     if (downloaded && !trackingSync.hasDownloadWork()) {
-                        // Polled at once, so what changed during the download is in, and the surfaces read fresh.
-                        void run(current, 'repositories').then(() => run(current, 'projects'));
+                        // Polled at once, so what changed during the download is in, and the surfaces read fresh; a
+                        // repository just tracked has its workflows read too.
+                        void run(current, 'repositories')
+                            .then(() => run(current, 'projects'))
+                            .then(() => run(current, 'workflows'));
                     }
 
                     return { incomplete: false };

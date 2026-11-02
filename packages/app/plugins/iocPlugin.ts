@@ -16,6 +16,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { DetailPrefetch } from '@/sync/DetailPrefetch.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
+import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
 /** Creates the app's IoC container and registers the services every screen relies on. */
 export default defineNuxtPlugin({
@@ -51,6 +52,7 @@ function startServices(container: Container) {
     container.set(RepositoryPersistence, persistence);
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);
+    container.set(WorkflowPersistence, persistence);
     // Started now rather than by the first list: the signed-in user's copy starts loading at once, and it is
     // there to delete when they sign out from a screen that never showed it.
     container.resolve(ItemStore);
