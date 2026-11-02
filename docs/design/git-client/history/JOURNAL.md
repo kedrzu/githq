@@ -35,3 +35,13 @@ Append-only; one line per turn that settled something.
   opens its commit's details (D12), a second clone is refused (D7). Prior forms in history/DECISIONS.md.
   Design closed by the owner.
 - 2026-11-02 — Owner merged the design (#67) and asked for the design agent's prompt: ui/browse-commit-history.md and ui/design-agent-prompt.md. Open in the brief: a Worktrees section in the list.
+- 2026-11-02 — Design agent drew the commit history in `githq.pen`: "App · Commits" (CH1–CH41) and "Desktop ·
+  Commits" (CD1–CD7). Three directions for the repository view's shape, Variant A recommended (D14); proposals
+  D15–D21. Open with the owner: the direction, the variants, and the data questions in the brief's "The screens".
+- 2026-11-02 — Owner kept both the tabs and the column layouts behind a synced setting in Settings · Display, to try
+  both; Work and Code dropped. D14 rewritten as the owner's decision, D22 added; CH7–CH9 and CH21 deleted, CH42 and
+  CH43 drawn.
+- 2026-11-02 — Owner on the graph: a draggable divider instead of a fixed cap (D17); pull request and CI right after the
+  headline, author with name, a faint stripe, failure as red dot and ✕ only (D18). CH13, CH14 deleted; CH44, CH45 drawn.
+- 2026-11-02 — Owner picked CH18: a commit's details open in a panel in the list's place (D16); CH19 deleted.
+- 2026-11-02 — Owner picked CD2: worktrees on their branches, no Worktrees section (D21); CD1 deleted. No variants left open.

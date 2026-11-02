@@ -242,3 +242,144 @@ version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now"
 
 **Why.** Everything here is already fetched for the graph ([D8](#d8), [D9](#d9)); files and diffs are the
 owner's explicit "not yet".
+
+## D14
+
+**The repository view becomes a set of sections, Issues, Pull requests, Commits and Workflows, on `1`–`4`, each with
+its own tools, in two layouts the user chooses between in Settings · Display: tabs beside the repository's name, each
+with its toolbar on the same line (CH1–CH3), or a column of the repository's own beside the sidebar holding its
+sections, its projects and, on Commits, the branch and tag list (CH4–CH6, CH42). In both, All is removed; Issues and
+Pull requests are two lists with their own state, grouping, List or Board and Display; the open count beside the title
+and grouping by kind go too. The choice is saved with the synced settings. Both are built; after trying them the owner
+keeps the switch or one layout.** (2026-11-02, owner: "a very hard decision, both are potentially good, so let's use
+both… a setting in our settings… synced… we'll test which is better and either keep the switch or pick one"; the
+details are the design agent's)
+
+**Why.** Neither shape wins on paper: tabs keep the full width for the list and the graph, the column gives the
+repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
+decides it. The layout is a preference of the user, not of a view, so it travels with the settings
+([settings-sync D4](../settings-sync/DECISIONS.md#d4)). This adds the first synced setting beyond what is tracked, which
+[settings-sync D7](../settings-sync/DECISIONS.md#d7) does not list yet.
+
+**Rejected.**
+- Two sections, Work (issues and pull requests in one list, kind as a switch) and Code (commits, workflows) — keeps All
+  but shares one grouping between issues and pull requests, and puts the branch list behind a key (owner, 2026-11-02;
+  the screens were CH7–CH9 and CH21, deleted).
+- Picking one layout now — owner: test both first.
+
+## D15
+
+**The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it
+folds away and `B` opens it over the graph. The default branch is first, then branches, then tags, each newest
+first, with the pull request and CI of each branch's tip. `B` puts the cursor in its filter, and typing narrows
+both groups.** (2026-11-02, design agent's proposal; CH3, CH15–CH17, CH6)
+
+**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key; on the
+right it leaves the app's sidebar and the graph's left edge alone.
+
+> **Checked 2026-11-02:** GitHub's `RefOrderField` has only `TAG_COMMIT_DATE` (tags only) and `ALPHABETICAL`
+> (`gh api graphql`, `__type(name: "RefOrderField")`). "Newest first" for branches needs each tip's
+> `committedDate` in the refs request of [D9](#d9) and a local sort.
+
+In the column layout the list is the column's lower part on Commits (CH6), and a commit's details open on the right
+of the pane instead of in the list's place (CH42).
+
+**Rejected.**
+- The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
+  screen says where branches stand.
+
+## D16
+
+**A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page.
+`J` and `K` keep moving through the graph with the panel open and it follows; `P` goes to the first parent, `⇧P`
+to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub, `Esc`
+closes and the list comes back.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20,
+CH27–CH29)
+
+**Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
+it, which a modal or a page would hide.
+
+**Rejected.**
+- The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
+
+## D17
+
+**A divider between the graph and the rows can be dragged. By default the graph takes a tenth of the pane's width;
+dragged, it can go from one lane (the default branch alone) to every lane. Lanes that don't fit fold into one thicker
+line at the graph's right edge, and their commits sit on it. The width is a share of the pane, so it scales with the
+window, and is remembered on the device like a panel's width; a double-click on the divider resets it. While dragging,
+a label says how many lanes fit of how many.** (2026-11-02, owner: "I really like the folding, I'd just like more
+control… a split panel that lets us resize the graph… sensible by default, even a percentage of the container… the
+graph collapses depending on the available width"; the default share, the reset and the label are the design agent's;
+CH10, CH11, CH44, CH45)
+
+**Why.** Folding keeps a very wide graph from breaking the layout, and the user decides how much of a busy repository's
+graph is worth the width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+
+**Rejected.**
+- A fixed cap of six lanes — no control over it (owner).
+- Every lane at full width, always — the message moves with every open branch.
+
+## D18
+
+**A row reads: graph, worktree markers (desktop), branches and tags, headline, then right after the headline the
+pull request's state and number and the CI mark; the author (16 px avatar and name) and the age are aligned at the
+right edge. Rows alternate with a very faint stripe. A failing commit is a red dot and a red ✕ after its pull request,
+and its text is never red; running is amber in both places. A merge is a hollow dot with a dimmed headline. Pull request
+and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open, the column layout) the
+headline is cut first and the author's name gives way to the avatar.** (2026-11-02, owner: pull request and checks to
+the right of the headline, "not somewhere far right in a separate column"; the author as avatar and name, the avatar a
+little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
+the narrow-row rule is the design agent's; CH12, CH34)
+
+**Why.** Read with the headline, the pull request and CI belong to it; in a far column they are hard to tie to the
+right commit. The stripe carries the eye from a dot far to the left to its row in a wide graph.
+
+**Rejected.**
+- Pull request and CI in fixed columns at the right edge — read badly, far from the headline (owner).
+- A red headline or a red-tinted row for a failure (owner; the screens were CH13, CH14, deleted).
+- The author as an avatar alone (owner).
+
+## D19
+
+**Commits loaded later on a first open appear between rows already on screen with no tint or motion, and the row
+under the cursor keeps its place; the status bar says branches are filling in.** (2026-11-02, design agent's
+proposal; CH32, CH33)
+
+**Why.** They are not news, only late; marking them would make them read as something that just happened.
+
+## D20
+
+**In an untracked repository, the explanation that it is not tracked moves into Issues and Pull requests and is
+about them only; it also says Commits needs no tracking. The "not tracked" chip stays in the header.**
+(2026-11-02, design agent's proposal; CH37, CH10)
+
+**Why.** [D11](#d11): Commits works in full without tracking, so a repository-wide warning would be wrong on it.
+
+## D21
+
+**Desktop, second step: a worktree shows in the branch and tag list as a row nested under the branch it has checked
+out (its folder's name and its count of uncommitted changes), and in the graph as a marker on its commit; there is no
+Worktrees section. A worktree on a bare commit has no row and is found in the graph only. A worktree's actions are in a
+menu, opened from its row (`.`) or its marker, starting with Reveal in Finder and Copy path. A clone is added from the
+Commits header ("Add a local clone") or the command menu; the two refusals of [D7](#d7) and [D5](#d5) are dialogs naming
+the folder and the way out.** (2026-11-02, owner picked worktrees on their branches, CD2, over a Worktrees section, CD1;
+the nested row, the menu and the dialogs are the design agent's; `githq.pen` "Desktop · Commits", CD2–CD7)
+
+**Why.** The list stays one list of branches and tags, and each worktree sits next to the branch it works on. The marker
+in the graph already says where each agent stands, including the one with no branch. A menu is the place a list of
+actions can grow without crowding the row.
+
+**Rejected.**
+- A Worktrees section opening the list (CD1, deleted) — owner picked CD2.
+- The worktree's name and count as a badge on the branch row — the branch name no longer fits in the list's width.
+
+## D22
+
+**Settings gains a Display section, between Projects and Sync settings (`3`; Sync settings and Account move to `4` and
+`5`). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
+once, and a line under it says the choice is saved with the settings.** (2026-11-02, owner asked for the setting in "a
+tab like General or Display"; the section's name and place are the design agent's; CH43)
+
+**Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
+would collect anything.

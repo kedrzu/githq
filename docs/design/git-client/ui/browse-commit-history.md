@@ -123,3 +123,48 @@ A worktree can have no branch at all, checked out on a bare commit, so it has no
 6. **The keys:** moving through rows, reaching the branch list, jumping to a branch by name, jumping to parents, switching section.
 7. **Second step:** whether worktrees also get a section of their own in the list, which would give a worktree with no branch
    a place. The design agent's earlier suggestion was yes; the owner has not settled it.
+
+## The screens
+
+In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`); the two layouts with Issues and Pull
+requests (CH1, CH2, CH4, CH5) are in **"App · Repository"** (`N1wdc`), and Settings · Display (CH43) in **"App · Settings"**
+(`i3VkT`). The numbers are the frames'.
+Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
+
+|Question|Answer in the frame|
+|-|-|
+|1. The shape of the repository view|Sections on `1`–`4`, All removed, in two layouts chosen in Settings · Display (CH43): tabs, CH1–CH3; a column of the repository's own, CH4–CH6, CH42. Both are built and tried; the Work and Code shape was dropped (D14, D22)|
+|2. Where the branch and tag list lives|Tabs layout: a column right of the graph, always there on a wide window: CH3, CH15–CH17. Column layout: the lower part of the repository's column: CH6 (D15)|
+|3. How a commit's details open|Only in a panel, in the list's place; `J`/`K` keep moving and the panel follows: CH18; a merge: CH20; in the column layout, on the right of the pane: CH42 (D16)|
+|4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|
+|5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI right after it, author and age at the right, a faint stripe; a failure is a red dot and a red ✕: CH12 (D18)|
+|6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
+|7. A Worktrees section in the list|No: a worktree is a row nested under its branch; one on a bare commit is in the graph only: CD2 (D21)|
+
+The repository view: CH1–CH3 and CH4–CH6, the setting CH43. The graph: few branches CH3, many CH10. The list: CH15–CH17. A
+commit's details: CH18, CH20. Desktop second step: CD2, worktree actions CD3, adding a folder CD4, CD5.
+
+States: opened before CH31; first open, the first second CH32, branches filling in CH33; pull request and CI not known yet CH34;
+scrolling past what is loaded CH35; the beginning of the history CH36; an old tag not loaded CH16; untracked CH37 (Issues) and CH10,
+CH17 (Commits); empty CH38; one branch and no pull requests CH39; offline CH40. Failures: failing CI CH12; a branch force-pushed or
+deleted CH41; no tracked repository for a folder CD6; a second clone CD7.
+
+Still open, not settled by the screens:
+
+- **Which layout stays (D14)** is decided by trying both.
+- **Settings sync's D7** lists only what is tracked as synced; the repository layout is the first other synced setting, and that
+  design's decisions should say so.
+- **Data the screens need that [D8](../DECISIONS.md#d8) and [D9](../DECISIONS.md#d9) don't fetch yet:**
+  - the pull request and CI of each branch's tip in the list (CH3): the rows on screen in the list need the same
+    `nodes(ids:)` request as the graph's rows, or a tracked repository's pull requests by head branch;
+  - "newest first" for branches: GitHub orders refs only by name (tags alone by date), so the refs request needs each
+    tip's `committedDate` and a local sort (D15);
+  - the commit's details show CI as the rollup only (CH18); naming the failing checks would need
+    `statusCheckRollup.contexts`, which nothing fetches. The details point to GitHub instead.
+- **A clone of an untracked repository (CD6).** [D5](../DECISIONS.md#d5) matches a folder to a tracked repository only,
+  while [D11](../DECISIONS.md#d11) lets Commits work without tracking. CD6 follows D5 and offers to track; the owner may
+  prefer to add the clone to the untracked repository's Commits.
+- **Workflows in an untracked repository** (the section is drawn in CH10, CH37): the actions design doesn't say whether it
+  works there.
+- **The pull request opened from a commit (CH29)** uses the shared pull request panel unchanged; its content is the
+  component's sample, not #1228's.
