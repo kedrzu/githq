@@ -33,6 +33,7 @@ import type {
     TrackedSyncState,
     TrackedTarget,
 } from '@/tracking/TrackingTypes.js';
+import { isPresent } from '@/utils/isPresent.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { isRateLimitRefusal } from './isRateLimitRefusal.js';
@@ -756,9 +757,4 @@ interface ItemPage {
     readonly pageInfo: { readonly hasNextPage: boolean; readonly endCursor: string | null };
     /** `null` for a node `toItem` could not read. */
     readonly items: readonly (Item | null)[];
-}
-
-/** A `node(id:)` answer that is the project asked for: GitHub answers `{}` for a node of another type, `null` for none. */
-function isPresent<T extends object>(node: T | Record<PropertyKey, never> | null): node is T {
-    return node !== null && Object.keys(node).length > 0;
 }
