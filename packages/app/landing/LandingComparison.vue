@@ -1,4 +1,4 @@
-<!-- The landing page's second section under the hero (githq.pen "LP1 · All your repositories, no separate tracker", Section 2): the "no separate tracker" promise — GitHub's issues and Projects are the tracker —, then githq against github.com and a dedicated tracker — next to the code, instant, keyboard, every repository at once, pull requests and workflows next to the issues, nothing to sync, the price —, a table with githq's column lit. Every mark has its word for screen readers. -->
+<!-- The landing page's second section under the hero (githq.pen "LP1 · All your repositories, no separate tracker", Section 2): the "no separate tracker" promise — GitHub's issues and Projects are the tracker —, then githq against github.com and a dedicated tracker — next to the code, instant, keyboard, every repository at once, pull requests and workflows next to the issues, nothing to sync, the price —, a table with githq's column lit. Every mark has its word for screen readers. The navigation's "Compare" lands here. -->
 <script lang="ts" setup>
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -9,6 +9,7 @@ import Wordmark from '@/components/Wordmark.vue';
 
 import * as l from './LandingComparison.loc.js';
 import LandingSectionTitle from './LandingSectionTitle.vue';
+import { LandingSectionId } from './landingLinks.js';
 import { useReveal } from './useReveal.js';
 
 /** "Partly", with a note under it on how far. */
@@ -46,6 +47,7 @@ const rows: ComparisonRow[] = [
 
 <template>
   <section
+    :id="LandingSectionId.compare"
     ref="section"
     :class="css.landingComparison"
     :aria-labelledby="headingId"

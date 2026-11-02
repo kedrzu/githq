@@ -28,7 +28,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** A first visit on a wide screen: the navigation, the hero, the GitHub concepts, the statement, the features, the details, the comparison, open source, the last call to action and the footer. */
+/** A first visit on a wide screen: the navigation, the hero, one place, the comparison, why now, the GitHub concepts, the features, the details, open source, the last call to action and the footer. */
 export const Landing: Story = { decorators: [wide] };
 
 /** G1: back from GitHub after "Cancel" on its consent screen, the banner above the hero. */

@@ -13,7 +13,7 @@ name:
 public:
   en: Public
 description:
-  en: A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects — the Linear experience, free, with GitHub as the only backend.
+  en: 'All your repositories in one place, no separate tracker: a fast, keyboard-first command center for GitHub Issues, Projects, pull requests and Actions.'
 language:
   en: TypeScript
 stack:
