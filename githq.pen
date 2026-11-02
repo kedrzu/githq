@@ -278122,7 +278122,7 @@
                               "height": "fill_container",
                               "children": [
                                 {
-                                  "id": "u6T0Yd",
+                                  "id": "UVNPK",
                                   "type": "ref",
                                   "ref": "SgpvP",
                                   "name": "File list",
@@ -278159,7 +278159,7 @@
                                       "enabled": false
                                     },
                                     "o5HrLI": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "xVVae": {
                                       "enabled": false
@@ -278168,7 +278168,7 @@
                                       "enabled": false
                                     },
                                     "yE9Sp": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "KJNcN": {
                                       "enabled": false
@@ -278180,7 +278180,7 @@
                                       "enabled": false
                                     },
                                     "Icj0F": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "G6Txzd": {
                                       "enabled": false
@@ -278189,7 +278189,7 @@
                                       "enabled": false
                                     },
                                     "w0VAom": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "nxymK": {
                                       "enabled": false
@@ -278198,7 +278198,7 @@
                                       "enabled": false
                                     },
                                     "e9K9S": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "lXj6D": {
                                       "enabled": false
@@ -278210,7 +278210,7 @@
                                       "enabled": false
                                     },
                                     "bfQQU": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "j31ah": {
                                       "enabled": false
@@ -278219,7 +278219,7 @@
                                       "enabled": false
                                     },
                                     "peOrn": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "AZFp7": {
                                       "enabled": false
@@ -278231,7 +278231,7 @@
                                       "enabled": false
                                     },
                                     "V6HMX8": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "ZG6Z3": {
                                       "enabled": false
@@ -278241,9 +278241,6 @@
                                     },
                                     "x44VAQ": {
                                       "enabled": false
-                                    },
-                                    "cM2lU": {
-                                      "padding": 0
                                     },
                                     "V6cCa": {
                                       "enabled": false
@@ -278268,7 +278265,7 @@
                                       "enabled": false
                                     },
                                     "nhllg": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "Z8rLA": {
                                       "enabled": false
@@ -278280,7 +278277,7 @@
                                       "enabled": false
                                     },
                                     "Zqk1f": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "rWKff": {
                                       "enabled": false
@@ -278289,7 +278286,7 @@
                                       "enabled": false
                                     },
                                     "tu5op": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "xCdAo": {
                                       "enabled": false
@@ -278301,7 +278298,7 @@
                                       "enabled": false
                                     },
                                     "N1COkY": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "gXO7v": {
                                       "enabled": false
@@ -278316,7 +278313,7 @@
                                       "enabled": false
                                     },
                                     "YJl5c": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "RYaIP": {
                                       "enabled": false
@@ -278328,16 +278325,13 @@
                                       "enabled": false
                                     },
                                     "NNpbL": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "iMXue": {
                                       "enabled": false
                                     },
                                     "p4PLQo": {
                                       "enabled": false
-                                    },
-                                    "a7zHgP": {
-                                      "padding": 0
                                     },
                                     "PDhcf": {
                                       "enabled": false
@@ -278375,7 +278369,7 @@
                                       "enabled": false
                                     },
                                     "VyxGd": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "Q1CCrZ": {
                                       "enabled": false
@@ -278835,7 +278829,7 @@
                               "height": "fill_container",
                               "children": [
                                 {
-                                  "id": "zjdMw",
+                                  "id": "ZVObC",
                                   "type": "ref",
                                   "ref": "SgpvP",
                                   "name": "File list",
@@ -278879,7 +278873,7 @@
                                       "enabled": false
                                     },
                                     "o5HrLI": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "xVVae": {
                                       "enabled": false
@@ -278888,7 +278882,7 @@
                                       "enabled": false
                                     },
                                     "yE9Sp": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "KJNcN": {
                                       "enabled": false
@@ -278900,7 +278894,7 @@
                                       "enabled": false
                                     },
                                     "Icj0F": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "G6Txzd": {
                                       "enabled": false
@@ -278909,7 +278903,7 @@
                                       "enabled": false
                                     },
                                     "w0VAom": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "nxymK": {
                                       "enabled": false
@@ -278918,7 +278912,7 @@
                                       "enabled": false
                                     },
                                     "e9K9S": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "lXj6D": {
                                       "enabled": false
@@ -278930,7 +278924,7 @@
                                       "enabled": false
                                     },
                                     "bfQQU": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "j31ah": {
                                       "enabled": false
@@ -278939,7 +278933,7 @@
                                       "enabled": false
                                     },
                                     "peOrn": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "AZFp7": {
                                       "enabled": false
@@ -278951,7 +278945,7 @@
                                       "enabled": false
                                     },
                                     "V6HMX8": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "ZG6Z3": {
                                       "enabled": false
@@ -278963,7 +278957,7 @@
                                       "enabled": false
                                     },
                                     "cM2lU": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "V6cCa": {
                                       "enabled": false
@@ -278983,9 +278977,6 @@
                                     "I5nzH": {
                                       "enabled": false
                                     },
-                                    "nhllg": {
-                                      "padding": 0
-                                    },
                                     "Z8rLA": {
                                       "enabled": true,
                                       "fill": "#00000000"
@@ -279003,9 +278994,6 @@
                                     "njxmN": {
                                       "enabled": false
                                     },
-                                    "Zqk1f": {
-                                      "padding": 0
-                                    },
                                     "rWKff": {
                                       "enabled": true,
                                       "fill": "#00000000"
@@ -279017,7 +279005,7 @@
                                       "enabled": false
                                     },
                                     "tu5op": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "xCdAo": {
                                       "enabled": false
@@ -279029,7 +279017,7 @@
                                       "enabled": false
                                     },
                                     "N1COkY": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "gXO7v": {
                                       "enabled": false
@@ -279044,7 +279032,7 @@
                                       "enabled": false
                                     },
                                     "YJl5c": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "RYaIP": {
                                       "enabled": false
@@ -279056,16 +279044,13 @@
                                       "enabled": false
                                     },
                                     "NNpbL": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "iMXue": {
                                       "enabled": false
                                     },
                                     "p4PLQo": {
                                       "enabled": false
-                                    },
-                                    "a7zHgP": {
-                                      "padding": 0
                                     },
                                     "PDhcf": {
                                       "enabled": true,
@@ -279127,7 +279112,7 @@
                                       "enabled": false
                                     },
                                     "VyxGd": {
-                                      "padding": 0
+                                      "enabled": false
                                     },
                                     "Q1CCrZ": {
                                       "enabled": false
@@ -289474,25 +289459,21 @@
         },
         {
           "type": "frame",
-          "id": "dSgLC",
-          "name": "Variants · How a viewed file shows in the list",
-          "fill": "#D6A23A1A",
-          "stroke": "#D6A23A",
-          "strokeWidth": 2,
+          "id": "nbFfG",
+          "name": "Row of screens",
           "gap": 80,
-          "padding": 24,
           "children": [
             {
               "type": "frame",
-              "id": "dV6RO",
-              "name": "Slot · CR43 · Variant A · A ticked box, the name dimmed (recommended)",
-              "width": 360,
+              "id": "G1GUF",
+              "name": "Slot · CR46 · A viewed file: an eye after its name",
+              "width": 420,
               "layout": "vertical",
               "gap": 12,
               "children": [
                 {
                   "type": "frame",
-                  "id": "Lwlfb",
+                  "id": "JE6Rt",
                   "name": "Caption",
                   "width": "fill_container",
                   "layout": "vertical",
@@ -289500,24 +289481,22 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "sgAnL",
+                      "id": "o9Aw8",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "CR43 · Variant A · A ticked box, the name dimmed (recommended)",
+                      "content": "CR46 · A viewed file: an eye after its name",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
                     {
                       "type": "text",
-                      "id": "o5p95q",
+                      "id": "t4QEiD",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The box is GitHub's own checkbox, also the place to click; the dimmed name lets the eye skip read files when scanning. Unread files stay bright, so what's left to do is what stands out.",
+                      "content": "No checkboxes in the list: they read like the folder icons. A file sits indented under its folder, and a viewed one has a small eye right after its name, the name slightly dimmed. Ticking happens on the file's header (Viewed V) or with V; status icons (loading, failed, waiting) sit at the row's right end.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -289527,11 +289506,11 @@
                 },
                 {
                   "type": "frame",
-                  "id": "GJbts",
-                  "name": "CR43 · Variant A · A ticked box, the name dimmed (recommended)",
+                  "id": "uujsm",
+                  "name": "CR46 · A viewed file: an eye after its name",
                   "clip": true,
                   "width": 300,
-                  "height": 520,
+                  "height": 560,
                   "fill": "$bg",
                   "cornerRadius": 10,
                   "stroke": "$border",
@@ -289539,179 +289518,12 @@
                   "layout": "vertical",
                   "children": [
                     {
-                      "id": "tBPwU",
+                      "id": "zizov",
                       "type": "ref",
                       "ref": "SgpvP",
                       "name": "File list",
                       "height": "fill_container",
                       "width": "fill_container"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "yUsae",
-              "name": "Slot · CR44 · Variant B · Colour only",
-              "width": 360,
-              "layout": "vertical",
-              "gap": 12,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "OsoiX",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "mFjk4",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "CR44 · Variant B · Colour only",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "QYA9Z",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "No box: viewed files are just dimmed. Quieter, but dim also means collapsed or gone elsewhere in the list, and there's nothing to click to tick.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "XW1EI",
-                  "name": "CR44 · Variant B · Colour only",
-                  "clip": true,
-                  "width": 300,
-                  "height": 520,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "id": "l6bKC",
-                      "type": "ref",
-                      "ref": "SgpvP",
-                      "name": "File list",
-                      "height": "fill_container",
-                      "width": "fill_container",
-                      "descendants": {
-                        "wdmIk/Q5ANn": {
-                          "enabled": false
-                        },
-                        "Z3tPM/Q5ANn": {
-                          "enabled": false
-                        },
-                        "byauX/Q5ANn": {
-                          "enabled": false
-                        },
-                        "h5Imov/Q5ANn": {
-                          "enabled": false
-                        },
-                        "lOAEI/Q5ANn": {
-                          "enabled": false
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "VbBbE",
-              "name": "Slot · CR45 · Variant C · The box only",
-              "width": 360,
-              "layout": "vertical",
-              "gap": 12,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "y835Bf",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "j6037m",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "CR45 · Variant C · The box only",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "a0UPu",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Ticked boxes at full brightness. Exact, but a list two-thirds read looks the same as an unread one at a glance.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "IjHb2",
-                  "name": "CR45 · Variant C · The box only",
-                  "clip": true,
-                  "width": 300,
-                  "height": 520,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "id": "oq79g",
-                      "type": "ref",
-                      "ref": "SgpvP",
-                      "name": "File list",
-                      "height": "fill_container",
-                      "width": "fill_container",
-                      "descendants": {
-                        "wdmIk/ykvzO": {
-                          "fill": "$fg"
-                        },
-                        "byauX/ykvzO": {
-                          "fill": "$fg"
-                        },
-                        "h5Imov/ykvzO": {
-                          "fill": "$fg"
-                        },
-                        "lOAEI/ykvzO": {
-                          "fill": "$fg"
-                        }
-                      }
                     }
                   ]
                 }
@@ -296352,7 +296164,7 @@
                                   "height": "fill_container",
                                   "descendants": {
                                     "RYaIP/Q5ANn": {
-                                      "enabled": true,
+                                      "enabled": false,
                                       "icon": "pause",
                                       "fill": "$amber"
                                     },
@@ -302245,7 +302057,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "One choice under Display: what ⌘↵ does with a comment when no draft is open. Kept on this device, like the review's view options (D17); everything else on this tab is saved with your settings, which is open with the owner.",
+                      "content": "One choice under Display: what ⌘↵ does with a comment when no draft is open. Saved with your settings like the rest of the tab, so every device behaves the same (D17, D34).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -303071,7 +302883,7 @@
                                           "name": "icon monitor",
                                           "width": 13,
                                           "height": 13,
-                                          "icon": "monitor",
+                                          "icon": "cloud",
                                           "library": "lucide",
                                           "fill": "$fg-3"
                                         },
@@ -303080,7 +302892,7 @@
                                           "id": "E7Veo",
                                           "name": "Text",
                                           "fill": "$fg-3",
-                                          "content": "Kept on this device.",
+                                          "content": "Saved with your settings in mlaine/githq-settings, so your other devices use it too.",
                                           "fontFamily": "$font",
                                           "fontSize": 12,
                                           "fontWeight": "normal"
