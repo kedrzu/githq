@@ -54,8 +54,8 @@ type HarnessAnswer = 'accepted' | 'pending' | 'refused';
 /**
  * A stack's merge panel as the app drives it (`MergePanelHost`): the line moved with `↑`/`↓`, the merge it sends
  * written out under it (`sent`: the method, the top it goes to with its head, and every one going), and the record of
- * its last merge (`record`) speaking as the host's does: for the range's top, or for a stack's merge that took the
- * range's first. The hidden `arrive` button brings the panel's read when `readLater`, and the stack read again
+ * its last merge (`record`) speaking as the host's does: for the range's top, or for the range's first, sent alone or
+ * taken by a stack's merge. The hidden `arrive` button brings the panel's read when `readLater`, and the stack read again
  * (`reread`) after a refusal, which then speaks.
  */
 const Harness = defineComponent({
@@ -98,7 +98,9 @@ const Harness = defineComponent({
             const id = record.value?.sent.going?.at(-1) ?? members.value[0]?.id;
             const first = merge.value.open[0];
             const speaks =
-                merge.value.going.at(-1)?.id === id || (first && record.value?.sent.going?.includes(first.id));
+                merge.value.going.at(-1)?.id === id ||
+                first?.id === id ||
+                (first && record.value?.sent.going?.includes(first.id));
             return speaks ? members.value.find(member => member.id === id) : undefined;
         });
         const options = computed((): MergeOptions | null => {
@@ -382,6 +384,20 @@ export const TopHeadMoved: Story = {
     },
 };
 
+/** PM27: as {@link TopHeadMoved}, with the commit read on the top after the refusal: who pushed it, and what. */
+export const TopHeadMovedNamed: Story = {
+    args: {
+        members: BILLING,
+        record: {
+            kind: 'refused',
+            sent: { ...BILLING_SENT, head: 'older-head' },
+            reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
+            at: NOW,
+            headCommit: { oid: 'head-oid', headline: 'Drop the old export format', author: 'monalisa' },
+        },
+    },
+};
+
 /** PM28: refused for a method the rules, read after it was sent, don't allow. */
 export const MethodNotAllowed: Story = {
     args: {
@@ -402,6 +418,21 @@ export const OpenedElsewhere: Story = {
         members: BILLING,
         openedOn: 489,
         record: { kind: 'refused', sent: BILLING_SENT, reason: STOPPED, at: NOW },
+    },
+};
+
+/** PM22, D18: opened on the first while GitHub works out whether it merges: a merge like any, its own verdict. */
+export const OneGoingMergeabilityUnknown: Story = {
+    args: {
+        members: sampleStack({
+            id: 'S_calendar',
+            number: 1203,
+            members: [
+                { title: 'Swap the date picker component', mergeable: 'UNKNOWN', mergeStateStatus: 'UNKNOWN' },
+                { title: 'Move recurring rules to the new picker' },
+            ],
+        }),
+        openedOn: 1203,
     },
 };
 

@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+
 import * as stories from './MergePanel.stack.stories.js';
 
 const {
@@ -15,6 +17,7 @@ const {
     MethodNotAllowed,
     NeedsRebase,
     NoAnswer,
+    OneGoingMergeabilityUnknown,
     OneGoingNewCommit,
     OneGoingRefused,
     OneGoingUnknown,
@@ -25,6 +28,7 @@ const {
     PushedToLower,
     Refused,
     TopHeadMoved,
+    TopHeadMovedNamed,
     WholeStack,
 } = composeStories(stories);
 
@@ -149,6 +153,23 @@ test('SP49: a draft inside holds the rest, and marking it ready is right there',
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
 });
 
+test('SP49: ⌘K is the key of marking the draft ready, shown on its button', async () => {
+    await DraftInside.run();
+
+    await expect
+        .element(page.getByRole('button', { name: 'Mark #102 ready' }))
+        .toHaveAttribute('aria-keyshortcuts', formatAriaKeyShortcuts('Mod+K'));
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
+});
+
+test('SP41: ⌘K marks nothing where no draft holds the rest', async () => {
+    await WholeStack.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
 test('SP50: an incomplete copy never reads ready, and ⌘↵ does nothing (D7)', async () => {
     await Incomplete.run();
 
@@ -208,6 +229,13 @@ test("SP61: refused at once — GitHub's words, nothing merged, and ⌘↵ tries
     await expect.element(panel()).toHaveTextContent('This stack must be rebased before it can be merged.');
     await expect.element(member(310)).toHaveTextContent('Ready');
     await expect.element(primary('Try again')).toBeVisible();
+
+    // The top of the merge, a key away.
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toBeVisible();
+    await userEvent.keyboard('o');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('Visit: https://github.com/mlaine/tasklet/pull/312');
 });
 
 test('SP62, D21, SP47: a push to a lower one — GitHub refused it, which one has the new commit, and the way on is the rebase', async () => {
@@ -219,6 +247,7 @@ test('SP62, D21, SP47: a push to a lower one — GitHub refused it, which one ha
     await expect.element(panel()).toHaveTextContent('This stack must be rebased before it can be merged.');
     await expect.element(member(95)).toHaveTextContent('Needs rebase');
     await expect.element(footer()).toHaveTextContent('Rebase stack on GitHub');
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toBeVisible();
 });
 
 test('PM27: the top of the range moved — the new commit, as for any merge', async () => {
@@ -227,6 +256,13 @@ test('PM27: the top of the range moved — the new commit, as for any merge', as
     await expect.element(panel()).toHaveTextContent('A new commit arrived, so nothing was merged');
     await expect.element(panel()).toHaveTextContent('See the new commit');
     await expect.element(primary('Squash and merge all 4')).toBeVisible();
+});
+
+test('PM27: a push to the top of the range names who pushed it and what, from the read of the top', async () => {
+    await TopHeadMovedNamed.run();
+
+    await expect.element(panel()).toHaveTextContent('monalisa pushed head-oi');
+    await expect.element(panel()).toHaveTextContent('“Drop the old export format”');
 });
 
 test("PM28: a stack's merge refused for a method the rules don't allow says so, as any merge's", async () => {
@@ -242,6 +278,9 @@ test('D11: the record of a refused merge of the whole stack speaks in a panel op
 
     await expect.element(panel()).toHaveTextContent('GitHub refused it');
     await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
+    // Not the range sent: another merge, until the line is back where it was.
+    await expect.element(primary('Squash and merge 2 of 4')).toBeVisible();
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
     await expect.element(primary('Try again')).toBeVisible();
 });
 
@@ -259,15 +298,29 @@ test("SC2, PM25: one going from a panel opened on a later one — refused, the m
     await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1203]');
 });
 
-test("SC2, PM29: one going from a panel opened on a later one — no answer, grey, and ⌘↵ doesn't merge again", async () => {
+test("SC2, PM29: one going from a panel opened on a later one — no answer, grey wherever the line is, and ⌘↵ doesn't merge again", async () => {
     await OneGoingUnknown.run();
 
-    await userEvent.keyboard('{ArrowUp}');
-    await expect.element(panel()).toHaveTextContent('Outcome not known yet');
-    await expect.element(panel()).toHaveTextContent('The next refresh will settle this');
+    for (const key of ['', '{ArrowUp}', '{ArrowDown}{ArrowDown}']) {
+        if (key) {
+            await userEvent.keyboard(key);
+        }
 
+        await expect.element(panel()).toHaveTextContent('Outcome not known yet');
+        await expect.element(panel()).toHaveTextContent('The next refresh will settle this');
+        await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+        await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    }
+});
+
+test('D18, PM22: one going while GitHub works out whether it merges reads as any merge, and ⌘↵ sends it', async () => {
+    await OneGoingMergeabilityUnknown.run();
+
+    await expect.element(panel()).toHaveTextContent('Not known yet');
+    await expect.element(panel()).not.toHaveTextContent('Not ready yet');
+    await expect.element(primary('Squash and merge')).toBeEnabled();
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1203]');
 });
 
 test('SC2, PM27: one going from a panel opened on a later one — a new commit, said, and nothing reads ready', async () => {

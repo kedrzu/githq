@@ -5,7 +5,8 @@ import type { Item, ItemReviewRequest, PullRequestItem } from '@/store/ItemTypes
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
 
 import type { StackDescription, StackPip, StackPullRequestPip } from './describeStack.js';
-import { describeStack, findStackHolder } from './describeStack.js';
+import { describeStack } from './describeStack.js';
+import { findStackHolder } from './findStackHolder.js';
 import { groupStacks } from './groupStacks.js';
 
 test('the name is the title of the first issue in the copy that the stack closes, by position then by order', () => {

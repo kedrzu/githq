@@ -11,33 +11,6 @@ missing:
   en:
     one: 1 more not in githq yet
     many: '{count} more not in githq yet'
-ready:
-  en: Ready
-merged:
-  en: Merged
-closed:
-  en: Closed
-draft:
-  en: Draft
-checksFailing:
-  plural: count
-  en:
-    one: '{count} check failing'
-    many: '{count} checks failing'
-checksFailingUncounted:
-  en: Checks failing
-changesRequested:
-  en: Changes requested
-conflicts:
-  en: Conflicts
-checksRunning:
-  en: Checks running
-needsRebase:
-  en: Needs rebase
-waitingForReview:
-  en: Waiting for review
-cannotMergeYet:
-  en: Can't merge yet
 staysOpen:
   en: Stays open
 blocked:
@@ -46,5 +19,3 @@ heldBy:
   en: 'Green itself, held by #{number}'
 freshChecks:
   en: Fresh checks running
-beingMerged:
-  en: Being merged

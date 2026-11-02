@@ -2,8 +2,9 @@ import { assertValue } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import { findStackHolder, toStackBlocker } from '@/store/stacks/describeStack.js';
 import type { StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
+import { findStackHolder } from '@/store/stacks/findStackHolder.js';
+import { toStackBlocker } from '@/store/stacks/toStackBlocker.js';
 
 import type { StackMerge, StackMergeBlock, StackMergeForward, StackRebaseCause } from './StackMergeTypes.js';
 
@@ -81,11 +82,7 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
             return null;
         }
 
-        if (holder.kind === 'closed') {
-            return { kind: 'closed', closedNumber: holder.pullRequest.number };
-        }
-
-        return { kind: 'held', blocker: toStackBlocker(holder) };
+        return { kind: holder.kind === 'closed' ? 'closed' : 'held' };
     }
 
     function getRebaseCause(behindNumber: number): StackRebaseCause {

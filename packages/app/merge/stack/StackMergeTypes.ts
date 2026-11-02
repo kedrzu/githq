@@ -75,21 +75,19 @@ export type StackRebaseCause =
     | { readonly kind: 'targetMoved' };
 
 /**
- * A member closed without merging sits inside the range: those after it cannot land until the stack is linked
- * again on github.com, those before it can (SP48).
+ * A member closed without merging, the {@link StackMerge.holder}, sits inside the range: those after it cannot land
+ * until the stack is linked again on github.com, those before it can (SP48).
  */
 export interface StackClosedBlock {
     readonly kind: 'closed';
-    readonly closedNumber: number;
 }
 
 /**
- * An open member going cannot land — a draft, failing, waiting for a review — and holds back every one after it
- * (SP45, SP49).
+ * An open member going, the {@link StackMerge.holder}, cannot land — a draft, failing, waiting for a review — and holds
+ * back every one after it (SP45, SP49).
  */
 export interface StackHeldBlock {
     readonly kind: 'held';
-    readonly blocker: StackBlocker;
 }
 
 /** What `⌘↵` does for a stack's range (merging D12, extended). */

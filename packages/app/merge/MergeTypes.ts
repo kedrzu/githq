@@ -89,18 +89,7 @@ export interface SentMerge extends MergeSubmission {
  * from the pull request as it is then ({@link MergeEnd}). Kept in memory only: a reload or another account forgets it.
  */
 export type MergeRecord =
-    | {
-          readonly kind: 'refused';
-          readonly sent: SentMerge;
-          readonly reason: EditFailureReason;
-          /** Epoch ms GitHub answered: a copy of the pull request read after it says more. */
-          readonly at: number;
-          /**
-           * The head commit the merge panel read after the refusal, while it is the pull request's head: who pushed
-           * it, for the rows and the opened item to say (PM27, PM37).
-           */
-          readonly headCommit?: MergeHeadCommit;
-      }
+    | MergeRefusedRecord
     | {
           readonly kind: 'unknown';
           readonly sent: SentMerge;
@@ -113,6 +102,20 @@ export type MergeRecord =
            */
           readonly refusal?: EditFailureReason;
       };
+
+/** A merge GitHub refused, with its reason ({@link MergeRecord}). */
+export interface MergeRefusedRecord {
+    readonly kind: 'refused';
+    readonly sent: SentMerge;
+    readonly reason: EditFailureReason;
+    /** Epoch ms GitHub answered: a copy of the pull request read after it says more. */
+    readonly at: number;
+    /**
+     * The head commit read after the refusal, while it is the pull request's head: who pushed it, for the panel, the
+     * rows and the opened item to say (PM27, PM37).
+     */
+    readonly headCommit?: MergeHeadCommit;
+}
 
 /**
  * How the last merge that did not end merged reads, from its record and the pull request as it is now

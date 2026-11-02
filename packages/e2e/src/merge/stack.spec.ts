@@ -274,6 +274,115 @@ test('SP62: a push to #101 after the panel opened — GitHub refuses the merge o
     }
 });
 
+test('PM27: a push to #103, the top of the range, after the panel opened — the panel names who pushed it and what; nothing merged', async ({
+    page,
+    github,
+}) => {
+    const { world, first, third } = createStackWorld();
+    const { myWork } = await openMyWork(page, github, world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, STACK);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    const sent = world.headOf(third);
+    world.push(third, 'monalisa', 'Open the stack from any of its pull requests');
+    await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(panel.root).toContainText('A new commit arrived, so nothing was merged');
+    await expect(panel.root).toContainText('monalisa pushed');
+    await expect(panel.root).toContainText('“Open the stack from any of its pull requests”');
+    expect(getMergeRequests(github)).toEqual([{ merge_method: 'squash', sha: sent }]);
+    expect(world.stateOf(first).merged).toBe(false);
+});
+
+test("D15, PM35: a stack refused after the panel left is one merge refused: GitHub's words, no count of items done, and the status bar says so", async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, first, third } = createStackWorld();
+    const { myWork, shell } = await openMyWork(page, github, world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, STACK);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    world.holdMerges();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+
+    const reason = 'At least 2 approving reviews are required by reviewers with write access.';
+    world.refuseHeldMerges(reason);
+    await page.clock.fastForward('00:02');
+
+    const toast = shell.toasts.filter({ hasText: "acme/web#103 wasn't merged" });
+    await expect(toast).toBeVisible();
+    await expect(toast).toContainText(reason);
+    await expect(shell.toasts).not.toContainText('2 of 3');
+    await expect(shell.statusBar.getByRole('button', { name: 'Merge refused · acme/web#103' })).toBeVisible();
+    expect(world.stateOf(first).merged).toBe(false);
+    expect(world.stateOf(third).merged).toBe(false);
+});
+
+test('D15: a stack refused with Rebase — opened again, the panel starts on Rebase', async ({ page, github }) => {
+    const { world, third } = createStackWorld();
+    world.refuseMerge(third, 'Required status check "e2e" is expected.');
+    const { myWork } = await openMyWork(page, github, world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, STACK);
+
+    await page.keyboard.press('Shift+M');
+    await panel.method('Rebase').click();
+    await expect(panel.primary).toHaveText('Rebase and merge all 3');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toContainText('GitHub refused it');
+    await page.keyboard.press('Escape');
+    await expect(panel.root).toBeHidden();
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.method('Rebase')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('SP49: ⌘K marks #102, the draft holding the rest, ready — #102 is read again, and the rest can go', async ({
+    page,
+    github,
+}) => {
+    const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
+    world.repository('acme/web', { defaultMergeMethod: 'SQUASH' });
+    const [, second = ''] = world.stack({
+        repository: 'acme/web',
+        number: 1,
+        pullRequests: [
+            { number: 101, title: STACK, foundBy: ['authored'], reviewDecision: 'APPROVED', minutesAgo: 30 },
+            {
+                number: 102,
+                title: 'Second',
+                foundBy: ['authored'],
+                reviewDecision: 'APPROVED',
+                isDraft: true,
+                minutesAgo: 20,
+            },
+            { number: 103, title: THIRD, foundBy: ['authored'], reviewDecision: 'APPROVED', minutesAgo: 10 },
+        ],
+    });
+    const { myWork } = await openMyWork(page, github, world);
+    const panel = new MergePanelHarness(page);
+    const readsOfSecond = () =>
+        github.graphqlCalls.filter(call => call.name === 'PullRequestMergeOptions' && call.variables.id === second)
+            .length;
+    await selectRow(myWork, STACK);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.root).toContainText('#102 is a draft');
+    expect(readsOfSecond()).toBe(0);
+
+    await page.keyboard.press('ControlOrMeta+k');
+    await expect.poll(readsOfSecond).toBe(1);
+    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    expect(world.stateOf(second).isDraft).toBe(false);
+});
+
 test('D18, PM32a: opened on #102, ↑ to the first alone — GitHub refuses it: the panel stays and says so, in no toast too', async ({
     page,
     github,

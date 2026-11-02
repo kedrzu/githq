@@ -2,6 +2,7 @@ import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { StackPullRequestPip } from '@/store/stacks/describeStack.js';
 
+import { isWholeRangeBlocked } from './isWholeRangeBlocked.js';
 import type { StackMerge, StackMergePullRequestRow, StackMergeRow, StackMergeRowState } from './StackMergeTypes.js';
 
 /** What the rows of a stack's merge panel are worked out from. */
@@ -24,7 +25,7 @@ export interface GetStackMergeRowsParams {
 export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRow[] {
     const { merge, outcomeUnknown = false } = params;
     // Nothing lands while the whole range is blocked (D7, D21): none is marked as going then.
-    const blocked = outcomeUnknown || merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase';
+    const blocked = outcomeUnknown || isWholeRangeBlocked(merge);
     const goingIds = new Set(merge.going.map(pr => pr.id));
     const { holder } = merge;
     const holderIndex = merge.members.findIndex(

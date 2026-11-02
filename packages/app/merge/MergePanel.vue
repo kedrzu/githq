@@ -77,6 +77,7 @@ import type {
   SentMerge,
 } from './MergeTypes.js';
 import { getStackMergeRows } from './stack/getStackMergeRows.js';
+import { isWholeRangeBlocked } from './stack/isWholeRangeBlocked.js';
 import StackMergeMembers from './stack/StackMergeMembers.vue';
 import type { StackMerge, StackMergeView } from './stack/StackMergeTypes.js';
 
@@ -101,8 +102,8 @@ const props = defineProps<{
   /**
    * What this session knows of the pull request's last merge that did not end merged, while it speaks for it: refused
    * (PM25, PM31) — for a moved head (PM27) or a method the rules don't allow (PM28), as the panel tells
-   * (`getMergeEnd`) — or no answer (PM29). In a stack, of the range's top, or of the stack's merge that took the range
-   * (stacked PRs D11). `null` for none, and while a merge is sent.
+   * (`getMergeEnd`) — or no answer (PM29). In a stack, of the range's top, or of the range's first: sent alone, or taken
+   * by a stack's merge (stacked PRs D11). `null` for none, and while a merge is sent.
    */
   record: MergeRecord | null;
   /** The pull request {@link record} is of, as it is told apart by its head: `pr` when none is given. */
@@ -239,6 +240,10 @@ const end = computed(() => getMergeEnd(props.record, endPr.value, props.options)
 const endPr = computed(() => props.recordOf ?? props.pr);
 /** No answer (PM29): the merge may still land, so nothing is offered to send it again. */
 const outcomeUnknown = computed(() => end.value?.kind === 'unknown');
+/** Refused for what still holds, the same range going: the same merge again. A moved head, a method gone or another range make it another merge. */
+const triesAgain = computed(
+  () => end.value?.kind === 'refused' && (end.value.sent.going?.length ?? 1) === (props.stack?.merge.going.length ?? 1),
+);
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
 /** Two or more going with a stack's merge: no commit text, and none sent (stacked PRs D11). */
@@ -277,7 +282,7 @@ const stackLine = computed((): 'held' | 'stops' | null => {
     return null;
   }
 
-  if (merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase') {
+  if (isWholeRangeBlocked(merge)) {
     return null;
   }
 
@@ -317,8 +322,7 @@ const stackChecks = computed(() => {
     return null;
   }
 
-  const kind = view.merge.block?.kind;
-  return kind === 'incomplete' || kind === 'needsRebase' ? null : view.checks;
+  return isWholeRangeBlocked(view.merge) ? null : view.checks;
 });
 
 /** Merging is the way forward: ⌘↵ merges (D6, D12). */
@@ -528,7 +532,7 @@ const primaryLabel = computed(() => {
   }
 
   if (says && method.value !== null) {
-    if (end.value?.kind === 'refused') {
+    if (triesAgain.value) {
       return t(l.tryAgain);
     }
 
@@ -547,8 +551,7 @@ const primaryLabel = computed(() => {
     return t(l.nothingToOffer);
   }
 
-  // Refused for what still holds: the same merge again. A moved head or a method gone make it another merge.
-  return end.value?.kind === 'refused' ? t(l.tryAgain) : primaryName(method.value);
+  return triesAgain.value ? t(l.tryAgain) : primaryName(method.value);
 });
 const checksHint = computed(() => {
   if (several.value) {
@@ -686,8 +689,13 @@ function endBand(): Band | null {
   switch (record?.kind) {
     case undefined:
       return null;
-    case 'refused':
-      return refusedBand(record.reason);
+    case 'refused': {
+      const said = refusedBand(record.reason);
+      // Of a stack's merge, a key to the top of it, for what GitHub says there (SP61, SP62).
+      return record.sent.going
+        ? { ...said, link: said.link ?? { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' } }
+        : said;
+    }
     case 'headMoved': {
       const head = record.head.slice(0, SHORT_SHA_LENGTH);
       const asked = record.sent.head.slice(0, SHORT_SHA_LENGTH);
@@ -842,12 +850,13 @@ function getRangeSays(view: StackMergeView): StackSays | null {
     return { verdict: said, band: under, forward: { kind: 'visit', url, label: t(l.rebaseStack) } };
   }
 
-  // One alone going is a merge like any: why it can't merge as it is, in its own verdict, and its own way forward (D18).
-  if (!several.value && standing.forward !== 'merge') {
+  // One alone going is a merge like any: why it can't merge as it is, in its own verdict, and its own way forward (D18)
+  // — the same where only the pips hold it, as while GitHub works out whether it merges (PM22).
+  if (!several.value && (standing.forward !== 'merge' || block?.kind === 'held')) {
     return null;
   }
 
-  const closed = block?.kind === 'closed' ? block.closedNumber : holder?.kind === 'closed' ? holder.number : null;
+  const closed = holder?.kind === 'closed' ? holder.number : null;
   if (closed !== null) {
     const text = t(l.stackClosed, { number: closed });
     const said: PanelVerdict = {
@@ -867,8 +876,7 @@ function getRangeSays(view: StackMergeView): StackSays | null {
     return { verdict: said, band: under, forward: block ? { kind: 'none', label: text } : { kind: 'merge' } };
   }
 
-  const blocker = block?.kind === 'held' ? block.blocker : holder;
-  if (blocker) {
+  if (holder) {
     const text =
       merge.canLand === 0
         ? t(l.stackNotReadyYet)
@@ -880,7 +888,7 @@ function getRangeSays(view: StackMergeView): StackSays | null {
       text,
       aside: merge.freshChecks
         ? t(l.stackCheckingLeft, { landed, left: merge.open.length })
-        : getHeldByText({ blocker, lang: APP_LANGUAGE, otherwise: l.stackHeldByOther }),
+        : getHeldByText({ blocker: holder, lang: APP_LANGUAGE, otherwise: l.stackHeldByOther }),
     };
     let forward: StackForward = { kind: 'merge' };
     if (merge.freshChecks) {
@@ -1189,6 +1197,9 @@ function onKeydown(event: KeyboardEvent) {
   } else if (canMoveLine.value && (matchesCommandKey(event, 'ArrowUp') || matchesCommandKey(event, 'ArrowDown'))) {
     event.preventDefault();
     emit('move', matchesCommandKey(event, 'ArrowUp') ? 'earlier' : 'later');
+  } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
+    event.preventDefault();
+    emit('step', 'markReady');
   } else if (matchesCommandKey(event, 'E') && !editing.value) {
     event.preventDefault();
     void edit();
@@ -1618,6 +1629,8 @@ function onOpenFocus(event: Event) {
             v-if="stackDraft !== null && allowed"
             variant="ghost"
             :icon="Eye"
+            kbd="Mod+K"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+K')"
             :busy="advancing === 'markReady'"
             @click="emit('step', 'markReady')"
             >{{ t(l.markNumberReady, { number: stackDraft }) }}</Button

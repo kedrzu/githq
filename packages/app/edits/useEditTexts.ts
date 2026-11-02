@@ -113,7 +113,7 @@ export function useEditTexts(): EditTexts {
             return '';
         }
 
-        if (failure.editCount <= 1 && first.edit.subject.kind === 'merged') {
+        if (first.edit.subject.kind === 'merged') {
             const { reference } = first.edit;
             return first.reason.kind === 'organizationRestricted'
                 ? t(l.failedMergeRestricted, { reference, organization: first.reason.organization })

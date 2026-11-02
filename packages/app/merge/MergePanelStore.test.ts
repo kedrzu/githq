@@ -489,10 +489,89 @@ test('a stack refused at once: recorded under its top, the stack read again whol
 
     panel.close();
     expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused' });
-    expect(panel.findStackMergeTop('PR_0')).toBe('PR_1');
-    expect(panel.findStackMergeTop('PR_1')).toBe('PR_1');
-    expect(panel.findStackMergeTop('PR_9')).toBeNull();
+    expect(panel.findRecordHolder('PR_0')).toBe('PR_1');
+    expect(panel.findRecordHolder('PR_1')).toBe('PR_1');
+    expect(panel.findRecordHolder('PR_9')).toBeNull();
     expect(panel.getSent('PR_1')).toMatchObject({ going: ['PR_0', 'PR_1'] });
+});
+
+test("D15: a stack refused gives back its method under every one going — a panel opened again is the first open one's", async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+
+    panel.open('PR_1', { wholeStack: true });
+    const refused = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'REBASE' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await refused;
+
+    expect(panel.getSent('PR_0')?.request.method).toBe('REBASE');
+    expect(panel.getSent('PR_1')?.request.method).toBe('REBASE');
+});
+
+test("PM29: a first open one sent alone holds its own record, whichever line the panel's on; the next merge of it ends it", async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    session.github.holdIf = request =>
+        request.operation === FIRST_MERGE ? Promise.reject(new TypeError('Failed to fetch')) : null;
+
+    panel.open('PR_1', { wholeStack: true });
+    const answering = panel.merge({ item: STACK_FIRST, submission: EDITED });
+    await session.clock.advance(0);
+    await answering;
+
+    expect(panel.getRecord('PR_0')).toMatchObject({ kind: 'unknown' });
+    expect(panel.findRecordHolder('PR_0')).toBe('PR_0');
+    expect(panel.findRecordHolder('PR_1')).toBeNull();
+
+    session.github.holdIf = () => null;
+    answers.put = REFUSED;
+    const next = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    expect(panel.findRecordHolder('PR_0')).toBeNull();
+    await session.clock.advance(0);
+    await next;
+});
+
+test("PM27: a push to a stack's top is named on the refusal, from the top's own read — at once or while it ran (stacked PRs D11)", async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+    answers.optionsHead = 'new-head';
+    const pushed = { oid: 'new-head', headline: 'New', author: null };
+
+    panel.open('PR_1', { wholeStack: true });
+    const refused = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await refused;
+    await session.clock.advance(0);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused', headCommit: pushed });
+
+    answers.put = PENDING;
+    const accepted = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await accepted;
+    expect(panel.getRecord('PR_1')).toBeNull();
+
+    answers.read = { status: 200, body: { status: 'failed', details: { message: 'Head branch was modified.' } } };
+    await session.clock.advance(1000);
+    await session.clock.advance(0);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused', headCommit: pushed });
 });
 
 test("a stack refused, the read again failing: not known as during the read, with GitHub's words (D11)", async () => {

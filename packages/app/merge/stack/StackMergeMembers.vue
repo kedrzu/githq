@@ -7,10 +7,11 @@ import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import StackTone from '@/lists/StackTone.vue';
 import type { StackLook } from '@/lists/useStackFacts.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
 
@@ -41,6 +42,12 @@ interface DrawnRow {
   readonly tone: StackLook['tone'];
   /** The line is drawn after it. */
   readonly lineAfter: boolean;
+}
+
+/** A row's state in words, in their tone. */
+interface DrawnWords {
+  readonly text: string;
+  readonly tone: StackLook['tone'];
 }
 
 const t = useTranslate();
@@ -74,7 +81,7 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
         icon: LoaderCircle,
         iconTone: 'warning',
         spin: true,
-        text: t(l.beingMerged),
+        text: getStackRowText({ kind: 'merging', pullRequest, lang: APP_LANGUAGE }),
         tone: 'warning',
       };
     // Nothing lands while they run: no mark of landing (SP58).
@@ -96,10 +103,13 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
   }
 }
 
-function describe(state: WordedState, pr: PullRequestItem): { text: string; tone: StackLook['tone'] } {
+function describe(state: WordedState, pr: PullRequestItem): DrawnWords {
   switch (state.kind) {
     case 'own':
-      return describeOwn(state.pip, pr);
+      return {
+        text: getStackRowText({ kind: state.pip, pullRequest: pr, lang: APP_LANGUAGE }),
+        tone: getOwnTone(state.pip),
+      };
     case 'staysOpen':
       return { text: t(l.staysOpen), tone: 'dim' };
     case 'blocked':
@@ -111,38 +121,22 @@ function describe(state: WordedState, pr: PullRequestItem): { text: string; tone
   }
 }
 
-/** Its own state in words, as the stack's map says it. */
-function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text: string; tone: StackLook['tone'] } {
-  const standing = getPullRequestStanding(pr);
+function getOwnTone(kind: StackPullRequestPipKind): StackLook['tone'] {
   switch (kind) {
     case 'ready':
-      return { text: t(l.ready), tone: 'success' };
+      return 'success';
     case 'merged':
-      return { text: t(l.merged), tone: 'done' };
+      return 'done';
     case 'closed':
-      return { text: t(l.closed), tone: 'danger' };
+    case 'broken':
+      return 'danger';
     case 'draft':
-      return { text: t(l.draft), tone: 'muted' };
-    case 'broken': {
-      let text: string;
-      if (standing.checksFailing) {
-        text =
-          standing.failingChecks > 0
-            ? t(l.checksFailing, { count: standing.failingChecks })
-            : t(l.checksFailingUncounted);
-      } else {
-        text = standing.changesRequested ? t(l.changesRequested) : t(l.conflicts);
-      }
-
-      return { text, tone: 'danger' };
-    }
+      return 'muted';
     case 'moving':
-      // Moving without running checks: the stack needs a rebase (D21).
-      return { text: standing.checksRunning ? t(l.checksRunning) : t(l.needsRebase), tone: 'warning' };
-    case 'waiting':
-      return { text: standing.waitingForReview ? t(l.waitingForReview) : t(l.cannotMergeYet), tone: 'dim' };
     case 'merging':
-      return { text: t(l.beingMerged), tone: 'warning' };
+      return 'warning';
+    case 'waiting':
+      return 'dim';
     default:
       return assertNever(kind);
   }

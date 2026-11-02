@@ -34,6 +34,8 @@ export interface StackToRead {
  * could not be asked. The answer is what a stack holds: a held pull request it does not list has left the stack — all
  * of them when the stack is gone — which moves no `updated_at`, so nothing else would tell a closed one. Only a whole
  * answer tells who left: not one cut by `first`, or with an entry GitHub refused.
+ *
+ * @util
  */
 export async function readStacksWhole(params: ReadStacksWholeParams): Promise<Item[]> {
     const { sdk, stacks, items, logger } = params;

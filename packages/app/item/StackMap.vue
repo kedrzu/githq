@@ -20,8 +20,8 @@ import StackTone from '@/lists/StackTone.vue';
 import type { StackLook, StackStateFact } from '@/lists/useStackFacts.js';
 import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
+import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
 import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -128,7 +128,7 @@ function getRow(pip: StackPullRequestPip): StackMapRow {
     kind: 'row',
     pullRequest,
     ...getPullRequestLook(kind),
-    text: props.arrangement === 'panel' ? getRowText(kind, pullRequest) : null,
+    text: props.arrangement === 'panel' ? getStackRowText({ kind, pullRequest, lang: APP_LANGUAGE }) : null,
     current: id === props.currentId,
     key: getKey(id),
   };
@@ -153,38 +153,6 @@ function getKey(id: string): 'J' | 'K' | null {
   }
 
   return id === props.neighbours?.next ? 'J' : null;
-}
-
-/** A row's state in words. */
-function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string {
-  const standing = getPullRequestStanding(pr);
-  switch (kind) {
-    case 'draft':
-      return t(l.draft);
-    case 'ready':
-      return t(l.ready);
-    case 'broken':
-      if (standing.checksFailing) {
-        return standing.failingChecks > 0
-          ? t(l.checksFailing, { count: standing.failingChecks })
-          : t(l.checksFailingUncounted);
-      }
-
-      return standing.changesRequested ? t(l.changesRequested) : t(l.conflicts);
-    case 'moving':
-      // Moving without running checks: the stack needs a rebase (D21).
-      return standing.checksRunning ? t(l.checksRunning) : t(l.needsRebaseRow);
-    case 'waiting':
-      return standing.waitingForReview ? t(l.waitingForReview) : t(l.cannotMergeYet);
-    case 'merged':
-      return t(l.merged);
-    case 'closed':
-      return t(l.closed);
-    case 'merging':
-      return t(l.beingMerged);
-    default:
-      return assertNever(kind);
-  }
 }
 
 /** "4 earlier · 2 landed, 2 ready" (SP31): how many, then those landed, ready, failing, drafts and closed. */

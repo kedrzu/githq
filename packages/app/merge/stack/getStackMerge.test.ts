@@ -99,7 +99,8 @@ test('held, the line sits at the last that can land and what holds the next one 
 
     // Moved past it, the range is held and nothing is sent.
     const past = getStackMerge({ description, end: 4 });
-    expect(past.block).toEqual({ kind: 'held', blocker: { number: 3, kind: 'waiting', waitingForReview: false } });
+    expect(past.block).toEqual({ kind: 'held' });
+    expect(past.holder).toEqual({ number: 3, kind: 'waiting', waitingForReview: false });
     expect(past.forward).toBe(null);
 });
 
@@ -134,7 +135,7 @@ test('a closed member mid-range blocks only those after it; earlier ones can lan
         forward: { kind: 'merge' },
     });
     expect(getStackMerge({ description, end: 4 })).toMatchObject({
-        block: { kind: 'closed', closedNumber: 3 },
+        block: { kind: 'closed' },
         forward: null,
     });
 });
@@ -144,7 +145,8 @@ test('a draft in the range holds it, and the way forward marks it ready (SP49)',
 
     const merge = getStackMerge({ description, end: 3 });
 
-    expect(merge.block).toMatchObject({ kind: 'held', blocker: { number: 2, kind: 'draft' } });
+    expect(merge.block).toEqual({ kind: 'held' });
+    expect(merge.holder).toMatchObject({ number: 2, kind: 'draft' });
     expect(merge.forward).toMatchObject({ kind: 'markReady', pullRequest: { number: 2 } });
 });
 

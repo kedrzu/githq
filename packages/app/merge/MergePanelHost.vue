@@ -18,6 +18,7 @@ import { pause } from '@/utils/pause.js';
 import MergePanel from './MergePanel.vue';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { MergePanelStore } from './MergePanelStore.js';
+import { PullRequestMerger } from './PullRequestMerger.js';
 import type { MergeStep, MergeSubmission } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
@@ -33,6 +34,7 @@ const FIRST_UPDATE_READ_MS = 1000;
 const UPDATE_TIME_LIMIT_MS = 30_000;
 
 const store = useService(MergePanelStore);
+const merger = useService(PullRequestMerger);
 const details = useService(ItemDetailStore);
 const items = useService(ItemStore);
 const auth = useService(AuthStore);
@@ -95,7 +97,8 @@ const pr = computed(() => {
 });
 /**
  * The pull request whose last merge the panel says the end of: the top of the range — the one alone going — else, the
- * line moved or opened elsewhere since, the top of the stack's merge that took the range's first (stacked PRs D11).
+ * line moved or opened elsewhere since, whichever holds the record of the range's first: itself sent alone (PM29), or
+ * the top of the stack's merge that took it (stacked PRs D11).
  */
 const recordOf = computed(() => {
   const range = stackMerge.value;
@@ -105,8 +108,8 @@ const recordOf = computed(() => {
     return top;
   }
 
-  const mergedTop = store.findStackMergeTop(first.id);
-  const item = mergedTop === null ? undefined : details.getItem(mergedTop);
+  const holder = store.findRecordHolder(first.id);
+  const item = holder === null ? undefined : details.getItem(holder);
   return item?.kind === 'pullRequest' ? item : top;
 });
 const read = useMergeOptions({ itemId: () => pr.value?.id ?? null });
@@ -176,7 +179,7 @@ watch(repository, name => {
 /**
  * Busy until GitHub answered — and, refused, until the panel read the pull request again, so it shows what the refusal
  * is told apart by (PM27, PM28). The head commit read is noted on the refusal, for the rows and the opened item to
- * name who pushed it (PM37).
+ * name who pushed it (PM37); a stack's merge of two or more is recorded under its top, whose head the store reads.
  */
 async function merge(submission: MergeSubmission) {
   const item = pr.value;
@@ -234,7 +237,8 @@ async function takeStep(step: MergeStep) {
     [item.id],
     step === 'markReady' ? { kind: 'draft', draft: false } : { kind: 'updateBranch', method: 'MERGE' },
   );
-  await read.refresh();
+  // A stack's draft further up is not the one the panel's read follows, and its row is what lets the rest go.
+  await (item.id === pr.value?.id ? read.refresh() : merger.readOptions(item.id));
   if (step === 'updateBranch' && outcome.failed.length === 0) {
     await waitForNewHead(item.id, opening, head);
   }

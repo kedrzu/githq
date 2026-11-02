@@ -344,8 +344,9 @@ test('a stack refused while it ran: being merged goes from every one, those earl
         expect(items.get(id)).toMatchObject({ merged: false, state: 'OPEN' });
         expect(items.get(id)).not.toHaveProperty('merging');
     }
-    // The merge's own refusal is reported, once.
+    // The merge's own refusal is reported, once — one thing that failed, not one of two items.
     expect(queue.failures.flatMap(failure => failure.failed.map(failed => failed.edit.itemId))).toEqual(['PR_1']);
+    expect(queue.failures[0]?.itemCount).toBe(1);
 });
 
 test('a stack read again whole: its pull requests as GitHub holds them are written into the copy', async () => {

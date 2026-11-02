@@ -129,7 +129,8 @@ export const PullRequestMerger = defineService({
                 onAnswer: answered.resolve,
                 onLateEnd,
             });
-            void queue.submit({ edits, account, itemCount: edits.length }).finally(() => {
+            // One merge is one thing that can fail, however many pull requests it lands (a stack's, D11).
+            void queue.submit({ edits, account, itemCount: 1 }).finally(() => {
                 // Never sent: another account signed in, or none, meanwhile. Settled already otherwise.
                 answered.resolve({ kind: 'refused', reason: { kind: 'notAllowed' } });
             });
