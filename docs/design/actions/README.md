@@ -28,11 +28,15 @@ So state is worked out per workflow and per group of refs. A group rather than a
 only once: if `v1.0-rc.1` fails and `v1.0-rc.3` passes, the release is fine again. A cancelled run says nothing
 either way. [The rule and the runs it was tested on](DECISIONS.md#d1).
 
-By default only the repository's default branch lights the counters. A repository's settings can add others,
-with wildcards, for example `release/*` or `v*`. A workflow disabled on GitHub does not count.
+By default only the repository's default branch lights the counters, whatever GitHub says it is, so a rename from
+`master` to `main` changes nothing. A repository's settings can add other branches and tags with wildcards, written
+the way GitHub's own workflow files write them: `release/*` or `v*`. They can also switch the default branch off,
+and a repository with nothing left lights nothing at all. Runs started by a pull request never count, so the
+failures on the branch you are working on stay out of the way. A workflow disabled on GitHub does not count either.
 That setting only affects counters: every workflow and run stays visible in the repository, so a wrong pattern
-cannot hide a failure from someone looking for it. [What this setting does, and what is still open
-about it](DECISIONS.md#d5).
+cannot hide a failure from someone looking for it. [What this setting does](DECISIONS.md#d5), [how a pattern
+matches](DECISIONS.md#d13), and [where it is kept](DECISIONS.md#d14): in the same settings that can follow you between
+computers.
 
 ## Where you see it
 

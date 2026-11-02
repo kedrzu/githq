@@ -156,9 +156,9 @@ nothing, and its workflows are still listed in the tab.** (2026-11-02, owner)
 Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
 repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
 
-**Patterns live in a settings store the app treats as a black box: synchronised or local, per repository.**
-(2026-11-01, owner) That store is being designed separately (branch `design/settings-sync-gist`); this design only
-reads and writes settings through it and depends on nothing else about it.
+**Patterns live in the user's settings, synchronised through GitHub when saving is on and local otherwise, the same
+way for every repository.** (2026-11-01, owner; "no per-repository choice" is the design agent's reading, 2026-11-02, not contradicted) Their place in
+the settings file is [D14](#d14).
 
 **Rejected.**
 
@@ -264,3 +264,29 @@ knows.
 
 - Separate lists for branches and tags, as GitHub's workflow files have them: an extra choice on every pattern
   for a collision the preview already makes visible.
+
+## D14
+
+**A repository's ref patterns are stored in its entry of the settings file as an optional `workflows` object:
+`defaultBranch`, whether the default branch counts, and `refs`, the patterns in the user's order. An entry without
+it means the default, `{ "defaultBranch": true, "refs": [] }`, and nothing is written until the user changes it. The
+object is one value when two devices change it: whichever side wins takes all of it.** (2026-11-02, owner for the
+optional field and its default, design agent for the shape, which the owner left as proposed)
+
+```json
+{ "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true,
+  "workflows": { "defaultBranch": true, "refs": ["v*", "release/*"] } }
+```
+
+**Why.** The default branch as a flag, not a special entry in `refs`, because a branch can be named anything, so no
+string is safe to reserve. An absent object, not a written copy of the default, so repositories nobody configured
+follow a default changed later. With saving to GitHub off, the same shape is kept locally: the settings store
+decides where, not this design ([D5](#d5)). How the file takes a new field, and what an older build does with it:
+[settings-sync D13](../settings-sync/DECISIONS.md#d13).
+
+**Rejected.**
+
+- A reserved entry such as `"@default"` in `refs`: a branch may carry that name.
+- Writing the default into every entry: entries nobody configured would keep an old default forever.
+- Merging two devices' pattern lists: no case for it, and a pattern deleted on one side would come back.
+- Raising the file's `version` for this field: the owner wants new settings to be optional fields instead.

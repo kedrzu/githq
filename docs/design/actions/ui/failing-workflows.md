@@ -21,9 +21,10 @@ in one feed, and the pages are slow.
 - **Broken**: the workflow's latest finished run on a counted ref failed. It stays broken until a run on such a ref
   passes. A cancelled run changes nothing. Nothing can silence a broken workflow. A workflow disabled or deleted on
   GitHub does not count.
-- **Counted refs**: by default the repository's default branch. Runs started by a pull request never count. The
-  repository's settings can add patterns with wildcards, such as `release/*` or `v*`. They affect only what lights
-  the red marker and the total; every workflow and run stays visible in the Workflows tab.
+- **Counted refs**: by default the repository's default branch, whichever GitHub reports. Runs started by a pull
+  request never count, and there is no setting for that. The repository's settings can add patterns with wildcards,
+  such as `release/*` or `v*`, and switch the default branch off. They affect only what lights the red marker and the
+  total; every workflow and run stays visible in the Workflows tab.
 
 ## Screens, in order
 
@@ -84,8 +85,35 @@ with one key.
 
 ### 5. A repository's ref patterns
 
-The question: which refs light the counters for this repository? A short list of patterns with wildcards, the default
-branch by default. Ideally it shows what a pattern matches, from runs githq already knows.
+The question: which refs light the counters for this repository? Typical reason to open it: a release tag failed and
+lit nothing, or a branch you do not care about keeps the repository red.
+
+What it holds:
+
+- **The default branch**, named as GitHub reports it (for example `main`), on by default and able to be switched off.
+  It is not a pattern the user typed and should not look like one.
+- **Patterns**, a short list in the user's order, usually empty, rarely more than three: add, edit, remove. One list
+  for branches and tags alike. The syntax is GitHub Actions' own: `*` matches anything except `/`, `**` matches
+  anything, so `release/*` matches `release/1.2` but not `release/1.2/hotfix`.
+- **What a pattern matches**, from runs githq already knows: the refs it would count, branch or tag. This is how the
+  user notices that `v*` also catches a branch `v2-experiment`, or that a pattern matches nothing. It can only show refs
+  that have had a run recently, and should not claim more.
+
+Cases to draw:
+
+- the default: only `main`, nothing added;
+- `main` plus `v*`, where `v*` matches the tags `v0.1.0-rc.1` to `rc.3` and a branch `v2-experiment`;
+- a pattern that matches nothing yet, such as `release/*` in a repository with no release branch;
+- the default branch switched off and no patterns: the repository lights nothing, and the screen says so plainly; its
+  workflows are still in the tab;
+- a repository githq has not read yet, so no matches are known.
+
+Where it lives is open. Since this brief was first written, githq gained a Settings screen that lists tracked
+repositories; per-repository settings may belong there, opened from the Workflows tab, or the tab may hold it itself.
+Either way, the way there starts at the Workflows tab, and the pattern list is reachable by keyboard.
+
+These settings follow the user between computers when saving settings to GitHub is on, and stay in this browser
+otherwise. Nothing on this screen needs to say which.
 
 ## States
 
@@ -125,4 +153,4 @@ branch by default. Ideally it shows what a pattern matches, from runs githq alre
 - How to show recent runs in a row so that a pattern reads at a glance, including running and cancelled runs.
 - Whether screen 4 is a full page or uses the app's existing side panel and modal for items.
 - How to move through a big log by keyboard: between steps, between errors, and searching.
-- Whether screen 5 is a dialog, part of the tab, or a page.
+- Whether screen 5 is a dialog, part of the tab, a page, or part of Settings.

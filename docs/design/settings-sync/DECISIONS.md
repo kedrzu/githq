@@ -220,15 +220,19 @@ never landed leaves it) is githq's own: turning on writes the file into it. A re
 **The file is `settings.json`: formatted JSON with a stable key order, a `version` number at the root, next to `repositories` and
 `projects`, arrays in the user's order. An entry says what it is and whether it is tracked, `tracking: true`; entries are never
 removed, because repositories will have settings of their own later and untracking must not throw them away, and so that an
-untracked item doesn't come back when lists are combined. `version` goes up with any new field, and a build that meets a higher number stops syncing ([D12](#d12)) until reloaded.**
-(2026-11-01, owner for `version`, the root layout and `tracking`; projects the same way as repositories, owner; the rest is the
+untracked item doesn't come back when lists are combined. A new field is optional and means its default when absent; every build
+keeps the fields it does not know, at the root and in entries, merges them key by key like the rest and writes them back after
+the known ones. `version` stays 1, and goes up only for a change an older build cannot carry, which stops syncing there
+([D12](#d12)) until reloaded.** (2026-11-01, owner for `version`, the root layout and `tracking`; projects the same way as
+repositories, owner; 2026-11-02, owner for optional fields without raising `version`, parsed with `zod/mini`; the rest is the
 design agent's proposal)
 
 ```json
 {
   "version": 1,
   "repositories": [
-    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true,
+      "workflows": { "defaultBranch": true, "refs": ["v*"] } },
     { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
   ],
   "projects": [
@@ -237,17 +241,28 @@ design agent's proposal)
 }
 ```
 
-**Why.** A reader on github.com gets a readable diff per change, and an older tab can't overwrite a field it doesn't know. A repository tracked again returns to its old place in the sidebar, which is the entries with `tracking: true`, in
-order.
+`workflows` is the first such field, from the GitHub Actions design ([D14 there](../actions/DECISIONS.md#d14)).
+
+**Why.** A reader on github.com gets a readable diff per change. Settings get added one by one, and an owner who reloads every
+open tab and desktop app for each of them would not add them. A build that keeps what it does not know can sit open for days
+without erasing a newer device's settings.
+
+> **Checked 2026-11-02:** builds before this change rebuild every entry from its known keys when writing
+> (`serializeSettings()` in `packages/app/settings/sync/SettingsDocument.ts`, the entry merge in `mergeSettings()`,
+> `applyEntries()` in `packages/app/tracking/TrackingStore.ts`), so they drop a field they do not know.
+
+**Known cost.** A build from before this change, still open in a tab or installed as the desktop app, drops the new fields the
+next time it writes the file, with no message. Accepted by the owner rather than raising `version` once more.
 
 **Rejected.**
 
+- Raising `version` with every new field, so older tabs stop instead of overwriting ([history](history/DECISIONS.md#d13)) — the
+  owner: every new setting would stop every open tab.
+- Raising `version` once more for the first new field and keeping unknown keys from then on — the owner chose no raise.
 - A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
   owner; view details are local ([D7](#d7)).
 - Removing an entry on untrack and keeping only what is tracked — repositories will have settings later, which must survive
   untracking (owner).
-- Preserving unknown keys so older tabs keep syncing past a new field ([history](history/DECISIONS.md#d13)) — nothing to preserve
-  until a second kind of setting exists, and reloading is cheap.
 - Keying repositories by node id — the app identifies them by name throughout
   (`packages/app/tracking/TrackingStore.ts:144`), and the id is stored if renames turn out to matter.
 
