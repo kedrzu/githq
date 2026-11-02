@@ -1,4 +1,5 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { assertValue } from '@nzyme/utils/assert.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
@@ -7,7 +8,7 @@ import { createApp, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { ListMove } from '@/lists/ListTypes.js';
+import type { ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import {
     SAMPLE_PROJECT,
@@ -18,9 +19,10 @@ import {
 } from '@/testing/sampleProject.js';
 import type { SampleProjectViewParams } from '@/testing/sampleProjectView.js';
 import { sampleProjectView } from '@/testing/sampleProjectView.js';
+import { sampleListStack, sampleStack } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
-import type { ProjectView as SavedView } from './ProjectTypes.js';
+import type { ProjectEntry, ProjectView as SavedView } from './ProjectTypes.js';
 import ProjectView from './ProjectView.vue';
 import type { ProjectViewOptions } from './projectViewOptions.js';
 
@@ -103,13 +105,63 @@ test('K6: until GitHub answers a view githq can’t evaluate, it waits — no it
     expect(document.querySelectorAll('[data-entry-key]')).toHaveLength(0);
 });
 
+test('D15: a stack’s entry shows the field values all its pull requests share, “+N” for the fields where they differ', async () => {
+    const pullRequests = sampleStack({ id: 'S_picker', number: 1300, members: [{}, {}] });
+    const nested: ListEntry<ProjectEntry>[] = pullRequests.map((content, index) => ({
+        key: `opt_progress:${content.id}`,
+        id: content.id,
+        value: {
+            item: {
+                itemId: `PVTI_${content.id}`,
+                projectId: 'PVT_q4',
+                contentId: content.id,
+                draft: null,
+                values: {
+                    F_priority: { kind: 'singleSelect', optionId: 'opt_high', name: 'High', color: 'ORANGE' },
+                    F_estimate: { kind: 'number', number: 3 + index },
+                },
+                updatedAt: content.updatedAt,
+                isArchived: false,
+            },
+            content,
+        },
+    }));
+    const stack = sampleListStack(pullRequests);
+    mount(SAMPLE_VIEW_SPRINT, {
+        groups: [
+            {
+                key: 'opt_progress',
+                label: 'In progress',
+                arrived: true,
+                droppable: true,
+                rows: [
+                    {
+                        key: 'opt_progress:stack',
+                        id: `stack:${stack.id}`,
+                        value: assertValue(nested[0]).value,
+                        nested,
+                        stack,
+                    },
+                ],
+            },
+        ],
+    });
+
+    const entry = page.getByRole('listitem').filter({ hasText: 'Part 1 of S_picker' });
+    await expect.element(entry.getByTitle('Priority: High')).toBeVisible();
+    await expect.element(entry.getByTitle(/Story points/)).not.toBeInTheDocument();
+    await expect.element(entry.getByText('+1', { exact: true })).toBeVisible();
+});
+
 interface MountOptions {
     readonly modifiedViews?: SampleProjectViewParams['modifiedViews'];
     readonly canMove?: boolean;
+    /** The groups shown in place of those built from the sample project's items. */
+    readonly groups?: readonly ListGroup<ProjectEntry>[];
 }
 
 /** Mounts the sample project on a saved view, rebuilding the groups from the options it holds, as the page does. */
-function mount(saved: SavedView, { modifiedViews = [], canMove = false }: MountOptions = {}) {
+function mount(saved: SavedView, { modifiedViews = [], canMove = false, groups }: MountOptions = {}) {
     const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries: SAMPLE_PROJECT_ENTRIES });
     const options = shallowRef<ProjectViewOptions>(initial.options);
     const view = {
@@ -138,6 +190,7 @@ function mount(saved: SavedView, { modifiedViews = [], canMove = false }: MountO
                     options: options.value,
                     modifiedViews,
                 }),
+                ...(groups && { groups }),
                 modified: options.value !== initial.options,
                 rowFieldId: 'F_status',
                 viewerLogin: SAMPLE_VIEWER.login,

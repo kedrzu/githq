@@ -126,6 +126,18 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly conflicts?: boolean;
     /** Whose review it asks for (logins). */
     readonly reviewRequests?: readonly string[];
+    /** Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip). */
+    readonly behindBase?: boolean;
+}
+
+/** A stack of open pull requests of the world, as GitHub links them: in one repository, each on the one below. */
+export interface GitHubWorldStackParams {
+    /** `owner/name`. */
+    readonly repository: string;
+    /** Its number in the repository. */
+    readonly number: number;
+    /** Its pull requests, bottom first: the first is based on `main`, each other on the head of the one before. */
+    readonly pullRequests: readonly Omit<GitHubWorldPullRequestParams, 'repository'>[];
 }
 
 /** A repository of the world: what the viewer may do there, and what its pickers offer. */
@@ -315,6 +327,28 @@ interface WorldPullRequest {
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly closes: readonly string[];
+    readonly behindBase: boolean;
+    /** Its place in a stack; `null` for a pull request in none. */
+    readonly stack: WorldStackPlace | null;
+}
+
+/** A stack of pull requests, bottom first. */
+interface WorldStack {
+    readonly id: string;
+    readonly number: number;
+    readonly entries: WorldStackEntry[];
+}
+
+interface WorldStackEntry {
+    readonly item: WorldItem;
+    readonly pullRequest: WorldPullRequest;
+}
+
+/** A pull request's place in its stack. */
+interface WorldStackPlace {
+    readonly stack: WorldStack;
+    /** 1 for the bottom one. */
+    readonly position: number;
 }
 
 interface WorldItem {
@@ -357,6 +391,10 @@ interface WorldMutationHandler<TName extends GitHubWorldMutation> {
 
 /** How many checks a pull request of the world runs. */
 const CHECK_COUNT = 5;
+/** The tip of every base branch of the world; each pull request is up to date with it but those behind it. */
+const BASE_OID = '0000000000000000000000000000000000000001';
+/** Where a pull request behind its base branch was last rebased on. */
+const STALE_BASE_OID = '0000000000000000000000000000000000000002';
 /** A connection the world answers whole: no page after it. */
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
@@ -401,9 +439,9 @@ const PROJECT_FIRST_PAGE = 100;
  * A small GitHub for the e2e tests: repositories with issues and pull requests, some found by the four "my work"
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
- * their query; `ItemsByIds`, `PullRequestStatuses`, `ItemDetails`, `ItemDetail` and `MoreComments` by node id
- * (the check list and the reviews left out); `ItemByNumber`; `RepositoryMetadata`; `ViewerProjects` (every
- * project of the world is the viewer's).
+ * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
+ * `ItemDetail` and `MoreComments` by node id (the check list and the reviews left out); `ItemByNumber`;
+ * `RepositoryMetadata`; `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
  * their organisations' — one hiding its private data left out with an error), a lookup by name, a tracked
@@ -423,6 +461,7 @@ export class GitHubWorld {
     private readonly items = new Map<string, WorldItem>();
     private readonly repositories = new Map<string, WorldRepository>();
     private readonly projects = new Map<string, WorldProject>();
+    private readonly stacks = new Map<string, WorldStack>();
     private readonly organizations = new Map<string, GitHubWorldOrganizationParams>();
     private readonly heldSearches = new Map<MyWorkSearch, Promise<void>>();
     private readonly failures = new Map<string, GitHubWorldFailure>();
@@ -520,15 +559,23 @@ export class GitHubWorld {
 
     /** Adds an open pull request; returns its node id. */
     pullRequest(params: GitHubWorldPullRequestParams): string {
-        const item = this.createItem(`PR_${slug(params.repository)}_${params.number}`, params, {
-            isDraft: params.isDraft ?? false,
-            reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
-            failingChecks: params.failingChecks ?? 0,
-            conflicts: params.conflicts ?? false,
-            reviewRequests: [...(params.reviewRequests ?? [])],
-            closes: params.closes ?? [],
-        });
-        return item.id;
+        return this.createPullRequest(params, null).item.id;
+    }
+
+    /** Adds a stack of open pull requests; returns their node ids, bottom first. */
+    stack(params: GitHubWorldStackParams): string[] {
+        const stack: WorldStack = {
+            id: `PRS_${slug(params.repository)}_${params.number}`,
+            number: params.number,
+            entries: [],
+        };
+        this.stacks.set(stack.id, stack);
+        for (const [index, pullRequest] of params.pullRequests.entries()) {
+            const place = { stack, position: index + 1 };
+            stack.entries.push(this.createPullRequest({ ...pullRequest, repository: params.repository }, place));
+        }
+
+        return stack.entries.map(entry => entry.item.id);
     }
 
     /** The address of an item on github.com. */
@@ -814,6 +861,26 @@ export class GitHubWorld {
                 notFoundErrors(ids, id => this.readItem(id) !== undefined),
             );
         });
+        // Every pull request of each stack, deleted ones left out; a stack the world has not is not there.
+        github.graphql('PullRequestStacks', ({ variables }) => ({
+            nodes: readIds(variables).map(id => {
+                const stack = this.stacks.get(id);
+                if (!stack) {
+                    return null;
+                }
+
+                const entries = stack.entries.filter(entry => !entry.item.deleted);
+                return {
+                    id,
+                    entries: {
+                        totalCount: entries.length,
+                        nodes: entries.slice(0, Number(variables.first)).map(entry => ({
+                            pullRequest: this.toPullRequestNode(entry.item, entry.pullRequest),
+                        })),
+                    },
+                };
+            }),
+        }));
         // Read ahead for "my work" after every poll (D18).
         github.graphql('ItemDetails', ({ variables }) => {
             const ids = readIds(variables);
@@ -1518,6 +1585,21 @@ export class GitHubWorld {
         });
     }
 
+    private createPullRequest(params: GitHubWorldPullRequestParams, stack: WorldStackPlace | null): WorldStackEntry {
+        const pullRequest: WorldPullRequest = {
+            isDraft: params.isDraft ?? false,
+            reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
+            failingChecks: params.failingChecks ?? 0,
+            conflicts: params.conflicts ?? false,
+            reviewRequests: [...(params.reviewRequests ?? [])],
+            closes: params.closes ?? [],
+            behindBase: params.behindBase ?? false,
+            stack,
+        };
+        const item = this.createItem(`PR_${slug(params.repository)}_${params.number}`, params, pullRequest);
+        return { item, pullRequest };
+    }
+
     private createItem(
         id: string,
         params: GitHubWorldItemParams,
@@ -1663,7 +1745,8 @@ export class GitHubWorld {
     }
 
     private toPullRequestNode(item: WorldItem, pullRequest: WorldPullRequest): PullRequestFieldsFragment {
-        const { failingChecks, reviewDecision } = pullRequest;
+        const { failingChecks, reviewDecision, stack: place } = pullRequest;
+        const below = place && place.position > 1 ? place.stack.entries[place.position - 2] : undefined;
         return {
             ...this.createItemFields(item),
             __typename: 'PullRequest',
@@ -1687,11 +1770,15 @@ export class GitHubWorld {
                 nodes: pullRequest.reviewRequests.map(login => ({ requestedReviewer: { login } })),
             },
             latestOpinionatedReviews: { nodes: [] },
+            stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
+            stackEntry: place && { position: place.position },
+            baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : BASE_OID,
+            baseRef: { target: { oid: BASE_OID } },
             additions: 12 * item.number,
             deletions: 3 * item.number,
             changedFiles: 2,
-            headRefName: `change-${item.number}`,
-            baseRefName: 'main',
+            headRefName: toHeadRefName(item),
+            baseRefName: below ? toHeadRefName(below.item) : 'main',
             closingIssuesReferences: { nodes: pullRequest.closes.map(issueId => ({ id: issueId })) },
         };
     }
@@ -2119,6 +2206,11 @@ function parseCursor(value: unknown): number | undefined {
 }
 
 /** `acme/web` → `acme_web`, for node ids. */
+/** The branch a pull request of the world is opened from. */
+function toHeadRefName(item: WorldItem) {
+    return `change-${item.number}`;
+}
+
 function slug(text: string) {
     return text.replace(/[^\w]/g, '_');
 }

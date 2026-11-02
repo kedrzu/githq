@@ -1,5 +1,8 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+
 /**
  * How a list is laid out (D9): rows under group headers, or a board with a column per group. Every list —
  * my work, a repository, a project — offers both, with the same toolbar.
@@ -30,9 +33,26 @@ export interface ListContextMenuProps {
     readonly open: () => void;
 }
 
-/** A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. */
+/**
+ * A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. A
+ * stack's entry (D2, D3) has a synthetic `id` (`stack:<stack id>`, never an item's), its `stack`, the member `Enter`
+ * opens as its `value`, and the stack's pull requests in its group as `nested`, shown only while it is expanded.
+ */
 export interface ListRow<T> extends ListEntry<T> {
     readonly nested: readonly ListEntry<T>[];
+    /** Set on a stack's entry. */
+    readonly stack?: ListStack | null;
+}
+
+/** What a stack's entry stands for: the stack, described, and its pull requests in the entry's group. */
+export interface ListStack {
+    /** The stack's node id: what is expanded, in every list at once (D10). */
+    readonly id: string;
+    readonly description: StackDescription;
+    /** The id of the pull request `Enter` opens (D9): the first open one not yet approved, else the first open one. */
+    readonly open: string;
+    /** The entry's pull requests, in the stack's order: the entry's `nested`, as items. */
+    readonly pullRequests: readonly PullRequestItem[];
 }
 
 /** What a group's header shows before its name. */

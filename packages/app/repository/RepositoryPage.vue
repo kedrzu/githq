@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. In the list, the pull requests of one stack in a group share an entry (`foldStacks`, D3). Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { useCommands } from '@/commands/useCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
@@ -20,6 +21,8 @@ import { ProjectStore } from '@/projects/ProjectStore.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { getProjectPath, getRepositoryKind, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -98,6 +101,23 @@ const repositoryList = computed(() =>
     texts: texts.value,
   }),
 );
+/** The list as shown: a stack's pull requests folded into its entries in the list layout (not tracked, always one). */
+const shownList = computed(() => {
+  const built = repositoryList.value;
+  if (tracked.value && view.options.layout !== 'list') {
+    return built;
+  }
+
+  return {
+    ...built,
+    groups: foldStacks({
+      groups: built.groups,
+      getPullRequest: item => (item.kind === 'pullRequest' ? item : null),
+      stacks: groupStacks(repositoryItems.value),
+      describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
+    }),
+  };
+});
 const openCount = computed(() => repositoryItems.value.filter(item => item.state === 'OPEN').length);
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
@@ -230,7 +250,7 @@ async function track() {
     :name-with-owner="nameWithOwner"
     :is-private="isPrivate"
     :tracked="tracked"
-    :list="repositoryList"
+    :list="shownList"
     :open-count="openCount"
     :projects="projectLinks.links"
     :without-project="projectLinks.withoutProject"

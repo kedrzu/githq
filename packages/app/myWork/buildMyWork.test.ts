@@ -3,9 +3,11 @@ import { expect, test } from 'bun:test';
 
 import type { MyWorkGroup, MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { IssueItem, Item, PullRequestItem } from '@/store/ItemTypes.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
+import { sampleStack } from '@/testing/sampleStacks.js';
 
-import type { MyWork, MyWorkFilter } from './buildMyWork.js';
+import type { MyWork, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
 import { buildMyWork } from './buildMyWork.js';
 
 test('each item shows once, in the first group that applies: review requested, my pull requests, assigned, mentioned', () => {
@@ -196,6 +198,123 @@ test('a filter keeps an assigned issue as the parent of a nested pull request it
     expect(sortedRowIds(build(items, membership, 'needsMe')).assigned).toEqual(['I_1', 'I_2']);
 });
 
+test('a stack is one entry, whole, in the first group any of its pull requests is in, and none of them shows again', () => {
+    // Review asked on two of four; the fourth also mentions me; the first is in no group of my work.
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}, {}] });
+    const plain = pr('PR_plain');
+
+    const work = build([...stack, plain], {
+        reviewRequested: ['PR_S_1_2', 'PR_S_1_3'],
+        authored: [plain.id, 'PR_S_1_4'],
+        mentioned: ['PR_S_1_4'],
+    });
+
+    expect(rowIds(work)).toEqual({ reviewRequested: ['S_1'], authored: ['PR_plain'], assigned: [], mentioned: [] });
+    expect(nestedIds(work, 'S_1')).toEqual(['PR_S_1_1', 'PR_S_1_2', 'PR_S_1_3', 'PR_S_1_4']);
+    expect(work.counts).toEqual({ reviewRequested: 1, authored: 1, assigned: 0, mentioned: 0, total: 2 });
+});
+
+test('without stacks (the board) each pull request of a stack is a plain row of the first group its search found', () => {
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}, {}] });
+    const plain = pr('PR_plain');
+    const items = [...stack, plain];
+    const byId = new Map(items.map(item => [item.id, item]));
+
+    const work = buildMyWork({
+        membership: {
+            reviewRequested: new Set(['PR_S_1_2', 'PR_S_1_3']),
+            authored: new Set([plain.id, 'PR_S_1_4']),
+            mentioned: new Set(['PR_S_1_4']),
+        },
+        getItem: id => byId.get(id),
+        stacks: new Map(),
+        filter: 'all',
+        sort: 'updated',
+    });
+
+    expect(sortedRowIds(work)).toEqual({
+        reviewRequested: ['PR_S_1_2', 'PR_S_1_3'],
+        authored: ['PR_S_1_4', 'PR_plain'],
+        assigned: [],
+        mentioned: [],
+    });
+    expect(work.groups.flatMap(group => group.rows).every(row => row.stack === null)).toBe(true);
+    expect(work.counts.total).toBe(4);
+});
+
+test("a stack's entry nests its open pull requests in the stack's order and opens the first not yet approved", () => {
+    const stack = sampleStack({
+        id: 'S_1',
+        number: 10,
+        members: [{ state: 'MERGED', merged: true }, {}, { reviewDecision: 'REVIEW_REQUIRED' }, { state: 'CLOSED' }],
+    });
+
+    const work = build(stack, { authored: stack.map(member => member.id) });
+
+    const [entry] = work.groups.find(group => group.group === 'authored')?.rows ?? [];
+    expect(entry?.stack?.id).toBe('S_1');
+    expect(entry?.nested.map(member => member.id)).toEqual(['PR_S_1_2', 'PR_S_1_3']);
+    expect(entry?.item.id).toBe('PR_S_1_3');
+});
+
+test("a stack's entry takes the place of its best sorted pull request", () => {
+    const at = (hour: number) => `2026-10-20T${String(hour).padStart(2, '0')}:00:00Z`;
+    const stack = sampleStack({
+        id: 'S_1',
+        number: 10,
+        members: [{ updatedAt: at(1) }, { updatedAt: at(5) }],
+    });
+    const newer = pr('PR_newer', { updatedAt: at(6) });
+    const between = pr('PR_between', { updatedAt: at(3) });
+    const older = pr('PR_older', { updatedAt: at(0) });
+
+    const work = build([...stack, newer, between, older], {
+        authored: [older.id, 'PR_S_1_1', between.id, newer.id],
+    });
+
+    expect(rowIds(work).authored).toEqual(['PR_newer', 'S_1', 'PR_between', 'PR_older']);
+});
+
+test('a stack with one open pull request left is a plain row', () => {
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{ state: 'MERGED', merged: true }, {}] });
+
+    const work = build(stack, { authored: ['PR_S_1_2'] });
+
+    expect(rowIds(work).authored).toEqual(['PR_S_1_2']);
+    expect(work.groups.find(group => group.group === 'authored')?.rows[0]?.stack).toBeNull();
+});
+
+test('a stacked pull request closing an assigned issue stays in its entry; a plain one still moves under the issue', () => {
+    const issue = sampleIssue('I_1');
+    const stack = sampleStack({ id: 'S_1', number: 10, members: [{ closingIssueIds: ['I_1'] }, {}] });
+    const fix = pr('PR_fix', { closingIssueIds: ['I_1'] });
+
+    const work = build([issue, fix, ...stack], {
+        authored: [fix.id, ...stack.map(member => member.id)],
+        assigned: [issue.id],
+    });
+
+    expect(rowIds(work)).toEqual({ reviewRequested: [], authored: ['S_1'], assigned: ['I_1'], mentioned: [] });
+    expect(nestedIds(work, 'I_1')).toEqual(['PR_fix']);
+    expect(nestedIds(work, 'S_1')).toEqual(['PR_S_1_1', 'PR_S_1_2']);
+});
+
+test("a filter keeps a stack's entry, whole, when any of its pull requests matches, and counts it once", () => {
+    const failing = sampleStack({
+        id: 'S_failing',
+        number: 10,
+        members: [{}, { checks: { state: 'FAILURE', passing: 0, failing: 1, pending: 0 } }, {}],
+    });
+    const approved = sampleStack({ id: 'S_approved', number: 20, members: [{}, {}] });
+    const items = [...failing, ...approved];
+
+    const work = build(items, { authored: items.map(item => item.id) }, 'needsMe');
+
+    expect(rowIds(work).authored).toEqual(['S_failing']);
+    expect(nestedIds(work, 'S_failing')).toEqual(['PR_S_failing_1', 'PR_S_failing_2', 'PR_S_failing_3']);
+    expect(work.counts.total).toBe(1);
+});
+
 function build(
     items: readonly Item[],
     groups: Partial<Record<MyWorkGroup, readonly string[]>>,
@@ -209,7 +328,13 @@ function build(
         mentioned: new Set(groups.mentioned),
     };
 
-    return buildMyWork({ membership, getItem: id => byId.get(id), filter, sort: 'updated' });
+    return buildMyWork({
+        membership,
+        getItem: id => byId.get(id),
+        stacks: groupStacks(items),
+        filter,
+        sort: 'updated',
+    });
 }
 
 /** A pull request of the sample, with what the test is about changed. */
@@ -220,7 +345,7 @@ function pr(id: string, overrides: Partial<PullRequestItem> = {}): PullRequestIt
 function rowIds(work: MyWork): Record<MyWorkGroup, string[]> {
     const ids: Record<MyWorkGroup, string[]> = { reviewRequested: [], authored: [], assigned: [], mentioned: [] };
     for (const { group, rows } of work.groups) {
-        ids[group] = rows.map(row => row.item.id);
+        ids[group] = rows.map(rowId);
     }
 
     return ids;
@@ -235,13 +360,19 @@ function sortedRowIds(work: MyWork): Record<MyWorkGroup, string[]> {
     return ids;
 }
 
-function nestedIds(work: MyWork, issueId: string): string[] {
+/** The nested ids of the row of an item, or of a stack's entry by the stack's id. */
+function nestedIds(work: MyWork, id: string): string[] {
     for (const { rows } of work.groups) {
-        const row = rows.find(candidate => candidate.item.id === issueId);
+        const row = rows.find(candidate => rowId(candidate) === id);
         if (row) {
             return row.nested.map(nested => nested.id);
         }
     }
 
     return [];
+}
+
+/** A row's item id, or a stack entry's stack id. */
+function rowId(row: MyWorkRow): string {
+    return row.stack?.id ?? row.item.id;
 }

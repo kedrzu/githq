@@ -58,5 +58,7 @@ export function samplePullRequest(id: string): PullRequestItem {
         checks: null,
         reviewRequests: [],
         latestReviews: [],
+        stack: null,
+        behindBase: false,
     };
 }
