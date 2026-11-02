@@ -87,8 +87,8 @@ raced another device is refused rather than silently overwriting it.
 
 Costs accepted: one more repository in the account, which githq has to hide from its own lists. It does not show on
 the public profile by default. Every write is a commit, so history keeps old settings until the repository is deleted.
-The landing page's permission line (`packages/app/landing/LandingPermission.loc.yaml:2`), "githq only touches issues,
-pull requests and projects", has to change.
+The permission lines on the landing page (`packages/app/landing/LandingPermission.loc.yaml`) and the desktop sign-in
+(`packages/app/desktop/DesktopSignIn.loc.yaml`) say githq also touches, if asked, its own settings repository.
 
 > **Checked 2026-11-01:** "By default, your contribution graph and Achievements only show activity from public
 > repositories." — [Contributions on your profile](https://docs.github.com/en/account-and-profile/concepts/contributions-on-your-profile).
@@ -271,7 +271,7 @@ checks it.
 
 > **Checked 2026-11-01 (live, creating kedrzu/githq-settings):** `POST /user/repos` (private, `auto_init: false`), then
 > `PUT …/contents/settings.json` without `sha` two seconds later → 201, the repository initialised. `PUT` without `sha` on an
-> existing file → 422 "\"sha\" wasn't supplied"; with a stale `sha` → 409. Both are read again and merged. CORS preflight
+> existing file → 422 ""sha" wasn't supplied"; with a stale `sha` → 409. Both are read again and merged. CORS preflight
 > from `http://localhost:8787` for `POST /user/repos` and `PUT …/contents/…` → 204, `allow-origin: *`.
 
 ## D15
