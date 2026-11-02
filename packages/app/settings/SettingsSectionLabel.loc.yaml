@@ -1,8 +1,6 @@
-repositories:
-  en: Repositories
-projects:
-  en: Projects
-saving:
-  en: Saving to GitHub
+tracking:
+  en: What to track
+sync:
+  en: Sync settings
 account:
   en: Account

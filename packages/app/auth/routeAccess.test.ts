@@ -23,13 +23,13 @@ test('signed out, an app route sends to the landing page with the way back', () 
 });
 
 test('a section of Settings keeps its address through the guard: to the landing page, and to the first choice', () => {
-    const saving = route('/settings?tab=saving', 'signedIn', { tab: 'saving' });
-    expect(resolveRouteAccess(saving, SIGNED_OUT)).toEqual({ path: '/', query: { next: '/settings?tab=saving' } });
-    expect(resolveRouteAccess(saving, FIRST_SIGN_IN)).toEqual({
+    const sync = route('/settings?tab=sync', 'signedIn', { tab: 'sync' });
+    expect(resolveRouteAccess(sync, SIGNED_OUT)).toEqual({ path: '/', query: { next: '/settings?tab=sync' } });
+    expect(resolveRouteAccess(sync, FIRST_SIGN_IN)).toEqual({
         path: '/settings/tracking/new',
-        query: { next: '/settings?tab=saving' },
+        query: { next: '/settings?tab=sync' },
     });
-    expect(resolveRouteAccess(saving, SIGNED_IN)).toBeUndefined();
+    expect(resolveRouteAccess(sync, SIGNED_IN)).toBeUndefined();
 });
 
 test('signed out, home is the landing page, whatever its address carries — never sent on, so never a loop', () => {

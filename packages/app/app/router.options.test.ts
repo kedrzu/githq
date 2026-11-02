@@ -46,7 +46,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3/views/2', 'project-org'],
     ['/users/kedrzu/projects/7', 'project-user'],
     ['/settings', 'settings'],
-    ['/settings?tab=saving', 'settings'],
+    ['/settings?tab=sync', 'settings'],
     ['/settings/tracking/new', 'tracking-choice'],
     ['/settings/tracking/download', 'first-download'],
     ['/auth/callback', 'auth-callback'],
@@ -111,15 +111,19 @@ test("tracking's old address settles on Settings, keeping the section, and never
     expect(settle('/settings/tracking?tab=projects#top')).toBe('/settings?tab=projects#top');
 });
 
-test("Settings' section is its `?tab=`; none or an unknown one is the first", () => {
+test("Settings' section is its `?tab=`; none, an unknown or an old one is the first", () => {
     for (const section of SETTINGS_SECTIONS) {
         expect(readSettingsSection(router.resolve(getSettingsPath(section)).query.tab)).toBe(section);
     }
 
-    expect(getSettingsPath('repositories')).toBe('/settings');
-    expect(readSettingsSection(undefined)).toBe('repositories');
-    expect(readSettingsSection('unknown')).toBe('repositories');
-    expect(readSettingsSection(['account'])).toBe('repositories');
+    expect(getSettingsPath('tracking')).toBe('/settings');
+    expect(readSettingsSection(undefined)).toBe('tracking');
+    expect(readSettingsSection('unknown')).toBe('tracking');
+    expect(readSettingsSection(['account'])).toBe('tracking');
+    // The sections an old address names are gone into the first, with no alias.
+    for (const old of ['repositories', 'projects', 'saving']) {
+        expect(readSettingsSection(old)).toBe('tracking');
+    }
 });
 
 test('home and every group of "my work" are one page instance', () => {
