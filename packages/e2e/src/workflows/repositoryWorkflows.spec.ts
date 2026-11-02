@@ -96,8 +96,8 @@ test('Enter unfolds a workflow in place — the kept runs at once, older ones re
     await page.keyboard.press('Enter');
     const runs = repository.runsOf('Probe');
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'true');
-    await expect(runs.locator('button[data-mark]')).toHaveCount(24);
-    await expect(runs.locator('button[data-mark]').last()).toContainText(/^#1\s*main\s*push/u);
+    await expect(repository.runLines('Probe')).toHaveCount(24);
+    await expect(repository.runLines('Probe').last()).toContainText(/^#1\s*main\s*push/u);
     await expect(runs).toContainText(/#23\s*feature\s*pull_request/u);
     await expect(repository.root.getByText(/Open run/u)).toBeVisible();
 
@@ -105,7 +105,7 @@ test('Enter unfolds a workflow in place — the kept runs at once, older ones re
     await page.keyboard.type('feat');
     await page.keyboard.press('Enter');
     await expect(runs.getByRole('button', { name: 'feature', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await expect(runs.locator('button[data-mark]')).toHaveCount(2);
+    await expect(repository.runLines('Probe')).toHaveCount(2);
 
     const run = `/${SAMPLE_REPOSITORY}/actions/runs/24`;
     github.web(run, () => ({ status: 200, body: '<title>Run</title>' }));
@@ -117,7 +117,7 @@ test('Enter unfolds a workflow in place — the kept runs at once, older ones re
     // Esc shows every ref again, then folds.
     await page.bringToFront();
     await page.keyboard.press('Escape');
-    await expect(runs.locator('button[data-mark]')).toHaveCount(24);
+    await expect(repository.runLines('Probe')).toHaveCount(24);
     await page.keyboard.press('ArrowLeft');
     await expect(runs).toHaveCount(0);
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');

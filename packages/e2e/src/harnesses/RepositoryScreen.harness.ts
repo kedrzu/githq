@@ -76,12 +76,17 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('button', { name, exact: true });
     }
 
-    /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
     /** The runs of the workflow `name` unfolded under its row (actions W3b): its ref filter and a button per run. */
     runsOf(name: string): Locator {
         return this.root.getByRole('group', { name: `Runs of ${name}`, exact: true });
     }
 
+    /** The lines of the runs of the workflow `name` unfolded under its row. */
+    runLines(name: string): Locator {
+        return this.runsOf(name).locator('button[data-mark]');
+    }
+
+    /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
     get alertsBar(): Locator {
         return this.root.getByTestId('workflow-alerts-bar');
     }
