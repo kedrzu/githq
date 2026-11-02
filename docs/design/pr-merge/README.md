@@ -73,5 +73,4 @@ How a stack looks in lists and how it merges as a whole is [its own design](../s
 ## Where this stands
 
 The design is closed, and the screens are drawn: [the brief lists them](ui/merge-a-pull-request.md#the-screens). It is
-being built. The note in the pull request's merge panel saying that merging happens on GitHub stays true until the build
-changes it, so it goes with the build.
+being built, and githq merges pull requests now: the note saying that merging happens on GitHub is gone.

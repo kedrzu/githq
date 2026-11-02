@@ -228,7 +228,6 @@ test('the options read on opening come back, partial errors and all, and their s
     const options = await reading;
 
     expect(options).toMatchObject({
-        baseRefName: 'main',
         proposedTexts: { SQUASH: { title: 'Fix the login loop (#2)', body: 'Fix it' } },
         requiresLinearHistory: false,
         status: { headRefOid: 'fresh-head' },

@@ -4,10 +4,6 @@ close:
   en: Esc to close
 reading:
   en: Reading
-beingMerged:
-  en: Being merged
-beingMergedDetail:
-  en: GitHub accepted it · not merged yet
 refused:
   en: GitHub refused the merge
 nothingMerged:

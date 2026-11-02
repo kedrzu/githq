@@ -1,6 +1,7 @@
 <!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives. Approvals are counted without "of N" (D14). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -25,6 +26,7 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
+import { useCheckTexts } from './useCheckTexts.js';
 import { usePullRequestVerdict } from './usePullRequestVerdict.js';
 import type { PullRequestVerdictTone } from './usePullRequestVerdict.js';
 
@@ -53,6 +55,7 @@ interface Line {
 }
 
 const t = useTranslate();
+const checkTexts = useCheckTexts();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const names = new Intl.ListFormat(APP_LANGUAGE);
 
@@ -88,33 +91,19 @@ const head = computed(() => {
 const filesUrl = computed(() => `${props.pr.url}/files`);
 
 function checksLine(): Line {
-  const { checks } = props.pr;
-  if (!checks || checks.passing + checks.failing + checks.pending === 0) {
-    return { tone: 'muted', icon: CircleDashed, text: t(l.noChecks) };
+  const { state, text } = checkTexts.summarize(props.pr.checks);
+  switch (state) {
+    case 'skipped':
+      return { tone: 'muted', icon: CircleDashed, text };
+    case 'passing':
+      return { tone: 'success', icon: CircleCheck, text };
+    case 'failing':
+      return { tone: 'danger', icon: CircleX, text };
+    case 'pending':
+      return { tone: 'warning', icon: Hourglass, text };
+    default:
+      return assertNever(state);
   }
-
-  if (checks.failing === 0 && checks.pending === 0) {
-    return { tone: 'success', icon: CircleCheck, text: t(l.allPassed, { count: checks.passing }) };
-  }
-
-  const parts: string[] = [];
-  if (checks.failing > 0) {
-    parts.push(t(l.failingCount, { count: numbers.format(checks.failing) }));
-  }
-
-  if (checks.pending > 0) {
-    parts.push(t(l.runningCount, { count: numbers.format(checks.pending) }));
-  }
-
-  if (checks.passing > 0) {
-    parts.push(t(l.passedCount, { count: numbers.format(checks.passing) }));
-  }
-
-  return {
-    tone: checks.failing > 0 ? 'danger' : 'warning',
-    icon: checks.failing > 0 ? CircleX : Hourglass,
-    text: parts.join(', '),
-  };
 }
 
 function reviewsLine(): Line {

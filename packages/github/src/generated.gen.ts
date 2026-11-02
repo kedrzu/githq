@@ -2372,7 +2372,6 @@ export type PullRequestMergeOptionsQuery = {
     node:
         | {
               __typename: 'PullRequest';
-              baseRefName: string;
               viewerCanMergeAsAdmin: boolean;
               viewerCanEnableAutoMerge: boolean;
               isMergeQueueEnabled: boolean;
@@ -9894,7 +9893,6 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
   node(id: $id) {
     ... on PullRequest {
       ...PullRequestStatusFields
-      baseRefName
       mergeHeadline: viewerMergeHeadlineText(mergeType: MERGE)
       mergeBody: viewerMergeBodyText(mergeType: MERGE)
       squashHeadline: viewerMergeHeadlineText(mergeType: SQUASH)

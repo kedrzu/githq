@@ -54,7 +54,6 @@ test('reads the status, the proposed texts, what the viewer may do and the check
 
     const expected: MergeOptions = {
         status: toPullRequestStatus(node),
-        baseRefName: 'main',
         proposedTexts: {
             MERGE: { title: 'Merge pull request #5 from acme/feature', body: 'Fix the login loop' },
             SQUASH: { title: 'Fix the login loop (#5)', body: '* Fix it\n\n* Test it' },

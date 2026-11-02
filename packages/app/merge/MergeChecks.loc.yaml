@@ -1,12 +1,5 @@
 checks:
   en: Checks
-noChecks:
-  en: None run
-allPassed:
-  plural: count
-  en:
-    one: Passed
-    many: All {count} passed
 requiredFailed:
   en: '{count} required failed'
 requiredRunning:
@@ -15,10 +8,6 @@ otherFailed:
   en: '{count} other failed'
 otherRunning:
   en: '{count} other running'
-failing:
-  en: '{count} failing'
-running:
-  en: '{count} running'
 passed:
   en: '{count} passed'
 skipped:
@@ -43,20 +32,6 @@ required:
   en: Required
 notStopping:
   en: "{detail} · doesn't stop the merge"
-stateFailedAfter:
-  en: failed after {duration}
-stateFailed:
-  en: failed
-stateRunningFor:
-  en: running for {duration}
-stateQueued:
-  en: queued
-statePassedIn:
-  en: passed in {duration}
-statePassed:
-  en: passed
-stateSkipped:
-  en: skipped
 log:
   en: Log
 logOf:

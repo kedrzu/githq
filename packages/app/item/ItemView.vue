@@ -1,5 +1,6 @@
 <!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
+import type { Translation } from '@nzyme/i18n-core';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -11,10 +12,7 @@ import {
   CircleCheckBig,
   CircleDot,
   CircleSlash,
-  GitMerge,
-  GitPullRequest,
   GitPullRequestClosed,
-  GitPullRequestDraft,
   ChevronDown,
   FileDiff,
   GitBranch,
@@ -53,6 +51,7 @@ import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
+import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -128,6 +127,14 @@ const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
   modal: AppWindow,
   page: Maximize2,
 };
+
+/** A pull request's state in words, by the tone of its icon. */
+const PULL_REQUEST_STATES = {
+  done: l.merged,
+  closed: l.closedUnmerged,
+  draft: l.draft,
+  open: l.open,
+} satisfies Record<StatePillTone, Translation>;
 
 /** What is typed into the comment box and not posted yet. */
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
@@ -212,17 +219,8 @@ const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string
     }
   }
 
-  if (item.merged) {
-    return { icon: GitMerge, tone: 'done', text: t(l.merged) };
-  }
-
-  if (item.state !== 'OPEN') {
-    return { icon: GitPullRequestClosed, tone: 'closed', text: t(l.closedUnmerged) };
-  }
-
-  return item.isDraft
-    ? { icon: GitPullRequestDraft, tone: 'draft', text: t(l.draft) }
-    : { icon: GitPullRequest, tone: 'open', text: t(l.open) };
+  const kind = getPullRequestKind(item);
+  return { ...kind, text: t(PULL_REQUEST_STATES[kind.tone]) };
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);

@@ -30,7 +30,6 @@ export function toMergeOptions(node: MergeOptionsNode): MergeOptions | null {
 
     return {
         status: toPullRequestStatus(node),
-        baseRefName: node.baseRefName,
         proposedTexts: {
             MERGE: { title: node.mergeHeadline, body: node.mergeBody },
             SQUASH: { title: node.squashHeadline, body: node.squashBody },

@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and ←/→ move between them. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and ←/→ move between them. The choice can't be cleared, only changed. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -11,7 +11,7 @@ export interface SegmentedTabsOption<T extends string> {
   /** The icon alone, `label` read out only (List / Board). */
   iconOnly?: boolean;
   disabled?: boolean;
-  /** The option's key ("1"), for `aria-keyshortcuts`; the caller handles the key. */
+  /** The option's key ("1"), for `aria-keyshortcuts` (and shown with `showKeys`); the caller handles the key. */
   keyshortcuts?: string;
   /** How many it holds, dim after the label ("Repositories 15"). */
   count?: number;
@@ -33,8 +33,10 @@ const props = withDefaults(
     variant?: 'boxed' | 'plain';
     /** The options wrap onto more lines when they don't fit (a long choice inline in the display options). */
     wrap?: boolean;
+    /** Each option's key shown dim after its label (the merge panel's methods, "Squash 1"). */
+    showKeys?: boolean;
   }>(),
-  { variant: 'plain', wrap: false },
+  { variant: 'plain', wrap: false, showKeys: false },
 );
 
 const model = defineModel<T>({ required: true });
@@ -76,6 +78,12 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
         v-if="option.count != null"
         :class="css.segmentedTabs_count"
         >{{ option.count }}</span
+      >
+      <span
+        v-if="showKeys && option.keyshortcuts"
+        :class="css.segmentedTabs_count"
+        aria-hidden="true"
+        >{{ option.keyshortcuts }}</span
       >
       <span
         v-if="option.attention"

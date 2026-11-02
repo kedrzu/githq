@@ -1,6 +1,6 @@
 <!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). `⌘↵` merges at once, before the panel's read arrives too: unedited text is then GitHub's default, and only edited text is ever sent. When the read takes the chosen method away, the panel moves to the default and says so once. Being merged, it says so and offers nothing to repeat; refused at once, it stays with the text and GitHub's reason. The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
 <script lang="ts" setup>
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
+import type { MergeStateStatus, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -9,9 +9,6 @@ import {
   CircleCheck,
   CircleX,
   GitMerge,
-  GitPullRequest,
-  GitPullRequestClosed,
-  GitPullRequestDraft,
   Info,
   LoaderCircle,
   MessageSquareWarning,
@@ -24,17 +21,21 @@ import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
+import SegmentedTabs from '@/components/SegmentedTabs.vue';
+import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { usePullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import type { PullRequestVerdictTone } from '@/item/usePullRequestVerdict.js';
+import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import { countMergeChecks } from './countMergeChecks.js';
+import { getAttentionChecks } from './getAttentionChecks.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
-import MergeChecks, { getAttentionChecks } from './MergeChecks.vue';
+import MergeChecks from './MergeChecks.vue';
 import * as l from './MergePanel.loc.js';
 import type { MergeCommitText, MergeOptions, MergeRequest } from './MergeTypes.js';
 
@@ -84,8 +85,6 @@ interface MethodNotice {
   readonly to: PullRequestMergeMethod | null;
 }
 
-/** What GitHub's status says when it would merge now: requirements met (an optional check may still fail). */
-const READY_STATES = new Set(['CLEAN', 'HAS_HOOKS', 'UNSTABLE']);
 const PEEK_LINES = 3;
 
 const t = useTranslate();
@@ -95,6 +94,9 @@ const { verdict: standingVerdict, mergeable } = usePullRequestVerdict(() => prop
 
 const offered = computed(() => (props.settings ? getMergeMethods(props.settings, props.options) : null));
 const methods = computed(() => offered.value?.methods ?? []);
+const methodOptions = computed((): SegmentedTabsOption<PullRequestMergeMethod>[] =>
+  methods.value.map((choice, index) => ({ value: choice, label: methodName(choice), keyshortcuts: String(index + 1) })),
+);
 const method = ref<PullRequestMergeMethod | null>(offered.value?.defaultMethod ?? null);
 const notice = ref<MethodNotice | null>(null);
 /** The commit texts the user edited, per method: the text follows the method. */
@@ -117,7 +119,7 @@ const ready = computed(() => {
 
   const current = counts.value;
   if (current && !getPullRequestStanding(pr).conflicts) {
-    return current.requiredFailing + current.requiredPending === 0 && READY_STATES.has(pr.mergeStateStatus);
+    return current.requiredFailing + current.requiredPending === 0 && isReadyState(pr.mergeStateStatus);
   }
 
   return mergeable.value;
@@ -126,13 +128,7 @@ const ready = computed(() => {
 const verdict = computed((): PanelVerdict => {
   const { pr } = props;
   if (merging.value) {
-    return {
-      kind: 'merging',
-      tone: 'warning',
-      icon: LoaderCircle,
-      text: t(l.beingMerged),
-      aside: t(l.beingMergedDetail),
-    };
+    return { kind: 'merging', ...standingVerdict.value };
   }
 
   if (props.refusal) {
@@ -233,18 +229,7 @@ const checksHint = computed(() => {
 
   return hasAttention.value ? t(l.hintAllChecks) : t(l.hintChecks);
 });
-const typeIcon = computed((): { icon: LucideIcon; tone: string } => {
-  const { pr } = props;
-  if (pr.merged) {
-    return { icon: GitMerge, tone: 'merged' };
-  }
-
-  if (pr.state !== 'OPEN') {
-    return { icon: GitPullRequestClosed, tone: 'closed' };
-  }
-
-  return pr.isDraft ? { icon: GitPullRequestDraft, tone: 'draft' } : { icon: GitPullRequest, tone: 'open' };
-});
+const typeIcon = computed(() => getPullRequestKind(props.pr));
 const reference = computed(() => `${props.pr.repository.nameWithOwner}#${props.pr.number}`);
 const refusalText = computed(() => {
   const reason = props.refusal;
@@ -306,6 +291,24 @@ watch(proposal, text => {
     void edit();
   }
 });
+
+/** What GitHub's status says when it would merge now: requirements met (an optional check may still fail). */
+function isReadyState(status: MergeStateStatus) {
+  switch (status) {
+    case 'CLEAN':
+    case 'HAS_HOOKS':
+    case 'UNSTABLE':
+      return true;
+    case 'BEHIND':
+    case 'BLOCKED':
+    case 'DIRTY':
+    case 'DRAFT':
+    case 'UNKNOWN':
+      return false;
+    default:
+      return assertNever(status);
+  }
+}
 
 function methodName(value: PullRequestMergeMethod) {
   switch (value) {
@@ -563,29 +566,14 @@ function onOpenFocus(event: Event) {
             <dt :class="css.mergePanel_lineKey">{{ t(l.method) }}</dt>
             <dd :class="css.mergePanel_lineValue">
               <div :class="css.mergePanel_methodRow">
-                <div
-                  v-if="choosable"
-                  :class="css.mergePanel_methods"
-                  role="group"
-                  :aria-label="t(l.methodsLabel)"
-                >
-                  <button
-                    v-for="(choice, index) in methods"
-                    :key="choice"
-                    type="button"
-                    :class="[css.mergePanel_method, choice === method && css.mergePanel_method_chosen]"
-                    :aria-pressed="choice === method"
-                    :aria-keyshortcuts="String(index + 1)"
-                    @click="choose(choice)"
-                  >
-                    {{ methodName(choice) }}
-                    <span
-                      :class="css.mergePanel_methodKey"
-                      aria-hidden="true"
-                      >{{ index + 1 }}</span
-                    >
-                  </button>
-                </div>
+                <SegmentedTabs
+                  v-if="choosable && method"
+                  :model-value="method"
+                  :label="t(l.methodsLabel)"
+                  :options="methodOptions"
+                  show-keys
+                  @update:model-value="choose"
+                />
                 <template v-else>
                   <span :class="css.mergePanel_methodName">{{
                     shownMethod ? methodName(shownMethod) : t(l.noMethod, { base: pr.baseRefName })
@@ -819,7 +807,7 @@ function onOpenFocus(event: Event) {
   color: $color-fg-3;
 }
 
-.mergePanel_typeIcon_merged {
+.mergePanel_typeIcon_done {
   color: $color-purple;
 }
 
@@ -1037,46 +1025,6 @@ function onOpenFocus(event: Event) {
   align-items: center;
   min-height: 24px;
   white-space: nowrap;
-}
-
-.mergePanel_methods {
-  display: flex;
-  gap: $spacing-2;
-  align-items: center;
-}
-
-.mergePanel_method {
-  @include focus-ring;
-
-  display: inline-flex;
-  gap: $spacing-6;
-  align-items: center;
-  padding: 3px $spacing-6 3px 9px;
-  font-family: $font-family-sans;
-  font-size: $font-size-sm;
-  color: $color-fg-2;
-  cursor: pointer;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: $radius-md;
-
-  &:hover {
-    color: $color-fg;
-  }
-}
-
-.mergePanel_method_chosen {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
-  border-color: $color-border-2;
-}
-
-.mergePanel_methodKey {
-  font-family: $font-family-mono;
-  font-size: 10.5px;
-  font-weight: $font-weight-normal;
-  color: $color-fg-dim;
 }
 
 .mergePanel_methodName {

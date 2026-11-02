@@ -11,7 +11,6 @@ import type { PullRequestStatus } from '@/store/ItemTypes.js';
  */
 export interface MergeOptions {
     readonly status: PullRequestStatus;
-    readonly baseRefName: string;
     /** The commit texts GitHub proposes to the viewer; a rebase makes no commit of its own, so it has none. */
     readonly proposedTexts: { readonly MERGE: MergeCommitText; readonly SQUASH: MergeCommitText };
     /**

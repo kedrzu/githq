@@ -8,20 +8,6 @@ passedCount:
   en: '{count} passed'
 skippedCount:
   en: '{count} skipped'
-failedAfter:
-  en: failed after {duration}
-failed:
-  en: failed
-runningFor:
-  en: running for {duration}
-queued:
-  en: queued
-passedIn:
-  en: passed in {duration}
-passed:
-  en: passed
-skipped:
-  en: skipped
 log:
   en: Log
 showPassed:

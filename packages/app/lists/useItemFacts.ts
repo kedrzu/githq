@@ -1,3 +1,4 @@
+import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
@@ -8,9 +9,6 @@ import {
     CircleSlash,
     CircleX,
     Eye,
-    GitMerge,
-    GitPullRequest,
-    GitPullRequestClosed,
     GitPullRequestDraft,
     Hourglass,
     Loader,
@@ -26,6 +24,7 @@ import { formatAge } from '@/utils/formatAge.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
+import { getPullRequestKind } from './utils/getPullRequestKind.js';
 
 /** Which item and how it is listed. */
 export interface UseItemFactsOptions {
@@ -80,6 +79,14 @@ export interface ItemFactsViewModel {
     readonly size: string | null;
     readonly projectField: ItemProjectFieldFact | null;
 }
+
+/** A pull request's kind and state read out, by the tone of its icon. */
+const PULL_REQUEST_LABELS = {
+    done: l.mergedPullRequest,
+    closed: l.closedPullRequest,
+    draft: l.draftPullRequest,
+    open: l.openPullRequest,
+} satisfies Record<ItemKindFact['tone'], Translation>;
 
 /**
  * What a row or a card of an issue or a pull request says about it: its kind and state, its reference, people,
@@ -154,17 +161,8 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 : { icon: CircleSlash, label: t(l.notPlannedIssue), tone: 'draft' };
         }
 
-        if (listed.merged) {
-            return { icon: GitMerge, label: t(l.mergedPullRequest), tone: 'done' };
-        }
-
-        if (listed.state !== 'OPEN') {
-            return { icon: GitPullRequestClosed, label: t(l.closedPullRequest), tone: 'closed' };
-        }
-
-        return listed.isDraft
-            ? { icon: GitPullRequestDraft, label: t(l.draftPullRequest), tone: 'draft' }
-            : { icon: GitPullRequest, label: t(l.openPullRequest), tone: 'open' };
+        const pullRequestKind = getPullRequestKind(listed);
+        return { ...pullRequestKind, label: t(PULL_REQUEST_LABELS[pullRequestKind.tone]) };
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {

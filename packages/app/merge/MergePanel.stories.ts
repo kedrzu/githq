@@ -54,7 +54,6 @@ const PASSED: readonly MergeCheck[] = [
 
 const OPTIONS: MergeOptions = {
     status: PR,
-    baseRefName: 'main',
     proposedTexts: {
         SQUASH: { title: 'Retry Stripe webhook delivery on 5xx (#477)', body: SQUASH_BODY },
         MERGE: {
