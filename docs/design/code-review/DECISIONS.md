@@ -135,14 +135,38 @@ threshold for size is not set)
 
 ## D9
 
-**The "viewed" mark is GitHub's own, read and written through the API, so it agrees with github.com both ways; the
-file list can be filtered as on github.com, and hiding viewed files makes the list shrink as you read.**
-(2026-11-02, owner)
+**The "viewed" mark is GitHub's own, read and written through the API, so it agrees with github.com both ways. The
+file list shows which files are viewed (icon or colour left to the screen design) and can be filtered as on
+github.com. With viewed files filtered out, marking a file viewed removes it from the list and from the diff at
+once, and the next file takes its place on screen.** (2026-11-02, owner: "exactly as on GitHub, and it's quite
+nice")
 
-**Why.** The owner marks files as seen so they stop showing up while reading a pull request.
+**Why.** The owner marks files as seen so they stop showing up; the list shrinks as the pull request is read. The
+jump is wanted here: it is the next file arriving. In terms of [D7](#d7) the position moves to the next visible file,
+which starts at the top of the screen, or where the removed file started if that was lower. GitHub drops the mark
+when the file changes in a later push, so a second round of review shows only what changed since.
 
 > **Checked 2026-11-02:** `PullRequestChangedFile.viewerViewedState` and the mutations `markFileAsViewed` /
 > `unmarkFileAsViewed` (`path`, `pullRequestId`) exist ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls)).
+
+**Rejected.**
+
+- Collapsing a viewed file to its header in the diff and filtering only the list (agent) — owner prefers GitHub's
+  behaviour; the next file arriving is not a disturbing jump.
+
+## D10
+
+**Files can be selected several at a time in the file list, and an action — first of all marking them viewed —
+applies to all of them: click, Shift+click for a range, Cmd/Ctrl+click to add one; from the keyboard the same keys
+as githq's lists.** (2026-11-02, owner; keyboard by agent)
+
+**Why.** Many files in a pull request are of no interest, and marking them one by one is click after click (owner).
+
+> **Checked 2026-11-02:** githq's lists toggle a row with `x`, extend the selection with `Shift+J` / `Shift+K` and
+> clear it with `Escape` (`packages/app/lists/ListView.vue:284-320`).
+
+Marking many files viewed is many `markFileAsViewed` mutations; they go in one GraphQL request (aliases), shown at
+once, as every edit in githq.
 
 ## Q5
 

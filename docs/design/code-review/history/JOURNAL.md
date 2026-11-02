@@ -29,3 +29,8 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   ("not only for performance") → D8 (Q3 closed; size threshold unset). Owner wants GitHub's viewed mark and filters
   like github.com, hiding viewed files so the list shrinks → D9. Asked: does hiding viewed act on the file list only
   or also on the diff; which other filters.
+- 2026-11-02 — Owner: with viewed filtered out, marking viewed removes the file from both list and diff, as on GitHub;
+  the jump is fine (next file takes its place) → D9 sharpened, agent's collapse-in-place rejected. Owner wants
+  multi-select in the file list (Shift+click range, Cmd+click add) to mark many viewed at once, and the viewed state
+  shown in the list (icon or colour to the designs) → D10. Unanswered: file list hideable as a remembered switch;
+  which filters besides viewed.
