@@ -392,8 +392,8 @@ proposal)
 
 ## D24
 
-**The review is a page of its own: the app sidebar as a rail, the review's toolbar, the stack bar, then three
-columns — the file list (300 px, left), the diff, the conversation (340 px, right) — and the status bar. A file is a
+**The review is a page of its own: the app sidebar as a rail, the review's toolbar, then three columns — on the left
+the stack and the file list (300 px), the diff, the conversation (340 px, right) — and the status bar. A file is a
 block with its header pinned while it is in view; threads sit under their line on the side they belong to, in split
 as in unified.** (2026-11-02, agent, screens CR1–CR6)
 
@@ -402,16 +402,20 @@ status bar already says how fresh things are and serves for loading and the API 
 
 ## D25
 
-**The stack sits in the same Stack bar a pull request has in a panel ([stacked-prs D25](../stacked-prs/DECISIONS.md#d25)),
-across the top of the review, above both columns.** (2026-11-02, agent's recommendation, waiting for the owner:
-`Variants · Where the stack sits beside the file list`, CR40–CR42)
+**The stack sits at the top of the left column, above the file list: a head with its name and "2 of 4", then one row
+per pull request, first to last, each a click, the open one highlighted, a row with your draft carrying an amber dot.
+Once the list scrolls, the rows scroll away and a 32 px bar stays pinned in their place, with the stack's name and
+one square per pull request, as the pull request's stack bar in a panel ([stacked-prs D25](../stacked-prs/DECISIONS.md#d25));
+the file list's head (filter, viewed toggle) stays pinned right under it. A pull request outside a stack has no stack
+section.** (2026-11-02, owner's pick of the agent's third variant, with the pinned bar added by the owner; CR47, CR48)
 
-**Why.** 36 px of height and no width; one click per square; it already marks the open one and each state.
+**Why.** The rows say what each pull request is, the bar keeps one click per pull request once you are reading, and
+nothing takes height from the diff.
 
-**Rejected (proposed).**
+**Rejected.**
 
-- Squares in the review's toolbar (CR41) — the stack loses its name and the toolbar crowds on a laptop.
-- The stack's rows on top of the file list (CR42) — takes 130 px or more of the list on every pull request.
+- The Stack bar across the top of the review, above both columns (agent's first recommendation, CR40).
+- The squares in the review's toolbar (CR41) — the stack loses its name and the toolbar crowds on a laptop.
 
 ## D26
 
@@ -436,19 +440,23 @@ read like the folder icons; CR46)
 
 ## D28
 
-**An unsent draft shows four ways, all amber: on the review, a 40 px strip under the stack bar saying it isn't sent,
-how many comments wait and who can't answer, with Submit review… (⇧S) and Discard, and no close button; on the
-stack bar, an amber dot on that pull request's square; in lists, the row's second line says "Your draft review · 3
-comments unsent" in place of its other state; in the app sidebar, "Unsent drafts" with a count at the very top, above
-My work, only while there is at least one, opening a list of them (an amber pencil with a badge on the rail).**
-(2026-11-02, agent; the review's warning waits for the owner: `Variants · How an unsent draft shows on the review`,
-CR30–CR32; lists and sidebar CR33, CR34)
+**An unsent draft shows four ways, all amber. On the review, a block in the file list's column with what's wrong ("Your
+draft review isn't sent"), the count, who can't answer, Submit review… (⇧S) and Discard, with no close button; the
+stack row of that pull request (and its square in the pinned bar) carries an amber dot. In lists, the row's second
+line says "Your draft review · 3 comments unsent" in place of its other state. In the app sidebar, "Unsent drafts"
+with a count at the very top, above My work, only while there is at least one, opening a list of them (an amber pencil
+with a badge on the rail). A refused submission turns the same block red.** (2026-11-02, owner: in the left column,
+pinned to its top or its foot; which of the two waits for the owner: `Variants · How an unsent draft shows on the
+review`, CR35–CR38, foot recommended; lists and sidebar CR33, CR34)
 
-**Why.** Above My work because it is the one thing in the sidebar that blocks someone else. Amber is already the
-app's "something is off" colour, and nothing else on the review is amber except outdated threads.
+**Why.** The left column has room the diff doesn't need. At the foot it takes nothing from the stack or the filter and
+stays put while the list scrolls; above the stack it would read as if it were about the whole stack.
 
-**Rejected (proposed).** The toolbar tinted amber (CR31) — saves 40 px but is easy to stop seeing. A floating bar
-over the diff (CR32) — covers code and reads as a toast that forgot to leave.
+**Rejected.**
+
+- A strip across the review under the stack bar (CR30) — takes height from the code (owner).
+- The review's toolbar tinted amber (CR31) — ugly, and the toolbar's buttons look wrong on it (owner).
+- A bar floating over the diff (CR32) — covers the screen (owner).
 
 ## D29
 
@@ -492,8 +500,8 @@ submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
 default, set in Settings."), and both buttons carry their label and key: Comment ⌘↵ / Start a review ⌘⇧↵, or Start a
 review ⌘↵ / Comment now ⌘⇧↵. With a draft open: Add to draft ⌘↵ / Submit draft (4 comments) ⌘⇧↵, and the line under
 the text, in amber, says a single comment isn't possible. Submitting opens a dialog over the review — summary, then
-Comment, Approve or Request changes on 1 2 3, the draft's comments listed — and a refused submission turns the strip
-red with GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76)
+Comment, Approve or Request changes on 1 2 3, the draft's comments listed — and a refused submission turns the draft's
+block red with GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76)
 
 **Why.** The two keys swap meaning with a setting and with a draft, so the screen has to say it every time.
 

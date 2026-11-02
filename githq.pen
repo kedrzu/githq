@@ -52124,213 +52124,10 @@
               "gap": 28,
               "children": [
                 {
-                  "type": "frame",
-                  "id": "wLkJ3",
-                  "name": "Owners",
-                  "width": 200,
-                  "layout": "vertical",
-                  "gap": 2,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "vTkrl",
-                      "name": "Owner All owners",
-                      "width": "fill_container",
-                      "fill": "$bg-3",
-                      "cornerRadius": 6,
-                      "gap": 8,
-                      "padding": [
-                        6,
-                        10
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "M3aTlr",
-                          "name": "All owners",
-                          "fill": "$fg",
-                          "content": "All owners",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "u6yTHq",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "jU4wA",
-                          "name": "Count",
-                          "fill": "$fg-3",
-                          "content": "14 / 327",
-                          "fontFamily": "$mono",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "M8jfzn",
-                      "name": "Owner mlaine",
-                      "width": "fill_container",
-                      "cornerRadius": 6,
-                      "gap": 8,
-                      "padding": [
-                        6,
-                        10
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "g4Bt3",
-                          "name": "icon user",
-                          "width": 13,
-                          "height": 13,
-                          "icon": "user",
-                          "library": "lucide",
-                          "fill": "$fg-3"
-                        },
-                        {
-                          "type": "text",
-                          "id": "Wo0ut",
-                          "name": "mlaine",
-                          "fill": "$fg-2",
-                          "content": "mlaine",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "aN6X2",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "DYbgH",
-                          "name": "Count",
-                          "fill": "$fg-3",
-                          "content": "12 / 12",
-                          "fontFamily": "$mono",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Hcw5k",
-                      "name": "Owner fitloop",
-                      "width": "fill_container",
-                      "cornerRadius": 6,
-                      "gap": 8,
-                      "padding": [
-                        6,
-                        10
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "DYyDS",
-                          "name": "icon building-2",
-                          "width": 13,
-                          "height": 13,
-                          "icon": "building-2",
-                          "library": "lucide",
-                          "fill": "$fg-3"
-                        },
-                        {
-                          "type": "text",
-                          "id": "hPmJ4",
-                          "name": "fitloop",
-                          "fill": "$fg-2",
-                          "content": "fitloop",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "N8Lfc",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "IQEpZ",
-                          "name": "Count",
-                          "fill": "$fg-3",
-                          "content": "2 / 312",
-                          "fontFamily": "$mono",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "saNt6",
-                      "name": "Owner acme-health",
-                      "width": "fill_container",
-                      "cornerRadius": 6,
-                      "gap": 8,
-                      "padding": [
-                        6,
-                        10
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "ltiqJ",
-                          "name": "icon lock",
-                          "width": 13,
-                          "height": 13,
-                          "icon": "lock",
-                          "library": "lucide",
-                          "fill": "$amber"
-                        },
-                        {
-                          "type": "text",
-                          "id": "jlN8O",
-                          "name": "acme-health",
-                          "fill": "$fg-2",
-                          "content": "acme-health",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Bt5r2",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "type": "text",
-                          "id": "HF7KL",
-                          "name": "Count",
-                          "fill": "$amber",
-                          "content": "0 / 3",
-                          "fontFamily": "$mono",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    }
-                  ]
+                  "id": "U7oz7",
+                  "type": "ref",
+                  "ref": "R7QiuW",
+                  "name": "Owners"
                 },
                 {
                   "type": "frame",
@@ -156831,7 +156628,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Only what is tracked, grouped by owner (your own first, then organisations, then owners you aren't a member of), alphabetical inside a group. No ticks and no owner filter: the list is short. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; it acts at once, with Undo (T20). Adding is a separate step: Track repositories (A) opens the picker (T18); a group's Track more opens it filtered to that owner, and is hidden when the owner has nothing left to track or can't be listed. Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
+                      "content": "Only what is tracked, grouped by owner (your own first, then organisations, then owners you aren't a member of), alphabetical inside a group. No ticks. Owners on the left, the same column as the picker (T18), with tracked counts; choosing one filters the list to it. Under it, \"Missing an organisation?\" with Grant access on GitHub, which opens GitHub's page for githq (github.com/settings/connections/applications/<client id>, getApprovalUrl), where an organisation githq can't see is granted (owner) or requested (member). Once granted, the organisation appears on the next read of the lists. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; it acts at once, with Undo (T20). Adding is a separate step: Track repositories (A) opens the picker (T18); a group's Track more opens it filtered to that owner, and is hidden when the owner has nothing left to track or can't be listed. Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -157018,18 +156815,45 @@
                               "name": "Body",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "layout": "vertical",
-                              "gap": 16,
+                              "gap": 24,
                               "padding": [
                                 16,
                                 12
                               ],
                               "children": [
                                 {
+                                  "id": "yFFiZ",
+                                  "type": "ref",
+                                  "ref": "R7QiuW",
+                                  "name": "Owners",
+                                  "descendants": {
+                                    "dBULj": {
+                                      "content": "15"
+                                    },
+                                    "bNxkL": {
+                                      "content": "12"
+                                    },
+                                    "k63UtE": {
+                                      "content": "2"
+                                    },
+                                    "Y4APQ": {
+                                      "icon": "building-2",
+                                      "fill": "$fg-3"
+                                    },
+                                    "ZLojM": {
+                                      "content": "nuxt"
+                                    },
+                                    "hsymZ": {
+                                      "content": "1",
+                                      "fill": "$fg-3"
+                                    }
+                                  }
+                                },
+                                {
                                   "type": "frame",
                                   "id": "eBezp",
                                   "name": "Tracked repositories",
-                                  "width": 960,
+                                  "width": "fill_container",
                                   "layout": "vertical",
                                   "children": [
                                     {
@@ -158401,7 +158225,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Track repositories (A) or a group's Track more opens the first sign-in chooser (G2) in a modal, so choosing what to track looks and works the same both times: owners on the left with tracked / all counts, the filter (/) and sort above the list, repositories grouped by owner. Tracked repositories show with a grey, fixed tick and \"tracked\", so the list answers \"is it already in?\"; an owner whose every repository is tracked folds to its header. A tick here only selects; nothing changes until Track 2 repositories (⌘↵). Esc or Cancel closes it without asking. Shown: opened with Track repositories, two picked. Keys: J and K move, Space ticks, / filters, ⌘↵ tracks, Esc closes.",
+                      "content": "Track repositories (A) or a group's Track more opens the first sign-in chooser (G2) in a modal, so choosing what to track looks and works the same both times: owners on the left with tracked / all counts and, under them, \"Missing an organisation?\" with Grant access on GitHub (the same link as G8; the column is the component Track / Owner filter, so first sign-in G2 shows it too), the filter (/) and sort above the list, repositories grouped by owner. Tracked repositories show with a grey, fixed tick and \"tracked\", so the list answers \"is it already in?\"; an owner whose every repository is tracked folds to its header. A tick here only selects; nothing changes until Track 2 repositories (⌘↵). Esc or Cancel closes it without asking. Shown: opened with Track repositories, two picked. Keys: J and K move, Space ticks, / filters, ⌘↵ tracks, Esc closes.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -159158,12 +158982,6 @@
                               "width": "fill_container",
                               "height": 396,
                               "descendants": {
-                                "vTkrl": {
-                                  "fill": "$bg-3"
-                                },
-                                "Hcw5k": {
-                                  "fill": "#00000000"
-                                },
                                 "AAcJG": {
                                   "content": "your repositories · all 12 tracked"
                                 },
@@ -166702,15 +166520,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -167641,15 +167450,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -168187,15 +167987,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -168753,15 +168544,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -169319,15 +169101,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -169862,15 +169635,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },
@@ -170419,15 +170183,6 @@
                                   "name": "Choose what to track",
                                   "enabled": false,
                                   "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
                                     "yJNxy": {
                                       "content": "Filter 327 repositories…"
                                     },

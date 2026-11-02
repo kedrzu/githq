@@ -190,9 +190,9 @@ for the owner; the recommended variant is A. Decisions: [DECISIONS](../DECISIONS
 
 |Question|Answer in the frame|
 |-|-|
-|1. The open draft warning|A strip under the stack bar: CR30 (A), CR31, CR32; the stack square's dot CR30; lists CR33; the sidebar entry and its list CR33, CR34|
+|1. The open draft warning|A block in the file list's column, at its foot (A) or its top (B), in a stack and outside one: CR35–CR38; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
 |2. The file list hidden, and how viewed shows|⌘B, as the conversation's ⌥⌘B: CR6, CR50; files indented under their folder, an eye after a viewed file's name: CR46|
-|3. Stack and file list together|The Stack bar across the top: CR40 (A), CR41, CR42|
+|3. Stack and file list together|The stack's rows on top of the file list: CR47; scrolled, a thin pinned bar and the filter under it: CR48|
 |4. Code shown out of place|The distance mark: CR11; a collapsed file with only its threads: CR12, expanded CR13|
 |5. Outdated threads and gone files|Placed approximately: CR2; line gone: CR10; a gone file: CR14|
 |6. The view options|One button naming layout and whitespace, a menu: CR50|
@@ -200,7 +200,7 @@ for the owner; the recommended variant is A. Decisions: [DECISIONS](../DECISIONS
 
 Reading: an opened pull request and D, CR1; large screen split with the conversation CR2, unified without it CR3;
 laptop split CR4, unified with the conversation CR5, both columns hidden CR6. Threads: CR10–CR15 (jumping between
-threads CR15). Settled by the owner: the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
+threads CR15). Settled by the owner: where the stack sits (CR47, CR48, D25), the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
 once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the keys CR29. States and failures:
 files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
