@@ -27,6 +27,33 @@ in `docs/design/githq/DECISIONS.md` and `JOURNAL.md`; the changelog below does n
   overrides that pointed into it to its new path; compare the resolved trees before and after. Do the reads
   first and the writes after: reading between writes is slow on a file this size.
 
+## Naming screens, variants and questions
+
+The owner reviews the file by scanning the canvas and searching it, and the briefs, `DECISIONS.md` and changelogs
+cite screens by code. So a screen's name says which screen it is, and whether a decision is waiting on it.
+
+- **Every screen has a code: its aspect's letters and a number,** e.g. `PM12`, `W4`. Each top-level aspect frame
+  has its own letters (`PM` merging, `W` workflows, `T` settings); read them off the frame before adding a screen,
+  and give a new aspect letters no other aspect in the file uses. A code is unique across the file.
+- **A new screen takes the next number in its aspect, and a code is never reused or changed,** even after its
+  screen is deleted, because documents cite it. A letter suffix (`K1b`, `PM24b`) is not a code: another state of a
+  screen is a new number. Codes already in the file stay as they are.
+- **Code and title read the same everywhere:** the slot (`Slot · W2 · Everything broken`), its caption title
+  (`W2 · Everything broken`) and the screen frame inside it.
+- **Variants of one question sit together in one frame named `Variants · <the question>`,** e.g.
+  `Variants · How an issue is created`, and each screen in it is titled `<code> · Variant A · <what it is>`:
+  `H3 · Variant A · Quick capture`. A variant drawn over several screens gives each screen its own code and the
+  same letter. Variant A is the one you recommend, and its caption says so. "Variant" appears in no other name, so
+  searching for it lists exactly what is still to be picked.
+- **Something else for the owner to settle,** an open question or a guess the brief didn't cover, puts
+  `Question ·` before the title (`K10 · Question · Who sees a hidden repository`) and the question in the caption.
+- **Both are amber, so they show from far away:** the `Variants · …` frame, or the slot of a question, gets the fill
+  `#D6A23A1A`, the stroke `#D6A23A` at 2 px and 24 px of padding. No other frame around screens is amber, so an
+  amber frame always means "the owner decides here".
+- **Once the owner picks,** delete the rejected variants (git history and `DECISIONS.md` keep them), move the
+  chosen screens out of the `Variants` frame, delete that frame, and drop `Variant A ·` from their titles. The codes
+  stay. A settled question loses `Question ·` and its amber. Changelog entries record the renames too.
+
 ## The changelog
 
 Keep a changelog of what you change, so a coding agent can build it without being told what to look for.
