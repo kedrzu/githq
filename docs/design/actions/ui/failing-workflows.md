@@ -32,7 +32,7 @@ in one feed, and the pages are slow.
 
 The question: is anything broken, and where? It holds:
 
-- one new entry with the total of broken workflows across tracked repositories, leading to screen 2;
+- one new entry with the total of broken workflows across tracked repositories, leading to screen 2, shown only while something is broken (with nothing broken, screen 2 is reached from the command menu);
 - a red marker on the row of each tracked repository with something broken. The row already shows a count of open
   items beside its name, which stays.
 

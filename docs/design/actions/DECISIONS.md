@@ -173,6 +173,10 @@ the settings file is [D14](#d14).
 red marker on the repository's sidebar row, and one cross-repository entry in the sidebar with a total.**
 (2026-11-01, owner)
 
+**The cross-repository entry is contextual: it is in the sidebar only while at least one workflow is known broken, and
+while its screen is open. The screen itself stays reachable from the command menu.** (2026-11-02, owner) The sidebar is
+meant to hold such contextual links and shortcuts, shown when they have something to say.
+
 **Why.** Per-repository views answer "what is in this repository"; the owner's problem is not knowing which
 repository. With many tracked repositories a red row can sit below the fold, and the collapsed rail shows no
 repositories at all (`packages/app/shell/Sidebar.vue:276-322`), so a total is needed. Tabs for issues and pull

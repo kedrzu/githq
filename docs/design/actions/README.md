@@ -48,7 +48,7 @@ together.
 
 A repository with something broken gets a red marker in the sidebar, and it stays until a run passes: nothing
 silences it. [The owner's call](DECISIONS.md#d9). And because you may not know which repository
-to look in, one sidebar entry gives the total and opens everything broken across repositories.
+to look in, one sidebar entry gives the total and opens everything broken across repositories. It appears only while something is broken; otherwise the screen is one command away.
 [Why not nested menus or columns](DECISIONS.md#d6).
 
 ## Opening a failure
