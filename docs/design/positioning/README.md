@@ -48,8 +48,9 @@ the opening with why it matters now. The variants it was chosen from are in [hea
 
 ## What is still open
 
-- The page promises merging and failing workflows across repositories before either is built; stacked pull
-  requests are.
+- The page promises failing workflows across repositories and merging. Failing workflows stay on the page because
+  they are about to land. Merging is not built yet.
+- The README's feature list calls merging and failing workflows "next"; it changes once they land.
 - The mobile landing page, the sign-in screen that shows the landing, and the share images in `githq.pen` still
   carry the old headline.
 - The repository's description on GitHub still says "task manager".
