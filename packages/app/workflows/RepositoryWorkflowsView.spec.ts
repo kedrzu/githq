@@ -89,7 +89,7 @@ test('W3c: rows not read yet have no verdict and no green, and what is known is 
     );
 });
 
-test('J/K move from the first row; Enter and a click open a broken workflow’s failed run and unfold any other, → too; "Alert settings" asks for the settings', async () => {
+test('J/K move from the first row; Enter and a click open a broken workflow’s failed run and unfold any other, → too; "Alert settings" and P ask for the settings — on the add field from a row without alerts', async () => {
     const openRun = vi.fn();
     const unfold = vi.fn();
     const settings = vi.fn();
@@ -115,7 +115,14 @@ test('J/K move from the first row; Enter and a click open a broken workflow’s 
     expect(openRun).toHaveBeenCalledTimes(1);
 
     await userEvent.click(bar().getByRole('button', { name: /Alert settings/ }));
-    expect(settings).toHaveBeenCalledTimes(1);
+    expect(settings).toHaveBeenLastCalledWith(false);
+    await userEvent.keyboard('p');
+    expect(settings).toHaveBeenLastCalledWith(false);
+
+    // Release fails only on a tag without alerts (W13).
+    await userEvent.click(page.getByRole('button', { name: 'Release', exact: true }));
+    await userEvent.keyboard('p');
+    expect(settings).toHaveBeenLastCalledWith(true);
 });
 
 test('W3b: an unfolded workflow lists its runs under its row — kept ones, then older ones read — and J/K walk into them and back out', async () => {

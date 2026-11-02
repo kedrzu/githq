@@ -1,9 +1,8 @@
-import type { GitHubWorkflow } from '@githq/github/rest/listWorkflows.js';
-
-import type { RepositoryWorkflows, WorkflowRefSettings } from '../WorkflowTypes.js';
+import type { RepositoryWorkflows, WorkflowRefSettings, WorkflowState } from '../WorkflowTypes.js';
 import { getKnownRefs } from './getKnownRefs.js';
 import type { KnownRef } from './getKnownRefs.js';
 import { getRepositoryWorkflowState } from './getRepositoryWorkflowState.js';
+import { isRefCounted } from './isRefCounted.js';
 import { matchRefPattern } from './matchRefPattern.js';
 
 /** What {@link previewWorkflowSettings} compares. */
@@ -20,10 +19,15 @@ export interface PreviewWorkflowSettingsParams {
 export interface WorkflowSettingsPreview {
     /** Each of the candidate's patterns, in its order, with the known refs it matches. */
     readonly patterns: readonly PatternPreview[];
-    /** The active workflows the candidate would make broken that are not now, in GitHub's order. */
-    readonly turnBroken: readonly GitHubWorkflow[];
-    /** The workflows broken now that the candidate would no longer count as broken, in GitHub's order. */
-    readonly stopCounting: readonly GitHubWorkflow[];
+    /**
+     * The active workflows the candidate would make broken that are not now, in GitHub's order, as the candidate
+     * would judge them: where and when they failed.
+     */
+    readonly turnBroken: readonly WorkflowState[];
+    /** The workflows broken now that the candidate would no longer count as broken, in GitHub's order, as now. */
+    readonly stopCounting: readonly WorkflowState[];
+    /** The known refs that count now and would not under the candidate, the latest run first. */
+    readonly stopMatching: readonly KnownRef[];
 }
 
 /** A pattern and the known refs it matches, the latest run first; none can mean none had a recent run. */
@@ -45,17 +49,20 @@ export function previewWorkflowSettings(params: PreviewWorkflowSettingsParams): 
     // How new a break is plays no part here.
     const before = getRepositoryWorkflowState(stored, current, 0).workflows;
     const after = getRepositoryWorkflowState(stored, candidate, 0).workflows;
-    const turnBroken: GitHubWorkflow[] = [];
-    const stopCounting: GitHubWorkflow[] = [];
+    const turnBroken: WorkflowState[] = [];
+    const stopCounting: WorkflowState[] = [];
     for (const [index, workflow] of after.entries()) {
-        const wasBroken = before[index]?.state === 'broken';
+        const previous = before[index];
+        const wasBroken = previous?.state === 'broken';
         const isBroken = workflow.state === 'broken';
         if (isBroken && !wasBroken) {
-            turnBroken.push(workflow.workflow);
-        } else if (wasBroken && !isBroken) {
-            stopCounting.push(workflow.workflow);
+            turnBroken.push(workflow);
+        } else if (previous && wasBroken && !isBroken) {
+            stopCounting.push(previous);
         }
     }
+
+    const defaultBranch = stored?.defaultBranch ?? null;
 
     return {
         patterns: [...new Set(candidate.refs)].map(pattern => ({
@@ -64,5 +71,8 @@ export function previewWorkflowSettings(params: PreviewWorkflowSettingsParams): 
         })),
         turnBroken,
         stopCounting,
+        stopMatching: known.filter(
+            ref => isRefCounted(current, defaultBranch, ref.name) && !isRefCounted(candidate, defaultBranch, ref.name),
+        ),
     };
 }

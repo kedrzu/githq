@@ -44,15 +44,19 @@ test('the known refs: every ref a run was seen on, the latest first, with its ki
     expect(known[0]).toMatchObject({
         latestRunAt: Date.parse('2026-11-02T11:30:00Z'),
         workflows: [
-            { workflow: { name: 'Release' }, failed: true },
-            { workflow: { name: 'CI' }, failed: true },
+            { workflow: { name: 'Release' }, verdict: 'failed' },
+            { workflow: { name: 'CI' }, verdict: 'failed' },
         ],
     });
-    expect(known[3]?.workflows).toMatchObject([{ workflow: { name: 'Release' }, failed: false }]);
+    expect(known[2]?.workflows).toMatchObject([
+        { workflow: { name: 'Release' }, verdict: 'passed', verdictAt: Date.parse('2026-11-02T10:00:00Z') },
+    ]);
+    // Only a cancelled run there: no verdict.
+    expect(known[3]?.workflows).toMatchObject([{ workflow: { name: 'Release' }, verdict: null, verdictAt: null }]);
     expect(getKnownRefs(undefined)).toEqual([]);
 });
 
-test('a pattern shows the known refs it matches, branches and tags alike, or none; and what would turn broken or stop counting', () => {
+test('a pattern shows the known refs it matches, branches and tags alike, or none; and what would turn broken or stop counting, and which refs would stop counting', () => {
     const preview = previewWorkflowSettings({
         stored: STORED,
         current: { defaultBranch: true, refs: [] },
@@ -64,7 +68,7 @@ test('a pattern shows the known refs it matches, branches and tags alike, or non
         ['release/*', []],
     ]);
     // Under v*, Release's latest verdict is rc.3's pass; CI's is its failure on the branch v2-experiment.
-    expect(preview.turnBroken.map(workflow => workflow.name)).toEqual(['CI']);
+    expect(preview.turnBroken.map(state => state.workflow.name)).toEqual(['CI']);
     expect(preview.stopCounting).toEqual([]);
 
     const narrowed = previewWorkflowSettings({
@@ -72,8 +76,11 @@ test('a pattern shows the known refs it matches, branches and tags alike, or non
         current: { defaultBranch: true, refs: ['v*'] },
         candidate: { defaultBranch: false, refs: ['v0.*'] },
     });
-    expect(narrowed.stopCounting.map(workflow => workflow.name)).toEqual(['CI']);
+    expect(narrowed.stopCounting.map(state => state.workflow.name)).toEqual(['CI']);
     expect(narrowed.turnBroken).toEqual([]);
+    // The default branch off and v* narrowed: the branches it counted no longer count.
+    expect(narrowed.stopMatching.map(ref => ref.name)).toEqual(['v2-experiment', 'main']);
+    expect(preview.stopMatching).toEqual([]);
 });
 
 test('a repository not read yet matches nothing known', () => {
@@ -83,5 +90,5 @@ test('a repository not read yet matches nothing known', () => {
             current: { defaultBranch: true, refs: [] },
             candidate: { defaultBranch: true, refs: ['v*'] },
         }),
-    ).toEqual({ patterns: [{ pattern: 'v*', refs: [] }], turnBroken: [], stopCounting: [] });
+    ).toEqual({ patterns: [{ pattern: 'v*', refs: [] }], turnBroken: [], stopCounting: [], stopMatching: [] });
 });

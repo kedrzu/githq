@@ -45,8 +45,11 @@ const emit = defineEmits<{
   filter: [ref: string | null];
   /** The unfolded workflow's end came into view, or its failed read is asked again: the caller reads older runs. */
   readMore: [];
-  /** P or "Alert settings": the caller opens the repository's settings on Workflow alerts. */
-  settings: [];
+  /**
+   * P or "Alert settings": the caller opens the repository's settings on Workflow alerts — on its add field when P is
+   * pressed on a workflow failing only where nothing raises alerts (W13).
+   */
+  settings: [addPattern: boolean];
   /** O or the empty state's button: the caller opens this address of GitHub's. */
   openOnGitHub: [url: string];
 }>();
@@ -182,7 +185,10 @@ useCommands(() => [
     section: 'view',
     key: 'P',
     when: () => props.list.status === 'read' && props.list.groups.length > 0,
-    run: () => emit('settings'),
+    run: () => {
+      const row = selectedRow.value;
+      emit('settings', row?.kind === 'workflow' && row.entry.standing?.kind === 'noAlerts');
+    },
   },
   {
     id: 'workflows.openOnGitHub',
@@ -277,7 +283,7 @@ function describeGroup(group: RepositoryWorkflowGroup) {
       v-if="list.status === 'read' && list.groups.length > 0"
       :alerts="list.alerts"
       :alerts-off="list.alertsOff"
-      @settings="emit('settings')"
+      @settings="emit('settings', false)"
     />
 
     <div :class="css.repositoryWorkflowsView_body">

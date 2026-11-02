@@ -1,0 +1,34 @@
+label:
+  en: Branch or tag pattern
+placeholder:
+  en: Add a branch or tag pattern, such as release/* or v*
+syntax:
+  en: '* anything but /   ** anything'
+save:
+  en: Save
+cancel:
+  en: Cancel
+wouldAlertOn:
+  en: Would alert on
+duplicate:
+  en: Already in the list
+turnsBroken:
+  en: '{workflow} turns broken: it failed on {ref} {age} ago'
+turnsBrokenNoRef:
+  en: '{workflow} turns broken'
+stopsCounting:
+  plural: count
+  en:
+    one: '{names} no longer counts as broken'
+    many: '{names} no longer count as broken'
+noLongerCounted:
+  en: 'No longer counted: {refs}'
+theBranch:
+  en: the branch {name}
+theTag:
+  en: the tag {name}
+staysBroken:
+  plural: count
+  en:
+    one: "{names} stays broken, so the counters don't change"
+    many: "{names} stay broken, so the counters don't change"

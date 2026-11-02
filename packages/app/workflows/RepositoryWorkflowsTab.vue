@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions` (actions W3a): a tracked repository's Workflows tab, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, the repository's runs on any ref with them (D2), which the tab lists though they may raise no alert. A broken workflow opens its latest failed run; any other unfolds in place (W3b): its kept runs at once, older ones — on any ref, or on the ref filtered by — read on demand a page at a time (`WorkflowRunHistory`, D12), never kept. A run opens on GitHub, in a new tab, until githq has a run page of its own. P opens the repository's settings on Workflow alerts, and Esc there comes back here. -->
+<!-- `/owner/name/actions` (actions W3a): a tracked repository's Workflows tab, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, the repository's runs on any ref with them (D2), which the tab lists though they may raise no alert. A broken workflow opens its latest failed run; any other unfolds in place (W3b): its kept runs at once, older ones — on any ref, or on the ref filtered by — read on demand a page at a time (`WorkflowRunHistory`, D12), never kept. A run opens on GitHub, in a new tab, until githq has a run page of its own. P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there comes back here. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -85,8 +85,8 @@ function readMore() {
   }
 }
 
-function openSettings() {
-  void router.push(getRepositorySettingsPath(props.nameWithOwner, 'workflowAlerts'));
+function openSettings(addPattern: boolean) {
+  void router.push(getRepositorySettingsPath(props.nameWithOwner, addPattern ? 'workflowAlertsAdd' : 'workflowAlerts'));
 }
 </script>
 

@@ -33,10 +33,15 @@ export const REPOSITORY_TAB_SEGMENTS = {
     workflows: 'actions',
 } as const satisfies Record<Exclude<RepositoryTab, 'all'>, string>;
 
-/** The sections of a tracked repository's settings page an address can point to, by their element's id. */
+/**
+ * The places on a tracked repository's settings page an address can point to, by their element's id: the page
+ * focuses the one named.
+ */
 export const REPOSITORY_SETTINGS_SECTIONS = {
     /** Which branches and tags raise workflow alerts (actions D5). */
     workflowAlerts: 'workflow-alerts',
+    /** Workflow alerts' add field, for a failure without alerts: `v*` is two keys away (actions W13). */
+    workflowAlertsAdd: 'workflow-alerts-add',
 } as const;
 
 /** A section of a tracked repository's settings page. */

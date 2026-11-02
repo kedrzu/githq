@@ -1,10 +1,12 @@
-<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock` — for now Tracking alone. -->
+<!-- A tracked repository's settings (T16), under Settings' header: its head ("← Repositories › fitloop/webapp  private · tracked", Esc goes back) and its sections stacked below it, each a `SettingsBlock`: Tracking, and Workflow alerts (`WorkflowAlertsBlock`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import type { TrackedStatus } from '@/tracking/TrackingTypes.js';
+import WorkflowAlertsBlock from '@/workflows/WorkflowAlertsBlock.vue';
+import type { RepositoryWorkflows, WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
 import SettingsPageHead from './SettingsPageHead.vue';
@@ -20,11 +22,17 @@ const props = defineProps<{
   /** What "synced 14s ago" is counted from. */
   now: number;
   openCount: number;
+  /** What is stored of its workflows; `undefined` before the first read. */
+  workflows?: RepositoryWorkflows;
+  /** Which refs raise its workflow alerts. */
+  workflowSettings: WorkflowRefSettings;
 }>();
 
 const emit = defineEmits<{
   back: [];
   untrack: [];
+  /** Workflow alerts as the user just changed them. */
+  workflowSettings: [settings: WorkflowRefSettings];
 }>();
 
 const t = useTranslate();
@@ -53,6 +61,13 @@ const meta = computed(() => {
       :now="now"
       :open-count="openCount"
       @untrack="emit('untrack')"
+    />
+    <WorkflowAlertsBlock
+      :name-with-owner="nameWithOwner"
+      :stored="workflows"
+      :settings="workflowSettings"
+      :now="now"
+      @change="emit('workflowSettings', $event)"
     />
   </div>
 </template>

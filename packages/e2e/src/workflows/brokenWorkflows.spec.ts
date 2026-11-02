@@ -1,9 +1,8 @@
-import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
-
 import { expect, test } from '../fixtures.js';
-import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { BrokenWorkflowsScreenHarness } from '../harnesses/BrokenWorkflowsScreen.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
+import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -67,7 +66,7 @@ test('with nothing broken the sidebar has no entry; ⌘K "Broken workflows" open
     await expect(shell.brokenWorkflowsCount).toHaveText('0');
 });
 
-test('a release failing on a tag lights nothing by default; with "v*" in the repository’s settings it is broken on the pattern, beside a pass on the default branch', async ({
+test('a release failing on a tag lights nothing by default; P from its row and "v*" in the repository’s settings make it broken, beside a pass on the default branch; with the default branch off and no patterns nothing alerts', async ({
     page,
     github,
 }) => {
@@ -82,24 +81,51 @@ test('a release failing on a tag lights nothing by default; with "v*" in the rep
         ],
     });
     const shell = await openTrackedWork(page, github, world);
-    await new CommandMenuHarness(page).run('Broken workflows');
-    const screen = new BrokenWorkflowsScreenHarness(page);
-    await expect(screen.allGreen).toBeVisible();
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.group('No alerts')).toContainText(/Release.*a\stag\swithout\salerts/u);
+    await expect(shell.brokenWorkflows).toHaveCount(0);
 
-    // The repository's settings entry takes the patterns (actions D14); no screen writes them yet.
-    const key = `githq.settings.${SAMPLE_VIEWER.viewer.login}`;
-    const kept = await page.evaluate(slot => localStorage.getItem(slot) ?? '', key);
-    const withPatterns = JSON.stringify(
-        JSON.parse(kept, (_, value: unknown) =>
-            isPlainObject(value) && value.nameWithOwner === SAMPLE_REPOSITORY
-                ? { ...value, workflows: { defaultBranch: true, refs: ['v*'] } }
-                : value,
-        ),
-    );
-    await page.evaluate(([slot, value]) => localStorage.setItem(slot, value), [key, withPatterns] as const);
-    await page.reload();
+    // P on a row without alerts lands on the add field: "v*" is two keys away (W13, W11).
+    await expect(repository.workflow('Release')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('p');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts-add`);
+    const settings = new TrackedSettingsScreenHarness(page);
+    await expect(settings.addPatternField).toBeFocused();
+    await page.keyboard.type('v*');
+    await expect(settings.workflowAlerts).toContainText('Release turns broken: it failed on v1.0-rc.1');
+    await page.keyboard.press('Enter');
+    await expect(settings.pattern('v*')).toContainText(/v1\.0-rc\.1.*1\stag.*1\sbroken/u);
 
+    // The sidebar follows at once, and Esc goes back to the tab.
     await expect(shell.brokenWorkflowsCount).toHaveText('1');
+    await expect(shell.workflowMarker(SAMPLE_REPOSITORY)).toHaveAttribute('data-marker', 'new');
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.group('Broken')).toContainText(/Release.*v\*/u);
+
+    // Kept with the settings: the Broken workflows screen says the same after a reload.
+    await page.goto('/dashboard/workflows');
+    const screen = new BrokenWorkflowsScreenHarness(page);
     await expect(screen.group('New')).toContainText('Release');
     await expect(screen.group('New')).toContainText('v*');
+
+    // ⌫ removes the pattern and Space switches the default branch off: no alerts at all (W9, W14).
+    await page.goto(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts`);
+    await expect(settings.workflowAlerts).toBeFocused();
+    await page.keyboard.press('j');
+    await expect(settings.pattern('v*')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('Backspace');
+    await expect(settings.pattern('v*')).toHaveCount(0);
+    await page.keyboard.press('k');
+    await page.keyboard.press('Space');
+    await expect(settings.defaultBranchSwitch).toHaveAttribute('aria-checked', 'false');
+    await expect(settings.workflowAlerts).toContainText(`No alerts from ${SAMPLE_REPOSITORY}`);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.alertsBar).toContainText('Nothing. Failures here never mark this repository broken.');
+    await expect(repository.group('No alerts')).toContainText('Release');
+    await expect(repository.kind('Workflows')).toHaveText(/^Workflows$/u);
+    await expect(shell.workflowMarker(SAMPLE_REPOSITORY)).toHaveCount(0);
+    await expect(shell.brokenWorkflows).toHaveCount(0);
 });

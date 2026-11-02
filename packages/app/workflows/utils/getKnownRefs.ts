@@ -1,9 +1,10 @@
 import type { GitHubWorkflow } from '@githq/github/rest/listWorkflows.js';
 import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 
-import type { RefKind, RepositoryWorkflows } from '../WorkflowTypes.js';
+import type { RefKind, RepositoryWorkflows, RunVerdict } from '../WorkflowTypes.js';
 import { getRefKind } from './getRefKind.js';
-import { getWorkflowVerdict } from './getWorkflowVerdict.js';
+import { getRunVerdict } from './getRunVerdict.js';
+import { sortRunsByCreation } from './sortRunsByCreation.js';
 
 /** A ref githq has seen a run on that could count: not one started by a pull request (actions D1). */
 export interface KnownRef {
@@ -19,8 +20,10 @@ export interface KnownRef {
 /** A workflow that ran on a {@link KnownRef}. */
 export interface KnownRefWorkflow {
     readonly workflow: GitHubWorkflow;
-    /** Its latest run there with a verdict failed. */
-    readonly failed: boolean;
+    /** The verdict of its latest run there that has one; `null` while none has. */
+    readonly verdict: RunVerdict | null;
+    /** The creation of that run (epoch ms); `null` while none has a verdict. */
+    readonly verdictAt: number | null;
 }
 
 /**
@@ -46,7 +49,12 @@ export function getKnownRefs(stored: RepositoryWorkflows | undefined): KnownRef[
             const latestRunAt = Math.max(...onRef.map(run => Date.parse(run.createdAt)));
             const known = refs.get(name) ?? { latestRunAt, workflows: [] };
             known.latestRunAt = Math.max(known.latestRunAt, latestRunAt);
-            known.workflows.push({ workflow, failed: getWorkflowVerdict(onRef) === 'failed' });
+            const decided = sortRunsByCreation(onRef).findLast(run => getRunVerdict(run) !== null);
+            known.workflows.push({
+                workflow,
+                verdict: decided ? getRunVerdict(decided) : null,
+                verdictAt: decided ? Date.parse(decided.createdAt) : null,
+            });
             refs.set(name, known);
         }
     }
