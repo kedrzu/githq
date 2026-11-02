@@ -256,8 +256,7 @@ function getStepTarget(step: MergeStep) {
     return pr.value;
   }
 
-  const draft = range.forward?.kind === 'markReady' ? range.forward.pullRequest : null;
-  return draft ?? range.open.find(member => member.number === range.holder?.number) ?? pr.value;
+  return range.open.find(member => member.number === range.holder?.number) ?? pr.value;
 }
 
 /** `↑`/`↓`: the line one open pull request earlier or later (D18). */

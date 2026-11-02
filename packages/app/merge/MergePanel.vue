@@ -250,6 +250,8 @@ const hasAttention = computed(() => props.options !== null && getAttentionChecks
 const several = computed(() => (props.stack?.merge.going.length ?? 0) > 1);
 /** No answer of a stack's merge of two or more: the panel says nothing of the range, and nothing moves (D11, PM29). */
 const stackOutcomeUnknown = computed(() => outcomeUnknown.value && end.value?.sent.going !== undefined);
+/** The stack speaks and says it doesn't know how its merge ended (SP60): the footer has its Close button and nothing else. */
+const stackSaysNotKnown = computed(() => stackSays.value?.verdict.kind === 'unknown');
 const stackRows = computed(() =>
   props.stack ? getStackMergeRows({ merge: props.stack.merge, outcomeUnknown: stackOutcomeUnknown.value }) : [],
 );
@@ -846,7 +848,8 @@ function getRangeSays(view: StackMergeView): StackSays | null {
             text: t(l.stackTargetMovedDetail),
             link: null,
           };
-    const url = merge.forward?.kind === 'rebaseOnGitHub' ? merge.forward.url : props.pr.url;
+    // GitHub's "Rebase stack" is on the stack's pull requests' pages: the top open one shows it all.
+    const url = merge.open.at(-1)?.url ?? props.pr.url;
     return { verdict: said, band: under, forward: { kind: 'visit', url, label: t(l.rebaseStack) } };
   }
 
@@ -895,10 +898,7 @@ function getRangeSays(view: StackMergeView): StackSays | null {
       const label = method.value === null ? t(l.nothingToOffer) : stackPrimaryName(merge, method.value, landed);
       forward = { kind: 'none', label };
     } else if (block) {
-      forward =
-        merge.forward?.kind === 'markReady'
-          ? { kind: 'markReady', number: merge.forward.pullRequest.number }
-          : { kind: 'none', label: text };
+      forward = holder.kind === 'draft' ? { kind: 'markReady', number: holder.number } : { kind: 'none', label: text };
     }
 
     return { verdict: said, band: null, forward };
@@ -1596,12 +1596,12 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="end || verdict.kind === 'merged'"
+          v-else-if="!stackSaysNotKnown && (end || verdict.kind === 'merged')"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span
         >
-        <template v-else>
+        <template v-else-if="!stackSaysNotKnown">
           <span
             v-if="showStopEarlier"
             :class="css.mergePanel_hint"

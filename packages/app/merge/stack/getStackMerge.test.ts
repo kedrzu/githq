@@ -21,7 +21,6 @@ test('the range starts at the first open member, merged ones before it listed bu
 
     expect(merge.members.map(pip => pip.kind)).toEqual(['merged', 'ready', 'ready', 'ready']);
     expect(numbers(merge.going)).toEqual([2, 3, 4]);
-    expect(merge.forward).toEqual({ kind: 'merge' });
     // A line on a merged one moves to the first open one: the range never starts later or earlier.
     expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
 });
@@ -54,7 +53,6 @@ test('SK2: a closed last member holds nothing, as the entry reads it: every open
         canLand: 2,
         holder: null,
         block: null,
-        forward: { kind: 'merge' },
     });
 });
 
@@ -94,14 +92,13 @@ test('held, the line sits at the last that can land and what holds the next one 
     expect(end).toBe(2);
 
     const merge = getStackMerge({ description, end });
-    expect(merge).toMatchObject({ canLand: 2, block: null, forward: { kind: 'merge' } });
+    expect(merge).toMatchObject({ canLand: 2, block: null });
     expect(merge.holder).toEqual({ number: 3, kind: 'waiting', waitingForReview: false });
 
     // Moved past it, the range is held and nothing is sent.
     const past = getStackMerge({ description, end: 4 });
     expect(past.block).toEqual({ kind: 'held' });
     expect(past.holder).toEqual({ number: 3, kind: 'waiting', waitingForReview: false });
-    expect(past.forward).toBe(null);
 });
 
 test('held at the first open one, the line stays where it was opened and nothing can land', () => {
@@ -110,7 +107,6 @@ test('held at the first open one, the line stays where it was opened and nothing
     expect(getStackMergeEnd({ description, openedOn: null })).toBe(2);
     expect(getStackMerge({ description, end: 2 })).toMatchObject({
         canLand: 0,
-        forward: null,
         block: { kind: 'held' },
     });
 });
@@ -132,36 +128,33 @@ test('a closed member mid-range blocks only those after it; earlier ones can lan
     expect(getStackMerge({ description, end: 2 })).toMatchObject({
         canLand: 2,
         block: null,
-        forward: { kind: 'merge' },
     });
     expect(getStackMerge({ description, end: 4 })).toMatchObject({
         block: { kind: 'closed' },
-        forward: null,
     });
 });
 
-test('a draft in the range holds it, and the way forward marks it ready (SP49)', () => {
+test('a draft in the range holds it (SP49)', () => {
     const description = stackOf([{}, { isDraft: true }, {}]);
 
     const merge = getStackMerge({ description, end: 3 });
 
     expect(merge.block).toEqual({ kind: 'held' });
     expect(merge.holder).toMatchObject({ number: 2, kind: 'draft' });
-    expect(merge.forward).toMatchObject({ kind: 'markReady', pullRequest: { number: 2 } });
 });
 
-test('an incomplete copy never reads ready, and ⌘↵ does nothing (D7, SP50)', () => {
+test('an incomplete copy never reads ready (D7, SP50)', () => {
     const description = stackOf([{}, {}], { size: 3 });
 
     for (const end of [null, 1, 2]) {
         const merge = getStackMerge({ description, end });
-        expect(merge).toMatchObject({ canLand: 0, holder: null, block: { kind: 'incomplete' }, forward: null });
+        expect(merge).toMatchObject({ canLand: 0, holder: null, block: { kind: 'incomplete' } });
     }
 
     expect(getStackMergeEnd({ description, openedOn: null })).toBe(2);
 });
 
-test('needing a rebase blocks the whole range, and the way forward is the top open one on GitHub (SP46, D8)', () => {
+test('needing a rebase blocks the whole range (SP46, D8)', () => {
     const members = sampleStack({
         id: 'S_1',
         number: 1,
@@ -178,7 +171,6 @@ test('needing a rebase blocks the whole range, and the way forward is the top op
         expect(merge).toMatchObject({
             canLand: 0,
             block: { kind: 'needsRebase', behindNumber: 2, cause: { kind: 'earlierPush', pushedNumber: 1 } },
-            forward: { kind: 'rebaseOnGitHub', url: members[2]?.url },
         });
     }
 });

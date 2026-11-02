@@ -135,6 +135,14 @@ test('SP46: needing a rebase, ⌘↵ opens GitHub, where "Rebase stack" is (D8, 
         .toHaveTextContent('Visit: https://github.com/fitloop/mobile/pull/97');
 });
 
+test('SP45: moved past the one holding the rest, nothing is on offer and ⌘↵ sends nothing', async () => {
+    await Held.run();
+
+    await userEvent.keyboard('{ArrowDown}{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(panel()).toHaveTextContent('2 of 4 can land');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
 test('SP48: a closed one mid-stack — those before it can land, later ones are blocked, rebuilding is on GitHub', async () => {
     await ClosedInside.run();
 
@@ -143,6 +151,14 @@ test('SP48: a closed one mid-stack — those before it can land, later ones are 
     await expect.element(member(491)).toHaveTextContent('Blocked');
     await expect.element(panel()).toHaveTextContent("isn't in githq yet");
     await expect.element(primary('Squash and merge')).toBeVisible();
+});
+
+test('SP48: moved past a closed one, ⌘↵ sends nothing', async () => {
+    await ClosedInside.run();
+
+    await userEvent.keyboard('{ArrowDown}{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(member(491)).toHaveTextContent('Blocked');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 
 test('SP49: a draft inside holds the rest, and marking it ready is right there', async () => {
@@ -160,6 +176,15 @@ test('SP49: ⌘K is the key of marking the draft ready, shown on its button', as
         .element(page.getByRole('button', { name: 'Mark #102 ready' }))
         .toHaveAttribute('aria-keyshortcuts', formatAriaKeyShortcuts('Mod+K'));
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
+});
+
+test('SP49: moved past the draft, ⌘↵ marks it ready, the button naming it', async () => {
+    await DraftInside.run();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(primary('Mark #102 ready')).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
 });
 
@@ -186,6 +211,8 @@ test('SP60, SP59: refused, nothing is known until the stack is read again; then 
     await expect.element(panel()).toHaveTextContent("GitHub refused it · what landed isn't read yet");
     await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
     await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
+    await expect.element(footer().getByRole('button', { name: 'Close' })).toBeVisible();
+    expect(footer().getByText('Close').elements()).toHaveLength(1);
     for (const number of [488, 489, 490, 491]) {
         await expect.element(member(number)).toHaveTextContent('Ready');
         await expect.element(member(number)).not.toHaveTextContent('Merged');
@@ -215,6 +242,9 @@ test('SP60: no answer — not known, the rows as the copy has them, nothing move
     await expect.element(member(488)).toHaveTextContent('Ready');
     await expect.element(footer()).not.toHaveTextContent('Stop earlier');
     await expect.element(footer()).not.toHaveTextContent('Squash and merge');
+    // The Close button says Esc itself: no hint beside it.
+    await expect.element(footer().getByRole('button', { name: 'Close' })).toBeVisible();
+    expect(footer().getByText('Close').elements()).toHaveLength(1);
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}{ArrowUp}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');

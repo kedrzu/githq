@@ -479,24 +479,25 @@ function getStackMergeTitle(description: StackDescription): string {
   }
 
   const end = getStackMergeEnd({ description, openedOn: null });
-  const { forward, going, open } = getStackMerge({ description, end });
-  switch (forward?.kind) {
-    case 'merge':
-      if (going.length === 1) {
+  const { block, going, holder, open } = getStackMerge({ description, end });
+  switch (block?.kind) {
+    case undefined:
+      if (going.length <= 1) {
         return t(l.merge);
       }
 
       return going.length === open.length
         ? t(l.mergeStack, { count: going.length })
         : t(l.mergeStackPart, { count: going.length });
-    case 'rebaseOnGitHub':
+    case 'needsRebase':
       return t(l.rebaseOnGitHub);
-    case 'markReady':
-      return t(l.markReady, { number: forward.pullRequest.number });
-    case undefined:
+    case 'held':
+      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(l.merge);
+    case 'incomplete':
+    case 'closed':
       return t(l.merge);
     default:
-      return assertNever(forward);
+      return assertNever(block);
   }
 }
 

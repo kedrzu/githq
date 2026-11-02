@@ -1,12 +1,9 @@
-import { assertValue } from '@nzyme/utils/assert.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
-
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
 import { findStackHolder } from '@/store/stacks/findStackHolder.js';
 import { toStackBlocker } from '@/store/stacks/toStackBlocker.js';
 
-import type { StackMerge, StackMergeBlock, StackMergeForward, StackRebaseCause } from './StackMergeTypes.js';
+import type { StackMerge, StackMergeBlock, StackRebaseCause } from './StackMergeTypes.js';
 
 /** What a stack's merge is worked out from. */
 export interface GetStackMergeParams {
@@ -47,7 +44,6 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
         checksOf: holder?.pullRequest ?? open[0] ?? null,
         freshChecks: description.landed > 0 && canLand === 0 && holder?.kind === 'moving',
         block,
-        forward: getForward(),
     };
 
     function getEndIndex(): number {
@@ -92,28 +88,5 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
         return before && behind && before.headRefName === behind.baseRefName
             ? { kind: 'earlierPush', pushedNumber: before.number }
             : { kind: 'targetMoved' };
-    }
-
-    function getForward(): StackMergeForward | null {
-        if (going.length === 0) {
-            return null;
-        }
-
-        if (!block) {
-            return { kind: 'merge' };
-        }
-
-        switch (block.kind) {
-            case 'needsRebase':
-                // GitHub's "Rebase stack" is on the stack's pull requests' pages: the top open one shows it all.
-                return { kind: 'rebaseOnGitHub', url: assertValue(open.at(-1)).url };
-            case 'held':
-                return holder?.kind === 'draft' ? { kind: 'markReady', pullRequest: holder.pullRequest } : null;
-            case 'incomplete':
-            case 'closed':
-                return null;
-            default:
-                return assertNever(block);
-        }
     }
 }

@@ -651,6 +651,8 @@ test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole
         index === 2 ? { ...pr, mergeStateStatus: 'BLOCKED' } : pr,
     );
     const rebase = members.map((pr, index): PullRequestItem => (index === 1 ? { ...pr, behindBase: true } : pr));
+    const draft = members.map((pr, index): PullRequestItem => (index === 0 ? { ...pr, isDraft: true } : pr));
+    const blocked = members.map((pr): PullRequestItem => ({ ...pr, mergeStateStatus: 'BLOCKED' }));
     const entry = (stacked: readonly PullRequestItem[]): Columns => [
         ['todo', [{ stack: 'S_1', members: ids, open: ids[0] ?? '', description: sampleStackDescription(stacked) }]],
     ];
@@ -665,6 +667,10 @@ test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole
     await expect.poll(title).toBe('Merge 2');
     view.columns.value = entry(rebase);
     await expect.poll(title).toMatch(matchText('Rebase on GitHub'));
+    view.columns.value = entry(draft);
+    await expect.poll(title).toBe('Mark #10 ready…');
+    view.columns.value = entry(blocked);
+    await expect.poll(title).toBe('Merge…');
 });
 
 test("D11: a stack's entry's context menu merges its whole stack", async () => {

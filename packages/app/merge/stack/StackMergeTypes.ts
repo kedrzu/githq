@@ -10,7 +10,7 @@ import type { MergeCheck } from '../MergeTypes.js';
 
 /**
  * A stack's merge as the panel shows it (stacked PRs D11, D18): every member, the range going — from the first open
- * one up to the line — how far it can go now, what blocks it, and what `⌘↵` does.
+ * one up to the line — how far it can go now, and what blocks it.
  */
 export interface StackMerge {
     /** Every place of the stack, first to last, merged, closed and missing ones included, each in its own state. */
@@ -46,8 +46,6 @@ export interface StackMerge {
     readonly freshChecks: boolean;
     /** What stops the range as the line has it; `null` when every one going can land. */
     readonly block: StackMergeBlock | null;
-    /** What `⌘↵` does; `null` when nothing (D7: also while the copy is incomplete). */
-    readonly forward: StackMergeForward | null;
 }
 
 /** What stops a stack's range. */
@@ -88,26 +86,6 @@ export interface StackClosedBlock {
  */
 export interface StackHeldBlock {
     readonly kind: 'held';
-}
-
-/** What `⌘↵` does for a stack's range (merging D12, extended). */
-export type StackMergeForward = StackMergeRangeForward | StackRebaseForward | StackMarkReadyForward;
-
-/** Merge the range: the merge goes to the last one going, and lands every one going. */
-export interface StackMergeRangeForward {
-    readonly kind: 'merge';
-}
-
-/** Open the stack's top open pull request on github.com, where "Rebase stack" is (D8, D21). */
-export interface StackRebaseForward {
-    readonly kind: 'rebaseOnGitHub';
-    readonly url: string;
-}
-
-/** Mark the draft holding the range ready for review (SP49). */
-export interface StackMarkReadyForward {
-    readonly kind: 'markReady';
-    readonly pullRequest: PullRequestItem;
 }
 
 /** A row of a stack's merge panel, first to last (SP40–SP62). */
