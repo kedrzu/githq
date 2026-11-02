@@ -25,6 +25,7 @@ export const API_LIMITS_URL = `${REPOSITORY_URL}/blob/main/docs/design/githq/DEC
 /** The ids of the landing page's sections the navigation and the footer link to (`#features`). */
 export const LandingSectionId = {
     features: 'features',
+    compare: 'compare',
     keyboard: 'keyboard',
     howItWorks: 'how-it-works',
     install: 'install',
