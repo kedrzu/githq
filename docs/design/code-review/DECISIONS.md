@@ -231,12 +231,18 @@ it")
 **Why.** Moving between the pull requests of a stack should cost nothing. Nothing of this goes to the synced
 settings, which hold only what is tracked ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
-## Q6
+## D15
 
-**Open: does the viewed filter hide a file that has an unresolved thread?** [D9](#d9) removes a viewed file from
-the list and the diff; [D13](#d13) keeps comments visible in collapsed files. A colleague commenting on a file you
-already marked viewed does not drop the mark (only a change to the file does), so with the filter on the comment is
-not in the diff at all.
+**The viewed filter never hides a file that has an unresolved thread: the file stays as its header with the pieces
+of code that carry threads ([D13](#d13)).** (2026-11-02, owner, on the agent's recommendation)
+
+**Why.** A colleague's comment on a file already marked viewed does not drop the mark — only a change to the file
+does — so with the filter winning, that comment would appear nowhere in the diff: the very missed thread the owner
+complains about. Accepted cost: a thread deliberately left open keeps its file in the list until it is resolved.
+
+**Rejected.**
+
+- The filter wins and the list shrinks to nothing — a new comment on a viewed file is missed.
 
 ## Q5
 

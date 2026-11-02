@@ -40,3 +40,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   collapsed files shown with 1–3 lines of context and a distance mark; collapsed files expand and collapse back;
   "show comments in collapsed files" option, default on, local → D13. Per-PR state (expanded/collapsed files,
   filters, context, position) kept in local cache → D14. Raised Q6: viewed filter vs unresolved threads.
+- 2026-11-02 — Owner chose: the viewed filter keeps files with unresolved threads (header + comment pieces) → D15 (Q6 closed).
