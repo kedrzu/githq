@@ -1,4 +1,3 @@
-import type { ListLayout } from '@/lists/ListTypes.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import type { MyWork, MyWorkFilter } from '@/myWork/buildMyWork.js';
 import type { MyWorkGroup, MyWorkMembership } from '@/store/ItemStoreTypes.js';
@@ -87,18 +86,13 @@ export const D1_MEMBERSHIP: MyWorkMembership = sampleMembership({
     mentioned: ['I_463', 'PR_94', 'I_1187'],
 });
 
-/** "My work" of `items` and `groups` under `filter`, newest first — for the board without stacks, as the page builds it. */
-export function sampleMyWork(
-    items: readonly Item[],
-    groups: MyWorkMembership,
-    filter: MyWorkFilter,
-    layout: ListLayout = 'list',
-): MyWork {
+/** "My work" of `items` and `groups` under `filter`, newest first, each stack one entry — as the page builds it. */
+export function sampleMyWork(items: readonly Item[], groups: MyWorkMembership, filter: MyWorkFilter): MyWork {
     const byId = new Map(items.map(item => [item.id, item]));
     return buildMyWork({
         membership: groups,
         getItem: id => byId.get(id),
-        stacks: layout === 'board' ? new Map() : groupStacks(items),
+        stacks: groupStacks(items),
         filter,
         sort: 'updated',
     });

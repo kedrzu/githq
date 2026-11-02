@@ -45,6 +45,21 @@ export interface MyWorkRow {
     readonly nested: readonly PullRequestItem[];
     /** Set on a stack's entry: the whole stack, whatever its pull requests' states. */
     readonly stack: PullRequestStack | null;
+    /**
+     * On a stack's entry the filter matches only some pull requests of: the ids of the others, shown de-emphasised (D3,
+     * SP25).
+     */
+    readonly unmatched?: ReadonlySet<string> | null;
+    /**
+     * On a pull request of a stack listed as a plain row — the last open one of its stack (D16, SP13): the whole stack,
+     * for the row's marker.
+     */
+    readonly stackMarker?: PullRequestStack | null;
+    /**
+     * On an assigned issue: the entries of the user's stacks with a pull request closing it (stacked PRs D12), each whole,
+     * in the order their best sorted pull requests give them.
+     */
+    readonly stacks?: readonly MyWorkRow[];
 }
 
 /** What "my work" is built from. */
@@ -53,10 +68,7 @@ export interface BuildMyWorkParams {
     readonly membership: MyWorkMembership;
     /** An item of the local copy by id; `undefined` when it is not there (yet). */
     readonly getItem: (id: string) => Item | undefined;
-    /**
-     * The stacks of the local copy, by id (`groupStacks`): whole, with pull requests in no group of my work too. Empty
-     * for the board, until it draws stacks: each pull request a plain row of its own group.
-     */
+    /** The stacks of the local copy, by id (`groupStacks`): whole, with pull requests in no group of my work too. */
     readonly stacks: ReadonlyMap<string, PullRequestStack>;
     readonly filter: MyWorkFilter;
     /** The order of the rows, and of the pull requests nested under one. */
@@ -72,11 +84,15 @@ export interface BuildMyWorkParams {
  * A stack with two open pull requests or more is one entry, whole (stacked PRs D3, D7): in the first group any of its
  * pull requests is in, nesting every open pull request of the stack — those in no group too (someone else's, on a stack
  * my review was asked on) — and none of them is a row anywhere else. The entry takes the place its best sorted pull
- * request would. A stacked pull request is not nested under an assigned issue (D12 is still to come); a stack with
- * one open pull request left is a plain row.
+ * request the filter matches would. A stack with one open pull request left is a plain row, marked as part of its stack
+ * (`stackMarker`, D16, SP13).
+ *
+ * A stack of mine whose entry would be in "My pull requests", with any open pull request closing an issue in "Assigned to
+ * me", goes under that issue instead — the first in the list, as a plain pull request — whole, and nowhere else (stacked
+ * PRs D12): the issue's `stacks`. The filter judges such an issue as one with those pull requests nested under it.
  *
  * The filter keeps a top-level row when it, or a pull request nested under it, matches — a stack's entry when any of
- * its pull requests would as a row of its group:
+ * its pull requests would as a row of its group, the others then de-emphasised (`unmatched`, SP25):
  *
  * - `needsMe`: every review requested from me, my pull requests with failing checks, changes requested or
  *   conflicts, every issue assigned to me — never a mention alone;
@@ -124,14 +140,35 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
         rowsByGroup.set(group, items.toSorted(compare));
     }
 
-    // My pull requests that close an assigned issue move under it — under the first such issue in the list.
+    // My pull requests that close an assigned issue move under it — under the first such issue in the list; so do my
+    // stacks, whole, with any of their pull requests closing one (D12).
     const assigned = rowsByGroup.get('assigned') ?? [];
     const assignedOrder = new Map(assigned.map((item, index) => [item.id, index]));
     const nestedByIssue = new Map<string, PullRequestItem[]>();
+    const stacksByIssue = new Map<string, MyWorkRow[]>();
+    /** The issue each stack of "My pull requests" goes under, `null` for none: worked out at its first pull request. */
+    const stackIssues = new Map<string, string | null>();
     const authored: Item[] = [];
     for (const item of rowsByGroup.get('authored') ?? []) {
-        const stacked = item.kind === 'pullRequest' && item.stack !== null && stackMembers.has(item.stack.id);
-        const issueId = item.kind === 'pullRequest' && !stacked ? firstAssignedIssue(item, assignedOrder) : null;
+        const members = item.kind === 'pullRequest' && item.stack ? stackMembers.get(item.stack.id) : undefined;
+        if (item.kind === 'pullRequest' && item.stack && members) {
+            const stackId = item.stack.id;
+            const known = stackIssues.get(stackId);
+            const issueId = known === undefined ? firstAssignedIssue(members, assignedOrder) : known;
+            const stack = params.stacks.get(stackId);
+            if (issueId === null || !stack) {
+                authored.push(item);
+            } else if (known === undefined) {
+                // An entry has two open pull requests or more: there is always one to open.
+                const entry = { item: getStackPullRequestToOpen(members) ?? item, nested: members, stack };
+                stacksByIssue.set(issueId, [...(stacksByIssue.get(issueId) ?? []), entry]);
+            }
+
+            stackIssues.set(stackId, issueId);
+            continue;
+        }
+
+        const issueId = item.kind === 'pullRequest' ? firstAssignedIssue([item], assignedOrder) : null;
         if (item.kind !== 'pullRequest' || issueId === null) {
             authored.push(item);
             continue;
@@ -151,10 +188,39 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
     for (const group of MY_WORK_GROUPS) {
         const rows: MyWorkRow[] = [];
         for (const item of rowsByGroup.get(group) ?? []) {
-            const row = getRow(item);
-            if (row && matchesFilter(row, group, filter)) {
-                rows.push(row);
+            const stackId = item.kind === 'pullRequest' ? item.stack?.id : undefined;
+            const members = stackId === undefined ? undefined : stackMembers.get(stackId);
+            const stacks = stacksByIssue.get(item.id);
+            const row: MyWorkRow = {
+                item,
+                nested: nestedByIssue.get(item.id) ?? [],
+                stack: null,
+                ...(stacks ? { stacks } : {}),
+            };
+            // A stack's entry is placed by the best sorted of its pull requests that matches; the others place nothing.
+            if (!matchesFilter(row, group, filter) || (stackId !== undefined && entered.has(stackId))) {
+                continue;
             }
+
+            if (stackId === undefined) {
+                rows.push(row);
+                continue;
+            }
+
+            if (!members) {
+                rows.push({ ...row, stackMarker: params.stacks.get(stackId) ?? null });
+                continue;
+            }
+
+            entered.add(stackId);
+            const unmatched = members.filter(member => !matchesFilter(toRow(member), group, filter));
+            rows.push({
+                // An entry has two open pull requests or more: there is always one to open.
+                item: getStackPullRequestToOpen(members) ?? item,
+                nested: members,
+                stack: params.stacks.get(stackId) ?? null,
+                unmatched: unmatched.length > 0 ? new Set(unmatched.map(member => member.id)) : null,
+            });
         }
 
         groups.push({ group, arrived: membership[group] !== undefined, rows });
@@ -163,27 +229,11 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
     }
 
     return { groups, counts: { ...counts, total } };
+}
 
-    /** The row an item gives: a stack's entry for its best sorted pull request, nothing for the rest of them. */
-    function getRow(item: Item): MyWorkRow | null {
-        const stackId = item.kind === 'pullRequest' ? item.stack?.id : undefined;
-        const members = stackId === undefined ? undefined : stackMembers.get(stackId);
-        if (stackId === undefined || !members) {
-            return { item, nested: nestedByIssue.get(item.id) ?? [], stack: null };
-        }
-
-        if (entered.has(stackId)) {
-            return null;
-        }
-
-        entered.add(stackId);
-        return {
-            // An entry has two open pull requests or more: there is always one to open.
-            item: getStackPullRequestToOpen(members) ?? item,
-            nested: members,
-            stack: params.stacks.get(stackId) ?? null,
-        };
-    }
+/** A pull request as a row of its own, as the filter judges a stack's. */
+function toRow(item: PullRequestItem): MyWorkRow {
+    return { item, nested: [], stack: null };
 }
 
 /** A stack's open pull requests in its order, as the local copy holds them now. */
@@ -199,10 +249,11 @@ function getOpenMembers(stack: PullRequestStack, getItem: (id: string) => Item |
     return open;
 }
 
-function firstAssignedIssue(pr: PullRequestItem, assignedOrder: ReadonlyMap<string, number>) {
+/** The first issue of "Assigned to me" any of the pull requests closes, or `null`. */
+function firstAssignedIssue(prs: readonly PullRequestItem[], assignedOrder: ReadonlyMap<string, number>) {
     let first: string | null = null;
     let firstIndex = Number.POSITIVE_INFINITY;
-    for (const id of pr.closingIssueIds) {
+    for (const id of prs.flatMap(pr => pr.closingIssueIds)) {
         const index = assignedOrder.get(id);
         if (index !== undefined && index < firstIndex) {
             first = id;
@@ -214,11 +265,6 @@ function firstAssignedIssue(pr: PullRequestItem, assignedOrder: ReadonlyMap<stri
 }
 
 function matchesFilter(row: MyWorkRow, group: MyWorkGroup, filter: MyWorkFilter): boolean {
-    if (row.stack) {
-        // A stack's entry stays when any of its pull requests would, as a row of the group.
-        return row.nested.some(item => matchesFilter({ item, nested: [], stack: null }, group, filter));
-    }
-
     switch (filter) {
         case 'all':
             return true;
@@ -250,7 +296,9 @@ function isWaitingOnOthers(row: MyWorkRow, group: MyWorkGroup): boolean {
         case 'authored':
             return row.item.kind === 'pullRequest' && getPullRequestStanding(row.item).waitingOnOthers;
         case 'assigned':
-            return row.nested.some(pr => getPullRequestStanding(pr).waitingOnOthers);
+            return [...row.nested, ...(row.stacks ?? []).flatMap(stack => stack.nested)].some(
+                pr => getPullRequestStanding(pr).waitingOnOthers,
+            );
         case 'reviewRequested':
         case 'mentioned':
             return false;

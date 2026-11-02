@@ -11,7 +11,15 @@ import type { ListViewOptions } from '@/lists/ListTypes.js';
 import type { MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { D1_ITEMS, D1_MEMBERSHIP, SAMPLE_NOW, sampleMembership, sampleMyWork } from '@/testing/sampleMyWork.js';
-import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
+import {
+    sampleStack,
+    STACK_UNDER_ISSUE_ITEMS,
+    STACK_UNDER_ISSUE_MEMBERSHIP,
+    STACKED_MY_WORK_ITEMS,
+    STACKED_MY_WORK_MEMBERSHIP,
+    TWO_STACKS_UNDER_ISSUE_ITEMS,
+    TWO_STACKS_UNDER_ISSUE_MEMBERSHIP,
+} from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
@@ -231,7 +239,7 @@ test('grouped by repository on the first download: what arrived is in its reposi
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
 });
 
-test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too; on the board, plain cards', async () => {
+test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too', async () => {
     mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP);
 
     const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
@@ -262,8 +270,8 @@ test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside 
     await expect.element(mine.getByText('Part 2 of S_calendar')).not.toBeInTheDocument();
 });
 
-test("stacked PRs: on the board a stack's pull requests are plain cards, each in its own group's column, with their mark", async () => {
-    // The fourth is found by a later group's search alone: it is a card there, as on a board without stacks.
+test('stacked PRs D3: on the board a stack is one card, whole, in the first reason any of its pull requests has; its column counts it once', async () => {
+    // The fourth is found by a later group's search alone: it stays in the stack's card all the same.
     const membership = sampleMembership({
         reviewRequested: [...(STACKED_MY_WORK_MEMBERSHIP.reviewRequested ?? [])],
         authored: [...(STACKED_MY_WORK_MEMBERSHIP.authored ?? [])],
@@ -272,24 +280,162 @@ test("stacked PRs: on the board a stack's pull requests are plain cards, each in
     });
     mount(STACKED_MY_WORK_ITEMS, membership, { layout: 'board' });
 
-    const review = page.getByRole('region', { name: 'Review requested' }).getByRole('listitem');
-    await expect
-        .element(review.filter({ hasText: 'Part 2 of S_webhooks' }))
-        .toHaveTextContent(/your review requested/i);
-    await expect
-        .element(review.filter({ hasText: 'Part 3 of S_webhooks' }))
-        .toHaveTextContent(/your review requested/i);
-    await expect.element(review.filter({ hasText: 'Part 4 of S_webhooks' })).not.toBeInTheDocument();
-    expect(review.elements()).toHaveLength(4);
+    const column = page.getByRole('region', { name: 'Review requested' });
+    const review = column.getByRole('listitem');
+    const card = review.filter({ hasText: 'Retry webhooks with backoff' });
+    await expect.element(card).toHaveTextContent('Your review on 2 of 4');
+    expect(review.elements()).toHaveLength(3);
+    await expect.element(column.getByRole('heading')).toHaveTextContent(/3$/);
+    await expect.element(page.getByText('Part 2 of S_webhooks')).not.toBeInTheDocument();
 
-    const mentioned = page.getByRole('region', { name: 'Mentioned' }).getByRole('listitem');
-    await expect.element(mentioned.filter({ hasText: 'Part 4 of S_webhooks' })).toBeInTheDocument();
+    const mentioned = page.getByRole('region', { name: 'Mentioned' });
+    await expect.element(mentioned.getByText('Part 4 of S_webhooks')).not.toBeInTheDocument();
+
+    // Expanded, the card lists all four inside it: still one card of its column.
+    await userEvent.click(card.getByRole('button', { name: 'Expand the stack' }));
+    await expect.element(card.getByText('Part 4 of S_webhooks')).toBeInTheDocument();
+    expect(column.element().querySelectorAll('[data-entry-key]')).toHaveLength(3);
+});
+
+test('stacked PRs D12: my stack closing an assigned issue sits under it, whole; the issue takes its chevron, pips and state', async () => {
+    const view = mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP);
+
+    const assigned = page.getByRole('region', { name: 'Assigned to me' });
+    const issue = assigned.getByRole('listitem').filter({ hasText: 'Background sync with conditional requests' });
+    await expect.element(issue).toHaveTextContent('2 of 3 ready, #31 blocks');
+    // Nowhere else, and collapsed: "My pull requests" keeps its three rows, the issue none of the stack's.
+    await expect.element(page.getByText('Sync: move the loop into a worker')).not.toBeInTheDocument();
+    expect(page.getByRole('region', { name: 'My pull requests' }).getByRole('listitem').elements()).toHaveLength(3);
+    await expect.element(assigned.getByRole('heading')).toHaveTextContent(/4$/);
+
+    // → on the issue expands it; its rows are the stack's pull requests, number alone.
+    view.selectedId.value = 'I_12';
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(issue.getByRole('button', { name: 'Collapse the stack' })).toBeInTheDocument();
+    const member = assigned.getByRole('listitem').filter({ hasText: 'Sync: read conditional requests first' });
+    await expect.element(member).toHaveTextContent('#30');
+    expect(assigned.getByRole('listitem').elements()).toHaveLength(8);
+
+    // Enter on the issue opens the issue, not a pull request.
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['I_12']);
+
+    // ← on one of its rows collapses it and selects the issue.
+    await userEvent.keyboard('j');
+    await expect.poll(selectedTitle).toBe('Sync: move the loop into a worker');
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(page.getByText('Sync: move the loop into a worker')).not.toBeInTheDocument();
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+});
+
+test('stacked PRs D23: with an item open, j walks from the issue into its folded stack one by one, k back into it at its last', async () => {
+    const view = mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP);
+    view.selectedId.value = 'I_12';
+    view.openedId.value = 'I_12';
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+
+    await userEvent.keyboard('j');
+    expect(view.opened).toEqual(['PR_S_sync_1']);
+    view.openedId.value = 'PR_S_sync_1';
+    await userEvent.keyboard('j');
+    view.openedId.value = 'PR_S_sync_2';
+    await userEvent.keyboard('j');
+    view.openedId.value = 'PR_S_sync_3';
+    expect(view.opened).toEqual(['PR_S_sync_1', 'PR_S_sync_2', 'PR_S_sync_3']);
+    // The issue stays selected while its folded stack is walked.
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+
+    await userEvent.keyboard('j');
+    await expect.poll(selectedTitle).toBe('Command palette: jump to issue by number');
+    view.openedId.value = 'I_9';
+    await userEvent.keyboard('k');
+    view.openedId.value = 'PR_S_sync_3';
+    await userEvent.keyboard('k');
+    view.openedId.value = 'PR_S_sync_2';
+    await userEvent.keyboard('kk');
+    expect(view.opened.slice(3)).toEqual(['I_9', 'PR_S_sync_3', 'PR_S_sync_2', 'PR_S_sync_1', 'I_12']);
+});
+
+test('stacked PRs D23: two stacks under one issue each get a header one step in, expanded on their own; Enter opens the stack', async () => {
+    const view = mount(TWO_STACKS_UNDER_ISSUE_ITEMS, TWO_STACKS_UNDER_ISSUE_MEMBERSHIP);
+
+    const assigned = page.getByRole('region', { name: 'Assigned to me' });
+    const rows = assigned.getByRole('listitem');
+    const issue = rows.filter({ hasText: 'Background sync with conditional requests' });
+    await expect.element(issue.getByRole('button', { name: 'Expand the stack' })).not.toBeInTheDocument();
+    await expect.element(issue).not.toHaveTextContent('ready');
+    const sync = rows.filter({ hasText: 'Sync: move the loop into a worker' });
+    const failover = rows.filter({ hasText: 'Fail over to the second provider' });
+    await expect.element(sync).toHaveTextContent('2 of 3 ready, #31 blocks');
+    await expect.element(failover).toBeInTheDocument();
+    // The issue, its two headers, the other issues and the nested pull request of the first.
+    expect(rows.elements()).toHaveLength(7);
+
+    // → on a header expands its stack alone.
+    view.selectedId.value = 'PR_S_sync_1';
+    await expect.poll(selectedText).toContain('#31 blocks');
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(page.getByText('Sync: read conditional requests first')).toBeInTheDocument();
+    await expect.element(page.getByText('Part 2 of S_failover')).not.toBeInTheDocument();
+    expect(rows.elements()).toHaveLength(10);
+
+    view.selectedId.value = 'PR_S_failover_1';
+    await expect.poll(selectedText).toContain('Fail over to the second provider');
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['PR_S_failover_1']);
+});
+
+test('stacked PRs D12: on the board the stack is a card under the issue it closes', async () => {
+    mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP, { layout: 'board' });
+
+    const column = page.getByRole('region', { name: 'Assigned to me' });
+    const cards = column.getByRole('listitem');
+    await expect.element(cards.nth(2)).toHaveTextContent('Background sync with conditional requests');
+    await expect.element(cards.nth(3)).toHaveTextContent('2 of 3 ready, #31 blocks');
+    await expect.element(column.getByRole('heading')).toHaveTextContent(/4$/);
 });
 
 /**
  * Mounts the view over `initial` and the groups of `arrived` (all of D1 by default), holding its filter and
  * selection like the page does.
  */
+/** A stack of the user's whose first two landed: its third, the last open one, in "My pull requests". */
+const TAIL_STACK = sampleStack({
+    id: 'S_tail',
+    number: 40,
+    members: [{ state: 'MERGED', merged: true }, { state: 'MERGED', merged: true }, { title: 'The last of the stack' }],
+});
+const TAIL_MEMBERSHIP = sampleMembership({
+    reviewRequested: [...(D1_MEMBERSHIP.reviewRequested ?? [])],
+    authored: [...(D1_MEMBERSHIP.authored ?? []), 'PR_S_tail_3'],
+    assigned: [...(D1_MEMBERSHIP.assigned ?? [])],
+    mentioned: [...(D1_MEMBERSHIP.mentioned ?? [])],
+});
+
+test('stacked PRs D16, SP13: the last open pull request of a stack is a plain row, marked as part of the stack', async () => {
+    mount([...D1_ITEMS, ...TAIL_STACK], TAIL_MEMBERSHIP);
+
+    const row = page
+        .getByRole('region', { name: 'My pull requests' })
+        .getByRole('listitem')
+        .filter({ hasText: 'The last of the stack' });
+    await expect.element(row.getByRole('img', { name: 'In a stack' })).toBeInTheDocument();
+    await expect.element(row).toHaveTextContent('3 of 3');
+    // No other row of my work carries the marker.
+    expect(page.getByRole('img', { name: 'In a stack' }).elements()).toHaveLength(1);
+});
+
+test('stacked PRs D16, SP13: on the board the last open pull request of a stack is a plain card with the marker', async () => {
+    mount([...D1_ITEMS, ...TAIL_STACK], TAIL_MEMBERSHIP, { layout: 'board' });
+
+    const card = page
+        .getByRole('region', { name: 'My pull requests' })
+        .getByRole('listitem')
+        .filter({ hasText: 'The last of the stack' });
+    await expect.element(card.getByRole('img', { name: 'In a stack' })).toBeInTheDocument();
+    await expect.element(card).toHaveTextContent('3 of 3');
+});
+
 function mount(
     initial: readonly Item[],
     arrived: MyWorkMembership = D1_MEMBERSHIP,
@@ -316,7 +462,7 @@ function mount(
             h(
                 MyWorkView,
                 {
-                    work: sampleMyWork(items.value, membership.value, filter.value, display.layout),
+                    work: sampleMyWork(items.value, membership.value, filter.value),
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     waitingCount: 0,
@@ -351,6 +497,8 @@ function mount(
 
     return {
         items,
+        /** The selected item, as the page holds it. */
+        selectedId,
         /** The items selected together. */
         checkedIds,
         /** The item opened over the list, as the page passes it. */

@@ -1,4 +1,4 @@
-<!-- What can be done to the items selected together in a list (E2, `x`): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. -->
+<!-- What can be done to the items selected together in a list (E2, `x`) — with stacks' entries among them, it says how many pull requests and how many entries and rows they span (D20, SP28): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -26,11 +26,14 @@ import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 
+import type { SelectionSpan } from './getSelectionSpan.js';
 import * as l from './SelectionActions.loc.js';
 
 const props = defineProps<{
   /** The items selected together. */
   ids: readonly string[];
+  /** The stacks' entries and rows they span in the list; without an entry the count stands alone ("3 selected"). */
+  span?: SelectionSpan | null;
 }>();
 
 const emit = defineEmits<{
@@ -52,6 +55,25 @@ const opened = ref<SelectionPicker | null>(null);
 const closeMenuOpen = ref(false);
 
 const selected = computed(() => props.ids.flatMap(id => items.get(id) ?? []));
+/** Every item selected is a pull request: the count names them, as edits apply to them (D20). */
+const allPullRequests = computed(
+  () => selected.value.length === props.ids.length && selected.value.every(item => item.kind === 'pullRequest'),
+);
+const chip = computed(() => t(allPullRequests.value ? l.pullRequests : l.items, { count: props.ids.length }));
+/** "9 pull requests selected, in 3 entries and 1 row" (SP28), or "3 selected" with no stack's entry among them. */
+const countText = computed(() => {
+  const span = props.span;
+  const count = props.ids.length;
+  if (!span || span.entries === 0) {
+    return t(l.selected, { count });
+  }
+
+  const selectedText = t(allPullRequests.value ? l.pullRequestsSelected : l.itemsSelected, { count });
+  const entries = t(l.entries, { count: span.entries });
+  return span.rows > 0
+    ? t(l.selectedInEntriesAndRows, { selected: selectedText, entries, rows: t(l.rows, { count: span.rows }) })
+    : t(l.selectedInEntries, { selected: selectedText, entries });
+});
 /** The repositories of the selection, each once (`owner/name`). */
 const repositoryNames = computed(() => [...new Set(selected.value.map(item => item.repository.nameWithOwner))]);
 const metadata = computed(() => repositoryNames.value.flatMap(name => repositories.get(name) ?? []));
@@ -123,8 +145,8 @@ useCommands(
     }),
   () => ({
     kind: 'selection',
-    label: t(l.items, { count: props.ids.length }),
-    title: t(l.items, { count: props.ids.length }),
+    label: chip.value,
+    title: chip.value,
   }),
 );
 
@@ -195,7 +217,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
     role="toolbar"
     :aria-label="t(l.actions)"
   >
-    <span :class="css.selectionActions_count">{{ t(l.selected, { count: ids.length }) }}</span>
+    <span :class="css.selectionActions_count">{{ countText }}</span>
     <Picker
       :open="opened === 'assignees'"
       :label="t(l.assignees)"

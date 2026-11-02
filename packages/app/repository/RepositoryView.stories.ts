@@ -1,11 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { foldStacks } from '@/lists/foldStacks.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListLayout, ListViewOptions } from '@/lists/ListTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
+import { SPREAD_STACK_ITEMS } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { RepositoryListTexts } from './buildRepositoryList.js';
@@ -82,6 +86,58 @@ export const BoardByLabel: Story = {
     args: { list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'label'), options: options('board', 'label') },
 };
 
+/**
+ * SP24, SP13: by label, a stack spread over two groups and a pull request alone in a third. Each group's entry is a share
+ * — "2 of 4", its pull requests' pips filled and the others hollow, how the share stands ("Both ready", "#1206 blocks")
+ * — and the lone one is an ordinary row marked "4 of 4", its pip tall.
+ */
+export const StackSpreadOverLabels: Story = {
+    args: {
+        nameWithOwner: 'fitloop/webapp',
+        list: sampleStackedList(SPREAD_STACK_ITEMS, 'label'),
+        openCount: SPREAD_STACK_ITEMS.length,
+        projects: [],
+        options: options('list', 'label'),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getAllByText('2 of 4')).toHaveLength(2);
+        await expect(canvas.getByText('Both ready')).toBeVisible();
+        await expect(canvas.getByText('#1206 blocks')).toBeVisible();
+        await expect(canvas.getByText('4 of 4')).toBeVisible();
+        await expect(canvas.getByLabelText('In a stack')).toBeVisible();
+    },
+};
+
+/**
+ * SP26 as a repository's board (by label; a project's by Status draws the same): the stack spread over two columns, a
+ * card in each — "2 of 4", the column's share filled — and the pull request alone in a third, an ordinary card marked
+ * "4 of 4". The chevron expands a card: its pull requests are listed inside it, the column still counting it once.
+ */
+export const StackOnBoard: Story = {
+    args: {
+        nameWithOwner: 'fitloop/webapp',
+        list: sampleStackedList(SPREAD_STACK_ITEMS, 'label'),
+        openCount: SPREAD_STACK_ITEMS.length,
+        projects: [],
+        options: options('board', 'label'),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getAllByText(/2 of 4/)).toHaveLength(2);
+        await expect(canvas.getByText('Both ready')).toBeVisible();
+        await expect(canvas.getByText('#1206 blocks')).toBeVisible();
+        await expect(canvas.getByText('4 of 4')).toBeVisible();
+
+        // Expanded, the stack's cards list its pull requests inside them: the column's cards stay the share and the issue.
+        const [expand] = canvas.getAllByRole('button', { name: 'Expand the stack' });
+        await userEvent.click(expand ?? canvasElement);
+        await expect(canvas.getByText('Timezones in the picker')).toBeVisible();
+        const frontend = canvas.getByRole('region', { name: 'frontend' });
+        await expect(frontend.querySelectorAll('[data-entry-key]')).toHaveLength(2);
+    },
+};
+
 /** Nothing matches the state and kind chosen. */
 export const NothingMatches: Story = { args: { list: sampleList([], 'milestone'), openCount: 0, projects: [] } };
 
@@ -105,6 +161,20 @@ export const NotFound: Story = {
 
 function sampleList(items: readonly Item[], grouping: RepositoryGrouping) {
     return buildRepositoryList({ items, state: 'open', kind: 'all', grouping, sort: 'updated', texts: TEXTS });
+}
+
+/** The list as the repository page shows it: a stack's pull requests folded per group (D3). */
+function sampleStackedList(items: readonly Item[], grouping: RepositoryGrouping) {
+    const list = sampleList(items, grouping);
+    return {
+        ...list,
+        groups: foldStacks({
+            groups: list.groups,
+            getPullRequest: item => (item.kind === 'pullRequest' ? item : null),
+            stacks: groupStacks(items),
+            describe: stack => describeStack({ stack, viewerLogin: SAMPLE_VIEWER.login, getItem: () => undefined }),
+        }),
+    };
 }
 
 function options(layout: ListLayout, grouping: RepositoryGrouping): ListViewOptions<RepositoryGrouping, ItemSort> {

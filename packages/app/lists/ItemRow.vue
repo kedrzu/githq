@@ -1,4 +1,4 @@
-<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter. -->
+<!-- The content of one row of a list (the list draws the row, its selection and its handlers) of issues and pull requests (D1): the kind and state icon, the title, the people (who opened it in my work, who it is assigned to elsewhere) and how long ago it changed; under them the repository and number, the marker of a pull request listed alone out of its stack (D16, SP13: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "3 of 4"), the pips and state of the stack an issue serves as the header of (stacked PRs D12, SP20, SP21), where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`) and the labels — those of them the list's display options show. A pull request nested under the issue it closes is indented and quieter; one of a stack with a header of its own under an issue one step further (D23). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight, Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
@@ -8,9 +8,13 @@ import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import type { Item } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import * as l from './ItemRow.loc.js';
+import type { ListStack } from './ListTypes.js';
+import StackMarker from './StackMarker.vue';
+import StackSummary from './StackSummary.vue';
 import { useItemFacts } from './useItemFacts.js';
 
 const props = withDefaults(
@@ -30,12 +34,27 @@ const props = withDefaults(
     repository?: string | null;
     /** The issue this pull request is nested under; its number alone names it when they share a repository. */
     parent?: Item | null;
+    /** Nested two steps in: a pull request of a stack with a header of its own under an issue (D23). */
+    deep?: boolean;
+    /** The stack this issue serves as the header of (`ListRow.stacks`, D12): its pips and state. */
+    header?: ListStack | null;
     /** In the selection several items are edited together in (`x`). */
     checked?: boolean;
     /** An edit of it GitHub just refused, said for a moment ("“regression” label undone"). */
     undone?: string | null;
+    /** The stack this pull request is listed alone out of (`ListRow.stackMarker`), for its marker. */
+    stack?: StackDescription | null;
   }>(),
-  { people: 'author', reviewRequested: false, repository: null, parent: null, undone: null },
+  {
+    people: 'author',
+    reviewRequested: false,
+    repository: null,
+    parent: null,
+    deep: false,
+    header: null,
+    undone: null,
+    stack: null,
+  },
 );
 
 defineSlots<{
@@ -57,7 +76,7 @@ const shown = computed(() => new Set(props.properties));
 </script>
 
 <template>
-  <div :class="[css.itemRow, parent && css.itemRow_nested]">
+  <div :class="[css.itemRow, parent && css.itemRow_nested, deep && css.itemRow_deep]">
     <Check
       v-if="checked"
       :class="css.itemRow_check"
@@ -92,6 +111,17 @@ const shown = computed(() => new Set(props.properties));
       </div>
       <div :class="css.itemRow_line">
         <span :class="css.itemRow_reference">{{ facts.reference }}</span>
+        <StackMarker
+          :class="css.itemRow_stack"
+          :item="item"
+          :stack="stack"
+        />
+        <StackSummary
+          v-if="header"
+          :stack="header"
+          :now="now"
+          :viewer-login="viewerLogin"
+        />
         <span
           v-if="facts.status && shown.has('status')"
           :class="[css.itemRow_status, css[`itemRow_status_${facts.status.tone}`]]"
@@ -180,6 +210,10 @@ const shown = computed(() => new Set(props.properties));
 
 .itemRow_nested {
   padding-left: 42px;
+}
+
+.itemRow_deep {
+  padding-left: 66px;
 }
 
 .itemRow_check {
@@ -282,6 +316,11 @@ const shown = computed(() => new Set(props.properties));
   flex: none;
   font-family: $font-family-mono;
   color: $color-fg-dim;
+}
+
+.itemRow_stack {
+  display: inline-flex;
+  flex: none;
 }
 
 .itemRow_status {

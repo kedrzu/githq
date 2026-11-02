@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -26,6 +26,8 @@ import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
+import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import * as propertyLabels from '@/lists/ItemProperty.loc.js';
 import ItemCard from '@/lists/ItemCard.vue';
@@ -34,6 +36,7 @@ import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import type { ListChoice, ListContextMenuProps, ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
 
@@ -133,7 +136,7 @@ defineSlots<{
   /** The entries of the menu the title opens (`ListToolbar`'s `titleMenu`). */
   menu?(): unknown;
   /** The actions of the items edited together, while there are any. */
-  selection?(props: { ids: readonly string[] }): unknown;
+  selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
 }>();
@@ -275,6 +278,7 @@ function addDraft(title: string, group: string | null) {
         v-if="checkedIds.length > 0"
         name="selection"
         :ids="checkedIds"
+        :span="getSelectionSpan(groups ?? [], checkedIds)"
       />
       <nav
         v-else-if="tabs.length > 0"
@@ -511,13 +515,14 @@ function addDraft(title: string, group: string | null) {
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, stack, nested }">
+        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker, nested }">
           <StackRow
             v-if="stack"
             :stack="stack"
             :properties="itemProperties"
             :now="now"
             :checked="checked"
+            :half-checked="halfChecked"
           >
             <template #fields>
               <ProjectEntryFields
@@ -536,6 +541,7 @@ function addDraft(title: string, group: string | null) {
             :now="now"
             :checked="checked"
             :undone="undone.get(entry.id)"
+            :stack="stackMarker"
           >
             <template #fields>
               <ProjectEntryFields
@@ -553,9 +559,23 @@ function addDraft(title: string, group: string | null) {
             :checked="checked"
           />
         </template>
-        <template #card="{ entry, checked }">
+        <template
+          #card="{ entry, checked, halfChecked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }"
+        >
+          <StackCard
+            v-if="stack"
+            :stack="stack"
+            :properties="itemProperties"
+            :now="now"
+            :checked="checked"
+            :half-checked="halfChecked"
+            :expanded="expanded"
+            :selected-member="selectedMember"
+            @toggle="toggleStack"
+            @open="openMember"
+          />
           <ItemCard
-            v-if="entry.value.content"
+            v-else-if="entry.value.content"
             :item="entry.value.content"
             :properties="itemProperties"
             people="assignees"
@@ -563,6 +583,7 @@ function addDraft(title: string, group: string | null) {
             :now="now"
             :checked="checked"
             :undone="undone.get(entry.id)"
+            :stack="stackMarker"
           >
             <template #fields>
               <ProjectEntryFields

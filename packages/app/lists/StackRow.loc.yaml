@@ -2,40 +2,5 @@ stack:
   en: Stack
 inSelection:
   en: Selected
-inGithq:
-  en: '{held} of {size} in githq'
-ready:
-  en: All {count} ready
-held:
-  en: '{ready} of {open} ready, #{number} blocks'
-heldByDraft:
-  en: '{ready} of {open} ready, #{number} is a draft'
-heldByChecks:
-  en: '{ready} of {open} ready, #{number} checks running'
-heldByReview:
-  en: '{ready} of {open} ready, #{number} waiting for review'
-needsRebase:
-  en: Needs rebase · nothing can merge
-closedInside:
-  en: '#{number} closed · {stuck} later stuck, dissolve and link again'
-closed:
-  en: Closed
-incomplete:
-  en: Still reading this stack
-merged:
-  en: Merged
-reviewRequested:
-  en: Your review on {requested} of {open} · {ready} ready
-landed:
-  en: '{count} landed · {state}'
-more:
-  en: '+{count}'
-size:
-  en: '+{additions} −{deletions}'
-projectField:
-  en: '{project}: {value}'
-milestones:
-  plural: count
-  en:
-    one: '{count} milestone'
-    many: '{count} milestones'
+partlySelected:
+  en: Partly selected

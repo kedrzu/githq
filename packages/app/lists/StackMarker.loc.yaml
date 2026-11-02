@@ -1,0 +1,4 @@
+inStack:
+  en: In a stack
+stackPlace:
+  en: '{position} of {size}'

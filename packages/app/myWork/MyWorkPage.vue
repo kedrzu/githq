@@ -1,4 +1,4 @@
-<!-- `/` and a group's own list at GitHub's dashboard address of it (`/pulls/review-requested`, `/pulls`, `/issues/assigned`, `/issues/mentioned`; `myWorkRoutes.ts`): "my work" from the local copy (D11, D17) — all four groups, or the one the sidebar narrowed it to (`meta.myWorkGroup`), in the list each stack one entry, whole, on the board its pull requests plain cards (`buildMyWork`). The routes share one instance (`meta.key`), so the filter and the selection survive moving between them. Opening items and the selection are every list's (`useItemList`); the layout, order and properties shown are kept on this device (`useListViewOptions`). -->
+<!-- `/` and a group's own list at GitHub's dashboard address of it (`/pulls/review-requested`, `/pulls`, `/issues/assigned`, `/issues/mentioned`; `myWorkRoutes.ts`): "my work" from the local copy (D11, D17) — all four groups, or the one the sidebar narrowed it to (`meta.myWorkGroup`), each stack one entry, whole — a row in the list, a card on the board (`buildMyWork`). The routes share one instance (`meta.key`), so the filter and the selection survive moving between them. Opening items and the selection are every list's (`useItemList`); the layout, order and properties shown are kept on this device (`useListViewOptions`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, ref } from 'vue';
@@ -40,8 +40,7 @@ const work = computed(() =>
       const item = items.get(id);
       return item && projects.withRowFields(item);
     },
-    // The board draws no stacks yet: each pull request is a plain card in its own group's column.
-    stacks: view.options.layout === 'board' ? new Map() : groupStacks(items.all),
+    stacks: groupStacks(items.all),
     filter: filter.value,
     sort: view.options.sort,
   }),
@@ -86,9 +85,10 @@ const waitingCount = computed(() => {
     @open="list.open"
     @listed="list.setListed"
   >
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>

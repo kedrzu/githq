@@ -83,6 +83,27 @@ export const InItsRepository: Story = { args: { repository: 'mlaine/tasklet' } }
 /** All its pull requests are among the items edited together (`x`, D20). */
 export const Checked: Story = { args: { checked: true } };
 
+/** SP28: some of its pull requests are among the items edited together, not all — a half mark. */
+export const HalfChecked: Story = {
+    args: { halfChecked: true },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('img', { name: 'Partly selected' })).toBeVisible();
+    },
+};
+
+/** SP25: the list's filter matches one of its four pull requests — "1 of 4 matches". */
+export const Filtered: Story = {
+    args: {
+        stack: {
+            ...sampleListStack(SAMPLE_STACKS.held),
+            unmatched: new Set(SAMPLE_STACKS.held.filter((_, index) => index !== 2).map(pr => pr.id)),
+        },
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('1 of 4 matches')).toBeVisible();
+    },
+};
+
 /** D15, githq D12: every pull request is "In review" in its first project — the entry shows the value they share. */
 export const ProjectFieldShared: Story = {
     args: {
