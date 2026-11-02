@@ -14,7 +14,7 @@ import { sortRunsByCreation } from './sortRunsByCreation.js';
 /** How long a break shows as new: the sidebar marker is bright, and the list puts it under New. */
 const NEW_BREAK_MS = 24 * 60 * 60 * 1000;
 /** How many runs a workflow's strip shows. */
-const STRIP_RUNS = 5;
+export const RUN_STRIP_SLOTS = 5;
 
 /**
  * Works out how a repository's workflows stand from what is stored of them — `undefined` while nothing is (actions
@@ -74,7 +74,7 @@ function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, no
     const base = {
         workflow,
         generated: workflow.path.startsWith('dynamic/'),
-        lastRuns: runs.slice(-STRIP_RUNS),
+        lastRuns: runs.slice(-RUN_STRIP_SLOTS),
         runningRun: running,
     };
 

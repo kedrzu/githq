@@ -5,6 +5,12 @@ import type { RepositoryKind } from '@/repository/buildRepositoryList.js';
 export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 
 /**
+ * The broken workflows of every tracked repository (actions W2), under a first segment GitHub reserves
+ * (`/dashboard`), so the address is never an owner's or a repository's.
+ */
+export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
+
+/**
  * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`) and its
  * lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`), all in one route.
  */

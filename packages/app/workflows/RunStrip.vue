@@ -9,6 +9,7 @@ import { formatLocalDate } from '@/utils/formatLocalDate.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import * as l from './RunStrip.loc.js';
+import { RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 
 const props = defineProps<{
@@ -29,16 +30,14 @@ interface Tick {
   readonly run: GitHubWorkflowRun | null;
 }
 
-/** How many runs the strip shows. */
-const SLOTS = 5;
 const LIST = new Intl.ListFormat(APP_LANGUAGE, { style: 'long', type: 'unit' });
 
 const t = useTranslate();
 
-const runs = computed(() => props.runs.slice(-SLOTS));
+const runs = computed(() => props.runs.slice(-RUN_STRIP_SLOTS));
 // Slots with no run known first, so the latest run is always in the last one.
 const ticks = computed((): Tick[] => [
-  ...Array.from({ length: SLOTS - runs.value.length }, (_, index): Tick => ({
+  ...Array.from({ length: RUN_STRIP_SLOTS - runs.value.length }, (_, index): Tick => ({
     key: `none-${index}`,
     kind: 'unknown',
     run: null,

@@ -68,8 +68,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
+import { BROKEN_WORKFLOWS_PATH, REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';

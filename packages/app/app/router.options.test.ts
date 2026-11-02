@@ -9,6 +9,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
+    BROKEN_WORKFLOWS_PATH,
     FIRST_DOWNLOAD_PATH,
     getGitHubUrl,
     getProjectPath,
@@ -18,7 +19,6 @@ import {
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
