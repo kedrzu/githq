@@ -10,6 +10,7 @@ import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { formatBytes } from '@/utils/formatBytes.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -71,12 +72,6 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const number = new Intl.NumberFormat(APP_LANGUAGE);
-const megabytes = new Intl.NumberFormat(APP_LANGUAGE, {
-  style: 'unit',
-  unit: 'megabyte',
-  maximumFractionDigits: 1,
-});
-const kilobytes = new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 0 });
 
 const organizationCount = computed(() =>
   props.organizations.kind === 'read' ? props.organizations.organizations.length : null,
@@ -131,10 +126,6 @@ const allowanceText = computed(() => {
 /** Its approval was requested from here, and it no longer hides anything: approved, as far as githq can tell. */
 function isApproved(organization: AccountOrganization) {
   return !organization.hiddenPrivate && organization.requestedAt !== null;
-}
-
-function formatBytes(bytes: number) {
-  return bytes >= 1_000_000 ? megabytes.format(bytes / 1_000_000) : kilobytes.format(bytes / 1000);
 }
 </script>
 

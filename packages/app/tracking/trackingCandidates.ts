@@ -1,5 +1,6 @@
 import type {
     CandidateProject,
+    CandidateRepositories,
     CandidateRepository,
     TrackedProject,
     TrackedRepository,
@@ -18,6 +19,26 @@ export function getCandidateRepositories(candidates: TrackingCandidates): Candid
     return [
         ...candidates.repositories.repositories,
         ...candidates.organizations.flatMap(organization => organization.repositories?.repositories ?? []),
+    ];
+}
+
+/** The repositories an owner lists, read so far. */
+export interface OwnerRepositories extends CandidateRepositories {
+    /** The user's or the organisation's login. */
+    readonly login: string;
+}
+
+/**
+ * The user's repository list, then each organisation's that GitHub lists, by owner — not one whose list it refused.
+ * @util
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getOwnerLists(candidates: TrackingCandidates): OwnerRepositories[] {
+    return [
+        { login: candidates.login, ...candidates.repositories },
+        ...candidates.organizations.flatMap(organization =>
+            organization.repositories ? [{ login: organization.login, ...organization.repositories }] : [],
+        ),
     ];
 }
 
