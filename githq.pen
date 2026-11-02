@@ -167213,7 +167213,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Here that is #1206, third of four. The bar is pinned under the toolbar, with the rows at the top of the content. The entry stays collapsed and its tall pip says where you are. K and J are in the legend above the rows.",
+                      "content": "Here that is #1206, third of four. The bar is pinned under the toolbar, with the rows at the top of the content. The entry stays collapsed and its tall pip says where you are. The one above answers K, the one below J: the key sits right after the title, so moving it changes nothing else on the row.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -167437,48 +167437,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "TbKpo",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "GoXDU",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "B5D5t",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "BeQ0o",
                                       "name": "Map row #1203",
                                       "width": "fill_container",
@@ -167579,6 +167537,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "lSGsb",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -167703,6 +167672,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "OrTuY",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd J",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "J"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -168381,48 +168361,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "q3x1zZ",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "GuVKK",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "b8dcAl",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "EI9sZ",
                                       "name": "Map row #1203",
                                       "width": "fill_container",
@@ -168584,6 +168522,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "rcEQX",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -168766,6 +168715,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "GKLd5",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd J",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "J"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -169524,48 +169484,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "qqd6P",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "PgNU7",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "NhiNs",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "DlQhE",
                                       "name": "Map row #15",
                                       "width": "fill_container",
@@ -169668,6 +169586,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "BaIGy",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd J",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "J"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -172580,48 +172509,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "Y9KP1c",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "M3Cpw",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "wMYq9",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "VdvpC",
                                       "name": "Map row #15",
                                       "width": "fill_container",
@@ -172722,6 +172609,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "KdZyz",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -174409,48 +174307,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "M4UOpt",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "EBeSV",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "i3Ru63",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "k9StiZ",
                                       "name": "Map row #15",
                                       "width": "fill_container",
@@ -176003,48 +175859,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "sOFtr",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "p2eFMC",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "DqzJy",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "GuVck",
                                       "name": "Map row #94",
                                       "width": "fill_container",
@@ -176147,6 +175961,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "hDcCv",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd J",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "J"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -189313,48 +189138,6 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "a3dOR",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        16
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "tvDVm",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "EEsgB",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "QI8UA",
                                       "name": "Map row #36",
                                       "width": "fill_container",
@@ -189394,6 +189177,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "GYrzy",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -189897,7 +189691,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The bar sits under the toolbar and never moves, folds or changes height: the stack's name and one square per pull request, numbered by its place, the open one with a full outline and a mark under it. Under the bar, at the top of the content, the rows: every pull request of the stack, none folded, a legend for K and J above them (the keys stay put instead of hopping from row to row), what stops the stack, the merge. They're content, so they scroll away under the bar. The unfold chevron keeps its place but is hidden while the rows are in view, so nothing shifts when it shows.",
+                      "content": "The bar sits under the toolbar and never moves, folds or changes height: the stack's name and one square per pull request, numbered by its place, the open one with a full outline and a mark under it. Under the bar, at the top of the content, the rows: every pull request of the stack, none folded, K and J right after the neighbours' titles (the states stay aligned, so nothing shifts as the keys move), what stops the stack, the merge. They're content, so they scroll away under the bar. The unfold chevron keeps its place but is hidden while the rows are in view, so nothing shifts when it shows.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -189983,48 +189777,6 @@
                             0
                           ],
                           "children": [
-                            {
-                              "type": "frame",
-                              "id": "fk2Mm",
-                              "name": "Legend",
-                              "width": "fill_container",
-                              "gap": 14,
-                              "padding": [
-                                4,
-                                16
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "pgXBj",
-                                  "type": "ref",
-                                  "ref": "xfbOl",
-                                  "name": "Hint K",
-                                  "descendants": {
-                                    "m5wIG9/luKkY": {
-                                      "content": "K"
-                                    },
-                                    "IOvfA": {
-                                      "content": "Previous"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "c4pjhv",
-                                  "type": "ref",
-                                  "ref": "xfbOl",
-                                  "name": "Hint J",
-                                  "descendants": {
-                                    "m5wIG9/luKkY": {
-                                      "content": "J"
-                                    },
-                                    "IOvfA": {
-                                      "content": "Next"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
                             {
                               "type": "frame",
                               "id": "RfJ5u",
@@ -190312,6 +190064,17 @@
                                   "fontWeight": "normal"
                                 },
                                 {
+                                  "id": "U4rRVv",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd K",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "K"
+                                    }
+                                  }
+                                },
+                                {
                                   "type": "frame",
                                   "id": "OInD2",
                                   "name": "spacer",
@@ -190434,6 +190197,17 @@
                                   "fontFamily": "$font",
                                   "fontSize": 12.5,
                                   "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "v6FYBM",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd J",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "J"
+                                    }
+                                  }
                                 },
                                 {
                                   "type": "frame",
@@ -191834,48 +191608,6 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "o038n1",
-                          "name": "Legend",
-                          "width": "fill_container",
-                          "gap": 14,
-                          "padding": [
-                            4,
-                            16
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "UAJCN",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint K",
-                              "descendants": {
-                                "m5wIG9/luKkY": {
-                                  "content": "K"
-                                },
-                                "IOvfA": {
-                                  "content": "Previous"
-                                }
-                              }
-                            },
-                            {
-                              "id": "rF8c3",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint J",
-                              "descendants": {
-                                "m5wIG9/luKkY": {
-                                  "content": "J"
-                                },
-                                "IOvfA": {
-                                  "content": "Next"
-                                }
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
                           "id": "Ppo94",
                           "name": "Map row #60",
                           "width": "fill_container",
@@ -192161,6 +191893,17 @@
                               "fontWeight": "normal"
                             },
                             {
+                              "id": "KW0vr",
+                              "type": "ref",
+                              "ref": "w9kS9",
+                              "name": "Kbd K",
+                              "descendants": {
+                                "luKkY": {
+                                  "content": "K"
+                                }
+                              }
+                            },
+                            {
                               "type": "frame",
                               "id": "tp33r",
                               "name": "spacer",
@@ -192283,6 +192026,17 @@
                               "fontFamily": "$font",
                               "fontSize": 12.5,
                               "fontWeight": "normal"
+                            },
+                            {
+                              "id": "WXaSq",
+                              "type": "ref",
+                              "ref": "w9kS9",
+                              "name": "Kbd J",
+                              "descendants": {
+                                "luKkY": {
+                                  "content": "J"
+                                }
+                              }
                             },
                             {
                               "type": "frame",
@@ -193019,7 +192773,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Any square opens its pull request, however far down you are. Neighbours stay on K and J, in the legend above the rows. No arrows: the squares are already the buttons, and the bar keeps its room for the name.",
+                      "content": "Any square opens its pull request, however far down you are. Neighbours stay on K and J, right after their titles in the rows. No arrows: the squares are already the buttons, and the bar keeps its room for the name.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -194337,48 +194091,6 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "p0Hfd",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        0
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "AghEm",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "cUCxK",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "uwN9W",
                                       "name": "Map row #36",
                                       "width": "fill_container",
@@ -194419,6 +194131,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "fUjnz",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -195071,48 +194794,6 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "czr59",
-                                      "name": "Legend",
-                                      "width": "fill_container",
-                                      "gap": 14,
-                                      "padding": [
-                                        4,
-                                        0
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "bfrJF",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint K",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "K"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Previous"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "d4NT2t",
-                                          "type": "ref",
-                                          "ref": "xfbOl",
-                                          "name": "Hint J",
-                                          "descendants": {
-                                            "m5wIG9/luKkY": {
-                                              "content": "J"
-                                            },
-                                            "IOvfA": {
-                                              "content": "Next"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
                                       "id": "h6gfEf",
                                       "name": "Map row #60",
                                       "width": "fill_container",
@@ -195363,6 +195044,17 @@
                                           "fontWeight": "normal"
                                         },
                                         {
+                                          "id": "i0bFw",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd K",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "K"
+                                            }
+                                          }
+                                        },
+                                        {
                                           "type": "frame",
                                           "id": "ISB9d",
                                           "name": "spacer",
@@ -195466,6 +195158,17 @@
                                           "fontFamily": "$font",
                                           "fontSize": 12.5,
                                           "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "n0FckH",
+                                          "type": "ref",
+                                          "ref": "w9kS9",
+                                          "name": "Kbd J",
+                                          "descendants": {
+                                            "luKkY": {
+                                              "content": "J"
+                                            }
+                                          }
                                         },
                                         {
                                           "type": "frame",
@@ -196023,48 +195726,6 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "uU2Hv",
-                                          "name": "Legend",
-                                          "width": "fill_container",
-                                          "gap": 14,
-                                          "padding": [
-                                            4,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "id": "kNsFE",
-                                              "type": "ref",
-                                              "ref": "xfbOl",
-                                              "name": "Hint K",
-                                              "descendants": {
-                                                "m5wIG9/luKkY": {
-                                                  "content": "K"
-                                                },
-                                                "IOvfA": {
-                                                  "content": "Previous"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "YgUOH",
-                                              "type": "ref",
-                                              "ref": "xfbOl",
-                                              "name": "Hint J",
-                                              "descendants": {
-                                                "m5wIG9/luKkY": {
-                                                  "content": "J"
-                                                },
-                                                "IOvfA": {
-                                                  "content": "Next"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
                                           "id": "pjJO7",
                                           "name": "Map row #36",
                                           "width": "fill_container",
@@ -196105,6 +195766,17 @@
                                               "fontFamily": "$font",
                                               "fontSize": 12.5,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "id": "U8ELl",
+                                              "type": "ref",
+                                              "ref": "w9kS9",
+                                              "name": "Kbd K",
+                                              "descendants": {
+                                                "luKkY": {
+                                                  "content": "K"
+                                                }
+                                              }
                                             },
                                             {
                                               "type": "frame",
@@ -196766,48 +196438,6 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "Kb8xc",
-                                          "name": "Legend",
-                                          "width": "fill_container",
-                                          "gap": 14,
-                                          "padding": [
-                                            4,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "id": "MuTQd",
-                                              "type": "ref",
-                                              "ref": "xfbOl",
-                                              "name": "Hint K",
-                                              "descendants": {
-                                                "m5wIG9/luKkY": {
-                                                  "content": "K"
-                                                },
-                                                "IOvfA": {
-                                                  "content": "Previous"
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "id": "H4by6",
-                                              "type": "ref",
-                                              "ref": "xfbOl",
-                                              "name": "Hint J",
-                                              "descendants": {
-                                                "m5wIG9/luKkY": {
-                                                  "content": "J"
-                                                },
-                                                "IOvfA": {
-                                                  "content": "Next"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
                                           "id": "Aohr0",
                                           "name": "Map row #60",
                                           "width": "fill_container",
@@ -197058,6 +196688,17 @@
                                               "fontWeight": "normal"
                                             },
                                             {
+                                              "id": "sCh74",
+                                              "type": "ref",
+                                              "ref": "w9kS9",
+                                              "name": "Kbd K",
+                                              "descendants": {
+                                                "luKkY": {
+                                                  "content": "K"
+                                                }
+                                              }
+                                            },
+                                            {
                                               "type": "frame",
                                               "id": "D28DE",
                                               "name": "spacer",
@@ -197161,6 +196802,17 @@
                                               "fontFamily": "$font",
                                               "fontSize": 12.5,
                                               "fontWeight": "normal"
+                                            },
+                                            {
+                                              "id": "RDTKa",
+                                              "type": "ref",
+                                              "ref": "w9kS9",
+                                              "name": "Kbd J",
+                                              "descendants": {
+                                                "luKkY": {
+                                                  "content": "J"
+                                                }
+                                              }
                                             },
                                             {
                                               "type": "frame",
