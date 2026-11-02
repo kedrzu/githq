@@ -75,14 +75,9 @@ const tab = computed({
 /** The kind of items listed: all of them behind the Workflows tab, whose counts stay those of the item tabs. */
 const kind = computed(() => (tab.value === 'workflows' ? 'all' : tab.value));
 
-// Coming back to a repository at its own address opens the tab it was left on (D5); an address naming a tab is obeyed.
+// The tab shown is remembered, so the links to this repository open it next time; the address always names it.
 const repositoryName = nameWithOwner.value;
-const lastTab = tabs.get(repositoryName);
-if (tab.value === 'all' && lastTab !== null) {
-  tab.value = lastTab;
-} else {
-  tabs.remember(repositoryName, tab.value);
-}
+tabs.remember(repositoryName, tab.value);
 
 // Another repository's workflows have nothing unfolded.
 watch(nameWithOwner, () => {

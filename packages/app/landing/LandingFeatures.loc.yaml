@@ -16,22 +16,6 @@ instantAlt:
   en: A project board in githq, its issues in Todo, In progress and In review columns.
 instantToast:
   en: Status → In progress · saved to GitHub
-myWorkKicker:
-  en: My work
-myWorkTitle:
-  en: |-
-    Everything that’s yours.
-    Every repo. One screen.
-myWorkBody:
-  en: Issues assigned to you, your pull requests with their CI and review state, the reviews waiting on you, the projects you track. A pull request that closes your issue sits right under it, so the same work never shows up twice.
-myWorkAssigned:
-  en: Assigned issues across every repository
-myWorkPullRequests:
-  en: 'Your PRs: checks, reviews, draft, mergeable'
-myWorkReviews:
-  en: Reviews requested from you, front and center
-myWorkAlt:
-  en: githq’s “My work” list, grouped into reviews requested from you, your pull requests and the issues assigned to you.
 keyboardKicker:
   en: Keyboard
 keyboardTitle:

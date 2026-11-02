@@ -302,7 +302,7 @@ experience: "not even an agent can do it through the API").
 
 ## D18
 
-**Writing a suggested change is supported — it is plain markdown, a ```` ```suggestion ```` block in the comment,
+**Writing a suggested change is supported — it is plain markdown, a ` ```suggestion ` block in the comment,
 prefilled with the selected lines. Applying someone's suggestion stays on github.com.** (2026-11-02, agent, on the
 owner's condition: suggestions only if GitHub's API supports them)
 

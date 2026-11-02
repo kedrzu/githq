@@ -19,6 +19,7 @@ import { Browser } from '@/services/Browser.js';
 import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
+import { LastRepositoryTab } from './LastRepositoryTab.js';
 import * as l from './useRepositoryCommands.loc.js';
 
 /** A repository's actions, by the name after `repository.`. */
@@ -46,6 +47,7 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
     const tracking = useService(TrackingStore);
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
+    const tabs = useService(LastRepositoryTab);
 
     return nameWithOwner => {
         const url = `${GITHUB_ORIGIN}/${nameWithOwner}`;
@@ -55,7 +57,7 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 title: t(l.open),
                 section: 'view',
                 icon: ArrowRight,
-                run: () => void router.push(getRepositoryPath(nameWithOwner)),
+                run: () => void router.push(tabs.getPath(nameWithOwner)),
             },
             issues: {
                 id: 'repository.issues',

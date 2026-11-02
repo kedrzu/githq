@@ -1,7 +1,7 @@
-<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, installable, anywhere on GitHub, reviews on github.com — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here, the footer's "Install the app" on its card. -->
+<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, installable, anywhere on GitHub, a stack of pull requests as one entry — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here, the footer's "Install the app" on its card. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { AppWindow, BadgeDollarSign, Gauge, GitMerge, Globe, Link, Lock, ServerOff } from 'lucide-vue-next';
+import { AppWindow, BadgeDollarSign, Gauge, Globe, Layers, Link, Lock, ServerOff } from 'lucide-vue-next';
 import { useId, useTemplateRef, watch } from 'vue';
 
 import * as l from './LandingDetails.loc.js';
@@ -104,9 +104,9 @@ watch(reveal, state => state === 'revealed' && swap.play());
       />
       <LandingDetail
         :class="css.landingDetails_half"
-        :icon="GitMerge"
-        :title="t(l.reviewsTitle)"
-        :body="t(l.reviewsBody)"
+        :icon="Layers"
+        :title="t(l.stacksTitle)"
+        :body="t(l.stacksBody)"
       />
     </ul>
   </section>

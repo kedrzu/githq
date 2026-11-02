@@ -1,4 +1,4 @@
-<!-- The landing page's last call to action (githq.pen "Landing — githq.dev", Final CTA): the sygnet, "Your issues are already here", "Sign in with GitHub" — straight to GitHub's consent screen (D21) — and "Star on GitHub", and what GitHub will ask for and why, over a violet glow from below. -->
+<!-- The landing page's last call to action (githq.pen "Landing — githq.dev", Final CTA): the sygnet, "Every repository you work in", "Sign in with GitHub" — straight to GitHub's consent screen (D21) — and "Star on GitHub", and what GitHub will ask for and why, over a violet glow from below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useId, useTemplateRef } from 'vue';
