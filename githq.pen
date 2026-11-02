@@ -729,6 +729,51 @@
                           "fontWeight": "500"
                         }
                       ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "XYL25",
+                      "name": "Switch",
+                      "reusable": true,
+                      "width": 28,
+                      "height": 16,
+                      "fill": "$border-2",
+                      "cornerRadius": 8,
+                      "padding": 2,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "yFQLf",
+                          "name": "Knob",
+                          "fill": "$fg-2",
+                          "width": 12,
+                          "height": 12
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sh74L",
+                      "name": "Switch / on",
+                      "reusable": true,
+                      "width": 28,
+                      "height": 16,
+                      "fill": "$accent",
+                      "cornerRadius": 8,
+                      "padding": 2,
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "NAvWX",
+                          "name": "Knob",
+                          "fill": "#FFFFFF",
+                          "width": 12,
+                          "height": 12
+                        }
+                      ]
                     }
                   ]
                 },
@@ -124399,6 +124444,76 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "z19Hix",
+              "name": "Refs",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "J7hppF",
+                  "name": "Refs / Ref",
+                  "reusable": true,
+                  "fill": "$bg-3",
+                  "cornerRadius": 4,
+                  "gap": 4,
+                  "padding": [
+                    2,
+                    6
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ja72S",
+                      "name": "Kind",
+                      "width": 11,
+                      "height": 11,
+                      "icon": "tag",
+                      "library": "lucide",
+                      "fill": "$fg-3"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FGyxa",
+                      "name": "Name",
+                      "fill": "$fg-2",
+                      "content": "v0.1.0-rc.3",
+                      "fontFamily": "$mono",
+                      "fontSize": 11.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "trwnF",
+                  "name": "Refs / Pattern",
+                  "reusable": true,
+                  "cornerRadius": 4,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "padding": [
+                    1,
+                    6
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V6lJlF",
+                      "name": "Pattern",
+                      "fill": "$fg",
+                      "content": "v*",
+                      "fontFamily": "$mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -159462,135 +159577,146 @@
                 },
                 {
                   "type": "frame",
-                  "id": "FSy0u",
+                  "id": "TV8sJ",
                   "name": "Places",
                   "gap": 3,
                   "alignItems": "center",
                   "children": [
                     {
-                      "id": "w69dkC",
+                      "id": "OpAiF",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#A57BF524",
+                      "stroke": "#A57BF573",
                       "name": "Place 1",
-                      "fill": "#A57BF526",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "1",
                           "fill": "$purple"
                         }
                       }
                     },
                     {
-                      "id": "w4DsFi",
+                      "id": "snmPm",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#A57BF524",
+                      "stroke": "#A57BF573",
                       "name": "Place 2",
-                      "fill": "#A57BF526",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "2",
                           "fill": "$purple"
                         }
                       }
                     },
                     {
-                      "id": "s4QRP5",
+                      "id": "i415p",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#3FB95024",
+                      "stroke": "#3FB95073",
                       "name": "Place 3",
-                      "fill": "#3FB95026",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "3",
                           "fill": "$green"
                         }
                       }
                     },
                     {
-                      "id": "q4OeG",
+                      "id": "gHd74",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#3FB95024",
+                      "stroke": "#3FB95073",
                       "name": "Place 4",
-                      "fill": "#3FB95026",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "4",
                           "fill": "$green"
                         }
                       }
                     },
                     {
-                      "id": "enaN1",
+                      "id": "k6nEk",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#3FB95024",
+                      "stroke": "#3FB95073",
                       "name": "Place 5",
-                      "fill": "#3FB95026",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "5",
                           "fill": "$green"
                         }
                       }
                     },
                     {
-                      "id": "U333yv",
+                      "id": "xEhiT",
                       "type": "ref",
-                      "ref": "mXNBE",
+                      "ref": "zEwwO",
+                      "fill": "#F0545C4D",
+                      "stroke": "$red",
                       "name": "Place 6",
-                      "fill": "$red",
                       "descendants": {
-                        "h6R2x": {
-                          "content": "6"
+                        "daH1z": {
+                          "content": "6",
+                          "fill": "$red"
                         }
                       }
                     },
                     {
-                      "id": "H6n9I",
+                      "id": "Gd3z4",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#646B7524",
+                      "stroke": "#646B7580",
                       "name": "Place 7",
-                      "fill": "#646B7533",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "7",
                           "fill": "$fg-2"
                         }
                       }
                     },
                     {
-                      "id": "X0y1ll",
+                      "id": "KuzT7",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#646B7524",
+                      "stroke": "#646B7580",
                       "name": "Place 8",
-                      "fill": "#646B7533",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "8",
                           "fill": "$fg-2"
                         }
                       }
                     },
                     {
-                      "id": "voOZm",
+                      "id": "bpq98",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#646B7524",
+                      "stroke": "#646B7580",
                       "name": "Place 9",
-                      "fill": "#646B7533",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "9",
                           "fill": "$fg-2"
                         }
                       }
                     },
                     {
-                      "id": "bKGNw",
+                      "id": "gzcq9",
                       "type": "ref",
-                      "ref": "liOKD",
+                      "ref": "eL9mw",
+                      "fill": "#646B7524",
+                      "stroke": "#646B7580",
                       "name": "Place 10",
-                      "fill": "#646B7533",
                       "descendants": {
-                        "h6R2x": {
+                        "daH1z": {
                           "content": "10",
                           "fill": "$fg-2"
                         }
@@ -159629,6 +159755,46 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "eL9mw",
+              "name": "Stack bar / Place · soft",
+              "reusable": true,
+              "width": 18,
+              "height": 18,
+              "fill": "#3FB95024",
+              "cornerRadius": 4,
+              "stroke": "#3FB95073",
+              "strokeWidth": 1,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "daH1z",
+                  "name": "Number",
+                  "fill": "$green",
+                  "content": "1",
+                  "fontFamily": "$mono",
+                  "fontSize": 10.5,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "id": "zEwwO",
+              "type": "ref",
+              "reusable": true,
+              "ref": "eL9mw",
+              "name": "Stack bar / Place · soft, current",
+              "fill": "#3FB9504D",
+              "stroke": "$green",
+              "descendants": {
+                "daH1z": {
+                  "fontWeight": "700"
+                }
+              }
             }
           ]
         },
@@ -184760,6 +184926,8 @@
                       "id": "eSUeh",
                       "name": "Caption title",
                       "fill": "$fg",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
                       "content": "SP82 · In a panel, at the top: the bar pinned, the rows under it",
                       "fontFamily": "$font",
                       "fontSize": 15,
@@ -184772,7 +184940,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The bar sits under the toolbar and never moves, folds or changes height: the stack's name and one square per pull request, numbered by its place, the open one solid. Under it, at the top of the content, the rows: what's around this one, what stops the stack, the merge. They're content, so they scroll away under the bar. The unfold chevron keeps its place but is hidden while the rows are in view, so nothing shifts when it shows.",
+                      "content": "The bar sits under the toolbar and never moves, folds or changes height: the stack's name and one square per pull request, numbered by its place, the open one solid. Under it, at the top of the content, the rows: every pull request of the stack, none folded, a legend for K and J above them (the keys stay put instead of hopping from row to row), what stops the stack, the merge. They're content, so they scroll away under the bar. The unfold chevron keeps its place but is hidden while the rows are in view, so nothing shifts when it shows.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -184860,48 +185028,293 @@
                           "children": [
                             {
                               "type": "frame",
-                              "id": "Logb2",
-                              "name": "Fold 4 earlier · 2 landed, 2 ready",
+                              "id": "fk2Mm",
+                              "name": "Legend",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "pgXBj",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint K",
+                                  "descendants": {
+                                    "m5wIG9/luKkY": {
+                                      "content": "K"
+                                    },
+                                    "IOvfA": {
+                                      "content": "Previous"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "c4pjhv",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint J",
+                                  "descendants": {
+                                    "m5wIG9/luKkY": {
+                                      "content": "J"
+                                    },
+                                    "IOvfA": {
+                                      "content": "Next"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "RfJ5u",
+                              "name": "Map row #60",
                               "width": "fill_container",
                               "gap": 8,
                               "padding": [
-                                3,
+                                4,
                                 16
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "F4eIt",
-                                  "name": "icon ellipsis",
+                                  "id": "QBZRO",
+                                  "name": "icon circle-check",
                                   "width": 12.5,
                                   "height": 12.5,
-                                  "icon": "ellipsis",
+                                  "icon": "git-merge",
                                   "library": "lucide",
-                                  "fill": "$fg-3"
+                                  "fill": "$purple"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "V5tKz",
-                                  "name": "4 earlier · 2 landed, 2 ready",
+                                  "id": "kwOha",
+                                  "name": "#60",
                                   "fill": "$fg-3",
-                                  "content": "4 earlier · 2 landed, 2 ready",
-                                  "fontFamily": "$font",
+                                  "content": "#60",
+                                  "fontFamily": "$mono",
                                   "fontSize": 11.5,
                                   "fontWeight": "normal"
                                 },
                                 {
+                                  "type": "text",
+                                  "id": "jgfmy",
+                                  "name": "Title",
+                                  "fill": "$fg-3",
+                                  "content": "Extract the sync queue",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
                                   "type": "frame",
-                                  "id": "tU9ok",
+                                  "id": "a8OhsI",
                                   "name": "spacer",
                                   "width": "fill_container",
                                   "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "fAnf0",
+                                  "name": "State",
+                                  "fill": "$purple",
+                                  "content": "Merged",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
                             {
                               "type": "frame",
-                              "id": "bOvNR",
+                              "id": "B2PC3",
+                              "name": "Map row #61",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "NDqXy",
+                                  "name": "icon circle-check",
+                                  "width": 12.5,
+                                  "height": 12.5,
+                                  "icon": "git-merge",
+                                  "library": "lucide",
+                                  "fill": "$purple"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "RZ9CH",
+                                  "name": "#61",
+                                  "fill": "$fg-3",
+                                  "content": "#61",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "q3afg",
+                                  "name": "Title",
+                                  "fill": "$fg-3",
+                                  "content": "Typed sync events",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "jqfr4",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MywT7",
+                                  "name": "State",
+                                  "fill": "$purple",
+                                  "content": "Merged",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CiPdv",
+                              "name": "Map row #62",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "yojbS",
+                                  "name": "icon circle-check",
+                                  "width": 12.5,
+                                  "height": 12.5,
+                                  "icon": "circle-check",
+                                  "library": "lucide",
+                                  "fill": "$green"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "g7Ia0",
+                                  "name": "#62",
+                                  "fill": "$fg-3",
+                                  "content": "#62",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Cai5A",
+                                  "name": "Title",
+                                  "fill": "$fg-2",
+                                  "content": "Persist the cursor",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "NwOBZ",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "jUV8V",
+                                  "name": "State",
+                                  "fill": "$green",
+                                  "content": "Ready",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xtXNh",
+                              "name": "Map row #63",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "FcszW",
+                                  "name": "icon circle-check",
+                                  "width": 12.5,
+                                  "height": 12.5,
+                                  "icon": "circle-check",
+                                  "library": "lucide",
+                                  "fill": "$green"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Gug3V",
+                                  "name": "#63",
+                                  "fill": "$fg-3",
+                                  "content": "#63",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "J3Ti8",
+                                  "name": "Title",
+                                  "fill": "$fg-2",
+                                  "content": "Retry with backoff",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZYkBj",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "L7yv30",
+                                  "name": "State",
+                                  "fill": "$green",
+                                  "content": "Ready",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TksPH",
                               "name": "Map row #64",
                               "width": "fill_container",
                               "gap": 8,
@@ -184913,7 +185326,7 @@
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "geHJd",
+                                  "id": "p0B20t",
                                   "name": "icon circle-check",
                                   "width": 12.5,
                                   "height": 12.5,
@@ -184923,7 +185336,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "aZ8jO",
+                                  "id": "VEpvr",
                                   "name": "#64",
                                   "fill": "$fg-3",
                                   "content": "#64",
@@ -184933,7 +185346,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "v7QR06",
+                                  "id": "Qo9fd",
                                   "name": "Title",
                                   "fill": "$fg-2",
                                   "content": "Batch the writes",
@@ -184943,36 +185356,20 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "rTB23",
+                                  "id": "OInD2",
                                   "name": "spacer",
                                   "width": "fill_container",
                                   "height": 1
                                 },
                                 {
                                   "type": "text",
-                                  "id": "m7Sut2",
+                                  "id": "hsrd2",
                                   "name": "State",
                                   "fill": "$green",
                                   "content": "Ready",
                                   "fontFamily": "$font",
                                   "fontSize": 11.5,
                                   "fontWeight": "normal"
-                                },
-                                {
-                                  "id": "D2pm1",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd K",
-                                  "padding": [
-                                    0,
-                                    4
-                                  ],
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "K",
-                                      "fontSize": 10
-                                    }
-                                  }
                                 }
                               ]
                             },
@@ -185041,7 +185438,7 @@
                             },
                             {
                               "type": "frame",
-                              "id": "He3OU",
+                              "id": "F9emnb",
                               "name": "Map row #66",
                               "width": "fill_container",
                               "gap": 8,
@@ -185053,7 +185450,7 @@
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "eCKvS",
+                                  "id": "GoyWb",
                                   "name": "icon hourglass",
                                   "width": 12.5,
                                   "height": 12.5,
@@ -185063,7 +185460,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "zS3Ak",
+                                  "id": "WJ6uQ",
                                   "name": "#66",
                                   "fill": "$fg-3",
                                   "content": "#66",
@@ -185073,7 +185470,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "K6d9pe",
+                                  "id": "S8MXG",
                                   "name": "Title",
                                   "fill": "$fg-2",
                                   "content": "Progress reporting",
@@ -185083,42 +185480,26 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "XsqN8",
+                                  "id": "ZpEfA",
                                   "name": "spacer",
                                   "width": "fill_container",
                                   "height": 1
                                 },
                                 {
                                   "type": "text",
-                                  "id": "utBC0",
+                                  "id": "xy9KS",
                                   "name": "State",
                                   "fill": "$fg-3",
                                   "content": "Waiting for review",
                                   "fontFamily": "$font",
                                   "fontSize": 11.5,
                                   "fontWeight": "normal"
-                                },
-                                {
-                                  "id": "yzxKJ",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd J",
-                                  "padding": [
-                                    0,
-                                    4
-                                  ],
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "J",
-                                      "fontSize": 10
-                                    }
-                                  }
                                 }
                               ]
                             },
                             {
                               "type": "frame",
-                              "id": "hbvQv",
+                              "id": "n70SJC",
                               "name": "Map row #67",
                               "width": "fill_container",
                               "gap": 8,
@@ -185130,7 +185511,7 @@
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "qPyo8",
+                                  "id": "fEKoA",
                                   "name": "icon hourglass",
                                   "width": 12.5,
                                   "height": 12.5,
@@ -185140,7 +185521,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "Pj5tR",
+                                  "id": "ziOy3",
                                   "name": "#67",
                                   "fill": "$fg-3",
                                   "content": "#67",
@@ -185150,7 +185531,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "JiUEc",
+                                  "id": "vaTF6",
                                   "name": "Title",
                                   "fill": "$fg-2",
                                   "content": "Pause on rate limit",
@@ -185160,14 +185541,14 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "X2MDj",
+                                  "id": "D7SUK",
                                   "name": "spacer",
                                   "width": "fill_container",
                                   "height": 1
                                 },
                                 {
                                   "type": "text",
-                                  "id": "WB3Lp",
+                                  "id": "nP5I0",
                                   "name": "State",
                                   "fill": "$fg-3",
                                   "content": "Waiting for review",
@@ -185179,42 +185560,123 @@
                             },
                             {
                               "type": "frame",
-                              "id": "sTpXN",
-                              "name": "Fold 2 later",
+                              "id": "R3e5F",
+                              "name": "Map row #68",
                               "width": "fill_container",
                               "gap": 8,
                               "padding": [
-                                3,
+                                4,
                                 16
                               ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "lyFDA",
-                                  "name": "icon ellipsis",
+                                  "id": "kpUX1",
+                                  "name": "icon hourglass",
                                   "width": 12.5,
                                   "height": 12.5,
-                                  "icon": "ellipsis",
+                                  "icon": "hourglass",
                                   "library": "lucide",
                                   "fill": "$fg-3"
                                 },
                                 {
                                   "type": "text",
-                                  "id": "EVwnz",
-                                  "name": "2 later",
+                                  "id": "rzMP2",
+                                  "name": "#68",
                                   "fill": "$fg-3",
-                                  "content": "2 later",
-                                  "fontFamily": "$font",
+                                  "content": "#68",
+                                  "fontFamily": "$mono",
                                   "fontSize": 11.5,
                                   "fontWeight": "normal"
                                 },
                                 {
+                                  "type": "text",
+                                  "id": "s9B87O",
+                                  "name": "Title",
+                                  "fill": "$fg-2",
+                                  "content": "Drop the old engine",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
                                   "type": "frame",
-                                  "id": "oHh8P",
+                                  "id": "mLq7E",
                                   "name": "spacer",
                                   "width": "fill_container",
                                   "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "qtssh",
+                                  "name": "State",
+                                  "fill": "$fg-3",
+                                  "content": "Waiting for review",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A4dNaE",
+                              "name": "Map row #69",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "padding": [
+                                4,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "T2pSD",
+                                  "name": "icon hourglass",
+                                  "width": 12.5,
+                                  "height": 12.5,
+                                  "icon": "hourglass",
+                                  "library": "lucide",
+                                  "fill": "$fg-3"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "hpOk1",
+                                  "name": "#69",
+                                  "fill": "$fg-3",
+                                  "content": "#69",
+                                  "fontFamily": "$mono",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "iN2by",
+                                  "name": "Title",
+                                  "fill": "$fg-2",
+                                  "content": "Docs for sync",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "uQSeA",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Seqhv",
+                                  "name": "State",
+                                  "fill": "$fg-3",
+                                  "content": "Waiting for review",
+                                  "fontFamily": "$font",
+                                  "fontSize": 11.5,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -185605,6 +186067,8 @@
                       "id": "rptM3",
                       "name": "Caption title",
                       "fill": "$fg",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
                       "content": "SP83 · Scrolled: the rows went under the bar, the chevron shows",
                       "fontFamily": "$font",
                       "fontSize": 15,
@@ -186034,6 +186498,8 @@
                       "id": "p4x0mW",
                       "name": "Caption title",
                       "fill": "$fg",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
                       "content": "SP84 · Scrolled, unfolded on the chevron: the rows drop over the content",
                       "fontFamily": "$font",
                       "fontSize": 15,
@@ -186380,7 +186846,7 @@
                     },
                     {
                       "type": "frame",
-                      "id": "BVbgZ",
+                      "id": "PSjLr",
                       "layoutPosition": "absolute",
                       "x": 0,
                       "y": 84,
@@ -186411,48 +186877,293 @@
                       "children": [
                         {
                           "type": "frame",
-                          "id": "GposE",
-                          "name": "Fold 4 earlier · 2 landed, 2 ready",
+                          "id": "o038n1",
+                          "name": "Legend",
+                          "width": "fill_container",
+                          "gap": 14,
+                          "padding": [
+                            4,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "UAJCN",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint K",
+                              "descendants": {
+                                "m5wIG9/luKkY": {
+                                  "content": "K"
+                                },
+                                "IOvfA": {
+                                  "content": "Previous"
+                                }
+                              }
+                            },
+                            {
+                              "id": "rF8c3",
+                              "type": "ref",
+                              "ref": "xfbOl",
+                              "name": "Hint J",
+                              "descendants": {
+                                "m5wIG9/luKkY": {
+                                  "content": "J"
+                                },
+                                "IOvfA": {
+                                  "content": "Next"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ppo94",
+                          "name": "Map row #60",
                           "width": "fill_container",
                           "gap": 8,
                           "padding": [
-                            3,
+                            4,
                             16
                           ],
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "icon",
-                              "id": "iIDyh",
-                              "name": "icon ellipsis",
+                              "id": "CQct2",
+                              "name": "icon circle-check",
                               "width": 12.5,
                               "height": 12.5,
-                              "icon": "ellipsis",
+                              "icon": "git-merge",
                               "library": "lucide",
-                              "fill": "$fg-3"
+                              "fill": "$purple"
                             },
                             {
                               "type": "text",
-                              "id": "ciPii",
-                              "name": "4 earlier · 2 landed, 2 ready",
+                              "id": "gFq5P",
+                              "name": "#60",
                               "fill": "$fg-3",
-                              "content": "4 earlier · 2 landed, 2 ready",
-                              "fontFamily": "$font",
+                              "content": "#60",
+                              "fontFamily": "$mono",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
                             },
                             {
+                              "type": "text",
+                              "id": "T3jaYQ",
+                              "name": "Title",
+                              "fill": "$fg-3",
+                              "content": "Extract the sync queue",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "type": "frame",
-                              "id": "XmG8Z",
+                              "id": "MxBMX",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "Y11bs5",
+                              "name": "State",
+                              "fill": "$purple",
+                              "content": "Merged",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
                         {
                           "type": "frame",
-                          "id": "pHidS",
+                          "id": "PoHNh",
+                          "name": "Map row #61",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "GhaPb",
+                              "name": "icon circle-check",
+                              "width": 12.5,
+                              "height": 12.5,
+                              "icon": "git-merge",
+                              "library": "lucide",
+                              "fill": "$purple"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Qq9YJ",
+                              "name": "#61",
+                              "fill": "$fg-3",
+                              "content": "#61",
+                              "fontFamily": "$mono",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dK1gw",
+                              "name": "Title",
+                              "fill": "$fg-3",
+                              "content": "Typed sync events",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "lKzVD",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "O88qg8",
+                              "name": "State",
+                              "fill": "$purple",
+                              "content": "Merged",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xAVrT",
+                          "name": "Map row #62",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "y8hlq3",
+                              "name": "icon circle-check",
+                              "width": 12.5,
+                              "height": 12.5,
+                              "icon": "circle-check",
+                              "library": "lucide",
+                              "fill": "$green"
+                            },
+                            {
+                              "type": "text",
+                              "id": "h632i",
+                              "name": "#62",
+                              "fill": "$fg-3",
+                              "content": "#62",
+                              "fontFamily": "$mono",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "MtDf3",
+                              "name": "Title",
+                              "fill": "$fg-2",
+                              "content": "Persist the cursor",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YkR2X",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "M0PIB",
+                              "name": "State",
+                              "fill": "$green",
+                              "content": "Ready",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "mnQRA",
+                          "name": "Map row #63",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Ze2Tf",
+                              "name": "icon circle-check",
+                              "width": 12.5,
+                              "height": 12.5,
+                              "icon": "circle-check",
+                              "library": "lucide",
+                              "fill": "$green"
+                            },
+                            {
+                              "type": "text",
+                              "id": "m4MH1",
+                              "name": "#63",
+                              "fill": "$fg-3",
+                              "content": "#63",
+                              "fontFamily": "$mono",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "pfBoC",
+                              "name": "Title",
+                              "fill": "$fg-2",
+                              "content": "Retry with backoff",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GchTE",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "HIpX6",
+                              "name": "State",
+                              "fill": "$green",
+                              "content": "Ready",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YOBAm",
                           "name": "Map row #64",
                           "width": "fill_container",
                           "gap": 8,
@@ -186464,7 +187175,7 @@
                           "children": [
                             {
                               "type": "icon",
-                              "id": "P5wqe",
+                              "id": "DDmLe",
                               "name": "icon circle-check",
                               "width": 12.5,
                               "height": 12.5,
@@ -186474,7 +187185,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "H5e1s",
+                              "id": "yxaAm",
                               "name": "#64",
                               "fill": "$fg-3",
                               "content": "#64",
@@ -186484,7 +187195,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "o106Ov",
+                              "id": "B8i8X2",
                               "name": "Title",
                               "fill": "$fg-2",
                               "content": "Batch the writes",
@@ -186494,42 +187205,26 @@
                             },
                             {
                               "type": "frame",
-                              "id": "fBG8w",
+                              "id": "tp33r",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "h3ccp",
+                              "id": "hWzdm",
                               "name": "State",
                               "fill": "$green",
                               "content": "Ready",
                               "fontFamily": "$font",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
-                            },
-                            {
-                              "id": "boJaQ",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd K",
-                              "padding": [
-                                0,
-                                4
-                              ],
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "K",
-                                  "fontSize": 10
-                                }
-                              }
                             }
                           ]
                         },
                         {
                           "type": "frame",
-                          "id": "ckVNM",
+                          "id": "oS6Oi",
                           "name": "Map row #65",
                           "width": "fill_container",
                           "fill": "$sel",
@@ -186543,7 +187238,7 @@
                           "children": [
                             {
                               "type": "icon",
-                              "id": "C85yUk",
+                              "id": "O8UxJ",
                               "name": "icon circle-x",
                               "width": 12.5,
                               "height": 12.5,
@@ -186553,7 +187248,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "whNFy",
+                              "id": "Ypzo5",
                               "name": "#65",
                               "fill": "$fg-3",
                               "content": "#65",
@@ -186563,7 +187258,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "B50lQ",
+                              "id": "kjR5N",
                               "name": "Title",
                               "fill": "$fg",
                               "content": "Conflict policy",
@@ -186573,14 +187268,14 @@
                             },
                             {
                               "type": "frame",
-                              "id": "tqVwk",
+                              "id": "x5NHh",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "WsKig",
+                              "id": "R11cTL",
                               "name": "State",
                               "fill": "$red",
                               "content": "2 checks failing",
@@ -186592,7 +187287,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "NzFDv",
+                          "id": "G0oDeE",
                           "name": "Map row #66",
                           "width": "fill_container",
                           "gap": 8,
@@ -186604,7 +187299,7 @@
                           "children": [
                             {
                               "type": "icon",
-                              "id": "SMUvb",
+                              "id": "mdl0s",
                               "name": "icon hourglass",
                               "width": 12.5,
                               "height": 12.5,
@@ -186614,7 +187309,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "j0BBg",
+                              "id": "ExMZA",
                               "name": "#66",
                               "fill": "$fg-3",
                               "content": "#66",
@@ -186624,7 +187319,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "RCLA3",
+                              "id": "Rg2pm",
                               "name": "Title",
                               "fill": "$fg-2",
                               "content": "Progress reporting",
@@ -186634,42 +187329,26 @@
                             },
                             {
                               "type": "frame",
-                              "id": "s96DAW",
+                              "id": "qrI7X",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "W5KX86",
+                              "id": "PW0dc",
                               "name": "State",
                               "fill": "$fg-3",
                               "content": "Waiting for review",
                               "fontFamily": "$font",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
-                            },
-                            {
-                              "id": "t3nhf",
-                              "type": "ref",
-                              "ref": "w9kS9",
-                              "name": "Kbd J",
-                              "padding": [
-                                0,
-                                4
-                              ],
-                              "descendants": {
-                                "luKkY": {
-                                  "content": "J",
-                                  "fontSize": 10
-                                }
-                              }
                             }
                           ]
                         },
                         {
                           "type": "frame",
-                          "id": "U1u3K",
+                          "id": "C5Gz3b",
                           "name": "Map row #67",
                           "width": "fill_container",
                           "gap": 8,
@@ -186681,7 +187360,7 @@
                           "children": [
                             {
                               "type": "icon",
-                              "id": "Fh3vf",
+                              "id": "XazsZ",
                               "name": "icon hourglass",
                               "width": 12.5,
                               "height": 12.5,
@@ -186691,7 +187370,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "kqVeA",
+                              "id": "Z04nH",
                               "name": "#67",
                               "fill": "$fg-3",
                               "content": "#67",
@@ -186701,7 +187380,7 @@
                             },
                             {
                               "type": "text",
-                              "id": "YftII",
+                              "id": "E0ZiGm",
                               "name": "Title",
                               "fill": "$fg-2",
                               "content": "Pause on rate limit",
@@ -186711,14 +187390,14 @@
                             },
                             {
                               "type": "frame",
-                              "id": "wDVym",
+                              "id": "S4dMK",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
                             },
                             {
                               "type": "text",
-                              "id": "GS0Hr",
+                              "id": "b1XrZ1",
                               "name": "State",
                               "fill": "$fg-3",
                               "content": "Waiting for review",
@@ -186730,48 +187409,129 @@
                         },
                         {
                           "type": "frame",
-                          "id": "ysJjC",
-                          "name": "Fold 2 later",
+                          "id": "V3Dvqg",
+                          "name": "Map row #68",
                           "width": "fill_container",
                           "gap": 8,
                           "padding": [
-                            3,
+                            4,
                             16
                           ],
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "icon",
-                              "id": "t04XDw",
-                              "name": "icon ellipsis",
+                              "id": "p1Db0e",
+                              "name": "icon hourglass",
                               "width": 12.5,
                               "height": 12.5,
-                              "icon": "ellipsis",
+                              "icon": "hourglass",
                               "library": "lucide",
                               "fill": "$fg-3"
                             },
                             {
                               "type": "text",
-                              "id": "HTJ0h",
-                              "name": "2 later",
+                              "id": "Zf7YE",
+                              "name": "#68",
                               "fill": "$fg-3",
-                              "content": "2 later",
-                              "fontFamily": "$font",
+                              "content": "#68",
+                              "fontFamily": "$mono",
                               "fontSize": 11.5,
                               "fontWeight": "normal"
                             },
                             {
+                              "type": "text",
+                              "id": "B521z9",
+                              "name": "Title",
+                              "fill": "$fg-2",
+                              "content": "Drop the old engine",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
                               "type": "frame",
-                              "id": "UM3nx",
+                              "id": "SaqFj",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "eGQSy",
+                              "name": "State",
+                              "fill": "$fg-3",
+                              "content": "Waiting for review",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
                         {
                           "type": "frame",
-                          "id": "ozjiP",
+                          "id": "oVyrs",
+                          "name": "Map row #69",
+                          "width": "fill_container",
+                          "gap": 8,
+                          "padding": [
+                            4,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "g8YCe",
+                              "name": "icon hourglass",
+                              "width": 12.5,
+                              "height": 12.5,
+                              "icon": "hourglass",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "vS6Y5",
+                              "name": "#69",
+                              "fill": "$fg-3",
+                              "content": "#69",
+                              "fontFamily": "$mono",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "YEI7m",
+                              "name": "Title",
+                              "fill": "$fg-2",
+                              "content": "Docs for sync",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "AVp6C",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "olfNw",
+                              "name": "State",
+                              "fill": "$fg-3",
+                              "content": "Waiting for review",
+                              "fontFamily": "$font",
+                              "fontSize": 11.5,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "L3Gaf",
                           "name": "Map foot",
                           "width": "fill_container",
                           "gap": 8,
@@ -186785,14 +187545,14 @@
                           "children": [
                             {
                               "type": "frame",
-                              "id": "wbNv8",
+                              "id": "sYAqi",
                               "name": "What stops it",
                               "gap": 6,
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "GUGEb",
+                                  "id": "BJsAq",
                                   "name": "icon circle-x",
                                   "width": 12.5,
                                   "height": 12.5,
@@ -186802,7 +187562,7 @@
                                 },
                                 {
                                   "type": "text",
-                                  "id": "vdAJh",
+                                  "id": "gVu3i",
                                   "name": "Stop text",
                                   "fill": "$red",
                                   "content": "#65 stops 4 later from landing",
@@ -186814,13 +187574,13 @@
                             },
                             {
                               "type": "frame",
-                              "id": "byURA",
+                              "id": "VhWcv",
                               "name": "spacer",
                               "width": "fill_container",
                               "height": 1
                             },
                             {
-                              "id": "U2QOJ7",
+                              "id": "LAnoB",
                               "type": "ref",
                               "ref": "n73Aps",
                               "name": "Button Merge 3 of 8",
@@ -186844,7 +187604,7 @@
                                   "fontSize": 12.5
                                 },
                                 "I9KkTl": {
-                                  "id": "OsKuP",
+                                  "id": "BHjR1",
                                   "type": "ref",
                                   "ref": "L44zw",
                                   "name": "Kbd ⇧M",
@@ -186889,8 +187649,384 @@
               "children": [
                 {
                   "type": "frame",
+                  "id": "W4RPQ",
+                  "name": "Slot · SP90 · Variant A · Soft squares, a firmer outline, the open one more saturated",
+                  "width": 560,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xa7LY",
+                      "name": "Caption",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QMhy3",
+                          "name": "Caption title",
+                          "fill": "$fg",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SP90 · Variant A · Soft squares, a firmer outline, the open one more saturated",
+                          "fontFamily": "$font",
+                          "fontSize": 15,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "JtUGb",
+                          "name": "Caption note",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Between quiet and outline: a gentle tint of the state, an outline a little firmer than the tint, the number crisp in the state's colour. The open one isn't solid: its tint, outline and number just turn up. Recommended, following the owner's lean towards the outline.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e5D0k",
+                      "name": "Bars",
+                      "clip": true,
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "cornerRadius": 10,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        6,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "id": "BdQHJ",
+                          "type": "ref",
+                          "ref": "cVyyK",
+                          "name": "Stack bar",
+                          "descendants": {
+                            "ucgUs": {
+                              "content": "Agent: rewrite the sync engine"
+                            },
+                            "TV8sJ": {
+                              "type": "frame",
+                              "id": "rhtat",
+                              "name": "Places",
+                              "gap": 3,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "zDnQu",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
+                                  "name": "Place 1",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "1",
+                                      "fill": "$purple"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "t4NrOw",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
+                                  "name": "Place 2",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "2",
+                                      "fill": "$purple"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Uh0sr",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
+                                  "name": "Place 3",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "3",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "Y2uLe7",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
+                                  "name": "Place 4",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "4",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "TL4gs",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
+                                  "name": "Place 5",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "5",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "TdT7O",
+                                  "type": "ref",
+                                  "ref": "zEwwO",
+                                  "fill": "#F0545C4D",
+                                  "stroke": "$red",
+                                  "name": "Place 6",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "6",
+                                      "fill": "$red"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "cLYYS",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 7",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "7",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "eJjmY",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 8",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "8",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "OScB9",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 9",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "9",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "kFtqN",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 10",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "10",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "bHN9Z",
+                          "type": "ref",
+                          "ref": "cVyyK",
+                          "name": "Stack bar",
+                          "descendants": {
+                            "ucgUs": {
+                              "content": "Migrate class calendar to new date picker"
+                            },
+                            "TV8sJ": {
+                              "type": "frame",
+                              "id": "LC3X6",
+                              "name": "Places",
+                              "gap": 3,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "C39qMC",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
+                                  "name": "Place 1",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "1",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "d77L4V",
+                                  "type": "ref",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
+                                  "name": "Place 2",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "2",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "mO8at",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#F0545C24",
+                                  "stroke": "#F0545C73",
+                                  "name": "Place 3",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "3",
+                                      "fill": "$red"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "tYrGs",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 4",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "4",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "id": "cEUnE",
+                          "type": "ref",
+                          "ref": "cVyyK",
+                          "name": "Stack bar",
+                          "descendants": {
+                            "ucgUs": {
+                              "content": "Billing: proration on plan change"
+                            },
+                            "TV8sJ": {
+                              "type": "frame",
+                              "id": "F4niMj",
+                              "name": "Places",
+                              "gap": 3,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "FlvNC",
+                                  "type": "ref",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
+                                  "name": "Place 1",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "1",
+                                      "fill": "$green"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "UXQn9",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#D6A23A24",
+                                  "stroke": "#D6A23A73",
+                                  "name": "Place 2",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "2",
+                                      "fill": "$amber"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "s6sIm",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 3",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "3",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "wJxgD",
+                                  "type": "ref",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
+                                  "name": "Place 4",
+                                  "descendants": {
+                                    "daH1z": {
+                                      "content": "4",
+                                      "fill": "$fg-2"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "h7Gf2",
-                  "name": "Slot · SP85 · Variant A · Tinted squares, the open one solid",
+                  "name": "Slot · SP85 · Variant B · Tinted squares, the open one solid",
                   "width": 560,
                   "layout": "vertical",
                   "gap": 12,
@@ -186908,7 +188044,9 @@
                           "id": "PxQwH",
                           "name": "Caption title",
                           "fill": "$fg",
-                          "content": "SP85 · Variant A · Tinted squares, the open one solid",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SP85 · Variant B · Tinted squares, the open one solid",
                           "fontFamily": "$font",
                           "fontSize": 15,
                           "fontWeight": "500"
@@ -186920,7 +188058,7 @@
                           "fill": "$fg-2",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Each square is tinted in its pull request's state and carries its place. The open one is solid, with a light ring, so it reads at a glance even when it is red. Recommended: the state and the place both stay readable on all ten squares.",
+                          "content": "Each square is tinted in its pull request's state and carries its place. The open one is solid, with a light ring, so it reads at a glance even when it is red.",
                           "lineHeight": 1.45,
                           "fontFamily": "$font",
                           "fontSize": 13,
@@ -186953,144 +188091,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Agent: rewrite the sync engine"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "hnbef",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "M2m2zm",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#A57BF526",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "1",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "XqOld",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#A57BF526",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "2",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "ypOEi",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "3",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "R8Ey7",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "4",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "d3FkZ",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
-                                  "name": "Place 5",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "5",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "myMMo",
-                                  "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$red",
-                                  "name": "Place 6",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "6"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Nk4xo",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 7",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "7",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "fdqtZ",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 8",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "8",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "QMOEV",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 9",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "9",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Npsm9",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 10",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "10",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187102,66 +188102,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Migrate class calendar to new date picker"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "W2i9YQ",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "Z4bDz",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "1",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "JG2oa",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "2",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "NHc3L",
-                                  "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$red",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "3"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "njg64",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187173,66 +188113,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Billing: proration on plan change"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "u2zNl",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "iwQDd",
-                                  "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$green",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "1"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "XGMe1",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#D6A23A26",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "2",
-                                      "fill": "$amber"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "sttZl",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "3",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "MPYoT",
-                                  "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "h6R2x": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         }
@@ -187243,7 +188123,7 @@
                 {
                   "type": "frame",
                   "id": "LAfb1",
-                  "name": "Slot · SP86 · Variant B · Quiet squares, the state in the number, the open one in accent",
+                  "name": "Slot · SP86 · Variant C · Quiet squares, the state in the number, the open one in accent",
                   "width": 560,
                   "layout": "vertical",
                   "gap": 12,
@@ -187261,7 +188141,9 @@
                           "id": "B7mpBT",
                           "name": "Caption title",
                           "fill": "$fg",
-                          "content": "SP86 · Variant B · Quiet squares, the state in the number, the open one in accent",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SP86 · Variant C · Quiet squares, the state in the number, the open one in accent",
                           "fontFamily": "$font",
                           "fontSize": 15,
                           "fontWeight": "500"
@@ -187306,134 +188188,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Agent: rewrite the sync engine"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "x5uokf",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "VFARi",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "1",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "jaRMb",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "2",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "UDJVx",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "3",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "U0LXEL",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "4",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "upqTM",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 5",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "5",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "jjj13",
-                                  "type": "ref",
-                                  "ref": "yBNTg",
-                                  "name": "Place 6",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "6"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "R226yY",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 7",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "7",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "AbNVJ",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 8",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "8",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "HDoYL",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 9",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "9",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "J7FdMu",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 10",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "10",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187445,62 +188199,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Migrate class calendar to new date picker"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "vIQL8",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "LjGea",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "1",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "PMP1D",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "2",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "cU3Er",
-                                  "type": "ref",
-                                  "ref": "yBNTg",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "3"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "H17pv",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187512,62 +188210,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Billing: proration on plan change"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "OvdLD",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "ryuWX",
-                                  "type": "ref",
-                                  "ref": "yBNTg",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "1"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Zl0RA",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "2",
-                                      "fill": "$amber"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "FmEQh",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "3",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "AhZa9",
-                                  "type": "ref",
-                                  "ref": "O48H1E",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "B3tuu4": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         }
@@ -187578,7 +188220,7 @@
                 {
                   "type": "frame",
                   "id": "snEAd",
-                  "name": "Slot · SP87 · Variant C · Outlined squares, the open one solid and larger",
+                  "name": "Slot · SP87 · Variant D · Outlined squares, the open one solid and larger",
                   "width": 560,
                   "layout": "vertical",
                   "gap": 12,
@@ -187596,7 +188238,9 @@
                           "id": "yRvbH",
                           "name": "Caption title",
                           "fill": "$fg",
-                          "content": "SP87 · Variant C · Outlined squares, the open one solid and larger",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "SP87 · Variant D · Outlined squares, the open one solid and larger",
                           "fontFamily": "$font",
                           "fontSize": 15,
                           "fontWeight": "500"
@@ -187641,145 +188285,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Agent: rewrite the sync engine"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "YH2at",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "j9vUzj",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$purple",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "1",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "JyF4U",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$purple",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "2",
-                                      "fill": "$purple"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "CnLIC",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$green",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "3",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "R2Mj9o",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$green",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "4",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "Xda3l",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$green",
-                                  "name": "Place 5",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "5",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "I9T7j",
-                                  "type": "ref",
-                                  "ref": "Tqq8t",
-                                  "fill": "$red",
-                                  "stroke": "$red",
-                                  "name": "Place 6",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "6"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "mkl3C",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 7",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "7",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "f71qfF",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 8",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "8",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "m8YzC",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 9",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "9",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "J1IQjZ",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 10",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "10",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187791,67 +188296,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Migrate class calendar to new date picker"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "H4wKv",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "yrTND",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$green",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "1",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "LO6Pv",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$green",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "2",
-                                      "fill": "$green"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "nMaWr",
-                                  "type": "ref",
-                                  "ref": "Tqq8t",
-                                  "fill": "$red",
-                                  "stroke": "$red",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "3"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "J4TSle",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         },
@@ -187863,67 +188307,6 @@
                           "descendants": {
                             "ucgUs": {
                               "content": "Billing: proration on plan change"
-                            },
-                            "FSy0u": {
-                              "type": "frame",
-                              "id": "dWQWj",
-                              "name": "Places",
-                              "gap": 3,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "id": "FFhYc",
-                                  "type": "ref",
-                                  "ref": "Tqq8t",
-                                  "fill": "$green",
-                                  "stroke": "$green",
-                                  "name": "Place 1",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "1"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "ghc8m",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$amber",
-                                  "name": "Place 2",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "2",
-                                      "fill": "$amber"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "TyIyr",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 3",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "3",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "hJ5IO",
-                                  "type": "ref",
-                                  "ref": "mLOnc",
-                                  "stroke": "$border-2",
-                                  "name": "Place 4",
-                                  "descendants": {
-                                    "sH2k4": {
-                                      "content": "4",
-                                      "fill": "$fg-2"
-                                    }
-                                  }
-                                }
-                              ]
                             }
                           }
                         }
@@ -187965,6 +188348,8 @@
                           "id": "YrWWx",
                           "name": "Caption title",
                           "fill": "$fg",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
                           "content": "SP88 · Variant A · A click on a square, K and J from the keyboard",
                           "fontFamily": "$font",
                           "fontSize": 15,
@@ -188011,137 +188396,148 @@
                             "ucgUs": {
                               "content": "Agent: rewrite the sync engine"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "z3nEhA",
+                              "id": "AzL2F",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "V7wTP",
+                                  "id": "JmzKV",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#A57BF526",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
                                   "name": "Place 1",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "1",
                                       "fill": "$purple"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "JhDn3",
+                                  "id": "SF2sB",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#A57BF526",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
                                   "name": "Place 2",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$purple"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "DiVGY",
+                                  "id": "GCsTa",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 3",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "3",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "END1B",
+                                  "id": "qsOlV",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 4",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "SDe0m",
+                                  "id": "Glp7H",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 5",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "5",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "VwsAa",
+                                  "id": "jq7Jl",
                                   "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$red",
+                                  "ref": "zEwwO",
+                                  "fill": "#F0545C4D",
+                                  "stroke": "$red",
                                   "name": "Place 6",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "6"
+                                    "daH1z": {
+                                      "content": "6",
+                                      "fill": "$red"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "icfqU",
+                                  "id": "t55PSc",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 7",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "7",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "skpH1",
+                                  "id": "gS7oU",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 8",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "8",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "r7i597",
+                                  "id": "ZOLoZ",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 9",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "9",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "K6W6i",
+                                  "id": "oQPJr",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 10",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "10",
                                       "fill": "$fg-2"
                                     }
@@ -188160,59 +188556,64 @@
                             "ucgUs": {
                               "content": "Migrate class calendar to new date picker"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "E6jzg",
+                              "id": "JvHnb",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "JU9bj",
+                                  "id": "m82sX",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 1",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "1",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "MC0ws",
+                                  "id": "T0HKse",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#3FB95026",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
                                   "name": "Place 2",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "Zmuz1",
+                                  "id": "K7CW7",
                                   "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$red",
+                                  "ref": "eL9mw",
+                                  "fill": "#F0545C24",
+                                  "stroke": "#F0545C73",
                                   "name": "Place 3",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "3"
+                                    "daH1z": {
+                                      "content": "3",
+                                      "fill": "$red"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "E4T3A",
+                                  "id": "k2Pt0i",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 4",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$fg-2"
                                     }
@@ -188231,59 +188632,64 @@
                             "ucgUs": {
                               "content": "Billing: proration on plan change"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "JRQDX",
+                              "id": "UaCSJ",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "G7KtQq",
+                                  "id": "ZwSdB",
                                   "type": "ref",
-                                  "ref": "mXNBE",
-                                  "fill": "$green",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
                                   "name": "Place 1",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "1"
+                                    "daH1z": {
+                                      "content": "1",
+                                      "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "fBmh1",
+                                  "id": "Tdmch",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#D6A23A26",
+                                  "ref": "eL9mw",
+                                  "fill": "#D6A23A24",
+                                  "stroke": "#D6A23A73",
                                   "name": "Place 2",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$amber"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "gK0K1",
+                                  "id": "YP7Ou",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 3",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "3",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "sO69G",
+                                  "id": "n5zBK",
                                   "type": "ref",
-                                  "ref": "liOKD",
-                                  "fill": "#646B7533",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 4",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$fg-2"
                                     }
@@ -188318,6 +188724,8 @@
                           "id": "gdgkF",
                           "name": "Caption title",
                           "fill": "$fg",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
                           "content": "SP89 · Variant B · ‹ and › around the squares",
                           "fontFamily": "$font",
                           "fontSize": 15,
@@ -188364,16 +188772,16 @@
                             "ucgUs": {
                               "content": "Agent: rewrite the sync engine"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "oZM6c",
+                              "id": "G7h5O",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "hMh52",
+                                  "id": "X6avY7",
                                   "name": "Previous",
                                   "width": 20,
                                   "height": 20,
@@ -188383,7 +188791,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "P4Iig6",
+                                      "id": "AwQV0",
                                       "name": "icon chevron-left",
                                       "width": 14,
                                       "height": 14,
@@ -188394,129 +188802,140 @@
                                   ]
                                 },
                                 {
-                                  "id": "nyIZF",
+                                  "id": "gI4pU",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
                                   "name": "Place 1",
-                                  "fill": "#A57BF526",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "1",
                                       "fill": "$purple"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "cCyx5",
+                                  "id": "VlLCZ",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#A57BF524",
+                                  "stroke": "#A57BF573",
                                   "name": "Place 2",
-                                  "fill": "#A57BF526",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$purple"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "Y8Ustr",
+                                  "id": "gFZj3",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 3",
-                                  "fill": "#3FB95026",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "3",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "D5T2kO",
+                                  "id": "W5waQZ",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 4",
-                                  "fill": "#3FB95026",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "r8xzc5",
+                                  "id": "slI3Z",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 5",
-                                  "fill": "#3FB95026",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "5",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "kpXkY",
+                                  "id": "pmonH",
                                   "type": "ref",
-                                  "ref": "mXNBE",
+                                  "ref": "zEwwO",
+                                  "fill": "#F0545C4D",
+                                  "stroke": "$red",
                                   "name": "Place 6",
-                                  "fill": "$red",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "6"
+                                    "daH1z": {
+                                      "content": "6",
+                                      "fill": "$red"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "j0syX",
+                                  "id": "HSkKr",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 7",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "7",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "xfbV3",
+                                  "id": "h8rfZ",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 8",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "8",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "OeDPk",
+                                  "id": "dQ6Jf",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 9",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "9",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "jvSlr",
+                                  "id": "ddDKL",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 10",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "10",
                                       "fill": "$fg-2"
                                     }
@@ -188524,7 +188943,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "tUrtK",
+                                  "id": "CcAVF",
                                   "name": "Next",
                                   "width": 20,
                                   "height": 20,
@@ -188534,7 +188953,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "cJIU7",
+                                      "id": "UHxAh",
                                       "name": "icon chevron-right",
                                       "width": 14,
                                       "height": 14,
@@ -188557,16 +188976,16 @@
                             "ucgUs": {
                               "content": "Migrate class calendar to new date picker"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "lT3Mi",
+                              "id": "mA8ok",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "TnSNx",
+                                  "id": "OO4ce",
                                   "name": "Previous",
                                   "width": 20,
                                   "height": 20,
@@ -188576,7 +188995,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "qfobI",
+                                      "id": "qlFwJ",
                                       "name": "icon chevron-left",
                                       "width": 14,
                                       "height": 14,
@@ -188587,51 +189006,56 @@
                                   ]
                                 },
                                 {
-                                  "id": "SbNyZ",
+                                  "id": "DafWI",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#3FB95024",
+                                  "stroke": "#3FB95073",
                                   "name": "Place 1",
-                                  "fill": "#3FB95026",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "1",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "TnrRy",
+                                  "id": "hWOgS",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
                                   "name": "Place 2",
-                                  "fill": "#3FB95026",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "n7Xeet",
+                                  "id": "kUaPl",
                                   "type": "ref",
-                                  "ref": "mXNBE",
+                                  "ref": "eL9mw",
+                                  "fill": "#F0545C24",
+                                  "stroke": "#F0545C73",
                                   "name": "Place 3",
-                                  "fill": "$red",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "3"
+                                    "daH1z": {
+                                      "content": "3",
+                                      "fill": "$red"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "qjeDX",
+                                  "id": "fZ7nB",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 4",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$fg-2"
                                     }
@@ -188639,7 +189063,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "LdbCR",
+                                  "id": "Estce",
                                   "name": "Next",
                                   "width": 20,
                                   "height": 20,
@@ -188649,7 +189073,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "CP6YS",
+                                      "id": "IYKvt",
                                       "name": "icon chevron-right",
                                       "width": 14,
                                       "height": 14,
@@ -188672,16 +189096,16 @@
                             "ucgUs": {
                               "content": "Billing: proration on plan change"
                             },
-                            "FSy0u": {
+                            "TV8sJ": {
                               "type": "frame",
-                              "id": "auxC8",
+                              "id": "w6tEZr",
                               "name": "Places",
                               "gap": 3,
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "aBDlo",
+                                  "id": "A0mvSi",
                                   "name": "Previous",
                                   "width": 20,
                                   "height": 20,
@@ -188691,7 +189115,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "IWPmc",
+                                      "id": "yc270",
                                       "name": "icon chevron-left",
                                       "width": 14,
                                       "height": 14,
@@ -188702,51 +189126,56 @@
                                   ]
                                 },
                                 {
-                                  "id": "AoWTT",
+                                  "id": "k301CZ",
                                   "type": "ref",
-                                  "ref": "mXNBE",
+                                  "ref": "zEwwO",
+                                  "fill": "#3FB9504D",
+                                  "stroke": "$green",
                                   "name": "Place 1",
-                                  "fill": "$green",
                                   "descendants": {
-                                    "h6R2x": {
-                                      "content": "1"
+                                    "daH1z": {
+                                      "content": "1",
+                                      "fill": "$green"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "gyLQF",
+                                  "id": "lVXON",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#D6A23A24",
+                                  "stroke": "#D6A23A73",
                                   "name": "Place 2",
-                                  "fill": "#D6A23A26",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "2",
                                       "fill": "$amber"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "lwjmt",
+                                  "id": "Nh9EO",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 3",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "3",
                                       "fill": "$fg-2"
                                     }
                                   }
                                 },
                                 {
-                                  "id": "bwBpR",
+                                  "id": "pKBBl",
                                   "type": "ref",
-                                  "ref": "liOKD",
+                                  "ref": "eL9mw",
+                                  "fill": "#646B7524",
+                                  "stroke": "#646B7580",
                                   "name": "Place 4",
-                                  "fill": "#646B7533",
                                   "descendants": {
-                                    "h6R2x": {
+                                    "daH1z": {
                                       "content": "4",
                                       "fill": "$fg-2"
                                     }
@@ -188754,7 +189183,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "TwJHA",
+                                  "id": "EYOJG",
                                   "name": "Next",
                                   "width": 20,
                                   "height": 20,
@@ -188764,7 +189193,7 @@
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "dO6mB",
+                                      "id": "L0Tf2",
                                       "name": "icon chevron-right",
                                       "width": 14,
                                       "height": 14,
