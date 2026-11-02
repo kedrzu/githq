@@ -7,6 +7,7 @@ import type { IndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
+import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
 /**
  * Sets the local copy of a test's container to IndexedDB, behind every interface its parts are kept through —
@@ -22,5 +23,6 @@ export function setIndexedDbPersistence(
     container.set(RepositoryPersistence, persistence);
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);
+    container.set(WorkflowPersistence, persistence);
     return persistence;
 }

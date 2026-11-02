@@ -19,7 +19,10 @@ export interface RepositoryWorkflows {
     readonly workflowsEtag: string | null;
     /** In GitHub's order. */
     readonly workflows: readonly StoredWorkflow[];
-    /** When the last read finished (epoch ms); `null` while nothing was read, which is not the same as healthy. */
+    /**
+     * When the last read finished (epoch ms) — a read GitHub refused too; `null` while nothing was read, which is not
+     * the same as healthy.
+     */
     readonly readAt: number | null;
     /** Why GitHub shows no workflow state for the repository, while it does not. */
     readonly unavailable: WorkflowsUnavailable | null;
@@ -28,10 +31,16 @@ export interface RepositoryWorkflows {
 /** A workflow and its latest runs on the refs that count. */
 export interface StoredWorkflow {
     readonly workflow: GitHubWorkflow;
-    /** The latest runs on the refs that count, at most 10, in any order. */
+    /**
+     * Its latest runs on the refs that count, merged by id from every query of its runs, the newest first, about
+     * 20 of them (`mergeWorkflowRuns`).
+     */
     readonly runs: readonly GitHubWorkflowRun[];
-    /** The ETag of its run list's last 200. */
-    readonly runsEtag: string | null;
+    /**
+     * The ETag of each query of its runs' last 200, by query: `branch:<name>` for the runs on one branch or tag. A
+     * query missing here was never read, or GitHub sent no ETag for it: it is read again.
+     */
+    readonly etags: Readonly<Record<string, string>>;
 }
 
 /** GitHub shows no workflow state for a repository: Actions is turned off there, or GitHub refuses to say. */

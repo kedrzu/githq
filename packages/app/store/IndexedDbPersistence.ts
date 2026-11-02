@@ -15,6 +15,8 @@ import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
+import type { WorkflowPersistenceShape } from '@/workflows/WorkflowPersistence.js';
+import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { ItemDetailPersistenceShape, ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
@@ -24,11 +26,11 @@ import type { Item } from './ItemTypes.js';
 
 /**
  * The layout of the database and of what it holds. Raise it whenever either changes (the `Item`, `ItemDetail`,
- * `RepositoryMetadata`, `Project`, `ProjectItem` or tracking types too): a database of another version is dropped
+ * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking or `RepositoryWorkflows` types too): a database of another version is dropped
  * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over too (`TabChannel`): raise
  * it when a `TabMessage` changes, so tabs of two githq versions do not hear each other.
  */
-export const LOCAL_DATABASE_VERSION = 4;
+export const LOCAL_DATABASE_VERSION = 5;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -40,7 +42,8 @@ export type IndexedDbPersistence = ItemPersistenceShape &
     ItemDetailPersistenceShape &
     RepositoryPersistenceShape &
     TrackingPersistenceShape &
-    ProjectPersistenceShape;
+    ProjectPersistenceShape &
+    WorkflowPersistenceShape;
 
 type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
@@ -68,13 +71,14 @@ interface LocalDatabase extends DBSchema {
     projects: { key: string; value: PersistedProject };
     projectItems: { key: string; value: ProjectItem; indexes: { projectId: string } };
     trackedSync: { key: string; value: SyncStateRecord };
+    workflows: { key: string; value: RepositoryWorkflows };
 }
 
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
  * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
- * (by `owner/name`), `projects` (by id), `projectItems` (by project item id) and `trackedSync` (each tracked
- * repository's and project's sync state). One object for the interfaces it is set as: they share the
+ * (by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
+ * repository's and project's sync state) and `workflows` (each tracked repository's, by `owner/name`). One object for the interfaces it is set as: they share the
  * connection.
  *
  * Only {@link ItemPersistenceShape.load} opens the database. A connection gives way when another one wants
@@ -102,6 +106,9 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         saveProject,
         saveProjectItems,
         deleteProject,
+        loadWorkflows,
+        saveWorkflows,
+        deleteWorkflows,
     };
 
     async function load(login: string): Promise<PersistedItems> {
@@ -275,6 +282,21 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         await Promise.all([tx.objectStore('projects').delete(projectId), ...ids.map(id => items.delete(id)), tx.done]);
     }
 
+    async function loadWorkflows(login: string) {
+        const db = await getOpen(login);
+        return await db.getAll('workflows');
+    }
+
+    async function saveWorkflows(login: string, workflows: RepositoryWorkflows) {
+        const db = await getOpen(login);
+        await db.put('workflows', workflows);
+    }
+
+    async function deleteWorkflows(login: string, nameWithOwner: string) {
+        const db = await getOpen(login);
+        await db.delete('workflows', nameWithOwner);
+    }
+
     /** The connection `load` opened; rejects when there is none (anymore). */
     async function getOpen(login: string) {
         const connection = connections.get(login);
@@ -339,6 +361,7 @@ function openDatabase(name: string) {
             db.createObjectStore('projects', { keyPath: 'project.id' });
             db.createObjectStore('projectItems', { keyPath: 'itemId' }).createIndex('projectId', 'projectId');
             db.createObjectStore('trackedSync', { keyPath: 'key' });
+            db.createObjectStore('workflows', { keyPath: 'nameWithOwner' });
         },
     });
 }

@@ -198,7 +198,7 @@ function repository(workflows: StoredWorkflow[], overrides: Partial<RepositoryWo
 }
 
 function stored(entry: GitHubWorkflow, runs: GitHubWorkflowRun[]): StoredWorkflow {
-    return { workflow: entry, runs, runsEtag: null };
+    return { workflow: entry, runs, etags: {} };
 }
 
 function workflow(id: number, overrides: Partial<GitHubWorkflow> = {}): GitHubWorkflow {
