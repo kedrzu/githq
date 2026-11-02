@@ -87,8 +87,9 @@ What the primary action is depends on the pull request and the repository:
   merged, and the user should know the outcome is not known yet.
 - **Page reloaded during a merge:** the "being merged" state is gone. The pull request shows what GitHub last said
   until the next refresh. Should a merge seem still open, sending it again is what the user might try.
-- **Possibly:** a pull request changing `.github/workflows` refused for lack of a permission of githq's, which would
-  need signing in again. Not confirmed yet; treat it as one more refusal with a reason.
+- **An organisation that hasn't approved githq:** GitHub reads its public repositories, so merging is offered, and the
+  first write is refused. Say which organisation and link to GitHub's page for requesting access (PM42). A change to
+  `.github/workflows` needs no extra permission (checked 2026-11-02, [D1](../DECISIONS.md#d1)).
 
 ## Hand-offs to github.com
 

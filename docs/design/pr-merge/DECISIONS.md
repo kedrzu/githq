@@ -37,6 +37,11 @@ of scope here.
 > say whether merging a pull request that changes `.github/workflows` needs the `workflow` scope. githq asks for
 > `repo`, `project` and `read:org`. Needs a live test with a token of exactly those scopes.
 
+> **Checked 2026-11-02 (live, `nzymejs/githq-merge-sandbox` #6, changing only `.github/workflows/hello.yml`):** the
+> owner, signed in through the OAuth App "githq (dev)" with `repo`, `project` and `read:org`, updated the branch and
+> merged it from githq. The `workflow` scope is not needed to merge, so nobody has to sign in again. The only refusal
+> on the way was the organisation's OAuth App access restriction (G5), lifted once `nzymejs` approved the app.
+
 **Rejected.**
 
 - Showing mergeability and opening github.com to merge — the earlier decision in

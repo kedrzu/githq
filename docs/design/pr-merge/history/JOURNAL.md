@@ -11,3 +11,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-01 — Screens drawn in `githq.pen`, frame "App · Merging a pull request" → D11–D16. Owner to pick: the panel's form, commit text, required checks, bypass, after `⌘Enter`. Raised with the owner, not designed around: `⌘Enter` before the read can merge a stack nobody has seen, because the row holds no `stackEntry` (D6 against the brief); bypass rules out the email, since one is REST and the other GraphQL (D5); what commit text does to a stack is undocumented.
 - 2026-11-01 — Stacks moved to `docs/design/stacked-prs/`; its D7 and D11 settle `⌘Enter` before the read and commit text in a stack.
 - 2026-11-02 — Build M1 checkpoint: owner accepted PM24 without the commit text → D14.
+- 2026-11-02 — Live: merging a change to `.github/workflows` needs no `workflow` scope (D1). An organisation restricting OAuth apps refuses every write; the brief's possible permission failure becomes that one (PM42).
