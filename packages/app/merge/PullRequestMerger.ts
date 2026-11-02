@@ -10,7 +10,7 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import { createMergeEdit } from './createMergeEdit.js';
 import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
@@ -48,7 +48,10 @@ export const PullRequestMerger = defineService({
         logger: Logger,
     },
     setup({ accounts, editor, items, details, queue, clock, logger }) {
-        return { readOptions, merge };
+        // Each row a read wrote, to the row it replaced.
+        const replacedRows = new WeakMap<Item, Item>();
+
+        return { readOptions, merge, getReplacedRow };
 
         /**
          * Reads the merge options of a pull request fresh (`PullRequestMergeOptions`), and writes the status read
@@ -88,7 +91,9 @@ export const PullRequestMerger = defineService({
                 const { status } = options;
                 const stored = items.getStored(itemId);
                 if (stored?.kind === 'pullRequest') {
-                    items.upsertMany([{ ...stored, ...status }]);
+                    const row = { ...stored, ...status };
+                    replacedRows.set(row, stored);
+                    items.upsertMany([row]);
                 }
 
                 // Opened from outside the lists, it has no row: its detail is what the panel shows.
@@ -98,6 +103,15 @@ export const PullRequestMerger = defineService({
             }
 
             return options;
+        }
+
+        /**
+         * The row {@link readOptions} replaced with `row`, writing the status it read; `undefined` for a row it did
+         * not write. Tells the panel's own reads apart from a copy the regular sync brought (D3: past the time limit,
+         * only the sync says how a merge ended).
+         */
+        function getReplacedRow(row: Item): Item | undefined {
+            return replacedRows.get(row);
         }
 
         /**

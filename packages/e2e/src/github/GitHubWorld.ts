@@ -6,6 +6,7 @@ import type {
     IssueStateReason,
     IssueTypeColor,
     ItemProjectItemFieldsFragment,
+    MergeableState,
     MergeStateStatus,
     ProjectFieldFieldsFragment,
     ProjectItemDetailFieldsFragment,
@@ -58,6 +59,7 @@ export type GitHubWorldMutation =
     | 'RequestReviews'
     | 'MarkReadyForReview'
     | 'ConvertToDraft'
+    | 'UpdatePullRequestBranch'
     | 'CreateIssue';
 
 const MY_WORK_SEARCHES: readonly MyWorkSearch[] = ['reviewRequested', 'authored', 'assigned', 'mentioned'];
@@ -128,8 +130,13 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly conflicts?: boolean;
     /** Whose review it asks for (logins). */
     readonly reviewRequests?: readonly string[];
-    /** Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip). */
+    /**
+     * Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip): `BEHIND` when its
+     * repository requires branches to be up to date ({@link GitHubWorldRepositoryParams.requiresUpToDate}).
+     */
     readonly behindBase?: boolean;
+    /** GitHub has not worked out yet whether it merges: `mergeable` and `mergeStateStatus` read `UNKNOWN`. */
+    readonly mergeabilityUnknown?: boolean;
     /**
      * The commit texts GitHub proposes to the viewer for a merge commit and a squash (`viewerMergeHeadlineText`,
      * `viewerMergeBodyText`); GitHub's usual ones by default — for a merge commit "Merge pull request #N from
@@ -184,6 +191,8 @@ export interface GitHubWorldRepositoryParams {
      * ruleset by default. Only the merge panel's read (`PullRequestMergeOptions`) sees it, as on GitHub.
      */
     readonly rulesetMergeMethods?: readonly PullRequestMergeMethod[];
+    /** Its base branch requires branches to be up to date before merging: one behind it reads `BEHIND`. */
+    readonly requiresUpToDate?: boolean;
 }
 
 /** What a repository of the world asks a new issue to start from. */
@@ -313,6 +322,7 @@ interface WorldRepository {
     mergeMethods: readonly PullRequestMergeMethod[];
     defaultMergeMethod: PullRequestMergeMethod;
     rulesetMergeMethods: readonly PullRequestMergeMethod[] | null;
+    requiresUpToDate: boolean;
 }
 
 interface WorldProject {
@@ -358,12 +368,22 @@ interface WorldPullRequest {
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly closes: readonly string[];
-    readonly behindBase: boolean;
+    behindBase: boolean;
+    readonly mergeabilityUnknown: boolean;
+    /** The last commit pushed to its branch since the test began ({@link GitHubWorld.push}); `null` for none. */
+    pushed: WorldCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
     readonly stack: WorldStackPlace | null;
     readonly proposedTexts: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
     /** Merged: its item is closed too, as GitHub's `state` then reads `MERGED`. */
     merged: boolean;
+}
+
+/** A commit pushed to a pull request's branch. */
+interface WorldCommit {
+    readonly oid: string;
+    readonly headline: string;
+    readonly author: string;
 }
 
 /** A merge GitHub accepted ({@link GitHubWorld.holdMerges}), by the `uuid` it is followed by. */
@@ -504,7 +524,7 @@ const PROJECT_FIRST_PAGE = 100;
  * `GET …/merge-async/{uuid}`): refused at once when the head commit named is not the pull request's
  * ({@link headOf}) or the test said so ({@link refuseMerge}), else accepted — and kept pending while
  * {@link holdMerges} holds. And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
- * {@link delete}), as GitHub does between two polls.
+ * {@link delete}, {@link push}), as GitHub does between two polls.
  */
 export class GitHubWorld {
     private readonly items = new Map<string, WorldItem>();
@@ -546,6 +566,7 @@ export class GitHubWorld {
         repository.mergeMethods = params.mergeMethods ?? repository.mergeMethods;
         repository.defaultMergeMethod = params.defaultMergeMethod ?? repository.defaultMergeMethod;
         repository.rulesetMergeMethods = params.rulesetMergeMethods ?? repository.rulesetMergeMethods;
+        repository.requiresUpToDate = params.requiresUpToDate ?? repository.requiresUpToDate;
     }
 
     /** The issue of `repository` titled `title`, as GitHub has it now; `undefined` when there is none. */
@@ -665,6 +686,19 @@ export class GitHubWorld {
     /** The head commit of a pull request: the `sha` a merge of it must name. */
     headOf(id: string): string {
         return toHeadRefOid(this.get(id));
+    }
+
+    /**
+     * Pushes a commit by `author` to the branch of the pull request `id`, as someone does on github.com: its head
+     * moves, so a merge naming the one before is refused. Returns the new head.
+     */
+    push(id: string, author: string, headline: string): string {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`Item ${id} is not a pull request in the GitHub world`);
+        }
+
+        return pushCommit(item, item.pullRequest, { author, headline });
     }
 
     /** Renames an item, which moves its `updated_at` to now. */
@@ -1038,15 +1072,11 @@ export class GitHubWorld {
                     viewerCanMergeAsAdmin: false,
                     viewerCanEnableAutoMerge: false,
                     isMergeQueueEnabled: false,
-                    // The head commit as the author's, under the pull request's title.
+                    // The commit pushed last, else the head as the author's, under the pull request's title.
                     headCommit: {
                         nodes: [
                             {
-                                commit: {
-                                    oid: node.headRefOid,
-                                    messageHeadline: item.title,
-                                    author: { name: item.author, user: { login: item.author } },
-                                },
+                                commit: toHeadCommit(item, item.pullRequest),
                             },
                         ],
                     },
@@ -1481,6 +1511,21 @@ export class GitHubWorld {
             answer: item => ({ markPullRequestReadyForReview: { pullRequest: toPullRequestState(item) } }),
             refused: { markPullRequestReadyForReview: null },
         });
+        // Brings the base branch in with a merge commit by the viewer: no longer behind, at a new head.
+        this.mutation(github, 'UpdatePullRequestBranch', {
+            findItem: byItemId('pullRequestId'),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.behindBase = false;
+                    pushCommit(item, item.pullRequest, {
+                        author: this.viewer,
+                        headline: `Merge branch 'main' into ${toHeadRefName(item)}`,
+                    });
+                }
+            },
+            answer: item => ({ updatePullRequestBranch: { pullRequest: { id: item.id } } }),
+            refused: { updatePullRequestBranch: null },
+        });
         this.mutation(github, 'ConvertToDraft', {
             findItem: byItemId('pullRequestId'),
             apply: item => {
@@ -1827,6 +1872,8 @@ export class GitHubWorld {
             reviewRequests: [...(params.reviewRequests ?? [])],
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
+            mergeabilityUnknown: params.mergeabilityUnknown ?? false,
+            pushed: null,
             stack,
             proposedTexts: params.proposedTexts ?? {},
             merged: false,
@@ -1897,6 +1944,7 @@ export class GitHubWorld {
                 mergeMethods: ['MERGE', 'SQUASH', 'REBASE'],
                 defaultMergeMethod: 'MERGE',
                 rulesetMergeMethods: null,
+                requiresUpToDate: false,
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {
@@ -1996,8 +2044,8 @@ export class GitHubWorld {
             isDraft: pullRequest.isDraft,
             merged: pullRequest.merged,
             reviewDecision,
-            mergeable: pullRequest.conflicts ? 'CONFLICTING' : 'MERGEABLE',
-            mergeStateStatus: getMergeStateStatus(pullRequest),
+            mergeable: getMergeable(pullRequest),
+            mergeStateStatus: getMergeStateStatus(pullRequest, this.getRepository(item.repository)),
             statusCheckRollup: {
                 state: failingChecks > 0 ? 'FAILURE' : 'SUCCESS',
                 contexts: {
@@ -2411,9 +2459,31 @@ function findSearch(q: string): MyWorkSearch | undefined {
     return MY_WORK_SEARCHES.find(search => MY_WORK_QUERIES[search] === q);
 }
 
-function getMergeStateStatus(pullRequest: WorldPullRequest): MergeStateStatus {
+/** Whether it merges, as GitHub has worked it out. */
+function getMergeable(pullRequest: WorldPullRequest): MergeableState {
+    if (pullRequest.mergeabilityUnknown) {
+        return 'UNKNOWN';
+    }
+
+    return pullRequest.conflicts ? 'CONFLICTING' : 'MERGEABLE';
+}
+
+/** Where its merge stands, in the order GitHub tells it: not worked out, conflicts, a draft, behind, then the rest. */
+function getMergeStateStatus(pullRequest: WorldPullRequest, repository: WorldRepository): MergeStateStatus {
+    if (pullRequest.mergeabilityUnknown) {
+        return 'UNKNOWN';
+    }
+
     if (pullRequest.conflicts) {
         return 'DIRTY';
+    }
+
+    if (pullRequest.isDraft) {
+        return 'DRAFT';
+    }
+
+    if (pullRequest.behindBase && repository.requiresUpToDate) {
+        return 'BEHIND';
     }
 
     if (pullRequest.failingChecks > 0) {
@@ -2453,6 +2523,16 @@ function toHeadRefName(item: WorldItem) {
     return `change-${item.number}`;
 }
 
+/** The head commit as `PullRequestMergeOptions` reads it: the one pushed last, else the author's under the title. */
+function toHeadCommit(item: WorldItem, pullRequest: WorldPullRequest) {
+    const author = pullRequest.pushed?.author ?? item.author;
+    return {
+        oid: toHeadRefOid(item),
+        messageHeadline: pullRequest.pushed?.headline ?? item.title,
+        author: { name: author, user: { login: author } },
+    };
+}
+
 /** The commit texts GitHub proposes for a pull request: the test's, else GitHub's usual ones. */
 function toProposedTexts(
     item: WorldItem,
@@ -2470,7 +2550,16 @@ function toProposedTexts(
 
 /** The head commit of a pull request: one of its own, so a merge naming another one can be told apart. */
 function toHeadRefOid(item: WorldItem) {
-    return item.number.toString(16).padStart(40, 'f');
+    return item.pullRequest?.pushed?.oid ?? item.number.toString(16).padStart(40, 'f');
+}
+
+/** Pushes a commit to the pull request's branch: its head moves to a commit of its own. Returns the new head. */
+function pushCommit(item: WorldItem, pullRequest: WorldPullRequest, commit: Omit<WorldCommit, 'oid'>): string {
+    const previous = pullRequest.pushed ? Number.parseInt(pullRequest.pushed.oid.slice(0, 8), 16) : 0;
+    const oid = `${(previous + 1).toString(16).padStart(8, '0')}${item.number.toString(16).padStart(32, 'e')}`;
+    pullRequest.pushed = { ...commit, oid };
+    item.updatedAt = new Date().toISOString();
+    return oid;
 }
 
 /** `acme/web` → `acme_web`, for node ids. */

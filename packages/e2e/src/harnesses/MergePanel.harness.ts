@@ -36,6 +36,14 @@ export class MergePanelHarness {
         return this.root.getByRole('textbox', { name: 'Commit title' });
     }
 
+    /**
+     * The primary action, `⌘↵`'s: the merge, the step towards it ("Mark ready for review", "Update branch"), the link
+     * to GitHub's conflict editor, or — off — why there is none.
+     */
+    get primary(): Locator {
+        return this.root.locator('footer').locator('a, button').last();
+    }
+
     /** Why GitHub refused the merge at once. */
     get refusal(): Locator {
         return this.root.getByRole('alert');

@@ -135,11 +135,26 @@ export const MergePanelStore = defineService({
 
         /**
          * A copy of the pull request read after the record was made arrived: its row replaced — the regular sync
-         * reads open pull requests' statuses each round — or its detail read since.
+         * reads open pull requests' statuses each round — or its detail read since. The panel's own reads of the
+         * merge options write the row too, but say nothing of how the merge ended: only rows they did not write
+         * count.
          */
         function isReadSince(itemId: string, kept: KeptRecord) {
             const detail = details.get(itemId);
-            return items.getStored(itemId) !== kept.row || (detail !== undefined && detail.fetchedAt > kept.at);
+            return !isRowKept(itemId, kept) || (detail !== undefined && detail.fetchedAt > kept.at);
+        }
+
+        /** Whether the row is the one the record was made over, or only the panel's reads wrote over it since. */
+        function isRowKept(itemId: string, kept: KeptRecord) {
+            let row = items.getStored(itemId);
+            while (row !== kept.row) {
+                row = row && merger.getReplacedRow(row);
+                if (row === undefined) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /**

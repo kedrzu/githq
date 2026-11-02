@@ -16,6 +16,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { MergePanelStore } from './MergePanelStore.js';
 import type { MergeOptions, MergeSubmission } from './MergeTypes.js';
+import { PullRequestMerger } from './PullRequestMerger.js';
 
 const MERGE = 'PUT /repos/acme/web/pulls/2/merge-async';
 const UUID = 'b904';
@@ -212,6 +213,31 @@ test('PM36: no answer in time goes once the regular sync brings a copy of the pu
     expect(panel.unanswered).toEqual([]);
 });
 
+test('PM29: the panel’s own reads of the pull request do not settle no answer in time — only the regular sync does', async () => {
+    const { panel, items, merger, session, answers } = await setup();
+    answers.put = PENDING;
+
+    panel.open('PR_1');
+    const accepted = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED, reread: readAs('head-oid') });
+    await session.clock.advance(0);
+    await accepted;
+    await session.clock.advance(120_000);
+    const synced = items.getStored('PR_1');
+
+    // Opened again: the panel reads the merge options, twice over, and writes the status read into the row.
+    panel.open('PR_1');
+    await merger.readOptions('PR_1');
+    await merger.readOptions('PR_1');
+    expect(items.getStored('PR_1')).not.toBe(synced);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'unknown' });
+
+    // The sync's copy settles it, and a read of the panel after it does not bring it back.
+    items.upsertMany([samplePullRequest('PR_1')]);
+    expect(panel.getRecord('PR_1')).toBeNull();
+    await merger.readOptions('PR_1');
+    expect(panel.getRecord('PR_1')).toBeNull();
+});
+
 test('PM34: a merge GitHub confirms after the panel left is listed for its toast, until dismissed', async () => {
     const { panel, session, answers } = await setup();
 
@@ -334,6 +360,7 @@ async function setup() {
     return {
         panel: session.container.resolve(MergePanelStore),
         queue: session.container.resolve(EditQueue),
+        merger: session.container.resolve(PullRequestMerger),
         items,
         session,
         answers,

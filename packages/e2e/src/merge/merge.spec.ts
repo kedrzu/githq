@@ -1,20 +1,15 @@
 import { expect, test } from '../fixtures.js';
-import type { GitHubMock } from '../github/GitHubMock.js';
-import { GitHubWorld } from '../github/GitHubWorld.js';
-import type { GitHubWorldRepositoryParams } from '../github/GitHubWorld.js';
-import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { MergePanelHarness } from '../harnesses/MergePanel.harness.js';
-import type { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
+import { selectRow } from '../myWork/selectRow.js';
 
-const FIRST = 'Redirect once after sign-in';
-const SECOND = 'Cache response headers';
+import { getMergeRequests } from './getMergeRequests.js';
+import { createSampleMergeableWork, FIRST_TITLE, PROPOSED_TITLE, SECOND_TITLE } from './sampleMergeableWork.js';
+
 /** A pull request of acme/web the viewer may merge that my work does not list. */
 const OUTSIDE = 'Trim the access log';
-/** What GitHub proposes for the merge commit of {@link FIRST}: its branch, not the fallback the panel writes itself. */
-const PROPOSED_TITLE = 'Merge pull request #15 from acme/redirect-once';
 
 test("⇧M on the selected row merges with the default method and GitHub's text: being merged until GitHub says merged, then it leaves my work", async ({
     page,
@@ -23,7 +18,7 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     const sample = createSampleMergeableWork();
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
     await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
@@ -37,8 +32,8 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     await expect(panel.root).toBeHidden();
     // Unedited text is GitHub's to write: neither the title nor the message is sent.
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: sample.world.headOf(sample.first) }]);
-    await expect(myWork.selectedRow).toContainText(SECOND);
-    const row = myWork.row(FIRST);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
+    const row = myWork.row(FIRST_TITLE);
     await expect(row).toContainText('Being merged');
     await expect(row.getByRole('img', { name: 'Open pull request' })).toBeVisible();
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
@@ -48,7 +43,7 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     release();
     await expect(row).toHaveCount(0, { timeout: 10_000 });
     await expect(shell.myWorkCount('My pull requests')).toHaveText('1');
-    await expect(myWork.selectedRow).toContainText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     expect(sample.world.stateOf(sample.first).merged).toBe(true);
     expect(sample.world.stateOf(sample.second).merged).toBe(false);
     // PM34: the user moved on, so the confirmation comes to them — short, and gone by itself.
@@ -66,7 +61,7 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     const panel = new MergePanelHarness(page);
-    await myWork.row(FIRST).click();
+    await myWork.row(FIRST_TITLE).click();
     await expect(item.mergeButton).toBeVisible();
 
     await page.keyboard.press('Shift+M');
@@ -86,7 +81,7 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
             commit_title: 'Redirect once, keeping the return address',
         },
     ]);
-    await expect(item.title).toHaveText(FIRST);
+    await expect(item.title).toHaveText(FIRST_TITLE);
     await expect(item.root).toContainText('Being merged');
     await expect(item.root).toContainText('Waiting for GitHub');
     await expect(item.mergeButton).toHaveCount(0);
@@ -141,18 +136,18 @@ test('PM24: ⇧M on a pull request being merged opens the panel in its being-mer
     const sample = createSampleMergeableWork();
     const { myWork } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
     await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
     const release = sample.world.holdMerges();
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
-    await expect(myWork.selectedRow).toContainText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
 
     // Back on it: the row still reads being merged.
     await page.keyboard.press('k');
-    await expect(myWork.selectedRow).toContainText(FIRST);
+    await expect(myWork.selectedRow).toContainText(FIRST_TITLE);
     await page.keyboard.press('Shift+M');
     await expect(panel.root).toContainText('Being merged');
     await expect(panel.line('Method')).toContainText('Merge commit');
@@ -164,7 +159,7 @@ test('PM24: ⇧M on a pull request being merged opens the panel in its being-mer
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
     release();
-    await expect(myWork.row(FIRST)).toHaveCount(0, { timeout: 10_000 });
+    await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
 });
 
 test('D9, PM32a: one pull request checked and merged with ⇧M is unchecked once sent, and the list moves past it', async ({
@@ -174,7 +169,7 @@ test('D9, PM32a: one pull request checked and merged with ⇧M is unchecked once
     const sample = createSampleMergeableWork();
     const { myWork } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
     await page.keyboard.press('x');
     await expect(page.getByRole('toolbar')).toContainText('1 selected');
 
@@ -185,9 +180,9 @@ test('D9, PM32a: one pull request checked and merged with ⇧M is unchecked once
 
     await expect(panel.root).toBeHidden();
     await expect(page.getByRole('toolbar')).toHaveCount(0);
-    await expect(myWork.selectedRow).toContainText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     release();
-    await expect(myWork.row(FIRST)).toHaveCount(0, { timeout: 10_000 });
+    await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
 });
 
 test('a merge GitHub refuses at once keeps the panel open with the edited text and says why; nothing is being merged', async ({
@@ -199,7 +194,7 @@ test('a merge GitHub refuses at once keeps the panel open with the edited text a
     sample.world.refuseMerge(sample.first, reason);
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
     // GitHub's proposal is in: the read arrived.
@@ -217,8 +212,8 @@ test('a merge GitHub refuses at once keeps the panel open with the edited text a
     await page.keyboard.press('Escape');
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
-    await expect(myWork.selectedRow).toContainText(FIRST);
-    await expect(myWork.row(FIRST)).not.toContainText('Being merged');
+    await expect(myWork.selectedRow).toContainText(FIRST_TITLE);
+    await expect(myWork.row(FIRST_TITLE)).not.toContainText('Being merged');
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
     // The panel says it: no toast besides.
     await expect(shell.toasts).toHaveCount(0);
@@ -232,7 +227,7 @@ test('PM35: a merge GitHub refuses after the user moved on reaches them in a toa
     const sample = createSampleMergeableWork();
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
     await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
@@ -241,7 +236,7 @@ test('PM35: a merge GitHub refuses after the user moved on reaches them in a toa
     sample.world.holdMerges();
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
-    await expect(myWork.selectedRow).toContainText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
 
     const reason = 'At least 2 approving reviews are required by reviewers with write access.';
     sample.world.refuseHeldMerges(reason);
@@ -251,8 +246,8 @@ test('PM35: a merge GitHub refuses after the user moved on reaches them in a toa
     await expect(toast).toBeVisible();
     await expect(toast).toContainText(`GitHub refused it: “${reason}” Nothing changed on GitHub.`);
     await expect(shell.statusBar.getByRole('button', { name: 'Merge refused · acme/web#15' })).toBeVisible();
-    await expect(myWork.row(FIRST)).toContainText('Merge refused');
-    await expect(myWork.row(FIRST)).not.toContainText('Being merged');
+    await expect(myWork.row(FIRST_TITLE)).toContainText('Merge refused');
+    await expect(myWork.row(FIRST_TITLE)).not.toContainText('Being merged');
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
 
     // It stays until dismissed, long past an edit's toast.
@@ -260,7 +255,7 @@ test('PM35: a merge GitHub refuses after the user moved on reaches them in a toa
     await expect(toast).toBeVisible();
 
     // ⌥M is the toast's: the panel of the refused pull request, not of the row selected.
-    await expect(myWork.selectedRow).toContainText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     await page.keyboard.press('Alt+M');
     await expect(panel.root).toHaveAccessibleName('Merge acme/web#15');
     await expect(panel.root).toContainText('GitHub refused the merge');
@@ -272,18 +267,18 @@ test('without write access in the repository nothing offers merging: the standin
     page,
     github,
 }) => {
-    const sample = createSampleMergeableWork({ viewerPermission: 'READ' });
+    const sample = createSampleMergeableWork({ repository: { viewerPermission: 'READ' } });
     const { myWork } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     const panel = new MergePanelHarness(page);
 
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
     await page.keyboard.press('Shift+M');
     await expect(panel.root).toHaveCount(0);
-    await expect(myWork.row(FIRST).getByRole('button', { name: 'Merge', exact: true })).toHaveCount(0);
+    await expect(myWork.row(FIRST_TITLE).getByRole('button', { name: 'Merge', exact: true })).toHaveCount(0);
 
     await page.keyboard.press('Enter');
-    await expect(item.title).toHaveText(FIRST);
+    await expect(item.title).toHaveText(FIRST_TITLE);
     await expect(item.root).toContainText("You can't merge in this repository");
     await expect(item.mergeButton).toHaveCount(0);
     await page.keyboard.press('Shift+M');
@@ -301,73 +296,19 @@ test('a ruleset allowing only squash narrows the methods to Squash once the pane
     page,
     github,
 }) => {
-    const sample = createSampleMergeableWork({ rulesetMergeMethods: ['SQUASH'] });
+    const sample = createSampleMergeableWork({ repository: { rulesetMergeMethods: ['SQUASH'] } });
     const { myWork } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST);
+    await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
     // Said only once the read is in, and the panel offers one method.
     await expect(panel.line('Method')).toContainText('the only method main allows');
     await expect(panel.line('Method')).toContainText('Squash');
     await expect(panel.methods).toHaveCount(0);
-    await expect(panel.line('Commit')).toContainText(`${FIRST} (#15)`);
+    await expect(panel.line('Commit')).toContainText(`${FIRST_TITLE} (#15)`);
 
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'squash', sha: sample.world.headOf(sample.first) }]);
 });
-
-/** The world of the merge tests and the node ids of its pull requests. */
-interface SampleMergeableWork {
-    readonly world: GitHubWorld;
-    /** {@link FIRST} (acme/web#15), approved and ready to merge, at the top of "My pull requests". */
-    readonly first: string;
-    /** {@link SECOND} (acme/web#16), ready too, the row after it. */
-    readonly second: string;
-}
-
-/**
- * "My pull requests" of two approved pull requests of acme/web, ready to merge. The repository allows all three
- * methods and starts on a merge commit, unless `repository` says otherwise.
- */
-function createSampleMergeableWork(repository: GitHubWorldRepositoryParams = {}): SampleMergeableWork {
-    const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
-    world.repository('acme/web', { defaultMergeMethod: 'MERGE', ...repository });
-    const first = world.pullRequest({
-        repository: 'acme/web',
-        number: 15,
-        title: FIRST,
-        foundBy: ['authored'],
-        reviewDecision: 'APPROVED',
-        proposedTexts: { MERGE: { title: PROPOSED_TITLE, body: FIRST } },
-        minutesAgo: 5,
-    });
-    const second = world.pullRequest({
-        repository: 'acme/web',
-        number: 16,
-        title: SECOND,
-        foundBy: ['authored'],
-        reviewDecision: 'APPROVED',
-        minutesAgo: 10,
-    });
-    return { world, first, second };
-}
-
-/**
- * Selects the row titled `title` with the keyboard (`j`), without opening it — again until it is: a key pressed
- * while the screen still loads is lost.
- */
-async function selectRow(myWork: MyWorkScreenHarness, title: string) {
-    await expect(async () => {
-        await myWork.root.page().keyboard.press('j');
-        await expect(myWork.selectedRow).toContainText(title, { timeout: 500 });
-    }).toPass();
-}
-
-/** The merges the app asked GitHub for (`PUT …/merge-async`), by their bodies, oldest first. */
-function getMergeRequests(github: GitHubMock) {
-    return github.restCalls
-        .filter(call => call.method === 'PUT' && call.url.pathname.endsWith('/merge-async'))
-        .map(call => call.body);
-}
