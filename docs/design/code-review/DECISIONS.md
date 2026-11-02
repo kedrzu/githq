@@ -511,7 +511,7 @@ optional comment, which goes on the pull request itself rather than on a file, t
 Request changes on 1 2 3, the pending comments listed — and a refused submission turns the pending toolbar red with
 GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
 
-> **Checked 2026-11-02:** a review's own text goes in `submitPullRequestReview`'s body, per [D1](#d1)'s mutations; not tried live.
+> **Checked 2026-11-03:** `SubmitPullRequestReviewInput` has `body: String`, the review's own text (`packages/github/src/schema.graphql`). Not tried live.
 
 **Why.** The two keys swap meaning with a setting and with a draft, so the screen has to say it every time.
 
