@@ -23,6 +23,7 @@ import MergeToasts from '@/merge/MergeToasts.vue';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
+import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
 import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
@@ -40,7 +41,7 @@ import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
-import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
 import UntrackToast from '@/tracking/UntrackToast.vue';
@@ -70,6 +71,7 @@ const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
 const settingsSync = useService(SettingsSync);
 const workflows = useService(WorkflowStore);
+const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
@@ -116,7 +118,7 @@ const tracked = computed((): SidebarTracked => ({
     return {
       key: `repository:${repository.nameWithOwner}`,
       label: repository.nameWithOwner,
-      to: getRepositoryPath(repository.nameWithOwner),
+      to: repositoryTabs.getPath(repository.nameWithOwner),
       target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
       isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,

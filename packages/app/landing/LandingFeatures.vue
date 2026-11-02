@@ -1,20 +1,8 @@
-<!-- The landing page's four features (githq.pen "Landing — githq.dev", Feature 01–04): Instant — with the toast of an edit saved to GitHub —, My work, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides. As a feature first scrolls into view, Instant's toast slides up after its screenshot, and Keyboard presses ⌘K — the command menu opens — then S. The navigation's "Features" and "Keyboard" land here. -->
+<!-- The landing page's features after the opening three (githq.pen "Landing — githq.dev", Feature 04–06): Instant — with the toast of an edit saved to GitHub —, Keyboard — its keys, and the command menu over a dimmed list — and Faithful to GitHub, the screenshot on alternating sides, first on the left. As a feature first scrolls into view, Instant's toast slides up after its screenshot, and Keyboard presses ⌘K — the command menu opens — then S. The footer's "Keyboard" lands here. -->
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  ArrowLeftRight,
-  CheckCheck,
-  CircleCheck,
-  CircleDot,
-  Command,
-  Eye,
-  GitPullRequest,
-  Link,
-  RefreshCw,
-  SquareKanban,
-  Zap,
-} from 'lucide-vue-next';
+import { ArrowLeftRight, CheckCheck, CircleCheck, Command, Link, RefreshCw, SquareKanban, Zap } from 'lucide-vue-next';
 
 import * as l from './LandingFeatures.loc.js';
 import LandingFeature from './LandingFeature.vue';
@@ -35,9 +23,9 @@ const keys = [
 </script>
 
 <template>
-  <div :id="LandingSectionId.features">
+  <div>
     <LandingFeature
-      number="01"
+      number="04"
       :kicker="t(l.instantKicker)"
       :title="t(l.instantTitle)"
       :body="t(l.instantBody)"
@@ -48,6 +36,7 @@ const keys = [
       ]"
       image="/landing/instant.webp"
       :image-alt="t(l.instantAlt)"
+      flip
     >
       <template #overlay>
         <p :class="css.landingFeatures_toast">
@@ -61,23 +50,8 @@ const keys = [
     </LandingFeature>
 
     <LandingFeature
-      number="02"
-      :kicker="t(l.myWorkKicker)"
-      :title="t(l.myWorkTitle)"
-      :body="t(l.myWorkBody)"
-      :points="[
-        { icon: CircleDot, text: t(l.myWorkAssigned) },
-        { icon: GitPullRequest, text: t(l.myWorkPullRequests) },
-        { icon: Eye, text: t(l.myWorkReviews) },
-      ]"
-      image="/landing/my-work-list.webp"
-      :image-alt="t(l.myWorkAlt)"
-      flip
-    />
-
-    <LandingFeature
       :id="LandingSectionId.keyboard"
-      number="03"
+      number="05"
       :kicker="t(l.keyboardKicker)"
       :title="t(l.keyboardTitle)"
       :body="t(l.keyboardBody)"
@@ -127,7 +101,7 @@ const keys = [
     </LandingFeature>
 
     <LandingFeature
-      number="04"
+      number="06"
       :kicker="t(l.faithfulKicker)"
       :title="t(l.faithfulTitle)"
       :body="t(l.faithfulBody)"

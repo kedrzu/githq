@@ -109,11 +109,12 @@ function onEscape(event: KeyboardEvent) {
 </template>
 
 <style lang="scss" module="css">
-// T18's height, whatever the list holds, so filtering doesn't move the footer.
+// A fixed height, whatever the list holds, so filtering doesn't move the footer: T18's 535px at the least, growing
+// with the window so a long list scrolls less.
 .trackPickerDialog {
   display: flex;
   flex-direction: column;
-  height: 535px;
+  height: max(535px, 70vh);
   max-height: 78vh;
   outline: none;
 }

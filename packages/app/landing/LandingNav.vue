@@ -1,4 +1,4 @@
-<!-- The landing page's top bar (githq.pen "Landing — githq.dev", Nav): the wordmark, links to the page's sections, the repository on GitHub and "Sign in". On a narrow page the links and the repository fold into a menu behind a button. -->
+<!-- The landing page's top bar (githq.pen "Landing — githq.dev", Nav), pinned to the top as the page scrolls: the wordmark, links to the page's sections, the repository on GitHub and "Sign in". On a narrow page the links and the repository fold into a menu behind a button. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Github, Menu, X } from 'lucide-vue-next';
@@ -22,7 +22,7 @@ const menuOpen = ref(false);
 
 const links = [
   { id: LandingSectionId.features, label: l.features },
-  { id: LandingSectionId.keyboard, label: l.keyboard },
+  { id: LandingSectionId.compare, label: l.compare },
   { id: LandingSectionId.howItWorks, label: l.howItWorks },
   { id: LandingSectionId.openSource, label: l.openSource },
 ];
@@ -117,7 +117,13 @@ const links = [
 .landingNav {
   @include landing-gutter;
 
+  position: sticky;
+  top: 0;
+  // Above the sections' screenshots and what they lift over them (a toast).
+  z-index: 10;
+  background: rgba($color-bg, 0.85);
   border-bottom: 1px solid $color-border;
+  backdrop-filter: blur(12px);
 
   @include landing-mobile {
     padding-block: 14px;
@@ -129,7 +135,7 @@ const links = [
   gap: $spacing-24;
   align-items: center;
   justify-content: space-between;
-  min-height: 68px;
+  min-height: $landing-nav-height;
 
   @include landing-mobile {
     min-height: 34px;

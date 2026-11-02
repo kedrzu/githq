@@ -27,7 +27,7 @@ test('a tracked repository is grouped by milestone, and as a board by issue type
     await expect(repository.rows('No type')).toHaveText([/Document the setup/, /Fix the crash on start/]);
 });
 
-test('coming back to a repository opens the tab it was left on, and an address naming a tab is obeyed', async ({
+test("a repository's link opens the tab it was left on, and an address naming a tab is obeyed", async ({
     page,
     github,
 }) => {
@@ -37,6 +37,8 @@ test('coming back to a repository opens the tab it was left on, and an address n
 
     await shell.myWorkLink('My work').click();
     await expect(page).toHaveURL('/');
+    // The link itself names the tab, so the page opens on it rather than switching to it after a first paint.
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveAttribute('href', `/${SAMPLE_REPOSITORY}/pulls`);
     await shell.tracked(SAMPLE_REPOSITORY).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
 

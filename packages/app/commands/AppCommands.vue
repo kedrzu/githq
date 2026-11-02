@@ -24,6 +24,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
+import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
@@ -31,7 +32,7 @@ import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
-import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
@@ -52,6 +53,7 @@ const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
 const update = useService(AppUpdate);
+const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
 const openItem = useOpenItem();
@@ -219,7 +221,7 @@ function getPlaces(): NavigationPlace[] {
       group: 'repositories',
       kind: 'repository',
       title: tracked.nameWithOwner,
-      path: getRepositoryPath(tracked.nameWithOwner),
+      path: repositoryTabs.getPath(tracked.nameWithOwner),
     });
   }
 
@@ -249,7 +251,7 @@ function navigate(result: NavigationResult) {
       void router.push(result.place.path);
       return;
     case 'repository':
-      void router.push(getRepositoryPath(result.nameWithOwner));
+      void router.push(repositoryTabs.getPath(result.nameWithOwner));
       return;
     case 'item':
       openItem(result.item);
