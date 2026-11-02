@@ -1,0 +1,165 @@
+import type { TestGraphQLRequest, TestRestAnswer } from './createTestSession.js';
+
+/** A workflow of the fake GitHub's repository. */
+export interface ActionsWorldWorkflow {
+    readonly id: number;
+    readonly name: string;
+    /** `active` unless the test turns it off (`disabled_manually`, …). */
+    readonly state: string;
+}
+
+/** A run of the fake GitHub's repository; `run_number` and the URLs are made from its id. */
+export interface ActionsWorldRun {
+    readonly id: number;
+    readonly workflowId: number;
+    readonly headBranch: string | null;
+    readonly event: string;
+    readonly status: string;
+    readonly conclusion: string | null;
+    /** ISO. */
+    readonly createdAt: string;
+}
+
+/** A repository's GitHub Actions in the fake GitHub; the test changes it between polls. */
+export interface ActionsWorldRepository {
+    defaultBranch: string;
+    workflows: ActionsWorldWorkflow[];
+    /** In any order: the lists answer the newest first. */
+    runs: ActionsWorldRun[];
+    /** GitHub answers the repository's Actions with this error status instead (403, 404, 401, …); `null` for none. */
+    refusal: number | null;
+}
+
+/**
+ * GitHub Actions in the fake GitHub, answering what `WorkflowSync` asks: a repository's latest runs, the repository
+ * itself (its default branch), its workflows and a workflow's runs (by `branch`, a page at a time with a `Link` to
+ * the next). Each answer's ETag is a hash of its body, answered `304` while it is the one sent. A repository the test
+ * never set up has no workflows, on `main`.
+ */
+export interface ActionsWorld {
+    readonly repositories: Map<string, ActionsWorldRepository>;
+    /** The repository's Actions, set up empty the first time. */
+    repository(nameWithOwner: string): ActionsWorldRepository;
+    /** The answer to an Actions request or a repository's `GET`; `undefined` for any other. */
+    answerRest(request: TestGraphQLRequest): TestRestAnswer | undefined;
+}
+
+const API = 'https://api.github.com';
+
+/** Creates the fake GitHub's Actions with no workflows anywhere. */
+export function createActionsWorld(): ActionsWorld {
+    const world: ActionsWorld = { repositories: new Map(), repository, answerRest };
+    return world;
+
+    function repository(nameWithOwner: string) {
+        let found = world.repositories.get(nameWithOwner);
+        if (!found) {
+            found = { defaultBranch: 'main', workflows: [], runs: [], refusal: null };
+            world.repositories.set(nameWithOwner, found);
+        }
+
+        return found;
+    }
+
+    function answerRest(request: TestGraphQLRequest): TestRestAnswer | undefined {
+        if (!request.operation.startsWith('GET ')) {
+            return undefined;
+        }
+
+        const path = request.operation.slice('GET '.length);
+        const match =
+            /^\/repos\/([^/]+\/[^/]+)(\/actions\/runs|\/actions\/workflows|\/actions\/workflows\/(\d+)\/runs)?$/.exec(
+                path,
+            );
+        const nameWithOwner = match?.[1];
+        if (!match || nameWithOwner === undefined) {
+            return undefined;
+        }
+
+        const found = repository(nameWithOwner);
+        const { variables } = request;
+        const perPage = Number(variables.per_page ?? 30);
+        if (match[2] === undefined) {
+            return conditional(request, { default_branch: found.defaultBranch });
+        }
+
+        if (found.refusal !== null) {
+            return { status: found.refusal, body: { message: 'Refused' } };
+        }
+
+        if (match[2] === '/actions/runs') {
+            const runs = newestFirst(found.runs).slice(0, perPage);
+            return conditional(request, { total_count: found.runs.length, workflow_runs: runs.map(toRestRun) });
+        }
+
+        if (match[2] === '/actions/workflows') {
+            return conditional(request, {
+                total_count: found.workflows.length,
+                workflows: found.workflows.map(workflow => ({
+                    id: workflow.id,
+                    node_id: `W_${workflow.id}`,
+                    name: workflow.name,
+                    path: `.github/workflows/${workflow.name.toLowerCase()}.yml`,
+                    state: workflow.state,
+                    html_url: `https://github.com/${nameWithOwner}/actions/workflows/${workflow.id}`,
+                })),
+            });
+        }
+
+        const workflowId = Number(match[3]);
+        const branch = typeof variables.branch === 'string' ? variables.branch : null;
+        const matching = newestFirst(found.runs).filter(
+            run => run.workflowId === workflowId && (branch === null || run.headBranch === branch),
+        );
+        const page = Number(variables.page ?? 1);
+        const runs = matching.slice((page - 1) * perPage, page * perPage);
+        const answer = conditional(request, { total_count: matching.length, workflow_runs: runs.map(toRestRun) });
+        if (page * perPage >= matching.length) {
+            return answer;
+        }
+
+        const next = new URL(`${API}${path}`);
+        if (branch !== null) {
+            next.searchParams.set('branch', branch);
+        }
+
+        next.searchParams.set('per_page', String(perPage));
+        next.searchParams.set('page', String(page + 1));
+        return { ...answer, link: `<${next.href}>; rel="next"` };
+    }
+}
+
+/** `body` with an ETag hashed from it, or a 304 when the request sent that ETag. */
+function conditional(request: TestGraphQLRequest, body: unknown): TestRestAnswer {
+    const etag = `"${hash(JSON.stringify(body))}"`;
+    return request.variables.ifNoneMatch === etag ? { status: 304, etag } : { status: 200, etag, body };
+}
+
+function newestFirst(runs: readonly ActionsWorldRun[]) {
+    return runs.toSorted((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id);
+}
+
+function toRestRun(run: ActionsWorldRun) {
+    return {
+        id: run.id,
+        workflow_id: run.workflowId,
+        run_number: run.id,
+        head_branch: run.headBranch,
+        head_sha: `sha${run.id}`,
+        event: run.event,
+        status: run.status,
+        conclusion: run.conclusion,
+        created_at: run.createdAt,
+        html_url: `https://github.com/acme/web/actions/runs/${run.id}`,
+    };
+}
+
+/** A short hash of `text` (djb2), as GitHub's ETags are hashes of the body. */
+function hash(text: string) {
+    let value = 5381;
+    for (const char of text) {
+        value = (Math.imul(value, 33) ^ (char.codePointAt(0) ?? 0)) >>> 0;
+    }
+
+    return value.toString(16);
+}

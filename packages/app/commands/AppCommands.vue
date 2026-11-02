@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -23,6 +23,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
+import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
@@ -30,8 +31,9 @@ import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
-import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import * as l from './AppCommands.loc.js';
 import CommandMenu from './CommandMenu.vue';
@@ -50,6 +52,7 @@ const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
 const update = useService(AppUpdate);
+const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
 const openItem = useOpenItem();
@@ -181,6 +184,13 @@ function getPlaces(): NavigationPlace[] {
       detail: t(l.myWork),
       path: getMyWorkGroupPath(group),
     })),
+    {
+      id: 'workflows',
+      group: 'goTo',
+      kind: 'workflows',
+      title: t(l.brokenWorkflows),
+      path: BROKEN_WORKFLOWS_PATH,
+    },
   ];
   for (const project of pendingUntracks.projects) {
     places.push({
@@ -210,7 +220,7 @@ function getPlaces(): NavigationPlace[] {
       group: 'repositories',
       kind: 'repository',
       title: tracked.nameWithOwner,
-      path: getRepositoryPath(tracked.nameWithOwner),
+      path: repositoryTabs.getPath(tracked.nameWithOwner),
     });
   }
 
@@ -240,7 +250,7 @@ function navigate(result: NavigationResult) {
       void router.push(result.place.path);
       return;
     case 'repository':
-      void router.push(getRepositoryPath(result.nameWithOwner));
+      void router.push(repositoryTabs.getPath(result.nameWithOwner));
       return;
     case 'item':
       openItem(result.item);

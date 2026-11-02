@@ -17,6 +17,7 @@ import {
   Layers,
   Settings,
   SquareKanban,
+  Workflow,
   Zap,
 } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
@@ -81,6 +82,7 @@ interface Row extends FilterListRow {
 
 const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   myWork: Inbox,
+  workflows: Workflow,
   project: SquareKanban,
   view: Eye,
   repository: BookMarked,

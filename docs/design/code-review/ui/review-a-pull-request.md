@@ -42,6 +42,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
      in a sidebar the user switches on and off. The choice is remembered, typically on for a large screen and off
      for a laptop.
 3. **The view options:**
+
    - split (before and after side by side) or unified;
    - hide whitespace changes;
    - show comments in collapsed files (on by default);

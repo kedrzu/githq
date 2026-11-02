@@ -1,3 +1,4 @@
+import { answerRepositoryActions, NO_ACTIONS } from '../github/answerRepositoryActions.js';
 import type { GitHubMock, GitHubOperationData } from '../github/GitHubMock.js';
 import { GitHubPartialAnswer } from '../github/GitHubMock.js';
 
@@ -73,7 +74,7 @@ export function answerTrackingCandidates(github: GitHubMock, params: TrackingCan
 
 /**
  * Answers the first download of the tracked repositories `names` with none of their items — every page empty —
- * and their change polls with no change. `hold` keeps the download's answers back until it resolves, to see it
+ * and their change polls with no change; they have no workflows. `hold` keeps the download's answers back until it resolves, to see it
  * under way.
  */
 export function answerEmptyRepositories(
@@ -83,6 +84,7 @@ export function answerEmptyRepositories(
 ): void {
     for (const name of names) {
         github.rest('GET', `/repos/${name}/issues`, () => ({ status: 200, json: [], etag: `"${name}"` }));
+        answerRepositoryActions(github, name, () => NO_ACTIONS);
     }
 
     const page = { totalCount: 0, pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] };

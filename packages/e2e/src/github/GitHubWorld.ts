@@ -29,7 +29,10 @@ import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 import { escapeHtml } from '../utils/escapeHtml.js';
+import { etagOf } from '../utils/etagOf.js';
 
+import { answerRepositoryActions } from './answerRepositoryActions.js';
+import type { GitHubActionsRun, GitHubActionsWorkflow } from './answerRepositoryActions.js';
 import { GitHubPartialAnswer } from './GitHubMock.js';
 import type { GitHubGraphQLAnswer, GitHubMock, GitHubOperationData, GitHubSearchHit } from './GitHubMock.js';
 
@@ -158,6 +161,8 @@ export interface GitHubWorldRepositoryParams {
     readonly issuesDisabled?: boolean;
     /** Its issue templates and forms; none (blank issues allowed) by default. */
     readonly templates?: GitHubWorldTemplates;
+    /** What GitHub calls its default branch; `main` by default. */
+    readonly defaultBranch?: string;
 }
 
 /** What a repository of the world asks a new issue to start from. */
@@ -177,6 +182,29 @@ export interface GitHubWorldMarkdownTemplate {
     readonly title?: string;
     readonly body: string;
     readonly labels?: readonly string[];
+}
+
+/** A GitHub Actions workflow of a repository ({@link GitHubWorld.workflow}). */
+export interface GitHubWorldWorkflowParams {
+    /** `owner/name`. */
+    readonly repository: string;
+    /** `Deploy`. */
+    readonly name: string;
+    /** `active` by default; `disabled_manually` for one turned off. */
+    readonly state?: string;
+    readonly runs?: readonly GitHubWorldRunParams[];
+}
+
+/** A run of a workflow ({@link GitHubWorld.workflow}, {@link GitHubWorld.workflowRun}). */
+export interface GitHubWorldRunParams {
+    /** `success`, `failure`, `cancelled`, …; `null` while it runs. */
+    readonly conclusion: string | null;
+    /** How long ago it was created. */
+    readonly minutesAgo: number;
+    /** The branch or tag it ran on; the repository's default branch by default. */
+    readonly branch?: string;
+    /** What started it: `push` by default, `pull_request`, `schedule`, … */
+    readonly event?: string;
 }
 
 /** An organisation the viewer belongs to ({@link GitHubWorld.organization}). */
@@ -282,6 +310,9 @@ interface WorldRepository {
     isArchived: boolean;
     issuesDisabled: boolean;
     templates: GitHubWorldTemplates;
+    defaultBranch: string;
+    workflows: GitHubActionsWorkflow[];
+    runs: GitHubActionsRun[];
 }
 
 interface WorldProject {
@@ -449,7 +480,8 @@ const PROJECT_FIRST_PAGE = 100;
  * (`GET /repos/{o}/{r}/issues?since=`), a tracked project's download and re-reads (`ProjectFull`,
  * `ProjectSchema`, `ProjectItems` — `updated:>=` by day, any other query matched against the titles, as GitHub
  * answers a saved view's free text) and its change signal (`GET /users|orgs/{o}/projectsV2/{n}`). Both REST
- * answers carry an ETag that is a hash of what they say, answered `304` while it is the one the app sent back.
+ * answers carry an ETag that is a hash of what they say, answered `304` while it is the one the app sent back. A
+ * repository's GitHub Actions are answered the same way: none until a test gives it workflows ({@link workflow}).
  *
  * It answers the app's edits as GitHub does: each mutation changes the world and answers with the state it
  * then has — unless the test said GitHub fails it ({@link failEdit}). {@link holdEdits} keeps their answers
@@ -467,6 +499,8 @@ export class GitHubWorld {
     private readonly failures = new Map<string, GitHubWorldFailure>();
     private readonly received: GitHubWorldEdit[] = [];
     private heldEdits: Promise<void> | null = null;
+    private nextWorkflowId = 1;
+    private nextRunId = 1;
     /** The mock it answers for, once installed: a repository or project added later is answered too. */
     private github: GitHubMock | null = null;
 
@@ -489,6 +523,45 @@ export class GitHubWorld {
         repository.isArchived = params.isArchived ?? repository.isArchived;
         repository.issuesDisabled = params.issuesDisabled ?? repository.issuesDisabled;
         repository.templates = params.templates ?? repository.templates;
+        repository.defaultBranch = params.defaultBranch ?? repository.defaultBranch;
+    }
+
+    /**
+     * Gives the repository a GitHub Actions workflow with its runs — a broken one when its latest run on the default
+     * branch failed — or, for a workflow it has by that name, adds the runs. Returns the workflow's id.
+     */
+    workflow(params: GitHubWorldWorkflowParams): number {
+        const repository = this.getRepository(params.repository);
+        let workflow = repository.workflows.find(candidate => candidate.name === params.name);
+        if (!workflow) {
+            workflow = { id: this.nextWorkflowId++, name: params.name, state: params.state ?? 'active' };
+            repository.workflows.push(workflow);
+        }
+
+        for (const run of params.runs ?? []) {
+            this.workflowRun(params.repository, params.name, run);
+        }
+
+        return workflow.id;
+    }
+
+    /** A run of the repository's workflow `name`, as GitHub records one between two polls. */
+    workflowRun(nameWithOwner: string, name: string, run: GitHubWorldRunParams): void {
+        const repository = this.getRepository(nameWithOwner);
+        const workflow = repository.workflows.find(candidate => candidate.name === name);
+        if (!workflow) {
+            throw new Error(`No workflow ${name} in ${nameWithOwner}`);
+        }
+
+        repository.runs.push({
+            id: this.nextRunId++,
+            workflowId: workflow.id,
+            headBranch: run.branch ?? repository.defaultBranch,
+            event: run.event ?? 'push',
+            status: run.conclusion === null ? 'in_progress' : 'completed',
+            conclusion: run.conclusion,
+            createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
+        });
     }
 
     /** The issue of `repository` titled `title`, as GitHub has it now; `undefined` when there is none. */
@@ -1049,9 +1122,11 @@ export class GitHubWorld {
 
     /**
      * Answers a repository's change list (`GET /repos/{o}/{r}/issues?since=`): its issues and pull requests updated
-     * since then, the most recently updated first, with an ETag hashed from them — `304` while it is the one sent.
+     * since then, the most recently updated first, with an ETag hashed from them — `304` while it is the one sent —
+     * and its GitHub Actions ({@link answerRepositoryActions}): no workflows until a test gives it some.
      */
     private answerRepositoryPoll(github: GitHubMock, repository: WorldRepository) {
+        answerRepositoryActions(github, repository.nameWithOwner, () => repository);
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
             const json = [...this.items.values()]
@@ -1655,6 +1730,9 @@ export class GitHubWorld {
                 isArchived: false,
                 issuesDisabled: false,
                 templates: {},
+                defaultBranch: 'main',
+                workflows: [],
+                runs: [],
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {
@@ -2140,16 +2218,6 @@ function restrictedError(login: string, path: readonly (number | string)[]): Git
         path,
         message: `Although you appear to have the correct authorization credentials, the \`${login}\` organization has enabled OAuth App access restrictions, meaning that data access to third-parties is limited.`,
     };
-}
-
-/** An ETag hashed from what an answer says, as GitHub's are: the same while nothing it says changes. */
-function etagOf(value: unknown): string {
-    let hash = 5381;
-    for (const char of JSON.stringify(value)) {
-        hash = (Math.imul(hash, 33) ^ (char.codePointAt(0) ?? 0)) >>> 0;
-    }
-
-    return `W/"${hash.toString(16)}"`;
 }
 
 /** GitHub's error for each id of a `nodes(ids:)` read it cannot resolve. */

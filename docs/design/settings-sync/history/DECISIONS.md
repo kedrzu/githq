@@ -231,3 +231,39 @@ order.
 - Removing an entry on untrack — it would forget that the user untracked it (owner).
 - Keying repositories by node id — the app identifies them by name throughout
   (`packages/app/tracking/TrackingStore.ts:144`), and the id is stored if renames turn out to matter.
+
+Retired 2026-11-02, new fields kept without raising `version` in [D13](../DECISIONS.md#d13).
+
+**The file is `settings.json`: formatted JSON with a stable key order, a `version` number at the root, next to `repositories` and
+`projects`, arrays in the user's order. An entry says what it is and whether it is tracked, `tracking: true`; entries are never
+removed, because repositories will have settings of their own later and untracking must not throw them away, and so that an
+untracked item doesn't come back when lists are combined. `version` goes up with any new field, and a build that meets a higher number stops syncing ([D12](#d12)) until reloaded.**
+(2026-11-01, owner for `version`, the root layout and `tracking`; projects the same way as repositories, owner; the rest is the
+design agent's proposal)
+
+```json
+{
+  "version": 1,
+  "repositories": [
+    { "nameWithOwner": "kedrzu/githq", "id": "R_kgDO…", "tracking": true },
+    { "nameWithOwner": "acme/api", "id": "R_kgDO…", "tracking": false }
+  ],
+  "projects": [
+    { "id": "PVT_kw…", "owner": "kedrzu", "ownerKind": "user", "number": 1, "title": "Roadmap", "tracking": true }
+  ]
+}
+```
+
+**Why.** A reader on github.com gets a readable diff per change, and an older tab can't overwrite a field it doesn't know. A repository tracked again returns to its old place in the sidebar, which is the entries with `tracking: true`, in
+order.
+
+**Rejected.**
+
+- A separate `tracked` object, and per-list options nested in entries or in a `lists` map ([history](history/DECISIONS.md#d13)) —
+  owner; view details are local ([D7](#d7)).
+- Removing an entry on untrack and keeping only what is tracked — repositories will have settings later, which must survive
+  untracking (owner).
+- Preserving unknown keys so older tabs keep syncing past a new field ([history](history/DECISIONS.md#d13)) — nothing to preserve
+  until a second kind of setting exists, and reloading is cheap.
+- Keying repositories by node id — the app identifies them by name throughout
+  (`packages/app/tracking/TrackingStore.ts:144`), and the id is stored if renames turn out to matter.

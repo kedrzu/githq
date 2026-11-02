@@ -7,6 +7,8 @@ import type {
 
 import type { ProjectFieldOption } from '@/store/ItemDetailTypes.js';
 
+import { createActionsWorld } from './createActionsWorld.js';
+import type { ActionsWorld } from './createActionsWorld.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from './createTestSession.js';
 
 /** An issue or pull request of the fake GitHub. */
@@ -45,6 +47,8 @@ export interface TrackingWorld {
     readonly failing: Set<string>;
     /** Repositories whose change list GitHub refuses (403), as an organisation restricting OAuth Apps does. */
     readonly refusedRepositories: Set<string>;
+    /** The repositories' GitHub Actions: none anywhere until the test adds some. */
+    readonly actions: ActionsWorld;
     answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined;
     answerRest(request: TestGraphQLRequest): TestRestAnswer | undefined;
 }
@@ -79,6 +83,7 @@ export function createTrackingWorld(): TrackingWorld {
             updatedAt: '2026-10-30T12:00:00Z',
         },
         refusedRepositories: new Set(),
+        actions: createActionsWorld(),
         assigned: [],
         failing: new Set(),
         answer,
@@ -212,7 +217,7 @@ export function createTrackingWorld(): TrackingWorld {
                   };
         }
 
-        return undefined;
+        return world.actions.answerRest(request);
     }
 
     /** The stack the world's pull requests say they are in, as `PullRequestStacks` reads it; `null` for none. */
