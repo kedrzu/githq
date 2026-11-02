@@ -61,6 +61,8 @@ defineSlots<{
   title?(): unknown;
   /** After the title: tabs, the actions of a selection. */
   default?(): unknown;
+  /** At the toolbar's end, on a `bare` one only — its room is not measured: a tab's key hints. */
+  end?(): unknown;
   /** More in the display options, after the options that didn't fit the toolbar (why the board is unavailable). */
   display?(): unknown;
   /** At the top of the display options: what they are changed from (a project's saved view). */
@@ -288,6 +290,10 @@ function change(changes: Partial<ListViewOptions>) {
       ref="controls"
       :class="css.listToolbar_controls"
     >
+      <slot
+        v-if="bare"
+        name="end"
+      />
       <ListToolbarControl
         v-for="option in onToolbar"
         :key="option.key"

@@ -30,6 +30,10 @@ export interface SampleRun {
     readonly branch?: string;
     /** `push` unless given; `pull_request` for one a pull request started. */
     readonly event?: string;
+    /** Its title (the commit's or the pull request's); none unless given. */
+    readonly title?: string;
+    /** How long it ran, in seconds, from its creation; not known unless given. */
+    readonly seconds?: number;
 }
 
 /** A sample workflow and its runs. */
@@ -46,6 +50,11 @@ export interface SampleWorkflowParams {
     readonly repository?: string;
     /** Its runs were read, though none is given: GitHub lists none. */
     readonly read?: boolean;
+    /**
+     * Where its runs' ids and numbers start counting, 0 unless given: older runs read apart from the kept ones count
+     * from below it (`-20`).
+     */
+    readonly firstRun?: number;
 }
 
 /**
@@ -107,20 +116,32 @@ function sampleStored(repository: string, workflows: readonly SampleWorkflowPara
     };
 }
 
+/** A sample workflow's runs, the newest first, as GitHub lists them; in `fitloop/webapp` unless its `repository` is given. */
+export function sampleWorkflowRuns(params: SampleWorkflowParams): readonly GitHubWorkflowRun[] {
+    return sampleStoredWorkflow(params.repository ?? 'fitloop/webapp', params).runs;
+}
+
 function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams): StoredWorkflow {
     const runs = params.runs.map((sample, index): GitHubWorkflowRun => {
-        const id = params.id * 1000 + index + 1;
+        const number = (params.firstRun ?? 0) + index;
+        const id = params.id * 1000 + number + 1;
+        const createdAt = SAMPLE_WORKFLOWS_NOW - toMs(sample.ago);
         return {
             id,
             workflowId: params.id,
-            runNumber: 200 + index,
+            runNumber: 200 + number,
             headBranch: sample.branch ?? 'main',
             event: sample.event ?? 'push',
             status: sample.conclusion === null ? 'in_progress' : 'completed',
             conclusion: sample.conclusion,
-            createdAt: new Date(SAMPLE_WORKFLOWS_NOW - toMs(sample.ago)).toISOString(),
+            createdAt: new Date(createdAt).toISOString(),
             htmlUrl: `https://github.com/${repository}/actions/runs/${id}`,
             headSha: `${id}`.padStart(40, '0'),
+            ...(sample.title !== undefined && { displayTitle: sample.title }),
+            ...(sample.seconds !== undefined && {
+                runStartedAt: new Date(createdAt).toISOString(),
+                updatedAt: new Date(createdAt + sample.seconds * 1000).toISOString(),
+            }),
         };
     });
 

@@ -22,6 +22,9 @@ const RUN = {
     workflow_id: 402_954_726,
     html_url: 'https://github.com/kedrzu/githq/actions/runs/18901234567',
     created_at: '2026-11-01T03:00:00Z',
+    display_title: 'Release v0.1.0-rc.3',
+    run_started_at: '2026-11-01T03:00:05Z',
+    updated_at: '2026-11-01T03:04:12Z',
 };
 
 test('asks one exact branch with the held ETag and reports 304 while its runs did not move', async () => {
@@ -67,6 +70,9 @@ test('returns one page of runs with the next page URL from the Link header', asy
                 createdAt: '2026-11-01T03:00:00Z',
                 htmlUrl: 'https://github.com/kedrzu/githq/actions/runs/18901234567',
                 headSha: '61d449d0c1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6',
+                displayTitle: 'Release v0.1.0-rc.3',
+                runStartedAt: '2026-11-01T03:00:05Z',
+                updatedAt: '2026-11-01T03:04:12Z',
             },
         ],
         nextPageUrl: NEXT_URL,

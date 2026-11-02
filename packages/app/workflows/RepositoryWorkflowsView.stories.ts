@@ -1,16 +1,73 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 import { defineComponent, h } from 'vue';
 
-import { SAMPLE_TAB_WORKFLOWS, SAMPLE_WORKFLOWS_NOW, sampleStoredWorkflows } from '@/testing/sampleWorkflows.js';
-import type { SampleRepositoryParams } from '@/testing/sampleWorkflows.js';
+import {
+    SAMPLE_TAB_WORKFLOWS,
+    SAMPLE_WORKFLOWS_NOW,
+    sampleStoredWorkflows,
+    sampleWorkflowRuns,
+} from '@/testing/sampleWorkflows.js';
+import type { SampleRepositoryParams, SampleWorkflowParams } from '@/testing/sampleWorkflows.js';
 
 import { buildRepositoryWorkflows } from './buildRepositoryWorkflows.js';
+import { buildUnfoldedWorkflow } from './buildUnfoldedWorkflow.js';
 import RepositoryWorkflowsView from './RepositoryWorkflowsView.vue';
+import type { WorkflowRunHistoryState } from './WorkflowRunHistory.js';
 import type { WorkflowRefSettings } from './WorkflowTypes.js';
 
 const WEBAPP = 'fitloop/webapp';
 const DEFAULT: WorkflowRefSettings = { defaultBranch: true, refs: [] };
+
+/** Probe as W3b unfolds it: its kept runs on `main`, a branch's and a pull request's, one going. */
+const PROBE: SampleWorkflowParams = {
+    id: 5,
+    name: 'Probe',
+    runs: [
+        { conclusion: 'success', ago: '3h', title: 'Fix the timezone on recurring classes', seconds: 251 },
+        {
+            conclusion: 'cancelled',
+            ago: '2h',
+            branch: 'chore/probe-target',
+            event: 'workflow_dispatch',
+            title: 'Try a second probe target',
+        },
+        {
+            conclusion: 'failure',
+            ago: '1h',
+            branch: 'sofiab/tokens',
+            event: 'pull_request',
+            title: 'Move design tokens into the ui package',
+            seconds: 242,
+        },
+        { conclusion: 'success', ago: '14m', title: 'Bump vite to 7.1.7', seconds: 192 },
+        { conclusion: null, ago: '1m', title: 'Show the waiting list on the class page' },
+    ],
+};
+/** Probe's older runs, read on demand. */
+const PROBE_OLDER = sampleWorkflowRuns({
+    ...PROBE,
+    firstRun: -3,
+    runs: [
+        {
+            conclusion: 'success',
+            ago: '3d',
+            title: 'Add a stale-while-revalidate cache to the API client',
+            seconds: 178,
+        },
+        { conclusion: 'success', ago: '2d', branch: 'v0.1.0', title: 'Release v0.1.0', seconds: 205 },
+        {
+            conclusion: 'failure',
+            ago: '1d',
+            branch: 'sofiab/tokens',
+            event: 'pull_request',
+            title: 'Move design tokens into the ui package',
+            seconds: 64,
+        },
+    ],
+});
+const UNFOLDED_WORKFLOWS = SAMPLE_TAB_WORKFLOWS.map(workflow => (workflow.id === PROBE.id ? PROBE : workflow));
 
 const meta = {
     component: RepositoryWorkflowsView,
@@ -18,7 +75,10 @@ const meta = {
         nameWithOwner: WEBAPP,
         now: SAMPLE_WORKFLOWS_NOW,
         list: sampleList({ workflows: SAMPLE_TAB_WORKFLOWS }),
-        onOpen: fn(),
+        onOpenRun: fn(),
+        onUnfold: fn(),
+        onFilter: fn(),
+        onReadMore: fn(),
         onSettings: fn(),
         onOpenOnGitHub: fn(),
     },
@@ -82,6 +142,52 @@ export const Refused: Story = {
         list: sampleList({ workflows: SAMPLE_TAB_WORKFLOWS, unavailable: { reason: 'refused', status: 403 } }),
     },
 };
+
+/** W3b: Probe unfolded, its kept runs and the older ones read so far; still reading. */
+export const Unfolded: Story = {
+    args: {
+        list: sampleList({ workflows: UNFOLDED_WORKFLOWS }),
+        unfolded: sampleUnfolded({ runs: PROBE_OLDER, status: 'reading', complete: false }),
+    },
+};
+
+/** W3b: Probe's runs on one branch, every page read. */
+export const UnfoldedOnRef: Story = {
+    args: {
+        list: sampleList({ workflows: UNFOLDED_WORKFLOWS }),
+        unfolded: sampleUnfolded(
+            { runs: PROBE_OLDER.filter(run => run.headBranch === 'sofiab/tokens'), status: 'idle', complete: true },
+            'sofiab/tokens',
+        ),
+    },
+};
+
+/** W3b: reading Probe's older runs failed; the rest of the tab still works. */
+export const UnfoldedReadFailed: Story = {
+    args: {
+        list: sampleList({ workflows: UNFOLDED_WORKFLOWS }),
+        unfolded: sampleUnfolded({ runs: [], status: 'failed', complete: false }),
+    },
+};
+
+/** W3b: everything kept shown, older runs not asked yet: the end in view asks for them. */
+export const UnfoldedNotRead: Story = {
+    args: {
+        list: sampleList({ workflows: UNFOLDED_WORKFLOWS }),
+        unfolded: sampleUnfolded({ runs: [], status: 'idle', complete: false }),
+    },
+};
+
+function sampleUnfolded(history: WorkflowRunHistoryState, ref: string | null = null) {
+    const stored = assertValue(sampleStoredWorkflows({ nameWithOwner: WEBAPP, workflows: UNFOLDED_WORKFLOWS }));
+    return buildUnfoldedWorkflow({
+        stored,
+        workflowId: PROBE.id,
+        ref,
+        history,
+        anyRef: ref === null ? history.runs : PROBE_OLDER,
+    });
+}
 
 function sampleList(repository: Omit<SampleRepositoryParams, 'nameWithOwner'>, settings = DEFAULT) {
     return buildRepositoryWorkflows({

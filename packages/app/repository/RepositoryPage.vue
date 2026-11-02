@@ -27,6 +27,7 @@ import { getProjectPath, getRepositoryPath, getRepositoryTab } from '@/tracking/
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { buildRepositoryWorkflows } from '@/workflows/buildRepositoryWorkflows.js';
+import RepositoryWorkflowsHints from '@/workflows/RepositoryWorkflowsHints.vue';
 import RepositoryWorkflowsTab from '@/workflows/RepositoryWorkflowsTab.vue';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
@@ -55,6 +56,8 @@ const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
 
 const state = ref<RepositoryState>('open');
+/** The workflow unfolded in the Workflows tab (actions W3b), which the toolbar's key hints follow; `null` with none. */
+const unfoldedWorkflow = ref<string | null>(null);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
@@ -80,6 +83,11 @@ if (tab.value === 'all' && lastTab !== null) {
 } else {
   tabs.remember(repositoryName, tab.value);
 }
+
+// Another repository's workflows have nothing unfolded.
+watch(nameWithOwner, () => {
+  unfoldedWorkflow.value = null;
+});
 
 // Leaving, the address already names another repository or none, and this page's tab is not theirs.
 watch(tab, value => {
@@ -280,9 +288,16 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
   >
     <template #workflows>
       <RepositoryWorkflowsTab
+        v-model:unfolded="unfoldedWorkflow"
         :name-with-owner="nameWithOwner"
         :list="workflowList"
         :now="list.now"
+      />
+    </template>
+    <template #workflowsHints>
+      <RepositoryWorkflowsHints
+        v-if="workflowList.groups.length > 0"
+        :unfolded="unfoldedWorkflow !== null"
       />
     </template>
     <template #menu>

@@ -31,12 +31,14 @@ const props = withDefaults(
     standing?: WorkflowRowStanding | null;
     /** The runs its strip shows, oldest first; `null`: those on the refs with alerts. */
     runs?: readonly GitHubWorkflowRun[] | null;
+    /** Whether its runs are unfolded under it; `null` for a row that does not unfold. */
+    expanded?: boolean | null;
   }>(),
-  { moreRefCount: 0, repository: null, selected: false, standing: null, runs: null },
+  { moreRefCount: 0, repository: null, selected: false, standing: null, runs: null, expanded: null },
 );
 
 const emit = defineEmits<{
-  /** The row was clicked or its button pressed: the caller opens the workflow's latest failed run, or the workflow. */
+  /** The row was clicked or its button pressed: the caller opens the workflow's latest failed run, or its runs. */
   open: [];
 }>();
 
@@ -191,6 +193,7 @@ function describeWhen(createdAt: string) {
         type="button"
         :class="[css.workflowRow_name, workflow.state === 'disabled' && css.workflowRow_name_muted]"
         :aria-current="selected ? 'true' : undefined"
+        :aria-expanded="expanded ?? undefined"
         :aria-describedby="`${id}-status ${id}-result`"
         @click="emit('open')"
       >

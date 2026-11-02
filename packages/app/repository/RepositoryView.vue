@@ -127,6 +127,8 @@ defineSlots<{
   contextMenu?(props: ListContextMenuProps): unknown;
   /** The Workflows tab's body, under the toolbar. */
   workflows?(): unknown;
+  /** The Workflows tab's key hints, at the toolbar's end. */
+  workflowsHints?(): unknown;
 }>();
 
 const t = useTranslate();
@@ -257,6 +259,12 @@ function getTabCount(value: RepositoryTab) {
           :label="t(l.kinds)"
           :options="tabOptions"
         />
+        <template
+          v-if="tab === 'workflows'"
+          #end
+        >
+          <slot name="workflowsHints" />
+        </template>
       </ListToolbar>
 
       <slot

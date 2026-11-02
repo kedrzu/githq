@@ -68,6 +68,61 @@ test("a repository's Workflows tab lists every workflow — runs on any ref read
     expect((await popup).url()).toBe(`https://github.com${failedRun}`);
 });
 
+test('Enter unfolds a workflow in place — the kept runs at once, older ones read on demand, a pull request’s among them —, F narrows them to a ref, Enter opens one, ← folds', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    // 24 runs, more than the 20 the sync keeps: the 4 oldest are read only as the workflow unfolds.
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Probe',
+        runs: Array.from({ length: 22 }, (_, index) => ({ conclusion: 'success', minutesAgo: 600 - index * 20 })),
+    });
+    world.workflowRun(SAMPLE_REPOSITORY, 'Probe', {
+        conclusion: 'failure',
+        minutesAgo: 120,
+        branch: 'feature',
+        event: 'pull_request',
+    });
+    world.workflowRun(SAMPLE_REPOSITORY, 'Probe', { conclusion: 'success', minutesAgo: 5, branch: 'feature' });
+    await openTrackedWork(page, github, world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await expect(repository.root.getByText(/Other runs/u)).toBeVisible();
+    await page.keyboard.press('Enter');
+    const runs = repository.runsOf('Probe');
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'true');
+    await expect(runs.locator('button[data-mark]')).toHaveCount(24);
+    await expect(runs.locator('button[data-mark]').last()).toContainText(/^#1\s*main\s*push/u);
+    await expect(runs).toContainText(/#23\s*feature\s*pull_request/u);
+    await expect(repository.root.getByText(/Open run/u)).toBeVisible();
+
+    await page.keyboard.press('f');
+    await page.keyboard.type('feat');
+    await page.keyboard.press('Enter');
+    await expect(runs.getByRole('button', { name: 'feature', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(runs.locator('button[data-mark]')).toHaveCount(2);
+
+    const run = `/${SAMPLE_REPOSITORY}/actions/runs/24`;
+    github.web(run, () => ({ status: 200, body: '<title>Run</title>' }));
+    await page.keyboard.press('j');
+    const popup = page.waitForEvent('popup');
+    await page.keyboard.press('Enter');
+    expect((await popup).url()).toBe(`https://github.com${run}`);
+
+    // Esc shows every ref again, then folds.
+    await page.bringToFront();
+    await page.keyboard.press('Escape');
+    await expect(runs.locator('button[data-mark]')).toHaveCount(24);
+    await page.keyboard.press('ArrowLeft');
+    await expect(runs).toHaveCount(0);
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the tab', async ({
     page,
     github,

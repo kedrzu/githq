@@ -4,6 +4,10 @@ previous:
   en: Previous workflow
 open:
   en: Open workflow
+otherRuns:
+  en: Other runs
+fold:
+  en: Fold
 alertSettings:
   en: Alert settings
 openOnGitHub:

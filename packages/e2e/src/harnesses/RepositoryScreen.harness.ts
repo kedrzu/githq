@@ -77,6 +77,11 @@ export class RepositoryScreenHarness {
     }
 
     /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
+    /** The runs of the workflow `name` unfolded under its row (actions W3b): its ref filter and a button per run. */
+    runsOf(name: string): Locator {
+        return this.root.getByRole('group', { name: `Runs of ${name}`, exact: true });
+    }
+
     get alertsBar(): Locator {
         return this.root.getByTestId('workflow-alerts-bar');
     }

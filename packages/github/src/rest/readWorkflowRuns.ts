@@ -20,6 +20,12 @@ export interface GitHubWorkflowRun {
     readonly createdAt: string;
     readonly htmlUrl: string;
     readonly headSha: string;
+    /** What GitHub titles the run with: the commit's or the pull request's title. Absent from runs kept before it was read. */
+    readonly displayTitle?: string;
+    /** ISO; when this attempt started running. Absent when GitHub gives none, and from runs kept before it was read. */
+    readonly runStartedAt?: string;
+    /** ISO; when the run last changed — once completed, when it finished. Absent from runs kept before it was read. */
+    readonly updatedAt?: string;
 }
 
 /**
@@ -62,6 +68,9 @@ export function readWorkflowRuns(status: number, payload: unknown): GitHubWorkfl
             createdAt: entry.created_at,
             htmlUrl: entry.html_url,
             headSha: entry.head_sha,
+            ...(typeof entry.display_title === 'string' && { displayTitle: entry.display_title }),
+            ...(typeof entry.run_started_at === 'string' && { runStartedAt: entry.run_started_at }),
+            ...(typeof entry.updated_at === 'string' && { updatedAt: entry.updated_at }),
         });
     }
 
