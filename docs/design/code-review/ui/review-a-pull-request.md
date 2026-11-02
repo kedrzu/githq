@@ -63,7 +63,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
    - a reply in a thread, and resolving a thread;
    - submitting a review as a comment, an approval or a request for changes, with a summary.
 7. **Settings** (second step). One setting chooses what a comment does by default: go out at once as a single
-   comment, or join a draft review. It sits in the existing settings screen.
+   comment, or join a draft review. It sits in the Code review section of the settings screen.
 
 ## What's on each screen
 
@@ -203,7 +203,7 @@ threads CR15). Settled by the owner: the pending review's toolbar (CR35, CR36, D
 once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the keys CR29. States and failures:
 files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
-range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77.
+range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
 
 Still open, not settled by the screens:
 

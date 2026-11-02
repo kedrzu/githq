@@ -517,8 +517,9 @@ GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dia
 
 ## D34
 
-**The comment setting sits in Settings · Display as "Comments in a code review": Send it at once / Add it to a draft
-review. It is saved with the synced settings, like the rest of that tab.** (2026-11-02, owner: "synchronised"; CR77)
+**The comment setting sits in Settings, in a section of its own, Code review: Send it at once / Add it to a draft
+review. It is saved with the synced settings.** (2026-11-03, owner: "synchronised", and a section of its own once
+Settings became a column of sections; CR77, now in App · Settings)
 
 ## D35
 
