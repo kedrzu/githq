@@ -8,8 +8,8 @@ export type ItemPropertyName = 'Assignees' | 'Labels' | 'Milestone';
 
 /**
  * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel, the modal or on its
- * own page): its header with the item menu, the way through the list and the arrangement switch; its
- * properties, projects and reviewers; its comments and the comment box.
+ * own page): its header with the item menu, the way through the list and the arrangement switch; the map of
+ * the stack a pull request is in; its properties, projects and reviewers; its comments and the comment box.
  */
 export class ItemViewHarness {
     readonly page: Page;
@@ -53,6 +53,19 @@ export class ItemViewHarness {
     /** "Add to project". */
     get addToProjectButton(): Locator {
         return this.root.getByRole('button', { name: 'Add to project' });
+    }
+
+    /** The rows of the map of the stack an opened pull request is in (`StackMap`), first to last. */
+    get stackMapRows(): Locator {
+        return this.root
+            .getByRole('region', { name: 'The stack' })
+            .getByRole('list', { name: 'Pull requests of the stack' })
+            .getByRole('button');
+    }
+
+    /** The map's row of the opened pull request (`aria-current="true"`). */
+    get stackMapCurrent(): Locator {
+        return this.stackMapRows.and(this.root.locator('[aria-current="true"]'));
     }
 
     /** The comment box (`R`). */

@@ -373,6 +373,33 @@ test('a page on its way when its repository or project is untracked brings nothi
     expect(items.get('I_other')).toBeUndefined();
 });
 
+test('a stack a tracked project holds one pull request of is copied whole, and goes whole when the project is untracked', async () => {
+    const world = sampleWorld();
+    const stack = { id: 'ST_lib', number: 1, size: 2 };
+    for (const [id, position] of [
+        ['PR_lib_1', 1],
+        ['PR_lib_2', 2],
+    ] as const) {
+        world.items.set(id, {
+            ...samplePullRequestNode(id, { repository: 'other/lib', number: 10 + position, updatedAt: MONDAY }),
+            stack,
+            stackEntry: { position },
+        });
+    }
+
+    world.project.items = [...world.project.items, worldProjectItem('PVTI_4', nodeOf(world, 'PR_lib_2'), null)];
+    const { session, tracking, items } = await setup(world);
+    tracking.choose({ repositories: [], projects: TRACK_ALL.projects });
+    await session.clock.advance(60_000);
+
+    expect(graphql(session.github.requests)).toContain('PullRequestStacks ST_lib');
+    expect(items.get('PR_lib_1')).toMatchObject({ stack: { id: 'ST_lib', position: 1 } });
+
+    tracking.untrack({ kind: 'project', id: 'PVT_1' });
+    expect(items.get('PR_lib_2')).toBeUndefined();
+    expect(items.get('PR_lib_1')).toBeUndefined();
+});
+
 test('a project no longer tracked but still in the kept copy — and the rows only it held — go when the copy is read', async () => {
     const world = sampleWorld();
     const login = uniqueLogin();

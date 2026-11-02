@@ -73,6 +73,8 @@ $font-size-md: 13px;
 $font-size-lg: 14px;
 $font-size-xl: 15px;
 $font-size-display: 30px;
+// The title of an item's row and of a stack's entry in a list.
+$font-size-row-title: 13.5px;
 
 $font-weight-normal: 400;
 $font-weight-medium: 500;
@@ -87,7 +89,11 @@ $line-height-normal: 1.5;
 
 $spacing-2: 2px;
 $spacing-4: 4px;
+// Between an icon and its text in a list row's facts, and between a row's two lines.
+$spacing-5: 5px;
 $spacing-6: 6px;
+// Above and below the content of a list's row.
+$spacing-7: 7px;
 $spacing-8: 8px;
 $spacing-10: 10px;
 $spacing-12: 12px;
