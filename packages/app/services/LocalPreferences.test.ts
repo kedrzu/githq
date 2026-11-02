@@ -1,6 +1,6 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
-import { nextTick } from 'vue';
+import { effectScope, nextTick } from 'vue';
 
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { createTestSession } from '@/testing/createTestSession.js';
@@ -57,6 +57,21 @@ test('a change is kept under the same keys, as the plain strings githq always ke
     expect(storage.getItem('githq.panelWidth.itemSide.modal')).toBe('300');
     // One panel is one ref, whoever asks for it.
     expect(preferences.getPanelWidth('itemSide.modal')).toBe(preferences.getPanelWidth('itemSide.modal'));
+});
+
+test("a panel's width first asked for by a component is still kept once that component is gone", async () => {
+    const session = createTestSession({ login: 'octocat', answer: () => undefined });
+    const storage = session.container.resolve(Browser).localStorage;
+    const preferences = session.container.resolve(LocalPreferences);
+
+    // The item panel asks first, then gives way to the modal, which asks for the same width.
+    const panel = effectScope();
+    panel.run(() => preferences.getPanelWidth('itemModal'));
+    panel.stop();
+    preferences.getPanelWidth('itemModal').value = 900;
+    await nextTick();
+
+    expect(storage.getItem('githq.panelWidth.itemModal')).toBe('900');
 });
 
 test('what another tab changes reaches this one, a cleared storage bringing back the defaults', () => {

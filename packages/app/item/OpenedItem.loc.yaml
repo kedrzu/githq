@@ -6,3 +6,5 @@ missingDetail:
   en: '{reference} does not exist on GitHub, or your account may not see it.'
 backToList:
   en: Back to the list
+resizeModal:
+  en: Resize window
