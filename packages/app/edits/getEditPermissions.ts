@@ -18,6 +18,8 @@ export interface EditPermissions {
     readonly draft: boolean;
     /** Add it to a project (the project's own permission is the project's). */
     readonly addToProject: boolean;
+    /** Merge an open pull request not being merged already. */
+    readonly merge: boolean;
 }
 
 /** What {@link getEditPermissions} decides from. */
@@ -42,6 +44,7 @@ export const NO_EDITS: EditPermissions = {
     reviewers: false,
     draft: false,
     addToProject: false,
+    merge: false,
 };
 
 /**
@@ -50,9 +53,9 @@ export const NO_EDITS: EditPermissions = {
  *
  * - READ: open issues and comment; close and reopen the issues and pull requests they opened themselves.
  * - TRIAGE: apply labels and milestones, assign, close and reopen any issue or pull request, request reviews.
- * - WRITE: also mark a draft ready for review or convert one to a draft (an author may do it to their own), and
- *   set the issue type — the REST docs say "only users with push access can set the type"; the roles table
- *   does not list types.
+ * - WRITE: also mark a draft ready for review or convert one to a draft (an author may do it to their own), set
+ *   the issue type — the REST docs say "only users with push access can set the type"; the roles table does not
+ *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it).
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
@@ -82,6 +85,7 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
         reviewers: pullRequest && triage,
         draft: pullRequest && !merged && item.state === 'OPEN' && (write || author),
         addToProject: true,
+        merge: pullRequest && item.state === 'OPEN' && !merged && !item.merging && write,
     };
 }
 

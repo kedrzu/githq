@@ -140,7 +140,7 @@ export function createIssueEdit(params: CreateIssueEditParams): Edit {
                 isArchived: false,
             })),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = (
                 await sdk.CreateIssue({
                     repositoryId: repository.id,

@@ -1,5 +1,6 @@
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
+import type { EditFailureReason } from '@/edits/EditTypes.js';
 import type { ItemCheck } from '@/store/ItemDetailTypes.js';
 import type { PullRequestStatus } from '@/store/ItemTypes.js';
 
@@ -49,3 +50,20 @@ export interface MergeCheck extends ItemCheck {
     /** The Actions workflow run a check run belongs to, to re-run it; `null` outside Actions. */
     readonly workflowRunId: number | null;
 }
+
+/** A merge the user asks for in the merge panel. */
+export interface MergeRequest {
+    readonly method: PullRequestMergeMethod;
+    /** The commit's title, only when the user edited it: GitHub's own default goes otherwise (D6). */
+    readonly title?: string;
+    /** The commit's message, only when the user edited it: GitHub's own default goes otherwise (D6). */
+    readonly body?: string;
+}
+
+/**
+ * How GitHub took a merge at first: it accepted it (it may still fail while it runs, reported like a failed edit),
+ * or refused it at once — the merge panel stays with its text and says why.
+ */
+export type MergeAnswer =
+    | { readonly kind: 'accepted' }
+    | { readonly kind: 'refused'; readonly reason: EditFailureReason };

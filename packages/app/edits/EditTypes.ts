@@ -1,5 +1,4 @@
-import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
-
+import type { Account } from '@/auth/AccountSession.js';
 import type { ViewerProject } from '@/repos/RepositoryTypes.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 
@@ -73,7 +72,9 @@ export type EditSubject =
     /** Made a sub-issue of `parent` (`portal#1187`) as it was created. */
     | { readonly kind: 'subIssueOf'; readonly parent: string }
     | { readonly kind: 'reviewRequested'; readonly login: string }
-    | { readonly kind: 'draft'; readonly draft: boolean };
+    | { readonly kind: 'draft'; readonly draft: boolean }
+    /** A pull request merged (`PullRequestMerger`). */
+    | { readonly kind: 'merged' };
 
 /** Why GitHub did not take an edit. */
 export type EditFailureReason =
@@ -103,7 +104,20 @@ export type EditVerdict =
            */
           readonly partial?: EditPartialFailure;
       }
-    | { readonly kind: 'rejected'; readonly reason: EditFailureReason };
+    | {
+          readonly kind: 'rejected';
+          readonly reason: EditFailureReason;
+          /**
+           * Whoever asked for the edit shows the refusal itself (a merge refused at once, in the merge panel still
+           * open): it is undone, but not listed as a failure nor named in its row.
+           */
+          readonly quiet?: boolean;
+      }
+    /**
+     * GitHub did not say in time how it ended (a merge still running): the optimistic layer goes, nothing is
+     * reported, and the next sync shows what GitHub holds.
+     */
+    | { readonly kind: 'unknown' };
 
 /** The parts of a confirmed edit GitHub did not take. */
 export interface EditPartialFailure {
@@ -133,7 +147,7 @@ export interface Edit {
      * Sends it and reads GitHub's answer; rejects when GitHub could not be reached or answered with an error. Not
      * there for an edit that cannot be sent at all (`failure` says why).
      */
-    readonly send?: (sdk: GitHubSdk) => Promise<EditVerdict>;
+    readonly send?: (account: Account) => Promise<EditVerdict>;
     /** Why it fails without being sent. */
     readonly failure?: EditFailureReason;
 }

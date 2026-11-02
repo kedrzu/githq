@@ -13,9 +13,9 @@ export interface EditTexts {
     failureTitle(failure: EditFailure): string;
     /** What happened, for its toast. */
     failureDetail(failure: EditFailure): string;
-    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187". */
+    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merging portal#477". */
     sending(edits: readonly Edit[]): string;
-    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority". */
+    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merging". */
     sendingFields(edits: readonly Edit[]): string;
     /** The status bar after a failure: "1 change failed · label “regression” no longer exists". */
     failed(failure: EditFailure): string;
@@ -69,12 +69,20 @@ export function useEditTexts(): EditTexts {
     function sending(edits: readonly Edit[]) {
         const items = new Set(edits.map(edit => edit.itemId));
         const [first] = edits;
+        if (first && edits.length === 1 && first.subject.kind === 'merged') {
+            return t(l.mergingTo, { target: shortReference(first.reference) });
+        }
+
         const target =
             items.size === 1 && first ? shortReference(first.reference) : t(l.itemCount, { count: items.size });
         return t(l.sendingTo, { count: edits.length, target });
     }
 
     function sendingFields(edits: readonly Edit[]) {
+        if (edits.length === 1 && edits[0]?.subject.kind === 'merged') {
+            return t(l.merging);
+        }
+
         const fields = [...new Set(edits.map(edit => fieldName(edit.subject)))];
         return t(l.sendingFields, { count: edits.length, fields: fields.join(', ') });
     }
@@ -138,6 +146,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedReviewRequested, { login: subject.login, reference });
             case 'draft':
                 return subject.draft ? t(l.failedDraft, { reference }) : t(l.failedReady, { reference });
+            case 'merged':
+                return t(l.failedMerged, { reference });
             default:
                 return assertNever(subject);
         }
@@ -177,6 +187,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeReviewRequested, { login: subject.login });
             case 'draft':
                 return subject.draft ? t(l.changeDraft) : t(l.changeReady);
+            case 'merged':
+                return t(l.changeMerged);
             default:
                 return assertNever(subject);
         }
@@ -226,6 +238,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.fieldReviewers);
             case 'draft':
                 return t(l.fieldDraft);
+            case 'merged':
+                return t(l.fieldMerge);
             default:
                 return assertNever(subject);
         }

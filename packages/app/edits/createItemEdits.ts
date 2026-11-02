@@ -128,7 +128,7 @@ function createLabelEdit(params: CreateItemEditsParams, name: string, add: boole
                           current.labels.filter(other => other.name !== name),
                       ),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const variables = { labelableId: item.id, labelIds: [label.id] };
             const answer = add
                 ? (await sdk.AddLabels(variables)).addLabelsToLabelable
@@ -171,7 +171,7 @@ function createAssigneeEdit(params: CreateItemEditsParams, login: string, add: b
                     : current.assignees.filter(other => other.login !== login),
             }),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const variables = { assignableId: item.id, assigneeIds: [user.id] };
             const answer = add
                 ? (await sdk.AddAssignees(variables)).addAssigneesToAssignable
@@ -204,7 +204,7 @@ function createMilestoneEdit(params: CreateItemEditsParams, title: string | null
     return {
         ...base(item, subject),
         optimistic: { item: current => ({ ...current, milestone: value }) },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const milestoneId = milestone?.id ?? null;
             const answer =
                 item.kind === 'issue'
@@ -233,7 +233,7 @@ function createIssueTypeEdit(params: CreateItemEditsParams, name: string | null)
     return {
         ...base(item, subject),
         optimistic: { item: current => (current.kind === 'issue' ? { ...current, issueType: value } : current) },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = (await sdk.UpdateIssueType({ issueId: item.id, issueTypeId: issueType?.id ?? null }))
                 .updateIssueIssueType?.issue;
             if (!answer || (answer.issueType?.name ?? null) !== name) {
@@ -269,7 +269,7 @@ function createStateEdit(params: CreateItemEditsParams, reason: CloseReason | nu
                       }
                     : { ...current, state: closing ? 'CLOSED' : 'OPEN', closedAt: closing ? now : null },
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             if (item.kind === 'issue') {
                 const answer = closing
                     ? (await sdk.CloseIssue({ issueId: item.id, stateReason: reason })).closeIssue?.issue
@@ -317,7 +317,7 @@ function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
             item: current => ({ ...current, commentCount: current.commentCount + 1 }),
             detail: detail => withComment(detail, pending),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const node = (await sdk.AddComment({ subjectId: item.id, body })).addComment?.commentEdge?.node;
             if (!node) {
                 return dropped();
@@ -371,7 +371,7 @@ function createProjectFieldEdit(
                 })),
             ...getProjectItemValueLayer({ itemId: project.itemId, fieldId: field.id, value }),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = await sendProjectFieldValue(sdk, {
                 projectId: project.projectId,
                 itemId: project.itemId,
@@ -448,7 +448,7 @@ function createAddToProjectEdit(params: CreateItemEditsParams, project: ViewerPr
             detail: current => withDetailProjectAdded(current, placeholderDetail),
             addedProjectItems: [placeholderItem],
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = (await sdk.AddToProject({ projectId: project.id, contentId: item.id })).addProjectV2ItemById
                 ?.item;
             if (!answer || answer.project.id !== project.id) {
@@ -499,7 +499,7 @@ function createReviewerEdit(params: CreateItemEditsParams, login: string): Edit 
                     ? { ...current, reviewRequests: [...current.reviewRequests, asked] }
                     : current,
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = (await sdk.RequestReviews({ pullRequestId: item.id, userIds: [user.id] })).requestReviews
                 ?.pullRequest;
             if (!answer) {
@@ -526,7 +526,7 @@ function createDraftEdit(params: CreateItemEditsParams, draft: boolean): Edit {
     return {
         ...base(item, { kind: 'draft', draft }),
         optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, isDraft: draft } : current) },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = draft
                 ? (await sdk.ConvertToDraft({ pullRequestId: item.id })).convertPullRequestToDraft?.pullRequest
                 : (await sdk.MarkReadyForReview({ pullRequestId: item.id })).markPullRequestReadyForReview?.pullRequest;

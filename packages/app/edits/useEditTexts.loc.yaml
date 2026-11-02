@@ -32,6 +32,8 @@ failedDraft:
   en: "{reference} wasn't turned into a draft"
 failedReady:
   en: "{reference} wasn't marked ready for review"
+failedMerged:
+  en: "{reference} wasn't merged"
 
 partlyLabelAdded:
   en: “{label}” added to {done} of {total} items
@@ -70,6 +72,8 @@ changeDraft:
   en: draft
 changeReady:
   en: ready for review
+changeMerged:
+  en: merge
 
 undoneLabel:
   en: “{label}” label undone
@@ -115,6 +119,10 @@ sendingFields:
   en:
     one: 'Sending 1 change: {fields}'
     many: 'Sending {count} changes: {fields}'
+mergingTo:
+  en: Merging {target}
+merging:
+  en: Merging
 itemCount:
   plural: count
   en:
@@ -147,6 +155,8 @@ fieldReviewers:
   en: Reviewers
 fieldDraft:
   en: Draft
+fieldMerge:
+  en: Merge
 
 openLabels:
   en: Open labels on GitHub

@@ -1,4 +1,3 @@
-import { GitHubApiError } from '@githq/github/GitHubApiError.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -17,6 +16,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, ItemConfirmation } from '@/store/ItemTypes.js';
 
 import type { Edit, EditFailureReason, EditSubject, EditVerdict } from './EditTypes.js';
+import { toEditFailureReason } from './toEditFailureReason.js';
 
 /** An edit GitHub did not take, and why. */
 export interface FailedEdit {
@@ -88,7 +88,8 @@ interface Session {
  * GitHub's answer decides: an edit is done only when the answer holds its value (GitHub silently drops what the
  * user may not do). A confirmed edit is written into the stores and its layer drawn over older sync answers for
  * a while (last write wins); a rejected or failed one is undone, listed as a failure (toast, status bar) and
- * named in its row for a moment.
+ * named in its row for a moment — unless whoever asked shows the refusal itself. One GitHub did not say the end of
+ * in time (a merge still running) is undone without a word, and the next sync shows what GitHub holds.
  *
  * It follows the signed-in user: when they sign out or another account signs in, the edits not sent yet are
  * dropped — never sent with another account's token — and those on the way are forgotten.
@@ -210,13 +211,13 @@ export const EditQueue = defineService({
 
             let verdict: EditVerdict;
             try {
-                verdict = await edit.send(current.account.sdk);
+                verdict = await edit.send(current.account);
             } catch (error) {
                 if (isCurrent(current)) {
                     logger.warn('An edit failed', { subject: edit.subject.kind, reference: edit.reference, error });
                 }
 
-                verdict = { kind: 'rejected', reason: toFailureReason(error) };
+                verdict = { kind: 'rejected', reason: toEditFailureReason(error) };
             }
 
             if (!isCurrent(current)) {
@@ -239,12 +240,23 @@ export const EditQueue = defineService({
             }
 
             overlay.remove(edit.itemId, edit.optimistic);
+            if (verdict.kind === 'unknown') {
+                logger.info('GitHub did not say in time how an edit ended', {
+                    subject: edit.subject.kind,
+                    reference: edit.reference,
+                });
+                return [];
+            }
 
             logger.warn('GitHub did not take an edit', {
                 subject: edit.subject.kind,
                 reference: edit.reference,
                 reason: verdict.reason.kind,
             });
+            if (verdict.quiet) {
+                return [];
+            }
+
             markUndone(current, edit);
             return [{ edit, reason: verdict.reason }];
         }
@@ -360,17 +372,4 @@ function withConfirmation(item: Item, confirmation: ItemConfirmation | null): It
         ...item,
         confirmation: previous && previous.at > confirmation.at ? { ...confirmation, at: previous.at } : confirmation,
     };
-}
-
-/** Why an edit that threw failed: GitHub's error, or no answer at all. */
-function toFailureReason(error: unknown): EditFailureReason {
-    if (!(error instanceof GitHubApiError)) {
-        return { kind: 'offline' };
-    }
-
-    if (error.errors.some(entry => entry.type === 'NOT_FOUND')) {
-        return { kind: 'missing' };
-    }
-
-    return { kind: 'refused', message: error.errors[0]?.message ?? error.message };
 }

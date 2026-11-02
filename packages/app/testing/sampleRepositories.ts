@@ -56,6 +56,7 @@ export const SAMPLE_MAINTAINER_EDITING: ItemEditing = {
         reviewers: true,
         draft: true,
         addToProject: true,
+        merge: true,
     },
     metadata: SAMPLE_PORTAL_METADATA,
     viewerLogin: SAMPLE_VIEWER.login,
@@ -84,6 +85,7 @@ export const SAMPLE_CONTRIBUTOR_EDITING: ItemEditing = {
         reviewers: false,
         draft: false,
         addToProject: true,
+        merge: false,
     },
     metadata: { ...SAMPLE_PORTAL_METADATA, viewerPermission: 'READ' },
 };

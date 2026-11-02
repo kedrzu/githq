@@ -18,6 +18,7 @@ import { Clock } from '@/services/Clock.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { pause } from '@/utils/pause.js';
 
 import { mergeSettings } from './mergeSettings.js';
 import { EMPTY_SETTINGS_DOCUMENT, parseSettings, serializeSettings } from './SettingsDocument.js';
@@ -445,7 +446,7 @@ export const SettingsSync = defineService({
                 }
 
                 if (sha === null) {
-                    await pause(NEW_REPOSITORY_PAUSE_MS);
+                    await pause(clock, NEW_REPOSITORY_PAUSE_MS);
                 }
 
                 saving = tracking.readSaving();
@@ -472,12 +473,6 @@ export const SettingsSync = defineService({
             if (repository) {
                 stop(repository.exists ? { kind: 'foreign' } : { kind: 'deleted' });
             }
-        }
-
-        function pause(ms: number) {
-            return new Promise<void>(resolve => {
-                clock.schedule(resolve, ms);
-            });
         }
 
         /**
