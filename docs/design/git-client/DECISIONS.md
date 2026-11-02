@@ -361,8 +361,8 @@ row of its own. A menu is the place a list of actions can grow without crowding 
 
 ## D22
 
-**Settings gains a Display section, between Projects and Sync settings (`4`; Sync settings and Account move to `5` and
-`6`). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
+**Settings gains a Display section, between Projects and Sync settings (`3`; Sync settings and Account move to `4` and
+`5`). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
 once, and a line under it says the choice is saved with the settings.** (2026-11-02, owner asked for the setting in "a
 tab like General or Display"; the section's name and place are the design agent's; CH43)
 

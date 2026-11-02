@@ -126,7 +126,9 @@ A worktree can have no branch at all, checked out on a bare commit, so it has no
 
 ## The screens
 
-In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`). The numbers are the frames'.
+In `githq.pen`, frames **"App · Commits"** (`DtWFt`) and **"Desktop · Commits"** (`Ri8IR`); the two layouts with Issues and Pull
+requests (CH1, CH2, CH4, CH5) are in **"App · Repository"** (`N1wdc`), and Settings · Display (CH43) in **"App · Settings"**
+(`i3VkT`). The numbers are the frames'.
 Amber frames are still to be picked; Variant A of each is recommended. Screens outside section 1 are drawn in the tabs layout. Decisions: [DECISIONS](../DECISIONS.md), D14 onward.
 
 |Question|Answer in the frame|
