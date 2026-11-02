@@ -135,13 +135,12 @@ const t = useTranslate();
 const choices = useItemListChoices();
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
-const TAB_LABELS = { all: l.all, issues: l.issues, pullRequests: l.pullRequests, workflows: l.workflows } as const;
 
 // An untracked repository's workflows are not read (actions D4): it has no Workflows tab.
 const tabOptions = computed((): SegmentedTabsOption<RepositoryTab>[] =>
   (props.tracked ? REPOSITORY_TABS : REPOSITORY_KINDS).map(value => ({
     value,
-    label: t(TAB_LABELS[value]),
+    label: t(l[value]),
     count: getTabCount(value),
   })),
 );

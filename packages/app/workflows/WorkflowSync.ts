@@ -50,6 +50,14 @@ interface PollEachParams {
     readonly getAnyRefRepositories: () => ReadonlySet<string>;
 }
 
+/** What {@link WorkflowSync}'s poll of one repository needs. */
+interface PollRepositoryParams {
+    readonly context: TrackingSyncContext;
+    readonly nameWithOwner: string;
+    /** Whether its workflows' runs on any ref are read too, a screen showing them. */
+    readonly anyRefWanted: boolean;
+}
+
 /** What marking a repository's workflows unavailable needs. */
 interface MarkUnavailableParams {
     readonly context: TrackingSyncContext;
@@ -128,7 +136,7 @@ export const WorkflowSync = defineService({
                 }
 
                 try {
-                    await pollRepository(context, nameWithOwner, anyRefWanted);
+                    await pollRepository({ context, nameWithOwner, anyRefWanted });
                 } catch (error) {
                     if (!isTargetFailure(error)) {
                         throw error;
@@ -153,7 +161,7 @@ export const WorkflowSync = defineService({
             return failed;
         }
 
-        async function pollRepository(context: TrackingSyncContext, nameWithOwner: string, anyRefWanted: boolean) {
+        async function pollRepository({ context, nameWithOwner, anyRefWanted }: PollRepositoryParams) {
             const stored = workflows.get(nameWithOwner);
             context.checkAllowance('core');
             const changes = await listRepositoryRuns(context.rest, {
@@ -207,9 +215,12 @@ export const WorkflowSync = defineService({
                 return;
             }
 
+            function findKept(id: number) {
+                return stored?.workflows.find(entry => entry.workflow.id === id);
+            }
+
             const listed =
                 list.status === 200 ? list.workflows : (stored?.workflows.map(entry => entry.workflow) ?? []);
-            const findKept = (id: number) => stored?.workflows.find(entry => entry.workflow.id === id);
             const showsProgress =
                 queries.length > 0 &&
                 listed.some(workflow => {
@@ -218,7 +229,7 @@ export const WorkflowSync = defineService({
                 });
             // What has been read shows at once, a workflow at a time. Its ETags stay the old ones until all of it is
             // read: this read cut short, the next one is not told that nothing changed, and goes on.
-            const showRead = (read: readonly StoredWorkflow[], tags: readonly string[]) => {
+            function showRead(read: readonly StoredWorkflow[], tags: readonly string[]) {
                 workflows.set({
                     nameWithOwner,
                     defaultBranch,
@@ -235,7 +246,7 @@ export const WorkflowSync = defineService({
                     tags,
                     unavailable: null,
                 });
-            };
+            }
             if (showsProgress) {
                 showRead([], stored?.tags ?? []);
             }
