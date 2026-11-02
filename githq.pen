@@ -124300,29 +124300,15 @@
               "alignItems": "center",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "WgehV",
-                  "name": "Icon tile",
-                  "width": 44,
-                  "height": 44,
-                  "fill": "$bg-3",
-                  "cornerRadius": 12,
-                  "stroke": "$border-2",
-                  "strokeWidth": 1,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "l67Rm",
-                      "name": "Icon",
-                      "width": 20,
-                      "height": 20,
-                      "icon": "workflow",
-                      "library": "lucide",
-                      "fill": "$fg-2"
-                    }
-                  ]
+                  "type": "icon",
+                  "id": "l67Rm",
+                  "name": "Icon",
+                  "width": 40,
+                  "height": 40,
+                  "icon": "workflow",
+                  "library": "lucide",
+                  "weight": 300,
+                  "fill": "$fg-2"
                 },
                 {
                   "type": "frame",
@@ -126979,7 +126965,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Positive and specific about what it covers: how many repositories were read and when. A quiet green check and a line of nerdy copy; no confetti.",
+                      "content": "Positive and specific about what it covers: how many repositories were read and when. A quiet green coffee cup instead of a checkmark, and a line of nerdy copy; no confetti.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -127104,17 +127090,13 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "eDrW5",
+                                  "id": "Ww6xc",
                                   "type": "ref",
                                   "ref": "UljqM",
                                   "name": "Empty state",
                                   "descendants": {
-                                    "WgehV": {
-                                      "fill": "#3FB95014",
-                                      "stroke": "#3FB95040"
-                                    },
                                     "l67Rm": {
-                                      "icon": "circle-check",
+                                      "icon": "coffee",
                                       "fill": "$green"
                                     },
                                     "L7GeQ": {
@@ -132038,13 +132020,13 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "rDUhT",
+                                  "id": "azWdd",
                                   "type": "ref",
                                   "ref": "UljqM",
                                   "name": "Empty state",
                                   "descendants": {
                                     "l67Rm": {
-                                      "icon": "folder-open"
+                                      "icon": "package-open"
                                     },
                                     "L7GeQ": {
                                       "content": "No workflows here, yet"
@@ -132057,13 +132039,13 @@
                                     },
                                     "ojOf0": {
                                       "type": "frame",
-                                      "id": "VbzwH",
+                                      "id": "PyuGI",
                                       "name": "Actions",
                                       "gap": 8,
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "Wuhbe",
+                                          "id": "w1ats",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button Open on GitHub",
@@ -140389,15 +140371,11 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "P8KSlQ",
+                                  "id": "MiwxP",
                                   "type": "ref",
                                   "ref": "UljqM",
                                   "name": "Empty state",
                                   "descendants": {
-                                    "WgehV": {
-                                      "fill": "#F0545C14",
-                                      "stroke": "#F0545C40"
-                                    },
                                     "l67Rm": {
                                       "icon": "file-x",
                                       "fill": "$red"
@@ -140413,13 +140391,13 @@
                                     },
                                     "ojOf0": {
                                       "type": "frame",
-                                      "id": "Gsw56",
+                                      "id": "d1GXVy",
                                       "name": "Actions",
                                       "gap": 8,
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "W2WOc1",
+                                          "id": "ZxS54",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button See the error on GitHub",
@@ -140921,13 +140899,13 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "y5w69v",
+                                          "id": "M7uVjx",
                                           "type": "ref",
                                           "ref": "UljqM",
                                           "name": "Empty state",
                                           "descendants": {
                                             "l67Rm": {
-                                              "icon": "archive-x"
+                                              "icon": "ghost"
                                             },
                                             "L7GeQ": {
                                               "content": "This log was garbage-collected"
@@ -140940,13 +140918,13 @@
                                             },
                                             "ojOf0": {
                                               "type": "frame",
-                                              "id": "iAWfD",
+                                              "id": "UkLMe",
                                               "name": "Actions",
                                               "gap": 8,
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "zO3dU",
+                                                  "id": "O8ybMb",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Open on GitHub",
@@ -144120,17 +144098,13 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "X04Ikp",
+                                          "id": "gIti9",
                                           "type": "ref",
                                           "ref": "UljqM",
                                           "name": "Empty state",
                                           "descendants": {
-                                            "WgehV": {
-                                              "fill": "#D6A23A14",
-                                              "stroke": "#D6A23A40"
-                                            },
                                             "l67Rm": {
-                                              "icon": "cloud-alert",
+                                              "icon": "unplug",
                                               "fill": "$amber"
                                             },
                                             "L7GeQ": {
@@ -144144,13 +144118,13 @@
                                             },
                                             "ojOf0": {
                                               "type": "frame",
-                                              "id": "t8sJlx",
+                                              "id": "yuX9P",
                                               "name": "Actions",
                                               "gap": 8,
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "uuM9H",
+                                                  "id": "Y0m9w",
                                                   "type": "ref",
                                                   "ref": "JOjbe",
                                                   "name": "Button Try again",
@@ -144167,7 +144141,7 @@
                                                   }
                                                 },
                                                 {
-                                                  "id": "BVr3C",
+                                                  "id": "ypvcC",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Open on GitHub",
@@ -145309,17 +145283,13 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "I7waA8",
+                                          "id": "dpUm8",
                                           "type": "ref",
                                           "ref": "UljqM",
                                           "name": "Empty state",
                                           "descendants": {
-                                            "WgehV": {
-                                              "fill": "#D6A23A14",
-                                              "stroke": "#D6A23A40"
-                                            },
                                             "l67Rm": {
-                                              "icon": "loader",
+                                              "icon": "hourglass",
                                               "fill": "$amber"
                                             },
                                             "L7GeQ": {
@@ -145333,13 +145303,13 @@
                                             },
                                             "ojOf0": {
                                               "type": "frame",
-                                              "id": "dib29",
+                                              "id": "bXZBs",
                                               "name": "Actions",
                                               "gap": 8,
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "t1e0r",
+                                                  "id": "B9lfUy",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Watch on GitHub",
@@ -147124,7 +147094,7 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "id": "G9ETT",
+                                  "id": "xjcqh",
                                   "type": "ref",
                                   "ref": "UljqM",
                                   "name": "Empty state",
@@ -147143,13 +147113,13 @@
                                     },
                                     "ojOf0": {
                                       "type": "frame",
-                                      "id": "ICeTi",
+                                      "id": "nSNxq",
                                       "name": "Actions",
                                       "gap": 8,
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "oFdk0",
+                                          "id": "jhTno",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button Open Actions settings on GitHub",
@@ -161034,10 +161004,19 @@
                                           "fontSize": 12.5
                                         },
                                         "I9KkTl": {
-                                          "name": "Kbd ⇧M"
-                                        },
-                                        "I9KkTl/luKkY": {
-                                          "content": "⇧M"
+                                          "id": "beOEe",
+                                          "type": "ref",
+                                          "ref": "L44zw",
+                                          "name": "Kbd ⇧M",
+                                          "height": 15,
+                                          "descendants": {
+                                            "pINSd": {
+                                              "icon": "arrow-big-up"
+                                            },
+                                            "Q8v43": {
+                                              "content": "M"
+                                            }
+                                          }
                                         }
                                       }
                                     }
@@ -162376,7 +162355,23 @@
                           "ref": "p1yIM",
                           "name": "List pane",
                           "width": "fill_container",
-                          "height": "fill_container"
+                          "height": "fill_container",
+                          "descendants": {
+                            "jwPxs": {
+                              "id": "pbMKY",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧M",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "M"
+                                }
+                              }
+                            }
+                          }
                         },
                         {
                           "type": "frame",
@@ -162927,10 +162922,19 @@
                                           "fontSize": 12.5
                                         },
                                         "I9KkTl": {
-                                          "name": "Kbd ⇧M"
-                                        },
-                                        "I9KkTl/luKkY": {
-                                          "content": "⇧M"
+                                          "id": "oPZ9c",
+                                          "type": "ref",
+                                          "ref": "L44zw",
+                                          "name": "Kbd ⇧M",
+                                          "height": 15,
+                                          "descendants": {
+                                            "pINSd": {
+                                              "icon": "arrow-big-up"
+                                            },
+                                            "Q8v43": {
+                                              "content": "M"
+                                            }
+                                          }
                                         }
                                       }
                                     }
@@ -165517,6 +165521,20 @@
                             },
                             "tPjtf": {
                               "height": 9
+                            },
+                            "jwPxs": {
+                              "id": "ZCTQD",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧M",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "M"
+                                }
+                              }
                             }
                           }
                         },
@@ -165910,13 +165928,23 @@
                                           "fontWeight": "600"
                                         },
                                         "I9KkTl": {
+                                          "id": "tqeD3",
+                                          "type": "ref",
+                                          "ref": "L44zw",
                                           "name": "Kbd ⇧M",
                                           "fill": "#FFFFFF33",
-                                          "stroke": "#0E101333"
-                                        },
-                                        "I9KkTl/luKkY": {
-                                          "fill": "#FFFFFF",
-                                          "content": "⇧M"
+                                          "stroke": "#0E101333",
+                                          "height": 15,
+                                          "descendants": {
+                                            "pINSd": {
+                                              "icon": "arrow-big-up",
+                                              "fill": "#FFFFFF"
+                                            },
+                                            "Q8v43": {
+                                              "content": "M",
+                                              "fill": "#FFFFFF"
+                                            }
+                                          }
                                         }
                                       }
                                     }
@@ -166277,7 +166305,7 @@
                       "id": "IyiWk",
                       "layoutPosition": "absolute",
                       "x": 400,
-                      "y": 96,
+                      "y": 335,
                       "name": "Merge panel",
                       "clip": true,
                       "width": 640,
@@ -166637,13 +166665,23 @@
                                   "fontWeight": "600"
                                 },
                                 "I9KkTl": {
+                                  "id": "avO86",
+                                  "type": "ref",
+                                  "ref": "guh3O",
                                   "name": "Kbd ⌘↵",
                                   "fill": "#FFFFFF33",
-                                  "stroke": "#0E101333"
-                                },
-                                "I9KkTl/luKkY": {
-                                  "fill": "#FFFFFF",
-                                  "content": "⌘↵"
+                                  "stroke": "#0E101333",
+                                  "height": 15,
+                                  "descendants": {
+                                    "q1SXG": {
+                                      "icon": "command",
+                                      "fill": "#FFFFFF"
+                                    },
+                                    "lhKUf": {
+                                      "icon": "corner-down-left",
+                                      "fill": "#FFFFFF"
+                                    }
+                                  }
                                 }
                               }
                             }
@@ -168584,18 +168622,16 @@
                                                   "fontWeight": "normal"
                                                 },
                                                 {
-                                                  "id": "xgV7x",
+                                                  "id": "ZXXQS",
                                                   "type": "ref",
-                                                  "ref": "w9kS9",
+                                                  "ref": "L44zw",
                                                   "name": "Kbd ⇧M",
-                                                  "padding": [
-                                                    0,
-                                                    4
-                                                  ],
                                                   "descendants": {
-                                                    "luKkY": {
-                                                      "content": "⇧M",
-                                                      "fontSize": 10
+                                                    "pINSd": {
+                                                      "icon": "arrow-big-up"
+                                                    },
+                                                    "Q8v43": {
+                                                      "content": "M"
                                                     }
                                                   }
                                                 }
@@ -169184,10 +169220,19 @@
                                           "fontSize": 12.5
                                         },
                                         "I9KkTl": {
-                                          "name": "Kbd ⇧M"
-                                        },
-                                        "I9KkTl/luKkY": {
-                                          "content": "⇧M"
+                                          "id": "HHAGK",
+                                          "type": "ref",
+                                          "ref": "L44zw",
+                                          "name": "Kbd ⇧M",
+                                          "height": 15,
+                                          "descendants": {
+                                            "pINSd": {
+                                              "icon": "arrow-big-up"
+                                            },
+                                            "Q8v43": {
+                                              "content": "M"
+                                            }
+                                          }
                                         }
                                       }
                                     }
@@ -169635,13 +169680,13 @@
                           "width": 80,
                           "children": [
                             {
-                              "id": "MQsNI",
+                              "id": "xOwo8",
                               "type": "ref",
-                              "ref": "w9kS9",
+                              "ref": "oPSI9",
                               "name": "Kbd ↵",
                               "descendants": {
-                                "luKkY": {
-                                  "content": "↵"
+                                "YRrEc": {
+                                  "icon": "corner-down-left"
                                 }
                               }
                             }
@@ -169752,13 +169797,16 @@
                           "width": 80,
                           "children": [
                             {
-                              "id": "abDw1",
+                              "id": "nFs9l",
                               "type": "ref",
-                              "ref": "w9kS9",
+                              "ref": "L44zw",
                               "name": "Kbd ⇧M",
                               "descendants": {
-                                "luKkY": {
-                                  "content": "⇧M"
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "M"
                                 }
                               }
                             }
@@ -169791,13 +169839,16 @@
                           "width": 80,
                           "children": [
                             {
-                              "id": "EfezM",
+                              "id": "BZC6S",
                               "type": "ref",
-                              "ref": "w9kS9",
+                              "ref": "guh3O",
                               "name": "Kbd ⌘↵",
                               "descendants": {
-                                "luKkY": {
-                                  "content": "⌘↵"
+                                "q1SXG": {
+                                  "icon": "command"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left"
                                 }
                               }
                             }
@@ -169867,15 +169918,30 @@
                           "id": "egOBq",
                           "name": "Keys",
                           "width": 80,
+                          "gap": 4,
                           "children": [
                             {
-                              "id": "EZLW3",
+                              "id": "xVjLZ",
                               "type": "ref",
                               "ref": "w9kS9",
-                              "name": "Kbd X  ⇧J",
+                              "name": "Kbd X",
                               "descendants": {
                                 "luKkY": {
-                                  "content": "X  ⇧J"
+                                  "content": "X"
+                                }
+                              }
+                            },
+                            {
+                              "id": "E0nu9",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧J",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "J"
                                 }
                               }
                             }
@@ -173294,18 +173360,16 @@
                                       "fontWeight": "normal"
                                     },
                                     {
-                                      "id": "WCqsJ",
+                                      "id": "er6qR",
                                       "type": "ref",
-                                      "ref": "w9kS9",
+                                      "ref": "L44zw",
                                       "name": "Kbd ⇧M",
-                                      "padding": [
-                                        0,
-                                        4
-                                      ],
                                       "descendants": {
-                                        "luKkY": {
-                                          "content": "⇧M",
-                                          "fontSize": 10
+                                        "pINSd": {
+                                          "icon": "arrow-big-up"
+                                        },
+                                        "Q8v43": {
+                                          "content": "M"
                                         }
                                       }
                                     }
@@ -181846,10 +181910,18 @@
                           "gap": 5,
                           "descendants": {
                             "m5wIG9": {
-                              "name": "Kbd ⌘K"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "⌘K"
+                              "id": "Tx8GS",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⌘K",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "command"
+                                },
+                                "Q8v43": {
+                                  "content": "K"
+                                }
+                              }
                             },
                             "IOvfA": {
                               "name": "Label",
@@ -183379,10 +183451,19 @@
                                           "fontSize": 12.5
                                         },
                                         "I9KkTl": {
-                                          "name": "Kbd ⇧M"
-                                        },
-                                        "I9KkTl/luKkY": {
-                                          "content": "⇧M"
+                                          "id": "qCjEE",
+                                          "type": "ref",
+                                          "ref": "L44zw",
+                                          "name": "Kbd ⇧M",
+                                          "height": 15,
+                                          "descendants": {
+                                            "pINSd": {
+                                              "icon": "arrow-big-up"
+                                            },
+                                            "Q8v43": {
+                                              "content": "M"
+                                            }
+                                          }
                                         }
                                       }
                                     }
@@ -186151,10 +186232,19 @@
                                               "fontSize": 12.5
                                             },
                                             "I9KkTl": {
-                                              "name": "Kbd ⇧M"
-                                            },
-                                            "I9KkTl/luKkY": {
-                                              "content": "⇧M"
+                                              "id": "nFT1z",
+                                              "type": "ref",
+                                              "ref": "L44zw",
+                                              "name": "Kbd ⇧M",
+                                              "height": 15,
+                                              "descendants": {
+                                                "pINSd": {
+                                                  "icon": "arrow-big-up"
+                                                },
+                                                "Q8v43": {
+                                                  "content": "M"
+                                                }
+                                              }
                                             }
                                           }
                                         }
@@ -187801,10 +187891,19 @@
                                                   "fontSize": 12.5
                                                 },
                                                 "I9KkTl": {
-                                                  "name": "Kbd ⇧M"
-                                                },
-                                                "I9KkTl/luKkY": {
-                                                  "content": "⇧M"
+                                                  "id": "kRg24",
+                                                  "type": "ref",
+                                                  "ref": "L44zw",
+                                                  "name": "Kbd ⇧M",
+                                                  "height": 15,
+                                                  "descendants": {
+                                                    "pINSd": {
+                                                      "icon": "arrow-big-up"
+                                                    },
+                                                    "Q8v43": {
+                                                      "content": "M"
+                                                    }
+                                                  }
                                                 }
                                               }
                                             }
@@ -189789,13 +189888,23 @@
                               "fontWeight": "600"
                             },
                             "I9KkTl": {
+                              "id": "uy5mN",
+                              "type": "ref",
+                              "ref": "guh3O",
                               "name": "Kbd ⌘↵",
                               "fill": "#FFFFFF33",
-                              "stroke": "#0E101333"
-                            },
-                            "I9KkTl/luKkY": {
-                              "fill": "#FFFFFF",
-                              "content": "⌘↵"
+                              "stroke": "#0E101333",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command",
+                                  "fill": "#FFFFFF"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left",
+                                  "fill": "#FFFFFF"
+                                }
+                              }
                             }
                           }
                         }
@@ -190827,13 +190936,23 @@
                               "fontWeight": "600"
                             },
                             "I9KkTl": {
+                              "id": "QKNPJ",
+                              "type": "ref",
+                              "ref": "guh3O",
                               "name": "Kbd ⌘↵",
                               "fill": "#FFFFFF33",
-                              "stroke": "#0E101333"
-                            },
-                            "I9KkTl/luKkY": {
-                              "fill": "#FFFFFF",
-                              "content": "⌘↵"
+                              "stroke": "#0E101333",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command",
+                                  "fill": "#FFFFFF"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left",
+                                  "fill": "#FFFFFF"
+                                }
+                              }
                             }
                           }
                         }
@@ -191254,10 +191373,19 @@
                               "fontSize": 12.5
                             },
                             "I9KkTl": {
-                              "name": "Kbd ⌘↵"
-                            },
-                            "I9KkTl/luKkY": {
-                              "content": "⌘↵"
+                              "id": "s358RM",
+                              "type": "ref",
+                              "ref": "guh3O",
+                              "name": "Kbd ⌘↵",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
                             }
                           }
                         }
@@ -191589,10 +191717,19 @@
                               "fontSize": 12.5
                             },
                             "I9KkTl": {
-                              "name": "Kbd ⌘↵"
-                            },
-                            "I9KkTl/luKkY": {
-                              "content": "⌘↵"
+                              "id": "TsXHD",
+                              "type": "ref",
+                              "ref": "guh3O",
+                              "name": "Kbd ⌘↵",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
                             }
                           }
                         }
@@ -191938,10 +192075,18 @@
                           "name": "Hint Dissolve…"
                         },
                         "Ln185/m5wIG9": {
-                          "name": "Kbd D"
-                        },
-                        "Ln185/m5wIG9/luKkY": {
-                          "content": "⌘K"
+                          "id": "W85tQ0",
+                          "type": "ref",
+                          "ref": "L44zw",
+                          "name": "Kbd ⌘K",
+                          "descendants": {
+                            "pINSd": {
+                              "icon": "command"
+                            },
+                            "Q8v43": {
+                              "content": "K"
+                            }
+                          }
                         },
                         "Ln185/IOvfA": {
                           "content": "Dissolve…"
@@ -192332,10 +192477,18 @@
                           "name": "Hint Mark #102 ready"
                         },
                         "Ln185/m5wIG9": {
-                          "name": "Kbd ⇧R"
-                        },
-                        "Ln185/m5wIG9/luKkY": {
-                          "content": "⌘K"
+                          "id": "MQjnz",
+                          "type": "ref",
+                          "ref": "L44zw",
+                          "name": "Kbd ⌘K",
+                          "descendants": {
+                            "pINSd": {
+                              "icon": "command"
+                            },
+                            "Q8v43": {
+                              "content": "K"
+                            }
+                          }
                         },
                         "Ln185/IOvfA": {
                           "content": "Mark #102 ready"
@@ -193396,13 +193549,23 @@
                               "fontWeight": "600"
                             },
                             "I9KkTl": {
+                              "id": "Vu8Jp",
+                              "type": "ref",
+                              "ref": "guh3O",
                               "name": "Kbd ⌘↵",
                               "fill": "#FFFFFF33",
-                              "stroke": "#0E101333"
-                            },
-                            "I9KkTl/luKkY": {
-                              "fill": "#FFFFFF",
-                              "content": "⌘↵"
+                              "stroke": "#0E101333",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command",
+                                  "fill": "#FFFFFF"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left",
+                                  "fill": "#FFFFFF"
+                                }
+                              }
                             }
                           }
                         }
@@ -194071,7 +194234,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "GitHub allows bypass for the lowest unmerged pull request only, so its zone speaks of #1203, never of the whole stack. Its chord is the same as PM12a.",
+                      "content": "GitHub allows bypass for the lowest unmerged pull request only, so its line speaks of #1203, never of the whole stack. Its shape and chord are PM12a's: its own line above the footer, a red outline, ⌥⌘↵; the primary stays last, here off.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -194298,76 +194461,191 @@
                       "id": "ZXX2j",
                       "name": "Bypass zone",
                       "width": "fill_container",
-                      "stroke": "$red-quiet",
+                      "stroke": "$border",
                       "strokeWidth": {
                         "top": 1
                       },
-                      "layout": "vertical",
-                      "gap": 8,
+                      "gap": 10,
+                      "padding": [
+                        8,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "xNsA9",
+                          "name": "icon shield-alert",
+                          "width": 13,
+                          "height": 13,
+                          "icon": "shield-alert",
+                          "library": "lucide",
+                          "fill": "$red"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OSkjJ",
+                          "name": "Text",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "GNX9H",
+                              "name": "Bypass title",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "You may merge #1203 past these requirements",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f6WjH",
+                              "name": "Bypass skips",
+                              "fill": "$fg-3",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Skips 1 approving review. Only the first open pull request of a stack can go past them, so this lands one.",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "XuNIe",
+                              "name": "Bypass email",
+                              "fill": "$fg-3",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Commits as your default, m.laine@fitloop.dev",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "yXjBy",
+                          "type": "ref",
+                          "ref": "JOjbe",
+                          "name": "Button Bypass rules and merge #1203",
+                          "cornerRadius": 6,
+                          "stroke": "$red",
+                          "gap": 6,
+                          "padding": [
+                            5,
+                            8,
+                            5,
+                            10
+                          ],
+                          "fill": "#00000000",
+                          "descendants": {
+                            "KpHhX": {
+                              "fill": "$red",
+                              "content": "Bypass rules and merge #1203",
+                              "fontSize": 12.5
+                            },
+                            "oCNhh": {
+                              "id": "iaI65",
+                              "type": "ref",
+                              "ref": "T24lwV",
+                              "name": "Kbd ⌥⌘↵",
+                              "height": 15,
+                              "descendants": {
+                                "weRcq": {
+                                  "icon": "option"
+                                },
+                                "w5d1Ed": {
+                                  "icon": "command"
+                                },
+                                "G9hW7": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QHafp",
+                      "name": "Footer",
+                      "width": "fill_container",
+                      "fill": "$bg",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 12,
                       "padding": [
                         10,
                         14
                       ],
+                      "alignItems": "center",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "GNX9H",
-                          "name": "Merge #1203 past the requireme",
-                          "fill": "$red",
-                          "content": "Merge #1203 past the requirements",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "f6WjH",
-                          "name": "Skips: 1 approving review. Onl",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Skips: 1 approving review. Only the first open pull request of a stack can go past them, so this lands one.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
+                          "id": "cZmFO",
+                          "type": "ref",
+                          "ref": "xfbOl",
+                          "name": "Hint All checks",
+                          "gap": 5,
+                          "enabled": false,
+                          "descendants": {
+                            "m5wIG9": {
+                              "name": "Kbd C"
+                            },
+                            "m5wIG9/luKkY": {
+                              "content": "C"
+                            },
+                            "IOvfA": {
+                              "name": "Label",
+                              "content": "All checks"
+                            }
+                          }
                         },
                         {
                           "type": "frame",
-                          "id": "djVXp",
-                          "name": "Actions",
-                          "gap": 8,
-                          "children": [
-                            {
-                              "id": "yXjBy",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Bypass and merge #1203",
-                              "cornerRadius": 6,
-                              "stroke": "$red",
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "fill": "#00000000",
-                              "descendants": {
-                                "KpHhX": {
-                                  "fill": "$red",
-                                  "content": "Bypass and merge #1203",
-                                  "fontSize": 12.5
-                                },
-                                "oCNhh": {
-                                  "name": "Kbd ⌥⇧⌘↵"
-                                },
-                                "oCNhh/luKkY": {
-                                  "content": "⌥⌘↵"
-                                }
-                              }
+                          "id": "tSjNd",
+                          "name": "spacer",
+                          "width": "fill_container",
+                          "height": 1
+                        },
+                        {
+                          "id": "egwxE",
+                          "type": "ref",
+                          "ref": "EoODS",
+                          "name": "Button Can't merge yet",
+                          "fill": "$bg-3",
+                          "cornerRadius": 6,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "gap": 6,
+                          "padding": [
+                            5,
+                            10
+                          ],
+                          "descendants": {
+                            "F9mRc": {
+                              "name": "icon circle-x",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "circle-x",
+                              "fill": "$fg-3"
+                            },
+                            "Cenjq": {
+                              "fill": "$fg-3",
+                              "content": "Can't merge yet",
+                              "fontSize": 12.5
                             }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -195006,10 +195284,18 @@
                           "gap": 5,
                           "descendants": {
                             "m5wIG9": {
-                              "name": "Kbd ⇧D"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "⇧D"
+                              "id": "zNd8x",
+                              "type": "ref",
+                              "ref": "L44zw",
+                              "name": "Kbd ⇧D",
+                              "descendants": {
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "D"
+                                }
+                              }
                             },
                             "IOvfA": {
                               "name": "Label",
@@ -196390,10 +196676,19 @@
                               "fontSize": 12.5
                             },
                             "I9KkTl": {
-                              "name": "Kbd ⌘↵"
-                            },
-                            "I9KkTl/luKkY": {
-                              "content": "⌘↵"
+                              "id": "UoUyI",
+                              "type": "ref",
+                              "ref": "guh3O",
+                              "name": "Kbd ⌘↵",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
                             }
                           }
                         }
@@ -197004,13 +197299,16 @@
                               "height": 1
                             },
                             {
-                              "id": "BTX0n",
+                              "id": "cKDGv",
                               "type": "ref",
-                              "ref": "w9kS9",
+                              "ref": "L44zw",
                               "name": "Kbd ⇧M",
                               "descendants": {
-                                "luKkY": {
-                                  "content": "⇧M"
+                                "pINSd": {
+                                  "icon": "arrow-big-up"
+                                },
+                                "Q8v43": {
+                                  "content": "M"
                                 }
                               }
                             }
@@ -198517,13 +198815,23 @@
                               "fontWeight": "600"
                             },
                             "I9KkTl": {
+                              "id": "LZw2C",
+                              "type": "ref",
+                              "ref": "guh3O",
                               "name": "Kbd ⌘↵",
                               "fill": "#FFFFFF33",
-                              "stroke": "#0E101333"
-                            },
-                            "I9KkTl/luKkY": {
-                              "fill": "#FFFFFF",
-                              "content": "⌘↵"
+                              "stroke": "#0E101333",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command",
+                                  "fill": "#FFFFFF"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left",
+                                  "fill": "#FFFFFF"
+                                }
+                              }
                             }
                           }
                         }
@@ -199448,10 +199756,16 @@
                               "fontSize": 12.5
                             },
                             "oCNhh": {
-                              "name": "Kbd ↵"
-                            },
-                            "oCNhh/luKkY": {
-                              "content": "↵"
+                              "id": "pwRpJ",
+                              "type": "ref",
+                              "ref": "oPSI9",
+                              "name": "Kbd ↵",
+                              "height": 15,
+                              "descendants": {
+                                "YRrEc": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
                             }
                           }
                         }
@@ -200155,10 +200469,19 @@
                               "fontSize": 12.5
                             },
                             "I9KkTl": {
-                              "name": "Kbd ⌘↵"
-                            },
-                            "I9KkTl/luKkY": {
-                              "content": "⌘↵"
+                              "id": "QBesp",
+                              "type": "ref",
+                              "ref": "guh3O",
+                              "name": "Kbd ⌘↵",
+                              "height": 15,
+                              "descendants": {
+                                "q1SXG": {
+                                  "icon": "command"
+                                },
+                                "lhKUf": {
+                                  "icon": "corner-down-left"
+                                }
+                              }
                             }
                           }
                         }
@@ -201635,18 +201958,16 @@
                                                   "fontWeight": "normal"
                                                 },
                                                 {
-                                                  "id": "ADp18",
+                                                  "id": "XC73P",
                                                   "type": "ref",
-                                                  "ref": "w9kS9",
+                                                  "ref": "L44zw",
                                                   "name": "Kbd ⇧M",
-                                                  "padding": [
-                                                    0,
-                                                    4
-                                                  ],
                                                   "descendants": {
-                                                    "luKkY": {
-                                                      "content": "⇧M",
-                                                      "fontSize": 10
+                                                    "pINSd": {
+                                                      "icon": "arrow-big-up"
+                                                    },
+                                                    "Q8v43": {
+                                                      "content": "M"
                                                     }
                                                   }
                                                 }
@@ -202030,13 +202351,23 @@
                                   "fontWeight": "600"
                                 },
                                 "I9KkTl": {
+                                  "id": "ry2Gy",
+                                  "type": "ref",
+                                  "ref": "L44zw",
                                   "name": "Kbd ⌥M",
                                   "fill": "#FFFFFF33",
-                                  "stroke": "#0E101333"
-                                },
-                                "I9KkTl/luKkY": {
-                                  "fill": "#FFFFFF",
-                                  "content": "⌥M"
+                                  "stroke": "#0E101333",
+                                  "height": 15,
+                                  "descendants": {
+                                    "pINSd": {
+                                      "icon": "option",
+                                      "fill": "#FFFFFF"
+                                    },
+                                    "Q8v43": {
+                                      "content": "M",
+                                      "fill": "#FFFFFF"
+                                    }
+                                  }
                                 }
                               }
                             },
@@ -202351,10 +202682,16 @@
                                   "fontSize": 12.5
                                 },
                                 "oCNhh": {
-                                  "name": "Kbd ↵"
-                                },
-                                "oCNhh/luKkY": {
-                                  "content": "↵"
+                                  "id": "PeoGk",
+                                  "type": "ref",
+                                  "ref": "oPSI9",
+                                  "name": "Kbd ↵",
+                                  "height": 15,
+                                  "descendants": {
+                                    "YRrEc": {
+                                      "icon": "corner-down-left"
+                                    }
+                                  }
                                 }
                               }
                             },
