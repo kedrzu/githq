@@ -34,3 +34,4 @@ Append-only; one line per turn that settled something.
   date gate on drawing (D9), refs checked by one GraphQL request instead of REST ETags (D9), an unloaded ref
   opens its commit's details (D12), a second clone is refused (D7). Prior forms in history/DECISIONS.md.
   Design closed by the owner.
+- 2026-11-02 — Owner merged the design (#67) and asked for the design agent's prompt: ui/browse-commit-history.md and ui/design-agent-prompt.md. Open in the brief: a Worktrees section in the list.
