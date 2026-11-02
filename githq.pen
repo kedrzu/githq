@@ -96033,7 +96033,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "⇧M, then ⌘↵. The panel opens from what githq already holds and fresh data arrives under it. Nothing shows as merged until GitHub says so. Where variants remain, the recommended one comes first; the choice is the owner's. Panel states are drawn at the panel's own size.",
+              "content": "⇧M, then ⌘↵. The panel opens from what githq already holds and fresh data arrives under it. Nothing shows as merged until GitHub says so. The variants are settled; what's drawn is the chosen design. Panel states are drawn at the panel's own size.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -107514,7 +107514,7 @@
             {
               "type": "frame",
               "id": "lBR76",
-              "name": "Slot · PM12a · Bypass: its own zone and its own chord (recommended)",
+              "name": "Slot · PM12a · Bypass: its own line and its own chord (chosen)",
               "width": 640,
               "layout": "vertical",
               "gap": 12,
@@ -107532,7 +107532,7 @@
                       "id": "l4xbA",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "PM12a · Bypass: its own zone and its own chord (recommended)",
+                      "content": "PM12a · Bypass: its own line and its own chord (chosen)",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -107544,7 +107544,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Quiet, above the footer: red only in its icon and words, so the usual action stays the one filled button, last, where ⌘↵ always is. Bypass answers only to ⌥⌘↵. If the repository has no auto-merge, the primary reads “Can't merge yet” and is off.",
+                      "content": "Above the footer, on no red ground: a red outline and red words, so the usual action stays the one filled button, last, where ⌘↵ always is. Bypass answers only to ⌥⌘↵. It lists what isn't met, since GitHub doesn't say which rules the user may bypass; a refusal comes back as PM25. It can't pick the commit email, so it says which one it uses.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -107890,7 +107890,10 @@
                               "id": "T2DeY",
                               "name": "Bypass title",
                               "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
                               "content": "You may merge past these requirements",
+                              "lineHeight": 1.4,
                               "fontFamily": "$font",
                               "fontSize": 12,
                               "fontWeight": "500"
@@ -107900,7 +107903,23 @@
                               "id": "Gx2sS",
                               "name": "Bypass skips",
                               "fill": "$fg-3",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
                               "content": "Skips ci / test (node 20) and a required review",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZwwJV",
+                              "name": "Bypass email",
+                              "fill": "$fg-3",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Commits as your default, m.laine@fitloop.dev",
+                              "lineHeight": 1.4,
                               "fontFamily": "$font",
                               "fontSize": 12,
                               "fontWeight": "normal"
@@ -108043,736 +108062,6 @@
                           }
                         }
                       ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "onirF",
-              "name": "Slot · PM12b · Bypass: armed with a key, closed",
-              "width": 640,
-              "layout": "vertical",
-              "gap": 12,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "O4nHm3",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "uPciS",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "PM12b · Bypass: armed with a key, closed",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "Xkdd8",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "One quiet line until asked for. The panel stays calmer, but what would be skipped is only one key away, not in view.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "BsRnz",
-                  "name": "Merge panel",
-                  "clip": true,
-                  "width": 640,
-                  "fill": "$bg-2",
-                  "cornerRadius": 12,
-                  "stroke": "$border-2",
-                  "strokeWidth": 1,
-                  "effect": {
-                    "type": "shadow",
-                    "shadowType": "outer",
-                    "color": "#000000C0",
-                    "offset": {
-                      "x": 0,
-                      "y": 24
-                    },
-                    "blur": 64
-                  },
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "DojJ9",
-                      "name": "Header",
-                      "width": "fill_container",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "bottom": 1
-                      },
-                      "gap": 8,
-                      "padding": [
-                        11,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "LKlEm",
-                          "name": "icon git-pull-request",
-                          "width": 15,
-                          "height": 15,
-                          "icon": "git-pull-request",
-                          "library": "lucide",
-                          "fill": "$green"
-                        },
-                        {
-                          "type": "text",
-                          "id": "D3OccT",
-                          "name": "Ref",
-                          "fill": "$fg-3",
-                          "content": "mlaine/tasklet#15",
-                          "fontFamily": "$mono",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "hmLin",
-                          "name": "Title",
-                          "fill": "$fg",
-                          "content": "IndexedDB store for issues and pull requests",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "S5VJTa",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "hFWeW",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd Esc",
-                          "descendants": {
-                            "luKkY": {
-                              "content": "Esc"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "N1oppj",
-                      "name": "Verdict",
-                      "width": "fill_container",
-                      "fill": "#F0545C14",
-                      "gap": 8,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "QZY0l",
-                          "name": "icon circle-x",
-                          "width": 15,
-                          "height": 15,
-                          "icon": "circle-x",
-                          "library": "lucide",
-                          "fill": "$red"
-                        },
-                        {
-                          "type": "text",
-                          "id": "i1JeVA",
-                          "name": "Verdict title",
-                          "fill": "$fg",
-                          "content": "Can't merge yet",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "E7Awqp",
-                          "name": "Verdict detail",
-                          "fill": "$fg-2",
-                          "content": "A required check failed · review required",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "K5x2xJ",
-                      "name": "Conditions",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 7,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "i8Oj4",
-                          "name": "Row Checks",
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "TPmb2",
-                              "name": "icon circle-x",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "circle-x",
-                              "library": "lucide",
-                              "fill": "$red"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "U9wseX",
-                              "name": "Key",
-                              "width": 72,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "wvgzj",
-                                  "name": "Cond key",
-                                  "fill": "$fg-3",
-                                  "content": "Checks",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "M0YyDm",
-                              "name": "Cond text",
-                              "fill": "$fg",
-                              "content": "1 required failed, 8 passed",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "BBl6L",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "p3Ddgl",
-                              "name": "Cond right",
-                              "fill": "$fg-3",
-                              "content": "4 required",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "L2l66J",
-                              "name": "icon chevron-right",
-                              "width": 12,
-                              "height": 12,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "eBxTV",
-                          "name": "Row Reviews",
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "ECN2Z",
-                              "name": "icon hourglass",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "hourglass",
-                              "library": "lucide",
-                              "fill": "$amber"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "nsrb4",
-                              "name": "Key",
-                              "width": 72,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "EZgUu",
-                                  "name": "Cond key",
-                                  "fill": "$fg-3",
-                                  "content": "Reviews",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "NkBHS",
-                              "name": "Cond text",
-                              "fill": "$fg",
-                              "content": "No approvals yet",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "K7Ac20",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "PG6Ln",
-                      "type": "ref",
-                      "ref": "aVl7l",
-                      "name": "How it lands",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Q05SHg": {
-                          "content": "idb-store"
-                        },
-                        "l7VX3H": {
-                          "content": "IndexedDB store for issues and pull requests (#15)"
-                        },
-                        "DsjfK": {
-                          "content": "Keeps every list in IndexedDB and reads it into memory on start,\nso the first screen draws from the cache and GitHub's answer follows.\nThe store is only a cache: wiping it loses nothing GitHub holds."
-                        },
-                        "nTIq0": {
-                          "content": "+27 lines"
-                        }
-                      }
-                    },
-                    {
-                      "id": "qURfo",
-                      "type": "ref",
-                      "ref": "wKwA4",
-                      "name": "Footer",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Ln185": {
-                          "name": "Hint Merge past requirements…"
-                        },
-                        "Ln185/m5wIG9": {
-                          "name": "Kbd B"
-                        },
-                        "Ln185/m5wIG9/luKkY": {
-                          "content": "B"
-                        },
-                        "Ln185/IOvfA": {
-                          "content": "Merge past requirements…"
-                        },
-                        "Wycr9": {
-                          "name": "Button Enable auto-merge"
-                        },
-                        "Wycr9/O9dWyI": {
-                          "name": "icon clock",
-                          "icon": "timer"
-                        },
-                        "Wycr9/i9UKWn": {
-                          "content": "Enable auto-merge"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "XLNYJ",
-              "name": "Slot · PM12b · Bypass: armed (after B)",
-              "width": 640,
-              "layout": "vertical",
-              "gap": 12,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "nCAZS",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "kqc6x",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "PM12b · Bypass: armed (after B)",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "LF7yh",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "The footer changes colour and words; ⌘↵ now does this, and Esc disarms. It's two deliberate steps, and the only state where ⌘↵ bypasses.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "UnE2E",
-                  "name": "Merge panel",
-                  "clip": true,
-                  "width": 640,
-                  "fill": "$bg-2",
-                  "cornerRadius": 12,
-                  "stroke": "$border-2",
-                  "strokeWidth": 1,
-                  "effect": {
-                    "type": "shadow",
-                    "shadowType": "outer",
-                    "color": "#000000C0",
-                    "offset": {
-                      "x": 0,
-                      "y": 24
-                    },
-                    "blur": 64
-                  },
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "HKhCt",
-                      "name": "Header",
-                      "width": "fill_container",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "bottom": 1
-                      },
-                      "gap": 8,
-                      "padding": [
-                        11,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "f1dyLK",
-                          "name": "icon git-pull-request",
-                          "width": 15,
-                          "height": 15,
-                          "icon": "git-pull-request",
-                          "library": "lucide",
-                          "fill": "$green"
-                        },
-                        {
-                          "type": "text",
-                          "id": "PiZH7",
-                          "name": "Ref",
-                          "fill": "$fg-3",
-                          "content": "mlaine/tasklet#15",
-                          "fontFamily": "$mono",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "zhYJZ",
-                          "name": "Title",
-                          "fill": "$fg",
-                          "content": "IndexedDB store for issues and pull requests",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "pIekB",
-                          "name": "spacer",
-                          "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "gKT1q",
-                          "type": "ref",
-                          "ref": "w9kS9",
-                          "name": "Kbd Esc",
-                          "descendants": {
-                            "luKkY": {
-                              "content": "Esc"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "yD810",
-                      "name": "Verdict",
-                      "width": "fill_container",
-                      "fill": "#F0545C14",
-                      "gap": 8,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "gha3B",
-                          "name": "icon shield-alert",
-                          "width": 15,
-                          "height": 15,
-                          "icon": "shield-alert",
-                          "library": "lucide",
-                          "fill": "$red"
-                        },
-                        {
-                          "type": "text",
-                          "id": "Taf7R",
-                          "name": "Verdict title",
-                          "fill": "$fg",
-                          "content": "Merging past requirements",
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "otTUN",
-                          "name": "Verdict detail",
-                          "fill": "$fg-2",
-                          "content": "This skips what the repository asks for",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "cbeZ4",
-                      "name": "Conditions",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 7,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "V0LwO",
-                          "name": "Row Skips",
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "NGWnR",
-                              "name": "icon circle-x",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "circle-x",
-                              "library": "lucide",
-                              "fill": "$red"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "n7qWf",
-                              "name": "Key",
-                              "width": 72,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "GRhEi",
-                                  "name": "Cond key",
-                                  "fill": "$fg-3",
-                                  "content": "Skips",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "UizjW",
-                              "name": "Cond text",
-                              "fill": "$fg",
-                              "content": "ci / test (node 20), failed",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "t8oAi",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "G1BNNP",
-                          "name": "Row Skips",
-                          "width": "fill_container",
-                          "gap": 8,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "ohzfx",
-                              "name": "icon hourglass",
-                              "width": 13,
-                              "height": 13,
-                              "icon": "hourglass",
-                              "library": "lucide",
-                              "fill": "$amber"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "XeQC7",
-                              "name": "Key",
-                              "width": 72,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "YNhL6",
-                                  "name": "Cond key",
-                                  "fill": "$fg-3",
-                                  "content": "Skips",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "uNfhh",
-                              "name": "Cond text",
-                              "fill": "$fg",
-                              "content": "A required review, no approvals yet",
-                              "fontFamily": "$font",
-                              "fontSize": 12.5,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Pco6b",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "zENXA",
-                      "type": "ref",
-                      "ref": "aVl7l",
-                      "name": "How it lands",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Q05SHg": {
-                          "content": "idb-store"
-                        },
-                        "l7VX3H": {
-                          "content": "IndexedDB store for issues and pull requests (#15)"
-                        },
-                        "DsjfK": {
-                          "content": "Keeps every list in IndexedDB and reads it into memory on start,\nso the first screen draws from the cache and GitHub's answer follows.\nThe store is only a cache: wiping it loses nothing GitHub holds."
-                        },
-                        "nTIq0": {
-                          "content": "+27 lines"
-                        }
-                      }
-                    },
-                    {
-                      "id": "K8fIUh",
-                      "type": "ref",
-                      "ref": "wKwA4",
-                      "name": "Footer",
-                      "width": "fill_container",
-                      "descendants": {
-                        "Ln185": {
-                          "name": "Hint Disarm"
-                        },
-                        "Ln185/m5wIG9": {
-                          "name": "Kbd Esc"
-                        },
-                        "Ln185/m5wIG9/luKkY": {
-                          "content": "Esc"
-                        },
-                        "Ln185/IOvfA": {
-                          "content": "Disarm"
-                        },
-                        "Wycr9": {
-                          "name": "Button Merge without them",
-                          "fill": "#F0545C1F",
-                          "stroke": "$red"
-                        },
-                        "Wycr9/O9dWyI": {
-                          "fill": "$red"
-                        },
-                        "Wycr9/i9UKWn": {
-                          "fill": "$red",
-                          "content": "Merge without them"
-                        }
-                      }
                     }
                   ]
                 }
@@ -124998,6 +124287,132 @@
                   "fontWeight": "normal"
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "UljqM",
+              "name": "Workflow / Empty state",
+              "reusable": true,
+              "width": 460,
+              "fill": "$bg",
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WgehV",
+                  "name": "Icon tile",
+                  "width": 44,
+                  "height": 44,
+                  "fill": "$bg-3",
+                  "cornerRadius": 12,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "l67Rm",
+                      "name": "Icon",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "workflow",
+                      "library": "lucide",
+                      "fill": "$fg-2"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NbrYV",
+                  "name": "Copy",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "L7GeQ",
+                      "name": "Title",
+                      "fill": "$fg",
+                      "content": "Title",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "iqY4w",
+                      "name": "Text",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Text",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bROQG",
+                  "name": "Detail",
+                  "fill": "$bg-2",
+                  "cornerRadius": 6,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "padding": [
+                    4,
+                    8
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "vyxcT",
+                      "name": "Detail text",
+                      "fill": "$fg-3",
+                      "content": "detail",
+                      "fontFamily": "$mono",
+                      "fontSize": 11.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ojOf0",
+                  "name": "Actions",
+                  "slot": [
+                    "n73Aps",
+                    "JOjbe"
+                  ],
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "rTDR4",
+                      "type": "ref",
+                      "ref": "n73Aps",
+                      "name": "Button Open on GitHub",
+                      "descendants": {
+                        "O9dWyI": {
+                          "name": "icon github",
+                          "icon": "github"
+                        },
+                        "i9UKWn": {
+                          "content": "Open on GitHub"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -127564,7 +126979,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Calm, and specific about what it covers: it says how many repositories were read and when. It isn't a celebration, and it isn't green.",
+                      "content": "Positive and specific about what it covers: how many repositories were read and when. A quiet green check and a line of nerdy copy; no confetti.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -127689,39 +127104,32 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "yak53",
-                                  "name": "Message body",
-                                  "width": 460,
-                                  "layout": "vertical",
-                                  "gap": 10,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "dj7P3",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "Nothing broken",
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "500"
+                                  "id": "eDrW5",
+                                  "type": "ref",
+                                  "ref": "UljqM",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "WgehV": {
+                                      "fill": "#3FB95014",
+                                      "stroke": "#3FB95040"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "hjmig",
-                                      "name": "Text",
-                                      "fill": "$fg-2",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "All 4 tracked repositories were read 40 seconds ago. Failures on refs that don't count are in each repository's Workflows tab.",
-                                      "lineHeight": 1.5,
-                                      "textAlign": "center",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13,
-                                      "fontWeight": "normal"
+                                    "l67Rm": {
+                                      "icon": "circle-check",
+                                      "fill": "$green"
+                                    },
+                                    "L7GeQ": {
+                                      "content": "All green, exit code 0"
+                                    },
+                                    "iqY4w": {
+                                      "content": "Every workflow that counts passes in all 4 tracked repositories. Nothing to fix, so go break something new. Failures on refs that don't count wait in each repository's Workflows tab."
+                                    },
+                                    "vyxcT": {
+                                      "content": "4/4 repositories · 0 broken · read 40s ago"
+                                    },
+                                    "ojOf0": {
+                                      "enabled": false
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -132630,63 +132038,32 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "xicx8",
-                                  "name": "Message body",
-                                  "width": 460,
-                                  "layout": "vertical",
-                                  "gap": 10,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "KEIKG",
-                                      "name": "icon workflow",
-                                      "width": 22,
-                                      "height": 22,
-                                      "icon": "workflow",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
+                                  "id": "rDUhT",
+                                  "type": "ref",
+                                  "ref": "UljqM",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "l67Rm": {
+                                      "icon": "folder-open"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "Odc1Y",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "No workflows in this repository",
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "500"
+                                    "L7GeQ": {
+                                      "content": "No workflows here, yet"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "j0qwuX",
-                                      "name": "Text",
-                                      "fill": "$fg-2",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "GitHub lists no Actions workflows for mlaine/tasklet. If one is added, it shows up here within 3 minutes.",
-                                      "lineHeight": 1.5,
-                                      "textAlign": "center",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13,
-                                      "fontWeight": "normal"
+                                    "iqY4w": {
+                                      "content": "mlaine/tasklet has nothing for Actions to run, so there's nothing to watch. Push a workflow and it shows up here within 3 minutes."
                                     },
-                                    {
+                                    "vyxcT": {
+                                      "content": "ls .github/workflows/ → empty"
+                                    },
+                                    "ojOf0": {
                                       "type": "frame",
-                                      "id": "Y2B7f",
+                                      "id": "VbzwH",
                                       "name": "Actions",
                                       "gap": 8,
-                                      "padding": [
-                                        6,
-                                        0,
-                                        0,
-                                        0
-                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "ROvmW",
+                                          "id": "Wuhbe",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button Open on GitHub",
@@ -132702,7 +132079,7 @@
                                         }
                                       ]
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -141012,63 +140389,37 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "HDaEP",
-                                  "name": "Message body",
-                                  "width": 460,
-                                  "layout": "vertical",
-                                  "gap": 10,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "ngtIr",
-                                      "name": "icon file-x",
-                                      "width": 22,
-                                      "height": 22,
+                                  "id": "P8KSlQ",
+                                  "type": "ref",
+                                  "ref": "UljqM",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "WgehV": {
+                                      "fill": "#F0545C14",
+                                      "stroke": "#F0545C40"
+                                    },
+                                    "l67Rm": {
                                       "icon": "file-x",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
+                                      "fill": "$red"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "b0HPpJ",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "This run has no jobs and no log",
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "500"
+                                    "L7GeQ": {
+                                      "content": "Failed before the first job"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "TKJG8",
-                                      "name": "Text",
-                                      "fill": "$fg-2",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "GitHub failed it before any job started, because the workflow file .github/workflows/deploy.yml is invalid.",
-                                      "lineHeight": 1.5,
-                                      "textAlign": "center",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13,
-                                      "fontWeight": "normal"
+                                    "iqY4w": {
+                                      "content": "GitHub couldn't parse .github/workflows/deploy.yml, so the run never got a runner: no jobs, no log. YAML strikes again."
                                     },
-                                    {
+                                    "vyxcT": {
+                                      "content": "deploy.yml · invalid workflow file"
+                                    },
+                                    "ojOf0": {
                                       "type": "frame",
-                                      "id": "l0oL7j",
+                                      "id": "Gsw56",
                                       "name": "Actions",
                                       "gap": 8,
-                                      "padding": [
-                                        6,
-                                        0,
-                                        0,
-                                        0
-                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "PbSC3",
+                                          "id": "W2WOc1",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button See the error on GitHub",
@@ -141084,7 +140435,7 @@
                                         }
                                       ]
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
@@ -141570,63 +140921,32 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "Go3l3",
-                                          "name": "Message body",
-                                          "width": 460,
-                                          "layout": "vertical",
-                                          "gap": 10,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "lKGhT",
-                                              "name": "icon history",
-                                              "width": 22,
-                                              "height": 22,
-                                              "icon": "history",
-                                              "library": "lucide",
-                                              "fill": "$fg-3"
+                                          "id": "y5w69v",
+                                          "type": "ref",
+                                          "ref": "UljqM",
+                                          "name": "Empty state",
+                                          "descendants": {
+                                            "l67Rm": {
+                                              "icon": "archive-x"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "ilzzr",
-                                              "name": "Title",
-                                              "fill": "$fg",
-                                              "content": "GitHub no longer has this log",
-                                              "fontFamily": "$font",
-                                              "fontSize": 15,
-                                              "fontWeight": "500"
+                                            "L7GeQ": {
+                                              "content": "This log was garbage-collected"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "DEBx0",
-                                              "name": "Text",
-                                              "fill": "$fg-2",
-                                              "textGrowth": "fixed-width",
-                                              "width": "fill_container",
-                                              "content": "It failed at Run ./scripts/renew.sh. GitHub keeps logs for 90 days by default and this run is 98 days old. The next failed run will have a log.",
-                                              "lineHeight": 1.5,
-                                              "textAlign": "center",
-                                              "fontFamily": "$font",
-                                              "fontSize": 13,
-                                              "fontWeight": "normal"
+                                            "iqY4w": {
+                                              "content": "It failed at Run ./scripts/renew.sh. GitHub keeps logs for 90 days by default and this run is 98 days old. The next failed run brings a fresh one."
                                             },
-                                            {
+                                            "vyxcT": {
+                                              "content": "retention 90d · run age 98d"
+                                            },
+                                            "ojOf0": {
                                               "type": "frame",
-                                              "id": "GeylS",
+                                              "id": "iAWfD",
                                               "name": "Actions",
                                               "gap": 8,
-                                              "padding": [
-                                                6,
-                                                0,
-                                                0,
-                                                0
-                                              ],
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "T1MwVr",
+                                                  "id": "zO3dU",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Open on GitHub",
@@ -141642,7 +140962,7 @@
                                                 }
                                               ]
                                             }
-                                          ]
+                                          }
                                         }
                                       ]
                                     }
@@ -144800,63 +144120,37 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "cUaBk",
-                                          "name": "Message body",
-                                          "width": 460,
-                                          "layout": "vertical",
-                                          "gap": 10,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "MWvlQ",
-                                              "name": "icon triangle-alert",
-                                              "width": 22,
-                                              "height": 22,
-                                              "icon": "triangle-alert",
-                                              "library": "lucide",
+                                          "id": "X04Ikp",
+                                          "type": "ref",
+                                          "ref": "UljqM",
+                                          "name": "Empty state",
+                                          "descendants": {
+                                            "WgehV": {
+                                              "fill": "#D6A23A14",
+                                              "stroke": "#D6A23A40"
+                                            },
+                                            "l67Rm": {
+                                              "icon": "cloud-alert",
                                               "fill": "$amber"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "gYjyv",
-                                              "name": "Title",
-                                              "fill": "$fg",
-                                              "content": "The log of build didn't load",
-                                              "fontFamily": "$font",
-                                              "fontSize": 15,
-                                              "fontWeight": "500"
+                                            "L7GeQ": {
+                                              "content": "The log of build didn't load"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "OrJaM",
-                                              "name": "Text",
-                                              "fill": "$fg-2",
-                                              "textGrowth": "fixed-width",
-                                              "width": "fill_container",
-                                              "content": "GitHub answered with an error (502). Other jobs' logs still open with ⌥J and ⌥K.",
-                                              "lineHeight": 1.5,
-                                              "textAlign": "center",
-                                              "fontFamily": "$font",
-                                              "fontSize": 13,
-                                              "fontWeight": "normal"
+                                            "iqY4w": {
+                                              "content": "GitHub answered 502 Bad Gateway, which happens to the best of servers. Other jobs' logs still open with ⌥J and ⌥K."
                                             },
-                                            {
+                                            "vyxcT": {
+                                              "content": "GET …/jobs/build/logs → 502"
+                                            },
+                                            "ojOf0": {
                                               "type": "frame",
-                                              "id": "Hcn3g",
+                                              "id": "t8sJlx",
                                               "name": "Actions",
                                               "gap": 8,
-                                              "padding": [
-                                                6,
-                                                0,
-                                                0,
-                                                0
-                                              ],
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "u4pGM",
+                                                  "id": "uuM9H",
                                                   "type": "ref",
                                                   "ref": "JOjbe",
                                                   "name": "Button Try again",
@@ -144873,7 +144167,7 @@
                                                   }
                                                 },
                                                 {
-                                                  "id": "eJI4G",
+                                                  "id": "BVr3C",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Open on GitHub",
@@ -144889,7 +144183,7 @@
                                                 }
                                               ]
                                             }
-                                          ]
+                                          }
                                         }
                                       ]
                                     },
@@ -146015,63 +145309,37 @@
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "RgTr4",
-                                          "name": "Message body",
-                                          "width": 460,
-                                          "layout": "vertical",
-                                          "gap": 10,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "F9ulL",
-                                              "name": "icon loader",
-                                              "width": 22,
-                                              "height": 22,
+                                          "id": "I7waA8",
+                                          "type": "ref",
+                                          "ref": "UljqM",
+                                          "name": "Empty state",
+                                          "descendants": {
+                                            "WgehV": {
+                                              "fill": "#D6A23A14",
+                                              "stroke": "#D6A23A40"
+                                            },
+                                            "l67Rm": {
                                               "icon": "loader",
-                                              "library": "lucide",
                                               "fill": "$amber"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "pa071",
-                                              "name": "Title",
-                                              "fill": "$fg",
-                                              "content": "build is still running",
-                                              "fontFamily": "$font",
-                                              "fontSize": 15,
-                                              "fontWeight": "500"
+                                            "L7GeQ": {
+                                              "content": "build is still running"
                                             },
-                                            {
-                                              "type": "text",
-                                              "id": "Q0aW62",
-                                              "name": "Text",
-                                              "fill": "$fg-2",
-                                              "textGrowth": "fixed-width",
-                                              "width": "fill_container",
-                                              "content": "GitHub has no way to stream a running job's log to githq. The log opens here when the job finishes; until then it's on GitHub.",
-                                              "lineHeight": 1.5,
-                                              "textAlign": "center",
-                                              "fontFamily": "$font",
-                                              "fontSize": 13,
-                                              "fontWeight": "normal"
+                                            "iqY4w": {
+                                              "content": "GitHub doesn't stream a running job's log to githq. It lands here the moment the job finishes; until then, watch it live on GitHub."
                                             },
-                                            {
+                                            "vyxcT": {
+                                              "content": "status: in_progress · 2m 14s"
+                                            },
+                                            "ojOf0": {
                                               "type": "frame",
-                                              "id": "yB0CN",
+                                              "id": "dib29",
                                               "name": "Actions",
                                               "gap": 8,
-                                              "padding": [
-                                                6,
-                                                0,
-                                                0,
-                                                0
-                                              ],
                                               "alignItems": "center",
                                               "children": [
                                                 {
-                                                  "id": "THTXz",
+                                                  "id": "t1e0r",
                                                   "type": "ref",
                                                   "ref": "n73Aps",
                                                   "name": "Button Watch on GitHub",
@@ -146087,7 +145355,7 @@
                                                 }
                                               ]
                                             }
-                                          ]
+                                          }
                                         }
                                       ]
                                     },
@@ -147856,63 +147124,32 @@
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "CPljT",
-                                  "name": "Message body",
-                                  "width": 460,
-                                  "layout": "vertical",
-                                  "gap": 10,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "JCeIy",
-                                      "name": "icon ban",
-                                      "width": 22,
-                                      "height": 22,
-                                      "icon": "ban",
-                                      "library": "lucide",
-                                      "fill": "$fg-3"
+                                  "id": "G9ETT",
+                                  "type": "ref",
+                                  "ref": "UljqM",
+                                  "name": "Empty state",
+                                  "descendants": {
+                                    "l67Rm": {
+                                      "icon": "power-off"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "K1Rtw",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "Can't tell how this repository is doing",
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "500"
+                                    "L7GeQ": {
+                                      "content": "Actions is switched off here"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "bAq2A",
-                                      "name": "Text",
-                                      "fill": "$fg-2",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "Actions is turned off for fitloop/api, so GitHub lists no workflows or runs. It isn't counted in the total.",
-                                      "lineHeight": 1.5,
-                                      "textAlign": "center",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13,
-                                      "fontWeight": "normal"
+                                    "iqY4w": {
+                                      "content": "fitloop/api has Actions turned off, so GitHub lists no workflows or runs and there's nothing to read. It isn't counted in the total."
                                     },
-                                    {
+                                    "vyxcT": {
+                                      "content": "actions: disabled"
+                                    },
+                                    "ojOf0": {
                                       "type": "frame",
-                                      "id": "NR3xh",
+                                      "id": "ICeTi",
                                       "name": "Actions",
                                       "gap": 8,
-                                      "padding": [
-                                        6,
-                                        0,
-                                        0,
-                                        0
-                                      ],
                                       "alignItems": "center",
                                       "children": [
                                         {
-                                          "id": "gzUsM",
+                                          "id": "oFdk0",
                                           "type": "ref",
                                           "ref": "n73Aps",
                                           "name": "Button Open Actions settings on GitHub",
@@ -147928,7 +147165,7 @@
                                         }
                                       ]
                                     }
-                                  ]
+                                  }
                                 }
                               ]
                             }
