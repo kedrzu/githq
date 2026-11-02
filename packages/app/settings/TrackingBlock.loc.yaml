@@ -1,0 +1,20 @@
+title:
+  en: Tracking
+repositoryDescription:
+  en: Whether githq keeps a copy of this repository's issues, pull requests and workflows.
+projectDescription:
+  en: Whether githq keeps a copy of this project's items, fields and views.
+tracked:
+  en: Tracked
+openItems:
+  plural: count
+  en:
+    zero: no open items in this browser
+    one: 1 open item in this browser
+    many: '{formatted} open items in this browser'
+untrack:
+  en: Untrack
+repositoryUntrackNote:
+  en: The same as Untrack on its row in Repositories, then back to Repositories.
+projectUntrackNote:
+  en: The same as Untrack on its row in Projects, then back to Projects.

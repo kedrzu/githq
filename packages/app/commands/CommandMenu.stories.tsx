@@ -57,11 +57,18 @@ const NAVIGATION: NavigationData = {
         },
         { id: 'settings', group: 'goTo', kind: 'settings', title: 'Settings', key: ',', path: '/settings' },
         {
-            id: 'settings:tracking',
+            id: 'settings:repositories',
             group: 'goTo',
-            kind: 'tracking',
-            title: 'Settings: What to track',
+            kind: 'repositories',
+            title: 'Settings: Repositories',
             path: '/settings',
+        },
+        {
+            id: 'settings:projects',
+            group: 'goTo',
+            kind: 'projects',
+            title: 'Settings: Projects',
+            path: '/settings?tab=projects',
         },
         {
             id: 'settings:sync',

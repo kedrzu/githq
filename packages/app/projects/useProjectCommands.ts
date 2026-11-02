@@ -1,13 +1,13 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, EyeOff, Github, LayoutList, Link, SquarePen } from 'lucide-vue-next';
+import { ArrowRight, EyeOff, Github, LayoutList, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
 import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
-import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, getProjectSettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { ProjectStore } from './ProjectStore.js';
@@ -20,6 +20,7 @@ export interface ProjectCommands {
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
+    readonly settings: Command;
     readonly untrack: Command;
 }
 
@@ -30,7 +31,7 @@ export interface ProjectCommandsTarget extends ProjectAddress {
 
 /**
  * The actions of a project: going to its view or one of its saved views, a new issue in it (where the user may add
- * one), its page on GitHub and the link to it, and no longer tracking it (only while it is tracked). The sidebar's
+ * one), its page on GitHub and the link to it, its settings (T17) and no longer tracking it (both only while it is tracked). The sidebar's
  * menu of a project offers them all; the project's view offers its page on GitHub in the command menu.
  */
 export function useProjectCommands(): (target: ProjectCommandsTarget) => ProjectCommands {
@@ -97,6 +98,14 @@ export function useProjectCommands(): (target: ProjectCommandsTarget) => Project
                 section: 'view',
                 icon: Link,
                 run: () => void navigator.clipboard.writeText(url),
+            },
+            settings: {
+                id: 'project.settings',
+                title: t(l.settings),
+                section: 'view',
+                icon: Settings,
+                when: () => target.id !== null && tracking.isTracked({ kind: 'project', id: target.id }),
+                run: () => void router.push(getProjectSettingsPath(target)),
             },
             untrack: {
                 id: 'project.untrack',

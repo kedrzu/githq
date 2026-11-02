@@ -20,6 +20,8 @@ export interface FilteredListKeys {
     isInside(target: EventTarget | null): boolean;
     /** The filter field's keys: Esc clears the filter, ↓ goes to the first row. */
     onFilterKeydown(event: KeyboardEvent): void;
+    /** Moves the focus to the row after or before `from`; from outside the rows, to the first; up from the first, to the filter. */
+    moveFocus(delta: 1 | -1, from: EventTarget | null): void;
 }
 
 /**
@@ -41,7 +43,7 @@ export function useFilteredListKeys(options: UseFilteredListKeysOptions): Filter
         }
     });
 
-    return { isInside, onFilterKeydown };
+    return { isInside, onFilterKeydown, moveFocus };
 
     function isInside(target: EventTarget | null) {
         return target instanceof Node && toValue(options.container)?.contains(target) === true;
@@ -57,7 +59,6 @@ export function useFilteredListKeys(options: UseFilteredListKeysOptions): Filter
         }
     }
 
-    /** Moves the focus to the next or previous row; up from the first goes back to the filter. */
     function moveFocus(delta: 1 | -1, from: EventTarget | null) {
         const elements = [...(toValue(options.container)?.querySelectorAll<HTMLElement>(rows) ?? [])];
         const index = elements.findIndex(

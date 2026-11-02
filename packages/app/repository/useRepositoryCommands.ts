@@ -1,12 +1,12 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, CircleDot, EyeOff, GitPullRequest, Github, Link, SquarePen } from 'lucide-vue-next';
+import { ArrowRight, CircleDot, EyeOff, GitPullRequest, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
-import { getRepositoryPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
+import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import * as l from './useRepositoryCommands.loc.js';
@@ -19,12 +19,13 @@ export interface RepositoryCommands {
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
+    readonly settings: Command;
     readonly untrack: Command;
 }
 
 /**
  * The actions of a repository (`owner/name`): going to its view or one kind of its items, a new issue in it, its
- * page on GitHub and the link to it, and no longer tracking it (only while it is tracked). The sidebar's menu of a
+ * page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is tracked). The sidebar's menu of a
  * repository offers them all; the repository's view offers its page on GitHub in the command menu.
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
@@ -79,6 +80,14 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 section: 'view',
                 icon: Link,
                 run: () => void navigator.clipboard.writeText(url),
+            },
+            settings: {
+                id: 'repository.settings',
+                title: t(l.settings),
+                section: 'view',
+                icon: Settings,
+                when: () => tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                run: () => void router.push(getRepositorySettingsPath(nameWithOwner)),
             },
             untrack: {
                 id: 'repository.untrack',

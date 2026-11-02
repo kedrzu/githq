@@ -26,11 +26,9 @@ test('`,` opens Settings; the command menu offers it once, under "Go to" with it
     await expect.element(settings).toBeInTheDocument();
     expect(settings.elements()).toHaveLength(1);
     await expect.element(settings).toHaveTextContent(',');
-    for (const section of ['What to track', 'Sync settings', 'Account']) {
+    for (const section of ['Repositories', 'Projects', 'Sync settings', 'Account']) {
         await expect.element(menu.getByRole('option', { name: `Settings: ${section}` })).toBeInTheDocument();
     }
-
-    await expect.element(menu.getByRole('option', { name: 'Settings: Projects' })).not.toBeInTheDocument();
 
     await userEvent.keyboard('settings: sync{Enter}');
     await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=sync');
