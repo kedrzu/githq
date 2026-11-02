@@ -211,6 +211,6 @@ Still open, not settled by the screens:
   (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
 - **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
-- **Wording left as it was:** lists and the sidebar still say "Your draft review · 3 comments unsent" and "Draft reviews" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72); the owner has only reworded the toolbar so far.
+- **Wording left as it was:** lists still say "Your draft review · 3 comments unsent" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72). The owner has reworded the toolbar and named the sidebar entry "Draft reviews".
 - **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
   the drafts list (CR34) shows the pull requests themselves.
