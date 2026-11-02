@@ -51,3 +51,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   same way) → D17 rewritten, prior form to history (Q7 closed). Owner: an open draft must be prominent in the review
   screen, marked in lists, and a sidebar entry listing PRs with drafts appears only when some exist → D21. Opened Q8:
   what the second key does while a draft is open.
+- 2026-11-02 — Owner agreed: second key with a draft open adds and submits the draft → D22 (Q8 closed); reading + draft warnings first, writing second → D23. Next: README story, rightsize.

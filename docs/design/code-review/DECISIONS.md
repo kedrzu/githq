@@ -268,8 +268,8 @@ special case.
 
 **A comment goes either straight to the pull request as a single comment, or into a draft review — GitHub's
 pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does when no draft is open;
-`Cmd+Shift+Enter` does the other. While a draft is open on the pull request, a comment can only join it: what the
-second key does then is [Q8](#q8).** (2026-11-02, owner: "some prefer to write a draft review and then throw it all
+`Cmd+Shift+Enter` does the other. While a draft is open on the pull request, a comment can only join it, and the second
+key submits the draft ([D22](#d22)).** (2026-11-02, owner: "some prefer to write a draft review and then throw it all
 as one review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference
 so far — agent's reading, the synced settings holding only what is tracked
 ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
@@ -343,8 +343,26 @@ agent does not see them, and cannot post its own replies or comments while the d
 > would ride. Not checked: whether starting a draft on github.com moves anything the background refresh notices, so a
 > draft begun there may show late; and drafts on pull requests outside githq's copy are not found at all.
 
-## Q8
+## D22
 
-**Open: with a draft open, what does the second key do?** Either it adds the comment and submits the whole draft at
-once as a comment review (so it does reach the agent), or it is unavailable and says why.
+**While a draft review is open on the pull request, the second key adds the comment and submits the whole draft at
+once as a comment review; its label says so, with the count ("Submit draft (4 comments)").** (2026-11-02, owner,
+on the agent's recommendation)
 
+**Why.** The usual moment to want a comment out is when the agent on the other side needs it; this turns the trap
+into the shortcut. Accepted risk: someone wanting to send one remark sends the whole draft — hence the label.
+
+**Rejected.**
+
+- The key unavailable while a draft is open, saying why — leaves the comments stuck, which is the owner's problem.
+
+## D23
+
+**Built in two steps. First reading: the diff with context, whitespace and both layouts, collapsed and viewed files,
+filters and selection, every thread in place with exact jumps, the conversation sidebar, moving through a stack, the
+remembered state — plus the open-draft warnings of [D21](#d21), which help even while drafts are still written on
+github.com. Then writing: comments, replies, resolving, drafts and submitting.** (2026-11-02, owner, on the agent's
+proposal)
+
+**Why.** Reading already replaces most of github.com's review screen and is where the worker is measured
+([D20](#d20)); draft warnings catch drafts started on github.com today.
