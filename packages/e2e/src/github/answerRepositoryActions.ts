@@ -9,6 +9,8 @@ export interface GitHubActionsState {
     readonly workflows: readonly GitHubActionsWorkflow[];
     /** In any order: the lists answer the newest first. */
     readonly runs: readonly GitHubActionsRun[];
+    /** The names of its tags. */
+    readonly tags: readonly string[];
 }
 
 /** A workflow of a repository. */
@@ -36,13 +38,13 @@ export interface GitHubActionsRun {
 }
 
 /** A repository with no workflows, on `main`: what every tracked repository answers unless a test gives it some. */
-export const NO_ACTIONS: GitHubActionsState = { defaultBranch: 'main', workflows: [], runs: [] };
+export const NO_ACTIONS: GitHubActionsState = { defaultBranch: 'main', workflows: [], runs: [], tags: [] };
 
 /**
  * Answers what the app reads of a tracked repository's GitHub Actions, from `read()` at each request: the
  * repository's latest runs (`GET /repos/{o}/{r}/actions/runs`), the repository itself for its default branch
- * (`GET /repos/{o}/{r}`), its workflows (`…/actions/workflows`) and a workflow's runs by `branch`
- * (`…/actions/workflows/{id}/runs`, one page, no `Link`). Every answer carries an ETag hashed from its body and is
+ * (`GET /repos/{o}/{r}`), its tags (`…/git/matching-refs/tags`), its workflows (`…/actions/workflows`) and a
+ * workflow's runs by `branch` or on any ref (`…/actions/workflows/{id}/runs`, one page, no `Link`). Every answer carries an ETag hashed from its body and is
  * `304` while it is the one the app sent back, as GitHub's are. A workflow's runs are answered once the list named it.
  */
 export function answerRepositoryActions(
@@ -64,6 +66,12 @@ export function answerRepositoryActions(
                 .map(run => toRestRun(nameWithOwner, run)),
         });
     });
+    github.rest('GET', `${base}/git/matching-refs/tags`, request =>
+        conditional(
+            request,
+            read().tags.map(tag => ({ ref: `refs/tags/${tag}`, object: { sha: tag, type: 'commit' } })),
+        ),
+    );
     github.rest('GET', `${base}/actions/workflows`, request => {
         const { workflows } = read();
         for (const { id } of workflows) {

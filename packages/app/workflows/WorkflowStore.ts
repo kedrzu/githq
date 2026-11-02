@@ -6,6 +6,7 @@ import { computed, shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { Clock } from '@/services/Clock.js';
+import { readWorkflowSettings } from '@/settings/sync/SettingsDocument.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
@@ -13,6 +14,8 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
+import { getKnownRefs } from './utils/getKnownRefs.js';
+import type { KnownRef } from './utils/getKnownRefs.js';
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
 import { WorkflowPersistence } from './WorkflowPersistence.js';
 import type { RepositoryWorkflowState, RepositoryWorkflows, WorkflowRefSettings } from './WorkflowTypes.js';
@@ -34,8 +37,6 @@ export interface WorkflowTotals {
     readonly hasUnread: boolean;
 }
 
-/** The refs that count while a repository's settings say nothing else (actions D5). */
-const DEFAULT_REF_SETTINGS: WorkflowRefSettings = { countDefaultBranch: true, patterns: [] };
 /** How often "broken for less than a day" is told again: a quarter of an hour late is little against a day. */
 const NOW_TICK_MS = 15 * 60_000;
 
@@ -49,7 +50,7 @@ interface Session {
 }
 
 /**
- * The tracked repositories' GitHub Actions workflows and their latest counted runs (actions D2, D4), as the sync last
+ * The tracked repositories' GitHub Actions workflows, their latest runs and tags (actions D2, D4), as the sync last
  * read them, and how each repository's workflows stand — worked out on read from them and from the refs that count
  * ({@link getRefSettings}), so a changed pattern needs no new read. Only tracked repositories are kept: one the user
  * stops tracking has its workflows dropped, here and on disk.
@@ -124,6 +125,7 @@ export const WorkflowStore = defineService({
             get,
             getState,
             getRefSettings,
+            getKnownRefs: getRepositoryKnownRefs,
             set,
             remove,
         };
@@ -149,11 +151,22 @@ export const WorkflowStore = defineService({
         }
 
         /**
-         * Which refs light the repository's counters (actions D5): its default branch for now, for every repository.
-         * The one place they are decided — the repository's settings (D14) are read here once they exist.
+         * Which refs light the repository's counters (actions D5, D14): its settings entry's `workflows`, the default
+         * while it has none or one not understood. The one place they are decided; reactive, so a change recomputes
+         * every state at once.
          */
-        function getRefSettings(_nameWithOwner: string): WorkflowRefSettings {
-            return DEFAULT_REF_SETTINGS;
+        function getRefSettings(nameWithOwner: string): WorkflowRefSettings {
+            return readWorkflowSettings(
+                tracking.document.repositories.find(entry => entry.nameWithOwner === nameWithOwner),
+            );
+        }
+
+        /**
+         * The refs githq has seen runs on in the tracked repository, for showing what a pattern matches (actions D13);
+         * empty before the first read. Reactive.
+         */
+        function getRepositoryKnownRefs(nameWithOwner: string): KnownRef[] {
+            return getKnownRefs(storedRef.value.get(nameWithOwner));
         }
 
         /** Keeps what the sync read of a tracked repository; ignored while signed out or once it is no longer tracked. */

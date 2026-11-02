@@ -17,7 +17,11 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
-import { EMPTY_SETTINGS_DOCUMENT, readSettingsDocument } from '@/settings/sync/SettingsDocument.js';
+import {
+    EMPTY_SETTINGS_DOCUMENT,
+    readSettingsDocument,
+    writeWorkflowSettings,
+} from '@/settings/sync/SettingsDocument.js';
 import type { SettingsDocument, SettingsProject, SettingsRepository } from '@/settings/sync/SettingsDocument.js';
 import { readSettingsSaving, SETTINGS_SAVING_OFF } from '@/settings/sync/SettingsSaving.js';
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
@@ -26,6 +30,7 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
+import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
 import { TrackingPersistence } from './TrackingPersistence.js';
 import type { PersistedTracking } from './TrackingPersistence.js';
@@ -180,6 +185,7 @@ export const TrackingStore = defineService({
             track,
             untrack,
             replaceDocument,
+            setWorkflowSettings,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -274,6 +280,21 @@ export const TrackingStore = defineService({
         }
 
         /**
+         * Sets which refs light the repository's workflow counters (actions D14) in its settings entry: a change the
+         * user made here, kept, sent to the other tabs and saved like a change of what is tracked. Nothing when the
+         * settings hold no entry of it, or that value already.
+         */
+        function setWorkflowSettings(nameWithOwner: string, settings: WorkflowRefSettings) {
+            const written = write(kept => {
+                const document = writeWorkflowSettings({ document: kept.document, nameWithOwner, settings });
+                return document && { ...kept, document };
+            });
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
          * Tracks exactly the choice `change` makes of what is tracked now, as {@link choose} does, without counting as
          * the user's choice; nothing when it makes none.
          */
@@ -293,8 +314,8 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Calls `listener` after the user changed what is tracked in this tab — chose, tracked or untracked — not when
-         * another tab did, nor when the document was replaced.
+         * Calls `listener` after the user changed their settings in this tab — chose, tracked, untracked or set a
+         * repository's workflows — not when another tab did, nor when the document was replaced.
          */
         function onLocalChange(listener: () => void) {
             changeListeners.push(listener);

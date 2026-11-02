@@ -107,6 +107,15 @@ export interface SyncLoopStatus {
     readonly pausedBucket: string | null;
 }
 
+/** What a screen showing workflows asks of {@link SyncEngine}'s `pollWorkflowsNow`. */
+export interface PollWorkflowsNowOptions {
+    /**
+     * `owner/name` whose workflows' recent runs on any ref are read too — its Workflows tab opened, which lists them
+     * though they may count nowhere (actions D2, D7).
+     */
+    readonly anyRefOf?: string;
+}
+
 const IDLE: SyncLoopStatus = { running: false, failing: false, pausedUntil: null, pausedBucket: null };
 /** The loops a surface's freshness is told from. */
 const FRESHNESS_LOOPS: readonly SyncLoop[] = ['myWork', 'repositories', 'projects', 'workflows'];
@@ -342,12 +351,25 @@ export const SyncEngine = defineService({
          * Polls the workflows now — a screen showing them opened (actions D2) — unless a poll of them is running. In a
          * tab that does not sync, the syncing tab is asked to.
          */
-        function pollWorkflowsNow() {
+        function pollWorkflowsNow(options: PollWorkflowsNowOptions = {}) {
+            const anyRefOf = options.anyRefOf ?? null;
             if (session) {
-                void run(session, 'workflows');
+                pollWorkflows(session, anyRefOf);
             } else if (followed) {
-                tabs.publish({ kind: 'pollWorkflows' });
+                tabs.publish({ kind: 'pollWorkflows', anyRefOf });
             }
+        }
+
+        /**
+         * Polls the workflows, with the runs on any ref of `anyRefOf` — read by the running poll, or by the next one,
+         * when one runs already.
+         */
+        function pollWorkflows(current: Session, anyRefOf: string | null) {
+            if (anyRefOf !== null) {
+                workflowSync.readAnyRef(anyRefOf);
+            }
+
+            void run(current, 'workflows');
         }
 
         function getLoopFreshness(
@@ -414,7 +436,7 @@ export const SyncEngine = defineService({
                     break;
                 case 'pollWorkflows':
                     if (session) {
-                        void run(session, 'workflows');
+                        pollWorkflows(session, message.anyRefOf);
                     }
 
                     break;

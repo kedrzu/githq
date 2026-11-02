@@ -313,6 +313,7 @@ interface WorldRepository {
     defaultBranch: string;
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
+    tags: string[];
 }
 
 interface WorldProject {
@@ -562,6 +563,11 @@ export class GitHubWorld {
             conclusion: run.conclusion,
             createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
         });
+    }
+
+    /** Gives the repository a tag, so a run on a ref of that name is on the tag. */
+    tag(nameWithOwner: string, name: string): void {
+        this.getRepository(nameWithOwner).tags.push(name);
     }
 
     /** The issue of `repository` titled `title`, as GitHub has it now; `undefined` when there is none. */
@@ -1733,6 +1739,7 @@ export class GitHubWorld {
                 defaultBranch: 'main',
                 workflows: [],
                 runs: [],
+                tags: [],
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {

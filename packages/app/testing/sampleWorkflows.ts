@@ -18,7 +18,7 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 /** The refs the samples count: `main` and the tags `v*`. */
-const SAMPLE_REFS: WorkflowRefSettings = { countDefaultBranch: true, patterns: ['v*'] };
+const SAMPLE_REFS: WorkflowRefSettings = { defaultBranch: true, refs: ['v*'] };
 
 /** A sample run, by its conclusion and how long before {@link SAMPLE_WORKFLOWS_NOW} it was created. */
 export interface SampleRun {
@@ -26,7 +26,7 @@ export interface SampleRun {
     readonly conclusion: string | null;
     /** How long ago, in minutes (`m`), hours (`h`) or days (`d`): `14m`, `3h`, `4d`. */
     readonly ago: `${number}${'d' | 'h' | 'm'}`;
-    /** `main` unless given: the default branch, which counts. */
+    /** `main` unless given: the default branch, which counts; a version (`v0.1.0`) is a tag. */
     readonly branch?: string;
 }
 
@@ -46,7 +46,7 @@ export interface SampleWorkflowParams {
 
 /**
  * A workflow's state as `getRepositoryWorkflowState` works it out from sample runs, at {@link SAMPLE_WORKFLOWS_NOW},
- * counting `main` and the tags `v*`.
+ * counting `main` and the tags `v*`, each in its own group.
  */
 export function sampleWorkflowState(params: SampleWorkflowParams): WorkflowState {
     const repository = params.repository ?? 'fitloop/webapp';
@@ -89,13 +89,16 @@ export function sampleStoredWorkflows(params: SampleRepositoryParams): Repositor
 }
 
 function sampleStored(repository: string, workflows: readonly SampleWorkflowParams[]): RepositoryWorkflows {
+    const refs = workflows.flatMap(params => params.runs.map(run => run.branch ?? 'main'));
     return {
         nameWithOwner: repository,
         defaultBranch: 'main',
         repositoryEtag: null,
         runsEtag: null,
         workflowsEtag: null,
+        tagsEtag: null,
         workflows: workflows.map(params => sampleStoredWorkflow(repository, params)),
+        tags: [...new Set(refs.filter(ref => /^v\d+\./.test(ref)))],
         unavailable: null,
     };
 }

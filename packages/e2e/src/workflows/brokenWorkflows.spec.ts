@@ -1,4 +1,7 @@
+import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
+
 import { expect, test } from '../fixtures.js';
+import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { BrokenWorkflowsScreenHarness } from '../harnesses/BrokenWorkflowsScreen.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
@@ -62,4 +65,41 @@ test('with nothing broken the sidebar has no entry; ⌘K "Broken workflows" open
     await expect(screen.root).toContainText('1/1 repositories · 0 broken');
     // On its own screen the entry shows, with nothing broken.
     await expect(shell.brokenWorkflowsCount).toHaveText('0');
+});
+
+test('a release failing on a tag lights nothing by default; with "v*" in the repository’s settings it is broken on the pattern, beside a pass on the default branch', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.tag(SAMPLE_REPOSITORY, 'v1.0-rc.1');
+    world.workflow({
+        repository: SAMPLE_REPOSITORY,
+        name: 'Release',
+        runs: [
+            { conclusion: 'success', minutesAgo: 600 },
+            { conclusion: 'failure', minutesAgo: 30, branch: 'v1.0-rc.1' },
+        ],
+    });
+    const shell = await openTrackedWork(page, github, world);
+    await new CommandMenuHarness(page).run('Broken workflows');
+    const screen = new BrokenWorkflowsScreenHarness(page);
+    await expect(screen.allGreen).toBeVisible();
+
+    // The repository's settings entry takes the patterns (actions D14); no screen writes them yet.
+    const key = `githq.settings.${SAMPLE_VIEWER.viewer.login}`;
+    const kept = await page.evaluate(slot => localStorage.getItem(slot) ?? '', key);
+    const withPatterns = JSON.stringify(
+        JSON.parse(kept, (_, value: unknown) =>
+            isPlainObject(value) && value.nameWithOwner === SAMPLE_REPOSITORY
+                ? { ...value, workflows: { defaultBranch: true, refs: ['v*'] } }
+                : value,
+        ),
+    );
+    await page.evaluate(([slot, value]) => localStorage.setItem(slot, value), [key, withPatterns] as const);
+    await page.reload();
+
+    await expect(shell.brokenWorkflowsCount).toHaveText('1');
+    await expect(screen.group('New')).toContainText('Release');
+    await expect(screen.group('New')).toContainText('v*');
 });

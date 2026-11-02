@@ -26,14 +26,16 @@ export interface ActionsWorldRepository {
     workflows: ActionsWorldWorkflow[];
     /** In any order: the lists answer the newest first. */
     runs: ActionsWorldRun[];
+    /** The names of its tags. */
+    tags: string[];
     /** GitHub answers the repository's Actions with this error status instead (403, 404, 401, …); `null` for none. */
     refusal: number | null;
 }
 
 /**
  * GitHub Actions in the fake GitHub, answering what `WorkflowSync` asks: a repository's latest runs, the repository
- * itself (its default branch), its workflows and a workflow's runs (by `branch`, a page at a time with a `Link` to
- * the next). Each answer's ETag is a hash of its body, answered `304` while it is the one sent. A repository the test
+ * itself (its default branch), its tags, its workflows and a workflow's runs (by `branch` or on any ref, a page at a
+ * time with a `Link` to the next). Each answer's ETag is a hash of its body, answered `304` while it is the one sent. A repository the test
  * never set up has no workflows, on `main`.
  */
 export interface ActionsWorld {
@@ -54,7 +56,7 @@ export function createActionsWorld(): ActionsWorld {
     function repository(nameWithOwner: string) {
         let found = world.repositories.get(nameWithOwner);
         if (!found) {
-            found = { defaultBranch: 'main', workflows: [], runs: [], refusal: null };
+            found = { defaultBranch: 'main', workflows: [], runs: [], tags: [], refusal: null };
             world.repositories.set(nameWithOwner, found);
         }
 
@@ -68,7 +70,7 @@ export function createActionsWorld(): ActionsWorld {
 
         const path = request.operation.slice('GET '.length);
         const match =
-            /^\/repos\/([^/]+\/[^/]+)(\/actions\/runs|\/actions\/workflows|\/actions\/workflows\/(\d+)\/runs)?$/.exec(
+            /^\/repos\/([^/]+\/[^/]+)(\/actions\/runs|\/actions\/workflows|\/actions\/workflows\/(\d+)\/runs|\/git\/matching-refs\/tags)?$/.exec(
                 path,
             );
         const nameWithOwner = match?.[1];
@@ -85,6 +87,13 @@ export function createActionsWorld(): ActionsWorld {
 
         if (found.refusal !== null) {
             return { status: found.refusal, body: { message: 'Refused' } };
+        }
+
+        if (match[2] === '/git/matching-refs/tags') {
+            return conditional(
+                request,
+                found.tags.map(tag => ({ ref: `refs/tags/${tag}`, object: { sha: `sha-${tag}`, type: 'commit' } })),
+            );
         }
 
         if (match[2] === '/actions/runs') {

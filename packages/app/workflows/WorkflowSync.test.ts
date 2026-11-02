@@ -39,8 +39,9 @@ const WORKFLOWS_INTERVAL = 180_000;
 const DEPLOY = 1;
 const CI = 2;
 const RETIRED = 3;
+const RELEASE = 4;
 
-test('the first read: the latest runs, the default branch, the workflows, and each active workflow’s runs on the default branch', async () => {
+test('the first read: the latest runs, the default branch, the workflows, the tags, and each active workflow’s runs on the default branch', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows } = await setup(world);
     tracking.choose(TRACK_BOTH);
@@ -50,11 +51,13 @@ test('the first read: the latest runs, the default branch, the workflows, and ea
         'GET /repos/acme/web/actions/runs per_page=10',
         'GET /repos/acme/web',
         'GET /repos/acme/web/actions/workflows per_page=100',
+        'GET /repos/acme/web/git/matching-refs/tags',
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10`,
         `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10`,
         'GET /repos/acme/api/actions/runs per_page=10',
         'GET /repos/acme/api',
         'GET /repos/acme/api/actions/workflows per_page=100',
+        'GET /repos/acme/api/git/matching-refs/tags',
     ]);
 
     // Deploy failed on main; CI passed there (its failure on a pull request's branch does not count); the retired
@@ -98,7 +101,8 @@ test('while nothing moves a poll costs three free requests per repository and wr
     expect(published.mock.calls.filter(([message]) => message.kind === 'workflows')).toEqual([]);
     expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'fresh', checkedAt: TEST_START + WORKFLOWS_INTERVAL });
 
-    // Deploy runs again on main and passes: every active workflow is asked, conditionally, and CI answers 304.
+    // Deploy runs again on main and passes: the tags and every active workflow are asked, conditionally, and the
+    // unchanged answer 304.
     world.actions.repository('acme/web').runs.push(run(20, DEPLOY, 'success', '2026-10-30T13:01:00Z'));
     session.github.requests.length = 0;
     await session.clock.advance(WORKFLOWS_INTERVAL);
@@ -106,6 +110,7 @@ test('while nothing moves a poll costs three free requests per repository and wr
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
         'GET /repos/acme/web conditional',
         'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        'GET /repos/acme/web/git/matching-refs/tags conditional',
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
         `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
@@ -223,6 +228,177 @@ test('a workflow gone from GitHub’s list goes; one with only cancelled runs on
         ['Deploy', 'broken'],
         ['CI', 'passing'],
         ['Retired', 'disabled'],
+    ]);
+});
+
+test('with a pattern, each active workflow’s runs on any ref are read too — paging back on the first read until the pattern has a verdict — and a failure on a tag counts', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    actions.tags = ['v1.0-rc.1'];
+    actions.workflows.push({ id: RELEASE, name: 'Release', state: 'active' });
+    actions.runs.push(run(60, RELEASE, 'failure', '2026-10-29T00:00:00Z', { headBranch: 'v1.0-rc.1' }));
+    // Its runs on pull requests' branches fill the first page of its runs on any ref.
+    for (let id = 300; id < 340; id++) {
+        actions.runs.push(
+            run(
+                id,
+                RELEASE,
+                'success',
+                `2026-10-29T${String(Math.floor((id - 300) / 2) + 1).padStart(2, '0')}:00:00Z`,
+                {
+                    headBranch: 'feature',
+                    event: 'pull_request',
+                },
+            ),
+        );
+    }
+
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: true, refs: ['v*'] });
+    await session.clock.advance(0);
+
+    const releaseRuns = (requests: readonly string[]) => requests.filter(request => request.includes('/workflows/4/'));
+    expect(releaseRuns(actionsRequests(session.github.requests))).toEqual([
+        'GET /repos/acme/web/actions/workflows/4/runs branch=main per_page=10',
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30',
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30 page=2',
+    ]);
+    const release = workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === RELEASE);
+    expect(release).toMatchObject({ state: 'broken' });
+    expect(release?.brokenGroups.map(group => [group.group, group.failedRef])).toEqual([
+        [
+            { kind: 'pattern', pattern: 'v*' },
+            { name: 'v1.0-rc.1', kind: 'tag' },
+        ],
+    ]);
+    expect(workflows.get('acme/web')?.tags).toEqual(['v1.0-rc.1']);
+    expect(workflows.totals.brokenCount).toBe(2);
+
+    // Another pull request run: read from the first page on, the deciding failure kept however far back.
+    actions.runs.push(
+        run(400, RELEASE, 'success', '2026-10-31T00:00:00Z', { headBranch: 'feature', event: 'pull_request' }),
+    );
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(releaseRuns(actionsRequests(session.github.requests))).toEqual([
+        'GET /repos/acme/web/actions/workflows/4/runs branch=main per_page=10 conditional',
+        'GET /repos/acme/web/actions/workflows/4/runs per_page=30 conditional',
+    ]);
+    expect(workflows.getState('acme/web').workflows.find(entry => entry.workflow.id === RELEASE)?.state).toBe('broken');
+
+    // The tag's release passes: the group heals, the default branch's never had a run.
+    actions.runs.push(run(401, RELEASE, 'success', '2026-10-31T01:00:00Z', { headBranch: 'v1.0-rc.2' }));
+    actions.tags = [...actions.tags, 'v1.0-rc.2'];
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(
+        workflows
+            .getState('acme/web')
+            .workflows.find(entry => entry.workflow.id === RELEASE)
+            ?.groups.map(group => group.state),
+    ).toEqual(['unknown', 'passing']);
+    expect(workflows.get('acme/web')?.tags).toEqual(['v1.0-rc.1', 'v1.0-rc.2']);
+});
+
+test('a changed setting applies at once to what is stored, and a pattern added is read at the next poll though nothing moved on GitHub', async () => {
+    const world = sampleWorld();
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(workflows.totals.brokenCount).toBe(1);
+
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: false, refs: [] });
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'unknown'],
+        ['CI', 'unknown'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(workflows.totals.brokenCount).toBe(0);
+
+    tracking.setWorkflowSettings('acme/web', { defaultBranch: true, refs: ['v*'] });
+    expect(workflows.totals.brokenCount).toBe(1);
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toEqual([
+        'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        'GET /repos/acme/web/git/matching-refs/tags conditional',
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+        'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+    ]);
+
+    // Read once: the next poll with nothing moved is free again.
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toHaveLength(6);
+});
+
+test('the Workflows tab’s poll reads its repository’s runs on any ref too, which count nowhere unless a pattern says so', async () => {
+    const world = sampleWorld();
+    const { session, tracking, workflows, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(10_000);
+
+    session.github.requests.length = 0;
+    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
+    await session.clock.advance(0);
+    expect(actionsRequests(session.github.requests)).toEqual([
+        'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
+        'GET /repos/acme/web/git/matching-refs/tags conditional',
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
+        'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
+    ]);
+    // CI's failure on a pull request's branch is kept for the tab, and counts nowhere.
+    const ci = workflows.get('acme/web')?.workflows.find(entry => entry.workflow.id === CI);
+    expect(ci?.runs.map(entry => entry.id)).toEqual([4, 3]);
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+    ]);
+
+    // Asked again, its runs on any ref are free while they did not move; the regular poll does not ask them.
+    session.github.requests.length = 0;
+    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
+    await session.clock.advance(0);
+    expect(actionsRequests(session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30 conditional`,
+    );
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toHaveLength(6);
+});
+
+test('a tab’s ask for runs on any ref made while a poll runs past its repository is read at the end of that poll', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(10_000);
+
+    const held = createPromise();
+    session.github.holdIf = request => (request.operation === 'GET /repos/acme/api/actions/runs' ? held.promise : null);
+    session.github.requests.length = 0;
+    sync.pollWorkflowsNow();
+    await session.clock.advance(0);
+    sync.pollWorkflowsNow({ anyRefOf: 'acme/web' });
+    held.resolve();
+    await session.clock.advance(0);
+    expect(actionsRequests(session.github.requests).filter(request => request.includes('per_page=30'))).toEqual([
+        `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs per_page=30`,
+        `GET /repos/acme/web/actions/workflows/${CI}/runs per_page=30`,
     ]);
 });
 
@@ -530,11 +706,11 @@ function stateOf(workflows: WorkflowStore, nameWithOwner: string) {
     return workflows.getState(nameWithOwner).workflows.map(entry => [entry.workflow.name, entry.state]);
 }
 
-/** The requests of Actions and of repositories, as `<operation> [branch=…] [per_page=…] [page=…] [conditional]`. */
+/** The requests of Actions, of repositories and of their tags, as `<operation> [branch=…] [per_page=…] [page=…] [conditional]`. */
 function actionsRequests(requests: readonly TestGraphQLRequest[]) {
     const read: string[] = [];
     for (const { operation, variables } of requests) {
-        if (!/^GET \/repos\/[^/]+\/[^/]+(\/actions\/.*)?$/.test(operation)) {
+        if (!/^GET \/repos\/[^/]+\/[^/]+(\/actions\/.*|\/git\/matching-refs\/tags)?$/.test(operation)) {
             continue;
         }
 

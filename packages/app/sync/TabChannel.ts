@@ -43,8 +43,11 @@ export type TabMessage =
     | { readonly kind: 'projectViewAnswer'; readonly key: string; readonly answer: ProjectViewAnswer }
     /** A repository's workflows as read, or `null` once they are dropped. */
     | { readonly kind: 'workflows'; readonly nameWithOwner: string; readonly workflows: RepositoryWorkflows | null }
-    /** A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2). */
-    | { readonly kind: 'pollWorkflows' };
+    /**
+     * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2),
+     * reading the runs on any ref of `anyRefOf` (`owner/name`) too when its Workflows tab opened.
+     */
+    | { readonly kind: 'pollWorkflows'; readonly anyRefOf: string | null };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;

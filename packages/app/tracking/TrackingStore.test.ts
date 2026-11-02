@@ -297,6 +297,39 @@ test('tabs stay in step: another tab takes the change in, and the document it sa
     expect(second.tracking.repositories).toEqual([API, WEB]);
 });
 
+test('a repository’s workflows setting is written only when the user changes it, kept through untracking, told as a local change and taken in by another tab', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    const tabs = createTestTabs();
+    const first = await open({ login, tabs });
+    const second = await open({ login, tabs });
+    let changes = 0;
+    first.tracking.onLocalChange(() => changes++);
+    first.tracking.choose({ repositories: [WEB, API], projects: [] });
+    changes = 0;
+
+    // Nobody set it: the entries carry none.
+    expect(first.tracking.document.repositories).toEqual([
+        { ...WEB, tracking: true },
+        { ...API, tracking: true },
+    ]);
+
+    const settings = { defaultBranch: false, refs: ['v*'] };
+    first.tracking.setWorkflowSettings('acme/web', settings);
+    first.tracking.setWorkflowSettings('acme/web', settings);
+    first.tracking.setWorkflowSettings('acme/unknown', settings);
+    expect(changes).toBe(1);
+    expect(first.tracking.document.repositories[0]).toEqual({ ...WEB, tracking: true, workflows: settings });
+
+    first.tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/web' });
+    first.tracking.track({ repository: WEB });
+    expect(first.tracking.document.repositories[0]).toEqual({ ...WEB, tracking: true, workflows: settings });
+
+    const key = `githq.settings.${login}`;
+    second.localStorage.set(key, first.localStorage.get(key) ?? '');
+    await first.session.clock.advance(0);
+    expect(second.tracking.document).toEqual(first.tracking.document);
+});
+
 test('the user’s settings repository is never offered to track; someone else’s of that name is', async () => {
     const login = `user-${crypto.randomUUID()}`;
     const { tracking } = await open({

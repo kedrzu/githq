@@ -6,7 +6,7 @@ import { expect, test } from 'bun:test';
 import type { RepositoryWorkflows, StoredWorkflow, WorkflowRefSettings } from '../WorkflowTypes.js';
 import { getRepositoryWorkflowState } from './getRepositoryWorkflowState.js';
 
-const DEFAULT_REFS: WorkflowRefSettings = { countDefaultBranch: true, patterns: [] };
+const DEFAULT_REFS: WorkflowRefSettings = { defaultBranch: true, refs: [] };
 /** 2026-11-02T12:00:00Z. */
 const NOW = Date.parse('2026-11-02T12:00:00Z');
 
@@ -156,12 +156,13 @@ test('only refs that count are read: a failure on a feature branch lights nothin
     ]);
 
     expect(getRepositoryWorkflowState(repo, DEFAULT_REFS, NOW).brokenCount).toBe(0);
-    expect(getRepositoryWorkflowState(repo, { countDefaultBranch: true, patterns: ['v*'] }, NOW)).toMatchObject({
+    expect(getRepositoryWorkflowState(repo, { defaultBranch: true, refs: ['v*'] }, NOW)).toMatchObject({
         brokenCount: 1,
     });
-    expect(
-        getRepositoryWorkflowState(repo, { countDefaultBranch: false, patterns: [] }, NOW).workflows[0],
-    ).toMatchObject({ state: 'unknown', lastRuns: [] });
+    expect(getRepositoryWorkflowState(repo, { defaultBranch: false, refs: [] }, NOW).workflows[0]).toMatchObject({
+        state: 'unknown',
+        lastRuns: [],
+    });
 });
 
 test('the strip holds the latest 5 counted runs oldest first, and a run in progress shows', () => {
@@ -201,6 +202,87 @@ test('a workflow GitHub generates counts like any other and says so', () => {
     });
 });
 
+test('each group is judged on its own: a pass on the default branch never hides a failure on a pattern, nor one pattern another', () => {
+    const tagFailure = run(2, 'failure', '2026-11-02T08:00:00Z', { headBranch: 'v0.1.0-rc.1' });
+    const state = getRepositoryWorkflowState(
+        repository([
+            stored(workflow(1), [
+                run(4, 'success', '2026-11-02T11:00:00Z'),
+                run(3, 'success', '2026-11-02T10:00:00Z', { headBranch: 'release/1.2' }),
+                tagFailure,
+                run(1, 'failure', '2026-11-01T08:00:00Z', { headBranch: 'release/1.1' }),
+            ]),
+        ]),
+        { defaultBranch: true, refs: ['v*', 'release/*'] },
+        NOW,
+    );
+
+    expect(state.workflows[0]?.groups.map(group => [group.group, group.state])).toEqual([
+        [{ kind: 'defaultBranch', branch: 'main' }, 'passing'],
+        [{ kind: 'pattern', pattern: 'v*' }, 'broken'],
+        // Under one pattern the latest run decides: release/1.2's pass hides release/1.1's failure (actions D1).
+        [{ kind: 'pattern', pattern: 'release/*' }, 'passing'],
+    ]);
+    expect(state.workflows[0]).toMatchObject({
+        state: 'broken',
+        latestFailedRun: tagFailure,
+        breakStartedAt: Date.parse('2026-11-02T08:00:00Z'),
+    });
+    expect(state.workflows[0]?.brokenGroups.map(group => group.failedRef)).toEqual([
+        { name: 'v0.1.0-rc.1', kind: 'tag' },
+    ]);
+    // The strip: the latest 5 counted runs, across groups.
+    expect(state.workflows[0]?.lastRuns.map(entry => entry.id)).toEqual([1, 2, 3, 4]);
+    expect(state.brokenCount).toBe(1);
+});
+
+test('broken in two groups: the newest break is the one shown, the other counted apart, the workflow once', () => {
+    const twice = getRepositoryWorkflowState(
+        repository([
+            stored(workflow(1), [
+                run(3, 'failure', '2026-11-02T10:00:00Z', { headBranch: 'v0.1.0-rc.2' }),
+                run(1, 'failure', '2026-10-30T10:00:00Z'),
+            ]),
+        ]),
+        { defaultBranch: true, refs: ['v*'] },
+        NOW,
+    );
+    expect(twice.workflows[0]?.brokenGroups.map(group => [group.group, group.failedRef])).toEqual([
+        [
+            { kind: 'pattern', pattern: 'v*' },
+            { name: 'v0.1.0-rc.2', kind: 'tag' },
+        ],
+        [
+            { kind: 'defaultBranch', branch: 'main' },
+            { name: 'main', kind: 'branch' },
+        ],
+    ]);
+    expect(twice.workflows[0]).toMatchObject({ breakStartedAt: Date.parse('2026-11-02T10:00:00Z'), isNew: true });
+    expect(twice.brokenCount).toBe(1);
+});
+
+test('a group with no run with a verdict is unknown, never passing: the workflow passes only by a group that passed', () => {
+    const state = getRepositoryWorkflowState(
+        repository([
+            stored(workflow(1), [
+                run(2, 'cancelled', '2026-11-02T10:00:00Z', { headBranch: 'v0.1.0-rc.1' }),
+                run(1, 'success', '2026-11-02T09:00:00Z'),
+            ]),
+        ]),
+        { defaultBranch: true, refs: ['v*'] },
+        NOW,
+    );
+    expect(state.workflows[0]?.groups.map(group => group.state)).toEqual(['passing', 'unknown']);
+    expect(state.workflows[0]?.state).toBe('passing');
+
+    const onlyTags = getRepositoryWorkflowState(
+        repository([stored(workflow(1), [run(1, 'success', '2026-11-02T09:00:00Z')])]),
+        { defaultBranch: false, refs: ['v*'] },
+        NOW,
+    );
+    expect(onlyTags.workflows[0]).toMatchObject({ state: 'unknown', groups: [{ state: 'unknown' }] });
+});
+
 function repository(workflows: StoredWorkflow[], overrides: Partial<RepositoryWorkflows> = {}): RepositoryWorkflows {
     return {
         nameWithOwner: 'kedrzu/githq',
@@ -208,7 +290,9 @@ function repository(workflows: StoredWorkflow[], overrides: Partial<RepositoryWo
         repositoryEtag: '"repo"',
         runsEtag: '"runs"',
         workflowsEtag: '"workflows"',
+        tagsEtag: '"tags"',
         workflows,
+        tags: ['v0.1.0-rc.1', 'v0.1.0-rc.2'],
         unavailable: null,
         ...overrides,
     };
