@@ -32,7 +32,9 @@ once.
 - **Your tracker, on GitHub** — tracked repositories and GitHub Projects as lists or boards, with the fields,
   views and iterations each project defines.
 - **Stacked pull requests** — a stack shows as one entry in your lists, and you walk through it in order.
-  Merging and the workflows failing on `main` in any repository are next.
+  Merging is next.
+- **Actions and workflows** — a red marker on any tracked repository with a broken workflow, one list of what is
+  broken across all of them, and one key from a failure to its log.
 - **Keyboard first** — a command menu (<kbd>⌘</kbd> <kbd>K</kbd>) and single-key actions on the selected
   items.
 - **Instant** — screens open from a copy in your browser; edits show at once and are written to GitHub behind
