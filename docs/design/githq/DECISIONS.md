@@ -77,6 +77,7 @@ required), draft, and whether it can be merged. Proposed by the agent, confirmed
 Code review (diff, line comments) stays on github.com in the first version; githq opens the PR there with one
 key. User, 2026-10-12: "review code zostanie na razie na githubie". The rest of the first-version boundaries
 are still a proposal ([Q6](#q6)).
+Superseded 2026-11-02 by the owner: review comes to githq, see [the code review design](../code-review/README.md).
 
 ### D7
 
