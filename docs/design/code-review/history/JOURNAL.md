@@ -21,3 +21,7 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   computing the diff ourselves as D6 (Q1 closed), large diffs open as Q3. Owner raised that jumping to a line
   depends on what is expanded/collapsed and comments have unpredictable height; proposed estimate-and-correct.
   Agent proposed anchoring on the target instead → open as Q4. Story not written yet.
+- 2026-11-02 — Owner agreed to anchoring on the target → D7 (Q4 closed). Owner asked whether computation should move
+  to a Web Worker or WebAssembly (github.com stutters on large PRs) → Q5 with agent's proposal (per-line
+  virtualization, diff + highlighting in a Web Worker, WASM only on measurement). Q3 updated: agent proposes
+  collapsing by kind and viewed state rather than size; GitHub's APIs don't say which files are generated.

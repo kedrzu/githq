@@ -99,13 +99,39 @@ extra.
 ## Q3
 
 **Open: which diffs start collapsed, and how a very large one is shown.** Owner: very large diffs will "probably"
-be collapsed by default, "or we think about how to show them better".
+be collapsed by default, "or we think about how to show them better". Agent: once rows are virtualized per line and
+computed off the main thread ([Q5](#q5)), size stops being a performance reason to collapse; collapse for what is not
+worth reading (generated files, lock files), and for files marked viewed. A collapsed file is neither fetched nor
+diffed until opened.
 
-## Q4
+> **Checked 2026-11-02:** neither GraphQL `PullRequestChangedFile` (`path`, `additions`, `deletions`, `changeType`,
+> `viewerViewedState`) nor REST `pulls/{n}/files` says whether a file is generated, so githq would read
+> `.gitattributes` (`linguist-generated`) itself ([GraphQL pulls](https://docs.github.com/en/graphql/reference/pulls),
+> [pulls/files](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests-files)).
 
-**Open: how a jump lands exactly on its target (a comment, a file, a line, the remembered reading place).** Owner's
-idea: estimate the position, jump, see how far off it is, correct the estimate, repeat. Agent's proposal: anchor the
-view on the target and render it first, absorbing height changes above the viewport so the target does not move;
-estimates then only drive the scrollbar. The remembered reading place is the same anchor (a file and line, or a
-comment) plus its offset from the top of the screen, so it survives switching layout, whitespace and expanded
-context.
+## D7
+
+**A jump lands on its target by rendering the target first and holding it in place on screen; heights that turn out
+different above the screen are absorbed into the scroll position, so what you look at does not move. "Where you
+are" is a thing with its own identity — a line of a file on one side, or a comment — plus its distance from the top
+of the screen.** (2026-11-02, agent's proposal, owner agreed)
+
+**Why.** Comments have unpredictable heights (markdown, images that load late) and lines may wrap, so no estimate of
+the content above a target is exact. Holding the target in place makes the estimate matter only for the scrollbar.
+The same position survives switching layout ([D3](#d3)), whitespace ([D4](#d4)) and expanded context ([D6](#d6)),
+and is what is remembered per pull request when moving through a stack. If the remembered line is hidden (a
+whitespace-only change after hiding whitespace), the view lands on the nearest visible line above it.
+
+**Rejected.**
+
+- Estimate, jump, measure the miss, correct and repeat (owner's first idea) — every correction is a visible jump, and
+  an image loading after the last correction moves the target again.
+- Remembering the scroll position in pixels — breaks at the first change of layout or whitespace.
+
+## Q5
+
+**Open: what runs off the main thread.** Owner: github.com stutters on large pull requests, probably too much on the
+main thread; should computation move to a Web Worker, or even WebAssembly? Agent's proposal: the virtualized list
+works per line, not per file, so a large file never renders at once; computing the diff and syntax highlighting —
+pure functions of the file text — run in a Web Worker; the main thread only lays out and draws the rows on screen;
+WebAssembly only where a measurement shows the JavaScript is the bottleneck.
