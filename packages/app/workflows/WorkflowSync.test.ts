@@ -74,7 +74,7 @@ test('the first read: the latest runs, the default branch, the workflows, and ea
     ]);
 });
 
-test('while no run moves a poll costs one free request per repository and writes nothing — here, on disk or to other tabs; on a change every active workflow is asked, the unchanged ones for free', async () => {
+test('while nothing moves a poll costs three free requests per repository and writes nothing — here, on disk or to other tabs; on a change every active workflow is asked, the unchanged ones for free', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows, sync, persistence } = await setup(world);
     tracking.choose(TRACK_BOTH);
@@ -87,7 +87,11 @@ test('while no run moves a poll costs one free request per repository and writes
     await session.clock.advance(WORKFLOWS_INTERVAL);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
     expect(storedOf(workflows, 'acme/web')).toBe(before);
     expect(saved).not.toHaveBeenCalled();
@@ -105,9 +109,42 @@ test('while no run moves a poll costs one free request per repository and writes
         `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs branch=main per_page=10 conditional`,
         `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10 conditional`,
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
     expect(workflows.getState('acme/web').workflows[0]).toMatchObject({ state: 'passing' });
     expect(workflows.totals.brokenCount).toBe(0);
+});
+
+test('a broken workflow disabled on GitHub, or a renamed default branch, with no run since, is noticed at the next poll', async () => {
+    const world = sampleWorld();
+    const actions = world.actions.repository('acme/web');
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(workflows.totals.brokenCount).toBe(1);
+
+    // Deploy is turned off on github.com: no run moves, only the workflow list.
+    actions.workflows = actions.workflows.map(workflow =>
+        workflow.id === DEPLOY ? { ...workflow, state: 'disabled_manually' } : workflow,
+    );
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'disabled'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(workflows.totals.brokenCount).toBe(0);
+
+    // The default branch is renamed: no run counts on it yet.
+    actions.defaultBranch = 'trunk';
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(workflows.getState('acme/web')).toMatchObject({ defaultBranch: 'trunk' });
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'disabled'],
+        ['CI', 'unknown'],
+        ['Retired', 'disabled'],
+    ]);
 });
 
 test('a run that finished after newer runs pushed it out of the latest runs is still read', async () => {
@@ -281,7 +318,11 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
 
     const held = createPromise();
@@ -296,7 +337,11 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
+        'GET /repos/acme/web conditional',
+        'GET /repos/acme/web/actions/workflows per_page=100 conditional',
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
 });
 
@@ -318,6 +363,8 @@ test('an untracked repository is not polled, and its workflows go — here and i
     await first.session.clock.advance(WORKFLOWS_INTERVAL);
     expect(actionsRequests(first.session.github.requests)).toEqual([
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
 
     // Reloaded: the kept copy holds the tracked repository's workflows only, and its first poll is free.
@@ -330,6 +377,8 @@ test('an untracked repository is not polled, and its workflows go — here and i
     expect(second.workflows.getState('acme/api').status).toBe('read');
     expect(actionsRequests(second.session.github.requests)).toEqual([
         'GET /repos/acme/api/actions/runs per_page=10 conditional',
+        'GET /repos/acme/api conditional',
+        'GET /repos/acme/api/actions/workflows per_page=100 conditional',
     ]);
 });
 

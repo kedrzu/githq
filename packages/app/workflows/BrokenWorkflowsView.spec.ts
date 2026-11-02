@@ -107,9 +107,12 @@ test('W2b: everything read and nothing broken — all green, with how many repos
     await expect.element(page.getByText('Open failed run')).not.toBeInTheDocument();
 });
 
-test("W2b: a repository GitHub refused stays out of the green and under Can't tell", async () => {
+test("W2b: a repository GitHub refused stays out of the green, which says what it covers, and under Can't tell", async () => {
     await NothingBrokenOneRefused.run();
 
+    await expect
+        .element(page.getByText(/^Every\sworkflow\sthat\scounts\spasses\sin\s1\sof\s2\stracked\srepositories;/u))
+        .toBeVisible();
     await expect.element(page.getByText(matchText('1/2 repositories · 0 broken · read 40s ago'))).toBeVisible();
     await expect
         .element(group("Can't tell"))

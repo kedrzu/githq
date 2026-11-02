@@ -85,7 +85,7 @@ export interface WorkflowState {
     readonly lastRuns: readonly GitHubWorkflowRun[];
     /** The latest failed run that counts, which Enter opens; `null` unless broken. */
     readonly latestFailedRun: GitHubWorkflowRun | null;
-    /** The latest run that counts and has not finished; `null` when none runs. */
+    /** The latest run among {@link lastRuns} that has not finished; `null` when none runs. */
     readonly runningRun: GitHubWorkflowRun | null;
 }
 

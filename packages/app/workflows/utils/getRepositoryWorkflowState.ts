@@ -70,12 +70,13 @@ export function getRepositoryWorkflowState(
 function getWorkflowState(entry: StoredWorkflow, counted: IsRunCountedParams, now: number): WorkflowState {
     const { workflow } = entry;
     const runs = sortRunsByCreation(entry.runs.filter(run => isRunCounted(run, counted)));
-    const running = runs.findLast(run => run.status !== 'completed') ?? null;
+    // Only the strip's runs: an older one stored in progress may have finished long since, off the page read again.
+    const lastRuns = runs.slice(-RUN_STRIP_SLOTS);
     const base = {
         workflow,
         generated: workflow.path.startsWith('dynamic/'),
-        lastRuns: runs.slice(-RUN_STRIP_SLOTS),
-        runningRun: running,
+        lastRuns,
+        runningRun: lastRuns.findLast(run => run.status !== 'completed') ?? null,
     };
 
     if (workflow.state !== 'active') {

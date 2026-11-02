@@ -65,6 +65,12 @@ const meta = computed(() => {
     ? t(l.brokenIn, { broken: brokenCount, repositories: brokenRepositoryCount })
     : t(l.noneIn, { count: readCount });
 });
+/** Says which repositories the green covers: some GitHub shows nothing of are out of it. */
+const allGreenText = computed(() =>
+  props.broken.unavailable.length > 0
+    ? t(l.allGreenTextPartly, { read: props.broken.readCount, tracked: trackedCount.value })
+    : t(l.allGreenText, { count: props.broken.readCount }),
+);
 const allGreenDetail = computed(() =>
   t(l.allGreenDetail, {
     read: props.broken.readCount,
@@ -137,7 +143,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           :icon="Coffee"
           tone="green"
           :title="t(l.allGreenTitle)"
-          :text="t(l.allGreenText, { count: broken.readCount })"
+          :text="allGreenText"
           :detail="allGreenDetail"
         />
       </div>

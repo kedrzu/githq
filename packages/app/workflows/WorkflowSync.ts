@@ -33,11 +33,12 @@ interface ReadBranchRunsParams {
 
 /**
  * Keeps the tracked repositories' workflows in step with GitHub over REST (actions D2), as the sync engine's
- * `workflows` loop: per repository, its latest runs' list with the last ETag — a 304 is free and writes nothing. On
- * a 200, or at the first read, the default branch and the workflow list, then every active workflow's runs on the
- * counted refs, all conditional: a run that changed may have left the latest runs' first page already, so each
- * workflow is asked, and one that did not change answers 304 for free. With no counted run with a verdict among them,
- * older pages, up to {@link MAX_RUN_PAGES}. A workflow gone from GitHub's list is dropped.
+ * `workflows` loop: per repository, its latest runs' list, the repository (its default branch) and its workflow list,
+ * each with the last ETag — while all three answer 304, free, nothing more is asked and nothing is written; a workflow
+ * turned off or deleted, or a renamed default branch, moves no run. When any changed, or at the first read, every
+ * active workflow's runs on the counted refs, all conditional: a run that changed may have left the latest runs' first
+ * page already, so each workflow is asked, and one that did not change answers 304 for free. With no counted run
+ * with a verdict among them, older pages, up to {@link MAX_RUN_PAGES}. A workflow gone from GitHub's list is dropped.
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
  * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may
@@ -102,14 +103,6 @@ export const WorkflowSync = defineService({
                 return;
             }
 
-            if (changes.status === 304 && stored) {
-                if (stored.unavailable !== null) {
-                    workflows.set({ ...stored, unavailable: null });
-                }
-
-                return;
-            }
-
             context.checkAllowance('core');
             const repository = await getRepositoryConditional(context.rest, {
                 nameWithOwner,
@@ -122,6 +115,14 @@ export const WorkflowSync = defineService({
             context.checkAllowance('core');
             const list = await listWorkflows(context.rest, { nameWithOwner, etag: stored?.workflowsEtag ?? undefined });
             if (!isWanted(context, nameWithOwner)) {
+                return;
+            }
+
+            if (stored && changes.status === 304 && repository.status === 304 && list.status === 304) {
+                if (stored.unavailable !== null) {
+                    workflows.set({ ...stored, unavailable: null });
+                }
+
                 return;
             }
 
@@ -157,7 +158,7 @@ export const WorkflowSync = defineService({
                 defaultBranch,
                 repositoryEtag:
                     repository.status === 200 ? (repository.etag ?? null) : (stored?.repositoryEtag ?? null),
-                runsEtag: changes.status === 200 ? (changes.etag ?? null) : null,
+                runsEtag: changes.status === 200 ? (changes.etag ?? null) : (stored?.runsEtag ?? null),
                 workflowsEtag: list.status === 200 ? (list.etag ?? null) : (stored?.workflowsEtag ?? null),
                 workflows: read,
                 unavailable: null,

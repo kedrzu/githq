@@ -175,6 +175,15 @@ test('the strip holds the latest 5 counted runs oldest first, and a run in progr
     expect(state.workflows[0]).toMatchObject({ state: 'broken', runningRun: running });
 });
 
+test('a run stored in progress but older than the strip shows no longer: its end was not read again', () => {
+    const stale = run(1, null, '2026-11-01T01:00:00Z', { status: 'in_progress' });
+    const runs = [2, 3, 4, 5, 6].map(id => run(id, 'success', `2026-11-02T0${id}:00:00Z`));
+    const state = getRepositoryWorkflowState(repository([stored(workflow(1), [...runs, stale])]), DEFAULT_REFS, NOW);
+
+    expect(state.workflows[0]?.lastRuns.map(entry => entry.id)).toEqual([2, 3, 4, 5, 6]);
+    expect(state.workflows[0]).toMatchObject({ state: 'passing', runningRun: null });
+});
+
 test('a workflow GitHub generates counts like any other and says so', () => {
     const state = getRepositoryWorkflowState(
         repository([
