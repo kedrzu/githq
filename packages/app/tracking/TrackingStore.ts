@@ -864,9 +864,15 @@ function applyEntries<T extends SettingsRepository | SettingsProject>(
 ): T[] {
     const chosenByKey = new Map(chosen.map(entry => [keyOf(entry), entry]));
     const known = new Set(entries.map(keyOf));
-    const next = entries.map(
-        entry => chosenByKey.get(keyOf(entry)) ?? (entry.tracking ? { ...entry, tracking: false } : entry),
-    );
+    // An entry keeps the fields this build does not know (settings-sync D13).
+    const next = entries.map(entry => {
+        const chosenEntry = chosenByKey.get(keyOf(entry));
+        if (chosenEntry) {
+            return { ...entry, ...chosenEntry };
+        }
+
+        return entry.tracking ? { ...entry, tracking: false } : entry;
+    });
     for (const entry of chosen) {
         if (!known.has(keyOf(entry))) {
             known.add(keyOf(entry));
