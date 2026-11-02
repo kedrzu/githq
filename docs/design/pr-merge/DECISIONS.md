@@ -210,16 +210,21 @@ design)
 
 ## D11
 
-**The panel's form, the commit text and what happens after `⌘Enter` are the owner's pick among the variants in
-`githq.pen`; the design agent's recommendation is its own surface over any screen (PM1a, PM2a), the title with one line
-of the message (PM3a), and the panel leaving once GitHub accepts (PM32a).** (2026-11-01, design agent; open until the
-owner picks)
+**The merge panel is its own surface over any screen (PM1a, PM2a); it shows the commit title and the first lines of the
+message (PM3a); and it leaves once GitHub accepts (PM32a).** (2026-11-01, design agent's proposal; chosen by the owner
+2026-11-02)
 
 **Why.** Its own surface is the only form that is the same two keys on a list, a board and an opened item. A title and
-one line show what lands in the history in no extra room, against a 38-line message. Leaving at the `202` keeps an
+the first lines show what lands in the history in little room, against a 38-line message. Leaving at the `202` keeps an
 immediate refusal in the panel with its text ([D6](#d6)) and costs no key on the usual merge.
 
-**Rejected.** Nothing yet: PM1b, PM1c, PM2b, PM2c, PM3b, PM3c and PM32b stand until the owner picks.
+**Rejected.**
+
+- Opening inside the row or the standing (PM1b, PM2b), or a tray at the corner (PM1c, PM2c) — neither is the same two
+  keys everywhere.
+- The commit text folded to one line (PM3b) or always open (PM3c) — too little, or a 38-line message in the way of
+  every merge.
+- The panel staying until the outcome (PM32b) — holds the user for a merge that takes seconds to minutes.
 
 ## D12
 
@@ -235,7 +240,8 @@ a chord that habit can't hit. Bypass in red, below the usual action, says what i
 
 **Required checks stay out of sight while green: one line, with "5 required" as a quiet aside. A failed check becomes a
 row; one that blocks carries a "Required" tag, and one that does not is grey and says it does not stop the merge.**
-(2026-11-01, design agent; PM4b is the alternative)
+(2026-11-01, design agent; PM4b is the alternative. Both are drawn with checks still running, a required one among them
+or only optional ones; open until the owner picks)
 
 **Why.** The usual merge has nothing to read here. Colour alone can't carry the difference, because both kinds failed.
 
