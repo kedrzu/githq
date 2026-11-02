@@ -144,7 +144,7 @@ test('a broken workflow disabled on GitHub, or a renamed default branch, with no
     // The default branch is renamed: no run counts on it yet.
     actions.defaultBranch = 'trunk';
     await session.clock.advance(WORKFLOWS_INTERVAL);
-    expect(workflows.getState('acme/web')).toMatchObject({ defaultBranch: 'trunk' });
+    expect(workflows.get('acme/web')).toMatchObject({ defaultBranch: 'trunk' });
     expect(stateOf(workflows, 'acme/web')).toEqual([
         ['Deploy', 'disabled'],
         ['CI', 'unknown'],

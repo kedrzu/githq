@@ -2,6 +2,7 @@ import type { RepositoryWorkflows, WorkflowRefSettings, WorkflowState } from '..
 import { getKnownRefs } from './getKnownRefs.js';
 import type { KnownRef } from './getKnownRefs.js';
 import { getRepositoryWorkflowState } from './getRepositoryWorkflowState.js';
+import { getWorkflowPatterns } from './getWorkflowPatterns.js';
 import { isRefCounted } from './isRefCounted.js';
 import { matchRefPattern } from './matchRefPattern.js';
 
@@ -65,14 +66,16 @@ export function previewWorkflowSettings(params: PreviewWorkflowSettingsParams): 
     const defaultBranch = stored?.defaultBranch ?? null;
 
     return {
-        patterns: [...new Set(candidate.refs)].map(pattern => ({
+        patterns: getWorkflowPatterns(candidate).map(pattern => ({
             pattern,
             refs: known.filter(ref => matchRefPattern(pattern, ref.name)),
         })),
         turnBroken,
         stopCounting,
         stopMatching: known.filter(
-            ref => isRefCounted(current, defaultBranch, ref.name) && !isRefCounted(candidate, defaultBranch, ref.name),
+            ref =>
+                isRefCounted({ settings: current, defaultBranch, ref: ref.name }) &&
+                !isRefCounted({ settings: candidate, defaultBranch, ref: ref.name }),
         ),
     };
 }

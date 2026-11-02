@@ -40,6 +40,14 @@ interface ReadRunsParams {
     readonly pageFor: readonly WorkflowRefGroup[];
 }
 
+/** What marking a repository's workflows unavailable needs. */
+interface MarkUnavailableParams {
+    readonly context: TrackingSyncContext;
+    readonly nameWithOwner: string;
+    /** What GitHub answered: 403 or 404. */
+    readonly status: number;
+}
+
 /**
  * Keeps the tracked repositories' workflows in step with GitHub over REST (actions D2), as the sync engine's
  * `workflows` loop: per repository, its latest runs' list, the repository (its default branch) and its workflow list,
@@ -119,7 +127,7 @@ export const WorkflowSync = defineService({
                     }
 
                     if (error.status >= 400 && error.status < 500) {
-                        markUnavailable(context, nameWithOwner, error.status);
+                        markUnavailable({ context, nameWithOwner, status: error.status });
                     } else {
                         failed++;
                         logger.warn('The workflows of a tracked repository could not be polled', {
@@ -322,7 +330,7 @@ export const WorkflowSync = defineService({
         }
 
         /** Says GitHub shows nothing of the repository's workflows — once: while it keeps saying so, nothing is written. */
-        function markUnavailable(context: TrackingSyncContext, nameWithOwner: string, status: number) {
+        function markUnavailable({ context, nameWithOwner, status }: MarkUnavailableParams) {
             const stored = workflows.get(nameWithOwner);
             if (!isWanted(context, nameWithOwner) || stored?.unavailable?.status === status) {
                 return;

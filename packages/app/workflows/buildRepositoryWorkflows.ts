@@ -2,9 +2,12 @@ import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
-import { getRefKind } from './utils/getRefKind.js';
 import { getRepositoryWorkflowState, RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
+import { getRowRef } from './utils/getRowRef.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
+import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
+import { isPullRequestRun } from './utils/isPullRequestRun.js';
+import { isWorkflowAlertsOff } from './utils/isWorkflowAlertsOff.js';
 import { sortRunsByCreation } from './utils/sortRunsByCreation.js';
 import type {
     RepositoryWorkflows,
@@ -105,11 +108,11 @@ export interface BuildRepositoryWorkflowsParams {
  */
 export function buildRepositoryWorkflows(params: BuildRepositoryWorkflowsParams): RepositoryWorkflowList {
     const { stored, settings, now } = params;
-    const alertsOff = !settings.defaultBranch && settings.refs.length === 0;
+    const alertsOff = isWorkflowAlertsOff(settings);
     const alerts: RepositoryWorkflowAlerts = {
         defaultBranch: settings.defaultBranch,
         defaultBranchName: stored?.defaultBranch ?? null,
-        patterns: [...new Set(settings.refs)],
+        patterns: getWorkflowPatterns(settings),
     };
     if (!stored) {
         return { status: 'unread', unavailable: null, alerts, alertsOff, groups: [], reading: true, count: 'unknown' };
@@ -187,7 +190,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
                 entry: {
                     ...row,
                     standing: null,
-                    gitRef: getRunRef(stored, runs.at(-1)),
+                    gitRef: getRowRef(stored, runs.at(-1)?.headBranch ?? null),
                     runs: runs.slice(-RUN_STRIP_SLOTS),
                 },
             };
@@ -206,7 +209,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
         };
     }
 
-    const ownRuns = runs.filter(run => !run.event.startsWith('pull_request'));
+    const ownRuns = runs.filter(run => !isPullRequestRun(run));
     if (ownRuns.length === 0 && runs.length > 0) {
         const shown = runs.slice(-RUN_STRIP_SLOTS);
         const failedCount = shown.filter(run => getRunVerdict(run) === 'failed').length;
@@ -218,7 +221,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
 
     const shown = ownRuns.slice(-RUN_STRIP_SLOTS);
     const latest = ownRuns.findLast(run => getRunVerdict(run) !== null);
-    const latestRef = getRunRef(stored, latest);
+    const latestRef = getRowRef(stored, latest?.headBranch ?? null);
     // A failure on a ref with alerts would have broken it: the latest one failing is on a ref without.
     if (latest && latestRef && getRunVerdict(latest) === 'failed') {
         return {
@@ -241,16 +244,10 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
         entry: {
             ...row,
             standing: { kind: 'notKnown', reading: false },
-            gitRef: getRunRef(stored, shown.at(-1)),
+            gitRef: getRowRef(stored, shown.at(-1)?.headBranch ?? null),
             runs: shown,
         },
     };
-}
-
-/** The ref a run is on, with its kind; `null` for none. */
-function getRunRef(stored: RepositoryWorkflows, run: GitHubWorkflowRun | undefined): WorkflowRowRef | null {
-    const name = run?.headBranch ?? null;
-    return name === null ? null : { name, kind: getRefKind(stored, name) };
 }
 
 /** The newest break first; equal ones keep GitHub's order. */

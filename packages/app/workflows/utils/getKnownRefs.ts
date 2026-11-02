@@ -4,6 +4,7 @@ import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import type { RefKind, RepositoryWorkflows, RunVerdict } from '../WorkflowTypes.js';
 import { getRefKind } from './getRefKind.js';
 import { getRunVerdict } from './getRunVerdict.js';
+import { isPullRequestRun } from './isPullRequestRun.js';
 import { sortRunsByCreation } from './sortRunsByCreation.js';
 
 /** A ref githq has seen a run on that could count: not one started by a pull request (actions D1). */
@@ -41,7 +42,7 @@ export function getKnownRefs(stored: RepositoryWorkflows | undefined): KnownRef[
     const refs = new Map<string, { latestRunAt: number; workflows: KnownRefWorkflow[] }>();
     for (const { workflow, runs } of stored.workflows) {
         const byRef = groupByToMap(
-            runs.filter(run => run.headBranch !== null && !run.event.startsWith('pull_request')),
+            runs.filter(run => run.headBranch !== null && !isPullRequestRun(run)),
             run => run.headBranch ?? '',
         );
 

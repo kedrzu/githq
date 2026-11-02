@@ -1,7 +1,7 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 
-import { getRefKind } from './utils/getRefKind.js';
-import { sortRunsByCreation } from './utils/sortRunsByCreation.js';
+import { getRowRef } from './utils/getRowRef.js';
+import { mergeRunsById } from './utils/mergeRunsById.js';
 import type { WorkflowRunHistoryState, WorkflowRunHistoryStatus } from './WorkflowRunHistory.js';
 import type { RepositoryWorkflows, WorkflowRowRef } from './WorkflowTypes.js';
 
@@ -51,8 +51,9 @@ export interface BuildUnfoldedWorkflowParams {
 export function buildUnfoldedWorkflow(params: BuildUnfoldedWorkflowParams): UnfoldedWorkflow {
     const { stored, workflowId, ref, history, anyRef } = params;
     const kept = stored.workflows.find(entry => entry.workflow.id === workflowId)?.runs ?? [];
-    const runs = mergeRuns([kept, history.runs]).filter(run => ref === null || run.headBranch === ref);
-    const seen = mergeRuns([kept, anyRef, history.runs]);
+    // The store's copy wins, so it comes last.
+    const runs = mergeRunsById([history.runs, kept]).filter(run => ref === null || run.headBranch === ref);
+    const seen = mergeRunsById([history.runs, anyRef, kept]);
 
     const refNames = new Set<string>();
     for (const run of seen) {
@@ -67,28 +68,10 @@ export function buildUnfoldedWorkflow(params: BuildUnfoldedWorkflowParams): Unfo
 
     return {
         key: `${workflowId}`,
-        runs: runs.map(run => ({ key: `run:${run.id}`, run, ref: toRef(run.headBranch) })),
+        runs: runs.map(run => ({ key: `run:${run.id}`, run, ref: getRowRef(stored, run.headBranch) })),
         refs: [...refNames],
         ref,
         status: history.status,
         complete: history.complete,
     };
-
-    function toRef(name: string | null): WorkflowRowRef | null {
-        return name === null ? null : { name, kind: getRefKind(stored, name) };
-    }
-}
-
-/** The runs of every list, merged by id — an earlier list's copy wins —, the newest first. */
-function mergeRuns(lists: readonly (readonly GitHubWorkflowRun[])[]) {
-    const byId = new Map<number, GitHubWorkflowRun>();
-    for (const list of lists) {
-        for (const run of list) {
-            if (!byId.has(run.id)) {
-                byId.set(run.id, run);
-            }
-        }
-    }
-
-    return sortRunsByCreation([...byId.values()]).toReversed();
 }

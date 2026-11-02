@@ -14,8 +14,6 @@ import { TabChannel } from '@/sync/TabChannel.js';
 import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
-import { getKnownRefs } from './utils/getKnownRefs.js';
-import type { KnownRef } from './utils/getKnownRefs.js';
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
 import { WorkflowPersistence } from './WorkflowPersistence.js';
 import type { RepositoryWorkflowState, RepositoryWorkflows, WorkflowRefSettings } from './WorkflowTypes.js';
@@ -125,7 +123,6 @@ export const WorkflowStore = defineService({
             get,
             getState,
             getRefSettings,
-            getKnownRefs: getRepositoryKnownRefs,
             set,
             remove,
         };
@@ -159,14 +156,6 @@ export const WorkflowStore = defineService({
             return readWorkflowSettings(
                 tracking.document.repositories.find(entry => entry.nameWithOwner === nameWithOwner),
             );
-        }
-
-        /**
-         * The refs githq has seen runs on in the tracked repository, for showing what a pattern matches (actions D13);
-         * empty before the first read. Reactive.
-         */
-        function getRepositoryKnownRefs(nameWithOwner: string): KnownRef[] {
-            return getKnownRefs(storedRef.value.get(nameWithOwner));
         }
 
         /** Keeps what the sync read of a tracked repository; ignored while signed out or once it is no longer tracked. */

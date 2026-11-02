@@ -1,4 +1,5 @@
 import type { WorkflowRefGroup, WorkflowRefSettings } from '../WorkflowTypes.js';
+import { getWorkflowPatterns } from './getWorkflowPatterns.js';
 
 /**
  * The groups a repository's runs are judged in (actions D1, D5): its default branch while it counts and is known,
@@ -12,7 +13,7 @@ export function getRefGroups(settings: WorkflowRefSettings, defaultBranch: strin
         groups.push({ kind: 'defaultBranch', branch: defaultBranch });
     }
 
-    for (const pattern of new Set(settings.refs)) {
+    for (const pattern of getWorkflowPatterns(settings)) {
         groups.push({ kind: 'pattern', pattern });
     }
 

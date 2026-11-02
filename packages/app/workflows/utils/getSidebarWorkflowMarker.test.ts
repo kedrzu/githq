@@ -7,7 +7,6 @@ import { getSidebarWorkflowMarker } from './getSidebarWorkflowMarker.js';
 const HEALTHY: RepositoryWorkflowState = {
     status: 'read',
     unavailable: null,
-    defaultBranch: 'main',
     workflows: [],
     brokenCount: 0,
     hasNewBreak: false,

@@ -1,6 +1,7 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 
 import type { WorkflowRefGroup } from '../WorkflowTypes.js';
+import { isPullRequestRun } from './isPullRequestRun.js';
 import { matchRefPattern } from './matchRefPattern.js';
 
 /**
@@ -12,7 +13,7 @@ import { matchRefPattern } from './matchRefPattern.js';
  */
 export function isRunInGroup(run: GitHubWorkflowRun, group: WorkflowRefGroup): boolean {
     const ref = run.headBranch;
-    if (ref === null || run.event.startsWith('pull_request')) {
+    if (ref === null || isPullRequestRun(run)) {
         return false;
     }
 

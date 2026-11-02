@@ -11,7 +11,7 @@ import type {
     WorkflowState,
 } from '../WorkflowTypes.js';
 import { getRefGroups } from './getRefGroups.js';
-import { getRefKind } from './getRefKind.js';
+import { getRowRef } from './getRowRef.js';
 import { getRunVerdict } from './getRunVerdict.js';
 import { getWorkflowVerdict } from './getWorkflowVerdict.js';
 import { isRunInGroup } from './isRunInGroup.js';
@@ -42,7 +42,6 @@ export function getRepositoryWorkflowState(
         return {
             status: stored ? 'unavailable' : 'unread',
             unavailable: stored?.unavailable ?? null,
-            defaultBranch: stored?.defaultBranch ?? null,
             workflows: [],
             brokenCount: 0,
             hasNewBreak: false,
@@ -65,7 +64,6 @@ export function getRepositoryWorkflowState(
     return {
         status: 'read',
         unavailable: null,
-        defaultBranch: stored.defaultBranch,
         workflows,
         brokenCount,
         hasNewBreak,
@@ -145,7 +143,6 @@ function getGroupState({ stored, group, now, runs: all }: GetGroupStateParams): 
     const firstFailure = breakRuns.find(run => getRunVerdict(run) === 'failed');
     const latestFailure = breakRuns.findLast(run => getRunVerdict(run) === 'failed');
     const breakStartedAt = firstFailure ? Date.parse(firstFailure.createdAt) : null;
-    const failedRefName = latestFailure?.headBranch ?? null;
     return {
         group,
         state: 'broken',
@@ -153,6 +150,6 @@ function getGroupState({ stored, group, now, runs: all }: GetGroupStateParams): 
         breakStartKnown: lastPass >= 0,
         isNew: breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
         latestFailedRun: latestFailure ?? null,
-        failedRef: failedRefName === null ? null : { name: failedRefName, kind: getRefKind(stored, failedRefName) },
+        failedRef: getRowRef(stored, latestFailure?.headBranch ?? null),
     };
 }

@@ -16,7 +16,6 @@ test('a repository not read yet, or one GitHub shows nothing of, is neither heal
     expect(getRepositoryWorkflowState(undefined, DEFAULT_REFS, NOW)).toEqual({
         status: 'unread',
         unavailable: null,
-        defaultBranch: null,
         workflows: [],
         brokenCount: 0,
         hasNewBreak: false,
@@ -30,7 +29,6 @@ test('a repository not read yet, or one GitHub shows nothing of, is neither heal
     ).toMatchObject({
         status: 'unavailable',
         unavailable: { reason: 'refused', status: 403 },
-        defaultBranch: 'main',
         workflows: [],
         brokenCount: 0,
     });

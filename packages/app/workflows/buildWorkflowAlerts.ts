@@ -4,7 +4,9 @@ import { assertValue } from '@nzyme/utils/assert.js';
 import { getKnownRefs } from './utils/getKnownRefs.js';
 import type { KnownRef } from './utils/getKnownRefs.js';
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
+import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
 import { isRefCounted } from './utils/isRefCounted.js';
+import { isWorkflowAlertsOff } from './utils/isWorkflowAlertsOff.js';
 import { matchRefPattern } from './utils/matchRefPattern.js';
 import { previewWorkflowSettings } from './utils/previewWorkflowSettings.js';
 import type {
@@ -15,6 +17,7 @@ import type {
     WorkflowRefGroup,
     WorkflowRefSettings,
     WorkflowRowRef,
+    WorkflowState,
 } from './WorkflowTypes.js';
 
 /** How many refs without alerts the card lists (`Workflow alerts / List`). */
@@ -100,11 +103,11 @@ export function buildWorkflowAlerts(params: BuildWorkflowAlertsParams): Workflow
     const known = getKnownRefs(stored);
     const state = getRepositoryWorkflowState(stored, settings, now);
     const defaultName = stored?.defaultBranch ?? null;
-    const patterns = [...new Set(settings.refs)];
+    const patterns = getWorkflowPatterns(settings);
 
     return {
         read: stored !== undefined,
-        alertsOff: !settings.defaultBranch && patterns.length === 0,
+        alertsOff: isWorkflowAlertsOff(settings),
         defaultBranch: {
             on: settings.defaultBranch,
             name: defaultName,
@@ -123,7 +126,7 @@ export function buildWorkflowAlerts(params: BuildWorkflowAlertsParams): Workflow
             brokenCount: countBroken(state, { kind: 'pattern', pattern }),
         })),
         otherRefs: known
-            .filter(ref => !isRefCounted(settings, defaultName, ref.name))
+            .filter(ref => !isRefCounted({ settings, defaultBranch: defaultName, ref: ref.name }))
             .slice(0, OTHER_REF_LIMIT)
             .map(ref => ({ ref, latest: getLatest(ref) })),
     };
@@ -211,7 +214,7 @@ export function previewPatternEdit(params: PreviewPatternEditParams): PatternEdi
         }),
         stopCounting: preview.stopCounting.map(state => state.workflow.name),
         stopMatching: preview.stopMatching,
-        staysBroken: changed ? [] : getBrokenOn(stored, candidate, pattern),
+        staysBroken: changed ? [] : getBrokenOn({ stored, settings: candidate, pattern }),
     };
 }
 
@@ -249,18 +252,26 @@ function countBroken(state: RepositoryWorkflowState, group: WorkflowRefGroup): n
         return null;
     }
 
-    return state.workflows.filter(workflow => workflow.brokenGroups.some(broken => isSameGroup(broken.group, group)))
-        .length;
+    return state.workflows.filter(workflow => isBrokenIn(workflow, group)).length;
 }
 
-function getBrokenOn(stored: RepositoryWorkflows | undefined, settings: WorkflowRefSettings, pattern: string) {
+/** What {@link getBrokenOn} looks at. */
+interface GetBrokenOnParams {
+    readonly stored: RepositoryWorkflows | undefined;
+    readonly settings: WorkflowRefSettings;
+    readonly pattern: string;
+}
+
+function getBrokenOn({ stored, settings, pattern }: GetBrokenOnParams) {
     // How new a break is plays no part here.
     const state = getRepositoryWorkflowState(stored, settings, 0);
     return state.workflows
-        .filter(workflow =>
-            workflow.brokenGroups.some(broken => isSameGroup(broken.group, { kind: 'pattern', pattern })),
-        )
+        .filter(workflow => isBrokenIn(workflow, { kind: 'pattern', pattern }))
         .map(workflow => workflow.workflow.name);
+}
+
+function isBrokenIn(workflow: WorkflowState, group: WorkflowRefGroup) {
+    return workflow.brokenGroups.some(broken => isSameGroup(broken.group, group));
 }
 
 function isSameGroup(a: WorkflowRefGroup, b: WorkflowRefGroup) {

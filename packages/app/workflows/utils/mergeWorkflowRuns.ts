@@ -3,7 +3,7 @@ import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import type { WorkflowRefGroup } from '../WorkflowTypes.js';
 import { getRunVerdict } from './getRunVerdict.js';
 import { isRunInGroup } from './isRunInGroup.js';
-import { sortRunsByCreation } from './sortRunsByCreation.js';
+import { mergeRunsById } from './mergeRunsById.js';
 
 /** How many runs a workflow keeps: a strip shows 5, and the break's start is told from the runs since the last pass. */
 export const WORKFLOW_RUNS_KEPT = 20;
@@ -27,16 +27,7 @@ export interface MergeWorkflowRunsParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function mergeWorkflowRuns(params: MergeWorkflowRunsParams): GitHubWorkflowRun[] {
-    const byId = new Map<number, GitHubWorkflowRun>();
-    for (const run of params.stored) {
-        byId.set(run.id, run);
-    }
-
-    for (const run of params.read) {
-        byId.set(run.id, run);
-    }
-
-    const runs = sortRunsByCreation([...byId.values()]).toReversed();
+    const runs = mergeRunsById([params.stored, params.read]);
     let kept = WORKFLOW_RUNS_KEPT;
     for (const group of params.groups) {
         const deciding = runs.findIndex(run => getRunVerdict(run) !== null && isRunInGroup(run, group));

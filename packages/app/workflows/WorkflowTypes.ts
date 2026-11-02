@@ -142,8 +142,6 @@ export interface RepositoryWorkflowState {
     readonly status: 'unread' | 'unavailable' | 'read';
     /** Why GitHub shows nothing, while `unavailable`; `null` otherwise. */
     readonly unavailable: WorkflowsUnavailable | null;
-    /** The branch GitHub calls the default one, as last read; `null` before. */
-    readonly defaultBranch: string | null;
     /** In the stored order; empty unless `read`. */
     readonly workflows: readonly WorkflowState[];
     readonly brokenCount: number;

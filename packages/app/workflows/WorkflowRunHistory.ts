@@ -45,6 +45,16 @@ interface HistorySession {
     readonly rest: GitHubRestRequester;
 }
 
+/** What reading a page goes on from. */
+interface ReadParams {
+    /** The session it was asked in: an answer arriving after it ended is dropped. */
+    readonly current: HistorySession;
+    readonly key: string;
+    /** The entry as it stood when asked. */
+    readonly entry: HistoryEntry;
+    readonly query: WorkflowRunHistoryQuery;
+}
+
 const UNREAD: HistoryEntry = { runs: [], status: 'idle', complete: false, nextPageUrl: null };
 
 /**
@@ -95,10 +105,10 @@ export const WorkflowRunHistory = defineService({
             }
 
             put(key, { ...entry, status: 'reading' });
-            void read(current, key, entry, query);
+            void read({ current, key, entry, query });
         }
 
-        async function read(current: HistorySession, key: string, entry: HistoryEntry, query: WorkflowRunHistoryQuery) {
+        async function read({ current, key, entry, query }: ReadParams) {
             try {
                 const page = await listWorkflowRuns(current.rest, {
                     nameWithOwner: query.nameWithOwner,
