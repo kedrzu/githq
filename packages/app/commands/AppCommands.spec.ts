@@ -20,7 +20,7 @@ test('`,` opens Settings; the command menu offers it once, under "Go to" with it
     await expect.poll(() => router.currentRoute.value.path).toBe('/settings');
 
     await router.push('/');
-    await userEvent.keyboard('{Meta>}k{/Meta}');
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     const settings = menu.getByRole('option', { name: 'Settings', exact: true });
     await expect.element(settings).toBeInTheDocument();
