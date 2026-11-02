@@ -3,10 +3,11 @@ import type { Locator, Page } from '@playwright/test';
 import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 import type { MyWorkGroupName } from './MyWorkScreen.harness.js';
+import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `SyncStoppedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -91,7 +92,17 @@ export class AppShellHarness {
         return this.page.getByRole('contentinfo', { name: 'Status' });
     }
 
-    /** The toasts showing, oldest first: each the failure of an edit (K1, K2). */
+    /** The account menu's button while syncing the settings stopped: its avatar carries an amber dot (T9). */
+    accountSyncStopped(login: string): Locator {
+        return this.sidebar.getByRole('button', { name: `Account: ${login} · syncing stopped`, exact: true });
+    }
+
+    /** The toast saying syncing the settings stopped, and why (settings-sync T9). */
+    get syncStoppedToast(): Locator {
+        return this.toasts.filter({ hasText: 'Syncing settings stopped' });
+    }
+
+    /** The toasts showing, oldest first: the failures of edits (K1, K2), and that syncing the settings stopped (T9). */
     get toasts(): Locator {
         return this.page.getByRole('region', { name: /^Notifications/ }).getByRole('listitem');
     }
@@ -101,10 +112,11 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /changes? failed/ });
     }
 
-    /** Opens the account page (G9) through the account menu. */
+    /** Opens Settings' Account section (G9), with "Settings" of the account menu and then its tab. */
     async openAccount(login: string): Promise<void> {
         await this.account(login).click();
-        await this.page.getByRole('menuitem', { name: 'Account' }).click();
+        await this.page.getByRole('menuitem', { name: 'Settings' }).click();
+        await new SettingsScreenHarness(this.page).section('Account').click();
     }
 
     /**

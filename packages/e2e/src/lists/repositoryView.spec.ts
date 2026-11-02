@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -26,7 +27,24 @@ test('a tracked repository is grouped by milestone, and as a board by issue type
     await expect(repository.rows('No type')).toHaveText([/Document the setup/, /Fix the crash on start/]);
 });
 
-test('J3: an untracked repository holds what concerns the user; tracked from there, the rest of its items arrive in place', async ({
+test('coming back to a repository opens the tab it was left on, and an address naming a tab is obeyed', async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/pulls`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+
+    await shell.myWorkLink('My work').click();
+    await expect(page).toHaveURL('/');
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/issues`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
+});
+
+test('J3: an untracked repository holds only what concerns the user and offers no tracking; tracked in Settings, the rest of its items arrive', async ({
     page,
     github,
 }) => {
@@ -51,10 +69,20 @@ test('J3: an untracked repository holds what concerns the user; tracked from the
     const repository = new RepositoryScreenHarness(page);
 
     await page.goto('/hubot/tools');
-    await expect(repository.notTracked('hubot/tools')).toContainText('only has what concerns you here: 1 item');
+    await expect(repository.notTracked('hubot/tools')).toContainText(
+        'githq only has what concerns you in hubot/tools: 1 issue.',
+    );
     await expect(repository.rows('Concerns you')).toHaveText([/Lint the release notes/]);
+    await expect(page.getByRole('button', { name: /^Track/ })).toHaveCount(0);
 
-    await repository.trackButton('hubot/tools').click();
+    await page.getByRole('link', { name: 'Settings' }).last().click();
+    const tracking = new TrackingScreenHarness(page);
+    await tracking
+        .notTracked('hubot/tools')
+        .getByRole('button', { name: /^Track/ })
+        .click();
+    await shell.tracked('hubot/tools').click();
+
     await expect(repository.groupingButton).toHaveText('Group: Milestone');
     await expect(repository.rows('No milestone')).toHaveText([
         /Lint the release notes/,

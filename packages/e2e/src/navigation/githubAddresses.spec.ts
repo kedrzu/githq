@@ -125,12 +125,12 @@ test("a tracked repository and its lists, a project and its saved view, the acco
     await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
 
     await page.goto('/settings');
-    await expect(new AccountScreenHarness(page).heading).toBeVisible();
+    await expect(new TrackingScreenHarness(page).tracked(SAMPLE_REPOSITORY)).toBeVisible();
     await expect(page).toHaveURL('/settings');
 
-    await page.goto('/settings/tracking');
-    await expect(new TrackingScreenHarness(page).tracked(SAMPLE_REPOSITORY)).toBeVisible();
-    await expect(page).toHaveURL('/settings/tracking');
+    await page.goto('/settings?tab=account');
+    await expect(new AccountScreenHarness(page).signOutButton).toBeVisible();
+    await expect(page).toHaveURL('/settings?tab=account');
 
     // Signed in, sign-in goes on to the work.
     await page.goto('/login');

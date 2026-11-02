@@ -87,8 +87,8 @@ raced another device is refused rather than silently overwriting it.
 
 Costs accepted: one more repository in the account, which githq has to hide from its own lists. It does not show on
 the public profile by default. Every write is a commit, so history keeps old settings until the repository is deleted.
-The landing page's permission line (`packages/app/landing/LandingPermission.loc.yaml:2`), "githq only touches issues,
-pull requests and projects", has to change.
+The permission lines on the landing page (`packages/app/landing/LandingPermission.loc.yaml`) and the desktop sign-in
+(`packages/app/desktop/DesktopSignIn.loc.yaml`) say githq also touches, if asked, its own settings repository.
 
 > **Checked 2026-11-01:** "By default, your contribution graph and Achievements only show activity from public
 > repositories." — [Contributions on your profile](https://docs.github.com/en/account-and-profile/concepts/contributions-on-your-profile).
@@ -212,7 +212,8 @@ agent's proposal)
 **Why.** The reasons need no rule of their own: the repository was deleted (404), it exists without our file, so it isn't
 ours, it is public when connecting, the file is unreadable or hand-edited into something invalid, its `version` is newer than this
 build understands, creating it or writing to it is refused. Refusing to write to a file it cannot read means the file stays
-recoverable. Visibility is checked when connecting, not on every poll.
+recoverable. Visibility is checked when connecting, not on every poll. An empty private repository with the name (no commits, as a creation whose first write
+never landed leaves it) is githq's own: turning on writes the file into it. A repository with commits and no file is not ours.
 
 ## D13
 
@@ -267,6 +268,11 @@ checks it.
 > **Checked 2026-11-01:** `PUT …/contents/…` initialises an empty repository, and the REST API "will return a 409 Conflict if
 > the Git repository is empty or unavailable", the latter while GitHub is still creating it —
 > [Git database](https://docs.github.com/en/rest/guides/using-the-rest-api-to-interact-with-your-git-database).
+
+> **Checked 2026-11-01 (live, creating kedrzu/githq-settings):** `POST /user/repos` (private, `auto_init: false`), then
+> `PUT …/contents/settings.json` without `sha` two seconds later → 201, the repository initialised. `PUT` without `sha` on an
+> existing file → 422 ""sha" wasn't supplied"; with a stale `sha` → 409. Both are read again and merged. CORS preflight
+> from `http://localhost:8787` for `POST /user/repos` and `PUT …/contents/…` → 204, `allow-origin: *`.
 
 ## D15
 

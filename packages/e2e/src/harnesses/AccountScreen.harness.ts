@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** Playwright harness for the account page (`AccountView.vue`, G9). */
+/** Playwright harness for Settings' Account section (`AccountView.vue`, G9). */
 export class AccountScreenHarness {
     readonly page: Page;
     readonly root: Locator;
@@ -8,11 +8,6 @@ export class AccountScreenHarness {
     constructor(page: Page) {
         this.page = page;
         this.root = page.getByRole('main');
-    }
-
-    /** The page's heading, "Account". */
-    get heading(): Locator {
-        return this.root.getByRole('heading', { name: 'Account', level: 1 });
     }
 
     /** An organisation's row: its name, whether it hides its private data, and when approval was requested. */

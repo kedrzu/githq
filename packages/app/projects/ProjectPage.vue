@@ -1,36 +1,45 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). A project still arriving says so; one not tracked offers to track it. -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A project still arriving says so; one not tracked shows what concerns the user and points to Settings (J4). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { Plus, SquareKanban, SquarePen } from 'lucide-vue-next';
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
-import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import type { DraftIssueFieldInput } from '@/edits/ItemEditor.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import type { ProjectFieldInput } from '@/edits/EditTypes.js';
 import { formatShortReference } from '@/item/itemRoutes.js';
+import { getItemComparator } from '@/lists/getItemComparator.js';
+import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
+import type { ItemProperty } from '@/lists/ItemProperty.js';
 import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
+import { withStackMembers } from '@/lists/withStackMembers.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
+import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { ProjectIteration } from '@/store/ItemDetailTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
-import { getProjectPath } from '@/tracking/trackingRoutes.js';
+import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import * as untracked from '@/tracking/UntrackedView.loc.js';
+import UntrackedView from '@/tracking/UntrackedView.vue';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 
 import type { ProjectListTexts } from './buildProjectList.js';
@@ -70,6 +79,8 @@ const NO_VIEW_OPTIONS: ProjectViewOptions = {
 };
 /** The options kept for "All items" (K9: `?all`), beside the saved views'. */
 const ALL_ITEMS_LIST = 'all';
+/** What the rows of a project not tracked show: it has no saved view or row field of its own to say (J4). */
+const UNTRACKED_PROPERTIES: readonly ItemProperty[] = ['status', 'labels', 'people', 'updated'];
 
 const auth = useService(AuthStore);
 const tracking = useService(TrackingStore);
@@ -86,12 +97,16 @@ const t = useTranslate();
 const list = useItemList();
 const projectCommands = useProjectCommands();
 
-const notFound = ref(false);
-const trackBusy = ref(false);
 const openedDraftId = shallowRef<string | null>(null);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const number = computed(() => Number(route.params.number));
+const address = computed((): ProjectAddress => ({
+  owner: owner.value,
+  ownerKind: route.path.startsWith('/orgs/') ? 'org' : 'user',
+  number: number.value,
+}));
+const githubUrl = computed(() => `${GITHUB_ORIGIN}${getProjectPath(address.value)}`);
 const viewNumber = computed(() => (typeof route.params.view === 'string' ? Number(route.params.view) : null));
 /** "Show all items" (K9): the project's items with no saved view's filter, shown as the saved view is otherwise. */
 const showAll = computed(() => route.query.all !== undefined);
@@ -99,6 +114,17 @@ const tracked = computed(() =>
   tracking.projects.find(candidate => candidate.owner === owner.value && candidate.number === number.value),
 );
 const project = computed((): Project | null => (tracked.value ? (projects.get(tracked.value.id) ?? null) : null));
+/** Not tracked, the copy holds what concerns the user: the open items of my work that say they are in it (J4). */
+const concerning = computed(() => {
+  if (tracked.value) {
+    return [];
+  }
+
+  return items.all
+    .filter(item => item.state === 'OPEN' && item.projects.some(isThisProject))
+    .map(item => projects.withRowFields(item))
+    .toSorted(getItemComparator('updated'));
+});
 
 // In a project, a new issue is added to it (H5): its `C` comes before the app's. Items already on GitHub are
 // added from the local copy, several in a row (K8).
@@ -126,12 +152,7 @@ useCommands(() =>
 // The project's page on GitHub is in the command menu too, named, as the screen is about it.
 useCommands(() => [
   {
-    ...projectCommands({
-      id: tracked.value?.id ?? null,
-      owner: owner.value,
-      ownerKind: route.path.startsWith('/orgs/') ? 'org' : 'user',
-      number: number.value,
-    }).openOnGitHub,
+    ...projectCommands({ ...address.value, id: tracked.value?.id ?? null }).openOnGitHub,
     detail: tracked.value?.title ?? `${owner.value}#${number.value}`,
   },
 ]);
@@ -230,18 +251,31 @@ const texts = computed((): ProjectListTexts => ({
     return current ? t(l.iterationCurrent, { range }) : range;
   },
 }));
-const groups = computed(() =>
-  project.value && selected.value
-    ? buildProjectList({
-        project: project.value,
-        entries: selected.value,
-        grouping: grouping.value,
-        sort: options.options.sort,
-        texts: texts.value,
-        today: today.value,
-      })
-    : null,
-);
+const groups = computed(() => {
+  const current = project.value;
+  if (!current || !selected.value) {
+    return null;
+  }
+
+  const matched = selected.value;
+  // D3, SP25: a stack any of whose pull requests the filter matches shows them all, in the groups the filter alone gives.
+  const shown = withStackMembers({
+    matched,
+    all: entries.value.filter(entry => !entry.item.isArchived),
+    getPullRequest,
+  });
+  const built = buildGroups(current, matched);
+  const keys = new Set(built.map(group => group.key));
+  // D3: a stack's pull requests in a group share an entry — described from the whole stack, which the local copy holds
+  // even where the project does not.
+  return foldStacks({
+    groups: shown === matched ? built : buildGroups(current, shown).filter(group => keys.has(group.key)),
+    getPullRequest,
+    stacks: groupStacks(items.all),
+    describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
+    matched: shown === matched ? null : new Set(matched.map(getProjectEntryId)),
+  });
+});
 const itemCount = computed(() => entries.value.filter(entry => !entry.item.isArchived).length);
 const tabs = computed((): ProjectTab[] => {
   const current = project.value;
@@ -298,7 +332,13 @@ const openedDraft = computed(() => {
   const id = openedDraftId.value;
   return id === null ? null : (entries.value.find(entry => entry.item.itemId === id)?.item ?? null);
 });
-const name = computed(() => tracked.value?.title ?? `${owner.value} #${number.value}`);
+const name = computed(() => {
+  const place = concerning.value[0]?.projects.find(isThisProject);
+  return tracked.value?.title ?? place?.title ?? `${owner.value} #${number.value}`;
+});
+const concerningRows = computed(() =>
+  concerning.value.map(item => ({ key: item.id, id: item.id, value: item, nested: [] })),
+);
 
 // A view GitHub answers is asked while it is shown (K6) — once per view, however often its items change.
 watch(
@@ -312,9 +352,25 @@ watch(
   { immediate: true },
 );
 
-watch([owner, number], () => {
-  notFound.value = false;
-});
+/** Whether a place an item says it is in is this project, by its address on GitHub. */
+function isThisProject(place: { readonly url: string }) {
+  return place.url.toLowerCase() === githubUrl.value.toLowerCase();
+}
+
+function buildGroups(current: Project, shown: readonly ProjectEntry[]) {
+  return buildProjectList({
+    project: current,
+    entries: shown,
+    grouping: grouping.value,
+    sort: options.options.sort,
+    texts: texts.value,
+    today: today.value,
+  });
+}
+
+function getPullRequest(entry: ProjectEntry) {
+  return entry.content?.kind === 'pullRequest' ? entry.content : null;
+}
 
 function listKey(projectId: string, viewId: string) {
   return `project:${projectId}:${viewId}`;
@@ -377,15 +433,26 @@ function canMove(entry: ListEntry<ProjectEntry>) {
   );
 }
 
-function move({ id, to }: ListMove) {
+function move({ ids, to }: ListMove) {
   const current = project.value;
-  const entry = findEntry(id);
   const field = current ? getGroupingField(current, grouping.value) : undefined;
-  if (!current || !entry || !field) {
+  const [id, ...others] = ids;
+  if (!current || !field || id === undefined) {
     return;
   }
 
   const value = toFieldInput(field.kind, to);
+  if (others.length > 0) {
+    // A stack's card (D3): the field of each pull request's own place, as for the items edited together.
+    void editor.edit(ids, { kind: 'projectFieldInProject', projectId: current.id, fieldId: field.id, value });
+    return;
+  }
+
+  const entry = findEntry(id);
+  if (!entry) {
+    return;
+  }
+
   if (entry.content) {
     void editor.edit([entry.content.id], {
       kind: 'projectField',
@@ -467,34 +534,6 @@ function setRowField(fieldId: string | null) {
     projects.setRowField(project.value.id, fieldId);
   }
 }
-
-async function track() {
-  trackBusy.value = true;
-  try {
-    const found = await tracking.findCandidate({
-      kind: 'project',
-      owner: owner.value,
-      ownerKind: route.path.startsWith('/orgs/') ? 'org' : 'user',
-      number: number.value,
-    });
-    if (!found || 'nameWithOwner' in found) {
-      notFound.value = true;
-      return;
-    }
-
-    tracking.track({
-      project: {
-        id: found.id,
-        owner: found.owner,
-        ownerKind: found.ownerKind,
-        number: found.number,
-        title: found.title,
-      },
-    });
-  } finally {
-    trackBusy.value = false;
-  }
-}
 </script>
 
 <template>
@@ -536,9 +575,10 @@ async function track() {
         :new-issue-key="NEW_ISSUE_KEY"
       />
     </template>
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>
@@ -556,8 +596,40 @@ async function track() {
     @close="openedDraftId = null"
   />
 
+  <UntrackedView
+    v-if="!tracked && auth.viewer"
+    v-model:selected-id="list.selectedId"
+    v-model:checked-ids="list.checkedIds"
+    :icon="SquareKanban"
+    :name="name"
+    :meta="owner"
+    :github-url="githubUrl"
+    :rows="concerningRows"
+    :summary="
+      concerning.length > 0
+        ? t(l.onlyWhatConcerns, { name, count: concerning.length })
+        : t(untracked.nothingConcerns, { name })
+    "
+    :others="t(concerning.length > 0 ? l.othersOnGitHub : l.allOnGitHub)"
+    :settings-to="getSettingsPath('projects', githubUrl)"
+    :properties="UNTRACKED_PROPERTIES"
+    :viewer-login="auth.viewer.login"
+    :now="list.now"
+    :opened-id="list.openedId"
+    :undone="list.undone"
+    @open="list.open"
+    @listed="list.setListed"
+  >
+    <template #contextMenu="menu">
+      <ItemContextMenu
+        :ids="menu.ids"
+        @open="menu.open"
+      />
+    </template>
+  </UntrackedView>
+
   <div
-    v-if="!project"
+    v-if="tracked && !project"
     :class="css.projectPage"
   >
     <header
@@ -567,28 +639,10 @@ async function track() {
       <h1 :class="css.projectPage_title">{{ name }}</h1>
     </header>
     <EmptyState
-      v-if="tracked"
       :icon="SquareKanban"
       :title="t(l.arrivingTitle, { name })"
       :detail="t(l.arrivingDetail, { count: trackedItems.getOpenCount({ kind: 'project', id: tracked.id }) })"
     />
-    <EmptyState
-      v-else
-      :icon="SquareKanban"
-      :title="t(l.notTrackedTitle, { name })"
-      :detail="notFound ? t(l.notFound) : t(l.notTrackedDetail)"
-    >
-      <template #action>
-        <Button
-          v-if="!notFound"
-          variant="primary"
-          :busy="trackBusy"
-          @click="track"
-        >
-          {{ t(l.track) }}
-        </Button>
-      </template>
-    </EmptyState>
   </div>
 </template>
 

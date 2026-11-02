@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. Moving an item to another group on the board sets that value through the edit engine — only where the user may. An untracked repository offers to track it; its copy then arrives in place. -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { useCommands } from '@/commands/useCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
@@ -20,6 +21,8 @@ import { ProjectStore } from '@/projects/ProjectStore.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { getProjectPath, getRepositoryKind, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -32,6 +35,7 @@ import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
 import { REPOSITORY_VIEW_CHOICES, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import { useRepositoryCommands } from './useRepositoryCommands.js';
+import { LastRepositoryTab } from './LastRepositoryTab.js';
 
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
@@ -44,10 +48,9 @@ const router = useRouter();
 const t = useTranslate();
 const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
+const tabs = useService(LastRepositoryTab);
 
 const state = ref<RepositoryState>('open');
-const notFound = ref(false);
-const trackBusy = ref(false);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
@@ -62,6 +65,23 @@ const kind = computed({
     void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
   },
 });
+
+// Coming back to a repository at its own address opens the tab it was left on (D5); an address naming a tab is obeyed.
+const repositoryName = nameWithOwner.value;
+const lastTab = tabs.get(repositoryName);
+if (kind.value === 'all' && lastTab !== null) {
+  kind.value = lastTab;
+} else {
+  tabs.remember(repositoryName, kind.value);
+}
+
+// Leaving, the address already names another repository or none, and this page's tab is not theirs.
+watch(kind, value => {
+  if (nameWithOwner.value === repositoryName) {
+    tabs.remember(repositoryName, value);
+  }
+});
+
 const view = useListViewOptions({
   list: () => `repository:${nameWithOwner.value}`,
   defaults: REPOSITORY_VIEW_DEFAULTS,
@@ -98,6 +118,19 @@ const repositoryList = computed(() =>
     texts: texts.value,
   }),
 );
+/** The list as shown: a stack's pull requests folded into its entries. */
+const shownList = computed(() => {
+  const built = repositoryList.value;
+  return {
+    ...built,
+    groups: foldStacks({
+      groups: built.groups,
+      getPullRequest: item => (item.kind === 'pullRequest' ? item : null),
+      stacks: groupStacks(repositoryItems.value),
+      describe: stack => describeStack({ stack, viewerLogin: auth.viewer?.login ?? '', getItem: id => items.get(id) }),
+    }),
+  };
+});
 const openCount = computed(() => repositoryItems.value.filter(item => item.state === 'OPEN').length);
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
@@ -137,7 +170,6 @@ useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, de
 watch(
   [nameWithOwner, tracked],
   ([repository, isTracked]) => {
-    notFound.value = false;
     if (isTracked) {
       void repositories.ensure(repository);
     }
@@ -177,10 +209,10 @@ function canMove(entry: ListEntry<Item>, from: string, to: string) {
   }
 }
 
-function move({ id, from, to }: ListMove) {
+function move({ ids, from, to }: ListMove) {
   const request = getMoveRequest(from, to);
   if (request) {
-    void editor.edit([id], request);
+    void editor.edit(ids, request);
   }
 }
 
@@ -202,20 +234,6 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       return assertNever(grouping);
   }
 }
-
-async function track() {
-  trackBusy.value = true;
-  try {
-    const found = await tracking.findCandidate({ kind: 'repository', owner: owner.value, name: name.value });
-    if (found && 'nameWithOwner' in found) {
-      tracking.track({ repository: { nameWithOwner: found.nameWithOwner, id: found.id } });
-    } else {
-      notFound.value = true;
-    }
-  } finally {
-    trackBusy.value = false;
-  }
-}
 </script>
 
 <template>
@@ -230,7 +248,7 @@ async function track() {
     :name-with-owner="nameWithOwner"
     :is-private="isPrivate"
     :tracked="tracked"
-    :list="repositoryList"
+    :list="shownList"
     :open-count="openCount"
     :projects="projectLinks.links"
     :without-project="projectLinks.withoutProject"
@@ -239,21 +257,19 @@ async function track() {
     :opened-id="list.openedId"
     :undone="list.undone"
     :can-move="canMove"
-    :not-found="notFound"
-    :track-busy="trackBusy"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
     @listed="list.setListed"
     @move="move"
-    @track="track"
   >
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />
     </template>
-    <template #selection="{ ids }">
+    <template #selection="{ ids, span }">
       <SelectionActions
         :ids="ids"
+        :span="span"
         @clear="list.checkedIds = []"
       />
     </template>

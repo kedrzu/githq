@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser. An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`) — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router';
 import { AuthStore } from '@/auth/AuthStore.js';
 import AppCommands from '@/commands/AppCommands.vue';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import Toaster from '@/components/Toaster.vue';
 import { EditQueue } from '@/edits/EditQueue.js';
 import EditToasts from '@/edits/EditToasts.vue';
 import { useEditTexts } from '@/edits/useEditTexts.js';
@@ -18,6 +19,8 @@ import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
+import { SettingsSync } from '@/settings/sync/SettingsSync.js';
+import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
@@ -25,6 +28,7 @@ import type { SegmentEdits } from '@/shell/FreshnessSegment.vue';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
@@ -51,6 +55,7 @@ const editTexts = useEditTexts();
 const registry = useService(CommandRegistry);
 const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
+const settingsSync = useService(SettingsSync);
 const route = useRoute();
 
 const collapsed = preferences.sidebarCollapsed;
@@ -59,8 +64,13 @@ const collapsed = preferences.sidebarCollapsed;
 const myWorkCounts = computed(() =>
   items.getSyncState('myWork').lastSuccessAt === null
     ? null
-    : buildMyWork({ membership: items.membership, getItem: id => items.get(id), filter: 'all', sort: 'updated' })
-        .counts,
+    : buildMyWork({
+        membership: items.membership,
+        getItem: id => items.get(id),
+        stacks: groupStacks(items.all),
+        filter: 'all',
+        sort: 'updated',
+      }).counts,
 );
 
 // Each tracked project and repository with its open items once they have arrived, else how far its download is.
@@ -83,7 +93,7 @@ const tracked = computed((): SidebarTracked => ({
       to: getRepositoryPath(repository.nameWithOwner),
       target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
-      isPrivate: trackedItems.isPrivate(repository.nameWithOwner),
+      isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
     };
   }),
 }));
@@ -192,6 +202,7 @@ function showLastFailure() {
     :tracked="tracked"
     :edits="opened?.onPage ? (itemEdits ?? listEdits) : listEdits"
     :item-edits="opened?.onPage ? null : itemEdits"
+    :settings-sync-stopped="settingsSync.state.state === 'stopped'"
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"
@@ -222,6 +233,9 @@ function showLastFailure() {
     :reference="opened.reference"
     arrangement="modal"
   />
-  <EditToasts v-if="auth.viewer" />
+  <Toaster v-if="auth.viewer">
+    <EditToasts />
+    <SyncStoppedToast :login="auth.viewer.login" />
+  </Toaster>
   <AppCommands v-if="auth.viewer" />
 </template>

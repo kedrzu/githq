@@ -1,10 +1,10 @@
-<!-- Choosing what to track (G2, D20): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. -->
+<!-- Choosing what to track (G2, D20): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). The projects sit beside them. An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). With nothing at all to pick, it offers tracking someone else's repository or project by name (G10). The `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { ArrowDownWideNarrow, Building2, Inbox, Lock, SquareKanban, User } from 'lucide-vue-next';
-import { computed, ref, useTemplateRef, watchEffect } from 'vue';
+import { computed, ref, useTemplateRef, watch, watchEffect } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
@@ -75,6 +75,18 @@ const props = defineProps<{
   approvals: Readonly<Record<string, number>>;
   /** Looks up a repository or project the user names (G10). */
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
+  /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
+  creates?: string | null;
+  /**
+   * "Track these" is under way: it and ⌘↵ do nothing until it ends. "Only my repositories" shows as disabled but keeps
+   * its focus and still emits — the page ignores it meanwhile.
+   */
+  busy?: boolean;
+}>();
+
+defineSlots<{
+  /** What the page says about saving to GitHub: the choice (G2, G12), or why it isn't offered (G13, G14). */
+  saving?(): unknown;
 }>();
 
 /** The chosen repositories, `owner/name`. */
@@ -102,6 +114,9 @@ const owner = ref<string>('all');
 const filter = ref('');
 const unfoldedOwners = ref<ReadonlySet<string>>(new Set());
 const projectsUnfolded = ref(false);
+/** The repository and the project last clicked in each list: where a Shift+click's range starts. */
+const repositoryAnchor = ref<string | null>(null);
+const projectAnchor = ref<string | null>(null);
 const listKeys = useFilteredListKeys({
   container: root,
   rows: '[data-tracking-row] [role="checkbox"]',
@@ -123,6 +138,16 @@ const chosenProjects = computed(() => new Set(projects.value));
 const needle = computed(() => filter.value.trim());
 const shownGroups = computed(() =>
   groups.value.filter(group => owner.value === 'all' || group.login === owner.value).map(showGroup),
+);
+/** The repositories' rows in the order shown, which a range follows. */
+const shownRepositoryNames = computed(() =>
+  empty.value
+    ? foundRepositories.value.map(repository => repository.nameWithOwner)
+    : shownGroups.value.flatMap(group => group.rows.map(row => row.nameWithOwner)),
+);
+/** The projects' rows in the order shown. */
+const shownProjectIds = computed(() =>
+  (empty.value ? foundProjects.value : shownProjects.value).map(project => project.id),
 );
 const ownerOptions = computed((): ChoiceListOption<string>[] => [
   ownerOption(
@@ -184,6 +209,13 @@ const openToCopy = computed(() =>
     return repository ? repository.openIssues + repository.openPullRequests : 0;
   }),
 );
+const summaryDetail = computed(() => {
+  const detail = t(l.summaryDetail, { count: openToCopy.value });
+  return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
+});
+
+/** Whether the click toggling a checkbox held Shift; read in the capture phase, before the checkbox toggles. */
+let rangeClick = false;
 
 // A filter looks through all of a shown group's repositories: the rest are asked for, a page at a time. Shown in
 // full without one, a group asks for its next page when the user does ("Show more"): an organisation may have
@@ -200,6 +232,11 @@ watchEffect(() => {
   }
 });
 
+// Another filter shows other rows: a range starts anew.
+watch(filter, () => {
+  repositoryAnchor.value = null;
+});
+
 onWindowEvent('keydown', event => {
   if (event.defaultPrevented) {
     return;
@@ -207,7 +244,10 @@ onWindowEvent('keydown', event => {
 
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
-    emit('track');
+    if (!props.busy) {
+      emit('track');
+    }
+
     return;
   }
 
@@ -303,8 +343,23 @@ function unfold(login: string) {
   unfoldedOwners.value = new Set([...unfoldedOwners.value, login]);
 }
 
+function onClickCapture(event: MouseEvent) {
+  rangeClick = event.shiftKey;
+}
+
+/** Keeps a Shift+click on a row from selecting the text up to it. */
+function onMousedown(event: MouseEvent) {
+  if (event.shiftKey && event.target instanceof Element && event.target.closest('[data-tracking-row]')) {
+    event.preventDefault();
+    // Kept from the row by the prevented default, the focus follows the click.
+    event.target.closest('[data-tracking-row]')?.querySelector<HTMLElement>('[role="checkbox"]')?.focus();
+  }
+}
+
+/** Chooses a repository, or with Shift the shown ones from the anchor to it. */
 function setRepository(name: string, chosen: boolean) {
-  setRepositories([name], chosen);
+  setRepositories(pickRange(shownRepositoryNames.value, repositoryAnchor.value, name), chosen);
+  repositoryAnchor.value = name;
 }
 
 function setRepositories(names: readonly string[], chosen: boolean) {
@@ -320,8 +375,24 @@ function setRepositories(names: readonly string[], chosen: boolean) {
   repositories.value = [...next];
 }
 
+/** Chooses a project, or with Shift the shown ones from the anchor to it. */
 function setProject(id: string, chosen: boolean) {
-  projects.value = chosen ? [...new Set([...projects.value, id])] : projects.value.filter(other => other !== id);
+  const range = new Set(pickRange(shownProjectIds.value, projectAnchor.value, id));
+  projects.value = chosen
+    ? [...new Set([...projects.value, ...range])]
+    : projects.value.filter(other => !range.has(other));
+  projectAnchor.value = id;
+}
+
+/** The rows a click on `row` sets: with Shift, all shown from the anchor to it; else, or with no anchor shown, itself. */
+function pickRange(rows: readonly string[], anchor: string | null, row: string) {
+  const from = rangeClick && anchor !== null ? rows.indexOf(anchor) : -1;
+  const to = rows.indexOf(row);
+  if (from < 0 || to < 0) {
+    return [row];
+  }
+
+  return rows.slice(Math.min(from, to), Math.max(from, to) + 1);
 }
 
 function ownerOption(option: ChoiceListOption<string>, count: OwnerCount): ChoiceListOption<string> {
@@ -341,6 +412,8 @@ function ownerCount(group: OwnerGroup): OwnerCount {
   <div
     ref="root"
     :class="css.trackingChooser"
+    @click.capture="onClickCapture"
+    @mousedown="onMousedown"
   >
     <!-- G10: nothing to pick. -->
     <div
@@ -390,11 +463,13 @@ function ownerCount(group: OwnerGroup): OwnerCount {
           </Checkbox>
         </div>
       </section>
+      <slot name="saving" />
       <div>
         <Button
           variant="primary"
           kbd="Mod+Enter"
           :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+          :busy="busy"
           @click="emit('track')"
         >
           {{ t(l.continue) }}
@@ -545,6 +620,7 @@ function ownerCount(group: OwnerGroup): OwnerCount {
               >
                 <span><Kbd keys="ArrowUp ArrowDown" /> {{ t(l.hintMove) }}</span>
                 <span><Kbd keys="Space" /> {{ t(l.hintSelect) }}</span>
+                <span><Kbd keys="Shift+Click" /> {{ t(l.hintSelectRange) }}</span>
                 <span><Kbd keys="Mod+A" /> {{ t(l.hintSelectAll) }}</span>
                 <span><Kbd keys="Escape" /> {{ t(l.hintClear) }}</span>
               </p>
@@ -607,30 +683,40 @@ function ownerCount(group: OwnerGroup): OwnerCount {
         </div>
       </div>
 
-      <div :class="css.trackingChooser_footer">
-        <p :class="css.trackingChooser_summary">
-          {{
-            t(l.summary, {
-              repositories: t(l.summaryRepositories, { count: repositories.length }),
-              projects: t(l.summaryProjects, { count: projects.length }),
-            })
-          }}
-        </p>
-        <p :class="css.trackingChooser_summaryDetail">{{ t(l.summaryDetail, { count: openToCopy }) }}</p>
-        <Button
-          :class="css.trackingChooser_onlyMine"
-          @click="emit('onlyMine')"
+      <div :class="css.trackingChooser_bottom">
+        <div
+          v-if="$slots.saving"
+          :class="css.trackingChooser_saving"
         >
-          {{ t(l.onlyMine) }}
-        </Button>
-        <Button
-          variant="primary"
-          kbd="Mod+Enter"
-          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
-          @click="emit('track')"
-        >
-          {{ t(l.track) }}
-        </Button>
+          <slot name="saving" />
+        </div>
+        <div :class="css.trackingChooser_footer">
+          <p :class="css.trackingChooser_summary">
+            {{
+              t(l.summary, {
+                repositories: t(l.summaryRepositories, { count: repositories.length }),
+                projects: t(l.summaryProjects, { count: projects.length }),
+              })
+            }}
+          </p>
+          <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
+          <Button
+            :class="css.trackingChooser_onlyMine"
+            :aria-disabled="busy || undefined"
+            @click="emit('onlyMine')"
+          >
+            {{ t(l.onlyMine) }}
+          </Button>
+          <Button
+            variant="primary"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :busy="busy"
+            @click="emit('track')"
+          >
+            {{ t(l.track) }}
+          </Button>
+        </div>
       </div>
     </template>
   </div>
@@ -830,9 +916,18 @@ function ownerCount(group: OwnerGroup): OwnerCount {
   color: $color-fg-dim;
 }
 
-.trackingChooser_footer {
+.trackingChooser_bottom {
   position: sticky;
   bottom: 0;
+}
+
+.trackingChooser_saving {
+  padding: 18px max(#{$spacing-24}, calc((100% - 1180px) / 2));
+  background: $color-bg;
+  border-top: 1px solid $color-border;
+}
+
+.trackingChooser_footer {
   display: flex;
   gap: 14px;
   align-items: center;

@@ -1,0 +1,20 @@
+title:
+  en: Syncing settings stopped
+deleted:
+  en: The repository {repository} no longer exists on GitHub.
+foreign:
+  en: Your repository githq-settings doesn't hold githq's settings, so githq won't write to it.
+public:
+  en: '{repository} is public, which would expose the names of your private repositories.'
+unreadable:
+  en: settings.json can't be read, so githq won't overwrite it.
+newer:
+  en: settings.json comes from a newer githq than this one.
+refused:
+  en: GitHub refused to create the repository or write to it.
+keepsWorking:
+  en: githq keeps working from what's on this device.
+openSettings:
+  en: Open settings
+openSavingCommand:
+  en: Open Saving to GitHub

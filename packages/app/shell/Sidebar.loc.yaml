@@ -14,12 +14,10 @@ projects:
   en: Projects
 repositories:
   en: Repositories
-trackRepositories:
-  en: Track repositories…
-trackProjects:
-  en: Add a project to track
-trackRepository:
-  en: Add a repository to track
+nothingTracked:
+  en: Repositories and projects you track appear here.
+settings:
+  en: Settings
 waiting:
   en: waiting
 hidden:

@@ -71,6 +71,10 @@ export function samplePullRequestNode(id: string, params: SampleRowNodeParams): 
         statusCheckRollup: null,
         reviewRequests: { nodes: [] },
         latestOpinionatedReviews: { nodes: [] },
+        stack: null,
+        stackEntry: null,
+        baseRefOid: 'base-oid',
+        baseRef: { target: { oid: 'base-oid' } },
     };
 }
 

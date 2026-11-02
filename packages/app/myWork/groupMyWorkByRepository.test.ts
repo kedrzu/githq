@@ -2,6 +2,7 @@
 import { expect, test } from 'bun:test';
 
 import { D1_ITEMS, D1_MEMBERSHIP, sampleMyWork } from '@/testing/sampleMyWork.js';
+import { STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP } from '@/testing/sampleStacks.js';
 
 import { groupMyWorkByRepository } from './groupMyWorkByRepository.js';
 
@@ -39,4 +40,23 @@ test('every row of my work once, the nested pull request still under its issue, 
 test('nothing tracked: one group of other repositories; nothing at all: no groups', () => {
     expect(groupMyWorkByRepository(work.groups, []).map(group => group.repository)).toEqual([null]);
     expect(groupMyWorkByRepository([], ['kedrzu/githq'])).toEqual([]);
+});
+
+test("a stack's entry stays whole in its repository's group, in the place of the first reason any of its pull requests has", () => {
+    const stacked = sampleMyWork(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP, 'all');
+    const grouped = groupMyWorkByRepository(stacked.groups, ['fitloop/api', 'fitloop/webapp']);
+
+    const rows = grouped.map(group => [group.repository, group.rows.map(row => row.stack?.id ?? row.item.id)]);
+    expect(rows.slice(0, 2)).toEqual([
+        ['fitloop/api', ['S_webhooks']],
+        ['fitloop/webapp', ['S_calendar']],
+    ]);
+    const webhooks = grouped[0]?.rows[0];
+    expect(webhooks?.nested.map(pr => pr.id)).toEqual([
+        'PR_S_webhooks_1',
+        'PR_S_webhooks_2',
+        'PR_S_webhooks_3',
+        'PR_S_webhooks_4',
+    ]);
+    expect(grouped.flatMap(group => group.rows).length).toBe(stacked.counts.total);
 });

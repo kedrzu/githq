@@ -1,0 +1,66 @@
+on:
+  en: Saving what you track to your GitHub account
+repository:
+  en: Repository
+private:
+  en: private
+lastSynced:
+  en: Last synced here
+notYet:
+  en: not yet
+saved:
+  en: Saved
+savedValue:
+  en: '{repositories}, {projects}. Views stay on this device.'
+repositories:
+  plural: count
+  en:
+    one: 1 repository
+    many: '{count} repositories'
+projects:
+  plural: count
+  en:
+    one: 1 project
+    many: '{count} projects'
+turnOffTitle:
+  en: Turn off saving
+turnOffDetail:
+  en: Stops syncing on this device. What you track here stays, and so does the repository.
+turnOff:
+  en: Turn off
+removing:
+  en: Removing the repository happens on github.com, because githq has no permission to delete repositories.
+repositorySettings:
+  en: Repository settings on GitHub
+turnedOff:
+  en: Saving is off on this device. What you track here stayed, and {repository} is still in your account.
+unreachable:
+  en: GitHub couldn't be reached, so saving stays off. Tick the box to try again.
+combineTitle:
+  en: '{repository} already exists, so it will be combined with this device'
+download:
+  plural: count
+  en:
+    one: 1 starts tracking here and downloads
+    many: '{count} start tracking here and download'
+addedToSaved:
+  plural: count
+  en:
+    one: 1 is added to the saved settings
+    many: '{count} are added to the saved settings'
+untracked:
+  plural: count
+  en:
+    one: 1 stops being tracked here, because the saved settings mark it untracked. Its copy on this device is deleted.
+    many: >-
+      {count} stop being tracked here, because the saved settings mark them untracked. Their copies on this device
+      are deleted.
+items:
+  plural: count
+  en:
+    one: 1 item
+    many: '{formatted} items'
+combine:
+  en: Combine and turn on
+cancel:
+  en: Cancel

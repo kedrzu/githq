@@ -17,6 +17,8 @@ export interface GitHubApiErrorOptions {
     /** The HTTP status of the answer — GitHub reports most GraphQL errors with a 200. */
     status: number;
     message: string;
+    /** GitHub's own message, as its answer worded it; none when it gave none. */
+    githubMessage?: string | undefined;
     /** The GraphQL errors of the answer; none when GitHub answered with a bare HTTP error. */
     errors?: readonly GitHubGraphQLErrorEntry[];
     /** The answer's `retry-after`, in seconds. */
@@ -39,11 +41,14 @@ export class GitHubApiError extends HttpError {
      * reset time comes through `onRateLimit`.
      */
     readonly retryAfter: number | undefined;
+    /** GitHub's own words for the refusal (its answer's `message`), to quote to the user; none when it gave none. */
+    readonly githubMessage: string | undefined;
 
     constructor(options: GitHubApiErrorOptions) {
         super(options.status, options.message);
         this.name = 'GitHubApiError';
         this.errors = options.errors ?? [];
         this.retryAfter = options.retryAfter;
+        this.githubMessage = options.githubMessage;
     }
 }
