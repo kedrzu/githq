@@ -8,6 +8,8 @@ disabled:
   en: Disabled on GitHub
 broken:
   en: Broken
+brokenJustNow:
+  en: Broke just now
 brokenFor:
   en: Broken for {age}
 brokenForOrMore:

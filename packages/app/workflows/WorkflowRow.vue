@@ -154,6 +154,10 @@ function describeBreak() {
   }
 
   const elapsed = props.now - breakStartedAt;
+  if (breakStartKnown && elapsed < MINUTE) {
+    return t(l.brokenJustNow);
+  }
+
   if (elapsed < DAY) {
     const age = formatAge(breakStartedAt, props.now);
     return breakStartKnown ? t(l.brokenFor, { age }) : t(l.brokenForOrMore, { age });

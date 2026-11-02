@@ -13,7 +13,7 @@ wouldAlertOn:
 duplicate:
   en: Already in the list
 turnsBroken:
-  en: '{workflow} turns broken: it failed on {ref} {age} ago'
+  en: '{workflow} turns broken: it failed on {ref} {when}'
 turnsBrokenNoRef:
   en: '{workflow} turns broken'
 stopsCounting:

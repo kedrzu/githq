@@ -39,11 +39,11 @@ nothingText:
 otherHeading:
   en: Other branches and tags with recent runs, no alerts
 otherFailed:
-  en: '{workflow} failed {age} ago'
+  en: '{workflow} failed {when}'
 otherPassed:
-  en: '{workflow} passed {age} ago'
+  en: '{workflow} passed {when}'
 otherRan:
-  en: '{workflow} ran {age} ago'
+  en: '{workflow} ran {when}'
 notRead:
   en: githq hasn't read this repository's runs yet, so it can't show what anything matches. The settings apply all the same.
 move:

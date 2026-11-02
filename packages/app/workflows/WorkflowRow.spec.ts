@@ -1,8 +1,10 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { matchText } from '@/testing/matchText.js';
+import { sampleWorkflowState } from '@/testing/sampleWorkflows.js';
 
 import * as stories from './WorkflowRow.stories.js';
 
@@ -38,6 +40,23 @@ test('the row is a button reached by Tab, named by the workflow, described by ho
     // of the text — the point of it.
     await userEvent.click(page.getByText('failed 14m ago'), { force: true });
     expect(open).toHaveBeenCalledTimes(2);
+});
+
+test('a run under a minute old reads "just now", never "now ago"', async () => {
+    const workflow = sampleWorkflowState({
+        id: 1,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'success', ago: '30h' },
+            { conclusion: 'failure', ago: '14m' },
+        ],
+    });
+    const failedAt = assertValue(workflow.breakStartedAt);
+
+    await BrokenNew.run({ args: { ...BrokenNew.args, workflow, now: failedAt + 10_000 } });
+
+    await expect.element(page.getByText('failed just now')).toBeVisible();
+    await expect.element(page.getByText('Broke just now')).toBeVisible();
 });
 
 test('a failure on no named ref says so in words, with no ref', async () => {

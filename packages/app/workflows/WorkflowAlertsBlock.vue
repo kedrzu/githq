@@ -11,7 +11,6 @@ import Kbd from '@/components/Kbd.vue';
 import Switch from '@/components/Switch.vue';
 import SettingsBlock from '@/settings/SettingsBlock.vue';
 import { REPOSITORY_SETTINGS_SECTIONS } from '@/tracking/trackingRoutes.js';
-import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
@@ -19,6 +18,7 @@ import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import { buildWorkflowAlerts, previewPatternEdit } from './buildWorkflowAlerts.js';
 import type { WorkflowAlertsOtherRef } from './buildWorkflowAlerts.js';
+import { useDescribeAgo } from './useDescribeAgo.js';
 import * as l from './WorkflowAlertsBlock.loc.js';
 import WorkflowPatternChip from './WorkflowPatternChip.vue';
 import WorkflowPatternEditor from './WorkflowPatternEditor.vue';
@@ -60,6 +60,7 @@ interface PatternRow {
 }
 
 const t = useTranslate();
+const describeAgo = useDescribeAgo();
 const root = useTemplateRef('root');
 const addField = useTemplateRef('addField');
 
@@ -246,7 +247,7 @@ function onFocus(event: FocusEvent) {
 
 function describeOther(entry: WorkflowAlertsOtherRef) {
   const { workflow, verdict, at } = entry.latest;
-  const params = { workflow, age: formatAge(at, props.now) };
+  const params = { workflow, when: describeAgo(at, props.now) };
   switch (verdict) {
     case 'failed':
       return t(l.otherFailed, params);

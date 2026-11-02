@@ -5,10 +5,10 @@ import { CircleMinus, Plus } from 'lucide-vue-next';
 import { computed, onMounted, ref, useTemplateRef } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
-import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
 
 import type { PatternEditPreview } from './buildWorkflowAlerts.js';
+import { useDescribeAgo } from './useDescribeAgo.js';
 import * as l from './WorkflowPatternEditor.loc.js';
 import WorkflowPatternMatches from './WorkflowPatternMatches.vue';
 
@@ -38,6 +38,7 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const describeAgo = useDescribeAgo();
 const input = useTemplateRef('input');
 const focused = ref(false);
 
@@ -55,7 +56,7 @@ const effects = computed(() => {
         ? t(l.turnsBroken, {
             workflow: entry.workflow,
             ref: entry.ref.name,
-            age: formatAge(entry.at, props.now),
+            when: describeAgo(entry.at, props.now),
           })
         : t(l.turnsBrokenNoRef, { workflow: entry.workflow });
     lines.push({ key: `broken:${entry.workflow}`, text, broken: true });
