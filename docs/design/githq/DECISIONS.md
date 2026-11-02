@@ -467,6 +467,22 @@ Track/Untrack bulk actions ("B", faster for big changes but a second model next 
 available as two side-by-side lists ("C"). The section "Saving to GitHub" is renamed **Sync settings**; settings
 has three sections, keys 1 to 3. Screens G8 and T1 in `githq.pen`.
 
+Settled while building it (PR #82, 2026-11-02):
+
+- **Saving is one write of the staged changes onto what is tracked by then**, not the ticks as they stand: a
+  repository tracked meanwhile in another tab, or a tracked row the list never drew, is never untracked by Save.
+- **Staged changes live as long as the section is shown.** Switching to another section or leaving Settings drops
+  them without asking (owner's call; keeping them across sections would need state above the section).
+- **A group's action** reads "Untrack all" only when every row it covers is ticked, else "Track all", the rule
+  sign-in already has for "Select none" / "Select all".
+- **What the lists don't hold still shows**, so it can be unticked: someone else's tracked repository in a group
+  "Elsewhere" at the end, and while the lists are first read (or reading them failed) the tracked rows alone,
+  under "Reading your repositories…".
+- **A tracked row's middle column is its open count**, as for every other row; githq can't tell how much one
+  repository takes in the browser, so T1's "1,420 · 21 MB" became "142 open".
+- **Dropped with the old screen:** the repositories suggested from My work, the size this browser keeps (Account
+  still shows it), the owner menu, the Organisations panel (Account still lists approvals), and `T` / `⌫` on rows.
+
 ## Open questions
 
 ### Q1
