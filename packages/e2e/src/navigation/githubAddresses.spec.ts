@@ -125,7 +125,7 @@ test("a tracked repository and its lists, a project and its saved view, the acco
     await expect(page).toHaveURL(`${SAMPLE_PROJECT_PATH}/views/2`);
 
     await page.goto('/settings');
-    await expect(new TrackingScreenHarness(page).tracked(SAMPLE_REPOSITORY)).toBeVisible();
+    await expect(new TrackingScreenHarness(page).row(SAMPLE_REPOSITORY)).toBeChecked();
     await expect(page).toHaveURL('/settings');
 
     await page.goto('/settings?tab=account');

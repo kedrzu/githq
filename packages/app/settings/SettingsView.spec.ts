@@ -4,28 +4,29 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './SettingsView.stories.js';
 
-const { Repositories, SavingStopped } = composeStories(stories);
+const { WhatToTrack, SyncStopped } = composeStories(stories);
 
-test('the title and the four tabs, with what is tracked counted', async () => {
-    await Repositories.run();
+test('the title and the three tabs, with what is tracked counted as one number', async () => {
+    await WhatToTrack.run();
 
     await expect.element(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument();
     const tabs = page.getByRole('group', { name: 'Settings sections' });
-    await expect.element(tabs.getByRole('button', { name: 'Repositories 15' })).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(tabs.getByRole('button', { name: 'Projects 3' })).toHaveAttribute('aria-keyshortcuts', '2');
-    await expect.element(tabs.getByRole('button', { name: 'Saving to GitHub' })).toBeInTheDocument();
-    await expect.element(tabs.getByRole('button', { name: 'Account' })).toBeInTheDocument();
+    await expect
+        .element(tabs.getByRole('button', { name: 'What to track 17' }))
+        .toHaveAttribute('aria-pressed', 'true');
+    await expect.element(tabs.getByRole('button', { name: 'Sync settings' })).toHaveAttribute('aria-keyshortcuts', '2');
+    await expect.element(tabs.getByRole('button', { name: 'Account' })).toHaveAttribute('aria-keyshortcuts', '3');
+    expect(tabs.getByRole('button').elements()).toHaveLength(3);
 });
 
-test('`1` to `4` and the tabs choose the section', async () => {
+test('`1` to `3` and the tabs choose the section', async () => {
     const onUpdateSection = vi.fn();
-    await Repositories.run({ args: { ...Repositories.args, 'onUpdate:section': onUpdateSection } });
+    await WhatToTrack.run({ args: { ...WhatToTrack.args, 'onUpdate:section': onUpdateSection } });
 
     for (const [key, section] of [
-        ['2', 'projects'],
-        ['3', 'saving'],
-        ['4', 'account'],
-        ['1', 'repositories'],
+        ['2', 'sync'],
+        ['3', 'account'],
+        ['1', 'tracking'],
     ] as const) {
         await userEvent.keyboard(key);
         expect(onUpdateSection).toHaveBeenLastCalledWith(section);
@@ -35,10 +36,10 @@ test('`1` to `4` and the tabs choose the section', async () => {
     expect(onUpdateSection).toHaveBeenLastCalledWith('account');
 });
 
-test('syncing stopped, Saving to GitHub carries a dot that says so', async () => {
-    await SavingStopped.run();
+test('syncing stopped, Sync settings carries a dot that says so', async () => {
+    await SyncStopped.run();
 
-    await expect.element(page.getByRole('button', { name: 'Saving to GitHub Syncing stopped' })).toBeVisible();
-    await Repositories.run();
-    await expect.element(page.getByRole('button', { name: 'Saving to GitHub', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Sync settings Syncing stopped' })).toBeVisible();
+    await WhatToTrack.run();
+    await expect.element(page.getByRole('button', { name: 'Sync settings', exact: true })).toBeVisible();
 });

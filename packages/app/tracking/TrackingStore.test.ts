@@ -181,6 +181,27 @@ test('a tab that has not heard of another tab’s change yet writes on top of it
     });
 });
 
+test('a choice made as a change of what is tracked is made of what the shared slot holds, another tab’s change included', async () => {
+    const login = `user-${crypto.randomUUID()}`;
+    // One localStorage, no broadcast between them: the second tab never hears what the first one sends.
+    const first = await open({ login });
+    const second = await open({ login, localStorage: first.localStorage });
+    second.tracking.choose({ repositories: [WEB, API], projects: [] });
+    const untracked: TrackedTarget[] = [];
+    second.tracking.onUntrack(target => untracked.push(target));
+
+    first.tracking.track({ repository: DOCS });
+    second.tracking.choose(({ repositories, projects }) => ({
+        repositories: repositories.filter(repository => repository.nameWithOwner !== 'acme/api'),
+        projects: [...projects, ROADMAP],
+    }));
+
+    expect(second.tracking.repositories).toEqual([WEB, DOCS]);
+    expect(second.tracking.projects).toEqual([ROADMAP]);
+    // Only what the change untracked is dropped here.
+    expect(untracked).toEqual([{ kind: 'repository', nameWithOwner: 'acme/api' }]);
+});
+
 test('settings loaded instead of choosing count as the choice, what they track kept as it is', async () => {
     const { tracking, localStorage, login } = await open();
     const loaded: SettingsDocument = { version: 1, repositories: [{ ...API, tracking: true }], projects: [] };

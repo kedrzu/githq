@@ -83,6 +83,22 @@ export const Gallery: Story = {
                     </Button>
                 </StoryRow>
             </StorySection>
+            <StorySection title="Beside a heading — small framed">
+                <StoryRow>
+                    <Button
+                        variant="framed"
+                        size="sm"
+                    >
+                        Select all 12
+                    </Button>
+                    <Button
+                        variant="framed"
+                        size="sm"
+                    >
+                        Show all 312
+                    </Button>
+                </StoryRow>
+            </StorySection>
             <StorySection title="Deleting something — danger">
                 <StoryRow>
                     <Button

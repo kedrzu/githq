@@ -77,10 +77,7 @@ test('J3: an untracked repository holds only what concerns the user and offers n
 
     await page.getByRole('link', { name: 'Settings' }).last().click();
     const tracking = new TrackingScreenHarness(page);
-    await tracking
-        .notTracked('hubot/tools')
-        .getByRole('button', { name: /^Track/ })
-        .click();
+    await tracking.track('hubot/tools');
     await shell.tracked('hubot/tools').click();
 
     await expect(repository.groupingButton).toHaveText('Group: Milestone');

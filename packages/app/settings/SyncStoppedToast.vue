@@ -1,4 +1,4 @@
-<!-- Syncing the settings stopped (settings-sync D12, T9): a toast saying why in short, that githq goes on from what this device has, and "Open settings" (⌥S) to Saving to GitHub. It comes once for each reason syncing stops for — remembered with the saving state, so not again on reload or in another tab — and stays until dismissed; syncing on again, or turned off, takes it away. On Saving to GitHub itself it is not shown: the reason is there in full, and counts as told. -->
+<!-- Syncing the settings stopped (settings-sync D12, T9): a toast saying why in short, that githq goes on from what this device has, and "Open settings" (⌥S) to Sync settings. It comes once for each reason syncing stops for — remembered with the saving state, so not again on reload or in another tab — and stays until dismissed; syncing on again, or turned off, takes it away. On Sync settings itself it is not shown: the reason is there in full, and counts as told. -->
 <script lang="ts" setup>
 import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -34,7 +34,7 @@ const t = useTranslate();
 /** The reason the toast tells, while it shows. */
 const shown = shallowRef<StoppedReason | null>(null);
 
-const onSaving = computed(() => route.path === SETTINGS_PATH && readSettingsSection(route.query.tab) === 'saving');
+const onSync = computed(() => route.path === SETTINGS_PATH && readSettingsSection(route.query.tab) === 'sync');
 
 const sentence = computed(() => {
   const reason = shown.value;
@@ -64,10 +64,10 @@ const sentence = computed(() => {
 // A reason not told yet shows, and is remembered as told at once: the toast stays here until dismissed, and is not
 // shown again anywhere.
 watch(
-  [() => sync.state, onSaving],
-  ([state, saving]) => {
+  [() => sync.state, onSync],
+  ([state, onSyncSection]) => {
     const untold = getUntoldStop(state);
-    if (state.state !== 'stopped' || saving) {
+    if (state.state !== 'stopped' || onSyncSection) {
       shown.value = null;
     } else if (untold) {
       shown.value = untold;
@@ -85,20 +85,20 @@ useCommands(() =>
     ? [
         {
           id: 'settings.saving.open',
-          title: t(l.openSavingCommand),
+          title: t(l.openSyncCommand),
           section: 'app',
           key: OPEN_KEY,
           icon: Settings,
           menu: false,
-          run: openSaving,
+          run: openSync,
         },
       ]
     : [],
 );
 
-function openSaving() {
+function openSync() {
   shown.value = null;
-  void router.push(getSettingsPath('saving'));
+  void router.push(getSettingsPath('sync'));
 }
 
 function onOpenChange(open: boolean) {
@@ -124,7 +124,7 @@ function onOpenChange(open: boolean) {
         :icon="Settings"
         :kbd="OPEN_KEY"
         :aria-keyshortcuts="OPEN_KEY"
-        @click="openSaving"
+        @click="openSync"
       >
         {{ t(l.openSettings) }}
       </Button>
