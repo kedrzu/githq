@@ -19,7 +19,6 @@ import {
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
