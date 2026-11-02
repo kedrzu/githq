@@ -89,7 +89,8 @@ branch by default. Ideally it shows what a pattern matches, from runs githq alre
 
 ## States
 
-- **Nothing broken**: the total and the markers say so calmly.
+- **Nothing broken**: the total and the markers say so calmly; the empty page says so positively, with a quiet
+  green check and a line of technical, slightly nerdy copy.
 - **Not known yet**: a repository just tracked, or the local copy rebuilt. This is not the same as healthy, so do not
   show a zero or green until the first read has finished.
 - **No workflows**, in a repository without any, and **Actions unavailable**, if GitHub refuses or Actions is turned
