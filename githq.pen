@@ -261311,18 +261311,6 @@
                           ]
                         },
                         {
-                          "type": "text",
-                          "id": "H5KUW",
-                          "name": "What happens",
-                          "fill": "$fg-3",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Goes out at once, as a single comment. Your default, set in Settings.",
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
-                        },
-                        {
                           "type": "frame",
                           "id": "tPqYP",
                           "name": "Footer",
@@ -293550,7 +293538,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Click a line number, or C on the line under the cursor. ⌘↵ sends it at once as a single comment; ⌘⇧↵ starts a draft review with it instead. The line under the box says which is your default and where it's set.",
+                      "content": "Click a line number, or C on the line under the cursor. ⌘↵ sends it at once as a single comment; ⌘⇧↵ starts a draft review with it instead. The two buttons name what each key does, and nothing more: you chose this default yourself.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -293892,13 +293880,7 @@
                                                   "type": "ref",
                                                   "ref": "T0DNU",
                                                   "name": "Comment box",
-                                                  "width": "fill_container",
-                                                  "descendants": {
-                                                    "H5KUW": {
-                                                      "content": "Goes out at once, as a single comment. Your default, set in Settings.",
-                                                      "fill": "$fg-3"
-                                                    }
-                                                  }
+                                                  "width": "fill_container"
                                                 }
                                               ]
                                             }
@@ -294050,7 +294032,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same box with the other setting: ⌘↵ starts a draft review, ⌘⇧↵ still sends this one at once. Once the draft exists, the warning of CR35 appears in the file list's column.",
+                      "content": "The same box with the other setting: ⌘↵ starts a draft review, ⌘⇧↵ still sends this one at once. Once the draft exists, the toolbar of CR35 appears at the foot of the diff.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -294394,10 +294376,6 @@
                                                   "name": "Comment box",
                                                   "width": "fill_container",
                                                   "descendants": {
-                                                    "H5KUW": {
-                                                      "content": "Starts a draft only you can see until you submit. Your default, set in Settings.",
-                                                      "fill": "$fg-3"
-                                                    },
                                                     "W3smo": {
                                                       "content": "Comment now"
                                                     },
@@ -294918,10 +294896,6 @@
                                                       "name": "Comment box",
                                                       "width": "fill_container",
                                                       "descendants": {
-                                                        "H5KUW": {
-                                                          "content": "Your draft is open, so this joins it. A single comment isn't possible here.",
-                                                          "fill": "$amber"
-                                                        },
                                                         "W3smo": {
                                                           "content": "Submit draft (4 comments)"
                                                         },
@@ -295401,10 +295375,6 @@
                                                     },
                                                     "tlkvO": {
                                                       "content": "      const result = await replayQueue(items, {\n        send: (item) => this.send(item),\n        onConflict: (item) => this.conflicts.push(item),\n        limit: MAX_BATCH,\n      })"
-                                                    },
-                                                    "H5KUW": {
-                                                      "content": "Goes out at once, as a single comment. Your default, set in Settings.",
-                                                      "fill": "$fg-3"
                                                     }
                                                   }
                                                 }
@@ -295755,10 +295725,6 @@
                                                     },
                                                     "y887h": {
                                                       "content": "Fine with keeping both. Please add the test before #1203 builds on it."
-                                                    },
-                                                    "H5KUW": {
-                                                      "content": "Goes out at once. Your default, set in Settings.",
-                                                      "fill": "$fg-3"
                                                     },
                                                     "W3smo": {
                                                       "content": "Start a review"

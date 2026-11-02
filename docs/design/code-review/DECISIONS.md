@@ -503,17 +503,20 @@ submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
 
 ## D33
 
-**The comment box says in words what ⌘↵ will do, under the text ("Goes out at once, as a single comment. Your
-default, set in Settings."), and both buttons carry their label and key: Comment ⌘↵ / Start a review ⌘⇧↵, or Start a
-review ⌘↵ / Comment now ⌘⇧↵. With a draft open: Add to draft ⌘↵ / Submit draft (4 comments) ⌘⇧↵, and the line under
-the text, in amber, says a single comment isn't possible. Submitting opens a dialog in the middle of the screen: an
+**The comment box's two buttons carry their label and key, and that is all it says: Comment ⌘↵ / Start a review ⌘⇧↵, or
+Start a review ⌘↵ / Comment now ⌘⇧↵. With a draft open: Add to draft ⌘↵ / Submit draft (4 comments) ⌘⇧↵. Submitting opens a dialog in the middle of the screen: an
 optional comment, which goes on the pull request itself rather than on a file, then Comment (the default), Approve or
 Request changes on 1 2 3, the pending comments listed — and a refused submission turns the pending toolbar red with
 GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
 
 > **Checked 2026-11-03:** `SubmitPullRequestReviewInput` has `body: String`, the review's own text (`packages/github/src/schema.graphql`). Not tried live.
 
-**Why.** The two keys swap meaning with a setting and with a draft, so the screen has to say it every time.
+**Why.** The buttons say what each key does. A line explaining the default broke the layout and repeats what someone who
+chose that setting already knows (owner, 2026-11-03).
+
+**Rejected.**
+
+- A line in the box saying what ⌘↵ will do and where it is set (agent) — reminds you of your own choice every time (owner).
 
 ## D34
 
