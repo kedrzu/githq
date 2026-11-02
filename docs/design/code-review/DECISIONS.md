@@ -280,9 +280,9 @@ special case.
 pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does when no draft is open;
 `Cmd+Shift+Enter` does the other. While a draft is open on the pull request, a comment can only join it, and the second
 key submits the draft ([D22](#d22)).** (2026-11-02, owner: "some prefer to write a draft review and then throw it all
-as one review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference
-so far — agent's reading, the synced settings holding only what is tracked
-([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+as one review, others prefer single comments; GitHub imposes one way") The setting is saved with the synced
+settings, so every device behaves the same ([D34](#d34); owner, 2026-11-02, reversing the agent's first reading that
+it was local).
 
 **Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
 review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
@@ -420,14 +420,19 @@ bars, both remembered (D14), both also in the View options.** (2026-11-02, agent
 
 ## D27
 
-**The file list is GitHub's tree order with folders as quiet labels above their files (compact folders, as VS Code);
-while a filter is on it goes flat, each file followed by its folder. Each row: viewed box, change letter (M, A, D, R),
-name, a tag for collapsed files ("lock file", "generated", "binary"), open threads in amber, size. A viewed file is a
-ticked box and a dimmed name.** (2026-11-02, agent; the viewed mark waits for the owner:
-`Variants · How a viewed file shows in the list`, CR43–CR45)
+**The file list is GitHub's tree order: folders are quiet labels, and a file sits indented under its folder (compact
+folders, as VS Code); files at the root are not indented. While a filter is on, only the matching files show, each
+followed by its folder. A row has no checkbox: change letter (M, A, D, R), name, a tag for collapsed files ("lock
+file", "generated", "binary"), open threads in amber, size, and at the right end a status icon only when there is one
+(loading, failed, waiting for the API allowance, gone). A viewed file has a small eye right after its name, the name
+slightly dimmed. Files are ticked on their header (Viewed V) or with V.** (2026-11-02, owner: checkboxes in the list
+read like the folder icons; CR46)
 
-**Rejected (proposed).** Colour only (CR44) — nothing to click, and dim already means other things in the list. The
-box only (CR45) — a list two-thirds read looks unread at a glance.
+**Rejected.**
+
+- A checkbox per row, ticked when viewed (agent's first proposal, CR43) — an empty box next to a folder icon looks
+  like one more icon, and both read alike (owner).
+- Colour only, or the box only (CR44, CR45) — dropped with the box.
 
 ## D28
 
@@ -495,8 +500,7 @@ red with GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76
 ## D34
 
 **The comment setting sits in Settings · Display as "Comments in a code review": Send it at once / Add it to a draft
-review, marked "Kept on this device".** (2026-11-02, agent, CR77) Open: everything else on that tab is saved with the
-synced settings, so the owner may prefer this one synced too, which would reverse the agent's reading in [D17](#d17).
+review. It is saved with the synced settings, like the rest of that tab.** (2026-11-02, owner: "synchronised"; CR77)
 
 ## D35
 
