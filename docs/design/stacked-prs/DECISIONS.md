@@ -211,6 +211,10 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 > does to several squashes is not stated. `.claude/skills/git-workflow/SKILL.md` lands stacks with `merge_method` only, one squash per
 > pull request under its title.
 
+> **Checked 2026-11-02 (live, `nzymejs/githq-merge-sandbox`, stack #22 of #19–#21):** one `merge-async` `squash` on the top
+> pull request, with `commit_title` "CUSTOM TITLE probe", landed all three as one squash commit each: #19 and #20 under their own
+> titles (`Probe stack part 1 (#19)`), #21 under the custom title. A title given applies to the top pull request only.
+
 **Rejected.**
 
 - One commit title and message for the stack (what the merge screens assumed, PM17) — GitHub does not say what it does.
