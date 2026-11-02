@@ -363,7 +363,7 @@ export const SyncEngine = defineService({
             const stored = workflows.get(nameWithOwner);
             if (stored?.unavailable != null) {
                 return stored.workflows.length > 0
-                    ? { kind: 'stale', since: null, reason: 'refused' }
+                    ? { kind: 'stale', since: null, reason: 'workflowsUnavailable' }
                     : getWorkflowsFreshness();
             }
 

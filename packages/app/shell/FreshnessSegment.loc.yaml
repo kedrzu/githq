@@ -16,6 +16,8 @@ refused:
   en: As of {time} · GitHub refuses to list its changes, asking again hourly
 refusedNothingYet:
   en: GitHub refuses to list its changes, asking again hourly
+workflowsUnavailable:
+  en: Last known workflows · GitHub doesn't list them now
 notRefreshedSince:
   en: Not refreshed since {time}
 pausedUntil:

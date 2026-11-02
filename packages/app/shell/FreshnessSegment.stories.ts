@@ -44,6 +44,11 @@ export const Failing: Story = { args: { freshness: { kind: 'stale', since: AT_14
 /** GitHub refusing a repository's changes (a 403): amber, asked again hourly. */
 export const Refused: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'refused' } } };
 
+/** W3e: GitHub no longer lists a repository's workflows; the rows below are the last known ones. */
+export const WorkflowsUnavailable: Story = {
+    args: { freshness: { kind: 'stale', since: null, reason: 'workflowsUnavailable' } },
+};
+
 /** Refresh paused by the allowance: since when the list has not been refreshed. */
 export const Paused: Story = {
     args: { freshness: { kind: 'paused', since: AT_14_06, until: new Date('2026-10-30T15:00:00').getTime() } },

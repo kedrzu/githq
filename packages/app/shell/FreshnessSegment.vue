@@ -99,6 +99,8 @@ const look = computed((): SegmentLook => {
             text:
               freshness.since === null ? t(l.refusedNothingYet) : t(l.refused, { time: formatTime(freshness.since) }),
           };
+        case 'workflowsUnavailable':
+          return { icon: TriangleAlert, tone: 'warning', text: t(l.workflowsUnavailable) };
         case 'offline':
           return {
             icon: History,

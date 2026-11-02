@@ -753,7 +753,11 @@ test('the Workflows tab’s freshness: Actions refused with rows last read is st
     world.actions.repository('acme/web').refusal = 403;
     await session.clock.advance(WORKFLOWS_INTERVAL);
     expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
-    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual({ kind: 'stale', since: null, reason: 'refused' });
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual({
+        kind: 'stale',
+        since: null,
+        reason: 'workflowsUnavailable',
+    });
 
     const refusedMidway = sampleWorld();
     const second = await setup(refusedMidway);
@@ -769,7 +773,10 @@ test('the Workflows tab’s freshness: Actions refused with rows last read is st
     await second.session.clock.advance(0);
     expect(second.workflows.get('acme/web')?.unavailable).toEqual({ reason: 'refused', status: 403 });
     expect(second.workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
-    expect(second.sync.getRepositoryWorkflowsFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'refused' });
+    expect(second.sync.getRepositoryWorkflowsFreshness('acme/web')).toMatchObject({
+        kind: 'stale',
+        reason: 'workflowsUnavailable',
+    });
 
     const neverShown = sampleWorld();
     neverShown.actions.repository('acme/web').refusal = 403;
