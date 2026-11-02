@@ -22,3 +22,5 @@ savedView:
   en: saved view
 settingsSection:
   en: 'Settings: {section}'
+brokenWorkflows:
+  en: Broken workflows

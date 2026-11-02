@@ -1,0 +1,19 @@
+summary:
+  plural: count
+  en:
+    one: 'Last run: {runs}'
+    many: 'Last {count} runs: {runs}'
+noRuns:
+  en: No runs known
+failed:
+  en: failed
+passed:
+  en: passed
+noVerdict:
+  en: no verdict
+running:
+  en: running
+runTitle:
+  en: '#{number} · {ref} · {date}, {time}'
+runTitleNoRef:
+  en: '#{number} · {date}, {time}'

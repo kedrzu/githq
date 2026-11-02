@@ -1,3 +1,5 @@
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
+
 import type { SettingsDocument, SettingsProject, SettingsRepository } from './SettingsDocument.js';
 
 /** The three versions {@link mergeSettings} compares. */
@@ -20,6 +22,7 @@ export interface MergeSettingsParams {
  */
 export function mergeSettings({ local, remote, base }: MergeSettingsParams): SettingsDocument {
     return {
+        ...mergeFields(local, remote, base),
         version: 1,
         repositories: mergeEntries(
             { local: local.repositories, remote: remote.repositories, base: base.repositories },
@@ -38,6 +41,7 @@ interface EntryKind<T> {
 const REPOSITORIES: EntryKind<SettingsRepository> = {
     keyOf: repository => repository.nameWithOwner,
     merge: (local, remote, base) => ({
+        ...mergeFields(local, remote, base),
         nameWithOwner: remote.nameWithOwner,
         id: pick(local.id, remote.id, base.id),
         tracking: pick(local.tracking, remote.tracking, base.tracking),
@@ -47,6 +51,7 @@ const REPOSITORIES: EntryKind<SettingsRepository> = {
 const PROJECTS: EntryKind<SettingsProject> = {
     keyOf: project => project.id,
     merge: (local, remote, base) => ({
+        ...mergeFields(local, remote, base),
         id: remote.id,
         owner: pick(local.owner, remote.owner, base.owner),
         ownerKind: pick(local.ownerKind, remote.ownerKind, base.ownerKind),
@@ -84,7 +89,28 @@ function mergeEntries<T>({ local, remote, base }: EntryVersions<T>, { keyOf, mer
     return merged;
 }
 
+/**
+ * Every field of the three, merged with {@link pick}, so one this build does not know survives a merge the same way
+ * (D13). The fields it knows are merged again by name, which gives them their types. A field the merge leaves
+ * `undefined` was removed, and is left out.
+ */
+function mergeFields(
+    local: Readonly<Record<string, unknown>>,
+    remote: Readonly<Record<string, unknown>>,
+    base: Readonly<Record<string, unknown>>,
+) {
+    const merged: Record<string, unknown> = {};
+    for (const key of new Set([...Object.keys(remote), ...Object.keys(local)])) {
+        const value = pick(local[key], remote[key], base[key]);
+        if (value !== undefined) {
+            merged[key] = value;
+        }
+    }
+
+    return merged;
+}
+
 /** The local value when only this device changed the key; the file's otherwise. */
 function pick<T>(local: T, remote: T, base: T): T {
-    return remote === base ? local : remote;
+    return deepEquals(remote, base) ? local : remote;
 }

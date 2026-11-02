@@ -101,6 +101,20 @@ test('moving to another screen keeps the toast and Undo', async () => {
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
 });
 
+test('with nothing known broken the sidebar has no "Broken workflows", but shows it on its own screen', async () => {
+    const { router } = await open();
+    await expect.element(sidebarLink(WEB)).toBeInTheDocument();
+    await expect.element(page.getByRole('link', { name: /^Broken workflows/u })).not.toBeInTheDocument();
+
+    await router.push('/dashboard/workflows');
+
+    // Nothing read yet: no zero is claimed.
+    await expect.element(page.getByRole('link', { name: 'Broken workflows –' })).toBeVisible();
+
+    await router.push('/settings');
+    await expect.element(page.getByRole('link', { name: /^Broken workflows/u })).not.toBeInTheDocument();
+});
+
 function sidebarLink(name: string) {
     return page.getByRole('link', { name });
 }
@@ -123,7 +137,10 @@ async function open() {
 
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+        routes: [
+            { path: '/dashboard/workflows', name: 'workflows', component: defineComponent({ render: () => null }) },
+            { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
+        ],
     });
     const host = document.createElement('div');
     document.body.append(host);

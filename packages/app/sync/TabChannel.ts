@@ -18,6 +18,7 @@ import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { SyncLoopStatus } from './SyncEngine.js';
 
@@ -39,7 +40,11 @@ export type TabMessage =
     | { readonly kind: 'projectItems'; readonly upserted: readonly ProjectItem[]; readonly removed: readonly string[] }
     | { readonly kind: 'rateLimit'; readonly rateLimit: GitHubRateLimit }
     | { readonly kind: 'syncStatus'; readonly status: Readonly<Record<SyncLoop, SyncLoopStatus>> }
-    | { readonly kind: 'projectViewAnswer'; readonly key: string; readonly answer: ProjectViewAnswer };
+    | { readonly kind: 'projectViewAnswer'; readonly key: string; readonly answer: ProjectViewAnswer }
+    /** A repository's workflows as read, or `null` once they are dropped. */
+    | { readonly kind: 'workflows'; readonly nameWithOwner: string; readonly workflows: RepositoryWorkflows | null }
+    /** A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2). */
+    | { readonly kind: 'pollWorkflows' };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;

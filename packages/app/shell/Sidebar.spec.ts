@@ -7,7 +7,13 @@ import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 import * as stories from './Sidebar.stories.js';
 
 const {
+    BrokenWorkflowsNew,
+    BrokenWorkflowsPartlyKnown,
+    BrokenWorkflowsScreenOpen,
+    BrokenWorkflowsSettled,
     Collapsed,
+    CollapsedBrokenWorkflowsNew,
+    CollapsedBrokenWorkflowsSettled,
     CollapsedManyProjects,
     CollapsedNoProjects,
     CollapsedNothingTracked,
@@ -25,6 +31,7 @@ const {
     TrackedMenu,
     WindowControlsCollapsed,
     WindowControlsOverflowing,
+    WorkflowsNotKnownYet,
 } = composeStories(stories);
 
 const NOTHING_TRACKED_NOTE = 'Repositories and projects you track appear here.';
@@ -314,4 +321,93 @@ test('on the rail the strip reaches across it, for all of the top to move the wi
     const strip = sidebar.querySelector('[data-tauri-drag-region]');
     expect(strip?.getBoundingClientRect().width).toBe(sidebar.clientWidth);
     expect(strip?.getBoundingClientRect().height).toBe(36);
+});
+
+const RED = 'rgb(240, 84, 92)';
+const RED_QUIET = 'rgb(166, 71, 76)';
+
+const brokenWorkflows = () => page.getByRole('link', { name: /^Broken workflows/u });
+/** The marker on a repository's icon: `new`, `settled`, `unread`; `null` with none. */
+const markerOf = (name: string) =>
+    page
+        .getByRole('link', { name: new RegExp(`^${name.replace('/', '\\/')}`, 'u') })
+        .element()
+        .querySelector('[tid="workflow-marker"]')
+        ?.getAttribute('data-marker') ?? null;
+
+test('W1: with nothing known broken there is no "Broken workflows" entry, on the sidebar or the rail', async () => {
+    await Expanded.run();
+    await expect.element(brokenWorkflows()).not.toBeInTheDocument();
+
+    await WorkflowsNotKnownYet.run();
+    await expect.element(brokenWorkflows()).not.toBeInTheDocument();
+
+    await Collapsed.run();
+    await expect.element(brokenWorkflows()).not.toBeInTheDocument();
+});
+
+test('W1: a new break — the entry after Mentioned, a red dot and a red count, to the broken workflows', async () => {
+    await BrokenWorkflowsNew.run();
+
+    const entry = brokenWorkflows();
+    await expect.element(entry).toHaveAccessibleName('Broken workflows 3');
+    await expect.element(entry).toHaveAttribute('href', '/dashboard/workflows');
+    const mentioned = page.getByRole('link', { name: /^Mentioned/u }).element();
+    expect(mentioned.compareDocumentPosition(entry.element())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const spans = entry.element().querySelectorAll('span');
+    expect(getComputedStyle(spans[spans.length - 1] as Element).color).toBe(RED);
+    expect(getComputedStyle(spans[spans.length - 2] as Element).backgroundColor).toBe(RED);
+});
+
+test('W1: settled — a quiet dot and the count in ordinary grey; "1+" while partly known', async () => {
+    await BrokenWorkflowsSettled.run();
+    const spans = brokenWorkflows().element().querySelectorAll('span');
+    expect(getComputedStyle(spans[spans.length - 2] as Element).backgroundColor).toBe(RED_QUIET);
+    expect(getComputedStyle(spans[spans.length - 1] as Element).color).not.toBe(RED);
+
+    await BrokenWorkflowsPartlyKnown.run();
+    await expect.element(brokenWorkflows()).toHaveAccessibleName('Broken workflows 1+');
+});
+
+test('W2b: on its own screen the entry shows with nothing broken, current, with no dot', async () => {
+    await BrokenWorkflowsScreenOpen.run();
+
+    const entry = brokenWorkflows();
+    await expect.element(entry).toHaveAccessibleName('Broken workflows 0');
+    await expect.element(entry).toHaveAttribute('aria-current', 'page');
+    expect(entry.element().querySelectorAll('span')).toHaveLength(2);
+});
+
+test("W1: a repository's marker sits on its icon — bright, quiet or a hollow ring — and its count stays", async () => {
+    await BrokenWorkflowsNew.run();
+
+    expect(markerOf('kedrzu/githq')).toBe('settled');
+    expect(markerOf('kedrzu/skills')).toBeNull();
+    expect(markerOf('skyline-labs/portal')).toBe('new');
+    await expect
+        .element(page.getByRole('link', { name: /^skyline-labs\/portal/u }))
+        .toHaveAccessibleName('skyline-labs/portal · workflows broken 142');
+    await expect.element(page.getByRole('link', { name: /^kedrzu\/skills/u })).toHaveAccessibleName('kedrzu/skills 7');
+
+    await BrokenWorkflowsPartlyKnown.run();
+    expect(markerOf('skyline-labs/portal')).toBe('unread');
+    await expect
+        .element(page.getByRole('link', { name: /^skyline-labs\/portal/u }))
+        .toHaveAccessibleName('skyline-labs/portal 142');
+});
+
+test('W1: on the rail the entry has a badge — filled red for a new break, outlined once settled', async () => {
+    await CollapsedBrokenWorkflowsNew.run();
+
+    let entry = page.getByRole('link', { name: 'Broken workflows, 3' });
+    await expect.element(entry).toBeVisible();
+    let badge = entry.element().querySelector('span');
+    expect(badge?.textContent).toBe('3');
+    expect(getComputedStyle(badge as Element).backgroundColor).toBe(RED);
+
+    await CollapsedBrokenWorkflowsSettled.run();
+    entry = page.getByRole('link', { name: 'Broken workflows, 1+' });
+    badge = entry.element().querySelector('span');
+    expect(badge?.textContent).toBe('1+');
+    expect(getComputedStyle(badge as Element).backgroundColor).not.toBe(RED);
 });

@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -38,6 +38,9 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
 import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
+import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
+import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
+import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
 defineSlots<{
   default(): unknown;
@@ -59,6 +62,7 @@ const registry = useService(CommandRegistry);
 const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
 const settingsSync = useService(SettingsSync);
+const workflows = useService(WorkflowStore);
 const route = useRoute();
 
 const collapsed = preferences.sidebarCollapsed;
@@ -97,13 +101,21 @@ const tracked = computed((): SidebarTracked => ({
       target,
       status: getTrackedStatus(target, haveOpenItemsArrived(tracking.getSyncState(target))),
       isPrivate: trackedItems.isPrivate(repository.nameWithOwner) === true,
+      workflowMarker: getSidebarWorkflowMarker(workflows.getState(repository.nameWithOwner)),
     };
   }),
 }));
 
+// The entry "Broken workflows" (actions W1): only while something is known broken, or on its own screen.
+const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
+
 // How fresh the screen is (D15): a tracked repository's or project's own poll — a saved view GitHub answers says
-// so (K6); anything else shows what "my work" holds.
+// so (K6); the broken workflows their own poll; anything else shows what "my work" holds.
 const screenFreshness = computed((): Freshness => {
+  if (route.name === 'workflows') {
+    return sync.getWorkflowsFreshness();
+  }
+
   const { owner, name, number } = route.params;
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {
     const nameWithOwner = `${owner}/${name}`;
@@ -207,6 +219,7 @@ function showLastFailure() {
     :edits="opened?.onPage ? (itemEdits ?? listEdits) : listEdits"
     :item-edits="opened?.onPage ? null : itemEdits"
     :settings-sync-stopped="settingsSync.state.state === 'stopped'"
+    :broken-workflows="brokenWorkflows"
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"

@@ -21,6 +21,7 @@ import FreshnessSegment from './FreshnessSegment.vue';
 import type { SegmentEdits } from './FreshnessSegment.vue';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
+import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
 import { WINDOW_CONTROLS_OVERLAID } from './windowControls.js';
 
@@ -46,6 +47,8 @@ defineProps<{
   tracked?: SidebarTracked;
   /** Syncing the settings stopped (settings-sync T9): an amber dot on the user's avatar. */
   settingsSyncStopped?: boolean;
+  /** The sidebar's entry "Broken workflows" (actions W1); not drawn when `null`. */
+  brokenWorkflows?: SidebarBrokenWorkflows | null;
 }>();
 
 const emit = defineEmits<{
@@ -182,6 +185,7 @@ function onLayout(sizes: number[]) {
           :counts="myWorkCounts"
           :tracked="tracked"
           :settings-sync-stopped="settingsSyncStopped"
+          :broken-workflows="brokenWorkflows"
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"

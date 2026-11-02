@@ -22,3 +22,9 @@ waiting:
   en: waiting
 hidden:
   en: hidden
+brokenWorkflows:
+  en: Broken workflows
+brokenWorkflowsCount:
+  en: Broken workflows, {count}
+workflowsBroken:
+  en: workflows broken

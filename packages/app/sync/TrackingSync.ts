@@ -1,5 +1,4 @@
-import { GitHubApiError } from '@githq/github/GitHubApiError.js';
-import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
+import type { GitHubApiError, GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { getProjectConditional } from '@githq/github/rest/getProjectConditional.js';
 import { listRepositoryIssuesSince } from '@githq/github/rest/listRepositoryIssuesSince.js';
@@ -35,8 +34,8 @@ import type {
 } from '@/tracking/TrackingTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
-import { isRateLimitRefusal } from './isRateLimitRefusal.js';
 import { readItemsByIds } from './readItemsByIds.js';
+import { isTargetFailure } from './utils/isTargetFailure.js';
 
 /** The session a poll runs for, as the sync engine hands it over. */
 export interface TrackingSyncContext {
@@ -736,14 +735,6 @@ export const TrackingSync = defineService({
         }
     },
 });
-
-/**
- * A failure that concerns the one target polled: GitHub answering it with an error status other than the
- * allowance's and a revoked token's (which concern every target, and fail the loop).
- */
-function isTargetFailure(error: unknown): error is GitHubApiError {
-    return error instanceof GitHubApiError && !isRateLimitRefusal(error) && error.status !== 401;
-}
 
 /** GitHub refusing a target for a reason that lasts — a 4xx other than a 404 (hidden) — rather than failing. */
 function isLastingRefusal(error: GitHubApiError) {

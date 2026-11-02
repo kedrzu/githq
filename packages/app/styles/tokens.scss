@@ -48,6 +48,9 @@ $color-on-light: #0e1013;
 $color-accent: #7b87f7;
 $color-green: #3fb950;
 $color-red: #f0545c;
+// A failure that isn't news (actions): a workflow broken for over a day, a run on a ref that doesn't count. Marks
+// only, never text.
+$color-red-quiet: #a6474c;
 $color-amber: #d6a23a;
 $color-purple: #a57bf5;
 
@@ -116,6 +119,17 @@ $list-header-height: 48px;
 $item-panel-width: 560px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
+
+// ---------------------------------------------------------------------------------------------------
+// The workflows (`workflows/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The design's columns of a workflow's row (`WorkflowRow`), fixed so the strip of runs sits in one column on every
+// row; the rows of repositories in the broken workflows' list (`BrokenWorkflowsView`) line up with them.
+$workflow-name-width: 230px;
+$workflow-repository-width: 130px;
+$workflow-ref-width: 130px;
+$workflow-row-height: 34px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)

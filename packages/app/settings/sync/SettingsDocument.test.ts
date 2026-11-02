@@ -97,3 +97,44 @@ test('a file of a higher version is newer, whatever else it holds', () => {
         version: 2,
     });
 });
+
+test('fields this build does not know are read, and written back after the known ones as they came', () => {
+    const text = `{
+  "version": 1,
+  "repositories": [
+    {
+      "nameWithOwner": "kedrzu/githq",
+      "id": "R_1",
+      "tracking": true,
+      "workflows": {
+        "defaultBranch": false,
+        "refs": [
+          "v*"
+        ]
+      }
+    }
+  ],
+  "projects": [],
+  "views": []
+}
+`;
+    const parsed = parseSettings(text);
+
+    expect(parsed).toEqual({
+        kind: 'ok',
+        document: {
+            version: 1,
+            repositories: [
+                {
+                    nameWithOwner: 'kedrzu/githq',
+                    id: 'R_1',
+                    tracking: true,
+                    workflows: { defaultBranch: false, refs: ['v*'] },
+                },
+            ],
+            projects: [],
+            views: [],
+        },
+    });
+    expect(parsed.kind === 'ok' && serializeSettings(parsed.document)).toBe(text);
+});
