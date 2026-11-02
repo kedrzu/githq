@@ -303,29 +303,41 @@ it, which a modal or a page would hide.
 
 ## D17
 
-**The graph takes at most six lanes (98 px); lanes beyond the sixth fold into one thicker line at its right
-edge, and their commits sit on it.** (2026-11-02, design agent's proposal; CH10, CH11)
+**A divider between the graph and the rows can be dragged. By default the graph takes a tenth of the pane's width;
+dragged, it can go from one lane (the default branch alone) to every lane. Lanes that don't fit fold into one thicker
+line at the graph's right edge, and their commits sit on it. The width is a share of the pane, so it scales with the
+window, and is remembered on the device like a panel's width; a double-click on the divider resets it. While dragging,
+a label says how many lanes fit of how many.** (2026-11-02, owner: "I really like the folding, I'd just like more
+control… a split panel that lets us resize the graph… sensible by default, even a percentage of the container… the
+graph collapses depending on the available width"; the default share, the reset and the label are the design agent's;
+CH10, CH11, CH44, CH45)
 
-**Why.** The headline stays at the same x in every repository; in a repository with 14 branches side by side
-every lane would take 182 px, more than many of the messages.
+**Why.** Folding keeps a very wide graph from breaking the layout, and the user decides how much of a busy repository's
+graph is worth the width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
 **Rejected.**
-- Every lane at full width (CH11) — exact, but the message moves with every open branch.
+- A fixed cap of six lanes — no control over it (owner).
+- Every lane at full width, always — the message moves with every open branch.
 
 ## D18
 
-**A row reads: graph, worktree markers (desktop), branches and tags, headline, the pull request's state icon and
-number, the CI mark, author, age. The default branch's line is a lighter grey on the left; a merge is a hollow dot
-with a dimmed headline. A failing commit is red twice, its dot and its CI mark, and nothing else on the row; running
-is amber. Pull request and CI not known yet are an empty bar, never a blank.** (2026-11-02, design agent's
-proposal; CH12–CH14, CH34)
+**A row reads: graph, worktree markers (desktop), branches and tags, headline, then right after the headline the
+pull request's state and number and the CI mark; the author (16 px avatar and name) and the age are aligned at the
+right edge. Rows alternate with a very faint stripe. A failing commit is a red dot and a red ✕ after its pull request,
+and its text is never red; running is amber in both places. A merge is a hollow dot with a dimmed headline. Pull request
+and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open, the column layout) the
+headline is cut first and the author's name gives way to the avatar.** (2026-11-02, owner: pull request and checks to
+the right of the headline, "not somewhere far right in a separate column"; the author as avatar and name, the avatar a
+little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
+the narrow-row rule is the design agent's; CH12, CH34)
 
-**Why.** Red in two fixed columns is found by scanning either one, and the rest of the row stays calm; a blank
-would read as "no pull request" or "no checks", which are ordinary.
+**Why.** Read with the headline, the pull request and CI belong to it; in a far column they are hard to tie to the
+right commit. The stripe carries the eye from a dot far to the left to its row in a wide graph.
 
 **Rejected.**
-- CI only as the dot's colour with a red headline (CH13) — passing and "no checks" can't be told apart.
-- A red-tinted row (CH14) — competes with the selection and reads as "new".
+- Pull request and CI in fixed columns at the right edge — read badly, far from the headline (owner).
+- A red headline or a red-tinted row for a failure (owner; the screens were CH13, CH14, deleted).
+- The author as an avatar alone (owner).
 
 ## D19
 
