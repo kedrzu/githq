@@ -190,18 +190,12 @@ function describeWhen(createdAt: string) {
 </template>
 
 <style lang="scss" module="css">
-// The design's columns, fixed so the strip sits in one column on every row.
-$name-width: 230px;
-$repository-width: 130px;
-$ref-width: 130px;
-$row-height: 34px;
-
 .workflowRow {
   position: relative;
   display: flex;
   gap: $spacing-10;
   align-items: center;
-  height: $row-height;
+  height: $workflow-row-height;
   padding: 0 $spacing-16;
   cursor: default;
 
@@ -241,7 +235,7 @@ $row-height: 34px;
 .workflowRow_nameCell {
   display: flex;
   flex: none;
-  width: $name-width;
+  width: $workflow-name-width;
   min-width: 0;
 }
 
@@ -297,7 +291,7 @@ $row-height: 34px;
 
 .workflowRow_repository {
   flex: none;
-  width: $repository-width;
+  width: $workflow-repository-width;
   overflow: hidden;
   font-size: $font-size-sm;
   color: $color-fg-2;
@@ -310,7 +304,7 @@ $row-height: 34px;
   flex: none;
   gap: $spacing-5;
   align-items: center;
-  width: $ref-width;
+  width: $workflow-ref-width;
   min-width: 0;
 }
 

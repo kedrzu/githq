@@ -1,16 +1,13 @@
 <!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. Repositories not read yet follow under "Not known yet", and nothing claims them healthy; those GitHub shows nothing of under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { Ban, CircleDashed, Coffee, Workflow } from 'lucide-vue-next';
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Kbd from '@/components/Kbd.vue';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
-import { followSelection } from '@/utils/followSelection.js';
-import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
-import { isScreenKey } from '@/utils/isScreenKey.js';
+import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import type { BrokenWorkflowEntry, BrokenWorkflows, UnavailableWorkflowsEntry } from './buildBrokenWorkflows.js';
 import * as l from './BrokenWorkflowsView.loc.js';
@@ -31,13 +28,17 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const root = useTemplateRef('root');
-/** The row the user moved to; `null` until they do, when the first row is the selected one. */
-const chosenKey = ref<string | null>(null);
 
 const rows = computed(() => [...props.broken.fresh, ...props.broken.ongoing]);
-const keys = computed(() => rows.value.map(row => row.key));
-const selectedKey = computed(() => chosenKey.value ?? keys.value[0] ?? null);
-const selectedRow = computed(() => rows.value.find(row => row.key === selectedKey.value) ?? null);
+// A row gone (a workflow passed, a repository untracked): the selection goes to its nearest neighbour.
+const selection = useRowSelection({
+  rows,
+  getKey: row => row.key,
+  root,
+  keyAttribute: 'data-workflow-key',
+  selectFirst: true,
+  open: row => emit('open', row),
+});
 /** "New" and "Ongoing", each while it has rows. */
 const brokenGroups = computed(() =>
   [
@@ -70,11 +71,6 @@ const allGreenDetail = computed(() =>
   }),
 );
 
-// A row gone (a workflow passed, a repository untracked): the selection goes to its nearest neighbour.
-watch(keys, (next, previous) => {
-  chosenKey.value = followSelection(previous, next, chosenKey.value);
-});
-
 useCommands(() => [
   { id: 'workflows.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
   { id: 'workflows.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
@@ -84,45 +80,8 @@ useCommands(() => [
 // Arrived from the sidebar or the command menu, the keys are the screen's: Enter no longer follows the link pressed.
 onMounted(() => root.value?.focus({ preventScroll: true }));
 
-onWindowEvent('keydown', event => {
-  if (!isScreenKey(event)) {
-    return;
-  }
-
-  switch (event.key) {
-    case 'j':
-    case 'ArrowDown':
-      event.preventDefault();
-      step(1);
-      return;
-    case 'k':
-    case 'ArrowUp':
-      event.preventDefault();
-      step(-1);
-      return;
-    case 'Enter':
-      if (selectedRow.value !== null && !isActivatableTarget(event.target)) {
-        event.preventDefault();
-        emit('open', selectedRow.value);
-      }
-  }
-});
-
-function step(by: 1 | -1) {
-  const index = selectedKey.value === null ? -1 : keys.value.indexOf(selectedKey.value);
-  const next = keys.value[Math.min(Math.max(index + by, 0), keys.value.length - 1)];
-  if (next === undefined) {
-    return;
-  }
-
-  chosenKey.value = next;
-  void nextTick(() => {
-    root.value?.querySelector(`[data-workflow-key="${CSS.escape(next)}"]`)?.scrollIntoView({ block: 'nearest' });
-  });
-}
-
 function openRow(row: BrokenWorkflowEntry) {
-  chosenKey.value = row.key;
+  selection.select(row.key);
   emit('open', row);
 }
 
@@ -204,7 +163,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           :git-ref="row.gitRef"
           :more-ref-count="row.moreRefCount"
           :repository="row.nameWithOwner"
-          :selected="row.key === selectedKey"
+          :selected="row.key === selection.selectedKey"
           @open="openRow(row)"
         />
       </section>
@@ -274,11 +233,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
 </template>
 
 <style lang="scss" module="css">
-// `WorkflowRow`'s columns, so a repository's row lines up with the workflows' rows.
-$name-width: 230px;
-$repository-width: 130px;
-$ref-width: 130px;
-
 .brokenWorkflowsView {
   display: flex;
   flex: 1;
@@ -327,7 +281,7 @@ $ref-width: 130px;
 .brokenWorkflowsView_hint {
   display: inline-flex;
   flex: none;
-  gap: 5px;
+  gap: $spacing-5;
   align-items: center;
   font-size: $font-size-xs;
   color: $color-fg-dim;
@@ -348,9 +302,9 @@ $ref-width: 130px;
 
 .brokenWorkflowsView_group {
   display: flex;
-  gap: 7px;
+  gap: $spacing-7;
   align-items: center;
-  padding: 10px $spacing-16 6px;
+  padding: $spacing-10 $spacing-16 $spacing-6;
   font-size: $font-size-xs;
   font-weight: $font-weight-medium;
   color: $color-fg-2;
@@ -371,7 +325,7 @@ $ref-width: 130px;
   display: flex;
   gap: $spacing-10;
   align-items: center;
-  height: 34px;
+  height: $workflow-row-height;
   padding: 0 $spacing-16;
 }
 
@@ -384,7 +338,7 @@ $ref-width: 130px;
 
 .brokenWorkflowsView_rowName {
   flex: none;
-  width: $name-width;
+  width: $workflow-name-width;
   overflow: hidden;
   font-size: $font-size-row-title;
   font-weight: $font-weight-medium;
@@ -399,7 +353,7 @@ $ref-width: 130px;
 
 .brokenWorkflowsView_rowRepository {
   flex: none;
-  width: $repository-width;
+  width: $workflow-repository-width;
   overflow: hidden;
   font-size: $font-size-sm;
   color: $color-fg-2;
@@ -409,7 +363,7 @@ $ref-width: 130px;
 
 .brokenWorkflowsView_rowRef {
   flex: none;
-  width: $ref-width;
+  width: $workflow-ref-width;
 }
 
 .brokenWorkflowsView_rowStatus {

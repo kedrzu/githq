@@ -121,6 +121,17 @@ $item-panel-width: 560px;
 $window-controls-height: 36px;
 
 // ---------------------------------------------------------------------------------------------------
+// The workflows (`workflows/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The design's columns of a workflow's row (`WorkflowRow`), fixed so the strip of runs sits in one column on every
+// row; the rows of repositories in the broken workflows' list (`BrokenWorkflowsView`) line up with them.
+$workflow-name-width: 230px;
+$workflow-repository-width: 130px;
+$workflow-ref-width: 130px;
+$workflow-row-height: 34px;
+
+// ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
 // ---------------------------------------------------------------------------------------------------
 

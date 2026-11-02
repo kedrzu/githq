@@ -732,7 +732,7 @@ function getProjectMark(title: string) {
   justify-content: center;
   min-width: 14px;
   height: 14px;
-  padding: 0 4px;
+  padding: 0 $spacing-4;
   font-size: 9px;
   font-weight: $font-weight-semibold;
   line-height: 1;

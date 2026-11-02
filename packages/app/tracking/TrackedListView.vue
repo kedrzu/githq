@@ -2,13 +2,13 @@
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import { followSelection } from '@/utils/followSelection.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
+import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import TrackedListHead from './TrackedListHead.vue';
 import * as l from './TrackedListView.loc.js';
@@ -41,18 +41,19 @@ defineSlots<{
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const root = useTemplateRef('root');
-const selectedKey = ref<string | null>(null);
 
 const rows = computed(() => props.groups.flatMap(group => group.rows));
-const keys = computed(() => rows.value.map(row => props.getKey(row)));
-const selectedRow = computed(() => rows.value.find(row => props.getKey(row) === selectedKey.value) ?? null);
+// A row gone (untracked here or elsewhere): the selection goes to the next one, the previous one after the last.
+const selection = useRowSelection({
+  rows,
+  getKey: row => props.getKey(row),
+  root,
+  keyAttribute: 'data-tracked-key',
+  open: row => emit('open', row),
+});
+const selectedRow = computed(() => rows.value.find(row => props.getKey(row) === selection.selectedKey) ?? null);
 const projects = computed(() => props.kind === 'projects');
 const addLabel = computed(() => t(projects.value ? l.addProjects : l.addRepositories));
-
-// A row gone (untracked here or elsewhere): the selection goes to the next one, the previous one after the last.
-watch(keys, (next, previous) => {
-  selectedKey.value = followSelection(previous, next, selectedKey.value);
-});
 
 useCommands(() => [
   { id: 'tracking.add', title: addLabel.value, section: 'view', key: ADD_KEY, run: () => emit('add') },
@@ -63,33 +64,9 @@ useCommands(() => [
 ]);
 
 onWindowEvent('keydown', event => {
-  if (!isScreenKey(event)) {
-    return;
-  }
-
-  switch (event.key) {
-    case 'j':
-    case 'ArrowDown':
-      event.preventDefault();
-      step(1);
-      return;
-    case 'k':
-    case 'ArrowUp':
-      event.preventDefault();
-      step(-1);
-      return;
-    case 'Enter':
-      if (selectedRow.value !== null && !isActivatableTarget(event.target)) {
-        event.preventDefault();
-        emit('open', selectedRow.value);
-      }
-
-      return;
-    case 'Backspace':
-      if (selectedRow.value !== null) {
-        event.preventDefault();
-        emit('untrack', selectedRow.value);
-      }
+  if (event.key === 'Backspace' && isScreenKey(event) && selectedRow.value !== null) {
+    event.preventDefault();
+    emit('untrack', selectedRow.value);
   }
 });
 
@@ -98,20 +75,6 @@ function onRowClick(event: MouseEvent, row: T) {
   if (!isActivatableTarget(event.target)) {
     emit('open', row);
   }
-}
-
-/** Nothing selected yet, either way starts at the first row. */
-function step(by: 1 | -1) {
-  const index = selectedKey.value === null ? -1 : keys.value.indexOf(selectedKey.value);
-  const next = index === -1 ? keys.value[0] : keys.value[Math.min(Math.max(index + by, 0), keys.value.length - 1)];
-  if (next === undefined) {
-    return;
-  }
-
-  selectedKey.value = next;
-  void nextTick(() => {
-    root.value?.querySelector(`[data-tracked-key="${CSS.escape(next)}"]`)?.scrollIntoView({ block: 'nearest' });
-  });
 }
 </script>
 
@@ -151,13 +114,13 @@ function step(by: 1 | -1) {
             v-for="row in group.rows"
             :key="getKey(row)"
             :data-tracked-key="getKey(row)"
-            :aria-current="getKey(row) === selectedKey ? 'true' : undefined"
+            :aria-current="getKey(row) === selection.selectedKey ? 'true' : undefined"
             @click="onRowClick($event, row)"
           >
             <slot
               name="row"
               :row="row"
-              :selected="getKey(row) === selectedKey"
+              :selected="getKey(row) === selection.selectedKey"
             />
           </li>
         </ul>
