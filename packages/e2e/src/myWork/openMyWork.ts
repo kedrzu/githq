@@ -19,5 +19,7 @@ export async function openMyWork(page: Page, github: GitHubMock, world: GitHubWo
     const shell = await signIn(page, github);
     const myWork = new MyWorkScreenHarness(page);
     await expect(shell.myWorkCount('My work')).toHaveText(/^\d+$/);
+    // The screen comes after the shell (`home/HomePage.vue`); its shortcuts work from then on.
+    await expect(myWork.filter('All')).toBeVisible();
     return { shell, myWork };
 }
