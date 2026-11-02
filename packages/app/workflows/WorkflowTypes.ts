@@ -94,6 +94,13 @@ export interface WorkflowState {
     readonly runningRun: GitHubWorkflowRun | null;
 }
 
+/** The ref or pattern a row's workflow is read on, as the row names it. */
+export interface WorkflowRowRef {
+    /** `main`, `v*`. */
+    readonly name: string;
+    readonly kind: 'branch' | 'tag';
+}
+
 /** A repository's workflows' states, and what its sidebar marker and the total need. */
 export interface RepositoryWorkflowState {
     /** `unread` before the first read, `unavailable` while GitHub shows nothing: neither is healthy nor counts. */

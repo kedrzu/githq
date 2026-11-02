@@ -1,8 +1,16 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertValue } from '@nzyme/utils/assert.js';
 
-import type { WorkflowState } from '@/workflows/WorkflowTypes.js';
+import type { BrokenWorkflowsSource } from '@/workflows/buildBrokenWorkflows.js';
+import { createUnreadWorkflows } from '@/workflows/utils/createUnreadWorkflows.js';
 import { getRepositoryWorkflowState } from '@/workflows/utils/getRepositoryWorkflowState.js';
+import type {
+    RepositoryWorkflows,
+    StoredWorkflow,
+    WorkflowRefSettings,
+    WorkflowState,
+    WorkflowsUnavailable,
+} from '@/workflows/WorkflowTypes.js';
 
 /** What the sample workflows' ages are counted to: 2026-11-02, 12:00 UTC. */
 export const SAMPLE_WORKFLOWS_NOW = Date.parse('2026-11-02T12:00:00Z');
@@ -10,6 +18,8 @@ export const SAMPLE_WORKFLOWS_NOW = Date.parse('2026-11-02T12:00:00Z');
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+/** The refs the samples count: `main` and the tags `v*`. */
+const SAMPLE_REFS: WorkflowRefSettings = { countDefaultBranch: true, patterns: ['v*'] };
 
 /** A sample run, by its conclusion and how long before {@link SAMPLE_WORKFLOWS_NOW} it was created. */
 export interface SampleRun {
@@ -41,6 +51,62 @@ export interface SampleWorkflowParams {
  */
 export function sampleWorkflowState(params: SampleWorkflowParams): WorkflowState {
     const repository = params.repository ?? 'fitloop/webapp';
+    const state = getRepositoryWorkflowState(
+        { ...sampleStored(repository, [params]), readAt: SAMPLE_WORKFLOWS_NOW },
+        SAMPLE_REFS,
+        SAMPLE_WORKFLOWS_NOW,
+    );
+
+    return assertValue(state.workflows[0]);
+}
+
+/** A sample tracked repository's workflows ({@link sampleRepositoryWorkflows}). */
+export interface SampleRepositoryParams {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    /** Its workflows; their `repository` is this one. */
+    readonly workflows?: readonly SampleWorkflowParams[];
+    /** Its workflows were never read. */
+    readonly unread?: boolean;
+    /** GitHub shows nothing of its workflows. */
+    readonly unavailable?: WorkflowsUnavailable;
+}
+
+/**
+ * A tracked repository's workflows as the cross-repository screen reads them, at {@link SAMPLE_WORKFLOWS_NOW}, read
+ * 40 seconds before, counting `main` and the tags `v*`.
+ */
+export function sampleRepositoryWorkflows(params: SampleRepositoryParams): BrokenWorkflowsSource {
+    const { nameWithOwner } = params;
+    const stored: RepositoryWorkflows | undefined = params.unread
+        ? undefined
+        : {
+              ...sampleStored(nameWithOwner, params.workflows ?? []),
+              unavailable: params.unavailable ?? null,
+          };
+    const state = getRepositoryWorkflowState(
+        stored ?? createUnreadWorkflows(nameWithOwner),
+        SAMPLE_REFS,
+        SAMPLE_WORKFLOWS_NOW,
+    );
+
+    return { nameWithOwner, state, stored };
+}
+
+function sampleStored(repository: string, workflows: readonly SampleWorkflowParams[]): RepositoryWorkflows {
+    return {
+        nameWithOwner: repository,
+        defaultBranch: 'main',
+        repositoryEtag: null,
+        runsEtag: null,
+        workflowsEtag: null,
+        workflows: workflows.map(params => sampleStoredWorkflow(repository, params)),
+        readAt: SAMPLE_WORKFLOWS_NOW - 40_000,
+        unavailable: null,
+    };
+}
+
+function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams): StoredWorkflow {
     const runs = params.runs.map((sample, index): GitHubWorkflowRun => {
         const id = params.id * 1000 + index + 1;
         return {
@@ -56,34 +122,18 @@ export function sampleWorkflowState(params: SampleWorkflowParams): WorkflowState
             headSha: `${id}`.padStart(40, '0'),
         };
     });
-    const state = getRepositoryWorkflowState(
-        {
-            nameWithOwner: repository,
-            defaultBranch: 'main',
-            repositoryEtag: null,
-            runsEtag: null,
-            workflowsEtag: null,
-            workflows: [
-                {
-                    workflow: {
-                        id: params.id,
-                        name: params.name,
-                        path: params.path ?? `.github/workflows/${params.name.toLowerCase()}.yml`,
-                        state: params.state ?? 'active',
-                        htmlUrl: `https://github.com/${repository}/actions/workflows/${params.id}`,
-                    },
-                    runs: runs.toReversed(),
-                    etags: {},
-                },
-            ],
-            readAt: SAMPLE_WORKFLOWS_NOW,
-            unavailable: null,
-        },
-        { countDefaultBranch: true, patterns: ['v*'] },
-        SAMPLE_WORKFLOWS_NOW,
-    );
 
-    return assertValue(state.workflows[0]);
+    return {
+        workflow: {
+            id: params.id,
+            name: params.name,
+            path: params.path ?? `.github/workflows/${params.name.toLowerCase()}.yml`,
+            state: params.state ?? 'active',
+            htmlUrl: `https://github.com/${repository}/actions/workflows/${params.id}`,
+        },
+        runs: runs.toReversed(),
+        etags: {},
+    };
 }
 
 function toMs(ago: SampleRun['ago']) {

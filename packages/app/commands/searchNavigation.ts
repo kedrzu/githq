@@ -12,11 +12,11 @@ import type { CommandMenuMatch } from './findMenuRows.js';
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
-/** A screen of the app the menu jumps to: my work and its groups, a tracked project or saved view, a repository, Settings and its sections. */
+/** A screen of the app the menu jumps to: my work and its groups, the broken workflows, a tracked project or saved view, a repository, Settings and its sections. */
 export interface NavigationPlace {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
-    readonly kind: 'myWork' | 'project' | 'view' | 'repository' | 'settings' | SettingsSection;
+    readonly kind: 'myWork' | 'workflows' | 'project' | 'view' | 'repository' | 'settings' | SettingsSection;
     readonly title: string;
     readonly detail?: string;
     /** Other words it is found by (a project's owner). */

@@ -18,6 +18,7 @@ import {
     REPOSITORY_PATH,
     REPOSITORY_SETTINGS_PATH,
 } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
 // the build if any exist). Who may open each one is its `meta.auth` (`auth/routeAccess.ts`); the app's screens
@@ -105,6 +106,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
     yield {
         path: `${SETTINGS_PATH}/tracking`,
         redirect: to => ({ path: SETTINGS_PATH, query: to.query, hash: to.hash }),
+    };
+    // The broken workflows of every tracked repository (actions W2). A static path under GitHub's reserved
+    // `/dashboard`, which outranks that segment's hand-off to github.com.
+    yield {
+        path: BROKEN_WORKFLOWS_PATH,
+        name: 'workflows',
+        component: () => import('@/workflows/BrokenWorkflowsPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell' },
     };
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
     // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.

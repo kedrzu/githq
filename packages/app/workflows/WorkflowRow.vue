@@ -12,14 +12,7 @@ import { formatLocalDate } from '@/utils/formatLocalDate.js';
 import RunStrip from './RunStrip.vue';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import * as l from './WorkflowRow.loc.js';
-import type { WorkflowState } from './WorkflowTypes.js';
-
-/** The ref or pattern a row's workflow is read on, as the row names it. */
-export interface WorkflowRowRef {
-  /** `main`, `v*`. */
-  readonly name: string;
-  readonly kind: 'branch' | 'tag';
-}
+import type { WorkflowRowRef, WorkflowState } from './WorkflowTypes.js';
 
 const props = withDefaults(
   defineProps<{

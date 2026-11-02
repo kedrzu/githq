@@ -3,8 +3,8 @@ import { defineComponent, h } from 'vue';
 
 import { SAMPLE_WORKFLOWS, SAMPLE_WORKFLOWS_NOW } from '@/testing/sampleWorkflows.js';
 
-import type { WorkflowRowRef } from './WorkflowRow.vue';
 import WorkflowRow from './WorkflowRow.vue';
+import type { WorkflowRowRef } from './WorkflowTypes.js';
 
 const MAIN: WorkflowRowRef = { name: 'main', kind: 'branch' };
 const TAGS: WorkflowRowRef = { name: 'v*', kind: 'tag' };

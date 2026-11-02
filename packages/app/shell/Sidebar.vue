@@ -1,6 +1,8 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
+
+import type { SidebarWorkflowMarker } from './SidebarTypes.js';
 
 /** What a tracked project or repository shows beside its name. */
 export type SidebarTrackedStatus =
@@ -23,6 +25,8 @@ export interface SidebarTrackedEntry {
   readonly status: SidebarTrackedStatus;
   /** A private repository: a lock instead of the repository icon. */
   readonly isPrivate?: boolean;
+  /** The marker on a repository's icon, of its workflows (actions W1); none when nothing there can be told. */
+  readonly workflowMarker?: SidebarWorkflowMarker | null;
 }
 
 /** The tracked projects and repositories, in the user's order. */
@@ -45,6 +49,7 @@ import {
   Search,
   Settings,
   SquareKanban,
+  Workflow,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
@@ -64,9 +69,11 @@ import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
+import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
 
 const props = defineProps<{
   viewer: Viewer;
@@ -80,6 +87,8 @@ const props = defineProps<{
   tracked?: SidebarTracked;
   /** Syncing the settings stopped (settings-sync T9, T10): the user's avatar and menu say so. */
   settingsSyncStopped?: boolean;
+  /** The entry "Broken workflows" (actions W1); not drawn when `null` or not given. */
+  brokenWorkflows?: SidebarBrokenWorkflows | null;
 }>();
 
 const emit = defineEmits<{
@@ -203,6 +212,27 @@ function getProjectMark(title: string) {
               <span :class="css.sidebar_count">{{ countText(group) }}</span>
             </RouterLink>
           </li>
+          <li v-if="brokenWorkflows">
+            <RouterLink
+              :to="BROKEN_WORKFLOWS_PATH"
+              :class="css.sidebar_item"
+              :active-class="css.sidebar_item_active"
+            >
+              <Workflow
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ t(l.brokenWorkflows) }}</span>
+              <span
+                v-if="brokenWorkflows.tone !== 'none'"
+                :class="[css.sidebar_brokenDot, css[`sidebar_brokenDot_${brokenWorkflows.tone}`]]"
+                aria-hidden="true"
+              />
+              <span :class="[css.sidebar_count, css[`sidebar_count_${brokenWorkflows.tone}`]]">{{
+                brokenWorkflows.count
+              }}</span>
+            </RouterLink>
+          </li>
         </ul>
 
         <template v-if="projects.length > 0">
@@ -249,12 +279,29 @@ function getProjectMark(title: string) {
                   :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
                   :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
                 >
-                  <component
-                    :is="repository.isPrivate ? Lock : BookMarked"
-                    :class="css.sidebar_itemIcon"
-                    aria-hidden="true"
-                  />
-                  <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
+                  <span :class="css.sidebar_repositoryIcon">
+                    <component
+                      :is="repository.isPrivate ? Lock : BookMarked"
+                      :class="css.sidebar_itemIcon"
+                      aria-hidden="true"
+                    />
+                    <span
+                      v-if="repository.workflowMarker"
+                      :class="[css.sidebar_marker, css[`sidebar_marker_${repository.workflowMarker}`]]"
+                      tid="workflow-marker"
+                      :data-marker="repository.workflowMarker"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span :class="css.sidebar_itemLabel"
+                    >{{ repository.label
+                    }}<span
+                      v-if="repository.workflowMarker === 'new' || repository.workflowMarker === 'settled'"
+                      :class="css.sidebar_hidden"
+                    >
+                      · {{ t(l.workflowsBroken) }}</span
+                    ></span
+                  >
                   <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
                 </RouterLink>
                 <template #content>
@@ -331,6 +378,25 @@ function getProjectMark(title: string) {
           :aria-label="t(groupLabels.mentioned)"
         >
           <AtSign aria-hidden="true" />
+        </RouterLink>
+        <RouterLink
+          v-if="brokenWorkflows"
+          :to="BROKEN_WORKFLOWS_PATH"
+          :class="css.sidebar_railLink"
+          :active-class="css.sidebar_railLink_active"
+          :aria-label="
+            brokenWorkflows.tone === 'none'
+              ? t(l.brokenWorkflows)
+              : t(l.brokenWorkflowsCount, { count: brokenWorkflows.count })
+          "
+        >
+          <Workflow aria-hidden="true" />
+          <span
+            v-if="brokenWorkflows.tone !== 'none'"
+            :class="[css.sidebar_badge, css[`sidebar_badge_${brokenWorkflows.tone}`]]"
+            aria-hidden="true"
+            >{{ brokenWorkflows.count }}</span
+          >
         </RouterLink>
         <template v-if="projects.length > 0">
           <hr :class="css.sidebar_divider" />
@@ -508,6 +574,77 @@ function getProjectMark(title: string) {
   background: $color-bg-3;
 }
 
+.sidebar_count_new {
+  color: $color-red;
+}
+
+.sidebar_count_settled {
+  color: $color-fg-2;
+}
+
+// The entry's marker (actions W1): bright red with a break under a day old, quiet red with older ones only.
+.sidebar_brokenDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.sidebar_brokenDot_new {
+  background: $color-red;
+}
+
+.sidebar_brokenDot_settled {
+  background: $color-red-quiet;
+}
+
+// A repository's icon with its workflows' marker on its corner (actions W1).
+.sidebar_repositoryIcon {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+// 7px on the icon's corner, ringed in the row's background so it reads apart from the icon.
+.sidebar_marker {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px $color-bg-2;
+
+  .sidebar_item:hover &,
+  .sidebar_item_active & {
+    box-shadow: 0 0 0 1.5px $color-bg-3;
+  }
+}
+
+.sidebar_marker_new {
+  background: $color-red;
+}
+
+.sidebar_marker_settled {
+  background: $color-red-quiet;
+}
+
+// Not read yet: a hollow ring, neither healthy nor broken.
+.sidebar_marker_unread {
+  background: $color-bg-2;
+  border: 1.5px solid $color-fg-3;
+
+  .sidebar_item:hover &,
+  .sidebar_item_active & {
+    background: $color-bg-3;
+  }
+}
+
+.sidebar_hidden {
+  @include visually-hidden;
+}
+
 .sidebar_item_sub {
   padding-left: 32px;
 }
@@ -582,6 +719,35 @@ function getProjectMark(title: string) {
 .sidebar_railLink_active {
   color: $color-fg;
   background: $color-bg-3;
+}
+
+// The rail's count of broken workflows (actions W1), on the icon's corner: filled red with a break under a day
+// old, outlined in quiet red with older ones only.
+.sidebar_badge {
+  position: absolute;
+  top: 3px;
+  left: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  border-radius: 7px;
+}
+
+.sidebar_badge_new {
+  color: $color-on-light;
+  background: $color-red;
+}
+
+.sidebar_badge_settled {
+  color: $color-fg;
+  background: $color-bg-3;
+  box-shadow: inset 0 0 0 1px $color-red-quiet;
 }
 
 .sidebar_railMark {

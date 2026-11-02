@@ -18,6 +18,7 @@ import {
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
+import { getBrokenWorkflowsPath } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
@@ -54,6 +55,10 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
     ['/settings', 'settings'],
     ['/settings?tab=sync', 'settings'],
+    // The broken workflows of every tracked repository, under GitHub's reserved `/dashboard`.
+    ['/dashboard/workflows', 'workflows'],
+    ['/dashboard', 'github-dashboard'],
+    ['/dashboard/other', 'github-dashboard'],
     ['/settings/tracking/new', 'tracking-choice'],
     ['/settings/tracking/download', 'first-download'],
     ['/auth/callback', 'auth-callback'],
@@ -203,6 +208,7 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositorySettingsPath('acme/web'), 'repository-settings'],
         [getProjectSettingsPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org-settings'],
         [getProjectSettingsPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }), 'project-user-settings'],
+        [getBrokenWorkflowsPath(), 'workflows'],
         [SETTINGS_PATH, 'settings'],
         ...SETTINGS_SECTIONS.map(section => [getSettingsPath(section), 'settings'] as const),
         [TRACKING_CHOICE_PATH, 'tracking-choice'],

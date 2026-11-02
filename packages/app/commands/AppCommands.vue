@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -32,6 +32,7 @@ import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getProjectPath, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
+import { getBrokenWorkflowsPath } from '@/workflows/workflowRoutes.js';
 
 import * as l from './AppCommands.loc.js';
 import CommandMenu from './CommandMenu.vue';
@@ -181,6 +182,13 @@ function getPlaces(): NavigationPlace[] {
       detail: t(l.myWork),
       path: getMyWorkGroupPath(group),
     })),
+    {
+      id: 'workflows',
+      group: 'goTo',
+      kind: 'workflows',
+      title: t(l.brokenWorkflows),
+      path: getBrokenWorkflowsPath(),
+    },
   ];
   for (const project of pendingUntracks.projects) {
     places.push({
