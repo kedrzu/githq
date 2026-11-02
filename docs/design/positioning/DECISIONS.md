@@ -34,12 +34,12 @@ what was handed out.
 
 ## D4
 
-**githq leads with two promises at once: one place to run all your repositories, and no separate tracker for
+**githq leads with two promises at once: one place to manage all your repositories, and no separate tracker for
 them, because GitHub's issues and Projects are the tracker.** (2026-11-02, owner)
 
 **Why.** Owner: openings that only said "it is a tracker, you need a tracker" did not land; the value is that a
 tracker on GitHub replaces the one you would otherwise use for your ten repositories with agents, and that the
-same place runs all of those repositories. "One place" on its own names no work; "a tracker" on its own sells
+same place manages all of those repositories. "One place" on its own names no work; "a tracker" on its own sells
 a need the reader may not feel.
 
 > **Checked 2026-11-02:** "existing tools are paid" holds only past a free tier. Linear's free plan is
@@ -55,3 +55,16 @@ a need the reader may not feel.
   tracker" (owner).
 - "Everything for GitHub in one place" — names no need (owner). D4's "one place" differs by being tied to the
   reader's repositories and to the tracker.
+
+## D5
+
+**The copy says githq is a command center for your repositories, and never says it "runs" them.**
+(2026-11-02, owner)
+
+**Why.** Owner: "run your repositories" suggests a runtime or hosting, which githq is not. "Command center"
+is the owner's preferred phrase for the name's idea.
+
+**Rejected.**
+- "HQ" as the word in the copy — owner prefers "command center".
+- "Run" as the verb for what githq lets you do with repositories — reads as hosting (owner).
+

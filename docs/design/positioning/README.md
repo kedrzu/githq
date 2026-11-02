@@ -23,7 +23,7 @@ we add next slots into it instead of contradicting it.
 
 ## The message
 
-**githq is one place to run all your repositories, and the tracker comes with it.** Two promises in one
+**githq is one place to manage all your repositories, and the tracker comes with it.** Two promises in one
 sentence. You work in ten repositories, and GitHub shows each of them on its own pages: issues here, pull
 requests there, a failed deploy in a third repository's Actions tab. githq puts all of it on one fast screen.
 And because issues and Projects are already part of that GitHub, you do not need a separate tracker for those
