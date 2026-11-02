@@ -15,7 +15,7 @@ import { samplePullRequest } from '@/testing/sampleItems.js';
 import { samplePullRequestNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
-import type { MergeAnswer } from './MergeTypes.js';
+import type { MergeAnswer, MergeLateEnd } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
 
 const MERGE_PATH = '/repos/acme/web/pulls/2/merge-async';
@@ -29,7 +29,7 @@ test('accepted: the panel learns at once; the row reads being merged — not mer
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
 
     expect(await answering).toEqual({ kind: 'accepted' });
@@ -56,7 +56,7 @@ test('the head commit always goes with the merge, and the commit text only when 
     const { merger, session, rest } = await setup();
     rest.answers.put = MERGED;
 
-    const unedited = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const unedited = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
     expect(await unedited).toEqual({ kind: 'accepted' });
 
@@ -64,6 +64,7 @@ test('the head commit always goes with the merge, and the commit text only when 
         item: open(),
         request: { method: 'MERGE', title: 'Merge the login fix', body: '' },
         shown,
+        onLateEnd,
     });
     await session.clock.advance(0);
     expect(await edited).toEqual({ kind: 'accepted' });
@@ -78,7 +79,7 @@ test('merged at once: confirmed, and a sync copy read before the merge does not 
     const { merger, items, session, rest } = await setup();
     rest.answers.put = MERGED;
 
-    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
     // How it landed, for the panel (PM26): only this app's merge knows it.
@@ -102,7 +103,7 @@ test('refused at once — a failed answer or an error — is the panel’s to sh
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = { status: 405, body: { status: 'failed', details: { message: 'Head branch was modified.' } } };
 
-    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
 
     expect(await refused).toEqual({
@@ -111,7 +112,7 @@ test('refused at once — a failed answer or an error — is the panel’s to sh
     });
 
     rest.answers.put = undefined;
-    const failed = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const failed = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
 
     expect(await failed).toMatchObject({ kind: 'refused', reason: { kind: 'refused' } });
@@ -128,7 +129,7 @@ test('refused at once after the panel closed: the refusal is not lost — a fail
 
     // The panel is closed (Esc) before GitHub answers the merge.
     let panelOpen = true;
-    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown: () => panelOpen });
+    const refused = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown: () => panelOpen, onLateEnd });
     panelOpen = false;
     await session.clock.advance(0);
 
@@ -147,7 +148,7 @@ test('a failed answer while it runs is a failed edit with GitHub’s words; a re
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -169,16 +170,36 @@ test('a failed answer while it runs is a failed edit with GitHub’s words; a re
         { kind: 'refused', message: 'Required status check failed.' },
     ]);
     expect(queue.failures[0]?.toast).toBe(true);
+    expect(lateEnds).toEqual([
+        { kind: 'refused', reason: { kind: 'refused', message: 'Required status check failed.' } },
+    ]);
 });
 
-test('a merge already running answers 409 with its uuid: accepted, and followed until GitHub says merged', async () => {
+test('PM30: sent again after a reload, of a pull request GitHub merged meanwhile — 200 merged: it reads merged, never refused', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    rest.answers.put = {
+        status: 200,
+        body: { status: 'merged', details: { message: 'Pull request was merged.', sha: 'merge-sha' } },
+    };
+
+    // After a reload githq knows only what GitHub last said: open, ready.
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'SQUASH', sha: 'merge-sha' } });
+    expect(queue.failures).toEqual([]);
+    expect(lateEnds).toEqual([]);
+});
+
+test('PM30: sent again after a reload while one runs — 409 with its uuid: accepted, and followed until GitHub says merged', async () => {
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = {
         status: 409,
         body: { status: 'pending', details: { message: 'Merge request is in progress.', uuid: UUID } },
     };
 
-    const answering = merger.merge({ item: open(), request: { method: 'MERGE' }, shown });
+    const answering = merger.merge({ item: open(), request: { method: 'MERGE' }, shown, onLateEnd });
     await session.clock.advance(0);
 
     expect(await answering).toEqual({ kind: 'accepted' });
@@ -201,7 +222,7 @@ test.each([
         rest.answers.put = answers.put;
         rest.answers.read = answers.read;
 
-        const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+        const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
         await session.clock.advance(0);
         expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -219,7 +240,7 @@ test('no answer within the time limit: being merged goes, with no failure, and n
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -233,6 +254,7 @@ test('no answer within the time limit: being merged goes, with no failure, and n
     expect(queue.pending).toEqual([]);
     expect(queue.failures).toEqual([]);
     expect(queue.undone.size).toBe(0);
+    expect(lateEnds).toEqual([{ kind: 'unknown' }]);
     // 1 s, 2 s, 4 s, then every 5 s: 7 s and 22 more within the two minutes, the last cut to the limit.
     const reads = rest.reads();
     expect(reads).toBe(26);
@@ -247,27 +269,28 @@ test('never sent for a non-writer, a closed or merged pull request, or one being
 
     const readOnly: PullRequestItem = { ...open(), repository: { ...open().repository, viewerPermission: 'TRIAGE' } };
     const notAllowed: MergeAnswer = { kind: 'refused', reason: { kind: 'notAllowed' } };
-    expect(await merger.merge({ item: readOnly, request: { method: 'SQUASH' }, shown })).toEqual(notAllowed);
-    expect(await merger.merge({ item: { ...open(), state: 'CLOSED' }, request: { method: 'SQUASH' }, shown })).toEqual(
-        notAllowed,
-    );
+    expect(await merger.merge({ item: readOnly, request: { method: 'SQUASH' }, shown, onLateEnd })).toEqual(notAllowed);
+    expect(
+        await merger.merge({ item: { ...open(), state: 'CLOSED' }, request: { method: 'SQUASH' }, shown, onLateEnd }),
+    ).toEqual(notAllowed);
     expect(
         await merger.merge({
             item: { ...open(), state: 'MERGED', merged: true },
             request: { method: 'SQUASH' },
             shown,
+            onLateEnd,
         }),
     ).toEqual(notAllowed);
     expect(
-        await merger.merge({ item: { ...open(), merging: 'SQUASH' }, request: { method: 'SQUASH' }, shown }),
+        await merger.merge({ item: { ...open(), merging: 'SQUASH' }, request: { method: 'SQUASH' }, shown, onLateEnd }),
     ).toEqual(notAllowed);
     expect(rest.puts()).toEqual([]);
 
     // The row the panel holds may not show it yet: the merge on its way says so.
-    const first = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown });
+    const first = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
     expect(await first).toEqual({ kind: 'accepted' });
-    expect(await merger.merge({ item: open(), request: { method: 'SQUASH' }, shown })).toEqual(notAllowed);
+    expect(await merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd })).toEqual(notAllowed);
     expect(rest.puts()).toHaveLength(1);
 });
 
@@ -282,6 +305,7 @@ test('the options read on opening come back, partial errors and all, and their s
         proposedTexts: { SQUASH: { title: 'Fix the login loop (#2)', body: 'Fix it' } },
         requiresLinearHistory: false,
         status: { headRefOid: 'fresh-head' },
+        headCommit: { oid: 'fresh-head', headline: 'Handle an empty billing answer', author: 'dkim' },
     });
     expect(items.getStored('PR_1')).toMatchObject({ headRefOid: 'fresh-head', title: open().title });
     expect(session.operations()).toContain('PullRequestMergeOptions');
@@ -307,6 +331,7 @@ async function setup() {
     const merger = session.container.resolve(PullRequestMerger);
     await items.ready();
     items.upsertMany([open()]);
+    lateEnds.length = 0;
 
     return { merger, items, queue, session, rest };
 
@@ -338,6 +363,17 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
             viewerCanMergeAsAdmin: false,
             viewerCanEnableAutoMerge: false,
             isMergeQueueEnabled: false,
+            headCommit: {
+                nodes: [
+                    {
+                        commit: {
+                            oid: 'fresh-head',
+                            messageHeadline: 'Handle an empty billing answer',
+                            author: { name: 'Dana Kim', user: { login: 'dkim' } },
+                        },
+                    },
+                ],
+            },
             baseRef: { target: { oid: 'base-oid' }, rules: null, branchProtectionRule: null },
             statusCheckRollup: null,
         },
@@ -358,6 +394,13 @@ interface MergeAnswers {
 /** The merge panel still shows what GitHub answers. */
 function shown() {
     return true;
+}
+
+/** How the merges GitHub accepted ended, when they did not merge after all. */
+const lateEnds: MergeLateEnd[] = [];
+
+function onLateEnd(end: MergeLateEnd) {
+    lateEnds.push(end);
 }
 
 function open(): PullRequestItem {

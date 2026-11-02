@@ -10,16 +10,20 @@ const {
     BeingRead,
     Conflicts,
     Draft,
+    HeadMoved,
     Merged,
     MergeabilityUnknown,
     MergedMeanwhile,
     MethodGone,
+    MethodNotAllowed,
     NoAnswer,
     NotAllowed,
     NothingToOffer,
     OptionalFailed,
+    OutcomeUnknown,
     Ready,
     Refused,
+    RefusedReopened,
     RequiredFailed,
     Sending,
 } = composeStories(stories);
@@ -113,6 +117,112 @@ test('PM25: refused at once, the panel stays with the edited text and GitHub’s
         .element(page.getByRole('textbox', { name: 'Commit title' }))
         .toHaveValue('Retry Stripe webhook delivery on 5xx (#477) now');
     await expect.element(page.getByRole('button', { name: /Try again/u })).toBeEnabled();
+    // Never read as merged, nor as being merged.
+    await expect.element(panel()).not.toHaveTextContent('Being merged');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('{"method":"SQUASH","title":"Retry Stripe webhook delivery on 5xx (#477) now"}');
+});
+
+test('PM25, D15: reopened after a refusal, GitHub’s reason in its own words, and the text it was sent with given back', async () => {
+    await RefusedReopened.run();
+
+    await expect.element(panel()).toHaveTextContent('GitHub refused the mergeNothing was merged');
+    await expect
+        .element(page.getByRole('alert'))
+        .toHaveTextContent(
+            'Repository rule violations found“At least 2 approving reviews are required by reviewers with write access.”',
+        );
+    await expect.element(panel().getByText('Edited', { exact: true })).toBeVisible();
+    await expect
+        .element(panel())
+        .toHaveTextContent('Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('"title":"Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)"');
+});
+
+test('PM27: a new commit arrived — nothing merged, the new commit named, and the primary goes by its state', async () => {
+    await HeadMoved.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(panel()).toHaveTextContent('A new commit arrived, so nothing was merged');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('dkim pushed 4f1c9e2');
+    await expect
+        .element(page.getByRole('alert'))
+        .toHaveTextContent(
+            '“Handle empty billing response”. You asked to merge a91d03b, so GitHub cancelled the merge',
+        );
+    await expect
+        .element(page.getByRole('link', { name: /See the new commit/u }))
+        .toHaveAttribute(
+            'href',
+            `https://github.com/fitloop/api/pull/477/commits/4f1c9e2a7d3b5c6e8f9a0b1c2d3e4f5a6b7c8d9e`,
+        );
+    // Another merge now, of the new commit: not the same one tried again.
+    await expect.element(page.getByRole('button', { name: /Try again/u })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Squash and merge/u })).toBeEnabled();
+    await expect.element(panel()).not.toHaveTextContent('Being merged');
+
+    await userEvent.keyboard('d');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent(
+            'Visit: https://github.com/fitloop/api/pull/477/commits/4f1c9e2a7d3b5c6e8f9a0b1c2d3e4f5a6b7c8d9e',
+        );
+});
+
+test('PM28: a method the rules, read late, don’t allow — the panel is on what they allow, the edit kept as its text', async () => {
+    await MethodNotAllowed.run();
+
+    await expect.element(page.getByRole('button', { name: /^Merge commit/u })).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.keyboard('e');
+    await userEvent.type(page.getByRole('textbox', { name: 'Commit title' }), ' now');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"method":"MERGE"');
+
+    await expect.element(panel()).toHaveTextContent("Merge commit isn't allowed on mainNothing was merged");
+    await expect.element(page.getByRole('alert')).toHaveTextContent('A ruleset on main allows only Squash');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Sent before the rules arrived.');
+    // Said once, in the refusal: not again as the method gone (PM9).
+    await expect.element(panel()).not.toHaveTextContent('is gone');
+    await expect
+        .element(page.getByRole('textbox', { name: 'Commit title' }))
+        .toHaveValue('Merge pull request #477 from fitloop/retry-stripe-5xx now');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(panel()).toHaveTextContent('MethodSquash');
+    await expect.element(panel().getByText('Edited', { exact: true })).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('{"method":"SQUASH","title":"Merge pull request #477 from fitloop/retry-stripe-5xx now"');
+});
+
+test('PM29: reopened with no answer in time — grey, neither merged nor failed, and no second merge on offer', async () => {
+    await OutcomeUnknown.run();
+
+    await expect
+        .element(panel())
+        .toHaveTextContent("Outcome not known yetGitHub hasn't answered · not shown as merged");
+    await expect.element(page.getByRole('status')).toHaveTextContent('The next refresh will settle this');
+    await expect.element(page.getByRole('status')).toHaveTextContent('then 2 minutes passed with no result');
+    await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
+    await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
+    expect(page.getByRole('button', { name: /merge|try again/iu }).elements()).toEqual([]);
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    await expect
+        .element(page.getByRole('link', { name: /Open on GitHub/u }))
+        .toHaveAttribute('href', 'https://github.com/fitloop/api/pull/477');
+    await userEvent.keyboard('o');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Visit: https://github.com/fitloop/api/pull/477');
 });
 
 test('PM4a: a required check that failed holds the merge — tagged and first, and ⌘↵ does nothing', async () => {

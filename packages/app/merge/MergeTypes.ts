@@ -31,6 +31,16 @@ export interface MergeOptions {
     readonly isMergeQueueEnabled: boolean;
     /** The checks of the head commit; empty when nothing runs. */
     readonly checks: readonly MergeCheck[];
+    /** The head commit as it is said when a merge was refused for naming an older one (PM27); `null` when unread. */
+    readonly headCommit: MergeHeadCommit | null;
+}
+
+/** A pull request's head commit, as the merge panel names it. */
+export interface MergeHeadCommit {
+    readonly oid: string;
+    readonly headline: string;
+    /** Its author's login, else the name in the commit; `null` when it names none. */
+    readonly author: string | null;
 }
 
 /** A commit's title and message. */
@@ -57,6 +67,43 @@ export interface MergeRequest {
     /** The commit's message, only when the user edited it: GitHub's own default goes otherwise (D6). */
     readonly body?: string;
 }
+
+/** A merge as the merge panel sends it: the request, and the commit text the user edited, whole, to give it back. */
+export interface MergeSubmission {
+    readonly request: MergeRequest;
+    /** The commit text as edited, title and message both; `null` when the user left GitHub's text as it was. */
+    readonly edited: MergeCommitText | null;
+}
+
+/** A merge this session sent: what the panel sent, with the head commit it named. */
+export interface SentMerge extends MergeSubmission {
+    readonly head: string;
+}
+
+/**
+ * What this session knows of a pull request's last merge that did not end merged (merging D3, D15), for the merge
+ * panel and the rows to say, with the text to give back: refused with GitHub's reason; refused because the head moved
+ * since the merge named it — told by reading the head again, not by GitHub's words (PM27); refused for a method the
+ * base branch's rules, read after it was sent, don't allow (PM28); or accepted with no answer in time (PM29). Kept in
+ * memory only: a reload or another account forgets it.
+ */
+export type MergeRecord =
+    | { readonly kind: 'refused'; readonly sent: SentMerge; readonly reason: EditFailureReason }
+    | {
+          readonly kind: 'headMoved';
+          readonly sent: SentMerge;
+          /** The head GitHub holds now. */
+          readonly head: string;
+          /** The commit at it, when the read brought it. */
+          readonly commit: MergeHeadCommit | null;
+      }
+    | { readonly kind: 'methodNotAllowed'; readonly sent: SentMerge }
+    | { readonly kind: 'unknown'; readonly sent: SentMerge };
+
+/** How a merge GitHub accepted ended when it did not merge: refused while it ran, or with no answer in time. */
+export type MergeLateEnd =
+    | { readonly kind: 'refused'; readonly reason: EditFailureReason }
+    | { readonly kind: 'unknown' };
 
 /**
  * How GitHub took a merge at first: it accepted it (it may still fail while it runs, reported like a failed edit),

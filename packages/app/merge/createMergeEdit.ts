@@ -13,7 +13,7 @@ import type { ClockShape } from '@/services/Clock.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { pause } from '@/utils/pause.js';
 
-import type { MergeAnswer, MergeRequest } from './MergeTypes.js';
+import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
 
 /** What {@link createMergeEdit} makes the merge of. */
 export interface CreateMergeEditParams {
@@ -24,6 +24,8 @@ export interface CreateMergeEditParams {
     readonly clock: ClockShape;
     /** Told once how GitHub took the merge at first ({@link MergeAnswer}); not told when it was never sent. */
     readonly onAnswer: (answer: MergeAnswer) => void;
+    /** Told when a merge GitHub accepted did not merge after all: refused while it ran, or no answer in time. */
+    readonly onLateEnd: (end: MergeLateEnd) => void;
     /**
      * Whether the merge panel still shows what GitHub answers: a refusal at once is then the panel's to show, and
      * otherwise a failed edit, so a panel closed before GitHub answered does not lose it.
@@ -34,8 +36,8 @@ export interface CreateMergeEditParams {
 /** The first wait before asking how a merge GitHub accepted ended; each next one doubles, up to the longest. */
 const FIRST_POLL_MS = 1000;
 const LONGEST_POLL_MS = 5000;
-/** How long the merge's result is asked for: past it, the regular sync decides (D3). */
-const MERGE_TIME_LIMIT_MS = 2 * 60_000;
+/** How long the merge's result is asked for: past it, the regular sync decides (D3), and the panel says so (PM29). */
+export const MERGE_TIME_LIMIT_MS = 2 * 60_000;
 
 /**
  * The merge of a pull request as an edit (merging D3, D5, D6). It draws the pull request as being merged
@@ -48,7 +50,7 @@ const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  * @__NO_SIDE_EFFECTS__
  */
 export function createMergeEdit(params: CreateMergeEditParams): Edit {
-    const { item, request, clock, onAnswer, shown } = params;
+    const { item, request, clock, onAnswer, onLateEnd, shown } = params;
     const target = getItemReference(item);
 
     return {
@@ -118,8 +120,11 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
             switch (answer.status) {
                 case 'merged':
                     return merged(answer.sha);
-                case 'failed':
-                    return { kind: 'rejected', reason: { kind: 'refused', message: answer.message } };
+                case 'failed': {
+                    const reason: EditFailureReason = { kind: 'refused', message: answer.message };
+                    onLateEnd({ kind: 'refused', reason });
+                    return { kind: 'rejected', reason };
+                }
                 case 'enqueued':
                     return { kind: 'unknown' };
                 case 'pending':
@@ -129,6 +134,7 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
             }
         }
 
+        onLateEnd({ kind: 'unknown' });
         return { kind: 'unknown' };
     }
 

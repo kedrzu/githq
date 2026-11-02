@@ -1,6 +1,7 @@
 # What the merge panel of a pull request needs, read fresh when it opens: the status, the texts GitHub proposes
-# for the commit, what the base branch's rulesets and protection allow, and the checks with which of them are
-# required. `branchProtectionRule` is unreadable without admin rights: read with partial errors allowed.
+# for the commit, what the base branch's rulesets and protection allow, the checks with which of them are required,
+# and the head commit's author and headline — named when GitHub refused a merge of an older commit (PM27).
+# `branchProtectionRule` is unreadable without admin rights: read with partial errors allowed.
 query PullRequestMergeOptions($id: ID!) {
     node(id: $id) {
         ... on PullRequest {
@@ -12,6 +13,20 @@ query PullRequestMergeOptions($id: ID!) {
             viewerCanMergeAsAdmin
             viewerCanEnableAutoMerge
             isMergeQueueEnabled
+            headCommit: commits(last: 1) {
+                nodes {
+                    commit {
+                        oid
+                        messageHeadline
+                        author {
+                            name
+                            user {
+                                login
+                            }
+                        }
+                    }
+                }
+            }
             baseRef {
                 rules(first: 50) {
                     nodes {

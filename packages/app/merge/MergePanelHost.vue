@@ -1,9 +1,8 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
 
-import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -13,7 +12,7 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import MergePanel from './MergePanel.vue';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { MergePanelStore } from './MergePanelStore.js';
-import type { MergeRequest, MergeStep } from './MergeTypes.js';
+import type { MergeStep, MergeSubmission } from './MergeTypes.js';
 import { useMergeOptions } from './useMergeOptions.js';
 
 /** How often a running check's time moves on. */
@@ -34,7 +33,6 @@ const read = useMergeOptions({ itemId: () => store.itemId });
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
 const sending = shallowRef(false);
-const refusal = shallowRef<EditFailureReason | null>(null);
 const advancing = shallowRef<MergeStep | null>(null);
 const now = useNow(TICK_MS, () => pr.value !== null);
 
@@ -52,7 +50,6 @@ watch(
   () => store.opening,
   () => {
     sending.value = false;
-    refusal.value = null;
     advancing.value = null;
   },
 );
@@ -62,7 +59,8 @@ watch(repository, name => {
   }
 });
 
-async function merge(request: MergeRequest) {
+/** Busy until GitHub answered and a refusal is told apart — by the panel's own read again, so it shows it (PM27). */
+async function merge(submission: MergeSubmission) {
   const item = pr.value;
   if (!item) {
     return;
@@ -70,17 +68,16 @@ async function merge(request: MergeRequest) {
 
   const opening = store.opening;
   sending.value = true;
-  refusal.value = null;
-  const answer = await store.merge(item, request);
+  await store.merge({ item, submission, reread });
   // Opened anew meanwhile: that panel is not this one's to answer.
-  if (store.opening !== opening) {
-    return;
+  if (store.opening === opening) {
+    sending.value = false;
   }
+}
 
-  sending.value = false;
-  if (answer.kind === 'refused') {
-    refusal.value = answer.reason;
-  }
+async function reread() {
+  await read.refresh();
+  return read.options;
 }
 
 /**
@@ -124,10 +121,11 @@ async function takeStep(step: MergeStep) {
     :reading="read.reading"
     :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
-    :refusal="refusal"
+    :record="store.getRecord(pr.id)"
     :advancing="advancing"
     :now="now"
     @merge="merge"
     @step="takeStep"
+    @visit="browser.openInNewTab"
   />
 </template>

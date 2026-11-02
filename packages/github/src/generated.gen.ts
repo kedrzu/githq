@@ -2396,6 +2396,15 @@ export type PullRequestMergeOptionsQuery = {
               mergeBody: string;
               squashHeadline: string;
               squashBody: string;
+              headCommit: {
+                  nodes: Array<{
+                      commit: {
+                          oid: string;
+                          messageHeadline: string;
+                          author: { name: string | null; user: { login: string } | null } | null;
+                      };
+                  } | null> | null;
+              };
               baseRef: {
                   rules: {
                       nodes: Array<{
@@ -9916,6 +9925,20 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
       viewerCanMergeAsAdmin
       viewerCanEnableAutoMerge
       isMergeQueueEnabled
+      headCommit: commits(last: 1) {
+        nodes {
+          commit {
+            oid
+            messageHeadline
+            author {
+              name
+              user {
+                login
+              }
+            }
+          }
+        }
+      }
       baseRef {
         rules(first: 50) {
           nodes {

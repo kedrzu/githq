@@ -90,8 +90,23 @@ test('reads the status, the proposed texts, what the viewer may do and the check
                 workflowRunId: null,
             },
         ],
+        headCommit: { oid: 'head-oid', headline: 'Handle an empty billing answer', author: 'dkim' },
     };
     expect(toMergeOptions(node)).toEqual(expected);
+});
+
+test('the head commit names its author by login, else by the name in the commit; none read, none named', () => {
+    const commit = { oid: 'head-oid', messageHeadline: 'Handle an empty billing answer' };
+    const byName: MergeNode = {
+        ...mergeNode(),
+        headCommit: { nodes: [{ commit: { ...commit, author: { name: 'Dana Kim', user: null } } }] },
+    };
+    expect(toMergeOptions(byName)?.headCommit).toEqual({
+        oid: 'head-oid',
+        headline: 'Handle an empty billing answer',
+        author: 'Dana Kim',
+    });
+    expect(toMergeOptions({ ...mergeNode(), headCommit: { nodes: [] } })?.headCommit).toBeNull();
 });
 
 test.each<[string, (Rule | null)[] | null, MergeOptions['allowedMergeMethods']]>([
@@ -144,6 +159,17 @@ function mergeNode(): MergeNode {
         viewerCanMergeAsAdmin: true,
         viewerCanEnableAutoMerge: false,
         isMergeQueueEnabled: false,
+        headCommit: {
+            nodes: [
+                {
+                    commit: {
+                        oid: 'head-oid',
+                        messageHeadline: 'Handle an empty billing answer',
+                        author: { name: 'Dana Kim', user: { login: 'dkim' } },
+                    },
+                },
+            ],
+        },
         baseRef: baseRef({}),
         statusCheckRollup: null,
     };

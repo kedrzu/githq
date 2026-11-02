@@ -3,6 +3,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 
+import { allowsMergeMethod } from './allowsMergeMethod.js';
 import type { MergeOptions } from './MergeTypes.js';
 
 /** The repository's settings {@link getMergeMethods} starts from. */
@@ -39,11 +40,7 @@ export function getMergeMethods(settings: MergeSettings, rules: MergeRules | nul
             return false;
         }
 
-        if (rules?.allowedMergeMethods && !rules.allowedMergeMethods.includes(method)) {
-            return false;
-        }
-
-        return !(method === 'MERGE' && rules?.requiresLinearHistory);
+        return rules === null || allowsMergeMethod(rules, method);
     });
 
     const defaultMethod = methods.includes(settings.viewerDefaultMergeMethod)

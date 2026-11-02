@@ -6,7 +6,7 @@ import { toPullRequestStatus } from '@/store/toItem.js';
 import { toItemCheck } from '@/store/toItemCheck.js';
 import { isPresent } from '@/utils/isPresent.js';
 
-import type { MergeCheck, MergeOptions } from './MergeTypes.js';
+import type { MergeCheck, MergeHeadCommit, MergeOptions } from './MergeTypes.js';
 
 /** The node `PullRequestMergeOptions` answers: a pull request, `{}` for another type, `null` when gone. */
 export type MergeOptionsNode = PullRequestMergeOptionsQuery['node'];
@@ -40,7 +40,18 @@ export function toMergeOptions(node: MergeOptionsNode): MergeOptions | null {
         viewerCanEnableAutoMerge: node.viewerCanEnableAutoMerge,
         isMergeQueueEnabled: node.isMergeQueueEnabled,
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], check => check && toMergeCheck(check)),
+        headCommit: toHeadCommit(node.headCommit),
     };
+}
+
+function toHeadCommit(page: PullRequestNode['headCommit']): MergeHeadCommit | null {
+    const commit = page.nodes?.at(-1)?.commit;
+    if (!commit) {
+        return null;
+    }
+
+    const author = commit.author?.user?.login ?? commit.author?.name ?? null;
+    return { oid: commit.oid, headline: commit.messageHeadline, author };
 }
 
 /** A method is allowed only when every pull request rule allows it; a rule naming no methods restricts none. */

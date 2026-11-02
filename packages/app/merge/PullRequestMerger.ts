@@ -8,11 +8,12 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { EditQueue } from '@/edits/EditQueue.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { Clock } from '@/services/Clock.js';
+import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import { createMergeEdit } from './createMergeEdit.js';
-import type { MergeAnswer, MergeOptions, MergeRequest } from './MergeTypes.js';
+import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
 import { toMergeOptions } from './toMergeOptions.js';
 
 /** A merge {@link PullRequestMerger} sends. */
@@ -25,6 +26,8 @@ export interface MergeParams {
      * once it closed (or opened anew), the refusal is reported like a failed edit, so it is not lost.
      */
     readonly shown: () => boolean;
+    /** Told when GitHub accepted the merge but it did not merge after all: refused while it ran, or no answer in time. */
+    readonly onLateEnd: (end: MergeLateEnd) => void;
 }
 
 /**
@@ -39,16 +42,17 @@ export const PullRequestMerger = defineService({
         accounts: AccountSession,
         editor: ItemEditor,
         items: ItemStore,
+        details: ItemDetailStore,
         queue: EditQueue,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, editor, items, queue, clock, logger }) {
+    setup({ accounts, editor, items, details, queue, clock, logger }) {
         return { readOptions, merge };
 
         /**
          * Reads the merge options of a pull request fresh (`PullRequestMergeOptions`), and writes the status read
-         * with them into its row. `null` when it is no pull request GitHub shows the user, when GitHub could not be
+         * with them into its row and its detail: the head commit the next merge names among it. `null` when it is no pull request GitHub shows the user, when GitHub could not be
          * asked, or when the account changed meanwhile. Never rejects.
          */
         async function readOptions(itemId: string): Promise<MergeOptions | null> {
@@ -79,10 +83,18 @@ export const PullRequestMerger = defineService({
                 logger.debug('Merge options read in part', { itemId, errors });
             }
 
-            // As stored: a change of the user's still on its way must not become part of it.
-            const stored = items.getStored(itemId);
-            if (options && stored?.kind === 'pullRequest') {
-                items.upsertMany([{ ...stored, ...options.status }]);
+            if (options) {
+                // As stored: a change of the user's still on its way must not become part of it.
+                const { status } = options;
+                const stored = items.getStored(itemId);
+                if (stored?.kind === 'pullRequest') {
+                    items.upsertMany([{ ...stored, ...status }]);
+                }
+
+                // Opened from outside the lists, it has no row: its detail is what the panel shows.
+                details.update(itemId, detail =>
+                    detail.item.kind === 'pullRequest' ? { ...detail, item: { ...detail.item, ...status } } : detail,
+                );
             }
 
             return options;
@@ -96,7 +108,7 @@ export const PullRequestMerger = defineService({
          * merge it, or it is being merged already.
          */
         async function merge(params: MergeParams): Promise<MergeAnswer> {
-            const { item, request, shown } = params;
+            const { item, request, shown, onLateEnd } = params;
             const account = accounts.current;
             const merging = queue.pending.some(edit => edit.itemId === item.id && edit.subject.kind === 'merged');
             if (!account || merging || !editor.getPermissions(item).merge) {
@@ -104,7 +116,7 @@ export const PullRequestMerger = defineService({
             }
 
             const answered = createPromise<MergeAnswer>();
-            const edit = createMergeEdit({ item, request, clock, shown, onAnswer: answered.resolve });
+            const edit = createMergeEdit({ item, request, clock, shown, onAnswer: answered.resolve, onLateEnd });
             void queue.submit({ edits: [edit], account, itemCount: 1 }).finally(() => {
                 // Never sent: another account signed in, or none, meanwhile. Settled already otherwise.
                 answered.resolve({ kind: 'refused', reason: { kind: 'notAllowed' } });

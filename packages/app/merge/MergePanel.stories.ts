@@ -4,14 +4,13 @@ import { expect, screen, userEvent, waitFor } from 'storybook/test';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
-import type { EditFailureReason } from '@/edits/EditTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeOptions, MergeRequest, MergeStep } from './MergeTypes.js';
+import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
 
 /** When the stories happen: a running check's time is counted to it. */
 const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
@@ -23,6 +22,7 @@ const PR: PullRequestItem = {
     title: 'Retry Stripe webhook delivery on 5xx',
     repository: { nameWithOwner: 'fitloop/api', owner: 'fitloop', isPrivate: true, viewerPermission: 'WRITE' },
     headRefName: 'retry-stripe-5xx',
+    headRefOid: 'a91d03b7e2c4f6a8b0d1e3f5a7c9b2d4e6f8a0c1',
     reviewDecision: 'APPROVED',
     checks: { state: 'SUCCESS', passing: 9, failing: 0, pending: 0 },
 };
@@ -61,17 +61,47 @@ const OPTIONS: MergeOptions = {
     viewerCanEnableAutoMerge: false,
     isMergeQueueEnabled: false,
     checks: SAMPLE_PASSED_CHECKS,
+    headCommit: { oid: PR.headRefOid, headline: 'Retry Stripe webhook delivery on 5xx', author: 'kedrzu' },
+};
+
+/** GitHub's reason for the refusal in PM25: a title line, and the rule's own words under it. */
+const RULE_VIOLATION = [
+    'Repository rule violations found',
+    '',
+    'At least 2 approving reviews are required by reviewers with write access.',
+].join('\n');
+
+/** A merge sent with the squash title edited. */
+const SENT_EDITED: SentMerge = {
+    request: { method: 'SQUASH', title: 'Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)' },
+    edited: { title: 'Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)', body: SQUASH_BODY },
+    head: PR.headRefOid,
+};
+
+/** The head after dkim pushed: checks running on it again. */
+const NEW_HEAD = '4f1c9e2a7d3b5c6e8f9a0b1c2d3e4f5a6b7c8d9e';
+const PUSHED: PullRequestItem = {
+    ...PR,
+    headRefOid: NEW_HEAD,
+    checks: { state: 'PENDING', passing: 2, failing: 0, pending: 7 },
 };
 
 /**
  * What GitHub answers the panel's merge with, in the harness: `pending` is no answer yet — the pull request drawn as
  * being merged meanwhile, as the merge's optimistic layer draws it — and `offline` none at all.
  */
-type HarnessAnswer = 'accepted' | 'offline' | 'pending' | 'refused';
+type HarnessAnswer = 'accepted' | 'headMoved' | 'methodNotAllowed' | 'offline' | 'pending' | 'refused';
+
+/** What the panel's read finds when it reads again after a refusal. */
+interface HarnessReread {
+    readonly pr: PullRequestItem;
+    readonly options: MergeOptions;
+}
 
 /**
  * The panel as the app drives it: the merges and steps it asks for are written out under it (`sent`), GitHub answers
- * a merge at once (`answer`: accepted closes it, refused keeps it with the reason), and with `readLater` the panel's
+ * a merge at once (`answer`: accepted closes it, refused keeps it with the reason, told apart by what the read finds
+ * again — `reread`, the pull request and its options as they are now), and with `readLater` the panel's
  * read is on its way until the hidden `arrive` button is clicked. A step is on its way until the hidden `stepped`
  * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it.
  */
@@ -81,7 +111,9 @@ const Harness = defineComponent({
         settings: { type: Object as PropType<MergeSettings | null>, default: () => ALL_METHODS },
         options: { type: Object as PropType<MergeOptions | null>, default: () => OPTIONS },
         readLater: { type: Boolean, default: false },
-        refusal: { type: Object as PropType<EditFailureReason | null>, default: null },
+        /** What the session knows of its last merge as the panel opens. */
+        record: { type: Object as PropType<MergeRecord | null>, default: null },
+        reread: { type: Object as PropType<HarnessReread | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
         allowed: { type: Boolean, default: true },
         /** The pull request once the step asked for is done; `null` for it as it was. */
@@ -93,7 +125,8 @@ const Harness = defineComponent({
         const open = ref(true);
         const arrived = ref(!props.readLater);
         const sent = ref('Nothing sent');
-        const refusal = shallowRef<EditFailureReason | null>(props.refusal);
+        const record = shallowRef<MergeRecord | null>(props.record);
+        const options = shallowRef(props.options);
         const sending = ref(false);
         const advancing = ref<MergeStep | null>(props.advancing);
         const current = shallowRef(props.pr);
@@ -124,11 +157,11 @@ const Harness = defineComponent({
                     'onUpdate:open': (value: boolean) => (open.value = value),
                     pr: sending.value ? { ...current.value, merging: 'SQUASH' } : current.value,
                     settings: props.settings,
-                    options: arrived.value ? props.options : null,
+                    options: arrived.value ? options.value : null,
                     reading: !arrived.value,
                     allowed: props.allowed,
                     sending: sending.value,
-                    refusal: refusal.value,
+                    record: record.value,
                     advancing: advancing.value,
                     now: NOW,
                     onStep: (step: MergeStep) => {
@@ -137,8 +170,15 @@ const Harness = defineComponent({
                             advancing.value = step;
                         }
                     },
-                    onMerge: (request: MergeRequest) => {
-                        sent.value = JSON.stringify(request);
+                    onVisit: (url: string) => (sent.value = `Visit: ${url}`),
+                    onMerge: (submission: MergeSubmission) => {
+                        sent.value = JSON.stringify(submission.request);
+                        const merge: SentMerge = { ...submission, head: current.value.headRefOid };
+                        if (props.reread) {
+                            current.value = props.reread.pr;
+                            options.value = props.reread.options;
+                        }
+
                         switch (props.answer) {
                             case 'accepted':
                                 open.value = false;
@@ -147,10 +187,25 @@ const Harness = defineComponent({
                                 sending.value = true;
                                 break;
                             case 'refused':
-                                refusal.value = { kind: 'refused', message: 'Repository rule violations found' };
+                                record.value = {
+                                    kind: 'refused',
+                                    sent: merge,
+                                    reason: { kind: 'refused', message: RULE_VIOLATION },
+                                };
                                 break;
                             case 'offline':
-                                refusal.value = { kind: 'offline' };
+                                record.value = { kind: 'refused', sent: merge, reason: { kind: 'offline' } };
+                                break;
+                            case 'headMoved':
+                                record.value = {
+                                    kind: 'headMoved',
+                                    sent: merge,
+                                    head: current.value.headRefOid,
+                                    commit: options.value?.headCommit ?? null,
+                                };
+                                break;
+                            case 'methodNotAllowed':
+                                record.value = { kind: 'methodNotAllowed', sent: merge };
                                 break;
                             default:
                                 assertNever(props.answer);
@@ -279,6 +334,66 @@ export const NotAllowed: Story = { args: { allowed: false } };
 
 /** PM25: refused at once — GitHub's reason in place; the panel and its text stay, ⌘↵ tries again. */
 export const Refused: Story = { args: { answer: 'refused' } };
+
+/** PM25, reopened (D15): refused earlier this session — the reason, and the text it was sent with, given back. */
+export const RefusedReopened: Story = {
+    args: {
+        settings: SQUASH_ONLY,
+        record: { kind: 'refused', sent: SENT_EDITED, reason: { kind: 'refused', message: RULE_VIOLATION } },
+    },
+};
+
+/**
+ * PM27: someone pushed in the meantime — GitHub refuses the merge naming the old head; the read again finds the new
+ * one, so nothing merged on purpose, and the primary goes by the new commit's state: checks running again.
+ */
+export const HeadMoved: Story = {
+    args: {
+        answer: 'headMoved',
+        settings: SQUASH_ONLY,
+        reread: {
+            pr: PUSHED,
+            options: {
+                ...OPTIONS,
+                status: PUSHED,
+                headCommit: { oid: NEW_HEAD, headline: 'Handle empty billing response', author: 'dkim' },
+            },
+        },
+    },
+};
+
+/**
+ * PM28: a method sent before the rules arrived — the read again brings a ruleset on main allowing only squash; the
+ * panel is on Squash, the edited merge commit text kept as its text, and ⌘↵ squashes.
+ */
+export const MethodNotAllowed: Story = {
+    args: {
+        answer: 'methodNotAllowed',
+        settings: { ...ALL_METHODS, viewerDefaultMergeMethod: 'MERGE' },
+        reread: { pr: PR, options: { ...OPTIONS, allowedMergeMethods: ['SQUASH'] } },
+    },
+};
+
+/**
+ * PM29: reopened for a pull request whose merge got no answer in time — grey, neither merged nor failed; nothing
+ * offers a second merge, and GitHub is a key away.
+ */
+export const OutcomeUnknown: Story = { args: { record: { kind: 'unknown', sent: SENT_EDITED } } };
+
+/** PM31: refused for a permission githq may lack — one more refusal with GitHub's reason (PM25's look). */
+export const RefusedForPermission: Story = {
+    args: {
+        record: {
+            kind: 'refused',
+            sent: SENT_EDITED,
+            reason: {
+                kind: 'refused',
+                message:
+                    'refusing to allow an OAuth App to create or update workflow `.github/workflows/ci.yml` without `workflow` scope',
+            },
+        },
+    },
+};
 
 /** PM32a: sent, GitHub has not answered yet — the panel stays as it was, its primary busy, claiming nothing. */
 export const Sending: Story = { args: { answer: 'pending' } };

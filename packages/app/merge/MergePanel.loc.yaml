@@ -14,6 +14,37 @@ outcomeUnknown:
   en: Outcome not known yet
 noAnswer:
   en: GitHub didn't answer · not shown as merged
+notAnsweredYet:
+  en: GitHub hasn't answered · not shown as merged
+nextRefreshSettles:
+  en: The next refresh will settle this
+noResult:
+  plural: minutes
+  en:
+    one: The request was accepted, then a minute passed with no result. It may still merge. Check on GitHub if you can't wait.
+    many: The request was accepted, then {minutes} minutes passed with no result. It may still merge. Check on GitHub if you can't wait.
+openOnGitHub:
+  en: Open on GitHub
+newCommitArrived:
+  en: A new commit arrived, so nothing was merged
+newCommitPushedBy:
+  en: '{author} pushed {head}'
+newCommitPushed:
+  en: '{head} was pushed to the branch'
+newCommitCancelled:
+  en: You asked to merge {asked}, so GitHub cancelled the merge, as githq asked it to. Checks will run again on the new commit.
+seeNewCommit:
+  en: See the new commit
+methodNotAllowed:
+  en: "{method} isn't allowed on {base}"
+requiresLinearHistory:
+  en: '{base} requires a linear history'
+rulesetAllowsOnly:
+  en: A ruleset on {base} allows only {method}
+rulesetDisallows:
+  en: "A ruleset on {base} doesn't allow {method}"
+sentBeforeRules:
+  en: Sent before the rules arrived. The panel now offers only what {base} allows.
 squashedInto:
   en: Squashed into {base}
 mergedInto:

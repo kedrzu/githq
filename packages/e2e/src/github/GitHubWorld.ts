@@ -1021,6 +1021,18 @@ export class GitHubWorld {
                     viewerCanMergeAsAdmin: false,
                     viewerCanEnableAutoMerge: false,
                     isMergeQueueEnabled: false,
+                    // The head commit as the author's, under the pull request's title.
+                    headCommit: {
+                        nodes: [
+                            {
+                                commit: {
+                                    oid: node.headRefOid,
+                                    messageHeadline: item.title,
+                                    author: { name: item.author, user: { login: item.author } },
+                                },
+                            },
+                        ],
+                    },
                     baseRef: {
                         target: node.baseRef?.target ?? null,
                         rules: { nodes: rules },
