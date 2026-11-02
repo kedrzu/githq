@@ -1,13 +1,14 @@
 import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import type { Locator } from 'vitest/browser';
 
 import { sampleCandidateRepository, SAMPLE_CANDIDATES } from '@/testing/sampleTracking.js';
 
 import * as stories from './TrackingChooser.stories.jsx';
 import type { TrackingCandidates } from './TrackingTypes.js';
 
-const { Choose, HiddenOrganisation, NothingToPick } = composeStories(stories);
+const { Choose, HiddenOrganisation, NothingToPick, NothingToPickWithSaving, SavingTicked } = composeStories(stories);
 
 const ANY = { ago: 0, open: 0 };
 
@@ -164,6 +165,80 @@ test('words in another order and a name without its diacritics find the same row
     await expect.element(page.getByText('0 of 4 match “nvx”')).toBeInTheDocument();
 });
 
+test('Shift+click chooses the rows shown from the last one clicked to it, down, up and across owners', async () => {
+    await Choose.run({ args: { ...Choose.args, candidates: FILTERED, repositories: [], projects: [] } });
+
+    await userEvent.click(repositoryRow('keynote'));
+    await shiftClick(repositoryRow('Żółty-theme'));
+    await expect.poll(chosenNames).toEqual(['keynote', 'note', 'Żółty-theme']);
+    expect(window.getSelection()?.isCollapsed ?? true).toBe(true);
+
+    // Up, from skyline-labs into the user's own.
+    await userEvent.click(repositoryRow('notes'));
+    await shiftClick(repositoryRow('nvim-tools-extras'));
+    await expect
+        .poll(chosenNames)
+        .toEqual(['keynote', 'note', 'Żółty-theme', 'nvim-tools-extras', 'banknote', 'notes']);
+});
+
+test('Shift+click on a chosen row unchooses the range; Shift+Space does it from the keyboard', async () => {
+    await Choose.run({
+        args: {
+            ...Choose.args,
+            candidates: FILTERED,
+            repositories: [
+                'kedrzu/keynote',
+                'kedrzu/note',
+                'kedrzu/Żółty-theme',
+                'kedrzu/nvim-tools-extras',
+                'skyline-labs/banknote',
+            ],
+            projects: [],
+        },
+    });
+
+    await userEvent.click(repositoryRow('note'));
+    await shiftClick(repositoryRow('nvim-tools-extras'));
+    await expect.poll(chosenNames).toEqual(['keynote', 'banknote']);
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(repositoryRow('banknote')).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await userEvent.keyboard('{ArrowUp}{ArrowUp}{ArrowUp}');
+    await expect.element(repositoryRow('note')).toHaveFocus();
+    await userEvent.keyboard('{Shift>} {/Shift}');
+    await expect.poll(chosenNames).toEqual(['keynote', 'note', 'Żółty-theme', 'nvim-tools-extras', 'banknote']);
+});
+
+test('under a filter a range takes only the matching rows; a new filter starts without an anchor', async () => {
+    await Choose.run({ args: { ...Choose.args, candidates: FILTERED, repositories: [], projects: [] } });
+
+    await userEvent.keyboard('/note');
+    await expect.poll(repositoryNames).toEqual(['note', 'keynote', 'notes', 'banknote']);
+    await userEvent.click(repositoryRow('keynote'));
+    await shiftClick(repositoryRow('banknote'));
+    await userEvent.keyboard('/{Escape}');
+    // Żółty-theme and nvim-tools-extras sit between them, filtered out: left as they were.
+    await expect.poll(chosenNames).toEqual(['keynote', 'banknote', 'notes']);
+
+    // The filter cleared, keynote no longer anchors a range: note stays unchosen.
+    await shiftClick(repositoryRow('Żółty-theme'));
+    await expect.poll(chosenNames).toEqual(['keynote', 'Żółty-theme', 'banknote', 'notes']);
+});
+
+test("a range stays within its list: the projects' anchor is their own", async () => {
+    await Choose.run({ args: { ...Choose.args, repositories: [], projects: [] } });
+    const projects = page.getByRole('region', { name: 'Projects' });
+
+    await userEvent.click(projects.getByRole('checkbox', { name: /^githq Roadmap/ }));
+    await userEvent.click(page.getByRole('checkbox', { name: /^kedrzu\/githq / }));
+    await shiftClick(projects.getByRole('checkbox', { name: /^Bug triage/ }));
+    await expect.element(projects.getByRole('checkbox', { name: /^Platform Q4/ })).toBeChecked();
+    await expect.element(projects.getByRole('checkbox', { name: /^Bug triage/ })).toBeChecked();
+    await expect.element(projects.getByRole('checkbox', { name: /^Docs revamp/ })).not.toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: /^kedrzu\/skills / })).not.toBeChecked();
+});
+
 /** The rows of the repositories' column, in order, by the name after the owner. */
 function repositoryNames() {
     return page
@@ -176,3 +251,53 @@ function repositoryNames() {
 function repositoryRow(name: string) {
     return page.getByRole('checkbox', { name: new RegExp(`/${name} `, 'u') });
 }
+
+/** The chosen rows of the repositories' column, in order, by the name after the owner. */
+function chosenNames() {
+    return page
+        .getByRole('region', { name: 'Repositories' })
+        .getByRole('checkbox', { checked: true })
+        .elements()
+        .map(row => /\/(.+?)\s*(?:public|private)/iu.exec(row.closest('[data-tracking-row]')?.textContent ?? '')?.[1]);
+}
+
+async function shiftClick(row: Locator) {
+    await userEvent.keyboard('{Shift>}');
+    await userEvent.click(row);
+    await userEvent.keyboard('{/Shift}');
+}
+
+test('the saving choice sits above the footer; ticked, the footer says "Track these" then creates the repository', async () => {
+    const onTrack = vi.fn();
+    await SavingTicked.run({ args: { ...SavingTicked.args, onTrack } });
+
+    await expect.element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' })).toBeChecked();
+    await expect.element(page.getByText('then creates mlaine/githq-settings', { exact: false })).toBeVisible();
+    await expect.element(page.getByText('You can change this any time in Settings.', { exact: false })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Track these' }));
+    expect(onTrack).toHaveBeenCalledOnce();
+});
+
+test('with nothing to pick, the saving choice sits above "Continue to My work"; the footer creates nothing unticked', async () => {
+    await NothingToPickWithSaving.run();
+
+    await expect
+        .element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' }))
+        .not.toBeChecked();
+    await expect.element(page.getByText('then creates', { exact: false })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Continue to My work' })).toBeVisible();
+});
+
+test('busy, ⌘↵ and "Track these" do nothing, and "Only my repositories" shows as disabled but keeps its focus', async () => {
+    const onTrack = vi.fn();
+    await Choose.run({ args: { ...Choose.args, busy: true, onTrack } });
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await userEvent.click(page.getByRole('button', { name: 'Track these' }));
+    expect(onTrack).not.toHaveBeenCalled();
+
+    const onlyMine = page.getByRole('button', { name: 'Only my repositories' });
+    await expect.element(onlyMine).toHaveAttribute('aria-disabled', 'true');
+    onlyMine.element().focus();
+    await expect.element(onlyMine).toHaveFocus();
+});

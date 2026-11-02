@@ -34,14 +34,15 @@ arrivingDetail:
     zero: githq is copying its items; they show here as soon as they have arrived.
     one: githq is copying its items; 1 open item has arrived so far.
     many: githq is copying its items; {count} open items have arrived so far.
-notTrackedTitle:
-  en: '{name} is not tracked'
-notTrackedDetail:
-  en: Track it to keep all its items in this browser.
-track:
-  en: Track
-notFound:
-  en: GitHub shows you no such project.
+onlyWhatConcerns:
+  plural: count
+  en:
+    one: 'githq only has what concerns you in {name}: 1 item.'
+    many: 'githq only has what concerns you in {name}: {count} items.'
+othersOnGitHub:
+  en: Its other items are on GitHub. Search and ⌘K only find what's here.
+allOnGitHub:
+  en: Its items are on GitHub. Search and ⌘K only find what's here.
 newIssueInProject:
   en: New issue in {project}
 addItemsToProject:

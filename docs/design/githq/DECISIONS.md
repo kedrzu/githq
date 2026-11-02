@@ -312,7 +312,8 @@ straight to GitHub's consent screen. Supersedes G1b in [D20](#d20) (user, 2026-1
 says what githq is, so a screen between it and GitHub only adds a click). What G1b explained moves:
 
 - one line under each "Sign in with GitHub" on the landing page warns that GitHub will ask for full
-  repository access and that githq only touches issues, pull requests and projects, linking to a "Why?"
+  repository access and that githq only touches issues, pull requests, projects and, if you ask, its own settings repository
+  ([settings-sync D6](../settings-sync/DECISIONS.md#d6)), linking to a "Why?"
   that lives on the Privacy page (scopes, why nothing narrower exists, where the data goes);
 - coming back from GitHub with the sign-in cancelled or failed lands on the landing page with a one-line,
   dismissible banner and "Try again" (screen G1, formerly G1c);

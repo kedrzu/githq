@@ -8,7 +8,7 @@ const props = withDefaults(
     /** The login: the name, and where the initials come from. */
     name: string;
     src?: string | null;
-    /** `xs` 16px (a row), `sm` 20px (the account), `md` 22px (the rail), `lg` 40px (the account page); `sm` when not given. */
+    /** `xs` 16px (a row), `sm` 20px (the account), `md` 22px (the rail), `lg` 40px (the Account section of Settings); `sm` when not given. */
     size?: 'lg' | 'md' | 'sm' | 'xs';
     /** The name is shown beside it: the picture is left out of the accessibility tree. */
     decorative?: boolean;

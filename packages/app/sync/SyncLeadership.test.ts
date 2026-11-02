@@ -53,8 +53,8 @@ test('of two tabs only the one holding the lock asks GitHub; the other shows the
     expect(polls(first)).toContain('RepositoryIssues');
     expect(polls(first)).toContain('ItemDetails');
     expect(polls(second)).toEqual([]);
-    // It wrote only what it changed itself: the syncing tab wrote the rest to the copy they share.
-    expect(second.writes).toEqual(['saveTracking']);
+    // It wrote nothing to the copy they share: its choice is kept in `localStorage`, the syncing tab wrote the rest.
+    expect(second.writes).toEqual([]);
 
     expect(second.items.all).toEqual(first.items.all);
     expect(second.items.membership).toEqual(first.items.membership);
@@ -308,10 +308,6 @@ function openTab(world: TrackingWorld, browser: TestTabs, login: string) {
             }
 
             await persistence.saveProjectItems(owner, changes);
-        },
-        saveTracking: async (owner, tracking) => {
-            writes.push('saveTracking');
-            await persistence.saveTracking(owner, tracking);
         },
         saveSyncState: async (owner, state) => {
             writes.push('saveSyncState');

@@ -1,4 +1,4 @@
-<!-- githq's logo, the wordmark "git/hq" (brandbook "Logo — git/hq" in `githq.pen`): Geist 700, violet on the slash alone. It heads the first sign-in's steps and the landing page; a caller sizes it with `--wordmark-size`. -->
+<!-- githq's logo, the wordmark "git/hq" (brandbook "Logo — git/hq" in `githq.pen`): Geist 700, violet on the slash alone. It heads the first sign-in's steps, the landing page and the sidebar; a caller sizes it with `--wordmark-size`. -->
 <template>
   <span
     :class="css.wordmark"

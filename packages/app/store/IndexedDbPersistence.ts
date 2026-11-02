@@ -14,6 +14,7 @@ import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/
 import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
 
 import type { ItemDetailPersistenceShape, ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
@@ -45,6 +46,7 @@ type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
     | { readonly key: 'sync'; readonly value: Partial<Record<SyncLoop, SyncLoopState>> }
     | { readonly key: 'viewerProjects'; readonly value: ViewerProjects }
+    /** The tracking choice of an older githq: read only to take it over into `localStorage` (`TrackingStore`). */
     | { readonly key: 'tracking'; readonly value: Tracking };
 
 /** A tracked repository's or project's sync state, by `repository:<owner/name>` or `project:<id>`. */
@@ -70,7 +72,7 @@ interface LocalDatabase extends DBSchema {
 
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
- * (memberships, sync state, the viewer's projects, the tracking choice), `details` (by item id), `repositories`
+ * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
  * (by `owner/name`), `projects` (by id), `projectItems` (by project item id) and `trackedSync` (each tracked
  * repository's and project's sync state). One object for the interfaces it is set as: they share the
  * connection.
@@ -94,7 +96,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         saveRepository,
         saveViewerProjects,
         loadTracking,
-        saveTracking,
         saveSyncState,
         deleteSyncState,
         loadProjects,
@@ -230,19 +231,14 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         };
     }
 
-    async function saveTracking(login: string, tracking: Tracking) {
-        const db = await getOpen(login);
-        await db.put('meta', { key: 'tracking', value: tracking });
-    }
-
     async function saveSyncState(login: string, state: TrackedSyncState) {
         const db = await getOpen(login);
-        await db.put('trackedSync', { key: getSyncStateKey(state), state });
+        await db.put('trackedSync', { key: getTrackedKey(state), state });
     }
 
     async function deleteSyncState(login: string, state: TrackedSyncState) {
         const db = await getOpen(login);
-        await db.delete('trackedSync', getSyncStateKey(state));
+        await db.delete('trackedSync', getTrackedKey(state));
     }
 
     async function loadProjects(login: string): Promise<PersistedProjects> {
@@ -345,8 +341,4 @@ function openDatabase(name: string) {
             db.createObjectStore('trackedSync', { keyPath: 'key' });
         },
     });
-}
-
-function getSyncStateKey(state: TrackedSyncState) {
-    return state.kind === 'repository' ? `repository:${state.nameWithOwner}` : `project:${state.id}`;
 }

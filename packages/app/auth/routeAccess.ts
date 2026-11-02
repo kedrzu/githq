@@ -1,5 +1,6 @@
 import type { LocationQuery, RouteLocationRaw } from 'vue-router';
 
+import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 
 import type { SignInFailure } from './AuthStore.js';
@@ -43,9 +44,6 @@ export const HOME_PATH = '/';
 /** Where a user who has not chosen what to track yet goes first (G2), under GitHub's reserved `/settings`. */
 export const TRACKING_CHOICE_PATH = '/settings/tracking/new';
 
-/** Where changing what is tracked is, once chosen (G8), under GitHub's reserved `/settings`. */
-export const TRACKING_PATH = '/settings/tracking';
-
 /** The session, as far as the guard looks at it (`AuthStore`). */
 export interface GuardedSession {
     readonly signedIn: boolean;
@@ -76,7 +74,7 @@ export interface GuardedRoute {
  * - signed in, to `/` with `next` or GitHub's `return_to` → there, see {@link readSignInReturnPath};
  * - signed in without having chosen what to track, to the app → choosing it (G2), with `next` to go on to after
  *   (none for "My work", where it goes anyway);
- * - signed in having chosen, to choosing (G2) → changing what is tracked (G8).
+ * - signed in having chosen, to choosing (G2) → Settings, where what is tracked changes (G8).
  */
 export function resolveRouteAccess(to: GuardedRoute, session: GuardedSession): RouteLocationRaw | undefined {
     switch (to.meta.auth) {
@@ -109,7 +107,7 @@ function resolveAppAccess(to: GuardedRoute, session: GuardedSession): RouteLocat
     }
 
     if (session.trackingChosen) {
-        return to.meta.firstSignIn === 'choose' ? TRACKING_PATH : undefined;
+        return to.meta.firstSignIn === 'choose' ? SETTINGS_PATH : undefined;
     }
 
     if (to.meta.firstSignIn) {

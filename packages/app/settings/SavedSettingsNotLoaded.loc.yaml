@@ -1,0 +1,24 @@
+declined:
+  en: Your saved settings weren't loaded, and saving stays off on this device. You can turn it on later in Settings.
+deleted:
+  en: >-
+    The repository {repository} can't be found on GitHub, so nothing was loaded and saving stays off. Settings has
+    the details.
+foreign:
+  en: >-
+    You have a repository named githq-settings, but it doesn't hold githq's settings, so nothing was loaded and saving
+    stays off. Settings has the details.
+public:
+  en: >-
+    {repository} is public, which would expose the names of your private repositories, so nothing was loaded and
+    saving stays off. Settings has the details.
+unreadable:
+  en: >-
+    settings.json can't be read, usually after a hand edit, so nothing was loaded and saving stays off. Settings has
+    the details.
+newer:
+  en: >-
+    settings.json comes from a newer githq than this one, so nothing was loaded and saving stays off. Reload this page
+    to update.
+refused:
+  en: 'GitHub refused to read your saved settings, so nothing was loaded and saving stays off. It said: “{message}”'

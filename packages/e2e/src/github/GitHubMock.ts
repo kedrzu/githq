@@ -56,6 +56,8 @@ export interface GitHubRestRequest {
     readonly url: URL;
     /** The `If-None-Match` header, or `null`. */
     readonly ifNoneMatch: string | null;
+    /** The JSON body (a `PUT`'s, a `POST`'s); `undefined` without one. */
+    readonly body: unknown;
 }
 
 /** A GraphQL operation the mock answered, as the app sent it ({@link GitHubMock.graphqlCalls}). */
@@ -130,6 +132,8 @@ export class GitHubPartialAnswer<TName extends GitHubOperationName> {
 const GRAPHQL_URL = 'https://api.github.com/graphql';
 const SEARCH_ISSUES_URL = 'https://api.github.com/search/issues';
 const API_HOST = 'api.github.com';
+/** The user's settings repository (`GET /repos/<login>/githq-settings`), which every first sign-in looks for. */
+const SETTINGS_REPOSITORY_PATH = /^\/repos\/[^/]+\/githq-settings$/;
 
 /** GitHub's hosts, subdomains included: nothing of the tests may reach them. */
 const GITHUB_HOSTS = ['github.com', 'githubusercontent.com', 'githubassets.com'];
@@ -173,7 +177,9 @@ const AVATAR_PNG = Buffer.from(
  * GitHub has said anything, as after a reload on a slow connection.
  *
  * Other REST endpoints — the conditional requests that poll tracked repositories and projects — are answered by
- * method and path ({@link rest}); one not registered is unrouted.
+ * method and path ({@link rest}); one not registered is unrouted. The settings repository, which every first
+ * sign-in looks for (`GET /repos/<login>/githq-settings`), is the exception: until a test registers it, there is none
+ * (404).
  *
  * To extend: a new GraphQL operation needs nothing here (its name and `data` type come from the generated SDK).
  */
@@ -387,12 +393,17 @@ export class GitHubMock {
             return;
         }
 
-        const rest = url.hostname === API_HOST ? this.restHandlers.get(`${method} ${url.pathname}`) : undefined;
+        const rest =
+            url.hostname === API_HOST
+                ? (this.restHandlers.get(`${method} ${url.pathname}`) ??
+                  (method === 'GET' && SETTINGS_REPOSITORY_PATH.test(url.pathname) ? answerNoRepository : undefined))
+                : undefined;
         if (rest) {
             const request = route.request();
             const ifNoneMatch = (await request.allHeaders())['if-none-match'] ?? null;
-            const answer = await rest({ url, ifNoneMatch });
-            this.answeredRest.push({ method, url, ifNoneMatch, status: answer.status });
+            const body = parseJson(request.postData());
+            const answer = await rest({ url, ifNoneMatch, body });
+            this.answeredRest.push({ method, url, ifNoneMatch, body, status: answer.status });
             const fulfilled = this.apiAnswer(answer.status, answer.json, 'core', this.rateLimit);
             await route.fulfill({
                 ...fulfilled,
@@ -547,4 +558,9 @@ function parseJson(text: string | null): unknown {
     } catch {
         return undefined;
     }
+}
+
+/** No such repository, as GitHub answers it. */
+function answerNoRepository(): GitHubRestAnswer {
+    return { status: 404, json: { message: 'Not Found' } };
 }
