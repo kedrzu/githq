@@ -78,7 +78,11 @@ const verdict = computed((): PullRequestVerdict => {
       return { ...look, text: t(l.notMerged), aside };
     }
     case 'unknown':
-      return { ...look, text: t(l.outcomeUnknown), aside: t(l.notAnswered) };
+      return {
+        ...look,
+        text: t(l.outcomeUnknown),
+        aside: record.refusal ? refusedAside(record.refusal) : t(l.notAnswered),
+      };
     default:
       return assertNever(record);
   }

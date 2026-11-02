@@ -459,7 +459,7 @@ test("SS4: a stack's merge confirmed after the panel left says how many landed, 
     ]);
 });
 
-test('a stack refused at once: recorded for it with the head of every one going, the stack read again whole, said until the panel showing it closes (D11, SP61)', async () => {
+test('a stack refused at once: recorded under its top, the stack read again whole, then refused — and it outlives the panel (D11, SP61)', async () => {
     const { panel, items, session, answers } = await setup();
     items.upsertMany(STACK);
     answers.put = REFUSED;
@@ -478,22 +478,101 @@ test('a stack refused at once: recorded for it with the head of every one going,
         sha: 'head-oid',
     });
 
-    expect(panel.getStackRecord('S_1')).toMatchObject({
-        kind: 'refused',
-        partway: false,
-        sent: {
-            going: [
-                { itemId: 'PR_0', head: 'earlier-head' },
-                { itemId: 'PR_1', head: 'head-oid' },
-            ],
-        },
-    });
     await session.clock.advance(0);
     expect(session.operations()).toContain('PullRequestStacks');
-    expect(panel.getStackRecord('S_1')).toMatchObject({ kind: 'refused', read: true });
+    expect(panel.getRecord('PR_1')).toMatchObject({
+        kind: 'refused',
+        reason: REFUSAL,
+        sent: { head: 'head-oid', going: ['PR_0', 'PR_1'] },
+    });
+    expect(panel.getRecord('PR_0')).toBeNull();
 
     panel.close();
-    expect(panel.getStackRecord('S_1')).toBeNull();
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused' });
+    expect(panel.findStackMergeTop('PR_0')).toBe('PR_1');
+    expect(panel.findStackMergeTop('PR_1')).toBe('PR_1');
+    expect(panel.findStackMergeTop('PR_9')).toBeNull();
+    expect(panel.getSent('PR_1')).toMatchObject({ going: ['PR_0', 'PR_1'] });
+});
+
+test("a stack refused, the read again failing: not known as during the read, with GitHub's words (D11)", async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+    answers.stacks = undefined;
+
+    panel.open('PR_1', { wholeStack: true });
+    const refused = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await refused;
+    await session.clock.advance(0);
+
+    expect(session.operations()).toContain('PullRequestStacks');
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'unknown', refusal: REFUSAL });
+    // GitHub did answer: the status bar has nothing to say of it.
+    expect(panel.unanswered).toEqual([]);
+});
+
+test("a stack's record ends with a newer copy from the regular sync, not with the panel's own read; the next merge ends it too", async () => {
+    const { panel, items, session, answers, merger } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+    const stack = { id: 'S_1', size: 2, going: STACK };
+    const submission: MergeSubmission = { request: { method: 'SQUASH' }, edited: null };
+
+    panel.open('PR_1', { wholeStack: true });
+    const refused = panel.merge({ item: STACK_TOP, submission, stack });
+    await session.clock.advance(0);
+    await refused;
+    await session.clock.advance(0);
+
+    const read = merger.readOptions('PR_1');
+    await session.clock.advance(0);
+    await read;
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused' });
+
+    // The first one merged alone: the next merge of one the stack's merge took ends what is known of it.
+    answers.firstPut = PENDING;
+    const alone = panel.merge({ item: STACK_FIRST, submission });
+    expect(panel.getRecord('PR_1')).toBeNull();
+    await session.clock.advance(0);
+    await alone;
+
+    answers.put = REFUSED;
+    panel.open('PR_1', { wholeStack: true });
+    const again = panel.merge({ item: STACK_TOP, submission, stack });
+    await session.clock.advance(0);
+    await again;
+    await session.clock.advance(0);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused' });
+
+    const at = session.clock.now();
+    items.setSyncState('myWork', syncRound(at + 1000, at + 2000));
+    expect(panel.getRecord('PR_1')).toBeNull();
+    // The text sent stays for the session.
+    expect(panel.getSent('PR_1')).toMatchObject({ going: ['PR_0', 'PR_1'] });
+});
+
+test("a stack's refusal after the panel left is reported once, naming its top (D15)", async () => {
+    const { panel, queue, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+
+    panel.open('PR_9');
+    const refused = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await refused;
+
+    expect(queue.failures.flatMap(failure => failure.failed.map(failed => failed.edit.itemId))).toEqual(['PR_1']);
+    expect(queue.failures).toHaveLength(1);
 });
 
 async function setup() {
@@ -505,7 +584,15 @@ async function setup() {
         read: TestRestAnswer | undefined;
         /** The head `PullRequestMergeOptions` finds. */
         optionsHead: string;
-    } = { put: undefined, firstPut: undefined, read: STILL_PENDING, optionsHead: 'head-oid' };
+        /** What reading the stack again is answered: none is a failed request. */
+        stacks: TestGraphQLAnswer | undefined;
+    } = {
+        put: undefined,
+        firstPut: undefined,
+        read: STILL_PENDING,
+        optionsHead: 'head-oid',
+        stacks: { data: { nodes: [{ id: 'S_1', entries: { totalCount: 0, nodes: [] } }] } },
+    };
     const session = createTestSession({
         login,
         answer: request => {
@@ -515,7 +602,7 @@ async function setup() {
                 case 'ItemDetail':
                     return { data: { node: samplePullRequestDetailNode('PR_1', '2026-10-20T10:00:00Z') } };
                 case 'PullRequestStacks':
-                    return { data: { nodes: [{ id: 'S_1', entries: { totalCount: 0, nodes: [] } }] } };
+                    return answers.stacks;
                 default:
                     return undefined;
             }

@@ -85,3 +85,14 @@ test('PM29: no answer stays not known — the merge may still land on the head i
         accepted: true,
     });
 });
+
+test("D11: a stack's refusal before the stack is read again is not known, with GitHub's words, whatever the head", () => {
+    const reading: MergeRecord = { kind: 'unknown', sent: SENT, at: 1, accepted: false, refusal: REASON };
+
+    expect(getMergeEnd(reading, { ...PR, headRefOid: 'new-head' }, OPTIONS)).toEqual({
+        kind: 'unknown',
+        sent: SENT,
+        accepted: false,
+        refusal: REASON,
+    });
+});

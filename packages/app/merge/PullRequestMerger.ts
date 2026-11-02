@@ -138,13 +138,13 @@ export const PullRequestMerger = defineService({
 
         /**
          * Reads a stack whole again (`PullRequestStacks`) — after a merge of it that did not end merged, what landed is
-         * only what GitHub holds (stacked PRs D11) — and writes its pull requests into the copy. Resolves once read,
-         * or once GitHub could not be asked; never rejects.
+         * only what GitHub holds (stacked PRs D11) — and writes its pull requests into the copy. Resolves whether it
+         * was: not when GitHub could not be asked, or the account changed meanwhile. Never rejects.
          */
-        async function readStack(stackId: string, size: number): Promise<void> {
+        async function readStack(stackId: string, size: number): Promise<boolean> {
             const account = accounts.current;
             if (!account) {
-                return;
+                return false;
             }
 
             let read: Item[];
@@ -157,12 +157,15 @@ export const PullRequestMerger = defineService({
                 });
             } catch (error) {
                 logger.warn('The stack was not read again', { stackId, error });
-                return;
+                return false;
             }
 
-            if (accounts.isCurrent(account)) {
-                items.upsertMany(read);
+            if (!accounts.isCurrent(account)) {
+                return false;
             }
+
+            items.upsertMany(read);
+            return true;
         }
     },
 });

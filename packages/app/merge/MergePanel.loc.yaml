@@ -234,6 +234,8 @@ stackEarlierPush:
   en: '#{number} has a new commit'
 stackEarlierPushDetail:
   en: The ones after it no longer sit on top of it. Rebasing the stack only exists on github.com.
+stackEarlierPushRefused:
+  en: '“{words}” {detail}'
 rebaseStack:
   en: Rebase stack on GitHub
 stackBeingMergedAll:
@@ -246,24 +248,16 @@ stackMerged:
   en: Merged, all {count}
 stackNothingOpen:
   en: Nothing in this stack is open
-stackReading:
-  en: GitHub refused part of it
-stackReadingAside:
-  en: Reading what actually landed
+refusedNotRead:
+  en: GitHub refused it · what landed isn't read yet
 stackStopped:
   en: 'Merge stopped at #{number}'
 stackStoppedAside:
   en: '{landed} landed, {open} still open'
 stackRefused:
   en: GitHub refused it
-stackHeadMoved:
-  en: 'Not merged: #{number} has a new commit'
-stackHeadMovedDetail:
-  en: 'The merge named the commit #{number} had when it was sent, so GitHub cancelled it, deliberately.'
 seeOnGitHub:
   en: '#{number} on GitHub'
-lookAtCommit:
-  en: Look at the commit
 markNumberReady:
   en: 'Mark #{number} ready'
 primaryAll:

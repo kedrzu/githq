@@ -78,6 +78,8 @@ export interface MergeSubmission {
 /** A merge this session sent: what the panel sent, with the head commit it named. */
 export interface SentMerge extends MergeSubmission {
     readonly head: string;
+    /** A stack's merge of two or more: every pull request going, first to last, the top last (stacked PRs D11). */
+    readonly going?: readonly string[];
 }
 
 /**
@@ -105,6 +107,11 @@ export type MergeRecord =
           readonly at: number;
           /** GitHub accepted it and said no result in time (PM29); `false`: the request itself went unanswered. */
           readonly accepted: boolean;
+          /**
+           * GitHub refused a stack's merge, and the stack was not read again since (stacked PRs D11): what landed is
+           * not known, and this is what GitHub said.
+           */
+          readonly refusal?: EditFailureReason;
       };
 
 /**
@@ -129,6 +136,8 @@ export type MergeEnd =
           readonly sent: SentMerge;
           /** GitHub accepted it and said no result in time; `false`: the request itself went unanswered. */
           readonly accepted: boolean;
+          /** GitHub refused a stack's merge, and what landed is not read yet: what GitHub said. */
+          readonly refusal?: EditFailureReason;
       };
 
 /** How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time. */

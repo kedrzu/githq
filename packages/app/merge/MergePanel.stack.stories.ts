@@ -1,3 +1,4 @@
+import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
@@ -11,9 +12,7 @@ import MergePanel from './MergePanel.vue';
 import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
-import { getStackMergeOutcome } from './stack/getStackMergeOutcome.js';
 import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
-import type { StackMergeRecord } from './stack/StackMergeTypes.js';
 
 /** When the stories happen. */
 const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
@@ -43,6 +42,9 @@ const CALENDAR = sampleStack({
 /** GitHub's word on a merge that stopped partway (SP59). */
 const STOPPED = { kind: 'refused', message: 'Required status check "export-e2e" is failing.' } as const;
 
+/** GitHub's word on a stack with a push to a lower one (D21). */
+const MUST_REBASE = { kind: 'refused', message: 'This stack must be rebased before it can be merged.' } as const;
+
 /**
  * What GitHub answers the panel's merge with, in the harness: `accepted` closes it; `pending` keeps it, every one going
  * drawn as being merged until the hidden `confirm` button says GitHub merged them; `refused` refuses it at once.
@@ -52,8 +54,9 @@ type HarnessAnswer = 'accepted' | 'pending' | 'refused';
 /**
  * A stack's merge panel as the app drives it (`MergePanelHost`): the line moved with `↑`/`↓`, the merge it sends
  * written out under it (`sent`: the method, the top it goes to with its head, and every one going), and the record of
- * its last merge (`record`) read against the stack as it is; the hidden `arrive` button brings the panel's read when
- * `readLater`, and the stack read again (`reread`) after a refusal.
+ * its last merge (`record`) speaking as the host's does: for the range's top, or for a stack's merge that took the
+ * range's first. The hidden `arrive` button brings the panel's read when `readLater`, and the stack read again
+ * (`reread`) after a refusal, which then speaks.
  */
 const Harness = defineComponent({
     props: {
@@ -62,12 +65,13 @@ const Harness = defineComponent({
         openedOn: { type: Number as PropType<number | null>, default: null },
         settings: { type: Object as PropType<MergeSettings>, default: () => SQUASH_FIRST },
         readLater: { type: Boolean, default: false },
-        record: { type: Object as PropType<StackMergeRecord | null>, default: null },
+        /** The last merge that did not end merged: a stack's names those going, else it is the first one's alone. */
+        record: { type: Object as PropType<MergeRecord | null>, default: null },
         /** The stack as the read after a refusal finds it. */
         reread: { type: Array as PropType<readonly PullRequestItem[] | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
-        /** The first open one's last merge that did not end merged: as the host, it speaks only with it going alone. */
-        ownRecord: { type: Object as PropType<MergeRecord | null>, default: null },
+        /** The methods the base branch's rules allow, as read; `null` when none restricts them. */
+        allowedMergeMethods: { type: Array as PropType<readonly PullRequestMergeMethod[] | null>, default: null },
     },
     setup(props) {
         const open = ref(true);
@@ -90,6 +94,13 @@ const Harness = defineComponent({
             }),
         );
         const pr = computed(() => members.value.find(member => member.state === 'OPEN') ?? members.value[0]);
+        const recordOf = computed(() => {
+            const id = record.value?.sent.going?.at(-1) ?? members.value[0]?.id;
+            const first = merge.value.open[0];
+            const speaks =
+                merge.value.going.at(-1)?.id === id || (first && record.value?.sent.going?.includes(first.id));
+            return speaks ? members.value.find(member => member.id === id) : undefined;
+        });
         const options = computed((): MergeOptions | null => {
             const first = pr.value;
             return first && arrived.value
@@ -99,7 +110,7 @@ const Harness = defineComponent({
                           SQUASH: { title: `${first.title} (#${first.number})`, body: 'Swaps the old picker out.' },
                           MERGE: { title: `Merge pull request #${first.number}`, body: first.title },
                       },
-                      allowedMergeMethods: null,
+                      allowedMergeMethods: props.allowedMergeMethods,
                       requiresLinearHistory: false,
                       viewerCanMergeAsAdmin: false,
                       viewerCanEnableAutoMerge: false,
@@ -126,8 +137,9 @@ const Harness = defineComponent({
                                 members.value = props.reread;
                             }
 
-                            if (record.value?.kind === 'refused') {
-                                record.value = { ...record.value, read: true };
+                            if (record.value?.kind === 'unknown' && record.value.refusal) {
+                                const { sent: merged, refusal: reason, at } = record.value;
+                                record.value = { kind: 'refused', sent: merged, reason, at };
                             }
                         },
                     },
@@ -158,7 +170,8 @@ const Harness = defineComponent({
                         reading: !arrived.value,
                         allowed: true,
                         sending: sending.value,
-                        record: merge.value.going.length === 1 ? props.ownRecord : null,
+                        record: recordOf.value ? record.value : null,
+                        recordOf: recordOf.value ?? null,
                         sent: null,
                         alreadyMerged: false,
                         advancing: advancing.value,
@@ -166,7 +179,6 @@ const Harness = defineComponent({
                         stack: {
                             description: description.value,
                             merge: merge.value,
-                            outcome: getStackMergeOutcome({ record: record.value, members: members.value }),
                             checks:
                                 merge.value.going.length > 1 && merge.value.checksOf
                                     ? {
@@ -214,16 +226,12 @@ const Harness = defineComponent({
                     record.value = {
                         kind: 'refused',
                         sent: {
-                            method: submission.request.method,
-                            going: going.map(member => ({
-                                itemId: member.id,
-                                number: member.number,
-                                head: member.headRefOid,
-                            })),
+                            ...submission,
+                            head: top?.headRefOid ?? '',
+                            going: going.map(member => member.id),
                         },
-                        reason: { kind: 'refused', message: 'This stack must be rebased before it can be merged.' },
-                        partway: false,
-                        read: false,
+                        reason: MUST_REBASE,
+                        at: NOW,
                     };
             }
         }
@@ -306,42 +314,94 @@ const BILLING = sampleStack({
     ],
 });
 
-/** Every one of {@link BILLING} going, with the head it had. */
-const BILLING_SENT = {
-    method: 'SQUASH' as const,
-    going: BILLING.map(member => ({ itemId: member.id, number: member.number, head: member.headRefOid })),
+/** A merge of every one of {@link BILLING}, as sent. */
+const BILLING_SENT: SentMerge = {
+    request: { method: 'SQUASH' },
+    edited: null,
+    head: 'head-oid',
+    going: BILLING.map(member => member.id),
 };
 
-/** SP60, then SP59 once the stack is read again (`arrive`): the first landed, the second refused. */
+/**
+ * SP60, then SP59 once the stack is read again (`arrive`): the first landed, the second refused, and those left
+ * rewritten onto what landed.
+ */
 export const PartwayFailure: Story = {
     args: {
         members: BILLING,
-        record: { kind: 'refused', sent: BILLING_SENT, reason: STOPPED, partway: true, read: false },
-        reread: BILLING.map((member, index) => (index === 0 ? { ...member, state: 'MERGED', merged: true } : member)),
+        record: { kind: 'unknown', sent: BILLING_SENT, at: NOW, accepted: false, refusal: STOPPED },
+        reread: BILLING.map((member, index) =>
+            index === 0
+                ? { ...member, state: 'MERGED', merged: true }
+                : { ...member, headRefOid: `rewritten-${index}` },
+        ),
     },
+};
+
+/** SP60 with no answer: nothing known of any of them, none to send again. */
+export const NoAnswer: Story = {
+    args: { members: BILLING, record: { kind: 'unknown', sent: BILLING_SENT, at: NOW, accepted: true } },
 };
 
 /** SP61: refused at once — GitHub's words, nothing merged, the way forward. */
 export const Refused: Story = { args: { members: SAMPLE_STACKS.ready, answer: 'refused' } };
 
-/** SP62: someone pushed to #1204 meanwhile — nothing merged, and which one has the new commit. */
-export const HeadMoved: Story = {
+const OFFLINE = sampleStack({
+    id: 'S_offline',
+    number: 94,
+    members: [
+        { title: 'Offline queue for booking edits', headRefName: 'offline-queue' },
+        { headRefName: 'replay', baseRefName: 'offline-queue', behindBase: true },
+        { baseRefName: 'replay' },
+    ],
+});
+
+/** SP62: someone pushed to #94 meanwhile — GitHub refuses, and read again the stack needs a rebase, because of #94. */
+export const PushedToLower: Story = {
     args: {
-        members: CALENDAR.map(member => (member.number === 1204 ? { ...member, headRefOid: 'pushed-head' } : member)),
+        members: OFFLINE,
         record: {
             kind: 'refused',
-            sent: {
-                method: 'SQUASH',
-                going: CALENDAR.slice(0, 2).map(member => ({
-                    itemId: member.id,
-                    number: member.number,
-                    head: member.headRefOid,
-                })),
-            },
-            reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
-            partway: false,
-            read: true,
+            sent: { request: { method: 'SQUASH' }, edited: null, head: 'head-oid', going: OFFLINE.map(pr => pr.id) },
+            reason: MUST_REBASE,
+            at: NOW,
         },
+    },
+};
+
+/** PM27: someone pushed to the top of the range meanwhile: the new commit, as for any merge. */
+export const TopHeadMoved: Story = {
+    args: {
+        members: BILLING,
+        record: {
+            kind: 'refused',
+            sent: { ...BILLING_SENT, head: 'older-head' },
+            reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
+            at: NOW,
+        },
+    },
+};
+
+/** PM28: refused for a method the rules, read after it was sent, don't allow. */
+export const MethodNotAllowed: Story = {
+    args: {
+        members: BILLING,
+        allowedMergeMethods: ['SQUASH'],
+        record: {
+            kind: 'refused',
+            sent: { ...BILLING_SENT, request: { method: 'MERGE' } },
+            reason: { kind: 'refused', message: 'Merge commits are not allowed.' },
+            at: NOW,
+        },
+    },
+};
+
+/** D11: opened on #489, though the refused merge went to the top: the record is found by any member going. */
+export const OpenedElsewhere: Story = {
+    args: {
+        members: BILLING,
+        openedOn: 489,
+        record: { kind: 'refused', sent: BILLING_SENT, reason: STOPPED, at: NOW },
     },
 };
 
@@ -350,7 +410,7 @@ export const OneGoingRefused: Story = {
     args: {
         members: CALENDAR,
         openedOn: 1204,
-        ownRecord: { kind: 'refused', sent: FIRST_SENT, reason: STOPPED, at: NOW },
+        record: { kind: 'refused', sent: FIRST_SENT, reason: STOPPED, at: NOW },
     },
 };
 
@@ -359,7 +419,7 @@ export const OneGoingUnknown: Story = {
     args: {
         members: CALENDAR,
         openedOn: 1204,
-        ownRecord: { kind: 'unknown', sent: FIRST_SENT, at: NOW, accepted: true },
+        record: { kind: 'unknown', sent: FIRST_SENT, at: NOW, accepted: true },
     },
 };
 
@@ -368,7 +428,7 @@ export const OneGoingNewCommit: Story = {
     args: {
         members: CALENDAR,
         openedOn: 1204,
-        ownRecord: {
+        record: {
             kind: 'refused',
             sent: { ...FIRST_SENT, head: 'older-head' },
             reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },

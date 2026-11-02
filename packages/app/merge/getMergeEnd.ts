@@ -25,7 +25,8 @@ export function getMergeEnd(
 
     const { sent } = record;
     if (record.kind === 'unknown') {
-        return { kind: 'unknown', sent, accepted: record.accepted };
+        const { accepted, refusal } = record;
+        return { kind: 'unknown', sent, accepted, ...(refusal ? { refusal } : {}) };
     }
 
     if (pr.headRefOid !== sent.head) {

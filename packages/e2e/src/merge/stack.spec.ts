@@ -263,8 +263,11 @@ test('SP62: a push to #101 after the panel opened — GitHub refuses the merge o
     world.push(first, 'monalisa', 'Name the stack after its issue');
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    await expect(panel.root).toContainText('Not merged: #101 has a new commit');
-    await expect(panel.stackMember(101)).toContainText('New commit');
+    await expect(panel.root).toContainText('GitHub refused it');
+    await expect(panel.root).toContainText('#101 has a new commit');
+    await expect(panel.root).toContainText('This stack must be rebased before it can be merged.');
+    await expect(panel.stackMember(102)).toContainText('Needs rebase');
+    await expect(panel.primary).toHaveText('Rebase stack on GitHub');
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'squash', sha: world.headOf(third) }]);
     for (const id of [first, second, third]) {
         expect(world.stateOf(id).merged).toBe(false);

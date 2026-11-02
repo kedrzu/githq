@@ -21,7 +21,6 @@ import { MergePanelStore } from './MergePanelStore.js';
 import type { MergeStep, MergeSubmission } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
-import { getStackMergeOutcome } from './stack/getStackMergeOutcome.js';
 import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
 import type { StackMergeView } from './stack/StackMergeTypes.js';
 import { useMergeOptions } from './useMergeOptions.js';
@@ -84,13 +83,7 @@ const stackMembers = computed(() =>
 const stackView = computed((): StackMergeView | null => {
   const stack = description.value;
   const range = stackMerge.value;
-  const stackId = store.stack?.id;
-  if (!stack || !range || stackId === undefined) {
-    return null;
-  }
-
-  const outcome = getStackMergeOutcome({ record: store.getStackRecord(stackId), members: stackMembers.value });
-  return { description: stack, merge: range, outcome, checks: stackChecks.value };
+  return stack && range ? { description: stack, merge: range, checks: stackChecks.value } : null;
 });
 /**
  * The pull request the panel is for: a stack's first open one — what lands alone, its base the stack's, its rulesets
@@ -99,6 +92,22 @@ const stackView = computed((): StackMergeView | null => {
 const pr = computed(() => {
   const members = stackMembers.value;
   return members.find(isOpenPullRequest) ?? members.at(-1) ?? opened.value;
+});
+/**
+ * The pull request whose last merge the panel says the end of: the top of the range — the one alone going — else, the
+ * line moved or opened elsewhere since, the top of the stack's merge that took the range's first (stacked PRs D11).
+ */
+const recordOf = computed(() => {
+  const range = stackMerge.value;
+  const top = range?.going.at(-1) ?? pr.value;
+  const first = range?.open[0];
+  if (!top || !first || store.getRecord(top.id)) {
+    return top;
+  }
+
+  const mergedTop = store.findStackMergeTop(first.id);
+  const item = mergedTop === null ? undefined : details.getItem(mergedTop);
+  return item?.kind === 'pullRequest' ? item : top;
 });
 const read = useMergeOptions({ itemId: () => pr.value?.id ?? null });
 /** The panel's full list of the checks is open. */
@@ -220,7 +229,7 @@ async function takeStep(step: MergeStep) {
   const opening = store.opening;
   const head = item.headRefOid;
   advancing.value = step;
-  store.forget(item.id);
+  store.forget(item.id, ...(recordOf.value ? [recordOf.value.id] : []));
   const outcome = await editor.edit(
     [item.id],
     step === 'markReady' ? { kind: 'draft', draft: false } : { kind: 'updateBranch', method: 'MERGE' },
@@ -292,7 +301,8 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :reading="read.reading"
     :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
-    :record="sending || (stackMerge && stackMerge.going.length !== 1) ? null : store.getRecord(pr.id)"
+    :record="sending || !recordOf ? null : store.getRecord(recordOf.id)"
+    :record-of="recordOf"
     :sent="store.getSent(pr.id)"
     :already-merged="alreadyMerged"
     :advancing="advancing"

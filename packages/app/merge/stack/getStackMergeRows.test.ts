@@ -6,10 +6,9 @@ import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
 
 import { getStackMerge } from './getStackMerge.js';
 import { getStackMergeRows } from './getStackMergeRows.js';
-import type { StackMergeOutcome, StackMergeRow } from './StackMergeTypes.js';
+import type { StackMergeRow } from './StackMergeTypes.js';
 
 const BLOCKED = { mergeStateStatus: 'BLOCKED', reviewDecision: 'REVIEW_REQUIRED' } as const;
-const REASON = { kind: 'refused', message: 'Refused' } as const;
 
 test('those going before the line, later ones dimmed and staying open (SP41)', () => {
     const rows = rowsOf([{}, {}, {}, {}], { end: 2 });
@@ -47,39 +46,31 @@ test('being merged: every one going reads so (SP56)', () => {
         merging: 'SQUASH' as const,
     }));
     const merge = getStackMerge({ description: sampleStackDescription(members), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome: null }))).toEqual(['1 going merging', '2 going merging']);
+    expect(summary(getStackMergeRows({ merge }))).toEqual(['1 going merging', '2 going merging']);
 });
 
 test('places the copy does not hold yet fold into one row (SP50)', () => {
     const members = sampleStack({ id: 'S_1', number: 1, members: [{}, {}], size: 4 });
     const merge = getStackMerge({ description: sampleStackDescription(members), end: null });
-    const rows = getStackMergeRows({ merge, outcome: null });
+    const rows = getStackMergeRows({ merge });
     expect(rows.at(-1)).toEqual({ kind: 'missing', count: 2 });
     expect(rows).toHaveLength(3);
 });
 
-test('after a merge that stopped partway: landed, refused where it stopped, still open after it (SP59, SP60)', () => {
+test('the outcome not known: each says its own state as the copy has it, none going, none dimmed (D11, PM29)', () => {
     const stack = sampleStack({ id: 'S_1', number: 1, members: [{ state: 'MERGED', merged: true }, {}, {}] });
-    const stopped: StackMergeOutcome = { kind: 'stopped', at: stack[1]!, landed: 1, reason: REASON };
-    const merge = getStackMerge({ description: sampleStackDescription(stack), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome: stopped }))).toEqual([
+    const merge = getStackMerge({ description: sampleStackDescription(stack), end: 2 });
+    expect(summary(getStackMergeRows({ merge, outcomeUnknown: true }))).toEqual([
         '1 own:merged',
-        '2 refused',
-        '3 dimmed stillOpen',
+        '2 own:ready',
+        '3 own:ready',
     ]);
-    const reading = getStackMergeRows({ merge, outcome: { kind: 'reading', reason: REASON } });
-    expect(summary(reading)).toEqual(['1 own:merged', '2 notKnown', '3 notKnown']);
 });
 
-test('a head moved: earlier ones not merged, the one with the new commit, later ones still open (SP62)', () => {
-    const stack = sampleStack({ id: 'S_1', number: 1, members: [{}, {}, {}] });
-    const outcome: StackMergeOutcome = { kind: 'headMoved', pullRequest: stack[1]! };
+test('after a merge that stopped partway: the one that landed reads merged, those left as any range (SP59)', () => {
+    const stack = sampleStack({ id: 'S_1', number: 1, members: [{ state: 'MERGED', merged: true }, {}, {}] });
     const merge = getStackMerge({ description: sampleStackDescription(stack), end: null });
-    expect(summary(getStackMergeRows({ merge, outcome }))).toEqual([
-        '1 notMerged',
-        '2 newCommit',
-        '3 dimmed stillOpen',
-    ]);
+    expect(summary(getStackMergeRows({ merge }))).toEqual(['1 own:merged', '2 going own:ready', '3 going own:ready']);
 });
 
 test('nothing marked as landing while the whole range is blocked (SP46)', () => {
@@ -89,7 +80,7 @@ test('nothing marked as landing while the whole range is blocked (SP46)', () => 
 
 function rowsOf(members: readonly Partial<PullRequestItem>[], params: { end: number | null }): StackMergeRow[] {
     const description = sampleStackDescription(sampleStack({ id: 'S_1', number: 1, members }));
-    return getStackMergeRows({ merge: getStackMerge({ description, end: params.end }), outcome: null });
+    return getStackMergeRows({ merge: getStackMerge({ description, end: params.end }) });
 }
 
 function summary(rows: readonly StackMergeRow[]): string[] {

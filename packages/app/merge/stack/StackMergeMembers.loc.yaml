@@ -48,13 +48,3 @@ freshChecks:
   en: Fresh checks running
 beingMerged:
   en: Being merged
-notKnown:
-  en: Not known yet
-refused:
-  en: Refused
-stillOpen:
-  en: Still open
-notMerged:
-  en: Not merged
-newCommit:
-  en: New commit

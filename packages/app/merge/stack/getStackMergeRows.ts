@@ -2,32 +2,29 @@ import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { StackPullRequestPip } from '@/store/stacks/describeStack.js';
 
-import type {
-    StackMerge,
-    StackMergeOutcome,
-    StackMergePullRequestRow,
-    StackMergeRow,
-    StackMergeRowState,
-} from './StackMergeTypes.js';
+import type { StackMerge, StackMergePullRequestRow, StackMergeRow, StackMergeRowState } from './StackMergeTypes.js';
 
 /** What the rows of a stack's merge panel are worked out from. */
 export interface GetStackMergeRowsParams {
     readonly merge: StackMerge;
-    /** How the stack's last merge that did not end merged reads; `null` for none. */
-    readonly outcome: StackMergeOutcome | null;
+    /**
+     * GitHub has not said how a merge of two or more of it ended: each says only its own state, none marked as landing,
+     * as the merge may land any of them or none (PM29, stacked PRs D11).
+     */
+    readonly outcomeUnknown?: boolean;
 }
 
 /**
  * The rows of a stack's merge panel, first to last (stacked PRs D11, D18): each pull request with what it says, those
  * going with the merge before the line, later ones dimmed; places the copy does not hold yet folded into one row each
- * run (SP50). After a merge that did not end merged there is no line: each says what is true of it (SP59–SP62).
+ * run (SP50).
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRow[] {
-    const { merge, outcome } = params;
+    const { merge, outcomeUnknown = false } = params;
     // Nothing lands while the whole range is blocked (D7, D21): none is marked as going then.
-    const blocked = merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase';
+    const blocked = outcomeUnknown || merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase';
     const goingIds = new Set(merge.going.map(pr => pr.id));
     const { holder } = merge;
     const holderIndex = merge.members.findIndex(
@@ -35,9 +32,6 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
     );
     const top = merge.going.at(-1);
     const lastGoingIndex = merge.members.findIndex(pip => pip.kind !== 'missing' && pip.pullRequest.id === top?.id);
-    // Where a merge that did not end merged stopped, or the one with a new commit: those after it are still open.
-    const stopNumber = getStopNumber();
-    const stopIndex = merge.members.findIndex(pip => pip.kind !== 'missing' && pip.pullRequest.number === stopNumber);
 
     const rows: StackMergeRow[] = [];
     for (const [index, pip] of merge.members.entries()) {
@@ -58,9 +52,8 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
 
     function getRow(pip: StackPullRequestPip, index: number): StackMergePullRequestRow {
         const { pullRequest } = pip;
-        const inRange = outcome === null && goingIds.has(pullRequest.id);
-        const after =
-            outcome === null ? lastGoingIndex >= 0 && index > lastGoingIndex : stopIndex >= 0 && index > stopIndex;
+        const inRange = goingIds.has(pullRequest.id);
+        const after = !outcomeUnknown && lastGoingIndex >= 0 && index > lastGoingIndex;
         return {
             kind: 'pullRequest',
             pullRequest,
@@ -77,26 +70,12 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
             return own;
         }
 
-        switch (outcome?.kind) {
-            case undefined:
-                break;
-            case 'reading':
-                return { kind: 'notKnown' };
-            case 'stopped':
-                return getStoppedState(index, { kind: 'refused' });
-            case 'headMoved':
-                if (index < stopIndex) {
-                    return isOpenPullRequest(pullRequest) ? { kind: 'notMerged' } : own;
-                }
-
-                return getStoppedState(index, { kind: 'newCommit' });
-            case 'refused':
-            case 'unknown':
-                return own;
-        }
-
         if (pullRequest.merging) {
             return { kind: 'merging' };
+        }
+
+        if (outcomeUnknown) {
+            return own;
         }
 
         if (merge.freshChecks && pip.kind === 'moving') {
@@ -108,24 +87,5 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
         }
 
         return inRange || index === holderIndex || !isOpenPullRequest(pullRequest) ? own : { kind: 'staysOpen' };
-
-        function getStoppedState(at: number, stop: StackMergeRowState): StackMergeRowState {
-            if (at === stopIndex) {
-                return stop;
-            }
-
-            return at > stopIndex && isOpenPullRequest(pullRequest) ? { kind: 'stillOpen' } : own;
-        }
-    }
-
-    function getStopNumber(): number | null {
-        switch (outcome?.kind) {
-            case 'stopped':
-                return outcome.at.number;
-            case 'headMoved':
-                return outcome.pullRequest.number;
-            default:
-                return null;
-        }
     }
 }

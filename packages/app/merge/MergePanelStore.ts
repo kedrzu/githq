@@ -14,7 +14,6 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { getMergeEnd } from './getMergeEnd.js';
 import type { MergeAnswer, MergeHeadCommit, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
-import type { SentStackMerge, StackMergeRecord, StackMergeRefusal } from './stack/StackMergeTypes.js';
 
 /** The loops of the regular sync that read pull requests again: a round of one says how a merge ended (D3). */
 const READING_LOOPS: readonly SyncLoop[] = ['myWork', 'pullRequestStatuses', 'repositories'];
@@ -90,8 +89,8 @@ export interface MergeConfirmationStack {
  * the panel's own reads don't (PM29). The method and text it was sent with stay for the session, for the panel to
  * start on again (D15). A merge confirmed while the panel did not show it is listed for its toast until the toast
  * goes (PM34). Open for a pull request in a stack, the panel is the stack's (stacked PRs D11): a merge of two or more
- * is recorded for the stack ({@link StackMergeRecord}) — refused, the stack is read again whole, and what landed is
- * what the copy then holds — until a panel showing it closes, or the next merge of the stack is sent.
+ * is recorded as any merge, under the top of the range, with every one going ({@link SentMerge.going}) — refused, the
+ * stack is read again whole, what landed being what the copy then holds, and until that read succeeds it is not known.
  */
 export type MergePanelStore = Resolved<typeof MergePanelStore>;
 export const MergePanelStore = defineService({
@@ -106,7 +105,6 @@ export const MergePanelStore = defineService({
     setup({ merger, accounts, items, details, clock }) {
         const itemIdRef = shallowRef<string | null>(null);
         const stackRef = shallowRef<MergePanelStack | null>(null);
-        const stackRecordsRef = shallowRef<ReadonlyMap<string, StackMergeRecord>>(new Map());
         const openingRef = shallowRef(0);
         const recordsRef = shallowRef<ReadonlyMap<string, MergeRecord>>(new Map());
         const sentRef = shallowRef<ReadonlyMap<string, SentMerge>>(new Map());
@@ -116,7 +114,6 @@ export const MergePanelStore = defineService({
 
         accounts.onChange(() => {
             recordsRef.value = new Map();
-            stackRecordsRef.value = new Map();
             sentRef.value = new Map();
             confirmationsRef.value = [];
         });
@@ -154,7 +151,7 @@ export const MergePanelStore = defineService({
             close,
             merge,
             getRecord,
-            getStackRecord,
+            findStackMergeTop,
             getSent,
             noteHeadCommit,
             forget,
@@ -171,14 +168,8 @@ export const MergePanelStore = defineService({
             onSent = options.onSent;
         }
 
-        /** Closes the panel. What it said of the stack's last merge is said: the record goes, once settled. */
+        /** Closes the panel. */
         function close() {
-            const stackId = stackRef.value?.id;
-            const record = stackId === undefined ? undefined : stackRecordsRef.value.get(stackId);
-            if (stackId !== undefined && record && !(record.kind === 'refused' && record.partway && !record.read)) {
-                setStackRecord(stackId, null);
-            }
-
             itemIdRef.value = null;
             stackRef.value = null;
             onSent = undefined;
@@ -192,9 +183,18 @@ export const MergePanelStore = defineService({
             return recordsRef.value.get(itemId) ?? null;
         }
 
-        /** What this session knows of the stack's last merge of two or more that did not end merged; reactive. */
-        function getStackRecord(stackId: string): StackMergeRecord | null {
-            return stackRecordsRef.value.get(stackId) ?? null;
+        /**
+         * The pull request whose record is of a stack's merge of two or more that took this one — the top of that
+         * range, whichever member the panel is open on now; `null` for none. Reactive.
+         */
+        function findStackMergeTop(itemId: string): string | null {
+            for (const [topId, record] of recordsRef.value) {
+                if (record.sent.going?.includes(itemId)) {
+                    return topId;
+                }
+            }
+
+            return null;
         }
 
         /** The method and text the pull request's last merge that did not end merged was sent with, for the session. */
@@ -226,24 +226,14 @@ export const MergePanelStore = defineService({
             }
         }
 
-        function setStackRecord(stackId: string, record: StackMergeRecord | null) {
-            const records = new Map(stackRecordsRef.value);
-            if (record) {
-                records.set(stackId, record);
-            } else {
-                records.delete(stackId);
-            }
-
-            stackRecordsRef.value = records;
-        }
-
         function dismissConfirmation(id: number) {
             confirmationsRef.value = confirmationsRef.value.filter(confirmation => confirmation.id !== id);
         }
 
         function isUnanswered(itemId: string) {
             const pr = details.getItem(itemId);
-            return pr?.kind === 'pullRequest' && getMergeEnd(getRecord(itemId), pr, null)?.kind === 'unknown';
+            const end = pr?.kind === 'pullRequest' ? getMergeEnd(getRecord(itemId), pr, null) : null;
+            return end?.kind === 'unknown' && !end.refusal;
         }
 
         /**
@@ -269,24 +259,18 @@ export const MergePanelStore = defineService({
          * runs; merged at once, as GitHub answers for one merged already (PM30), or refused at once, the panel stays
          * and shows it — a refusal recorded as it arrives ({@link getRecord}). A refusal arriving after the panel
          * closed or opened anew is reported like a failed edit as well ({@link PullRequestMerger}). A stack's merge
-         * of two or more takes every one going with it, and its end is recorded for the stack too: refused, the stack
-         * is read again whole (stacked PRs D11).
+         * of two or more takes every one going with it, recorded under the top: refused, the stack is read again whole
+         * (stacked PRs D11).
          */
         async function merge(params: MergePanelMergeParams): Promise<MergeAnswer> {
             const { item, submission, stack } = params;
             const opening = openingRef.value;
             const account = accounts.current;
-            const sent: SentMerge = { ...submission, head: item.headRefOid };
-            const sentStack: SentStackMerge | null = stack
-                ? {
-                      method: submission.request.method,
-                      going: stack.going.map(pr => ({ itemId: pr.id, number: pr.number, head: pr.headRefOid })),
-                  }
-                : null;
-            forget(item.id);
-            if (stack) {
-                setStackRecord(stack.id, null);
-            }
+            const going = stack?.going.map(pr => pr.id);
+            const sent: SentMerge = { ...submission, head: item.headRefOid, ...(going ? { going } : {}) };
+            // The next merge of it ends what is known of the last, a stack's that took it included.
+            const last = findStackMergeTop(item.id);
+            forget(item.id, ...(going ?? []), ...(last === null ? [] : [last]));
 
             const answer = await merger.merge({
                 item,
@@ -302,7 +286,7 @@ export const MergePanelStore = defineService({
                             keep({ kind: 'unknown', sent, at: clock.now(), accepted: true });
                             return;
                         case 'refused':
-                            keep(toRecord(end.reason), true);
+                            keep(toRecord(end.reason));
                             return;
                         default:
                             assertNever(end);
@@ -337,44 +321,40 @@ export const MergePanelStore = defineService({
 
             /**
              * Recorded while the account that sent it is still signed in: another one's records start empty. A stack's
-             * refusal is recorded for it as well, and the stack read again whole: what landed is what GitHub holds.
+             * refusal says what landed only from the stack read again whole (stacked PRs D11): not known until then.
              */
-            function keep(record: MergeRecord, partway = false) {
+            function keep(record: MergeRecord) {
                 if (!isSender()) {
                     return;
                 }
 
-                recordsRef.value = new Map(recordsRef.value).set(item.id, record);
                 sentRef.value = new Map(sentRef.value).set(item.id, sent);
-                if (!stack || !sentStack) {
+                if (!stack || record.kind !== 'refused') {
+                    setRecord(record);
                     return;
                 }
 
-                if (record.kind === 'unknown') {
-                    setStackRecord(stack.id, { kind: 'unknown', sent: sentStack, accepted: record.accepted });
-                    return;
-                }
-
-                const refused: StackMergeRefusal = {
-                    kind: 'refused',
-                    sent: sentStack,
-                    reason: record.reason,
-                    partway,
-                    read: false,
+                const reading: MergeRecord = {
+                    kind: 'unknown',
+                    sent,
+                    at: record.at,
+                    accepted: false,
+                    refusal: record.reason,
                 };
-                setStackRecord(stack.id, refused);
-                void readAgain(stack, refused);
+                setRecord(reading);
+                void readAgain(stack, reading, record);
             }
 
-            /**
-             * The stack read again whole, the refusal then says what landed — or, GitHub not reached, the copy does
-             * until the next sync. Unless another merge of it, or another account, came meanwhile.
-             */
-            async function readAgain(merged: MergePanelStackMerge, refused: StackMergeRefusal) {
-                await merger.readStack(merged.id, merged.size);
-                if (stackRecordsRef.value.get(merged.id) === refused) {
-                    setStackRecord(merged.id, { ...refused, read: true });
+            /** The refusal speaks once the stack is read, unless something newer of the merge came meanwhile. */
+            async function readAgain(merged: MergePanelStackMerge, reading: MergeRecord, refused: MergeRecord) {
+                const read = await merger.readStack(merged.id, merged.size);
+                if (read && recordsRef.value.get(item.id) === reading) {
+                    setRecord(refused);
                 }
+            }
+
+            function setRecord(record: MergeRecord) {
+                recordsRef.value = new Map(recordsRef.value).set(item.id, record);
             }
 
             /**

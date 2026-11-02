@@ -48,6 +48,7 @@ import { getHeldByText } from '@/lists/utils/getHeldByText.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
+import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -77,7 +78,7 @@ import type {
 } from './MergeTypes.js';
 import { getStackMergeRows } from './stack/getStackMergeRows.js';
 import StackMergeMembers from './stack/StackMergeMembers.vue';
-import type { StackMerge, StackMergeOutcome, StackMergeView } from './stack/StackMergeTypes.js';
+import type { StackMerge, StackMergeView } from './stack/StackMergeTypes.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -100,9 +101,12 @@ const props = defineProps<{
   /**
    * What this session knows of the pull request's last merge that did not end merged, while it speaks for it: refused
    * (PM25, PM31) — for a moved head (PM27) or a method the rules don't allow (PM28), as the panel tells
-   * (`getMergeEnd`) — or no answer (PM29). `null` for none, and while a merge is sent.
+   * (`getMergeEnd`) — or no answer (PM29). In a stack, of the range's top, or of the stack's merge that took the range
+   * (stacked PRs D11). `null` for none, and while a merge is sent.
    */
   record: MergeRecord | null;
+  /** The pull request {@link record} is of, as it is told apart by its head: `pr` when none is given. */
+  recordOf?: PullRequestItem | null;
   /**
    * The method and text this session's last merge of it that did not end merged was sent with: a panel opened starts
    * on them (D15). `null` for none.
@@ -231,16 +235,37 @@ const editWhenRead = ref(false);
 
 const merging = computed(() => shownPr.value.merging !== undefined);
 /** How the last merge that did not end merged reads now: refused, a new commit, a method gone, or not known. */
-const end = computed(() => getMergeEnd(props.record, props.pr, props.options));
+const end = computed(() => getMergeEnd(props.record, endPr.value, props.options));
+const endPr = computed(() => props.recordOf ?? props.pr);
 /** No answer (PM29): the merge may still land, so nothing is offered to send it again. */
 const outcomeUnknown = computed(() => end.value?.kind === 'unknown');
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
 /** Two or more going with a stack's merge: no commit text, and none sent (stacked PRs D11). */
 const several = computed(() => (props.stack?.merge.going.length ?? 0) > 1);
+/** No answer of a stack's merge of two or more: the panel says nothing of the range, and nothing moves (D11, PM29). */
+const stackOutcomeUnknown = computed(() => outcomeUnknown.value && end.value?.sent.going !== undefined);
 const stackRows = computed(() =>
-  props.stack ? getStackMergeRows({ merge: props.stack.merge, outcome: props.stack.outcome }) : [],
+  props.stack ? getStackMergeRows({ merge: props.stack.merge, outcomeUnknown: stackOutcomeUnknown.value }) : [],
 );
+/**
+ * Where a stack's merge that did not end merged stopped, some of those going having landed: never told by assumption
+ * but by what the copy read after it holds (D11). `null` while that read is on its way, and with none landed.
+ */
+const stackStop = computed(() => {
+  const ended = end.value;
+  const going = ended?.sent.going;
+  if (!props.stack || !going || ended?.kind === 'unknown') {
+    return null;
+  }
+
+  const sent = props.stack.merge.members.flatMap(pip =>
+    pip.kind !== 'missing' && going.includes(pip.pullRequest.id) ? [pip.pullRequest] : [],
+  );
+  const landed = sent.filter(isMergedPullRequest).length;
+  const at = sent.find(pr => !isMergedPullRequest(pr));
+  return landed > 0 && at ? { at, landed } : null;
+});
 /** The stack's members being merged; the host gives none while the merge is sent (PM32a). */
 const stackMerging = computed(() => props.stack?.merge.open.filter(pr => pr.merging !== undefined) ?? []);
 const stackSays = computed((): StackSays | null => (props.stack ? getStackSays(props.stack) : null));
@@ -248,7 +273,7 @@ const stackSays = computed((): StackSays | null => (props.stack ? getStackSays(p
 const stackLine = computed((): 'held' | 'stops' | null => {
   const view = props.stack;
   const merge = view?.merge;
-  if (!merge || view.outcome || stackMerging.value.length > 0 || merge.going.length >= merge.open.length) {
+  if (!merge || stackOutcomeUnknown.value || stackMerging.value.length > 0 || merge.going.length >= merge.open.length) {
     return null;
   }
 
@@ -262,7 +287,7 @@ const canMoveLine = computed(() => {
   const merge = props.stack?.merge;
   return (
     merge !== undefined &&
-    !props.stack?.outcome &&
+    !stackOutcomeUnknown.value &&
     merge.open.length > 1 &&
     stackMerging.value.length === 0 &&
     !props.sending &&
@@ -279,16 +304,16 @@ const showStopEarlier = computed(
 /** A draft holds the rest while those before it can land (SP49): marking it ready is right there. */
 const stackDraft = computed(() => {
   const merge = props.stack?.merge;
-  return merge && !merge.block && merge.holder?.kind === 'draft' && !props.stack?.outcome ? merge.holder.number : null;
+  return merge && !merge.block && merge.holder?.kind === 'draft' && !end.value ? merge.holder.number : null;
 });
 
 /**
- * Whose checks `C` shows with two or more going (D11: not those of a range): none where they would not help — a merge
- * that did not end merged, a range nothing of which can land, the checks running again anyway (SP46, SP50, SP58).
+ * Whose checks `C` shows with two or more going (D11: not those of a range): none where they would not help — a range
+ * nothing of which can land, the checks running again anyway (SP46, SP50, SP58).
  */
 const stackChecks = computed(() => {
   const view = props.stack;
-  if (!view || view.outcome || view.merge.freshChecks) {
+  if (!view || view.merge.freshChecks) {
     return null;
   }
 
@@ -468,7 +493,10 @@ const showStackChecks = computed(() => checksShowable.value && stackChecks.value
 const showLanding = computed(() => {
   const says = stackSays.value;
   if (says) {
-    return (says.forward.kind === 'merge' || says.forward.kind === 'markReady') && !checksOpen.value;
+    return (
+      (says.forward.kind === 'merge' || says.forward.kind === 'markReady') &&
+      !(checksShowable.value && checksOpen.value)
+    );
   }
 
   switch (verdict.value.kind) {
@@ -500,7 +528,7 @@ const primaryLabel = computed(() => {
   }
 
   if (says && method.value !== null) {
-    if (props.stack?.outcome?.kind === 'refused') {
+    if (end.value?.kind === 'refused') {
       return t(l.tryAgain);
     }
 
@@ -553,59 +581,7 @@ const stackMethodNote = computed(() =>
   shownMethod.value === 'REBASE' ? t(l.eachCommitOnto, { base: props.pr.baseRefName }) : t(l.eachOwnTitle),
 );
 /** What the last merge's end says beneath the verdict: GitHub's reason, the new commit, or that the next refresh settles it. */
-const band = computed((): Band | null => {
-  if (stackSays.value) {
-    return stackSays.value.band;
-  }
-
-  const record = end.value;
-  const base = props.pr.baseRefName;
-  switch (record?.kind) {
-    case undefined:
-      return null;
-    case 'refused':
-      return refusalBand(record.reason);
-    case 'headMoved': {
-      const head = record.head.slice(0, SHORT_SHA_LENGTH);
-      const asked = record.sent.head.slice(0, SHORT_SHA_LENGTH);
-      const { commit } = record;
-      const cancelled = t(l.newCommitCancelled, { asked });
-      return {
-        tone: 'warning',
-        icon: GitCommitHorizontal,
-        title: commit?.author
-          ? t(l.newCommitPushedBy, { author: commit.author, head })
-          : t(l.newCommitPushed, { head }),
-        text: commit ? t(l.newCommitHeadline, { headline: commit.headline, cancelled }) : cancelled,
-        link: { label: t(l.seeNewCommit), url: `${props.pr.url}/commits/${record.head}`, key: 'D' },
-      };
-    }
-    case 'methodNotAllowed': {
-      const sent = record.sent.request.method;
-      const only = methods.value.length === 1 ? methods.value[0] : undefined;
-      let title: string;
-      if (sent === 'MERGE' && props.options?.requiresLinearHistory) {
-        title = t(l.requiresLinearHistory, { base });
-      } else if (only) {
-        title = t(l.rulesetAllowsOnly, { base, method: methodName(only) });
-      } else {
-        title = t(l.rulesetDisallows, { base, method: methodName(sent) });
-      }
-
-      return { tone: 'danger', icon: CircleX, title, text: t(l.sentBeforeRules, { base }), link: null };
-    }
-    case 'unknown':
-      return {
-        tone: 'muted',
-        icon: Info,
-        title: t(l.nextRefreshSettles),
-        text: record.accepted ? t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }) : t(l.noAnswer),
-        link: { label: t(l.openOnGitHub), url: props.pr.url, key: 'O' },
-      };
-    default:
-      return assertNever(record);
-  }
-});
+const band = computed((): Band | null => (stackSays.value ? stackSays.value.band : endBand()));
 const noticeText = computed(() => {
   const current = notice.value;
   // A merge refused for the method the read took away says it once, in its own band (PM28).
@@ -659,10 +635,22 @@ function endVerdict(): PanelVerdict | null {
     return null;
   }
 
+  const stop = stackStop.value;
+  if (stop) {
+    return {
+      kind: 'refused',
+      ...getMergeEndLook('refused'),
+      text: t(l.stackStopped, { number: stop.at.number }),
+      aside: t(l.stackStoppedAside, { landed: stop.landed, open: props.stack?.merge.open.length ?? 0 }),
+    };
+  }
+
   const look = getMergeEndLook(record.kind);
   switch (record.kind) {
-    case 'refused':
-      return { kind: 'refused', ...look, text: t(l.refused), aside: t(l.nothingMerged) };
+    case 'refused': {
+      const text = record.sent.going ? t(l.stackRefused) : t(l.refused);
+      return { kind: 'refused', ...look, text, aside: t(l.nothingMerged) };
+    }
     case 'headMoved':
       return { kind: 'newCommit', ...look, text: t(l.newCommitArrived), aside: null };
     case 'methodNotAllowed': {
@@ -673,25 +661,125 @@ function endVerdict(): PanelVerdict | null {
       return { kind: 'refused', ...look, text, aside: t(l.nothingMerged) };
     }
     case 'unknown':
-      return { kind: 'unknown', ...look, text: t(l.outcomeUnknown), aside: t(l.notAnsweredYet) };
+      return {
+        kind: 'unknown',
+        ...look,
+        text: t(l.outcomeUnknown),
+        aside: record.refusal ? t(l.refusedNotRead) : t(l.notAnsweredYet),
+      };
+    default:
+      return assertNever(record);
+  }
+}
+
+/** What the last merge's end says beneath the verdict: GitHub's reason, the new commit, or that the next refresh settles it. */
+function endBand(): Band | null {
+  const record = end.value;
+  const base = props.pr.baseRefName;
+  // Stopped midway, what landed rewrote those left: their new heads are no new commit, GitHub's words still say why.
+  const stop = stackStop.value;
+  if (stop && props.record?.kind === 'refused') {
+    const { number, url } = stop.at;
+    return { ...refusalBand(props.record.reason), link: { label: t(l.seeOnGitHub, { number }), url, key: 'O' } };
+  }
+
+  switch (record?.kind) {
+    case undefined:
+      return null;
+    case 'refused':
+      return refusedBand(record.reason);
+    case 'headMoved': {
+      const head = record.head.slice(0, SHORT_SHA_LENGTH);
+      const asked = record.sent.head.slice(0, SHORT_SHA_LENGTH);
+      const { commit } = record;
+      const cancelled = t(l.newCommitCancelled, { asked });
+      return {
+        tone: 'warning',
+        icon: GitCommitHorizontal,
+        title: commit?.author
+          ? t(l.newCommitPushedBy, { author: commit.author, head })
+          : t(l.newCommitPushed, { head }),
+        text: commit ? t(l.newCommitHeadline, { headline: commit.headline, cancelled }) : cancelled,
+        link: { label: t(l.seeNewCommit), url: `${endPr.value.url}/commits/${record.head}`, key: 'D' },
+      };
+    }
+    case 'methodNotAllowed': {
+      const sent = record.sent.request.method;
+      const only = methods.value.length === 1 ? methods.value[0] : undefined;
+      let title: string;
+      if (sent === 'MERGE' && props.options?.requiresLinearHistory) {
+        title = t(l.requiresLinearHistory, { base });
+      } else if (only) {
+        title = t(l.rulesetAllowsOnly, { base, method: methodName(only) });
+      } else {
+        title = t(l.rulesetDisallows, { base, method: methodName(sent) });
+      }
+
+      return { tone: 'danger', icon: CircleX, title, text: t(l.sentBeforeRules, { base }), link: null };
+    }
+    case 'unknown': {
+      const link = { label: t(l.openOnGitHub), url: endPr.value.url, key: 'O' };
+      if (record.refusal) {
+        const said = refusalBand(record.refusal);
+        return { ...said, link: said.link ?? link };
+      }
+
+      return {
+        tone: 'muted',
+        icon: Info,
+        title: t(l.nextRefreshSettles),
+        text: record.accepted ? t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }) : t(l.noAnswer),
+        link,
+      };
+    }
     default:
       return assertNever(record);
   }
 }
 
 /**
- * What the panel says of a stack's range (stacked PRs D11, D18, D19, D21): how its last merge that did not end merged
- * reads (SP59–SP62), all merged, being merged (SP56), the copy incomplete (SP50) or the stack needing a rebase
- * (SP46, SP47) — whatever the line — then, with two or more going or one that can merge, what holds the range or
- * that it is ready (SP40–SP45, SP48, SP49). `null` where one alone is going and it can't merge as it is: its own
- * verdict and way forward then, as for any pull request.
+ * GitHub's refusal: its words, and with a push to a lower one of a stack, which pull request has the new commit (D21,
+ * SP47) — GitHub's words only say the stack needs a rebase.
  */
-function getStackSays(view: StackMergeView): StackSays | null {
-  const { merge, outcome } = view;
-  if (outcome) {
-    return getOutcomeSays(merge, outcome);
+function refusedBand(reason: EditFailureReason): Band {
+  const said = refusalBand(reason);
+  const block = props.stack?.merge.block;
+  if (reason.kind !== 'refused' || block?.kind !== 'needsRebase' || block.cause.kind !== 'earlierPush') {
+    return said;
   }
 
+  return {
+    tone: 'warning',
+    icon: GitCommitHorizontal,
+    title: t(l.stackEarlierPush, { number: block.cause.pushedNumber }),
+    text: t(l.stackEarlierPushRefused, { words: said.title, detail: t(l.stackEarlierPushDetail) }),
+    link: null,
+  };
+}
+
+/**
+ * What the panel says of a stack's range: what the range itself says, with how its last merge that did not end merged
+ * ended laid over the verdict and the band (D11, SP59–SP62). The way forward stays the range's — the merge again, the
+ * rebase, marking ready — but for no answer, when nothing is offered as it may still land (PM29).
+ */
+function getStackSays(view: StackMergeView): StackSays | null {
+  const range = getRangeSays(view);
+  const ended = endVerdict();
+  if (!range || !ended) {
+    return range;
+  }
+
+  return { verdict: ended, band: endBand(), forward: ended.kind === 'unknown' ? { kind: 'close' } : range.forward };
+}
+
+/**
+ * What a stack's range says of itself (stacked PRs D11, D18, D19, D21): all merged, being merged (SP56), the copy
+ * incomplete (SP50) or the stack needing a rebase (SP46, SP47) — whatever the line — then, with two or more going or
+ * one that can merge, what holds the range or that it is ready (SP40–SP45, SP48, SP49). `null` where one alone is going
+ * and it can't merge as it is: its own verdict and way forward then, as for any pull request.
+ */
+function getRangeSays(view: StackMergeView): StackSays | null {
+  const { merge } = view;
   const { landed, held, size } = view.description;
   if (merge.open.length === 0) {
     const text = landed > 0 ? t(l.stackMerged, { count: landed }) : t(l.stackNothingOpen);
@@ -754,9 +842,8 @@ function getStackSays(view: StackMergeView): StackSays | null {
     return { verdict: said, band: under, forward: { kind: 'visit', url, label: t(l.rebaseStack) } };
   }
 
-  // One alone going is a merge like any: how its last one ended, or why it can't merge as it is, in its own verdict,
-  // and its own way forward (D18, PM25, PM27, PM29).
-  if (!several.value && (end.value !== null || standing.forward !== 'merge')) {
+  // One alone going is a merge like any: why it can't merge as it is, in its own verdict, and its own way forward (D18).
+  if (!several.value && standing.forward !== 'merge') {
     return null;
   }
 
@@ -817,104 +904,6 @@ function getStackSays(view: StackMergeView): StackSays | null {
     aside: readyAside(merge, landed),
   };
   return { verdict: said, band: null, forward: { kind: 'merge' } };
-}
-
-/**
- * How a stack's last merge that did not end merged reads (stacked PRs D11): what is true per pull request, never all
- * or none by assumption. Refused at once, ⌘↵ is the range's way forward again (SP61).
- */
-function getOutcomeSays(merge: StackMerge, outcome: StackMergeOutcome): StackSays {
-  switch (outcome.kind) {
-    case 'reading': {
-      const said: PanelVerdict = {
-        kind: 'unknown',
-        tone: 'warning',
-        icon: CircleDashed,
-        text: t(l.stackReading),
-        aside: t(l.stackReadingAside),
-      };
-      return { verdict: said, band: refusalBand(outcome.reason), forward: { kind: 'close' } };
-    }
-    case 'headMoved': {
-      const { pullRequest } = outcome;
-      const look = getMergeEndLook('headMoved');
-      const said: PanelVerdict = {
-        kind: 'newCommit',
-        ...look,
-        text: t(l.stackHeadMoved, { number: pullRequest.number }),
-        aside: t(l.nothingMerged),
-      };
-      const under: Band = {
-        tone: 'warning',
-        icon: GitCommitHorizontal,
-        title: t(l.stackEarlierPush, { number: pullRequest.number }),
-        text: t(l.stackHeadMovedDetail, { number: pullRequest.number }),
-        link: { label: t(l.lookAtCommit), url: `${pullRequest.url}/commits/${pullRequest.headRefOid}`, key: 'O' },
-      };
-      return { verdict: said, band: under, forward: { kind: 'close' } };
-    }
-    case 'stopped': {
-      const { at, landed } = outcome;
-      const said: PanelVerdict = {
-        kind: 'refused',
-        ...getMergeEndLook('refused'),
-        text: t(l.stackStopped, { number: at.number }),
-        aside: t(l.stackStoppedAside, { landed, open: merge.open.length }),
-      };
-      const under: Band = {
-        ...refusalBand(outcome.reason),
-        link: { label: t(l.seeOnGitHub, { number: at.number }), url: at.url, key: 'O' },
-      };
-      return { verdict: said, band: under, forward: { kind: 'close' } };
-    }
-    case 'refused': {
-      const said: PanelVerdict = {
-        kind: 'refused',
-        ...getMergeEndLook('refused'),
-        text: t(l.stackRefused),
-        aside: t(l.nothingMerged),
-      };
-      const under = refusalBand(outcome.reason);
-      switch (merge.forward?.kind) {
-        case 'merge':
-          return { verdict: said, band: under, forward: { kind: 'merge' } };
-        case 'rebaseOnGitHub':
-          return {
-            verdict: said,
-            band: under,
-            forward: { kind: 'visit', url: merge.forward.url, label: t(l.rebaseStack) },
-          };
-        case 'markReady':
-          return {
-            verdict: said,
-            band: under,
-            forward: { kind: 'markReady', number: merge.forward.pullRequest.number },
-          };
-        case undefined:
-          return { verdict: said, band: under, forward: { kind: 'close' } };
-        default:
-          return assertNever(merge.forward);
-      }
-    }
-    case 'unknown': {
-      const said: PanelVerdict = {
-        kind: 'unknown',
-        ...getMergeEndLook('unknown'),
-        text: t(l.outcomeUnknown),
-        aside: t(l.notAnsweredYet),
-      };
-      const under: Band = {
-        tone: 'muted',
-        icon: Info,
-        title: t(l.nextRefreshSettles),
-        text: outcome.accepted ? t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }) : t(l.noAnswer),
-        link: { label: t(l.openOnGitHub), url: props.pr.url, key: 'O' },
-      };
-      return { verdict: said, band: under, forward: { kind: 'close' } };
-    }
-    default:
-      return assertNever(outcome);
-  }
 }
 
 /** What lands of a stack ready as far as the line (SP40–SP43). */
@@ -1596,7 +1585,7 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="end || stack?.outcome || verdict.kind === 'merged'"
+          v-else-if="end || verdict.kind === 'merged'"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span

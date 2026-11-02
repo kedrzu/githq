@@ -354,10 +354,20 @@ test('a stack read again whole: its pull requests as GitHub holds them are writt
 
     const reading = merger.readStack('S_1', 2);
     await session.clock.advance(0);
-    await reading;
+    expect(await reading).toBe(true);
 
     expect(session.operations()).toContain('PullRequestStacks');
     expect(items.get('PR_0')).toMatchObject({ merged: true, state: 'MERGED' });
+});
+
+test('a stack read again: it says it was not, when GitHub could not be asked', async () => {
+    const { merger, session } = await setup();
+    stackAnswered = false;
+
+    const reading = merger.readStack('S_1', 2);
+    await session.clock.advance(0);
+
+    expect(await reading).toBe(false);
 });
 
 test('SK7: a stack read again tells who left it, as the sync does, and asks for no more than a stack holds', async () => {
@@ -417,6 +427,7 @@ async function setup() {
     items.upsertMany([open()]);
     lateEnds.length = 0;
     stackTotalCount = 2;
+    stackAnswered = true;
 
     return { merger, items, queue, session, rest };
 
@@ -433,7 +444,7 @@ async function setup() {
 }
 
 function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
-    if (request.operation === 'PullRequestStacks') {
+    if (request.operation === 'PullRequestStacks' && stackAnswered) {
         const merged = samplePullRequestNode('PR_0', {
             repository: 'acme/web',
             number: 1,
@@ -497,6 +508,8 @@ function shown() {
 
 /** How many pull requests the fake GitHub says the stack holds; it lists one. */
 let stackTotalCount = 2;
+/** Whether the fake GitHub answers reading the stack again. */
+let stackAnswered = true;
 
 /** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];

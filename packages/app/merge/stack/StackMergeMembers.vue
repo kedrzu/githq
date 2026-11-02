@@ -1,8 +1,8 @@
-<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, its checks running again after earlier ones landed (SP58), being merged, or what a merge that did not end merged left of it — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
+<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, its checks running again after earlier ones landed (SP58), being merged — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleDashed, Ellipsis, GitMerge, Loader, LoaderCircle } from 'lucide-vue-next';
+import { Ellipsis, GitMerge, Loader, LoaderCircle } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -24,7 +24,7 @@ const props = defineProps<{
 }>();
 
 /** A row's state drawn with its pull request's own icon, in words alone: the others have an icon of their own. */
-type WordedState = Exclude<StackMergeRowState, { readonly kind: 'freshChecks' | 'merging' | 'notKnown' }>;
+type WordedState = Exclude<StackMergeRowState, { readonly kind: 'freshChecks' | 'merging' }>;
 
 /** A row as drawn: its pull request, its icon, and its state in words. */
 interface DrawnRow {
@@ -77,15 +77,6 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
         text: t(l.beingMerged),
         tone: 'warning',
       };
-    case 'notKnown':
-      return {
-        ...base,
-        icon: CircleDashed,
-        iconTone: 'dim',
-        spin: false,
-        text: t(l.notKnown),
-        tone: 'dim',
-      };
     // Nothing lands while they run: no mark of landing (SP58).
     case 'freshChecks':
       return {
@@ -115,14 +106,6 @@ function describe(state: WordedState, pr: PullRequestItem): { text: string; tone
       return { text: t(l.blocked), tone: 'dim' };
     case 'heldBy':
       return { text: t(l.heldBy, { number: state.number }), tone: 'dim' };
-    case 'refused':
-      return { text: t(l.refused), tone: 'danger' };
-    case 'stillOpen':
-      return { text: t(l.stillOpen), tone: 'dim' };
-    case 'notMerged':
-      return { text: t(l.notMerged), tone: 'dim' };
-    case 'newCommit':
-      return { text: t(l.newCommit), tone: 'warning' };
     default:
       return assertNever(state);
   }

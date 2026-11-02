@@ -1,6 +1,3 @@
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
-
-import type { EditFailureReason } from '@/edits/EditTypes.js';
 import type { ItemChecks, PullRequestItem } from '@/store/ItemTypes.js';
 import type {
     StackBlocker,
@@ -115,71 +112,6 @@ export interface StackMarkReadyForward {
     readonly pullRequest: PullRequestItem;
 }
 
-/** A stack's merge of two or more this session sent (stacked PRs D11): one merge of the top, landing every one going. */
-export interface SentStackMerge {
-    readonly method: PullRequestMergeMethod;
-    /** Every pull request going, first to last — the top last — with the head commit each had as it was sent. */
-    readonly going: readonly StackMergeHead[];
-}
-
-/** A pull request going with a stack's merge, and the head commit it had as the merge was sent. */
-export interface StackMergeHead {
-    readonly itemId: string;
-    readonly number: number;
-    readonly head: string;
-}
-
-/**
- * What this session knows of a stack's last merge of two or more that did not end merged, as GitHub answered it
- * (merging D3, D15): refused — at once, so nothing landed (SP61), or while it ran, so some may have (SP59) — or no
- * answer in time (PM29). How it reads is told from the stack as it is then ({@link StackMergeOutcome}).
- */
-export type StackMergeRecord =
-    | StackMergeRefusal
-    | {
-          readonly kind: 'unknown';
-          readonly sent: SentStackMerge;
-          /** GitHub accepted it and said no result in time; `false`: the request itself went unanswered. */
-          readonly accepted: boolean;
-      };
-
-/** A stack's merge GitHub refused, as {@link StackMergeRecord} keeps it. */
-export interface StackMergeRefusal {
-    readonly kind: 'refused';
-    readonly sent: SentStackMerge;
-    readonly reason: EditFailureReason;
-    /** GitHub refused it after taking it: earlier ones may have landed. */
-    readonly partway: boolean;
-    /**
-     * The stack was read again since the refusal (stacked PRs D11): what the copy holds is what landed. Until then
-     * nothing is known of a partway one (SP60).
-     */
-    readonly read: boolean;
-}
-
-/**
- * How a stack's last merge that did not end merged reads now (`getStackMergeOutcome`): refused partway and not read
- * again yet (SP60); a pull request going has a new commit since — nothing merged, deliberately (SP62); stopped at a
- * pull request after some landed (SP59); refused with nothing landed (SP61); or no answer (PM29).
- */
-export type StackMergeOutcome =
-    | { readonly kind: 'reading'; readonly reason: EditFailureReason }
-    | {
-          readonly kind: 'headMoved';
-          /** The first pull request going whose head moved since the merge was sent. */
-          readonly pullRequest: PullRequestItem;
-      }
-    | {
-          readonly kind: 'stopped';
-          /** The first pull request going that did not land. */
-          readonly at: PullRequestItem;
-          /** How many of those going landed. */
-          readonly landed: number;
-          readonly reason: EditFailureReason;
-      }
-    | { readonly kind: 'refused'; readonly reason: EditFailureReason }
-    | { readonly kind: 'unknown'; readonly accepted: boolean };
-
 /** A row of a stack's merge panel, first to last (SP40–SP62). */
 export type StackMergeRow = StackMergePullRequestRow | StackMergeMissingRow;
 
@@ -190,7 +122,7 @@ export interface StackMergePullRequestRow {
     readonly state: StackMergeRowState;
     /** It lands with the merge: the line is after it. */
     readonly going: boolean;
-    /** Dimmed: below the line, or past where a merge that did not end merged stopped. */
+    /** Dimmed: below the line. */
     readonly dimmed: boolean;
 }
 
@@ -203,8 +135,7 @@ export interface StackMergeMissingRow {
 /**
  * What a row says of its pull request: its own state as its pip shows it; staying open below the line (SP41); held
  * by an earlier one — blocked, or green itself (SP45, SP48); its checks running again after earlier ones landed (SP58);
- * being merged (SP56); not known yet (SP60); refused where a merge stopped, still open after it (SP59); not merged, or
- * the one with a new commit (SP62).
+ * being merged (SP56).
  */
 export type StackMergeRowState =
     | { readonly kind: 'own'; readonly pip: StackPullRequestPipKind }
@@ -212,20 +143,13 @@ export type StackMergeRowState =
     | { readonly kind: 'blocked' }
     | { readonly kind: 'heldBy'; readonly number: number }
     | { readonly kind: 'freshChecks' }
-    | { readonly kind: 'merging' }
-    | { readonly kind: 'notKnown' }
-    | { readonly kind: 'refused' }
-    | { readonly kind: 'stillOpen' }
-    | { readonly kind: 'notMerged' }
-    | { readonly kind: 'newCommit' };
+    | { readonly kind: 'merging' };
 
 /** A stack's merge as the merge panel shows it (stacked PRs D11). */
 export interface StackMergeView {
     /** The stack as the entry reads it: its name (D4) for the header, how many landed and how many the copy holds. */
     readonly description: StackDescription;
     readonly merge: StackMerge;
-    /** How its last merge of two or more that did not end merged reads; `null` for none. */
-    readonly outcome: StackMergeOutcome | null;
     /** The checks of {@link StackMerge.checksOf}, for two or more going; `null` otherwise. */
     readonly checks: StackMergeChecks | null;
 }

@@ -106,7 +106,7 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                     close: () => undefined,
                     merge: () => Promise.resolve({ kind: 'accepted' }),
                     getRecord: () => null,
-                    getStackRecord: () => null,
+                    findStackMergeTop: () => null,
                     getSent: () => null,
                     noteHeadCommit: () => undefined,
                     forget: () => undefined,

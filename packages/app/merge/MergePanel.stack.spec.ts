@@ -10,17 +10,21 @@ const {
     ClosedInside,
     DraftInside,
     Held,
-    HeadMoved,
     Incomplete,
     LineMoved,
+    MethodNotAllowed,
     NeedsRebase,
+    NoAnswer,
     OneGoingNewCommit,
     OneGoingRefused,
     OneGoingUnknown,
     OneLands,
+    OpenedElsewhere,
     PartlyMerged,
     PartwayFailure,
+    PushedToLower,
     Refused,
+    TopHeadMoved,
     WholeStack,
 } = composeStories(stories);
 
@@ -154,39 +158,91 @@ test('SP50: an incomplete copy never reads ready, and ⌘↵ does nothing (D7)',
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 
-test('SP60, SP59: after a partway failure nothing is known until the stack is read again, then what is true per pull request', async () => {
+test('SP60, SP59: refused, nothing is known until the stack is read again; then a member that landed reads Merged, and where it stopped', async () => {
     await PartwayFailure.run();
 
-    await expect.element(panel()).toHaveTextContent('GitHub refused part of it');
+    await expect.element(panel()).toHaveTextContent('Outcome not known yet');
+    await expect.element(panel()).toHaveTextContent("GitHub refused it · what landed isn't read yet");
+    await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
+    await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
     for (const number of [488, 489, 490, 491]) {
-        await expect.element(member(number)).toHaveTextContent('Not known yet');
+        await expect.element(member(number)).toHaveTextContent('Ready');
+        await expect.element(member(number)).not.toHaveTextContent('Merged');
+        await expect.element(member(number)).not.toHaveTextContent('lands');
     }
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 
     document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
     await expect.element(panel()).toHaveTextContent('Merge stopped at #489');
     await expect.element(panel()).toHaveTextContent('1 landed, 3 still open');
     await expect.element(member(488)).toHaveTextContent('Merged');
-    await expect.element(member(489)).toHaveTextContent('Refused');
-    await expect.element(member(490)).toHaveTextContent('Still open');
+    await expect.element(member(489)).not.toHaveTextContent('Merged');
+    // Those left were rewritten onto what landed: no new commit of anyone's, GitHub's words stay.
     await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
+    await expect.element(panel()).not.toHaveTextContent('new commit');
+    await expect.element(page.getByRole('link', { name: '#489 on GitHub' })).toBeVisible();
 });
 
-test("SP61: refused at once — GitHub's words, nothing merged", async () => {
+test('SP60: no answer — not known, the rows as the copy has them, nothing moves, and ⌘↵ is not offered', async () => {
+    await NoAnswer.run();
+
+    await expect.element(panel()).toHaveTextContent('Outcome not known yet');
+    await expect.element(panel()).toHaveTextContent("GitHub hasn't answered · not shown as merged");
+    await expect.element(panel()).toHaveTextContent('The next refresh will settle this');
+    await expect.element(member(488)).toHaveTextContent('Ready');
+    await expect.element(footer()).not.toHaveTextContent('Stop earlier');
+    await expect.element(footer()).not.toHaveTextContent('Squash and merge');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}{ArrowUp}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test("SP61: refused at once — GitHub's words, nothing merged, and ⌘↵ tries the range again", async () => {
     await Refused.run();
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(panel()).toHaveTextContent('GitHub refused it');
     await expect.element(panel()).toHaveTextContent('Nothing was merged');
     await expect.element(panel()).toHaveTextContent('This stack must be rebased before it can be merged.');
+    await expect.element(member(310)).toHaveTextContent('Ready');
+    await expect.element(primary('Try again')).toBeVisible();
 });
 
-test('SP62: a new commit on one going — nothing merged, and which one has it', async () => {
-    await HeadMoved.run();
+test('SP62, D21, SP47: a push to a lower one — GitHub refused it, which one has the new commit, and the way on is the rebase', async () => {
+    await PushedToLower.run();
 
-    await expect.element(panel()).toHaveTextContent('Not merged: #1204 has a new commit');
-    await expect.element(member(1203)).toHaveTextContent('Not merged');
-    await expect.element(member(1204)).toHaveTextContent('New commit');
-    await expect.element(member(1205)).toHaveTextContent('Still open');
+    await expect.element(panel()).toHaveTextContent('GitHub refused it');
+    await expect.element(panel()).toHaveTextContent('Nothing was merged');
+    await expect.element(panel()).toHaveTextContent('#94 has a new commit');
+    await expect.element(panel()).toHaveTextContent('This stack must be rebased before it can be merged.');
+    await expect.element(member(95)).toHaveTextContent('Needs rebase');
+    await expect.element(footer()).toHaveTextContent('Rebase stack on GitHub');
+});
+
+test('PM27: the top of the range moved — the new commit, as for any merge', async () => {
+    await TopHeadMoved.run();
+
+    await expect.element(panel()).toHaveTextContent('A new commit arrived, so nothing was merged');
+    await expect.element(panel()).toHaveTextContent('See the new commit');
+    await expect.element(primary('Squash and merge all 4')).toBeVisible();
+});
+
+test("PM28: a stack's merge refused for a method the rules don't allow says so, as any merge's", async () => {
+    await MethodNotAllowed.run();
+
+    await expect.element(panel()).toHaveTextContent('Merge commit');
+    await expect.element(panel()).toHaveTextContent('Nothing was merged');
+    await expect.element(panel()).not.toHaveTextContent('Merge commits are not allowed.');
+});
+
+test('D11: the record of a refused merge of the whole stack speaks in a panel opened on a member under its top', async () => {
+    await OpenedElsewhere.run();
+
+    await expect.element(panel()).toHaveTextContent('GitHub refused it');
+    await expect.element(panel()).toHaveTextContent('Required status check "export-e2e" is failing.');
+    await expect.element(primary('Try again')).toBeVisible();
 });
 
 test("SC2, PM25: one going from a panel opened on a later one — refused, the merge's own ending speaks, and ⌘↵ tries again", async () => {
