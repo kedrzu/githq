@@ -250,8 +250,25 @@ export const OnlyOptionalRunning: Story = {
 /** PM7: rebase chosen — no commit text, the panel shrinks. */
 export const Rebase: Story = { args: { settings: { ...ALL_METHODS, viewerDefaultMergeMethod: 'REBASE' } } };
 
-/** PM8: being read — opens at once from the row; ⌘↵ already works. */
+/**
+ * PM8: being read — opens at once from the row; ⌘↵ already works. A loader beside the commit's title until the
+ * proposal is in, then its message opens below.
+ */
 export const BeingRead: Story = { args: { readLater: true } };
+
+/** PM8: being read, and the proposal brings no message — the loader goes and nothing opens. */
+export const BeingReadNoMessage: Story = {
+    args: {
+        readLater: true,
+        options: {
+            ...OPTIONS,
+            proposedTexts: {
+                ...OPTIONS.proposedTexts,
+                SQUASH: { title: 'Retry Stripe webhook delivery on 5xx (#477)', body: '' },
+            },
+        },
+    },
+};
 
 /**
  * PM9: changed under the eyes — the panel starts on Merge commit, the viewer's default; the read brings a ruleset

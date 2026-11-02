@@ -1,9 +1,10 @@
-<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive, and quiet bars hold the commit's lines. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
+<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
 <script lang="ts" setup>
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
@@ -15,6 +16,7 @@ import {
   GitMerge,
   GitPullRequestArrow,
   Info,
+  LoaderCircle,
   Lock,
   MessageSquareWarning,
   RefreshCw,
@@ -976,6 +978,18 @@ function onOpenFocus(event: Event) {
                   :class="css.mergePanel_edited"
                   >{{ t(l.edited) }}</span
                 >
+                <!-- GitHub's proposal on its way: what it brings opens below once it is in, if it brings anything. -->
+                <span
+                  v-if="commitBody === null && reading"
+                  :class="css.mergePanel_commitLoader"
+                  tid="commit-loader"
+                >
+                  <LoaderCircle
+                    :class="css.mergePanel_commitLoaderIcon"
+                    aria-hidden="true"
+                  />
+                  <span :class="css.mergePanel_hidden">{{ t(l.proposalOnItsWay) }}</span>
+                </span>
                 <span :class="css.mergePanel_spacer" />
                 <Button
                   v-if="proposal || reading"
@@ -987,49 +1001,36 @@ function onOpenFocus(event: Event) {
                   >{{ t(l.edit) }}</Button
                 >
               </div>
-              <template v-if="commitBody !== null">
+              <Reveal tid="commit-message">
                 <span
-                  v-if="peek.lines.length > 0"
-                  :class="css.mergePanel_commitLines"
+                  v-if="peek.lines.length > 0 || peek.more > 0"
+                  key="message"
+                  :class="css.mergePanel_commitMessage"
                 >
                   <span
-                    v-for="(line, index) in peek.lines"
-                    :key="index"
-                    :class="css.mergePanel_commitLine"
-                    >{{ line }}</span
+                    v-if="peek.lines.length > 0"
+                    :class="css.mergePanel_commitLines"
+                  >
+                    <span
+                      v-for="(line, index) in peek.lines"
+                      :key="index"
+                      :class="css.mergePanel_commitLine"
+                      >{{ line }}</span
+                    >
+                  </span>
+                  <span
+                    v-if="peek.more > 0"
+                    :class="css.mergePanel_commitMore"
+                    >{{ t(l.moreLines, { count: peek.more }) }}</span
                   >
                 </span>
                 <span
-                  v-if="peek.more > 0"
-                  :class="css.mergePanel_commitMore"
-                  >{{ t(l.moreLines, { count: peek.more }) }}</span
-                >
-              </template>
-              <!-- The lines GitHub's proposal fills, held quiet until it arrives: nothing moves when it does. -->
-              <template v-else-if="reading">
-                <span :class="css.mergePanel_hidden">{{ t(l.proposalOnItsWay) }}</span>
-                <span
+                  v-else-if="commitBody === null && !reading"
+                  key="default"
                   :class="css.mergePanel_commitLines"
-                  aria-hidden="true"
+                  >{{ t(l.githubDefault) }}</span
                 >
-                  <span
-                    v-for="index in PEEK_LINES"
-                    :key="index"
-                    :class="[css.mergePanel_commitLine, css.mergePanel_placeholder]"
-                    >&nbsp;</span
-                  >
-                </span>
-                <span
-                  :class="[css.mergePanel_commitMore, css.mergePanel_placeholder]"
-                  aria-hidden="true"
-                  >&nbsp;</span
-                >
-              </template>
-              <span
-                v-else
-                :class="css.mergePanel_commitLines"
-                >{{ t(l.githubDefault) }}</span
-              >
+              </Reveal>
             </dd>
           </div>
         </dl>
@@ -1412,6 +1413,25 @@ function onOpenFocus(event: Event) {
   color: $color-accent;
 }
 
+// Beside the title while GitHub's proposal is read, in the place the title row already holds.
+.mergePanel_commitLoader {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.mergePanel_commitLoaderIcon {
+  width: 12px;
+  height: 12px;
+  color: $color-fg-dim;
+  animation: merge-panel-spin 1s linear infinite;
+}
+
+.mergePanel_commitMessage {
+  display: flex;
+  flex-direction: column;
+}
+
 .mergePanel_commitLines {
   display: flex;
   flex-direction: column;
@@ -1429,35 +1449,6 @@ function onOpenFocus(event: Event) {
 .mergePanel_commitMore {
   font-size: $font-size-2xs;
   color: $color-fg-dim;
-}
-
-// A line of the message to come: a quiet bar in the line's own box, so the line keeps its height.
-.mergePanel_placeholder {
-  position: relative;
-
-  &::after {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 88%;
-    height: 6px;
-    content: '';
-    background: $color-bg-3;
-    border-radius: $radius-sm;
-    transform: translateY(-50%);
-  }
-
-  &:nth-child(2)::after {
-    width: 72%;
-  }
-
-  &:nth-child(3)::after {
-    width: 56%;
-  }
-
-  &.mergePanel_commitMore::after {
-    width: 48px;
-  }
 }
 
 .mergePanel_editor {
@@ -1515,5 +1506,11 @@ function onOpenFocus(event: Event) {
 .mergePanel_footerNote {
   font-size: $font-size-xs;
   color: $color-fg-dim;
+}
+
+@keyframes merge-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

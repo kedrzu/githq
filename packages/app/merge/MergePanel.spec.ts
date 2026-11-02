@@ -9,6 +9,7 @@ const {
     Behind,
     BeingMerged,
     BeingRead,
+    BeingReadNoMessage,
     Conflicts,
     Draft,
     HeadMoved,
@@ -43,7 +44,7 @@ test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub
     await expect.element(panel()).not.toBeInTheDocument();
 });
 
-test('PM8: the read arriving moves nothing — the method chips, the checks with their chevron and C, the commit lines are in place before it', async () => {
+test('PM8: the read arriving moves nothing above the commit — the method chips, the checks with their chevron and C are in place before it; the message opens below the title', async () => {
     await BeingRead.run();
 
     await expect.element(panel()).toHaveTextContent('Reading');
@@ -52,14 +53,34 @@ test('PM8: the read arriving moves nothing — the method chips, the checks with
         .toHaveAttribute('aria-pressed', 'true');
     await expect.element(page.getByRole('button', { name: 'Show all checks' })).toBeDisabled();
     expect(panel().element().querySelector('footer')?.textContent).toContain('Checks');
+    await expect.element(commitLoader()).toBeVisible();
+    expect(commitMessage().element().textContent).toBe('');
     const before = measureRows();
 
     document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
     await expect.element(panel()).not.toHaveTextContent('Reading');
     await expect.element(panel()).toHaveTextContent('Retry Stripe webhook delivery on 5xx (#477)');
     await expect.element(page.getByRole('button', { name: 'Show all checks' })).toBeEnabled();
+    await expect.element(commitLoader()).not.toBeInTheDocument();
+    await expect.element(commitMessage()).toHaveTextContent(/^Fixes #468\./u);
 
-    expect(measureRows()).toEqual(before);
+    const after = measureRows();
+    expect(after.above).toEqual(before.above);
+    expect(after.footer.left).toBe(before.footer.left);
+    expect(after.footer.width).toBe(before.footer.width);
+    expect(after.footer.top).toBeGreaterThanOrEqual(after.commitBottom);
+});
+
+test('PM8: a proposal with no message — the loader goes and nothing opens', async () => {
+    await BeingReadNoMessage.run();
+
+    await expect.element(commitLoader()).toBeVisible();
+    document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
+    await expect.element(panel()).not.toHaveTextContent('Reading');
+    await expect.element(commitLoader()).not.toBeInTheDocument();
+    expect(commitMessage().element().textContent).toBe('');
+    expect(commitMessage().element().getBoundingClientRect().height).toBe(0);
+    expect(panel().element().textContent).not.toContain("GitHub's default message");
 });
 
 test('PM3d: E edits; Esc leaves the field keeping the edit, a second Esc closes; only the edited title is sent', async () => {
@@ -482,17 +503,38 @@ function panel() {
     return page.getByRole('dialog', { name: 'Merge fitloop/api#477' });
 }
 
-/** Where the panel's rows sit and how tall they are: each line of how it lands, the checks, the footer, the panel. */
+function commitLoader() {
+    return page.getByTestId('commit-loader');
+}
+
+/** The `Reveal` the commit's message opens in. */
+function commitMessage() {
+    return page.getByTestId('commit-message');
+}
+
+/**
+ * Where the panel's rows sit: each line of how it lands above the commit and the checks' row in full; the footer only
+ * across and below the commit, which may grow as its message opens.
+ */
 function measureRows() {
     const root = panel().element();
-    const rows = [
-        root,
-        ...root.querySelectorAll('dl > div'),
-        root.querySelector('footer'),
+    const lines = [...root.querySelectorAll('dl > div')];
+    const commit = lines.at(-1);
+    const above = [
+        ...lines.slice(0, -1),
         page.getByRole('button', { name: 'Show all checks' }).element().parentElement,
-    ];
-    return rows.map(row => {
+    ].map(row => {
         const box = row?.getBoundingClientRect();
-        return box ? { top: box.top, height: box.height } : null;
+        return box ? { top: box.top, left: box.left, width: box.width, height: box.height } : null;
     });
+    const footer = root.querySelector('footer')?.getBoundingClientRect();
+    if (!commit || !footer) {
+        throw new Error('The panel has no commit row or no footer');
+    }
+
+    return {
+        above,
+        commitBottom: commit.getBoundingClientRect().bottom,
+        footer: { top: footer.top, left: footer.left, width: footer.width },
+    };
 }
