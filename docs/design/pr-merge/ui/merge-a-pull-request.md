@@ -125,7 +125,7 @@ the recommended one comes first.
 |-|-|-|
 |The panel's form|Its own surface over any screen: PM1a, PM2a (chosen)||
 |Required checks without noise|One line while green, a row with a tag when off, still running: PM4a (chosen); all open after C, passed, failed or running||
-|"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
+|"Being merged"|Row PM37, item PM33, panel PM24 (method only, no commit text: D14), stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
 |A late refusal|Toast, status bar and row: PM35||
 |Commit text|Title and the first lines: PM3a (chosen); editing: PM3d||
 |Bypass|Its own line, red outline, and its own chord: PM12a (chosen)||

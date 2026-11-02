@@ -268,6 +268,14 @@ Purple appears only when GitHub confirms.** (2026-11-01, design agent)
 
 **Why.** [D3](#d3): it must not read as merged, and purple is what merged looks like.
 
+A panel opened again while the merge runs (PM24) shows the method and the branches, without the commit text: the text
+sent is not kept, and GitHub's proposal could differ from it. (owner, 2026-11-02)
+
+**Rejected.**
+
+- Keeping the text sent with the pull request while it is being merged, to show it in PM24 — something more to hold for
+  a few seconds of a state the user rarely reopens.
+
 ## D15
 
 **A refusal after moving on reuses a failed edit's toast and status bar (K1), but stays until dismissed and leads back to
