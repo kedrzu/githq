@@ -6,6 +6,7 @@ import type { MaybeRefOrGetter } from 'vue';
 
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
@@ -38,6 +39,7 @@ export interface OpenedItemViewModel {
 export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewModel {
     const resolver = useService(ItemResolver);
     const details = useService(ItemDetailStore);
+    const items = useService(ItemStore);
     const navigation = useService(ItemNavigation);
 
     const reference = makeRef(options.reference);
@@ -66,6 +68,17 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
             }
         },
         { immediate: true },
+    );
+
+    // Opened, and its row left the local copy (it left "my work"): no poll reads it any more, and what made it leave —
+    // merged on GitHub, say — is in neither the row nor the detail held. Its detail is read once more.
+    watch(
+        () => [id.value, id.value !== null && items.getStored(id.value) !== undefined] as const,
+        ([current, held], [previous, heldBefore]) => {
+            if (current !== null && current === previous && heldBefore && !held) {
+                void details.readAgain(current);
+            }
+        },
     );
 
     return reactive<OpenedItemViewModel>({

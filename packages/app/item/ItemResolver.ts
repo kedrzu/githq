@@ -12,7 +12,9 @@ import type { ItemReference } from './itemRoutes.js';
 /**
  * Finds the node id of an item an address names by repository and number (`itemRoutes.ts`): in the local copy
  * when it holds the item — at once, without asking GitHub — else through `ItemByNumber`, remembered for the
- * session. Follows the signed-in user: what was found for one is forgotten when they sign out.
+ * session. An id found in the copy is remembered too: an item's id never changes, and its row can leave the copy
+ * while the item is open (it left "my work"). Follows the signed-in user: what was found for one is forgotten when
+ * they sign out.
  */
 export type ItemResolver = Resolved<typeof ItemResolver>;
 export const ItemResolver = defineService({
@@ -25,10 +27,13 @@ export const ItemResolver = defineService({
     setup({ accounts, items, logger }) {
         /** What GitHub said, by `owner/name/number` in lower case: the id, or `null` for no such item. */
         const foundRef = shallowRef<ReadonlyMap<string, string | null>>(new Map());
+        /** The ids seen in the local copy, by the same key. Plain: {@link peek} fills it while it reads the copy. */
+        const seenInCopy = new Map<string, string>();
         const inFlight = new Map<string, Promise<void>>();
 
         accounts.onChange(() => {
             foundRef.value = new Map();
+            seenInCopy.clear();
             inFlight.clear();
         });
 
@@ -45,11 +50,12 @@ export const ItemResolver = defineService({
             const key = toKey(reference);
             for (const item of items.all) {
                 if (item.number === reference.number && toKey(getItemReference(item)) === key) {
+                    seenInCopy.set(key, item.id);
                     return item.id;
                 }
             }
 
-            return foundRef.value.get(key);
+            return seenInCopy.get(key) ?? foundRef.value.get(key);
         }
 
         /** Asks GitHub for the item's id unless {@link peek} knows it. Never rejects; a failure leaves it unknown. */

@@ -5,6 +5,7 @@ import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 // The sample's list, top to bottom: #52, #48, #17, #7, then #12 with #15 nested under it, #9, and #3 — 8 items.
 const ISSUE = 'Sign-in loops after the token expires';
+const MENTION = 'Dark mode for the status bar';
 
 test("an item opened from the list in the panel is at GitHub's project-pane address: a reload opens it again, Back returns to the list with it selected", async ({
     page,
@@ -26,6 +27,27 @@ test("an item opened from the list in the panel is at GitHub's project-pane addr
     await expect(page).toHaveURL('/');
     await expect(item.root).toBeHidden();
     await expect(myWork.selectedRow).toContainText(ISSUE);
+});
+
+test('an item that leaves my work while it is open stays open, and is read once more for what made it leave', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the 30 seconds to the next poll can be skipped.
+    await page.clock.install();
+    const sample = createSampleMyWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+
+    await myWork.row(MENTION).click();
+    await expect(item.title).toHaveText(MENTION);
+
+    sample.world.retitle(sample.mention, 'Dark mode everywhere');
+    sample.world.leave(sample.mention, 'mentioned');
+    await page.clock.fastForward('00:30');
+
+    await expect(myWork.row(MENTION)).toHaveCount(0);
+    await expect(item.title).toHaveText('Dark mode everywhere');
 });
 
 test('switched to a modal and back, the address stays the same; a reload reopens the item in the arrangement remembered, Back returns to the list, and the next item opens in a modal too', async ({

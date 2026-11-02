@@ -23,6 +23,21 @@ test('an item the local copy holds is found at once, whatever the case of its ad
     expect(session.operations()).not.toContain('ItemByNumber');
 });
 
+test('an item whose row left the copy keeps its id, without asking GitHub, until its user signs out', async () => {
+    const { resolver, items, session } = await setup();
+    const reference = { owner: 'acme', name: 'web', number: 12 };
+    items.upsertMany([{ ...sampleIssue('I_held'), number: 12 }]);
+    expect(resolver.peek(reference)).toBe('I_held');
+
+    items.remove(['I_held']);
+
+    expect(resolver.peek(reference)).toBe('I_held');
+    expect(session.operations()).not.toContain('ItemByNumber');
+
+    session.signOutFromAnotherTab();
+    expect(resolver.peek(reference)).toBeUndefined();
+});
+
 test('an item outside the copy is asked for once, however often it is opened meanwhile, and remembered', async () => {
     const { resolver, session } = await setup();
     const reference = { owner: 'acme', name: 'web', number: 7 };

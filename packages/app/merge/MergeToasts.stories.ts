@@ -121,6 +121,7 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                     getItem: id => (id === PR.id ? PR : undefined),
                     getFreshness: () => ({ kind: 'partial' }),
                     ensure: () => Promise.resolve(),
+                    readAgain: () => Promise.resolve(),
                     loadOlderComments: () => Promise.resolve(),
                     needsFetch: () => false,
                     fetchDetails: () => Promise.resolve([]),
