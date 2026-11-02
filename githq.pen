@@ -150748,6 +150748,241 @@
                   }
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "Vy3ob",
+              "name": "Track / Project row · ticked",
+              "reusable": true,
+              "width": "fill_container",
+              "cornerRadius": 6,
+              "gap": 10,
+              "padding": [
+                8,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "LTZiE",
+                  "name": "Checkbox",
+                  "width": 15,
+                  "height": 15,
+                  "fill": "$accent",
+                  "cornerRadius": 4,
+                  "stroke": "$accent",
+                  "strokeWidth": 1,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "ooekR",
+                      "name": "icon check",
+                      "width": 11,
+                      "height": 11,
+                      "icon": "check",
+                      "library": "lucide",
+                      "fill": "#0E1013"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon",
+                  "id": "bdllz",
+                  "name": "icon square-kanban",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "square-kanban",
+                  "library": "lucide",
+                  "fill": "$fg-3"
+                },
+                {
+                  "type": "frame",
+                  "id": "GzHLd",
+                  "name": "Name",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TzPa4",
+                      "name": "Project name",
+                      "fill": "$fg",
+                      "content": "tasklet Roadmap",
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "CfJgn",
+                      "name": "Number",
+                      "fill": "$fg-3",
+                      "content": "#1",
+                      "fontFamily": "$mono",
+                      "fontSize": 11.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "s8kJPl",
+                  "name": "Visibility",
+                  "cornerRadius": 4,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "padding": [
+                    1,
+                    6
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BFOa0",
+                      "name": "Visibility label",
+                      "fill": "$fg-3",
+                      "content": "public",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lzZ1Y",
+                  "name": "spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "text",
+                  "id": "p3xeCY",
+                  "name": "Repositories",
+                  "fill": "$fg-3",
+                  "content": "from mlaine/tasklet",
+                  "fontFamily": "$font",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "BB7A2",
+                  "name": "Items cell",
+                  "width": 80,
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "x3ypF",
+                      "name": "Items",
+                      "fill": "$fg-3",
+                      "content": "34 items",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "R2LzqL",
+                  "name": "Activity",
+                  "width": 120,
+                  "justifyContent": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wKoHs",
+                      "name": "Activity text",
+                      "fill": "$fg-2",
+                      "content": "synced 14s ago",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "z2Nei",
+              "type": "ref",
+              "reusable": true,
+              "ref": "Vy3ob",
+              "name": "Track / Project row · unticked",
+              "descendants": {
+                "LTZiE": {
+                  "fill": "#00000000",
+                  "stroke": "$border-2"
+                },
+                "ooekR": {
+                  "enabled": false
+                },
+                "TzPa4": {
+                  "fill": "$fg-2"
+                },
+                "wKoHs": {
+                  "content": "updated 2d ago",
+                  "fill": "$fg-3"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "R3CmsE",
+              "name": "Track / Owner",
+              "reusable": true,
+              "width": "fill_container",
+              "cornerRadius": 6,
+              "gap": 8,
+              "padding": [
+                6,
+                10
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "glwb1",
+                  "name": "Icon",
+                  "width": 13,
+                  "height": 13,
+                  "icon": "user",
+                  "library": "lucide",
+                  "fill": "$fg-3"
+                },
+                {
+                  "type": "text",
+                  "id": "jAK6g",
+                  "name": "Owner",
+                  "fill": "$fg-2",
+                  "content": "mlaine",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "W7h0Qr",
+                  "name": "spacer",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "text",
+                  "id": "LZuw5",
+                  "name": "Count",
+                  "fill": "$fg-3",
+                  "content": "1 / 1",
+                  "fontFamily": "$mono",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
             }
           ]
         },
@@ -157072,7 +157307,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Projects are their own section again, next to Repositories, with the first sign-in chooser's projects column (Track / Projects) as its body. A tick means tracked; changes stage and save with the same bar as Repositories. A tracked project brings its items even from repositories that aren't tracked.",
+                      "content": "Projects are their own section next to Repositories, laid out like it so both read and work the same: owners on the left with tracked / all counts, a filter (/) and sort above the list, projects grouped by owner with ticks, a group action (Track all, Untrack all), and the same staged save at the bottom. Each row: the project's name and number, visibility, where its items come from (and how many of those repositories are tracked, since a tracked project brings its items even from untracked ones), its item count, and its sync status or the staged change. Closed projects are hidden behind Show closed. An organisation that hasn't approved githq can't list its projects and says so, as in Repositories. Keys: J and K move, Space ticks, 1 to 4 switch sections.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -157184,7 +157419,7 @@
                                           "content": "Projects"
                                         },
                                         "Mv9uV": {
-                                          "content": "2"
+                                          "content": "3"
                                         }
                                       }
                                     },
@@ -157249,20 +157484,664 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "mcfFg",
-                                  "name": "Projects",
-                                  "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    8
-                                  ],
+                                  "id": "ZCJCO",
+                                  "name": "Choose projects",
+                                  "width": "fill_container",
+                                  "gap": 28,
                                   "children": [
                                     {
-                                      "id": "vS4XV",
-                                      "type": "ref",
-                                      "ref": "sgzQr",
-                                      "name": "Projects"
+                                      "type": "frame",
+                                      "id": "RT8mW",
+                                      "name": "Owners",
+                                      "width": 200,
+                                      "layout": "vertical",
+                                      "gap": 2,
+                                      "children": [
+                                        {
+                                          "id": "l46ke2",
+                                          "type": "ref",
+                                          "ref": "R3CmsE",
+                                          "name": "Owner All owners",
+                                          "width": "fill_container",
+                                          "fill": "$bg-3",
+                                          "descendants": {
+                                            "glwb1": {
+                                              "enabled": false
+                                            },
+                                            "jAK6g": {
+                                              "content": "All owners",
+                                              "fill": "$fg"
+                                            },
+                                            "LZuw5": {
+                                              "content": "3 / 7",
+                                              "fill": "$fg-3"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "e8duFU",
+                                          "type": "ref",
+                                          "ref": "R3CmsE",
+                                          "name": "Owner mlaine",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "glwb1": {
+                                              "icon": "user",
+                                              "fill": "$fg-3"
+                                            },
+                                            "jAK6g": {
+                                              "content": "mlaine",
+                                              "fill": "$fg-2"
+                                            },
+                                            "LZuw5": {
+                                              "content": "1 / 1",
+                                              "fill": "$fg-3"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Ud1zJ",
+                                          "type": "ref",
+                                          "ref": "R3CmsE",
+                                          "name": "Owner fitloop",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "glwb1": {
+                                              "icon": "building-2",
+                                              "fill": "$fg-3"
+                                            },
+                                            "jAK6g": {
+                                              "content": "fitloop",
+                                              "fill": "$fg-2"
+                                            },
+                                            "LZuw5": {
+                                              "content": "2 / 6",
+                                              "fill": "$fg-3"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "EinKo",
+                                          "type": "ref",
+                                          "ref": "R3CmsE",
+                                          "name": "Owner acme-health",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "glwb1": {
+                                              "icon": "lock",
+                                              "fill": "$amber"
+                                            },
+                                            "jAK6g": {
+                                              "content": "acme-health",
+                                              "fill": "$fg-2"
+                                            },
+                                            "LZuw5": {
+                                              "content": "– / –",
+                                              "fill": "$amber"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "FqGxw",
+                                      "name": "Projects",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "HcLei",
+                                          "name": "Tools",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            0,
+                                            8,
+                                            0
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "pJIe2",
+                                              "name": "Search",
+                                              "width": "fill_container",
+                                              "cornerRadius": 7,
+                                              "stroke": "$border-2",
+                                              "strokeWidth": 1,
+                                              "gap": 8,
+                                              "padding": [
+                                                7,
+                                                10
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "uf7td",
+                                                  "name": "icon search",
+                                                  "width": 14,
+                                                  "height": 14,
+                                                  "icon": "search",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "n2Uhpe",
+                                                  "name": "Placeholder",
+                                                  "fill": "$fg-3",
+                                                  "content": "Filter 7 projects…",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 13,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "T4D7l8",
+                                                  "name": "spacer",
+                                                  "width": "fill_container",
+                                                  "height": 1
+                                                },
+                                                {
+                                                  "id": "zbBGX",
+                                                  "type": "ref",
+                                                  "ref": "w9kS9",
+                                                  "name": "Kbd /",
+                                                  "descendants": {
+                                                    "luKkY": {
+                                                      "content": "/"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "M0kgUh",
+                                              "name": "Sort",
+                                              "cornerRadius": 7,
+                                              "stroke": "$border",
+                                              "strokeWidth": 1,
+                                              "gap": 6,
+                                              "padding": [
+                                                7,
+                                                10
+                                              ],
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "zIdLb",
+                                                  "name": "icon sort",
+                                                  "width": 13,
+                                                  "height": 13,
+                                                  "icon": "arrow-down-wide-narrow",
+                                                  "library": "lucide",
+                                                  "fill": "$fg-3"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "ThYly",
+                                                  "name": "Sort label",
+                                                  "fill": "$fg-2",
+                                                  "content": "Recently updated",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 12.5,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "BsX7j",
+                                          "name": "About",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            0,
+                                            12,
+                                            4,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "qQ8rc",
+                                              "name": "icon info",
+                                              "width": 13,
+                                              "height": 13,
+                                              "icon": "info",
+                                              "library": "lucide",
+                                              "fill": "$fg-3"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "X0lCVS",
+                                              "name": "Text",
+                                              "fill": "$fg-3",
+                                              "content": "A tracked project brings all its items with it, including those in repositories you don't track. Its views, fields and iterations come along.",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "Shohc",
+                                          "name": "Group mlaine",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            12,
+                                            12,
+                                            4,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "OWKGM",
+                                              "name": "Owner",
+                                              "fill": "$fg-2",
+                                              "content": "mlaine",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "LFC2O",
+                                              "name": "Summary",
+                                              "fill": "$fg-3",
+                                              "content": "your projects · 1 of 1 tracked",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "QG5GO",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "id": "nZJMf",
+                                              "type": "ref",
+                                              "ref": "gQ61z",
+                                              "name": "Action Untrack all",
+                                              "descendants": {
+                                                "tzW1W": {
+                                                  "content": "Untrack all"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "erJhG",
+                                          "type": "ref",
+                                          "ref": "Vy3ob",
+                                          "name": "Project tasklet Roadmap",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "tasklet Roadmap"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#1"
+                                            },
+                                            "BFOa0": {
+                                              "content": "public"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "from mlaine/tasklet"
+                                            },
+                                            "x3ypF": {
+                                              "content": "34 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "synced 14s ago"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "M3v8P",
+                                          "name": "Group fitloop",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            12,
+                                            12,
+                                            4,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "xcVUP",
+                                              "name": "Owner",
+                                              "fill": "$fg-2",
+                                              "content": "fitloop",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "K1udFp",
+                                              "name": "Summary",
+                                              "fill": "$fg-3",
+                                              "content": "organisation · 2 of 6 tracked",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ZBpch",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "id": "ztbTQ",
+                                              "type": "ref",
+                                              "ref": "gQ61z",
+                                              "name": "Action Track all",
+                                              "descendants": {
+                                                "tzW1W": {
+                                                  "content": "Track all"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "nWHZK",
+                                          "type": "ref",
+                                          "ref": "Vy3ob",
+                                          "name": "Project Platform Q4",
+                                          "width": "fill_container",
+                                          "fill": "$sel",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "Platform Q4"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#12"
+                                            },
+                                            "BFOa0": {
+                                              "content": "private"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "from 4 repositories, 2 tracked"
+                                            },
+                                            "x3ypF": {
+                                              "content": "128 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "synced 14s ago"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "P2ovr",
+                                          "type": "ref",
+                                          "ref": "Vy3ob",
+                                          "name": "Project Docs revamp",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "Docs revamp"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#9"
+                                            },
+                                            "BFOa0": {
+                                              "content": "private"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "from fitloop/webapp"
+                                            },
+                                            "x3ypF": {
+                                              "content": "12 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "synced 14s ago"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "zXQlh",
+                                          "type": "ref",
+                                          "ref": "Vy3ob",
+                                          "name": "Project Bug triage",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "Bug triage"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#7"
+                                            },
+                                            "BFOa0": {
+                                              "content": "private"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "from 6 repositories, 2 tracked"
+                                            },
+                                            "x3ypF": {
+                                              "content": "61 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "will be tracked",
+                                              "fill": "$accent"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "U4whSG",
+                                          "type": "ref",
+                                          "ref": "z2Nei",
+                                          "name": "Project Mobile 2.0",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "Mobile 2.0"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#15"
+                                            },
+                                            "BFOa0": {
+                                              "content": "private"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "from fitloop/mobile"
+                                            },
+                                            "x3ypF": {
+                                              "content": "210 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "updated 2d ago"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "E5yds",
+                                          "type": "ref",
+                                          "ref": "z2Nei",
+                                          "name": "Project Hiring pipeline",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "TzPa4": {
+                                              "content": "Hiring pipeline"
+                                            },
+                                            "CfJgn": {
+                                              "content": "#3"
+                                            },
+                                            "BFOa0": {
+                                              "content": "private"
+                                            },
+                                            "p3xeCY": {
+                                              "content": "drafts only"
+                                            },
+                                            "x3ypF": {
+                                              "content": "19 items"
+                                            },
+                                            "wKoHs": {
+                                              "content": "updated 3w ago"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "rpoa1",
+                                          "name": "Closed",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            4,
+                                            12,
+                                            4,
+                                            37
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "yK1fy",
+                                              "name": "Text",
+                                              "fill": "$fg-3",
+                                              "content": "1 closed project hidden: Q3 Launch (#11)",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "id": "JaeWx",
+                                              "type": "ref",
+                                              "ref": "gQ61z",
+                                              "name": "Action Show closed",
+                                              "descendants": {
+                                                "tzW1W": {
+                                                  "content": "Show closed"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "WmjWY",
+                                          "name": "Group acme-health",
+                                          "width": "fill_container",
+                                          "gap": 8,
+                                          "padding": [
+                                            12,
+                                            12,
+                                            4,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "R4WUo7",
+                                              "name": "Owner",
+                                              "fill": "$fg-2",
+                                              "content": "acme-health",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "ZDTVm",
+                                              "name": "Summary",
+                                              "fill": "$fg-3",
+                                              "content": "organisation · projects hidden",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "kpNBE",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "XK3Ql",
+                                          "name": "Hidden notice",
+                                          "width": "fill_container",
+                                          "fill": "#D6A23A14",
+                                          "cornerRadius": 8,
+                                          "stroke": "#D6A23A40",
+                                          "strokeWidth": 1,
+                                          "gap": 10,
+                                          "padding": [
+                                            10,
+                                            12
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "O69fN",
+                                              "name": "icon lock",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "lock",
+                                              "library": "lucide",
+                                              "fill": "$amber"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "S6Yx9",
+                                              "name": "Text",
+                                              "fill": "$fg",
+                                              "content": "acme-health hasn't approved githq, so its projects can't be listed.",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "ADdTB",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "lo9is",
+                                              "name": "Link",
+                                              "fill": "$amber",
+                                              "content": "Why, and how to fix",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
                                     }
                                   ]
                                 },
@@ -157357,8 +158236,19 @@
                                   "type": "ref",
                                   "ref": "j5sdqa",
                                   "name": "Pending changes",
-                                  "width": "fill_container(1180)",
-                                  "enabled": false
+                                  "width": "fill_container",
+                                  "enabled": true,
+                                  "descendants": {
+                                    "nfHoK": {
+                                      "content": "1 change · start tracking fitloop/Bug triage"
+                                    },
+                                    "C0i7IE": {
+                                      "content": "Its 61 items are read in the background; the project opens at once."
+                                    },
+                                    "VynTp/Cenjq": {
+                                      "content": "Save 1 change"
+                                    }
+                                  }
                                 }
                               ]
                             }
@@ -211150,6 +212040,611 @@
                                   "fontSize": 12.5
                                 }
                               }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "dJs0G",
+      "x": 3801,
+      "y": 21810,
+      "name": "Variants · How the landing page opens",
+      "fill": "#D6A23A1A",
+      "stroke": "#D6A23A",
+      "strokeWidth": 2,
+      "gap": 80,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "ors8Z",
+          "name": "Slot · LP1 · Variant A · All your repositories, no separate tracker",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "type": "frame",
+              "id": "e7Ah0K",
+              "name": "Caption",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "eaPEr",
+                  "name": "Caption title",
+                  "fill": "$fg",
+                  "content": "LP1 · Variant A · All your repositories, no separate tracker",
+                  "fontFamily": "$font",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "bJFes",
+                  "name": "Caption note",
+                  "fill": "$fg-2",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Recommended, and the owner's favourite. The headline states both promises outright, one per sentence; the subhead names what's on the screen and then what you stop paying for. Only the top of githq.dev changes: from the Built on GitHub strip down, the page stays as it is.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lmxW7",
+              "name": "LP1 · Variant A · All your repositories, no separate tracker",
+              "clip": true,
+              "width": 1440,
+              "fill": "$bg",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SHKZ6",
+                  "name": "Nav",
+                  "width": "fill_container",
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "padding": [
+                    18,
+                    120
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XAzPX",
+                      "name": "Brand",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "SZA4G",
+                          "type": "ref",
+                          "ref": "Jdpz4",
+                          "name": "Wordmark",
+                          "descendants": {
+                            "vRWIQ": {
+                              "fontSize": 20
+                            },
+                            "LgB4e": {
+                              "fontSize": 20
+                            },
+                            "N78Orz": {
+                              "fontSize": 20
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P1tmLZ",
+                      "name": "Links",
+                      "gap": 32,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JSzLc",
+                          "name": "Features",
+                          "fill": "$fg-2",
+                          "content": "Features",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "z0Mlq",
+                          "name": "Keyboard",
+                          "fill": "$fg-2",
+                          "content": "Keyboard",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kY4yb",
+                          "name": "How it works",
+                          "fill": "$fg-2",
+                          "content": "How it works",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gbdcT",
+                          "name": "Open source",
+                          "fill": "$fg-2",
+                          "content": "Open source",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Msp19",
+                      "name": "Actions",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IDqh6",
+                          "name": "GitHub link",
+                          "cornerRadius": 8,
+                          "gap": 6,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "a8LEy",
+                              "name": "GitHub icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "github",
+                              "library": "lucide",
+                              "fill": "$fg-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "XzoB9",
+                              "name": "Repo",
+                              "fill": "$fg-2",
+                              "content": "kedrzu/githq",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tO2vf",
+                          "name": "Sign in",
+                          "fill": "$fg",
+                          "cornerRadius": 8,
+                          "padding": [
+                            8,
+                            14
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Yt2tQ",
+                              "name": "Label",
+                              "fill": "$bg",
+                              "content": "Sign in",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "w06Kgr",
+                  "name": "Hero",
+                  "width": "fill_container",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "radial",
+                    "enabled": true,
+                    "rotation": 0,
+                    "size": {
+                      "width": 1.1,
+                      "height": 0.7
+                    },
+                    "colors": [
+                      {
+                        "color": "#7B87F72E",
+                        "position": 0
+                      },
+                      {
+                        "color": "#7B87F700",
+                        "position": 1
+                      }
+                    ],
+                    "center": {
+                      "y": 0.18
+                    }
+                  },
+                  "layout": "vertical",
+                  "gap": 28,
+                  "padding": [
+                    120,
+                    120,
+                    0,
+                    120
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y4oc0E",
+                      "name": "Headline",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 180,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#F5F6F8",
+                            "position": 0.35
+                          },
+                          {
+                            "color": "#8A919B",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "textGrowth": "fixed-width",
+                      "width": 1080,
+                      "content": "All your repositories\nin one place.\nNo separate tracker.",
+                      "lineHeight": 1.02,
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 80,
+                      "fontWeight": "600",
+                      "letterSpacing": -3.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "S6klG",
+                      "name": "Subhead",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 680,
+                      "content": "githq puts GitHub Issues, Projects, pull requests and Actions from every repository on one fast screen. The tracker you would pay Linear for is already in your GitHub.",
+                      "lineHeight": 1.5,
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e0Clj",
+                      "name": "CTAs",
+                      "gap": 12,
+                      "padding": [
+                        8,
+                        0,
+                        0,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IjjKC",
+                          "name": "Primary CTA",
+                          "fill": "$fg",
+                          "cornerRadius": 10,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#7B87F766",
+                            "blur": 32
+                          },
+                          "gap": 10,
+                          "padding": [
+                            14,
+                            22
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "AeNFC",
+                              "name": "GitHub icon",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "github",
+                              "library": "lucide",
+                              "fill": "$bg"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bMiM2",
+                              "name": "Label",
+                              "fill": "$bg",
+                              "content": "Sign in with GitHub",
+                              "fontFamily": "Inter",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iV9O8",
+                          "name": "Secondary CTA",
+                          "fill": "$bg-2",
+                          "cornerRadius": 10,
+                          "stroke": "#646B758C",
+                          "strokeWidth": 1,
+                          "gap": 10,
+                          "padding": [
+                            14,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "eNIY9",
+                              "name": "Star icon",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "star",
+                              "library": "lucide",
+                              "fill": "$fg-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "sAf2l",
+                              "name": "Label",
+                              "fill": "$fg",
+                              "content": "Star on GitHub",
+                              "fontFamily": "Inter",
+                              "fontSize": 16,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DeM93",
+                      "name": "Fine print",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "eQrEq",
+                          "name": "Reassurance",
+                          "fill": "$fg-3",
+                          "content": "No install  ·  No new tracker  ·  Nothing stored outside GitHub",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 12,
+                          "fontWeight": "normal",
+                          "letterSpacing": 0.2
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kBgKn",
+                          "name": "Permission note",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "FMwsv",
+                              "name": "icon shield-check",
+                              "width": 13,
+                              "height": 13,
+                              "icon": "shield-check",
+                              "library": "lucide",
+                              "fill": "$fg-3"
+                            },
+                            {
+                              "type": "text",
+                              "id": "uFNbO",
+                              "name": "Note",
+                              "fill": "$fg-3",
+                              "content": "GitHub will ask for full repository access. githq only touches issues, pull requests, projects and, if you ask, its own settings repository.",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ryUMy",
+                              "name": "Why link",
+                              "fill": "$fg-2",
+                              "content": "Why?",
+                              "fontFamily": "Inter",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "uOtLw",
+                      "name": "Screenshot stage",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        40,
+                        0,
+                        0,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "D34jC",
+                          "name": "App picture — My work and broken workflows",
+                          "clip": true,
+                          "width": 1200,
+                          "height": 750,
+                          "fill": "$bg",
+                          "cornerRadius": 14,
+                          "stroke": "$border-2",
+                          "strokeWidth": 1,
+                          "effect": [
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#000000CC",
+                              "offset": {
+                                "x": 0,
+                                "y": 40
+                              },
+                              "blur": 120
+                            },
+                            {
+                              "type": "shadow",
+                              "shadowType": "outer",
+                              "color": "#7B87F733",
+                              "offset": {
+                                "x": 0,
+                                "y": -10
+                              },
+                              "blur": 90
+                            }
+                          ],
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "wJr7x",
+                              "name": "Main",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "children": [
+                                {
+                                  "id": "tuY8t",
+                                  "type": "ref",
+                                  "ref": "ZPurg",
+                                  "name": "Sidebar",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "b49czV": {
+                                      "fill": "$bg-3"
+                                    },
+                                    "uONNn": {
+                                      "fill": "$fg"
+                                    },
+                                    "AC0j9": {
+                                      "fill": "$fg",
+                                      "fontWeight": "500"
+                                    },
+                                    "m9ZtIx": {
+                                      "enabled": true
+                                    },
+                                    "CTGG0": {
+                                      "content": "3",
+                                      "fill": "$red"
+                                    },
+                                    "pxvMV": {
+                                      "enabled": true,
+                                      "fill": "$red-quiet"
+                                    },
+                                    "KMmC0": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "U7ZGmZ",
+                                  "type": "ref",
+                                  "ref": "A8DFa",
+                                  "name": "List pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "kmCFZ",
+                              "type": "ref",
+                              "ref": "BFhwj",
+                              "name": "Status bar",
+                              "width": "fill_container"
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "q5izjR",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 470,
+                              "name": "Bottom fade",
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "enabled": true,
+                                "rotation": 180,
+                                "size": {
+                                  "height": 1
+                                },
+                                "colors": [
+                                  {
+                                    "color": "#0E101300",
+                                    "position": 0
+                                  },
+                                  {
+                                    "color": "#0E1013",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "width": 1200,
+                              "height": 280
                             }
                           ]
                         }
