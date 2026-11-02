@@ -288,6 +288,78 @@ test('never sent for a non-writer, a closed or merged pull request, or one being
     expect(rest.puts()).toEqual([]);
 });
 
+test('a stack: one merge of the top with its head; every one going reads being merged — none merged — until GitHub says merged (stacked PRs D11, D3)', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    items.upsertMany([earlier()]);
+    rest.answers.put = PENDING;
+
+    const answering = merger.merge({
+        item: open(),
+        members: [earlier()],
+        request: { method: 'SQUASH' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(rest.puts()).toEqual([{ merge_method: 'squash', sha: 'head-oid' }]);
+    for (const id of ['PR_0', 'PR_1']) {
+        expect(items.get(id)).toMatchObject({ merging: 'SQUASH', merged: false, state: 'OPEN' });
+    }
+
+    await session.clock.advance(3000);
+    expect(items.get('PR_0')).toMatchObject({ merging: 'SQUASH', merged: false });
+
+    rest.answers.read = MERGED;
+    await session.clock.advance(4000);
+
+    for (const id of ['PR_0', 'PR_1']) {
+        expect(items.get(id)).toMatchObject({ merged: true, state: 'MERGED' });
+        expect(items.get(id)).not.toHaveProperty('merging');
+    }
+    expect(queue.pending).toEqual([]);
+    expect(queue.failures).toEqual([]);
+});
+
+test('a stack refused while it ran: being merged goes from every one, those earlier with no word — what landed shows once the stack is read again', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    items.upsertMany([earlier()]);
+    rest.answers.put = PENDING;
+
+    const answering = merger.merge({
+        item: open(),
+        members: [earlier()],
+        request: { method: 'SQUASH' },
+        shown: () => false,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+
+    rest.answers.read = { status: 200, body: { status: 'failed', details: { message: 'Stack needs to be rebased' } } };
+    await session.clock.advance(1000);
+
+    for (const id of ['PR_0', 'PR_1']) {
+        expect(items.get(id)).toMatchObject({ merged: false, state: 'OPEN' });
+        expect(items.get(id)).not.toHaveProperty('merging');
+    }
+    // The merge's own refusal is reported, once.
+    expect(queue.failures.flatMap(failure => failure.failed.map(failed => failed.edit.itemId))).toEqual(['PR_1']);
+});
+
+test('a stack read again whole: its pull requests as GitHub holds them are written into the copy', async () => {
+    const { merger, items, session } = await setup();
+    items.upsertMany([earlier()]);
+
+    const reading = merger.readStack('S_1', 2);
+    await session.clock.advance(0);
+    await reading;
+
+    expect(session.operations()).toContain('PullRequestStacks');
+    expect(items.get('PR_0')).toMatchObject({ merged: true, state: 'MERGED' });
+});
+
 test('the options read on opening come back, partial errors and all, and their status is written into the row', async () => {
     const { merger, items, session } = await setup();
 
@@ -342,6 +414,16 @@ async function setup() {
 }
 
 function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
+    if (request.operation === 'PullRequestStacks') {
+        const merged = samplePullRequestNode('PR_0', {
+            repository: 'acme/web',
+            number: 1,
+            updatedAt: '2026-10-20T10:00:00Z',
+            open: false,
+        });
+        return { data: { nodes: [{ id: 'S_1', entries: { totalCount: 2, nodes: [{ pullRequest: merged }] } }] } };
+    }
+
     if (request.operation !== 'PullRequestMergeOptions') {
         return undefined;
     }
@@ -399,4 +481,9 @@ function onLateEnd(end: MergeLateEnd) {
 
 function open(): PullRequestItem {
     return samplePullRequest('PR_1');
+}
+
+/** The pull request before {@link open} in its stack. */
+function earlier(): PullRequestItem {
+    return { ...samplePullRequest('PR_0'), number: 1, headRefOid: 'earlier-head' };
 }

@@ -1,0 +1,58 @@
+listLabel:
+  en: Pull requests in the stack, first to last
+stopsHere:
+  en: Stops here
+canGoUpToHere:
+  en: Can go up to here
+lands:
+  en: lands
+missing:
+  plural: count
+  en:
+    one: 1 more not in githq yet
+    many: '{count} more not in githq yet'
+ready:
+  en: Ready
+merged:
+  en: Merged
+closed:
+  en: Closed
+draft:
+  en: Draft
+checksFailing:
+  plural: count
+  en:
+    one: '{count} check failing'
+    many: '{count} checks failing'
+checksFailingUncounted:
+  en: Checks failing
+changesRequested:
+  en: Changes requested
+conflicts:
+  en: Conflicts
+checksRunning:
+  en: Checks running
+needsRebase:
+  en: Needs rebase
+waitingForReview:
+  en: Waiting for review
+cannotMergeYet:
+  en: Can't merge yet
+staysOpen:
+  en: Stays open
+blocked:
+  en: Blocked
+heldBy:
+  en: 'Green itself, held by #{number}'
+beingMerged:
+  en: Being merged
+notKnown:
+  en: Not known yet
+refused:
+  en: Refused
+stillOpen:
+  en: Still open
+notMerged:
+  en: Not merged
+newCommit:
+  en: New commit

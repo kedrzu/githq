@@ -1,0 +1,330 @@
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { computed, defineComponent, h, ref, shallowRef } from 'vue';
+import type { PropType } from 'vue';
+
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { sampleStack, sampleStackDescription, SAMPLE_STACKS } from '@/testing/sampleStacks.js';
+
+import type { MergeSettings } from './getMergeMethods.js';
+import MergePanel from './MergePanel.vue';
+import type { MergeOptions, MergeStep, MergeSubmission } from './MergeTypes.js';
+import { getStackMerge } from './stack/getStackMerge.js';
+import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
+import { getStackMergeOutcome } from './stack/getStackMergeOutcome.js';
+import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
+import type { StackMergeRecord } from './stack/StackMergeTypes.js';
+
+/** When the stories happen. */
+const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
+
+const SQUASH_FIRST: MergeSettings = {
+    mergeCommitAllowed: true,
+    squashMergeAllowed: true,
+    rebaseMergeAllowed: true,
+    viewerDefaultMergeMethod: 'SQUASH',
+};
+
+/** SP41–SP43: four ready, "Migrate class calendar to new date picker". */
+const CALENDAR = sampleStack({
+    id: 'S_calendar',
+    number: 1203,
+    members: [
+        { title: 'Swap the date picker component' },
+        { title: 'Move recurring rules to the new picker' },
+        { title: 'Timezones in the picker' },
+        { title: 'Remove the old picker' },
+    ],
+});
+
+/** GitHub's word on a merge that stopped partway (SP59). */
+const STOPPED = { kind: 'refused', message: 'Required status check "export-e2e" is failing.' } as const;
+
+/**
+ * What GitHub answers the panel's merge with, in the harness: `accepted` closes it; `pending` keeps it, every one going
+ * drawn as being merged until the hidden `confirm` button says GitHub merged them; `refused` refuses it at once.
+ */
+type HarnessAnswer = 'accepted' | 'pending' | 'refused';
+
+/**
+ * A stack's merge panel as the app drives it (`MergePanelHost`): the line moved with `↑`/`↓`, the merge it sends
+ * written out under it (`sent`: the method, the top it goes to with its head, and every one going), and the record of
+ * its last merge (`record`) read against the stack as it is; the hidden `arrive` button brings the panel's read when
+ * `readLater`, and the stack read again (`reread`) after a refusal.
+ */
+const Harness = defineComponent({
+    props: {
+        members: { type: Array as PropType<readonly PullRequestItem[]>, required: true },
+        /** The number of the pull request it was opened on; `null` from the stack's entry. */
+        openedOn: { type: Number as PropType<number | null>, default: null },
+        settings: { type: Object as PropType<MergeSettings>, default: () => SQUASH_FIRST },
+        readLater: { type: Boolean, default: false },
+        record: { type: Object as PropType<StackMergeRecord | null>, default: null },
+        /** The stack as the read after a refusal finds it. */
+        reread: { type: Array as PropType<readonly PullRequestItem[] | null>, default: null },
+        answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
+    },
+    setup(props) {
+        const open = ref(true);
+        const arrived = ref(!props.readLater);
+        const sent = ref('Nothing sent');
+        const members = shallowRef(props.members);
+        const record = shallowRef(props.record);
+        const movedEnd = shallowRef<number | null | undefined>(undefined);
+        const sending = ref(false);
+        const advancing = ref<MergeStep | null>(null);
+
+        const description = computed(() => sampleStackDescription(members.value));
+        const merge = computed(() =>
+            getStackMerge({
+                description: description.value,
+                end:
+                    movedEnd.value === undefined
+                        ? getStackMergeEnd({ description: description.value, openedOn: props.openedOn })
+                        : movedEnd.value,
+            }),
+        );
+        const pr = computed(() => members.value.find(member => member.state === 'OPEN') ?? members.value[0]);
+        const options = computed((): MergeOptions | null => {
+            const first = pr.value;
+            return first && arrived.value
+                ? {
+                      status: first,
+                      proposedTexts: {
+                          SQUASH: { title: `${first.title} (#${first.number})`, body: 'Swaps the old picker out.' },
+                          MERGE: { title: `Merge pull request #${first.number}`, body: first.title },
+                      },
+                      allowedMergeMethods: null,
+                      requiresLinearHistory: false,
+                      viewerCanMergeAsAdmin: false,
+                      viewerCanEnableAutoMerge: false,
+                      isMergeQueueEnabled: false,
+                      checks: [],
+                      headCommit: null,
+                  }
+                : null;
+        });
+
+        return () => {
+            const first = pr.value;
+            return h('div', { style: { padding: '16px' } }, [
+                h('p', [h('span', { tid: 'sent' }, sent.value)]),
+                h(
+                    'button',
+                    {
+                        type: 'button',
+                        tid: 'arrive',
+                        hidden: true,
+                        onClick: () => {
+                            arrived.value = true;
+                            if (props.reread) {
+                                members.value = props.reread;
+                            }
+
+                            if (record.value?.kind === 'refused') {
+                                record.value = { ...record.value, read: true };
+                            }
+                        },
+                    },
+                    'The read arrives',
+                ),
+                h(
+                    'button',
+                    {
+                        type: 'button',
+                        tid: 'confirm',
+                        hidden: true,
+                        onClick: () =>
+                            (members.value = members.value.map(member =>
+                                member.merging
+                                    ? { ...member, merging: undefined, state: 'MERGED', merged: true }
+                                    : member,
+                            )),
+                    },
+                    'GitHub says merged',
+                ),
+                first &&
+                    h(MergePanel, {
+                        open: open.value,
+                        'onUpdate:open': (value: boolean) => (open.value = value),
+                        pr: first,
+                        settings: props.settings,
+                        options: options.value,
+                        reading: !arrived.value,
+                        allowed: true,
+                        sending: sending.value,
+                        record: null,
+                        sent: null,
+                        alreadyMerged: false,
+                        advancing: advancing.value,
+                        now: NOW,
+                        stack: {
+                            name: description.value.name.title,
+                            merge: merge.value,
+                            outcome: getStackMergeOutcome({ record: record.value, members: members.value }),
+                        },
+                        onMove: (direction: 'earlier' | 'later') => {
+                            movedEnd.value = moveStackMergeEnd(merge.value, direction);
+                        },
+                        onStep: (step: MergeStep) => {
+                            sent.value = `Step: ${step}`;
+                            advancing.value = step;
+                        },
+                        onVisit: (url: string) => (sent.value = `Visit: ${url}`),
+                        onMerge: (submission: MergeSubmission) => onMerge(submission),
+                    }),
+            ]);
+        };
+
+        function onMerge(submission: MergeSubmission) {
+            const { going, top } = merge.value;
+            sent.value = JSON.stringify({
+                request: submission.request,
+                top: top?.number,
+                head: top?.headRefOid,
+                going: going.map(member => member.number),
+            });
+            switch (props.answer) {
+                case 'accepted':
+                    open.value = false;
+                    return;
+                case 'pending': {
+                    const ids = new Set(going.map(member => member.id));
+                    members.value = members.value.map(member =>
+                        ids.has(member.id) ? { ...member, merging: submission.request.method } : member,
+                    );
+                    return;
+                }
+                case 'refused':
+                    record.value = {
+                        kind: 'refused',
+                        sent: {
+                            method: submission.request.method,
+                            going: going.map(member => ({
+                                itemId: member.id,
+                                number: member.number,
+                                head: member.headRefOid,
+                            })),
+                        },
+                        reason: { kind: 'refused', message: 'This stack must be rebased before it can be merged.' },
+                        partway: false,
+                        read: false,
+                    };
+            }
+        }
+    },
+});
+
+const meta = {
+    component: Harness,
+    args: { members: SAMPLE_STACKS.ready },
+} satisfies Meta<typeof Harness>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+/** SP40: from an entry, the whole stack — what lands, each with its state, and the button counts. */
+export const WholeStack: Story = {};
+
+/** SP41: four, from the entry — `↑` moves the line, later ones stay open and the button counts. */
+export const LineMoved: Story = { args: { members: CALENDAR } };
+
+/** SP42: opened on #1204 — everything up to it, the header the stack's. */
+export const FromPullRequest: Story = { args: { members: CALENDAR, openedOn: 1204 } };
+
+/** SP43: opened on the first — it lands alone, an ordinary merge, with its commit text. */
+export const OneLands: Story = { args: { members: CALENDAR, openedOn: 1203 } };
+
+/** SP44: several methods, one for all — Rebase chosen. */
+export const OneMethodForAll: Story = {
+    args: { settings: { ...SQUASH_FIRST, viewerDefaultMergeMethod: 'REBASE' } },
+};
+
+/** SP45: held — the line at the last that can land, the one holding the rest named. */
+export const Held: Story = { args: { members: SAMPLE_STACKS.held } };
+
+/** SP46: needs rebase, the target moved — `⌘↵` opens GitHub's "Rebase stack". */
+export const NeedsRebase: Story = { args: { members: SAMPLE_STACKS.needsRebase } };
+
+/** SP47: needs rebase after a push to an earlier one. */
+export const NeedsRebaseAfterPush: Story = {
+    args: {
+        members: sampleStack({
+            id: 'S_offline',
+            number: 94,
+            members: [
+                { title: 'Offline queue for booking edits', headRefName: 'offline-queue' },
+                { headRefName: 'replay', baseRefName: 'offline-queue', behindBase: true },
+                { baseRefName: 'replay' },
+            ],
+        }),
+    },
+};
+
+/** SP48: a pull request closed mid-stack — those before it can land, later ones can't. */
+export const ClosedInside: Story = { args: { members: SAMPLE_STACKS.closedInside } };
+
+/** SP49: a draft inside holds the rest; marking it ready is right there. */
+export const DraftInside: Story = { args: { members: SAMPLE_STACKS.draftInside } };
+
+/** SP50: the copy holds two of four — never ready, `⌘↵` does nothing. */
+export const Incomplete: Story = { args: { members: SAMPLE_STACKS.incomplete } };
+
+/** SP51: being read — `⌘↵` already works. */
+export const BeingRead: Story = { args: { readLater: true } };
+
+/** SP56: sent and accepted while open — every one going is being merged, none merged until GitHub says so. */
+export const BeingMerged: Story = { args: { answer: 'pending' } };
+
+/** SP58: one landed, the rest carries on. */
+export const PartlyMerged: Story = { args: { members: SAMPLE_STACKS.partlyMerged } };
+
+const BILLING = sampleStack({
+    id: 'S_billing',
+    number: 488,
+    members: [
+        { title: 'Split the export job' },
+        { title: 'Stream rows to storage' },
+        { title: 'Add the export format option' },
+        { title: 'Remove the old export' },
+    ],
+});
+
+/** Every one of {@link BILLING} going, with the head it had. */
+const BILLING_SENT = {
+    method: 'SQUASH' as const,
+    going: BILLING.map(member => ({ itemId: member.id, number: member.number, head: member.headRefOid })),
+};
+
+/** SP60, then SP59 once the stack is read again (`arrive`): the first landed, the second refused. */
+export const PartwayFailure: Story = {
+    args: {
+        members: BILLING,
+        record: { kind: 'refused', sent: BILLING_SENT, reason: STOPPED, partway: true, read: false },
+        reread: BILLING.map((member, index) => (index === 0 ? { ...member, state: 'MERGED', merged: true } : member)),
+    },
+};
+
+/** SP61: refused at once — GitHub's words, nothing merged, the way forward. */
+export const Refused: Story = { args: { members: SAMPLE_STACKS.ready, answer: 'refused' } };
+
+/** SP62: someone pushed to #1204 meanwhile — nothing merged, and which one has the new commit. */
+export const HeadMoved: Story = {
+    args: {
+        members: CALENDAR.map(member => (member.number === 1204 ? { ...member, headRefOid: 'pushed-head' } : member)),
+        record: {
+            kind: 'refused',
+            sent: {
+                method: 'SQUASH',
+                going: CALENDAR.slice(0, 2).map(member => ({
+                    itemId: member.id,
+                    number: member.number,
+                    head: member.headRefOid,
+                })),
+            },
+            reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
+            partway: false,
+            read: true,
+        },
+    },
+};

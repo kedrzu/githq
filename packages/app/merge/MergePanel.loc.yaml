@@ -186,3 +186,97 @@ branch:
   en: Branch
 behind:
   en: Behind {base}
+stackDialogTitle:
+  en: Merge the stack {name}
+stackReady:
+  en: Ready to merge
+stackAllLand:
+  en: All {count} land, first to last
+stackLandWithLanded:
+  en: '{count} land · {landed} landed before'
+stackLastOne:
+  en: The last one open
+stackOnlyOne:
+  en: 'Only #{number} · {rest} stay open'
+stackSomeLand:
+  en: '{count} land · {rest} stay open'
+stackCanLand:
+  en: '{count} of {open} can land'
+stackNotReadyYet:
+  en: Not ready yet
+stackHeldByDraft:
+  en: '#{number} is a draft'
+stackHeldByChecks:
+  en: '#{number} checks running'
+stackHeldByReview:
+  en: '#{number} waiting for review'
+stackHeldByOther:
+  en: '#{number} holds the rest'
+stackClosed:
+  en: '#{number} is closed'
+stackClosedAside:
+  en: Later ones can't land until the stack is rebuilt
+stackDissolve:
+  en: Dissolving the stack and linking it again isn't in githq yet
+stackDissolveDetail:
+  en: 'On GitHub, rebuild the stack without #{number}.'
+stackIncomplete:
+  en: Still reading this stack
+stackIncompleteAside:
+  en: '{held} of {size} in githq'
+stackNeedsRebase:
+  en: Needs rebase
+stackNeedsRebaseAside:
+  en: Nothing can merge until it's done
+stackTargetMoved:
+  en: '{base} moved'
+stackTargetMovedDetail:
+  en: Rebuilding the stack on it only exists on github.com. Checks will run again, and githq picks it up at the next refresh.
+stackEarlierPush:
+  en: '#{number} has a new commit'
+stackEarlierPushDetail:
+  en: The ones after it no longer sit on top of it. Rebasing the stack only exists on github.com.
+rebaseStack:
+  en: Rebase stack on GitHub
+stackBeingMergedAll:
+  en: Being merged, all {count}
+stackBeingMerged:
+  en: Being merged, {count}
+stackTakesLonger:
+  en: Stacks take longer · not merged yet
+stackMerged:
+  en: Merged, all {count}
+stackNothingOpen:
+  en: Nothing in this stack is open
+stackReading:
+  en: GitHub refused part of it
+stackReadingAside:
+  en: Reading what actually landed
+stackStopped:
+  en: 'Merge stopped at #{number}'
+stackStoppedAside:
+  en: '{landed} landed, {open} still open'
+stackRefused:
+  en: GitHub refused it
+stackHeadMoved:
+  en: 'Not merged: #{number} has a new commit'
+stackHeadMovedDetail:
+  en: 'The merge named the commit #{number} had when it was sent, so GitHub cancelled it, deliberately.'
+seeOnGitHub:
+  en: '#{number} on GitHub'
+lookAtCommit:
+  en: Look at the commit
+markNumberReady:
+  en: 'Mark #{number} ready'
+primaryAll:
+  en: '{primary} all {count}'
+primaryCount:
+  en: '{primary} {count}'
+primaryOf:
+  en: '{primary} {count} of {open}'
+eachOwnTitle:
+  en: each lands under its own title
+eachCommitOnto:
+  en: each commit onto {base}
+stopEarlier:
+  en: Stop earlier

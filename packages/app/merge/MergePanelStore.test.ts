@@ -40,6 +40,18 @@ const EDITED: MergeSubmission = {
 const SENT = { ...EDITED, head: 'head-oid' };
 const REFUSAL = { kind: 'refused', message: 'Required status check "ci" is expected.' } as const;
 
+/** A stack of two: #1, then the one the merge goes to (`PR_1`, #2). */
+const STACK_TOP = { ...samplePullRequest('PR_1'), stack: { id: 'S_1', number: 1, size: 2, position: 2 } };
+const STACK = [
+    {
+        ...samplePullRequest('PR_0'),
+        number: 1,
+        headRefOid: 'earlier-head',
+        stack: { id: 'S_1', number: 1, size: 2, position: 1 },
+    },
+    STACK_TOP,
+];
+
 test('accepted: the panel leaves and the opener moves on; refused at once: it stays, nothing moves, nothing toasts', async () => {
     const { panel, queue, session, answers } = await setup();
     const sent: string[] = [];
@@ -384,6 +396,55 @@ test('the records live in memory only: another account starts with none, and a r
     expect(panel.getSent('PR_1')).toBeNull();
 });
 
+test('a stack: opened on a pull request it takes everything up to it, from the entry the whole stack (stacked PRs D11)', async () => {
+    const { panel, items } = await setup();
+    items.upsertMany(STACK);
+
+    panel.open('PR_1', { wholeStack: true });
+    expect(panel.stack).toEqual({ id: 'S_1', openedOn: null });
+    panel.open('PR_1');
+    expect(panel.stack).toEqual({ id: 'S_1', openedOn: 2 });
+    panel.open('PR_9');
+    expect(panel.stack).toBeNull();
+});
+
+test('a stack refused at once: recorded for it with the head of every one going, the stack read again whole, said until the panel showing it closes (D11, SP61)', async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = REFUSED;
+
+    panel.open('PR_1', { wholeStack: true });
+    const refused = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    expect(await refused).toEqual({ kind: 'refused', reason: REFUSAL });
+    // No commit text with two or more going (D11).
+    expect(session.github.requests.find(request => request.operation === MERGE)?.variables.body).toEqual({
+        merge_method: 'squash',
+        sha: 'head-oid',
+    });
+
+    expect(panel.getStackRecord('S_1')).toMatchObject({
+        kind: 'refused',
+        partway: false,
+        sent: {
+            going: [
+                { itemId: 'PR_0', head: 'earlier-head' },
+                { itemId: 'PR_1', head: 'head-oid' },
+            ],
+        },
+    });
+    await session.clock.advance(0);
+    expect(session.operations()).toContain('PullRequestStacks');
+    expect(panel.getStackRecord('S_1')).toMatchObject({ kind: 'refused', read: true });
+
+    panel.close();
+    expect(panel.getStackRecord('S_1')).toBeNull();
+});
+
 async function setup() {
     const login = `user-${crypto.randomUUID()}`;
     const answers: {
@@ -400,6 +461,8 @@ async function setup() {
                     return mergeOptionsAnswer(answers.optionsHead);
                 case 'ItemDetail':
                     return { data: { node: samplePullRequestDetailNode('PR_1', '2026-10-20T10:00:00Z') } };
+                case 'PullRequestStacks':
+                    return { data: { nodes: [{ id: 'S_1', entries: { totalCount: 0, nodes: [] } }] } };
                 default:
                     return undefined;
             }

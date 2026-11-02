@@ -90,6 +90,7 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                 });
                 container.set(MergePanelStore, {
                     itemId: null,
+                    stack: null,
                     opening: 0,
                     get confirmations() {
                         return confirmationsRef.value;
@@ -99,6 +100,7 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                     close: () => undefined,
                     merge: () => Promise.resolve({ kind: 'accepted' }),
                     getRecord: () => null,
+                    getStackRecord: () => null,
                     getSent: () => null,
                     noteHeadCommit: () => undefined,
                     forget: () => undefined,

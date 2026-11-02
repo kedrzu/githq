@@ -10,9 +10,10 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import { toItem } from '@/store/toItem.js';
 
-import { createMergeEdit } from './createMergeEdit.js';
+import { createMergeEdits } from './createMergeEdits.js';
 import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
 import { toMergeOptions } from './toMergeOptions.js';
 
@@ -20,6 +21,8 @@ import { toMergeOptions } from './toMergeOptions.js';
 export interface MergeParams {
     /** The pull request as shown: its head commit is the one the merge names. */
     readonly item: PullRequestItem;
+    /** The open pull requests of its stack before it, which the merge lands with it (stacked PRs D11). */
+    readonly members?: readonly PullRequestItem[];
     readonly request: MergeRequest;
     /**
      * Whether the merge panel shows the pull request. A refusal is the panel's to show only then; once it closed (or
@@ -48,7 +51,7 @@ export const PullRequestMerger = defineService({
         logger: Logger,
     },
     setup({ accounts, editor, items, details, queue, clock, logger }) {
-        return { readOptions, merge };
+        return { readOptions, merge, readStack };
 
         /**
          * Reads the merge options of a pull request fresh (`PullRequestMergeOptions`), and writes the status read
@@ -110,19 +113,61 @@ export const PullRequestMerger = defineService({
          * merge it, or it is being merged already (its permissions say so).
          */
         async function merge(params: MergeParams): Promise<MergeAnswer> {
-            const { item, request, shown, onLateEnd } = params;
+            const { item, members = [], request, shown, onLateEnd } = params;
             const account = accounts.current;
             if (!account || !editor.getPermissions(item).merge) {
                 return { kind: 'refused', reason: { kind: 'notAllowed' } };
             }
 
             const answered = createPromise<MergeAnswer>();
-            const edit = createMergeEdit({ item, request, clock, shown, onAnswer: answered.resolve, onLateEnd });
-            void queue.submit({ edits: [edit], account, itemCount: 1 }).finally(() => {
+            const edits = createMergeEdits({
+                item,
+                members,
+                request,
+                clock,
+                shown,
+                onAnswer: answered.resolve,
+                onLateEnd,
+            });
+            void queue.submit({ edits, account, itemCount: edits.length }).finally(() => {
                 // Never sent: another account signed in, or none, meanwhile. Settled already otherwise.
                 answered.resolve({ kind: 'refused', reason: { kind: 'notAllowed' } });
             });
             return await answered.promise;
+        }
+
+        /**
+         * Reads a stack whole again (`PullRequestStacks`) — after a merge of it that did not end merged, what landed is
+         * only what GitHub holds (stacked PRs D11) — and writes its pull requests into the copy. Resolves once read,
+         * or once GitHub could not be asked; never rejects.
+         */
+        async function readStack(stackId: string, size: number): Promise<void> {
+            const account = accounts.current;
+            if (!account) {
+                return;
+            }
+
+            const read: Item[] = [];
+            try {
+                const { nodes } = await account.sdk.PullRequestStacks(
+                    { ids: [stackId], first: size },
+                    { onPartialErrors: errors => logger.debug('Stack read in part', { stackId, errors }) },
+                );
+                const node = nodes[0];
+                for (const entry of node && 'entries' in node ? (node.entries.nodes ?? []) : []) {
+                    const item = toItem(entry?.pullRequest ?? null);
+                    if (item) {
+                        read.push(item);
+                    }
+                }
+            } catch (error) {
+                logger.warn('The stack was not read again', { stackId, error });
+                return;
+            }
+
+            if (accounts.isCurrent(account)) {
+                items.upsertMany(read);
+            }
         }
     },
 });

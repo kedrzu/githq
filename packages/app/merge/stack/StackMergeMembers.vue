@@ -1,0 +1,362 @@
+<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, being merged, or what a merge that did not end merged left of it — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
+<script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { CircleDashed, Ellipsis, GitMerge, LoaderCircle } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+import Kbd from '@/components/Kbd.vue';
+import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
+
+import * as l from './StackMergeMembers.loc.js';
+import type { StackMergeRow, StackMergeRowState } from './StackMergeTypes.js';
+
+const props = defineProps<{
+  rows: readonly StackMergeRow[];
+  /** The line after the last one going: `stops` where it was put, `held` at the last that can land; `null` for none. */
+  line: 'held' | 'stops' | null;
+}>();
+
+/** How a row's state is coloured. */
+type Tone = 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
+
+/** A row as drawn: its pull request, its icon, and its state in words. */
+interface DrawnRow {
+  readonly key: string;
+  /** `null` for places the copy does not hold yet. */
+  readonly pullRequest: PullRequestItem | null;
+  readonly going: boolean;
+  readonly dimmed: boolean;
+  readonly icon: LucideIcon;
+  readonly iconTone: Tone | 'closed' | 'draft' | 'open';
+  /** Being merged (SP56): the spinning icon says it, the text is for screen readers alone. */
+  readonly spin: boolean;
+  readonly text: string;
+  readonly tone: Tone;
+  /** The line is drawn after it. */
+  readonly lineAfter: boolean;
+}
+
+const t = useTranslate();
+
+const lastGoing = computed(() => props.rows.findLastIndex(row => row.kind === 'pullRequest' && row.going));
+const drawn = computed(() => props.rows.map((row, index) => draw(row, index)));
+
+function draw(row: StackMergeRow, index: number): DrawnRow {
+  const lineAfter = props.line !== null && index === lastGoing.value;
+  if (row.kind === 'missing') {
+    return {
+      key: `missing-${index}`,
+      pullRequest: null,
+      going: false,
+      dimmed: false,
+      icon: Ellipsis,
+      iconTone: 'dim',
+      spin: false,
+      text: t(l.missing, { count: row.count }),
+      tone: 'dim',
+      lineAfter,
+    };
+  }
+
+  const { pullRequest, state, going, dimmed } = row;
+  const base = { key: pullRequest.id, pullRequest, going, dimmed, lineAfter };
+  switch (state.kind) {
+    case 'merging':
+      return {
+        ...base,
+        icon: LoaderCircle,
+        iconTone: 'warning',
+        spin: true,
+        text: t(l.beingMerged),
+        tone: 'warning',
+      };
+    case 'notKnown':
+      return {
+        ...base,
+        icon: CircleDashed,
+        iconTone: 'dim',
+        spin: false,
+        text: t(l.notKnown),
+        tone: 'dim',
+      };
+    default: {
+      const look = getPullRequestKind(pullRequest);
+      const { text, tone } = describe(state, pullRequest);
+      return { ...base, icon: look.icon, iconTone: look.tone, spin: false, text, tone };
+    }
+  }
+}
+
+function describe(state: StackMergeRowState, pr: PullRequestItem): { text: string; tone: Tone } {
+  switch (state.kind) {
+    case 'own':
+      return describeOwn(state.pip, pr);
+    case 'staysOpen':
+      return { text: t(l.staysOpen), tone: 'dim' };
+    case 'blocked':
+      return { text: t(l.blocked), tone: 'dim' };
+    case 'heldBy':
+      return { text: t(l.heldBy, { number: state.number }), tone: 'dim' };
+    case 'refused':
+      return { text: t(l.refused), tone: 'danger' };
+    case 'stillOpen':
+      return { text: t(l.stillOpen), tone: 'dim' };
+    case 'notMerged':
+      return { text: t(l.notMerged), tone: 'dim' };
+    case 'newCommit':
+      return { text: t(l.newCommit), tone: 'warning' };
+    case 'merging':
+      return { text: t(l.beingMerged), tone: 'warning' };
+    case 'notKnown':
+      return { text: t(l.notKnown), tone: 'dim' };
+    default:
+      return assertNever(state);
+  }
+}
+
+/** Its own state in words, as the stack's map says it. */
+function describeOwn(kind: StackPullRequestPipKind, pr: PullRequestItem): { text: string; tone: Tone } {
+  const standing = getPullRequestStanding(pr);
+  switch (kind) {
+    case 'ready':
+      return { text: t(l.ready), tone: 'success' };
+    case 'merged':
+      return { text: t(l.merged), tone: 'done' };
+    case 'closed':
+      return { text: t(l.closed), tone: 'danger' };
+    case 'draft':
+      return { text: t(l.draft), tone: 'muted' };
+    case 'broken': {
+      let text: string;
+      if (standing.checksFailing) {
+        text =
+          standing.failingChecks > 0
+            ? t(l.checksFailing, { count: standing.failingChecks })
+            : t(l.checksFailingUncounted);
+      } else {
+        text = standing.changesRequested ? t(l.changesRequested) : t(l.conflicts);
+      }
+
+      return { text, tone: 'danger' };
+    }
+    case 'moving':
+      // Moving without running checks: the stack needs a rebase (D21).
+      return { text: standing.checksRunning ? t(l.checksRunning) : t(l.needsRebase), tone: 'warning' };
+    case 'waiting':
+      return { text: standing.waitingForReview ? t(l.waitingForReview) : t(l.cannotMergeYet), tone: 'dim' };
+    default:
+      return assertNever(kind);
+  }
+}
+</script>
+
+<template>
+  <ol
+    :class="css.stackMergeMembers"
+    :aria-label="t(l.listLabel)"
+  >
+    <template
+      v-for="item in drawn"
+      :key="item.key"
+    >
+      <li
+        :class="[css.stackMergeMembers_row, item.dimmed && css.stackMergeMembers_row_dimmed]"
+        tid="stack-member"
+      >
+        <component
+          :is="item.icon"
+          :class="[
+            css.stackMergeMembers_icon,
+            css[`stackMergeMembers_icon_${item.iconTone}`],
+            item.spin && css.stackMergeMembers_icon_spin,
+          ]"
+          aria-hidden="true"
+        />
+        <template v-if="item.pullRequest">
+          <span :class="css.stackMergeMembers_number">#{{ item.pullRequest.number }}</span>
+          <span :class="css.stackMergeMembers_title">{{ item.pullRequest.title }}</span>
+        </template>
+        <span
+          :class="[
+            css.stackMergeMembers_state,
+            css[`stackMergeMembers_state_${item.tone}`],
+            item.spin && css.stackMergeMembers_hidden,
+            !item.pullRequest && css.stackMergeMembers_state_missing,
+          ]"
+          >{{ item.text }}</span
+        >
+        <template v-if="item.going && !item.spin">
+          <GitMerge
+            :class="css.stackMergeMembers_lands"
+            aria-hidden="true"
+          />
+          <span :class="css.stackMergeMembers_hidden">{{ t(l.lands) }}</span>
+        </template>
+      </li>
+      <li
+        v-if="item.lineAfter"
+        :class="css.stackMergeMembers_line"
+        tid="stack-line"
+      >
+        <span :class="css.stackMergeMembers_rule" />
+        <span :class="css.stackMergeMembers_lineLabel">{{
+          line === 'held' ? t(l.canGoUpToHere) : t(l.stopsHere)
+        }}</span>
+        <Kbd keys="↑" />
+        <Kbd keys="↓" />
+        <span :class="css.stackMergeMembers_rule" />
+      </li>
+    </template>
+  </ol>
+</template>
+
+<style lang="scss" module="css">
+.stackMergeMembers {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: $spacing-10 14px;
+  margin: 0;
+  list-style: none;
+}
+
+.stackMergeMembers_row {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+  min-height: 20px;
+  white-space: nowrap;
+}
+
+.stackMergeMembers_icon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+
+  .stackMergeMembers_row_dimmed & {
+    opacity: 0.45;
+  }
+}
+
+.stackMergeMembers_icon_open,
+.stackMergeMembers_icon_success {
+  color: $color-green;
+}
+
+.stackMergeMembers_icon_done {
+  color: $color-purple;
+}
+
+.stackMergeMembers_icon_closed,
+.stackMergeMembers_icon_danger {
+  color: $color-red;
+}
+
+.stackMergeMembers_icon_warning {
+  color: $color-amber;
+}
+
+.stackMergeMembers_icon_draft,
+.stackMergeMembers_icon_muted,
+.stackMergeMembers_icon_dim {
+  color: $color-fg-3;
+}
+
+.stackMergeMembers_icon_spin {
+  animation: stack-merge-members-spin 1s linear infinite;
+}
+
+.stackMergeMembers_number {
+  flex: none;
+  font-family: $font-family-mono;
+  font-size: $font-size-2xs;
+  color: $color-fg-dim;
+}
+
+.stackMergeMembers_title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: $font-size-sm;
+  color: $color-fg-2;
+
+  .stackMergeMembers_row_dimmed & {
+    color: $color-fg-dim;
+  }
+}
+
+.stackMergeMembers_state {
+  flex: none;
+  font-size: $font-size-xs;
+}
+
+.stackMergeMembers_state_missing {
+  flex: 1;
+}
+
+.stackMergeMembers_state_success {
+  color: $color-green;
+}
+
+.stackMergeMembers_state_done {
+  color: $color-purple;
+}
+
+.stackMergeMembers_state_danger {
+  color: $color-red;
+}
+
+.stackMergeMembers_state_warning {
+  color: $color-amber;
+}
+
+.stackMergeMembers_state_muted {
+  color: $color-fg-2;
+}
+
+.stackMergeMembers_state_dim {
+  color: $color-fg-dim;
+}
+
+.stackMergeMembers_lands {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: $color-fg-3;
+}
+
+.stackMergeMembers_line {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+}
+
+.stackMergeMembers_rule {
+  flex: 1;
+  height: 1px;
+  background: $color-accent;
+}
+
+.stackMergeMembers_lineLabel {
+  flex: none;
+  font-size: $font-size-2xs;
+  color: $color-accent;
+}
+
+.stackMergeMembers_hidden {
+  @include visually-hidden;
+}
+
+@keyframes stack-merge-members-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

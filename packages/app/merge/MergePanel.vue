@@ -9,13 +9,18 @@ import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
   ArrowUpRight,
+  CircleCheck,
+  CircleDashed,
   CircleX,
   Eye,
   GitBranch,
   GitCommitHorizontal,
   GitMerge,
   GitPullRequestArrow,
+  Hourglass,
   Info,
+  Layers,
+  Loader,
   LoaderCircle,
   Lock,
   MessageSquareWarning,
@@ -38,18 +43,21 @@ import { usePullRequestConditions } from '@/item/usePullRequestConditions.js';
 import type { PullRequestCondition } from '@/item/usePullRequestConditions.js';
 import { usePullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import type { PullRequestVerdict } from '@/item/usePullRequestVerdict.js';
+import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
+import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackBlocker } from '@/store/stacks/describeStack.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { Browser } from '@/services/Browser.js';
 import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import { countMergeChecks } from './countMergeChecks.js';
-import { MERGE_TIME_LIMIT_MS } from './createMergeEdit.js';
+import { MERGE_TIME_LIMIT_MS } from './createMergeEdits.js';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import { getMergeEnd } from './getMergeEnd.js';
@@ -68,6 +76,9 @@ import type {
   MergeSubmission,
   SentMerge,
 } from './MergeTypes.js';
+import { getStackMergeRows } from './stack/getStackMergeRows.js';
+import StackMergeMembers from './stack/StackMergeMembers.vue';
+import type { StackMerge, StackMergeOutcome, StackMergeView } from './stack/StackMergeTypes.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -107,6 +118,12 @@ const props = defineProps<{
   advancing: MergeStep | null;
   /** Epoch ms a running check's time is counted to. */
   now: number;
+  /**
+   * Open for a stack (stacked PRs D11): `pr` is its first open pull request — what lands alone when one is going
+   * (D18) — and this the stack's merge: its list, the line, and what the panel says where the stack speaks for the
+   * range. None outside a stack.
+   */
+  stack?: StackMergeView | null;
 }>();
 
 const emit = defineEmits<{
@@ -116,6 +133,8 @@ const emit = defineEmits<{
   step: [step: MergeStep];
   /** A link's key (`D`, `O`): opens the page on github.com in a new tab. */
   visit: [url: string];
+  /** `↑` or `↓` in a stack: the line moves one open pull request earlier or later (stacked PRs D18). */
+  move: [direction: 'earlier' | 'later'];
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
@@ -154,6 +173,24 @@ interface BandLink {
   readonly label: string;
   readonly url: string;
   readonly key: string;
+}
+
+/** What `⌘↵` does where the stack speaks for its range. */
+type StackForward =
+  | { readonly kind: 'merge' }
+  | { readonly kind: 'visit'; readonly url: string; readonly label: string }
+  | { readonly kind: 'markReady'; readonly number: number }
+  | { readonly kind: 'close' }
+  | { readonly kind: 'none'; readonly label: string };
+
+/**
+ * What the panel says of a stack's range where the stack speaks for it, rather than its first open pull request
+ * going alone (D18): the verdict, a band beneath it, and the way forward.
+ */
+interface StackSays {
+  readonly verdict: PanelVerdict;
+  readonly band: Band | null;
+  readonly forward: StackForward;
 }
 
 /** The method the panel was on when the read took it away (PM9). */
@@ -199,8 +236,57 @@ const end = computed(() => getMergeEnd(props.record, props.pr, props.options));
 const outcomeUnknown = computed(() => end.value?.kind === 'unknown');
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
+/** Two or more going with a stack's merge: no commit text, and none sent (stacked PRs D11). */
+const several = computed(() => (props.stack?.merge.going.length ?? 0) > 1);
+const stackRows = computed(() =>
+  props.stack
+    ? getStackMergeRows({ merge: props.stack.merge, outcome: props.stack.outcome, sending: props.sending })
+    : [],
+);
+/** The stack's members being merged: none while the merge is sent, as the panel stays as it was then (PM32a). */
+const stackMerging = computed(() =>
+  props.stack && !props.sending ? props.stack.merge.open.filter(pr => pr.merging !== undefined) : [],
+);
+const stackSays = computed((): StackSays | null => (props.stack ? getStackSays(props.stack) : null));
+/** The line after the last one going, while later ones stay open (SP41, SP45); none otherwise. */
+const stackLine = computed((): 'held' | 'stops' | null => {
+  const view = props.stack;
+  const merge = view?.merge;
+  if (!merge || view.outcome || stackMerging.value.length > 0 || merge.going.length >= merge.open.length) {
+    return null;
+  }
+
+  if (merge.block?.kind === 'incomplete' || merge.block?.kind === 'needsRebase') {
+    return null;
+  }
+
+  return merge.holder && merge.going.length === merge.canLand ? 'held' : 'stops';
+});
+const canMoveLine = computed(() => {
+  const merge = props.stack?.merge;
+  return (
+    merge !== undefined &&
+    !props.stack?.outcome &&
+    merge.open.length > 1 &&
+    stackMerging.value.length === 0 &&
+    !props.sending &&
+    !editing.value
+  );
+});
+/** A draft holds the rest while those before it can land (SP49): marking it ready is right there. */
+const stackDraft = computed(() => {
+  const merge = props.stack?.merge;
+  return merge && !merge.block && merge.holder?.kind === 'draft' && !props.stack?.outcome ? merge.holder.number : null;
+});
+
 /** Merging is the way forward: ⌘↵ merges (D6, D12). */
-const mergesNow = computed(() => !merging.value && !outcomeUnknown.value && standing.forward === 'merge');
+const mergesNow = computed(() => {
+  if (stackSays.value) {
+    return stackSays.value.forward.kind === 'merge';
+  }
+
+  return !merging.value && !outcomeUnknown.value && standing.forward === 'merge';
+});
 /**
  * The step ⌘↵ takes instead of merging: the one asked for until it is done, else the way forward where it can't
  * merge yet (D12). `null` where it merges, or nothing is left to do.
@@ -210,6 +296,10 @@ const step = computed((): MergeStep | null => {
     return props.advancing;
   }
 
+  if (stackSays.value) {
+    return stackSays.value.forward.kind === 'markReady' ? 'markReady' : null;
+  }
+
   const forward = merging.value || outcomeUnknown.value ? null : standing.forward;
   return forward === 'merge' ? null : forward;
 });
@@ -217,6 +307,10 @@ const step = computed((): MergeStep | null => {
 const leadsToMerge = computed(() => mergesNow.value || step.value === 'updateBranch');
 
 const verdict = computed((): PanelVerdict => {
+  if (stackSays.value) {
+    return stackSays.value.verdict;
+  }
+
   if (merging.value) {
     return { kind: 'merging', ...standing.verdict };
   }
@@ -316,8 +410,11 @@ const canSend = computed(
 const stepButton = computed((): StepButton | null => {
   const current = step.value;
   switch (current) {
-    case 'markReady':
-      return { label: t(l.markReady), icon: Eye };
+    case 'markReady': {
+      const forward = stackSays.value?.forward;
+      const label = forward?.kind === 'markReady' ? t(l.markNumberReady, { number: forward.number }) : t(l.markReady);
+      return { label, icon: Eye };
+    }
     case 'updateBranch':
       return { label: t(l.updateBranch), icon: GitPullRequestArrow };
     // A link of its own, out of the panel.
@@ -334,6 +431,11 @@ const choosable = computed(() => methods.value.length > 1 && !editing.value && !
 /** While being merged, the method it was sent with (PM24). */
 const shownMethod = computed(() => shownPr.value.merging ?? method.value);
 const showChecks = computed(() => {
+  // The checks of one pull request: not those of a range of them.
+  if (several.value) {
+    return false;
+  }
+
   switch (verdict.value.kind) {
     case 'ready':
     case 'blocked':
@@ -349,6 +451,11 @@ const showChecks = computed(() => {
   }
 });
 const showLanding = computed(() => {
+  const says = stackSays.value;
+  if (says) {
+    return (says.forward.kind === 'merge' || says.forward.kind === 'markReady') && !checksOpen.value;
+  }
+
   switch (verdict.value.kind) {
     case 'merging':
     case 'refused':
@@ -370,6 +477,19 @@ const primaryLabel = computed(() => {
   // Merged or closed meanwhile (the read, a sync): that is what stops it, whatever the role.
   if (!props.allowed && isOpenPullRequest(props.pr)) {
     return t(l.notAllowed);
+  }
+
+  const says = stackSays.value;
+  if (says?.forward.kind === 'none') {
+    return says.forward.label;
+  }
+
+  if (says && method.value !== null) {
+    if (props.stack?.outcome?.kind === 'refused') {
+      return t(l.tryAgain);
+    }
+
+    return several.value && props.stack ? stackPrimaryName(props.stack.merge, method.value) : primaryName(method.value);
   }
 
   if (!mergesNow.value) {
@@ -407,8 +527,16 @@ const checksHint = computed(() => {
 });
 const typeIcon = computed(() => getPullRequestKind(props.pr));
 const reference = computed(() => `${props.pr.repository.nameWithOwner}#${props.pr.number}`);
+/** The method's note under a stack's merge of two or more (SP40, SP44). */
+const stackMethodNote = computed(() =>
+  shownMethod.value === 'REBASE' ? t(l.eachCommitOnto, { base: props.pr.baseRefName }) : t(l.eachOwnTitle),
+);
 /** What the last merge's end says beneath the verdict: GitHub's reason, the new commit, or that the next refresh settles it. */
 const band = computed((): Band | null => {
+  if (stackSays.value) {
+    return stackSays.value.band;
+  }
+
   const record = end.value;
   const base = props.pr.baseRefName;
   switch (record?.kind) {
@@ -528,6 +656,290 @@ function endVerdict(): PanelVerdict | null {
     default:
       return assertNever(record);
   }
+}
+
+/**
+ * What the panel says of a stack's range (stacked PRs D11, D18, D19, D21): how its last merge that did not end merged
+ * reads (SP59–SP62), all merged, being merged (SP56), the copy incomplete (SP50) or the stack needing a rebase
+ * (SP46, SP47) — whatever the line — then, with two or more going or one that can merge, what holds the range or
+ * that it is ready (SP40–SP45, SP48, SP49). `null` where one alone is going and it can't merge as it is: its own
+ * verdict and way forward then, as for any pull request.
+ */
+function getStackSays(view: StackMergeView): StackSays | null {
+  const { merge, outcome } = view;
+  if (outcome) {
+    return getOutcomeSays(merge, outcome);
+  }
+
+  const landed = countLanded(merge);
+  if (merge.open.length === 0) {
+    const text = landed > 0 ? t(l.stackMerged, { count: landed }) : t(l.stackNothingOpen);
+    return {
+      verdict: { kind: 'merged', tone: 'done', icon: GitMerge, text, aside: null },
+      band: null,
+      forward: { kind: 'close' },
+    };
+  }
+
+  const going = stackMerging.value.length;
+  if (going > 0) {
+    const text =
+      going === merge.open.length && landed === 0
+        ? t(l.stackBeingMergedAll, { count: going })
+        : t(l.stackBeingMerged, { count: going });
+    const said: PanelVerdict = { kind: 'merging', tone: 'warning', icon: Loader, text, aside: t(l.stackTakesLonger) };
+    return { verdict: said, band: null, forward: { kind: 'close' } };
+  }
+
+  const { block, holder } = merge;
+  const offeredName = method.value === null ? t(l.nothingToOffer) : primaryName(method.value);
+  if (block?.kind === 'incomplete') {
+    const held = merge.members.filter(pip => pip.kind !== 'missing').length;
+    const aside = t(l.stackIncompleteAside, { held, size: merge.members.length });
+    const said: PanelVerdict = {
+      kind: 'blocked',
+      tone: 'muted',
+      icon: CircleDashed,
+      text: t(l.stackIncomplete),
+      aside,
+    };
+    return { verdict: said, band: null, forward: { kind: 'none', label: offeredName } };
+  }
+
+  if (block?.kind === 'needsRebase') {
+    const said: PanelVerdict = {
+      kind: 'blocked',
+      tone: 'warning',
+      icon: GitBranch,
+      text: t(l.stackNeedsRebase),
+      aside: t(l.stackNeedsRebaseAside),
+    };
+    const under: Band =
+      block.cause.kind === 'earlierPush'
+        ? {
+            tone: 'warning',
+            icon: GitCommitHorizontal,
+            title: t(l.stackEarlierPush, { number: block.cause.pushedNumber }),
+            text: t(l.stackEarlierPushDetail),
+            link: null,
+          }
+        : {
+            tone: 'warning',
+            icon: GitBranch,
+            title: t(l.stackTargetMoved, { base: props.pr.baseRefName }),
+            text: t(l.stackTargetMovedDetail),
+            link: null,
+          };
+    const url = merge.forward?.kind === 'rebaseOnGitHub' ? merge.forward.url : props.pr.url;
+    return { verdict: said, band: under, forward: { kind: 'visit', url, label: t(l.rebaseStack) } };
+  }
+
+  // One alone going that can't merge as it is: its own verdict says why, and its way forward (D18).
+  if (merge.ordinary && standing.forward !== 'merge') {
+    return null;
+  }
+
+  const closed = block?.kind === 'closed' ? block.closedNumber : holder?.kind === 'closed' ? holder.number : null;
+  if (closed !== null) {
+    const text = t(l.stackClosed, { number: closed });
+    const said: PanelVerdict = {
+      kind: block ? 'blocked' : 'ready',
+      tone: 'danger',
+      icon: CircleX,
+      text,
+      aside: t(l.stackClosedAside),
+    };
+    const under: Band = {
+      tone: 'muted',
+      icon: Info,
+      title: t(l.stackDissolve),
+      text: t(l.stackDissolveDetail, { number: closed }),
+      link: { label: t(l.openOnGitHub), url: merge.open.at(-1)?.url ?? props.pr.url, key: 'O' },
+    };
+    return { verdict: said, band: under, forward: block ? { kind: 'none', label: text } : { kind: 'merge' } };
+  }
+
+  const blocker = block?.kind === 'held' ? block.blocker : holder;
+  if (blocker) {
+    const text =
+      merge.canLand === 0
+        ? t(l.stackNotReadyYet)
+        : t(l.stackCanLand, { count: merge.canLand, open: merge.open.length });
+    const said: PanelVerdict = {
+      kind: block ? 'blocked' : 'ready',
+      tone: 'warning',
+      icon: Hourglass,
+      text,
+      aside: heldAside(blocker),
+    };
+    let forward: StackForward = { kind: 'merge' };
+    if (block) {
+      forward =
+        merge.forward?.kind === 'markReady'
+          ? { kind: 'markReady', number: merge.forward.pullRequest.number }
+          : { kind: 'none', label: text };
+    }
+
+    return { verdict: said, band: null, forward };
+  }
+
+  const said: PanelVerdict = {
+    kind: 'ready',
+    tone: 'success',
+    icon: CircleCheck,
+    text: t(l.stackReady),
+    aside: readyAside(merge, landed),
+  };
+  return { verdict: said, band: null, forward: { kind: 'merge' } };
+}
+
+/**
+ * How a stack's last merge that did not end merged reads (stacked PRs D11): what is true per pull request, never all
+ * or none by assumption. Refused at once, ⌘↵ is the range's way forward again (SP61).
+ */
+function getOutcomeSays(merge: StackMerge, outcome: StackMergeOutcome): StackSays {
+  switch (outcome.kind) {
+    case 'reading': {
+      const said: PanelVerdict = {
+        kind: 'unknown',
+        tone: 'warning',
+        icon: CircleDashed,
+        text: t(l.stackReading),
+        aside: t(l.stackReadingAside),
+      };
+      return { verdict: said, band: refusalBand(outcome.reason), forward: { kind: 'close' } };
+    }
+    case 'headMoved': {
+      const { pullRequest } = outcome;
+      const look = getMergeEndLook('headMoved');
+      const said: PanelVerdict = {
+        kind: 'newCommit',
+        ...look,
+        text: t(l.stackHeadMoved, { number: pullRequest.number }),
+        aside: t(l.nothingMerged),
+      };
+      const under: Band = {
+        tone: 'warning',
+        icon: GitCommitHorizontal,
+        title: t(l.stackEarlierPush, { number: pullRequest.number }),
+        text: t(l.stackHeadMovedDetail, { number: pullRequest.number }),
+        link: { label: t(l.lookAtCommit), url: `${pullRequest.url}/commits/${pullRequest.headRefOid}`, key: 'O' },
+      };
+      return { verdict: said, band: under, forward: { kind: 'close' } };
+    }
+    case 'stopped': {
+      const { at, landed } = outcome;
+      const said: PanelVerdict = {
+        kind: 'refused',
+        ...getMergeEndLook('refused'),
+        text: t(l.stackStopped, { number: at.number }),
+        aside: t(l.stackStoppedAside, { landed, open: merge.open.length }),
+      };
+      const under: Band = {
+        ...refusalBand(outcome.reason),
+        link: { label: t(l.seeOnGitHub, { number: at.number }), url: at.url, key: 'O' },
+      };
+      return { verdict: said, band: under, forward: { kind: 'close' } };
+    }
+    case 'refused': {
+      const said: PanelVerdict = {
+        kind: 'refused',
+        ...getMergeEndLook('refused'),
+        text: t(l.stackRefused),
+        aside: t(l.nothingMerged),
+      };
+      const under = refusalBand(outcome.reason);
+      switch (merge.forward?.kind) {
+        case 'merge':
+          return { verdict: said, band: under, forward: { kind: 'merge' } };
+        case 'rebaseOnGitHub':
+          return {
+            verdict: said,
+            band: under,
+            forward: { kind: 'visit', url: merge.forward.url, label: t(l.rebaseStack) },
+          };
+        case 'markReady':
+          return {
+            verdict: said,
+            band: under,
+            forward: { kind: 'markReady', number: merge.forward.pullRequest.number },
+          };
+        case undefined:
+          return { verdict: said, band: under, forward: { kind: 'close' } };
+        default:
+          return assertNever(merge.forward);
+      }
+    }
+    case 'unknown': {
+      const said: PanelVerdict = {
+        kind: 'unknown',
+        ...getMergeEndLook('unknown'),
+        text: t(l.outcomeUnknown),
+        aside: t(l.notAnsweredYet),
+      };
+      const under: Band = {
+        tone: 'muted',
+        icon: Info,
+        title: t(l.nextRefreshSettles),
+        text: outcome.accepted ? t(l.noResult, { minutes: MERGE_TIME_LIMIT_MS / 60_000 }) : t(l.noAnswer),
+        link: { label: t(l.openOnGitHub), url: props.pr.url, key: 'O' },
+      };
+      return { verdict: said, band: under, forward: { kind: 'close' } };
+    }
+    default:
+      return assertNever(outcome);
+  }
+}
+
+/** Who holds the rest of a stack, and why (SP45, SP49). */
+function heldAside(blocker: StackBlocker) {
+  const { number } = blocker;
+  const reason = getHeldReason(blocker);
+  switch (reason) {
+    case 'draft':
+      return t(l.stackHeldByDraft, { number });
+    case 'checks':
+      return t(l.stackHeldByChecks, { number });
+    case 'review':
+      return t(l.stackHeldByReview, { number });
+    case 'other':
+      return t(l.stackHeldByOther, { number });
+    default:
+      return assertNever(reason);
+  }
+}
+
+/** What lands of a stack ready as far as the line (SP40–SP43). */
+function readyAside(merge: StackMerge, landed: number) {
+  const count = merge.going.length;
+  const rest = merge.open.length - count;
+  if (rest > 0) {
+    const first = merge.going[0];
+    return count === 1 && first
+      ? t(l.stackOnlyOne, { number: first.number, rest })
+      : t(l.stackSomeLand, { count, rest });
+  }
+
+  if (count === 1) {
+    return t(l.stackLastOne);
+  }
+
+  return landed > 0 ? t(l.stackLandWithLanded, { count, landed }) : t(l.stackAllLand, { count });
+}
+
+/** "Squash and merge all 3", "… 2" after some landed, "… 2 of 4" with the line before the last (SP40, SP41, SP58). */
+function stackPrimaryName(merge: StackMerge, value: PullRequestMergeMethod) {
+  const primary = primaryName(value);
+  const count = merge.going.length;
+  if (count < merge.open.length) {
+    return t(l.primaryOf, { primary, count, open: merge.open.length });
+  }
+
+  return countLanded(merge) > 0 ? t(l.primaryCount, { primary, count }) : t(l.primaryAll, { primary, count });
+}
+
+function countLanded(merge: StackMerge) {
+  return merge.members.filter(pip => pip.kind !== 'missing' && isMergedPullRequest(pip.pullRequest)).length;
 }
 
 /** GitHub's reason in its own words: the first line as the title, the rest quoted beneath it (PM25, PM31). */
@@ -674,6 +1086,16 @@ function peekLines(body: string) {
 
 /** `⌘↵`: the way forward — the merge, or the step towards it (D12). */
 function goForward() {
+  const forward = stackSays.value?.forward;
+  if (forward?.kind === 'visit') {
+    emit('visit', forward.url);
+    return;
+  }
+
+  if (forward?.kind === 'close' || forward?.kind === 'none') {
+    return;
+  }
+
   const next = step.value;
   if (next === null) {
     send();
@@ -687,8 +1109,9 @@ function send() {
     return;
   }
 
-  // Only what the user edited goes; GitHub writes its own default otherwise (D6).
-  const text = draft.value;
+  // Only what the user edited goes; GitHub writes its own default otherwise (D6). With two or more of a stack going,
+  // nothing: each lands under its own title (stacked PRs D11).
+  const text = several.value ? null : draft.value;
   emit('merge', {
     request: {
       method: method.value,
@@ -706,7 +1129,8 @@ function choose(next: PullRequestMergeMethod) {
 
 async function edit() {
   const key = commitMethod.value;
-  if (key === null || merging.value) {
+  // Two or more of a stack land each under its own title: there is no text to edit (stacked PRs D11).
+  if (key === null || merging.value || several.value) {
     return;
   }
 
@@ -754,6 +1178,9 @@ function onKeydown(event: KeyboardEvent) {
   if (chosen && choosable.value) {
     event.preventDefault();
     choose(chosen);
+  } else if (canMoveLine.value && (matchesCommandKey(event, 'ArrowUp') || matchesCommandKey(event, 'ArrowDown'))) {
+    event.preventDefault();
+    emit('move', matchesCommandKey(event, 'ArrowUp') ? 'earlier' : 'later');
   } else if (matchesCommandKey(event, 'E') && !editing.value) {
     event.preventDefault();
     void edit();
@@ -785,7 +1212,7 @@ function onOpenFocus(event: Event) {
 <template>
   <Dialog
     v-model:open="open"
-    :title="t(l.dialogTitle, { reference })"
+    :title="stack ? t(l.stackDialogTitle, { name: stack.name }) : t(l.dialogTitle, { reference })"
     :width="640"
     bare
     fit-content
@@ -802,13 +1229,23 @@ function onOpenFocus(event: Event) {
       @keydown="onKeydown"
     >
       <header :class="css.mergePanel_header">
-        <component
-          :is="typeIcon.icon"
-          :class="[css.mergePanel_typeIcon, css[`mergePanel_typeIcon_${typeIcon.tone}`]]"
-          aria-hidden="true"
-        />
-        <span :class="css.mergePanel_reference">{{ reference }}</span>
-        <span :class="css.mergePanel_title">{{ pr.title }}</span>
+        <template v-if="stack">
+          <Layers
+            :class="[css.mergePanel_typeIcon, css.mergePanel_typeIcon_stack]"
+            aria-hidden="true"
+          />
+          <span :class="css.mergePanel_reference">{{ pr.repository.nameWithOwner }}</span>
+          <span :class="css.mergePanel_title">{{ stack.name }}</span>
+        </template>
+        <template v-else>
+          <component
+            :is="typeIcon.icon"
+            :class="[css.mergePanel_typeIcon, css[`mergePanel_typeIcon_${typeIcon.tone}`]]"
+            aria-hidden="true"
+          />
+          <span :class="css.mergePanel_reference">{{ reference }}</span>
+          <span :class="css.mergePanel_title">{{ pr.title }}</span>
+        </template>
         <span
           v-if="reading"
           :class="css.mergePanel_reading"
@@ -845,6 +1282,12 @@ function onOpenFocus(event: Event) {
         <PullRequestVerdictLine
           :verdict="verdict"
           inset="lg"
+        />
+
+        <StackMergeMembers
+          v-if="stack"
+          :rows="stackRows"
+          :line="stackLine"
         />
 
         <div
@@ -933,30 +1376,43 @@ function onOpenFocus(event: Event) {
                     >{{ t(l.onlyMethod, { base: pr.baseRefName }) }}</span
                   >
                 </template>
-                <span :class="css.mergePanel_spacer" />
-                <span :class="css.mergePanel_hidden">{{
-                  t(l.branchInto, { head: pr.headRefName, base: pr.baseRefName })
-                }}</span>
                 <span
-                  :class="css.mergePanel_branch"
-                  aria-hidden="true"
-                  >{{ pr.headRefName }}</span
+                  v-if="several"
+                  :class="css.mergePanel_note"
+                  >{{ stackMethodNote }}</span
                 >
-                <ArrowRight
-                  :class="css.mergePanel_branchIcon"
-                  aria-hidden="true"
-                />
+                <span :class="css.mergePanel_spacer" />
+                <!-- A stack lands on its first one's base. -->
                 <span
+                  v-if="stack"
                   :class="css.mergePanel_branch"
-                  aria-hidden="true"
                   >{{ pr.baseRefName }}</span
                 >
+                <template v-else>
+                  <span :class="css.mergePanel_hidden">{{
+                    t(l.branchInto, { head: pr.headRefName, base: pr.baseRefName })
+                  }}</span>
+                  <span
+                    :class="css.mergePanel_branch"
+                    aria-hidden="true"
+                    >{{ pr.headRefName }}</span
+                  >
+                  <ArrowRight
+                    :class="css.mergePanel_branchIcon"
+                    aria-hidden="true"
+                  />
+                  <span
+                    :class="css.mergePanel_branch"
+                    aria-hidden="true"
+                    >{{ pr.baseRefName }}</span
+                  >
+                </template>
               </div>
             </dd>
           </div>
 
           <div
-            v-if="!editing && !merging && shownMethod === 'REBASE'"
+            v-if="!editing && !merging && !several && shownMethod === 'REBASE'"
             :class="css.mergePanel_line"
           >
             <dt :class="css.mergePanel_lineKey">{{ t(l.commits) }}</dt>
@@ -966,7 +1422,7 @@ function onOpenFocus(event: Event) {
           </div>
 
           <div
-            v-else-if="!editing && !merging && commitMethod"
+            v-else-if="!editing && !merging && !several && commitMethod"
             :class="css.mergePanel_line"
           >
             <dt :class="css.mergePanel_lineKey">{{ t(l.commit) }}</dt>
@@ -1085,13 +1541,13 @@ function onOpenFocus(event: Event) {
 
       <footer :class="css.mergePanel_footer">
         <span
-          v-if="merging"
+          v-if="verdict.kind === 'merging'"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintCloseGoesOn) }}</span
         >
         <span
-          v-if="merging"
+          v-if="verdict.kind === 'merging'"
           :class="css.mergePanel_footerNote"
           >{{ t(l.keepWorking) }}</span
         >
@@ -1102,10 +1558,16 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="end || verdict.kind === 'merged'"
+          v-else-if="end || stack?.outcome || verdict.kind === 'merged'"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span
+        >
+        <span
+          v-else-if="canMoveLine && !stackLine && stackSays?.forward.kind === 'merge'"
+          :class="css.mergePanel_hint"
+          aria-hidden="true"
+          ><Kbd keys="↑ ↓" /> {{ t(l.stopEarlier) }}</span
         >
         <span
           v-else-if="checksHint"
@@ -1114,10 +1576,37 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="C" /> {{ checksHint }}</span
         >
         <span :class="css.mergePanel_spacer" />
-        <template v-if="!merging && verdict.kind !== 'merged' && verdict.kind !== 'unknown'">
+        <template v-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
+          <Button
+            kbd="Escape"
+            aria-keyshortcuts="Escape"
+            @click="open = false"
+            >{{ t(l.hintClose) }}</Button
+          >
+        </template>
+        <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'merged' && verdict.kind !== 'unknown'">
+          <Button
+            v-if="stackDraft !== null && allowed"
+            variant="ghost"
+            :icon="Eye"
+            :busy="advancing === 'markReady'"
+            @click="emit('step', 'markReady')"
+            >{{ t(l.markNumberReady, { number: stackDraft }) }}</Button
+          >
+          <!-- GitHub's "Rebase stack" is on github.com only, and the icon says so (stacked PRs D8, D21). -->
+          <Button
+            v-if="stackSays?.forward.kind === 'visit' && allowed"
+            :icon="ArrowUpRight"
+            :link="stackSays.forward.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            >{{ stackSays.forward.label }}</Button
+          >
           <!-- It leaves for github.com's editor, and the icon says so (PM19). -->
           <Button
-            v-if="step === 'resolveConflicts' && allowed"
+            v-else-if="step === 'resolveConflicts' && allowed"
             :icon="ArrowUpRight"
             :link="conflictsUrl"
             target="_blank"
@@ -1196,6 +1685,10 @@ function onOpenFocus(event: Event) {
 
 .mergePanel_typeIcon_closed {
   color: $color-red;
+}
+
+.mergePanel_typeIcon_stack {
+  color: $color-fg-2;
 }
 
 .mergePanel_reference {

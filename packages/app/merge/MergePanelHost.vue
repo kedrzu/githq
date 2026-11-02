@@ -1,20 +1,30 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names, fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
 
+import { AuthStore } from '@/auth/AuthStore.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemStore } from '@/store/ItemStore.js';
+import { describeStack } from '@/store/stacks/describeStack.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { pause } from '@/utils/pause.js';
 
 import MergePanel from './MergePanel.vue';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { MergePanelStore } from './MergePanelStore.js';
 import type { MergeStep, MergeSubmission } from './MergeTypes.js';
+import { getStackMerge } from './stack/getStackMerge.js';
+import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
+import { getStackMergeOutcome } from './stack/getStackMergeOutcome.js';
+import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
+import type { StackMergeView } from './stack/StackMergeTypes.js';
 import { useMergeOptions } from './useMergeOptions.js';
 
 /** How often a running check's time moves on. */
@@ -26,17 +36,70 @@ const UPDATE_TIME_LIMIT_MS = 30_000;
 
 const store = useService(MergePanelStore);
 const details = useService(ItemDetailStore);
+const items = useService(ItemStore);
+const auth = useService(AuthStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 const browser = useService(Browser);
 const clock = useService(Clock);
 
-const pr = computed(() => {
+const opened = computed(() => {
   const id = store.itemId;
   const item = id === null ? undefined : details.getItem(id);
   return item?.kind === 'pullRequest' ? item : null;
 });
-const read = useMergeOptions({ itemId: () => store.itemId });
+// The stack the panel is open for, from the local copy alone — no request (D7).
+const description = computed(() => {
+  const stackId = store.stack?.id;
+  const item = opened.value;
+  if (stackId === undefined || !item) {
+    return null;
+  }
+
+  const others = items.all.filter(
+    other => other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
+  );
+  const found = groupStacks([...others, item]).get(stackId);
+  return found
+    ? describeStack({ stack: found, viewerLogin: auth.viewer?.login ?? '', getItem: id => details.getItem(id) })
+    : null;
+});
+/** Where the user put the line with `↑`/`↓` in this opening; `undefined` until then: where it opens (D11, D19). */
+const movedEnd = shallowRef<number | null | undefined>(undefined);
+const stackMerge = computed(() => {
+  const stack = description.value;
+  const openedOn = store.stack?.openedOn ?? null;
+  if (!stack) {
+    return null;
+  }
+
+  const end = movedEnd.value === undefined ? getStackMergeEnd({ description: stack, openedOn }) : movedEnd.value;
+  return getStackMerge({ description: stack, end });
+});
+/** The stack's pull requests the copy holds, first to last. */
+const stackMembers = computed(() =>
+  (stackMerge.value?.members ?? []).flatMap(pip => (pip.kind === 'missing' ? [] : [pip.pullRequest])),
+);
+const stackView = computed((): StackMergeView | null => {
+  const stack = description.value;
+  const range = stackMerge.value;
+  const stackId = store.stack?.id;
+  if (!stack || !range || stackId === undefined) {
+    return null;
+  }
+
+  const outcome = getStackMergeOutcome({ record: store.getStackRecord(stackId), members: stackMembers.value });
+  return { name: stack.name.title, merge: range, outcome };
+});
+/**
+ * The pull request the panel is for: a stack's first open one — what lands alone, its base the stack's, its rulesets
+ * the ones the merge meets — else the last one, all merged.
+ */
+const pr = computed(() => {
+  const members = stackMembers.value;
+  return members.find(isOpenPullRequest) ?? members.at(-1) ?? opened.value;
+});
+const read = useMergeOptions({ itemId: () => pr.value?.id ?? null });
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
 const sending = shallowRef(false);
@@ -61,6 +124,7 @@ watch(
     sending.value = false;
     advancing.value = null;
     alreadyMerged.value = false;
+    movedEnd.value = undefined;
   },
 );
 watch(repository, name => {
@@ -82,11 +146,22 @@ async function merge(submission: MergeSubmission) {
 
   const opening = store.opening;
   sending.value = true;
-  const answer = await store.merge({ item, submission });
+  // Two or more of a stack: one merge of the top of the range lands them all (D11).
+  const range = stackMerge.value;
+  const stackId = store.stack?.id;
+  const top = range?.top;
+  const several = range && top && stackId !== undefined && range.going.length > 1;
+  const answer = await (several
+    ? store.merge({
+        item: top,
+        submission,
+        stack: { id: stackId, size: range.members.length, going: range.going },
+      })
+    : store.merge({ item, submission }));
   if (answer.kind === 'refused' && store.opening === opening) {
     await read.refresh();
     const commit = read.options?.headCommit;
-    if (commit && store.opening === opening && store.itemId === item.id) {
+    if (commit && store.opening === opening && pr.value?.id === item.id) {
       store.noteHeadCommit(item.id, commit);
     }
   }
@@ -105,7 +180,7 @@ async function merge(submission: MergeSubmission) {
  * the session knew of it stops speaking (`forget`).
  */
 async function takeStep(step: MergeStep) {
-  const item = pr.value;
+  const item = getStepTarget(step);
   if (!item) {
     return;
   }
@@ -134,6 +209,25 @@ async function takeStep(step: MergeStep) {
   }
 }
 
+/** A stack's draft that holds the rest is marked ready from its panel (SP49); any other step is the panel's own one. */
+function getStepTarget(step: MergeStep) {
+  const range = stackMerge.value;
+  if (step !== 'markReady' || !range) {
+    return pr.value;
+  }
+
+  const draft = range.forward?.kind === 'markReady' ? range.forward.pullRequest : null;
+  return draft ?? range.open.find(member => member.number === range.holder?.number) ?? pr.value;
+}
+
+/** `↑`/`↓`: the line one open pull request earlier or later (D18). */
+function moveLine(direction: 'earlier' | 'later') {
+  const range = stackMerge.value;
+  if (range) {
+    movedEnd.value = moveStackMergeEnd(range, direction);
+  }
+}
+
 /**
  * GitHub answers an update of the branch before it is made: the old head, its mergeability unknown (live,
  * 2026-11-02). Merging that head would be refused as a new commit, so the panel stays updating and reads the pull
@@ -154,7 +248,7 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
   }
 
   function isShown() {
-    return store.opening === opening && store.itemId === itemId;
+    return store.opening === opening && pr.value?.id === itemId;
   }
 }
 </script>
@@ -170,12 +264,14 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :reading="read.reading"
     :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
-    :record="sending ? null : store.getRecord(pr.id)"
+    :record="sending || (stackMerge && !stackMerge.ordinary) ? null : store.getRecord(pr.id)"
     :sent="store.getSent(pr.id)"
     :already-merged="alreadyMerged"
     :advancing="advancing"
     :now="now"
+    :stack="stackView"
     @merge="merge"
+    @move="moveLine"
     @step="takeStep"
     @visit="browser.openInNewTab"
   />

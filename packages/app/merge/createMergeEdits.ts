@@ -5,8 +5,9 @@ import { requestAsyncMerge } from '@githq/github/rest/requestAsyncMerge.js';
 import type { RequestAsyncMergeParams } from '@githq/github/rest/requestAsyncMerge.js';
 import type { AsyncMergeAnswer } from '@githq/github/rest/sendAsyncMergeRequest.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import { createPromise } from '@nzyme/utils/createPromise.js';
 
-import type { Edit, EditFailureReason, EditVerdict } from '@/edits/EditTypes.js';
+import type { Edit, EditAnswer, EditFailureReason, EditVerdict } from '@/edits/EditTypes.js';
 import { toEditFailureReason } from '@/edits/toEditFailureReason.js';
 import { getItemReference } from '@/item/itemRoutes.js';
 import type { ClockShape } from '@/services/Clock.js';
@@ -15,10 +16,15 @@ import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
 
-/** What {@link createMergeEdit} makes the merge of. */
-export interface CreateMergeEditParams {
+/** What {@link createMergeEdits} makes the merge of. */
+export interface CreateMergeEditsParams {
     /** The pull request as shown: its head commit is the one the merge names. */
     readonly item: PullRequestItem;
+    /**
+     * The open pull requests of its stack before it, which the merge lands with it (stacked PRs D11): GitHub lands
+     * every one below the one merged. None outside a stack's merge.
+     */
+    readonly members?: readonly PullRequestItem[];
     readonly request: MergeRequest;
     /** Time and timers: asking for the merge's result waits on them. */
     readonly clock: ClockShape;
@@ -40,16 +46,106 @@ const LONGEST_POLL_MS = 5000;
 export const MERGE_TIME_LIMIT_MS = 2 * 60_000;
 
 /**
- * The merge of a pull request as an edit (merging D3, D5, D6). It draws the pull request as being merged
+ * The merge of a pull request as edits: its own, first, and one of each other pull request
+ * the merge lands with it — a stack's earlier ones (stacked PRs D11). Each of those is drawn as being merged too, and
+ * GitHub's word on the merge is all there is of them (D3): merged when it says merged; refused or not known, their
+ * layer goes without a word, for a merge refused partway may have landed some — what is true shows once the stack is
+ * read again.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
+    const { members = [], request, clock } = params;
+    const edit = createMergeEdit(params);
+    const { send } = edit;
+    if (members.length === 0 || !send) {
+        return [edit];
+    }
+
+    const ended = createPromise<EditVerdict>();
+    const top: Edit = {
+        ...edit,
+        send: async account => {
+            let answer: EditAnswer;
+            try {
+                answer = await send(account);
+            } catch (error) {
+                ended.resolve({ kind: 'unknown' });
+                throw error;
+            }
+
+            if (answer.kind !== 'following') {
+                ended.resolve(answer);
+                return answer;
+            }
+
+            const { follow } = answer;
+            return {
+                kind: 'following',
+                follow: async () => {
+                    const verdict = await follow().catch((error: unknown) => {
+                        ended.resolve({ kind: 'unknown' });
+                        throw error;
+                    });
+                    ended.resolve(verdict);
+                    return verdict;
+                },
+            };
+        },
+    };
+
+    return [top, ...members.map(member => createMemberEdit(member))];
+
+    /**
+     * Waits for GitHub's word on the merge outside the edits sent at once (`following`): it may take minutes, and
+     * the merge itself must not wait behind it.
+     */
+    function createMemberEdit(member: PullRequestItem): Edit {
+        return {
+            itemId: member.id,
+            reference: `${member.repository.nameWithOwner}#${member.number}`,
+            subject: { kind: 'merged' },
+            optimistic: {
+                item: current => (current.kind === 'pullRequest' ? { ...current, merging: request.method } : current),
+                supersededBy: isMerged,
+            },
+            send: () =>
+                Promise.resolve({
+                    kind: 'following',
+                    follow: async () => toMemberVerdict(await ended.promise),
+                }),
+        };
+    }
+
+    /** Merged as the merge was: without a commit of its own to say, as GitHub's answer names only the top's. */
+    function toMemberVerdict(verdict: EditVerdict): EditVerdict {
+        if (verdict.kind !== 'confirmed') {
+            return { kind: 'unknown' };
+        }
+
+        const now = new Date(clock.now()).toISOString();
+        return {
+            kind: 'confirmed',
+            layer: {
+                item: current =>
+                    current.kind === 'pullRequest'
+                        ? { ...current, state: 'MERGED', merged: true, closedAt: current.closedAt ?? now }
+                        : current,
+                supersededBy: isMerged,
+            },
+        };
+    }
+}
+
+/**
+ * The merge of the pull request itself as an edit (merging D3, D5, D6). It draws the pull request as being merged
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
  * confirms it; a refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is
  * a failed edit otherwise; put in a merge queue (`enqueued`), with no answer in time, or with the request itself
  * unanswered, the layer goes without a word and the next sync shows what GitHub holds.
- *
- * @__NO_SIDE_EFFECTS__
  */
-export function createMergeEdit(params: CreateMergeEditParams): Edit {
+function createMergeEdit(params: CreateMergeEditsParams): Edit {
     const { item, request, clock, onAnswer, onLateEnd, shown } = params;
     const target = getItemReference(item);
 
