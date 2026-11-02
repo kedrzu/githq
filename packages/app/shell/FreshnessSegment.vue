@@ -23,15 +23,8 @@ import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import * as l from './FreshnessSegment.loc.js';
+import type { SegmentEdits } from './SegmentEdits.js';
 import StatusSegment from './StatusSegment.vue';
-
-/** The user's own edits of what the segment shows, said instead of its freshness. */
-export interface SegmentEdits {
-  /** `unanswered`: a merge GitHub has not said the end of — neither failed nor done. */
-  readonly kind: 'failed' | 'sending' | 'unanswered';
-  /** "Sending 2 changes · portal#1187". */
-  readonly text: string;
-}
 
 const props = defineProps<{
   freshness: Freshness;

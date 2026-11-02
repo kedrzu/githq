@@ -11,7 +11,7 @@ import { Clock } from '@/services/Clock.js';
 import type { Freshness } from '@/sync/Freshness.js';
 
 import FreshnessSegment from './FreshnessSegment.vue';
-import type { SegmentEdits } from './FreshnessSegment.vue';
+import type { SegmentEdits } from './SegmentEdits.js';
 
 const NOW = Date.parse('2026-10-30T14:06:00Z');
 const FRESH: Freshness = { kind: 'fresh', checkedAt: NOW };

@@ -29,7 +29,7 @@ import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
-import type { SegmentEdits } from '@/shell/FreshnessSegment.vue';
+import type { SegmentEdits } from '@/shell/SegmentEdits.js';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
