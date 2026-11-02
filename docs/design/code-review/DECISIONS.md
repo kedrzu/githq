@@ -267,19 +267,28 @@ special case.
 ## D17
 
 **A comment goes either straight to the pull request as a single comment, or into a draft review — GitHub's
-pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does; `Cmd+Shift+Enter`
-always does the other.** (2026-11-02, owner: "some prefer to write a draft review and then throw it all as one
-review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference so far —
-agent's reading, the synced settings holding only what is tracked ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does when no draft is open;
+`Cmd+Shift+Enter` does the other. While a draft is open on the pull request, a comment can only join it: what the
+second key does then is [Q8](#q8).** (2026-11-02, owner: "some prefer to write a draft review and then throw it all
+as one review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference
+so far — agent's reading, the synced settings holding only what is tracked
+([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
 **Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
 review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
-stack has its own.
+stack has its own. GitHub accepts nothing else from the same user on that pull request while it is open (owner's
+experience: "not even an agent can do it through the API").
 
 > **Checked 2026-11-02:** `AddPullRequestReviewThreadInput` takes either `pullRequestReviewId` (into a pending
 > review) or `pullRequestId`, plus `path`, `line`, `side`, `startLine`, `startSide`, `subjectType`
-> (`packages/github/src/schema.graphql`). Whether a single comment can be posted while the user has a pending review
-> on the same pull request is open: [Q7](#q7).
+> (`packages/github/src/schema.graphql`). A third-party guide claims REST `POST …/pulls/{n}/comments` still posts
+> a standalone comment ([guide](https://www.claudepluginhub.com/skills/mthalman-superpowers/skills%2Fgithub-pr-reviews));
+> the owner's experience says otherwise, and the design follows the owner. Not tried live.
+
+**Rejected.**
+
+- `Cmd+Shift+Enter` always posting a single comment ([history](history/DECISIONS.md#d17)) — impossible while a
+  draft is open.
 
 ## D18
 
@@ -317,11 +326,25 @@ optimise for speed"; the candidate is the agent's)
 **Why.** github.com stutters on large pull requests (owner). Fetching inside the worker removes the cost the owner
 worried about, sending texts there and back.
 
-## Q7
+## D21
 
-**Open: can a single comment be posted while the same user has a pending review on that pull request?** A
-third-party guide says a new review fails with "user can only have one pending review per pull request", and that
-REST `POST …/pulls/{n}/comments` posts a standalone comment
-([guide](https://www.claudepluginhub.com/skills/mthalman-superpowers/skills%2Fgithub-pr-reviews), not primary).
-To try live on a test pull request before building [D17](#d17).
+**An open draft review is impossible to miss. The review screen says so prominently while one is open on the pull
+request — how many comments wait and the actions to submit or discard it. Lists mark a pull request that has your
+open draft. The sidebar of the app gains an entry listing the pull requests with your open drafts, shown only while
+there is at least one.** (2026-11-02, owner)
+
+**Why.** The owner reviews agents' pull requests. A draft started without noticing keeps the comments unsent: the
+agent does not see them, and cannot post its own replies or comments while the draft stays open (owner).
+
+> **Checked 2026-11-02:** `PullRequest.reviews` filters by `states` (including `PENDING`) and `author`
+> (`packages/github/src/schema.graphql`); a pending review is visible only to its author, so for the viewer it is
+> exactly "my drafts". The volatile part of a pull request is already re-read by its own query,
+> `PullRequestStatuses` with `PullRequestStatusFields` (`packages/github/src/operations/`), which is where the count
+> would ride. Not checked: whether starting a draft on github.com moves anything the background refresh notices, so a
+> draft begun there may show late; and drafts on pull requests outside githq's copy are not found at all.
+
+## Q8
+
+**Open: with a draft open, what does the second key do?** Either it adds the comment and submits the whole draft at
+once as a comment review (so it does reach the agent), or it is unavailable and says why.
 

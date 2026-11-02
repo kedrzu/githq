@@ -47,3 +47,7 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   No prefetch in v1, recorded as an option → D19. Worker/WASM: speed is the only criterion, decided by measurement;
   agent's candidate (worker fetches itself, sends only drawn rows) → D20 (Q5 closed). Opened Q7: single comment while
   a pending review exists (third-party source only).
+- 2026-11-02 — Owner: a single comment cannot be posted while a draft review is open (own experience; agents fail the
+  same way) → D17 rewritten, prior form to history (Q7 closed). Owner: an open draft must be prominent in the review
+  screen, marked in lists, and a sidebar entry listing PRs with drafts appears only when some exist → D21. Opened Q8:
+  what the second key does while a draft is open.
