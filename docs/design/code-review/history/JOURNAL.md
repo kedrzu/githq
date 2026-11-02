@@ -52,3 +52,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   screen, marked in lists, and a sidebar entry listing PRs with drafts appears only when some exist → D21. Opened Q8:
   what the second key does while a draft is open.
 - 2026-11-02 — Owner agreed: second key with a draft open adds and submits the draft → D22 (Q8 closed); reading + draft warnings first, writing second → D23. Next: README story, rightsize.
+- 2026-11-02 — Owner's 'ok' taken for D22 and D23. README written; githq D6 and README pointed here. Rightsize (3 passes): candidates put to owner — outdated placement by text search vs computed (D12), diffHunk snippets in collapsed files vs fetching them (D13 vs D8 contradiction), worker fetching itself (D20), blob cache persisted vs session (D19), unconfirmed keys (D16); agent recommends keeping D6, D7, D14, D21, the collapsed-comments option and .gitattributes (owner's own asks or simpler versions break them).
