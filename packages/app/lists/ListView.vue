@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's, and with an item open `j`/`k` walk a collapsed header's own item and then its pull requests, as a collapsed entry's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -11,12 +11,23 @@ import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { Browser } from '@/services/Browser.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
+import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
+import { ExpandedStacks } from './ExpandedStacks.js';
 import ListGroupMarker from './ListGroupMarker.vue';
-import type { ListContextMenuProps, ListEntry, ListGroup, ListLayout, ListMove } from './ListTypes.js';
+import type {
+  ListContextMenuProps,
+  ListEntry,
+  ListGroup,
+  ListLayout,
+  ListMove,
+  ListRow,
+  ListStack,
+} from './ListTypes.js';
 import * as l from './ListView.loc.js';
 
 const props = withDefaults(
@@ -27,7 +38,10 @@ const props = withDefaults(
     openedId?: string | null;
     /** The entry's page on GitHub, for `o`; `null` when it has none (a draft issue). */
     getUrl?: (value: T) => string | null;
-    /** Whether the entry may be moved from one group into another (the user may set that value of it). */
+    /**
+     * Whether the entry may be moved from one group into another (the user may set that value of it); a stack's entry
+     * may when each of its pull requests may.
+     */
     canMove?: (entry: ListEntry<T>, from: string, to: string) => boolean;
   }>(),
   { openedId: null, getUrl: () => null, canMove: () => false },
@@ -36,15 +50,18 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** Enter or a click on an entry, or the selection moved while an item is open. */
   open: [id: string];
-  /** The items the list shows, top to bottom (column by column on the board), each once. */
+  /**
+   * The items the list shows, top to bottom (column by column on the board), each once: a stack's entry gives its pull
+   * requests, collapsed or not.
+   */
   listed: [ids: readonly string[]];
   /** An entry was dropped into another group, or moved there with `⇧←`/`⇧→`. */
   move: [move: ListMove];
 }>();
 
-/** The selected item's id. */
+/** The selected item's id; on a stack's entry, the pull request Enter opens or the one opened inside it. */
 const selectedId = defineModel<string | null>('selectedId', { default: null });
-/** The items edited together (`x`), in the list's order. */
+/** The items edited together (`x`), in the list's order — never a stack entry's own id. */
 const checkedIds = defineModel<readonly string[]>('checkedIds', { default: () => [] });
 
 defineSlots<{
@@ -66,8 +83,28 @@ interface ListSlotProps<TValue> {
   /** The entry it is nested under. */
   parent: ListEntry<TValue> | null;
   group: ListGroup<TValue>;
-  /** Among the items edited together. */
+  /** Among the items edited together; a stack's entry when all its pull requests are. */
   checked: boolean;
+  /** A stack's entry some of whose pull requests are among the items edited together, not all (D20, SP28): a half mark. */
+  halfChecked: boolean;
+  /** Set on a stack's entry: draw it as one. */
+  stack: ListStack | null;
+  /** Set on an entry serving as a stack's header (`ListRow.stacks`, D12): draw the stack's pips and state on it. */
+  header: ListStack | null;
+  /** How deep it is nested: 0 a top-level entry, 2 a pull request of a stack with a header of its own under an issue (D23). */
+  depth: number;
+  /** Set on a pull request listed alone out of its stack (`ListRow.stackMarker`): draw its marker (D16). */
+  stackMarker: StackDescription | null;
+  /** The entries nested under it, shown or not: a stack entry's pull requests. */
+  nested: readonly ListEntry<TValue>[];
+  /** A stack's entry, or a stack's header, is expanded: on the board, a stack's card lists its pull requests inside it. */
+  expanded: boolean;
+  /** On the selected stack's entry, the pull request selected in it; else `null`. */
+  selectedMember: string | null;
+  /** Expands or collapses a stack's entry (its card's chevron). */
+  toggleStack: () => void;
+  /** Selects one of a stack card's pull requests and opens it (a click on it inside the expanded card). */
+  openMember: (id: string) => void;
 }
 
 /** An entry where the list shows it. */
@@ -76,37 +113,110 @@ interface Placed {
   readonly group: ListGroup<T>;
   /** On the board, the column's index. */
   readonly column: number;
-  /** Nested under another entry: never moved on its own. */
-  readonly nested: boolean;
+  /** The entry it is nested under — it is never moved on its own; on a stack's pull request, what expands it. */
+  readonly parent: ListRow<T> | null;
+  /** 0 for a top-level entry, 1 nested under one, 2 a pull request of a stack's entry nested under one (D23). */
+  readonly depth: number;
+  /** Set on a stack's entry. */
+  readonly stack: ListStack | null;
+  /** Set on an entry serving as its one nested stack's header (`ListRow.stacks`, D12): it takes the stack's chevron. */
+  readonly header: ListStack | null;
+  /** Set on the row of a stack's pull request: its stack. */
+  readonly memberOf: ListStack | null;
+  /** A stack's pull request under an issue (D12, D23): on a rail below what expands it. */
+  readonly rail: boolean;
+  /** The entries nested under it, shown or not: a stack entry's pull requests, a row's own. */
+  readonly nested: readonly ListEntry<T>[];
+  /** The items it stands for: its own, or a stack entry's pull requests. */
+  readonly ids: readonly string[];
+  /**
+   * The items it stands for as the list lists and walks them: a stack's header its own and then its stack's pull requests
+   * (D23), else as `ids`.
+   */
+  readonly walked: readonly string[];
+  /** The item Enter opens. */
+  readonly openId: string;
+  /** What moving it into another group moves: itself, a stack entry's pull requests, none for a nested entry. */
+  readonly moved: readonly ListEntry<T>[];
+}
+
+/** A top-level entry to place, in its group. */
+interface PlaceRowParams {
+  readonly row: ListRow<T>;
+  readonly group: ListGroup<T>;
+  /** On the board, the group's column. */
+  readonly column: number;
+}
+
+/** An entry to place as it is unless it is more, under its row. */
+interface BaseParams {
+  readonly entry: ListEntry<T>;
+  readonly parent: ListRow<T> | null;
+  readonly depth: number;
+}
+
+/** A stack's pull requests to place under what expands them. */
+interface PlaceMembersParams {
+  /** The entry whose `nested` they are. */
+  readonly of: ListRow<T>;
+  readonly memberOf: ListStack;
+  readonly parent: ListRow<T>;
+  readonly depth: number;
+  /** On a rail below what expands them (D12, D23). */
+  readonly rail: boolean;
+}
+
+/** The entry a row or a card is drawn for, and the top-level row and group it is under. */
+interface GetSlotPropsParams {
+  readonly current: Placed;
+  readonly row: ListRow<T>;
+  readonly group: ListGroup<T>;
 }
 
 /** An entry being dragged. */
 interface Dragged {
-  readonly entry: ListEntry<T>;
+  readonly key: string;
+  readonly moved: readonly ListEntry<T>[];
   readonly from: string;
 }
 
 const t = useTranslate();
 const browser = useService(Browser);
+const expandedStacks = useService(ExpandedStacks);
 const bodyRef = useTemplateRef<HTMLElement>('body');
 const collapsed = ref<ReadonlySet<string>>(new Set());
 const selectedKey = ref<string | null>(null);
 const dragged = shallowRef<Dragged | null>(null);
 const dropTarget = ref<string | null>(null);
 const menuIds = shallowRef<readonly string[]>([]);
+/** The item the context menu's "Open" opens; `null` when it is for several. */
+const menuOpenId = ref<string | null>(null);
 
-/** Every entry the list shows, in its order: the board's column by column, a collapsed group's left out. */
+/** Each top-level entry and those shown nested under it, in order, by the entry's key. */
+const shownByRow = computed(() => {
+  const shown = new Map<string, Placed[]>();
+  for (const [column, group] of props.groups.entries()) {
+    for (const row of group.rows) {
+      shown.set(row.key, placeRow({ row, group, column }));
+    }
+  }
+
+  return shown;
+});
+/**
+ * Every entry the list shows, in its order: the board's column by column, a collapsed group's left out, and so are
+ * the rows of a collapsed stack's entry or header.
+ */
 const placed = computed(() => {
   const entries = new Map<string, Placed>();
-  for (const [column, group] of props.groups.entries()) {
+  for (const group of props.groups) {
     if (props.layout === 'list' && collapsed.value.has(group.key)) {
       continue;
     }
 
     for (const row of group.rows) {
-      entries.set(row.key, { entry: row, group, column, nested: false });
-      for (const nested of row.nested) {
-        entries.set(nested.key, { entry: nested, group, column, nested: true });
+      for (const current of shownByRow.value.get(row.key) ?? []) {
+        entries.set(current.entry.key, current);
       }
     }
   }
@@ -123,16 +233,21 @@ const columns = computed(() => {
 
   return keys;
 });
-const listedIds = computed(() => [...new Set([...placed.value.values()].map(({ entry }) => entry.id))]);
+const listedIds = computed(() => [...new Set([...placed.value.values()].flatMap(({ walked }) => walked))]);
 
-// The selection given from outside (an item opened by its address, a toast's request) lands on the item's first
-// entry; one already on that item stays where it is.
+// The selection given from outside (an item opened by its address, a toast's request, `J` in an opened item) lands on
+// the item's first entry — a collapsed stack's entry or header for one of its pull requests; one already on that item
+// stays where it is. On an expanded stack's entry or header, another of its pull requests moves it onto that one's row.
 watch(
   selectedId,
   id => {
-    const current = selectedKey.value === null ? undefined : placed.value.get(selectedKey.value);
-    if (current?.entry.id !== id) {
+    const key = selectedKey.value;
+    const current = key === null ? undefined : placed.value.get(key);
+    const toggled = current && getToggled(current);
+    if (key === null || id === null || !current?.walked.includes(id)) {
       selectedKey.value = id === null ? null : findKey(order.value, id);
+    } else if (toggled && id !== current.openId && expandedStacks.has(toggled.id)) {
+      selectedKey.value = order.value.find(other => isNestedRowOf(other, key, id)) ?? key;
     }
   },
   { immediate: true },
@@ -218,6 +333,15 @@ onWindowEvent('keydown', event => {
       if (board) {
         event.preventDefault();
         stepColumn(event.key === 'ArrowLeft' ? -1 : 1);
+      } else if (expandSelected(event.key === 'ArrowRight')) {
+        event.preventDefault();
+      }
+
+      return;
+    case ' ':
+      // On the board ←/→ step between columns: Space expands or collapses the selected stack's card.
+      if (board && !isActivatableTarget(event.target) && toggleSelectedStack()) {
+        event.preventDefault();
       }
 
       return;
@@ -226,8 +350,8 @@ onWindowEvent('keydown', event => {
       openSelectedOnGitHub();
       return;
     case 'Enter':
-      if (!(event.target instanceof HTMLButtonElement || event.target instanceof HTMLAnchorElement)) {
-        const id = currentId();
+      if (!isActivatableTarget(event.target)) {
+        const id = currentOpenId();
         if (id !== null) {
           event.preventDefault();
           emit('open', id);
@@ -283,11 +407,24 @@ function getKeyCommands(): Command[] {
     );
   }
 
+  if ([...placed.value.values()].some(current => getToggled(current) !== null)) {
+    commands.push({
+      id: 'list.toggleStack',
+      title: t(l.toggleStack),
+      section: 'view',
+      ...(props.layout === 'list' ? { key: 'ArrowRight', otherKeys: ['ArrowLeft'] } : { key: 'Space' }),
+      menu: false,
+    });
+  }
+
   return commands;
 }
 
-/** Moves the selection `by` entries — on the board within its column; returns the entry it is on now. */
-function step(by: 1 | -1) {
+/**
+ * Moves the selection `by` entries — on the board within its column; returns the entry it is on now. With an item open
+ * it walks a stack's pull requests one by one, unless `byEntry`.
+ */
+function step(by: 1 | -1, byEntry = false) {
   const keys = selectedColumnKeys() ?? order.value;
   if (keys.length === 0) {
     return null;
@@ -295,7 +432,97 @@ function step(by: 1 | -1) {
 
   const index = selectedKey.value === null ? -1 : keys.indexOf(selectedKey.value);
   const next = index === -1 ? 0 : Math.min(Math.max(index + by, 0), keys.length - 1);
+  if (index !== -1 && props.openedId != null && !byEntry) {
+    return stepOpened(keys, index, next, by);
+  }
+
   return go(keys[next] ?? null);
+}
+
+/**
+ * The items `j`/`k` opened inside collapsed entries that the opened item has not caught up with yet, oldest first:
+ * keys pressed faster than an item opens walk on from the last of them.
+ */
+const walking: string[] = [];
+watch(
+  () => props.openedId,
+  id => {
+    const caughtUp = id == null ? -1 : walking.indexOf(id);
+    walking.splice(0, caughtUp === -1 ? walking.length : caughtUp + 1);
+  },
+);
+
+/**
+ * With an item open over the list: its pull requests one by one (D9) — through a collapsed stack's entry member by
+ * member, the entry staying selected, into one from above at its first and from below at its last; an expanded one's
+ * entry is passed over, its rows being its pull requests. A collapsed stack's header is walked the same way, its own
+ * item first (D23); an expanded one is a row like any. On the board a stack's card, expanded or not, is walked as a
+ * collapsed entry: its pull requests are inside it.
+ */
+function stepOpened(keys: readonly string[], index: number, next: number, by: 1 | -1) {
+  const openedId = walking.at(-1) ?? props.openedId ?? null;
+  const members = getWalkedMembers(keys[index]);
+  const inside = openedId === null ? -1 : members.indexOf(openedId);
+  const sibling = inside === -1 ? undefined : members[inside + by];
+  if (sibling !== undefined) {
+    return openInEntry(keys[index] ?? null, sibling);
+  }
+
+  // An expanded entry would open one of its rows out of turn: on to the row past it, or nowhere at the list's top.
+  const past = next + by;
+  const target = !isPassedOver(keys[next]) ? next : keys[past] === undefined ? index : past;
+  const key = keys[target] ?? null;
+  const entered = getWalkedMembers(key);
+  const member = by === 1 ? entered[0] : entered.at(-1);
+  if (target !== index && member !== undefined) {
+    return openInEntry(key, member);
+  }
+
+  // Out of collapsed entries: the selected entry is what the next key steps from.
+  walking.length = 0;
+  return go(key);
+}
+
+/**
+ * The items walked inside an entry, in order: a collapsed stack's entry's pull requests — on the board any's — and a
+ * collapsed header's own item and its stack's; none for any other entry.
+ */
+function getWalkedMembers(key: string | null | undefined): readonly string[] {
+  const current = key == null ? undefined : placed.value.get(key);
+  const toggled = current && getToggled(current);
+  if (!current || !toggled) {
+    return [];
+  }
+
+  return current.stack && props.layout === 'board' ? current.walked : isExpanded(toggled) ? [] : current.walked;
+}
+
+/** A stack's entry in the list shown expanded: passed over by an opened item, its rows being its pull requests. */
+function isPassedOver(key: string | undefined) {
+  const current = key === undefined ? undefined : placed.value.get(key);
+  return props.layout === 'list' && current?.stack != null && isExpanded(current.stack);
+}
+
+/** The stack an entry expands and collapses: its own, or the one it is the header of. */
+function getToggled(current: Placed) {
+  return current.stack ?? current.header;
+}
+
+function isExpanded(stack: ListStack) {
+  return expandedStacks.has(stack.id);
+}
+
+/** Selects the entry `key` with `id`, one of the items it stands for, and opens that item. */
+function openInEntry(key: string | null, id: string) {
+  selectedKey.value = key;
+  selectedId.value = id;
+  if (id !== (walking.at(-1) ?? props.openedId)) {
+    walking.push(id);
+    emit('open', id);
+  }
+
+  void nextTick(scrollToSelected);
+  return id;
 }
 
 /** On the board: to the entry at the same height in the next column that has any. */
@@ -334,39 +561,232 @@ function go(key: string | null) {
   return id;
 }
 
-/** `⇧←`/`⇧→` on the board: the selected entry into the next column that takes it. */
+/** `⇧←`/`⇧→` on the board: the selected entry into the next column that takes it — a stack's card all its pull requests. */
 function moveSelected(by: 1 | -1) {
   const key = selectedKey.value;
   const current = key === null ? undefined : placed.value.get(key);
-  if (!current || current.nested) {
+  if (!current || current.parent) {
     return;
   }
 
   for (let column = current.column + by; column >= 0 && column < props.groups.length; column += by) {
     const group = props.groups[column];
-    if (group && canDrop(current.entry, current.group.key, group)) {
-      emit('move', { id: current.entry.id, from: current.group.key, to: group.key });
+    if (group && canDrop(current.moved, current.group.key, group)) {
+      emit('move', { ids: current.moved.map(entry => entry.id), from: current.group.key, to: group.key });
       return;
     }
   }
 }
 
+/** `x`: the selected entry's items in or out of the items edited together — a stack's entry all of them (D20). */
 function toggleChecked() {
-  const id = currentId();
-  if (id === null) {
+  const ids = currentIds();
+  if (ids.length === 0) {
     return;
   }
 
-  setChecked(
-    checkedIds.value.includes(id) ? checkedIds.value.filter(other => other !== id) : [...checkedIds.value, id],
-  );
+  const checked = checkedIds.value;
+  setChecked(ids.every(id => checked.includes(id)) ? checked.filter(id => !ids.includes(id)) : [...checked, ...ids]);
 }
 
-/** Adds the selected entry and the one `by` away, and moves there. */
+/**
+ * Adds the selected entry and the one `by` away, and moves there: over a collapsed stack's entry in one step, adding all
+ * its pull requests, over an expanded one row by row (D20).
+ */
 function extend(by: 1 | -1) {
-  const before = currentId();
-  const after = step(by);
-  setChecked([...checkedIds.value, ...[before, after].filter(id => id !== null)]);
+  const before = extendedIds();
+  step(by, true);
+  setChecked([...checkedIds.value, ...before, ...extendedIds()]);
+}
+
+/** What `⇧J`/`⇧K` add of the selected entry: nothing of an expanded stack's entry itself, its rows being walked. */
+function extendedIds() {
+  return isPassedOver(selectedKey.value ?? undefined) ? [] : currentIds();
+}
+
+/**
+ * `→` expands the selected stack's entry or header, `←` collapses it — or, on one of its rows, collapses it and selects
+ * it. Whether it was a stack's to expand or collapse.
+ */
+function expandSelected(expand: boolean) {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  const toggled = current && getToggled(current);
+  if (toggled) {
+    expandedStacks.set(toggled.id, expand);
+    return true;
+  }
+
+  const parent = current?.parent;
+  if (!expand && parent && current.memberOf) {
+    // Selected before it collapses, so the selection never sees its row go.
+    selectedKey.value = parent.key;
+    expandedStacks.set(current.memberOf.id, false);
+    void nextTick(scrollToSelected);
+    return true;
+  }
+
+  return false;
+}
+
+/** Space on the board: expands or collapses the selected stack's card; whether it was one. */
+function toggleSelectedStack() {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  const stack = current ? getToggled(current) : null;
+  if (stack) {
+    toggleStack(stack);
+  }
+
+  return stack !== null;
+}
+
+function toggleStack(stack: ListStack) {
+  expandedStacks.set(stack.id, !isExpanded(stack));
+}
+
+/**
+ * A top-level entry and the entries shown nested under it, in order: in the list a lone nested stack's pull requests
+ * under its header while expanded (D12), else each nested stack's entry one step in with its pull requests on a rail
+ * below it while expanded (D23); then a stack's entry's pull requests while expanded, or a row's own nested ones. On
+ * the board a stack's card lists its pull requests inside it.
+ */
+function placeRow({ row, group, column }: PlaceRowParams): Placed[] {
+  const list = props.layout === 'list';
+  const stacks = (row.stacks ?? []).flatMap(nested => (nested.stack ? [{ row: nested, stack: nested.stack }] : []));
+  const header = list && stacks.length === 1 ? (stacks[0] ?? null) : null;
+  const stack = row.stack ?? null;
+  const ids = stack ? row.nested.map(nested => nested.id) : [row.id];
+  const shown: Placed[] = [
+    {
+      ...base({ entry: row, parent: null, depth: 0 }),
+      stack,
+      header: header?.stack ?? null,
+      nested: row.nested,
+      ids,
+      walked: header ? [row.id, ...header.row.nested.map(nested => nested.id)] : ids,
+      openId: stack ? stack.open : row.id,
+      moved: getMoved(row),
+    },
+  ];
+  if (header) {
+    shown.push(...placeMembers({ of: header.row, memberOf: header.stack, parent: row, depth: 1, rail: true }));
+  } else {
+    for (const nested of stacks) {
+      const memberIds = nested.row.nested.map(member => member.id);
+      shown.push(
+        {
+          ...base({ entry: nested.row, parent: row, depth: 1 }),
+          stack: nested.stack,
+          nested: nested.row.nested,
+          ids: memberIds,
+          walked: memberIds,
+          openId: nested.stack.open,
+        },
+        ...placeMembers({ of: nested.row, memberOf: nested.stack, parent: nested.row, depth: 2, rail: true }),
+      );
+    }
+  }
+
+  if (stack) {
+    shown.push(...placeMembers({ of: row, memberOf: stack, parent: row, depth: 1, rail: false }));
+  } else {
+    shown.push(...row.nested.map(nested => base({ entry: nested, parent: row, depth: 1 })));
+  }
+
+  return shown;
+
+  /** An entry as it is placed unless it is more. */
+  function base({ entry, parent, depth }: BaseParams): Placed {
+    return {
+      entry,
+      group,
+      column,
+      parent,
+      depth,
+      stack: null,
+      header: null,
+      memberOf: null,
+      rail: false,
+      nested: [],
+      ids: [entry.id],
+      walked: [entry.id],
+      openId: entry.id,
+      moved: [],
+    };
+  }
+
+  /** The rows of a stack's pull requests under what expands it, while it is expanded in the list. */
+  function placeMembers({ of, memberOf, parent, depth, rail }: PlaceMembersParams): Placed[] {
+    if (!list || !isExpanded(memberOf)) {
+      return [];
+    }
+
+    return of.nested.map(member => ({ ...base({ entry: member, parent, depth }), memberOf, rail }));
+  }
+}
+
+/** What a row or a card is drawn from. */
+function getSlotProps({ current, row, group }: GetSlotPropsParams): ListSlotProps<T> {
+  const key = current.entry.key;
+  return {
+    entry: current.entry,
+    parent: current.parent,
+    group,
+    checked: isChecked(key),
+    halfChecked: isHalfChecked(key),
+    stack: current.stack,
+    header: current.header,
+    depth: current.depth,
+    stackMarker: current.parent ? null : (row.stackMarker ?? null),
+    nested: current.nested,
+    expanded: isToggledExpanded(current),
+    selectedMember: getSelectedMember(current),
+    toggleStack: () => toggleOf(current),
+    openMember: (id: string) => openMember(key, id),
+  };
+}
+
+/** The entry's stack, or the stack it is the header of, is expanded. */
+function isToggledExpanded(current: Placed) {
+  const toggled = getToggled(current);
+  return toggled !== null && isExpanded(toggled);
+}
+
+function toggleOf(current: Placed) {
+  const toggled = getToggled(current);
+  if (toggled) {
+    toggleStack(toggled);
+  }
+}
+
+/** On a stack's card, one of its pull requests clicked: the card selected on it, and it opened. */
+function openMember(key: string, id: string) {
+  selectedKey.value = key;
+  selectedId.value = id;
+  emit('open', id);
+}
+
+/** The pull request selected in a stack's entry, when it is the selected one. */
+function getSelectedMember(current: Placed) {
+  return current.stack && selectedKey.value === current.entry.key ? selectedId.value : null;
+}
+
+/** All the items the entry stands for are among those edited together. */
+function isChecked(key: string) {
+  const ids = placed.value.get(key)?.ids ?? [];
+  return ids.length > 0 && ids.every(id => checkedIds.value.includes(id));
+}
+
+/** A stack's entry some of whose pull requests, not all, are among the items edited together. */
+function isHalfChecked(key: string) {
+  const current = placed.value.get(key);
+  return !!current?.stack && current.ids.some(id => checkedIds.value.includes(id)) && !isChecked(key);
+}
+
+/** A row of a stack's entry shown only because another of it matches the list's filter (D3, SP25). */
+function isUnmatched(current: Placed) {
+  return current.memberOf?.unmatched?.has(current.entry.id) ?? false;
 }
 
 /** In the list's order, each once. */
@@ -376,26 +796,44 @@ function setChecked(ids: readonly string[]) {
 }
 
 function openEntry(key: string) {
-  const id = select(key);
+  select(key);
+  const id = placed.value.get(key)?.openId ?? null;
   if (id !== null) {
     emit('open', id);
   }
 }
 
-/** Selects the entry; returns its item's id. */
+/**
+ * Selects the entry; returns its item's id — on a stack's entry or header the selected item when it is one of its,
+ * else the one Enter opens.
+ */
 function select(key: string | null) {
-  const id = key === null ? null : (placed.value.get(key)?.entry.id ?? null);
+  const current = key === null ? undefined : placed.value.get(key);
+  const kept = selectedId.value;
+  const inside = kept !== null && !!current && getToggled(current) !== null && current.walked.includes(kept);
+  const id = inside ? kept : (current?.openId ?? null);
   selectedKey.value = key;
   selectedId.value = id;
   return id;
 }
 
 /**
- * The selected item's id — read from the entry, as the model given by the owner changes only once it re-renders.
+ * The items the selected entry stands for — read from the entry, as the model given by the owner changes only once it
+ * re-renders.
  */
-function currentId() {
+function currentIds(): readonly string[] {
   const key = selectedKey.value;
-  return key === null ? selectedId.value : (placed.value.get(key)?.entry.id ?? null);
+  if (key === null) {
+    return selectedId.value === null ? [] : [selectedId.value];
+  }
+
+  return placed.value.get(key)?.ids ?? [];
+}
+
+/** The item Enter opens for the selected entry. */
+function currentOpenId() {
+  const key = selectedKey.value;
+  return key === null ? selectedId.value : (placed.value.get(key)?.openId ?? null);
 }
 
 function openSelectedOnGitHub() {
@@ -424,25 +862,37 @@ function toggleGroup(key: string) {
   collapsed.value = next;
 }
 
-function isDraggable(entry: ListEntry<T>, group: ListGroup<T>) {
-  return props.layout === 'board' && props.groups.some(other => canDrop(entry, group.key, other));
+/** What moving a row moves (D3): the row itself, or a stack's entry's pull requests. */
+function getMoved(row: ListRow<T>): readonly ListEntry<T>[] {
+  return row.stack ? row.nested : [row];
 }
 
-function canDrop(entry: ListEntry<T>, from: string, group: ListGroup<T>) {
-  return group.droppable && group.key !== from && props.canMove(entry, from, group.key);
+function isDraggable(row: ListRow<T>, group: ListGroup<T>) {
+  return props.layout === 'board' && props.groups.some(other => canDrop(getMoved(row), group.key, other));
 }
 
-function startDrag(event: DragEvent, entry: ListEntry<T>, group: ListGroup<T>) {
-  dragged.value = { entry, from: group.key };
+/** Whether the group takes what is moved: every entry of it, so a stack's card moves whole or not at all. */
+function canDrop(moved: readonly ListEntry<T>[], from: string, group: ListGroup<T>) {
+  return (
+    group.droppable &&
+    group.key !== from &&
+    moved.length > 0 &&
+    moved.every(entry => props.canMove(entry, from, group.key))
+  );
+}
+
+function startDrag(event: DragEvent, row: ListRow<T>, group: ListGroup<T>) {
+  const moved = getMoved(row);
+  dragged.value = { key: row.key, moved, from: group.key };
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', entry.id);
+    event.dataTransfer.setData('text/plain', moved.map(entry => entry.id).join('\n'));
   }
 }
 
 function dragOver(event: DragEvent, group: ListGroup<T>) {
   const drag = dragged.value;
-  if (drag && canDrop(drag.entry, drag.from, group)) {
+  if (drag && canDrop(drag.moved, drag.from, group)) {
     event.preventDefault();
     dropTarget.value = group.key;
   }
@@ -451,10 +901,10 @@ function dragOver(event: DragEvent, group: ListGroup<T>) {
 function drop(event: DragEvent, group: ListGroup<T>) {
   const drag = dragged.value;
   endDrag();
-  if (drag && canDrop(drag.entry, drag.from, group)) {
+  if (drag && canDrop(drag.moved, drag.from, group)) {
     event.preventDefault();
-    select(drag.entry.key);
-    emit('move', { id: drag.entry.id, from: drag.from, to: group.key });
+    select(drag.key);
+    emit('move', { ids: drag.moved.map(entry => entry.id), from: drag.from, to: group.key });
   }
 }
 
@@ -470,30 +920,43 @@ function endDrag() {
 function prepareContextMenu(event: MouseEvent) {
   const row = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-entry-key]') : null;
   const key = row?.dataset.entryKey;
-  const entry = key === undefined ? undefined : placed.value.get(key)?.entry;
-  if (key === undefined || !entry) {
+  const current = key === undefined ? undefined : placed.value.get(key);
+  if (key === undefined || !current) {
     event.stopImmediatePropagation();
     return;
   }
 
-  if (checkedIds.value.length > 1 && checkedIds.value.includes(entry.id)) {
-    menuIds.value = checkedIds.value;
+  const checked = checkedIds.value;
+  if (checked.length > 1 && current.ids.every(id => checked.includes(id))) {
+    menuIds.value = checked;
+    menuOpenId.value = null;
     return;
   }
 
-  menuIds.value = [entry.id];
+  menuIds.value = current.ids;
+  menuOpenId.value = current.openId;
   select(key);
 }
 
 function openFromMenu() {
-  const [id] = menuIds.value;
-  if (menuIds.value.length === 1 && id !== undefined) {
-    emit('open', id);
+  if (menuOpenId.value !== null) {
+    emit('open', menuOpenId.value);
   }
 }
 
+/** The item's own entry, else the stack's entry or header it is in. */
 function findKey(keys: readonly string[], id: string) {
-  return keys.find(key => placed.value.get(key)?.entry.id === id) ?? null;
+  return (
+    keys.find(key => placed.value.get(key)?.entry.id === id) ??
+    keys.find(key => placed.value.get(key)?.walked.includes(id)) ??
+    null
+  );
+}
+
+/** The row of the item nested under the entry `parentKey`. */
+function isNestedRowOf(key: string, parentKey: string, id: string) {
+  const current = placed.value.get(key);
+  return current?.parent?.key === parentKey && current.entry.id === id;
 }
 </script>
 
@@ -579,26 +1042,37 @@ function findKey(keys: readonly string[], id: string) {
                 :key="row.key"
               >
                 <li
-                  v-for="{ entry, parent } in [
-                    { entry: row, parent: null },
-                    ...row.nested.map(nested => ({ entry: nested, parent: row })),
-                  ]"
-                  :key="entry.key"
+                  v-for="current in shownByRow.get(row.key)"
+                  :key="current.entry.key"
                   :class="[
                     css.listView_row,
-                    selectedKey === entry.key && css.listView_row_selected,
-                    checkedIds.includes(entry.id) && css.listView_row_checked,
+                    current.rail && css[`listView_row_rail${current.depth}`],
+                    selectedKey === current.entry.key && css.listView_row_selected,
+                    isChecked(current.entry.key) && css.listView_row_checked,
+                    isUnmatched(current) && css.listView_row_unmatched,
                   ]"
-                  :aria-current="selectedKey === entry.key ? 'true' : undefined"
-                  :data-entry-key="entry.key"
-                  @click="openEntry(entry.key)"
+                  :aria-current="selectedKey === current.entry.key ? 'true' : undefined"
+                  :data-entry-key="current.entry.key"
+                  @click="openEntry(current.entry.key)"
                 >
+                  <!-- In the row's gutter (SP10, SP20, SP22); toggling it opens nothing. -->
+                  <button
+                    v-if="getToggled(current)"
+                    type="button"
+                    tabindex="-1"
+                    :class="[css.listView_stackToggle, current.depth > 0 && css.listView_stackToggle_nested]"
+                    :aria-expanded="isToggledExpanded(current)"
+                    :aria-label="t(isToggledExpanded(current) ? l.collapseStack : l.expandStack)"
+                    @click.stop="toggleOf(current)"
+                  >
+                    <component
+                      :is="isToggledExpanded(current) ? ChevronDown : ChevronRight"
+                      aria-hidden="true"
+                    />
+                  </button>
                   <slot
                     name="row"
-                    :entry="entry"
-                    :parent="parent"
-                    :group="group"
-                    :checked="checkedIds.includes(entry.id)"
+                    v-bind="getSlotProps({ current, row, group })"
                   />
                 </li>
               </template>
@@ -655,31 +1129,25 @@ function findKey(keys: readonly string[], id: string) {
               :key="row.key"
             >
               <li
-                v-for="{ entry, parent } in [
-                  { entry: row, parent: null },
-                  ...row.nested.map(nested => ({ entry: nested, parent: row })),
-                ]"
-                :key="entry.key"
+                v-for="current in shownByRow.get(row.key)"
+                :key="current.entry.key"
                 :class="[
                   css.listView_card,
-                  parent && css.listView_card_nested,
-                  selectedKey === entry.key && css.listView_card_selected,
-                  checkedIds.includes(entry.id) && css.listView_card_checked,
-                  dragged?.entry.key === entry.key && css.listView_card_dragged,
+                  current.parent && css.listView_card_nested,
+                  selectedKey === current.entry.key && css.listView_card_selected,
+                  isChecked(current.entry.key) && css.listView_card_checked,
+                  dragged?.key === current.entry.key && css.listView_card_dragged,
                 ]"
-                :aria-current="selectedKey === entry.key ? 'true' : undefined"
-                :data-entry-key="entry.key"
-                :draggable="!parent && isDraggable(entry, group) ? 'true' : undefined"
-                @click="openEntry(entry.key)"
-                @dragstart="startDrag($event, entry, group)"
+                :aria-current="selectedKey === current.entry.key ? 'true' : undefined"
+                :data-entry-key="current.entry.key"
+                :draggable="!current.parent && isDraggable(row, group) ? 'true' : undefined"
+                @click="openEntry(current.entry.key)"
+                @dragstart="startDrag($event, row, group)"
                 @dragend="endDrag"
               >
                 <slot
                   name="card"
-                  :entry="entry"
-                  :parent="parent"
-                  :group="group"
-                  :checked="checkedIds.includes(entry.id)"
+                  v-bind="getSlotProps({ current, row, group })"
                 />
               </li>
             </template>
@@ -790,11 +1258,64 @@ function findKey(keys: readonly string[], id: string) {
 }
 
 .listView_row {
+  position: relative;
   cursor: default;
 
   &:hover {
     background: $color-bg-2;
   }
+}
+
+// A stack's pull requests under an issue (D12, D23): a rail below the icon of what expands them — the issue's, or a
+// nested stack's header's (`ItemRow`, `StackRow`: 16px and 42px in, icons 15px wide).
+.listView_row_rail1::before,
+.listView_row_rail2::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  content: '';
+  background: $color-border-2;
+}
+
+.listView_row_rail1::before {
+  left: $spacing-16 + 7px;
+}
+
+.listView_row_rail2::before {
+  left: 42px + 7px;
+}
+
+// In the 16px gutter left of the row's icon, level with it: the row's padding and the icon's own offset.
+.listView_stackToggle {
+  position: absolute;
+  top: $spacing-7 + $spacing-2;
+  left: calc(($spacing-16 - 14px) / 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  color: $color-fg-3;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-radius: $radius-sm;
+
+  &:hover {
+    color: $color-fg-2;
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// A nested stack's header (D23): in the gutter left of its icon, 42px in.
+.listView_stackToggle_nested {
+  left: calc(42px - $spacing-16 + ($spacing-16 - 14px) / 2);
 }
 
 .listView_row_selected,
@@ -806,6 +1327,10 @@ function findKey(keys: readonly string[], id: string) {
 .listView_row_checked,
 .listView_row_checked:hover {
   background: rgba($color-accent, 0.1);
+}
+
+.listView_row_unmatched > * {
+  opacity: 0.4;
 }
 
 .listView_column {

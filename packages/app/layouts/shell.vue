@@ -25,6 +25,7 @@ import type { SegmentEdits } from '@/shell/FreshnessSegment.vue';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
@@ -59,8 +60,13 @@ const collapsed = preferences.sidebarCollapsed;
 const myWorkCounts = computed(() =>
   items.getSyncState('myWork').lastSuccessAt === null
     ? null
-    : buildMyWork({ membership: items.membership, getItem: id => items.get(id), filter: 'all', sort: 'updated' })
-        .counts,
+    : buildMyWork({
+        membership: items.membership,
+        getItem: id => items.get(id),
+        stacks: groupStacks(items.all),
+        filter: 'all',
+        sort: 'updated',
+      }).counts,
 );
 
 // Each tracked project and repository with its open items once they have arrived, else how far its download is.
