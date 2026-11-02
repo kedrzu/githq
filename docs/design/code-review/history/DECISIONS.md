@@ -47,7 +47,6 @@ line itself was rewritten, the thread goes to its nearest surviving neighbour �
 - Outdated threads only in the pull request's conversation sidebar (agent) — file comments stay with files (owner).
 - Hiding outdated threads, as github.com mostly does — exactly the owner's complaint.
 
-
 ## D13
 
 Retired 2026-11-02, replaced by the current [D13](../DECISIONS.md#d13): threads in a collapsed file show the code they were written on, so the file stays unfetched.
@@ -68,7 +67,6 @@ stays expanded (owner).
 - A comment above the code with an arrow pointing to its line, without the line (owner's first thought) — a few lines
   of code tell more.
 
-
 ## D20
 
 Retired 2026-11-02, replaced by the current [D20](../DECISIONS.md#d20): files are fetched by the app's GitHub client, not by the worker.
@@ -83,5 +81,3 @@ optimise for speed"; the candidate is the agent's)
 
 **Why.** github.com stutters on large pull requests (owner). Fetching inside the worker removes the cost the owner
 worried about, sending texts there and back.
-
-
