@@ -124,11 +124,11 @@ the recommended one comes first.
 |Question|Answer in the frame|Variants|
 |-|-|-|
 |The panel's form|Its own surface over any screen: PM1a, PM2a (chosen)||
-|Required checks without noise|One line while green, a row with a tag when off: PM4a; still running, required or only optional, beside them|Two lines always (PM4b), the same two running states beside it; all open: PM4c|
+|Required checks without noise|One line while green, a row with a tag when off, still running: PM4a (chosen); all open after C, passed, failed or running||
 |"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
 |A late refusal|Toast, status bar and row: PM35||
 |Commit text|Title and the first lines: PM3a (chosen); editing: PM3d||
-|Bypass|Own red zone and chord: PM12a|Armed with a key (PM12b)|
+|Bypass|Its own line, red outline, and its own chord: PM12a (chosen)||
 |Ordinary commands|Beside the reason (PM20, PM26), the palette and menus: PM39||
 
 The states: ready PM5–PM7, being read PM8–PM9, auto-merge PM10–PM11, nothing to offer PM13, queue PM14–PM16, stack

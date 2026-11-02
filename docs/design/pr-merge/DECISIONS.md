@@ -230,20 +230,33 @@ immediate refusal in the panel with its text ([D6](#d6)) and costs no key on the
 
 **`⌘Enter` is always the way forward of the state, and never bypass; bypass answers to `⌥⌘Enter`, jumping the queue to
 `⇧⌘Enter`.** The way forward is merge, enable auto-merge, add to queue, update branch, mark ready, resolve on GitHub or
-turn auto-merge off. When there is none the primary is off. (2026-11-01, design agent; bypass's shape, PM12a or PM12b,
-is the owner's pick)
+turn auto-merge off. When there is none the primary is off. (2026-11-01, design agent; bypass's shape, PM12a, chosen by
+the owner 2026-11-02)
 
 **Why.** The second key stays one habit across every state, and the only actions with a cost nobody can take back get
-a chord that habit can't hit. Bypass in red, below the usual action, says what it skips.
+a chord that habit can't hit. Bypass is its own line above the footer, with a red outline and red words but no red
+ground, so the usual action stays the one filled button, last; its label, "Bypass rules and merge", says what it does
+without reading the line beside it.
+
+**Rejected.**
+
+- Bypass armed with a key, B, after which `⌘Enter` bypasses (PM12b) — the one state where the habit key does the costly
+  thing.
+- A red zone below the footer (PM12a's first draft) — it outshone the usual action.
 
 ## D13
 
 **Required checks stay out of sight while green: one line, with "5 required" as a quiet aside. A failed check becomes a
 row; one that blocks carries a "Required" tag, and one that does not is grey and says it does not stop the merge.**
-(2026-11-01, design agent; PM4b is the alternative. Both are drawn with checks still running, a required one among them
-or only optional ones; open until the owner picks)
+While checks still run, the required ones that run become tagged rows with how long they have run, and the merge
+offers auto-merge; when only optional ones run the line stays one and the panel reads ready. C opens every check,
+required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 
 **Why.** The usual merge has nothing to read here. Colour alone can't carry the difference, because both kinds failed.
+
+**Rejected.**
+
+- Two lines always, Required and Others (PM4b) — more to read when everything is green.
 
 ## D14
 
