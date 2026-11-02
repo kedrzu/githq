@@ -362,7 +362,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
       :rows="list.groups.flatMap(group => group.rows)"
       :summary="summary"
       :others="t(list.counts.all > 0 ? l.othersOnGitHub : l.allOnGitHub)"
-      :settings-to="getSettingsPath('tracking', nameWithOwner)"
+      :settings-to="getSettingsPath('repositories', nameWithOwner)"
       :properties="properties"
       :viewer-login="viewerLogin"
       :now="now"

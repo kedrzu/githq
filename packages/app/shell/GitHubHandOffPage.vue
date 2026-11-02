@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { Browser } from '@/services/Browser.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
+import { goBack } from '@/utils/goBack.js';
 
 const browser = useService(Browser);
 const route = useRoute();
@@ -13,15 +14,7 @@ const router = useRouter();
 browser.replaceLocation(getGitHubUrl(route.fullPath));
 // The desktop app's window never leaves the app: GitHub opened in the browser, and the app goes back.
 if (__DESKTOP__) {
-  goBack();
-}
-
-function goBack() {
-  if (router.options.history.state.back == null) {
-    void router.replace('/');
-  } else {
-    router.back();
-  }
+  goBack(router, '/');
 }
 </script>
 

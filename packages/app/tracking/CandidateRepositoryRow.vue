@@ -1,4 +1,4 @@
-<!-- A repository the tracking screens offer (G2, G4, G5): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. In Settings (G8) the last column says what saving will do to it, or how it stands when tracked (`TrackedRowNote`); a tracked one GitHub's lists have not given shows only what is known of it — no tag when its privacy is unknown, no open count. -->
+<!-- A repository the tracking screens offer (G2, G4, G5, T18): its checkbox, named "owner/**name**" with public or private, and what tells whether the user cares — how many issues and pull requests are open, and how recently it saw a push. An archived one says it is read-only. In the picker (T18) a tracked one shows a grey, fixed tick and "tracked" instead of its activity; one GitHub's lists have not given shows only what is known of it — no tag when its privacy is unknown, no open count. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { BookMarked, Lock } from 'lucide-vue-next';
@@ -9,21 +9,17 @@ import { formatAge } from '@/utils/formatAge.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './CandidateRepositoryRow.loc.js';
-import TrackedRowNote from './TrackedRowNote.vue';
-import type { TrackedChange } from './TrackedRowNote.vue';
-import type { CandidateRepository, TrackedRepositoryEntry, TrackedStatus } from './TrackingTypes.js';
+import type { CandidateRepository, TrackedRepositoryEntry } from './TrackingTypes.js';
 
 /** A push within this long reads as recent activity, brighter. */
 const RECENT_MS = 7 * 24 * 60 * 60_000;
 
 const props = defineProps<{
-  /** Offered by GitHub's lists, or (Settings) tracked yet not among what they gave so far. */
+  /** Offered by GitHub's lists, or (the picker) tracked yet not among what they gave so far. */
   repository: CandidateRepository | TrackedRepositoryEntry;
   now: number;
-  /** Settings: what saving will do to it. */
-  change?: TrackedChange | null;
-  /** Settings: how it stands, when tracked. */
-  status?: TrackedStatus | null;
+  /** The picker: already tracked, so its tick is fixed and it can't be picked. */
+  tracked?: boolean;
 }>();
 
 const selected = defineModel<boolean>({ required: true });
@@ -37,12 +33,14 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
 
 <template>
   <div
-    :class="css.candidateRepositoryRow"
+    :class="[css.candidateRepositoryRow, tracked && css.candidateRepositoryRow_tracked]"
     data-tracking-row
   >
     <Checkbox
-      v-model="selected"
+      :model-value="tracked || selected"
+      :readonly="tracked"
       :class="css.candidateRepositoryRow_label"
+      @update:model-value="selected = $event"
     >
       <span :class="css.candidateRepositoryRow_name">
         <component
@@ -71,13 +69,11 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
       :class="css.candidateRepositoryRow_meta"
       >{{ t(l.open, { count: candidate.openIssues + candidate.openPullRequests }) }}</span
     >
-    <TrackedRowNote
-      v-if="change || status"
+    <span
+      v-if="tracked"
       :class="css.candidateRepositoryRow_active"
-      :change="change ?? null"
-      :status="status ?? null"
-      :now="now"
-    />
+      >{{ t(l.tracked) }}</span
+    >
     <span
       v-else-if="candidate"
       :class="[
@@ -172,5 +168,19 @@ const pushedAt = computed(() => (candidate.value?.pushedAt == null ? null : Date
 
 .candidateRepositoryRow_active_recent {
   color: $color-fg-2;
+}
+
+// A fixed tick, grey rather than the readonly checkbox's dimmed accent, with the row's name quieter.
+.candidateRepositoryRow.candidateRepositoryRow_tracked {
+  [role='checkbox'] {
+    color: $color-fg-3;
+    background: $color-bg-3;
+    border-color: $color-border-2;
+    opacity: 1;
+  }
+
+  .candidateRepositoryRow_repo {
+    color: $color-fg-2;
+  }
 }
 </style>
