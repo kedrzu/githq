@@ -197,7 +197,7 @@ test('settings saved on another device are offered instead of the choice: loaded
     await page.reload();
     await expect(page).toHaveURL('/');
     await expect(shell.tracked('acme/api')).toBeVisible();
-    await page.goto('/settings?tab=saving');
+    await page.goto('/settings?tab=sync');
     await expect(new SavingScreenHarness(page).on).toBeVisible();
 });
 

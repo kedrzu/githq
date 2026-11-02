@@ -1,4 +1,4 @@
-<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). A section's controls go into the header from the section itself (`SettingsView`). -->
+<!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). `?q=` is what What to track's filter holds when it opens. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -28,15 +28,13 @@ const section = computed({
 <template>
   <SettingsView
     v-model:section="section"
-    :repositories="tracking.repositories.length"
-    :projects="tracking.projects.length"
+    :tracked="tracking.repositories.length + tracking.projects.length"
     :saving-stopped="sync.state.state === 'stopped'"
   >
     <AccountSection v-if="section === 'account'" />
-    <SavingSection v-else-if="section === 'saving'" />
+    <SavingSection v-else-if="section === 'sync'" />
     <TrackingSection
       v-else
-      :tab="section"
       :initial-search="search"
     />
   </SettingsView>

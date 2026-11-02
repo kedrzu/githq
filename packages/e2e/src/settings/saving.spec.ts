@@ -31,10 +31,12 @@ test('turned on with no repository, githq creates it, saves what is tracked, and
         `https://github.com/${LOGIN}/githq-settings`,
     );
     expect(github.restCalls.some(call => call.method === 'POST' && call.url.pathname === '/user/repos')).toBe(true);
-    expect(repository.file && JSON.parse(repository.file.text)).toMatchObject({
-        version: 1,
-        repositories: [{ nameWithOwner: SAMPLE_REPOSITORY, tracking: true }],
-    });
+    await expect
+        .poll((): unknown => repository.file && JSON.parse(repository.file.text))
+        .toMatchObject({
+            version: 1,
+            repositories: [{ nameWithOwner: SAMPLE_REPOSITORY, tracking: true }],
+        });
 });
 
 test('turned on with settings already saved, it shows what combining changes and changes nothing until told', async ({
@@ -140,8 +142,8 @@ test('a repository deleted on GitHub stops syncing when the window is focused; t
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 
     await expect(saving.stopped).toContainText(`The repository ${LOGIN}/githq-settings no longer exists on GitHub.`);
-    await expect(new SettingsScreenHarness(page).section('Saving to GitHub')).toHaveAccessibleName(
-        'Saving to GitHub Syncing stopped',
+    await expect(new SettingsScreenHarness(page).section('Sync settings')).toHaveAccessibleName(
+        'Sync settings Syncing stopped',
     );
     const created = countSettingsCreations(github);
 
@@ -172,7 +174,7 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
     await expect(shell.accountSyncStopped(LOGIN)).toBeVisible();
 
     await page.keyboard.press('Alt+KeyS');
-    await expect(page).toHaveURL(/\/settings\?tab=saving$/u);
+    await expect(page).toHaveURL(/\/settings\?tab=sync$/u);
     await expect(saving.stopped).toBeVisible();
     await expect(shell.syncStoppedToast).toHaveCount(0);
 
@@ -182,7 +184,7 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
 
     await shell.accountSyncStopped(LOGIN).click();
     await page.getByRole('menuitem', { name: /^Settings/u }).click();
-    await expect(page).toHaveURL(/\/settings\?tab=saving$/u);
+    await expect(page).toHaveURL(/\/settings\?tab=sync$/u);
     await saving.turnOffButton.click();
 
     await expect(saving.choice).not.toBeChecked();
@@ -191,12 +193,12 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
 
 /**
  * Signs in with the sample tracked, then answers the settings repository as `repository` says — none on the first
- * sign-in, so it offers no saved settings — and opens Settings' Saving to GitHub.
+ * sign-in, so it offers no saved settings — and opens Settings' Sync settings.
  */
 async function openSaving(page: Page, github: GitHubMock, repository: SettingsRepository) {
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     const answered = answerSettingsRepository(github, repository);
-    await page.goto('/settings?tab=saving');
+    await page.goto('/settings?tab=sync');
     return answered;
 }
 

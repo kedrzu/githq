@@ -9,12 +9,23 @@ import type { LucideIcon } from 'lucide-vue-next';
  * - `light`: light fill, the main action of a page with nothing else on it ("Sign in with GitHub").
  * - `secondary`: raised neutral fill with an outline, next to a primary ("Only my repositories").
  * - `outline`: outline only, quieter tools of a toolbar ("Group: Reason").
+ * - `framed`: a stronger outline and a medium label, an action beside a heading that plain text would leave reading as
+ *   status ("Select all 12", "Show all 312"). Drawn small only.
  * - `ghost`: no fill until hovered, toolbars and menus' triggers ("Filter").
  * - `link`: text only, inline in a sentence ("Why?") or a row's meta line ("Open on GitHub").
  * - `field`: looks like a text field, for a button that opens one ("Search… ⌘K" in the sidebar).
  * - `danger`: red outline, an action that deletes something ("Sign out and clear").
  */
-export type ButtonVariant = 'danger' | 'field' | 'ghost' | 'light' | 'link' | 'outline' | 'primary' | 'secondary';
+export type ButtonVariant =
+  | 'danger'
+  | 'field'
+  | 'framed'
+  | 'ghost'
+  | 'light'
+  | 'link'
+  | 'outline'
+  | 'primary'
+  | 'secondary';
 
 /** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action, `xl` the landing page's hero. */
 export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
@@ -227,6 +238,21 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   }
 }
 
+.button_framed {
+  color: $color-fg-2;
+  border-color: $color-border-2;
+
+  &:hover {
+    color: $color-fg;
+    background: $color-bg-2;
+  }
+
+  &.button_sm {
+    padding-inline: 9px;
+    font-weight: $font-weight-medium;
+  }
+}
+
 .button_danger {
   color: $color-red;
   background: rgba($color-red, 0.06);
@@ -297,6 +323,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   }
 
   &.button_outline,
+  &.button_framed,
   &.button_ghost,
   &.button_link {
     color: $color-fg-dim;

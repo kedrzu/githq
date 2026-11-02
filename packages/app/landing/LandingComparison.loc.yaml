@@ -1,9 +1,11 @@
 eyebrow:
-  en: Why githq
+  en: 02 — No separate tracker
 titleLine1:
-  en: The best of both.
+  en: Your tracker is
 titleLine2:
-  en: Without the second tool.
+  en: already on GitHub.
+body:
+  en: 'Issues, labels, Projects with their fields, boards and iterations. They are the tracker, and githq works them directly: an edit shows at once and is on github.com the same second. Nothing to import, nothing to keep in sync.'
 github:
   en: github.com
 tracker:
@@ -16,6 +18,10 @@ keyboard:
   en: Everything from the keyboard
 allRepositories:
   en: All your repositories in one view
+nextToIssues:
+  en: Pull requests, checks and failing workflows next to your issues
+oneRepositoryAtATime:
+  en: one repository at a time
 nothingToSync:
   en: Nothing to import or keep in sync
 price:

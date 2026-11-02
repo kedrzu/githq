@@ -453,6 +453,49 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
 > signing provided by SignPath.io, certificate by SignPath Foundation". Software that installs must also explain
 > how to uninstall it. The policy is in the root `README.md`.
 
+### D24
+
+Settings chooses what to track with **the first sign-in chooser itself** (owner, 2026-11-02, "Direction A" of
+three). The section "What to track" replaces the separate Repositories and Projects sections and is the
+`Track / Choose what to track` component of G2: owners on the left listing every repository, the search and sort
+right above the list, repositories ticked and grouped by owner, projects beside them. A tick means tracked. In
+settings a tracked row shows its sync status where sign-in shows activity, and changing ticks stages changes that
+a bar at the bottom saves or discards together, so many repositories are tracked or untracked at once. Why: the
+two screens were built differently for the same question, the old one could only find repositories by search,
+and its single-key shortcuts acted on rows that couldn't be selected. Rejected: ticks as a selection with
+Track/Untrack bulk actions ("B", faster for big changes but a second model next to sign-in's), and tracked and
+available as two side-by-side lists ("C"). The section "Saving to GitHub" is renamed **Sync settings**; settings
+has three sections, keys 1 to 3. Screens G8 and T1 in `githq.pen`.
+
+Settled while building it (PR #82, 2026-11-02):
+
+- **Saving is one write of the staged changes onto what is tracked by then**, not the ticks as they stand: a
+  repository tracked meanwhile in another tab, or a tracked row the list never drew, is never untracked by Save.
+- **Staged changes live as long as the section is shown.** Switching to another section or leaving Settings drops
+  them without asking (owner's call; keeping them across sections would need state above the section).
+- **A group's action** reads "Untrack all" only when every row it covers is ticked, else "Track all", the rule
+  sign-in already has for "Select none" / "Select all".
+- **What the lists don't hold still shows**, so it can be unticked: someone else's tracked repository in a group
+  "Elsewhere" at the end, and while the lists are first read (or reading them failed) the tracked rows alone,
+  under "Reading your repositories…".
+- **A tracked row's middle column is its open count**, as for every other row; githq can't tell how much one
+  repository takes in the browser, so T1's "1,420 · 21 MB" became "142 open".
+- **Dropped with the old screen:** the repositories suggested from My work, the size this browser keeps (Account
+  still shows it), the owner menu, the Organisations panel (Account still lists approvals), and `T` / `⌫` on rows.
+
+### D25
+
+Settings lists **only what is tracked**, and adding is a **separate picker** (owner, 2026-11-02). Repositories and
+Projects each show the tracked ones grouped by owner, without ticks or an owner filter (the list is short), and a row
+opens that repository's or project's settings page (T16), because each now has settings of its own. Each row untracks
+with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
+owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
+gone from Settings. First sign-in keeps its chooser (G2). Replaces the Settings half of D24. Screens G8, T17.
+The picker is **the first sign-in chooser in a modal of its own** (owner, 2026-11-02), not a palette shaped like the
+command menu: the same chooser both times, for repositories (T18) and projects (T22). **Untrack acts at once, with
+Undo** (owner, 2026-11-02; T20): the row leaves the list and a toast offers Undo (⌘Z) for 10 seconds; the copy in this
+browser is deleted only when the toast goes. No confirmation on the row.
+
 ## Open questions
 
 ### Q1

@@ -1,10 +1,10 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge, their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
-import { nextTick, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
@@ -70,14 +70,41 @@ const collapsed = defineModel<boolean>('collapsed', { default: false });
 
 /** `$sidebar-rail-width`, or room for macOS's window controls over it: the rail is not resized. */
 const SIDEBAR_RAIL_WIDTH = WINDOW_CONTROLS_OVERLAID ? 80 : 56;
-/** What is left to the screen, at least, in percent of the window. */
-const SCREEN_MIN_SIZE = 25;
+/** What is left to the screen (the list), at least, in pixels: the item panel grows as wide as the window allows. */
+const SCREEN_MIN_WIDTH = 400;
 
 const t = useTranslate();
 const sidebarWidth = usePanelWidth({ key: 'sidebar', default: 236, min: 180, max: 400 });
-const panelWidth = usePanelWidth({ key: 'itemPanel', default: 560, min: 400, max: 960 });
+const panelWidth = usePanelWidth({ key: 'itemPanel', default: 560, min: 400 });
+const surfaces = useTemplateRef<InstanceType<typeof SplitterGroup>>('surfaces');
 const sidebarPanel = useTemplateRef<InstanceType<typeof SplitterPanel>>('sidebarPanel');
 const itemPanel = useTemplateRef<InstanceType<typeof SplitterPanel>>('itemPanel');
+
+/** The panels' width together, in pixels: the window's, as the screen's minimum is in percent of it. */
+const surfacesWidth = ref(window.innerWidth);
+const screenMinSize = computed(() => Math.min(100, (SCREEN_MIN_WIDTH / surfacesWidth.value) * 100));
+// The panel stops where the screen would get narrower than its minimum, so dragging it never squeezes the sidebar.
+// From the sidebar's width the user chose, not the one it has while dragged: the panels would be laid out anew.
+const panelMaxWidth = computed(() =>
+  Math.max(
+    panelWidth.min,
+    surfacesWidth.value - (collapsed.value ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
+  ),
+);
+
+let observer: ResizeObserver | undefined;
+onMounted(() => {
+  const element = surfaces.value?.$el as HTMLElement | undefined;
+  if (element) {
+    observer = new ResizeObserver(([entry]) => {
+      if (entry) {
+        surfacesWidth.value = entry.contentRect.width;
+      }
+    });
+    observer.observe(element);
+  }
+});
+onBeforeUnmount(() => observer?.disconnect());
 
 // `[` collapses or expands the sidebar, unless the key is being typed into something.
 useCommands(() => [
@@ -106,7 +133,8 @@ async function restoreWidths() {
   itemPanel.value?.resize(panelWidth.stored);
 }
 
-watch(collapsed, restoreWidths);
+// A new minimum or maximum lays the panels out anew as well.
+watch([collapsed, screenMinSize, panelMaxWidth], restoreWidths);
 
 // The panels' widths now, in pixels but the screen's: `[sidebar, screen, panel?]`. The rail's is not the sidebar's.
 function onLayout(sizes: number[]) {
@@ -132,6 +160,7 @@ function onLayout(sizes: number[]) {
   >
     <!-- Ids and orders keep the panels apart as the item panel comes and goes. -->
     <SplitterGroup
+      ref="surfaces"
       direction="horizontal"
       :class="css.appShell_surfaces"
       @layout="onLayout"
@@ -177,7 +206,7 @@ function onLayout(sizes: number[]) {
         id="app-screen"
         as="main"
         :order="1"
-        :min-size="SCREEN_MIN_SIZE"
+        :min-size="screenMinSize"
         :class="css.appShell_screen"
       >
         <slot />
@@ -194,7 +223,7 @@ function onLayout(sizes: number[]) {
           size-unit="px"
           :default-size="panelWidth.stored"
           :min-size="panelWidth.min"
-          :max-size="panelWidth.max"
+          :max-size="panelMaxWidth"
           :style="panelWidth.style"
           :class="css.appShell_panel"
           @vue:mounted="restoreWidths"

@@ -58,10 +58,10 @@ test('J3: an untracked repository shows what concerns the user; Settings opens w
     await expect(page).toHaveURL('/settings?q=acme%2Fweb');
     const tracking = new TrackingScreenHarness(page);
     await expect(tracking.search).toHaveValue('acme/web');
-    await expect(tracking.notTracked('acme/web')).toBeVisible();
+    await expect(tracking.row('acme/web')).not.toBeChecked();
 });
 
-test('J4: an untracked project shows what concerns the user; Settings opens on Projects with its address searched, and offers it', async ({
+test('J4: an untracked project shows what concerns the user; Settings opens with its address searched, and offers it', async ({
     page,
     github,
 }) => {
@@ -87,8 +87,8 @@ test('J4: an untracked project shows what concerns the user; Settings opens on P
     await lines.getByRole('link', { name: 'Settings' }).click();
 
     const address = `https://github.com/users/${SAMPLE_VIEWER.viewer.login}/projects/7`;
-    await expect(page).toHaveURL(`/settings?tab=projects&q=${encodeURIComponent(address)}`);
+    await expect(page).toHaveURL(`/settings?q=${encodeURIComponent(address)}`);
     const tracking = new TrackingScreenHarness(page);
     await expect(tracking.search).toHaveValue(address);
-    await expect(tracking.notTracked('Mobile launch')).toBeVisible();
+    await expect(tracking.row('Mobile launch')).not.toBeChecked();
 });

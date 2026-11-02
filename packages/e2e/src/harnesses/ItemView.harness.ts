@@ -40,6 +40,11 @@ export class ItemViewHarness {
         return this.page.getByRole('dialog').filter({ has: this.root });
     }
 
+    /** The handles on the modal's left and right edges, dragged to resize it. */
+    get modalHandles(): Locator {
+        return this.modal.getByRole('separator', { name: 'Resize window' });
+    }
+
     /** The item's reference in its header, opening the item menu (M1–M2, `⌘.`). */
     get menuButton(): Locator {
         return this.root.getByRole('button', { name: /^Actions of / });

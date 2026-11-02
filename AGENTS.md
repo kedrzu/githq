@@ -1,6 +1,6 @@
 # githq
 
-A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects — the Linear experience, free, with GitHub as the only backend.
+All your repositories in one place, no separate tracker: a fast, keyboard-first command center for GitHub Issues, Projects, pull requests and Actions across every repository — the Linear experience, free, with GitHub as the only backend. How we describe it: `docs/design/positioning/`.
 
 ## What this is
 
@@ -18,7 +18,7 @@ A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects 
 
 ## Status
 
-Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`.
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`.
 
 ## Stack & commands
 

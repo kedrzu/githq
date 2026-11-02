@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** Playwright harness for Settings' Saving to GitHub section (`SavingView.vue`, settings-sync T3–T8). */
+/** Playwright harness for Settings' Sync settings section (`SavingView.vue`, settings-sync T3–T8). */
 export class SavingScreenHarness {
     readonly page: Page;
     readonly root: Locator;
