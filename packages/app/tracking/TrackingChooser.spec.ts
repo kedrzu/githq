@@ -582,3 +582,20 @@ test('not found: the line says nothing matches', async () => {
 
     await expect.element(page.getByText('Nothing you can see matches “nobody/nothing”.')).toBeInTheDocument();
 });
+
+test('the filter counts what it looks through: one repository, or many', async () => {
+    const single: TrackingCandidates = {
+        ...EMPTY_CANDIDATES,
+        repositories: {
+            repositories: [sampleCandidateRepository('kedrzu/githq', ANY)],
+            totalCount: 1,
+            nextCursor: null,
+        },
+    };
+    await Choose.run({ args: { ...Choose.args, candidates: single } });
+    const filter = page.getByRole('textbox', { name: 'Filter repositories' });
+    await expect.element(filter).toHaveAttribute('placeholder', expect.stringMatching(/^Filter 1\srepository…$/u));
+
+    await Choose.run();
+    await expect.element(filter).toHaveAttribute('placeholder', expect.stringMatching(/^Filter 327\srepositories…$/u));
+});
