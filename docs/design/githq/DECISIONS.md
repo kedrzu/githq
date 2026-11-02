@@ -453,6 +453,20 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
 > signing provided by SignPath.io, certificate by SignPath Foundation". Software that installs must also explain
 > how to uninstall it. The policy is in the root `README.md`.
 
+### D24
+
+Settings chooses what to track with **the first sign-in chooser itself** (owner, 2026-11-02, "Direction A" of
+three). The section "What to track" replaces the separate Repositories and Projects sections and is the
+`Track / Choose what to track` component of G2: owners on the left listing every repository, the search and sort
+right above the list, repositories ticked and grouped by owner, projects beside them. A tick means tracked. In
+settings a tracked row shows its sync status where sign-in shows activity, and changing ticks stages changes that
+a bar at the bottom saves or discards together, so many repositories are tracked or untracked at once. Why: the
+two screens were built differently for the same question, the old one could only find repositories by search,
+and its single-key shortcuts acted on rows that couldn't be selected. Rejected: ticks as a selection with
+Track/Untrack bulk actions ("B", faster for big changes but a second model next to sign-in's), and tracked and
+available as two side-by-side lists ("C"). The section "Saving to GitHub" is renamed **Sync settings**; settings
+has three sections, keys 1 to 3. Screens G8 and T1 in `githq.pen`.
+
 ## Open questions
 
 ### Q1
