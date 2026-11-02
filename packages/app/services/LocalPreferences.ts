@@ -2,6 +2,7 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { storageRef } from '@nzyme/vue-utils/reactivity/storageRef.js';
 import type { StorageRef } from '@nzyme/vue-utils/reactivity/storageRef.js';
+import { effectScope } from 'vue';
 
 import { ITEM_ARRANGEMENTS } from '@/item/itemRoutes.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
@@ -45,6 +46,9 @@ export const LocalPreferences = defineService({
             deserialize: raw => raw === 'true',
         });
         const panelWidths = new Map<string, StorageRef<number | null>>();
+        // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
+        // that component is gone (the item panel, once the item moves to the modal).
+        const panelWidthsScope = effectScope(true);
 
         browser.onLocalStorageChange(key => {
             if (key === null || key === ITEM_ARRANGEMENT_KEY) {
@@ -77,12 +81,19 @@ export const LocalPreferences = defineService({
         function getPanelWidth(panel: string) {
             let width = panelWidths.get(panel);
             if (!width) {
-                width = storageRef<number | null>({
-                    key: PANEL_WIDTH_KEY_PREFIX + panel,
-                    storage,
-                    serialize: String,
-                    deserialize: parseWidth,
-                });
+                const created = panelWidthsScope.run(() =>
+                    storageRef<number | null>({
+                        key: PANEL_WIDTH_KEY_PREFIX + panel,
+                        storage,
+                        serialize: String,
+                        deserialize: parseWidth,
+                    }),
+                );
+                if (!created) {
+                    throw new Error('The panel widths are no longer kept');
+                }
+
+                width = created;
                 panelWidths.set(panel, width);
             }
 

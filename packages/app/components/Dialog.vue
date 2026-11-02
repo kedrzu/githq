@@ -1,4 +1,4 @@
-<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). -->
+<!-- A modal window over a dimmed app (reka-ui's `Dialog`): focus moves in and stays there, Escape or the close button closes it and focus goes back where it was. Titled for screen readers always; the title can be visually hidden where the content speaks for itself (quick capture). It is put in the page only while open, so the one opened last is on top — the command menu over an item's modal. With `resizeLabel`, its left and right edges are dragged to resize it (`v-model:width`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
@@ -15,9 +15,12 @@ import {
 
 import * as l from './Dialog.loc.js';
 import IconButton from './IconButton.vue';
+import WidthHandle from './WidthHandle.vue';
 
 // Without a description reka-ui still points `aria-describedby` at one; this drops the dangling reference.
 const NO_DESCRIPTION = { 'aria-describedby': undefined };
+/** What it leaves of the window either side of it, at least: `$spacing-24`. */
+const DIALOG_MARGIN = 24;
 
 withDefaults(
   defineProps<{
@@ -26,8 +29,10 @@ withDefaults(
     titleHidden?: boolean;
     /** A line under the title, also the dialog's description. */
     description?: string;
-    /** Width in px; it never grows past the window. 560 when not given. */
-    width?: number;
+    /** With `v-model:width`: its edges resize it, and say this to screen readers ("Resize window"). */
+    resizeLabel?: string;
+    /** With `resizeLabel`: how narrow it may be dragged, in px. */
+    minWidth?: number;
     /**
      * The content draws its own header and close button: the title is read out only, there is no padding and no
      * close button, and the dialog is as tall as the window allows.
@@ -36,7 +41,7 @@ withDefaults(
     /** With `bare`: as tall as the content, up to the window (the command menu), instead of the window. */
     fitContent?: boolean;
   }>(),
-  { description: undefined, width: 560 },
+  { description: undefined, resizeLabel: undefined, minWidth: 320 },
 );
 
 defineSlots<{
@@ -52,9 +57,13 @@ const emit = defineEmits<{
   escapeKeyDown: [event: KeyboardEvent];
   /** It opened and is about to focus its first control; `preventDefault()` and focus another (a title field). */
   openAutoFocus: [event: Event];
+  /** With `resizeLabel`: the user let go of an edge, or released an arrow key on it. */
+  resized: [];
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+/** Width in px; it never grows past the window. */
+const width = defineModel<number>('width', { default: 560 });
 const t = useTranslate();
 </script>
 
@@ -66,7 +75,7 @@ const t = useTranslate();
     >
       <slot name="trigger" />
     </DialogTrigger>
-    <DialogPortal>
+    <DialogPortal v-if="open">
       <DialogOverlay :class="css.dialog_overlay" />
       <DialogContent
         :class="[css.dialog, bare && (fitContent ? css.dialog_fit : css.dialog_bare)]"
@@ -115,6 +124,18 @@ const t = useTranslate();
           kbd="Escape"
           @click="open = false"
         />
+        <template v-if="resizeLabel">
+          <WidthHandle
+            v-for="side in ['left', 'right'] as const"
+            :key="side"
+            v-model="width"
+            :side="side"
+            :label="resizeLabel"
+            :min="minWidth"
+            :margin="DIALOG_MARGIN"
+            @resized="emit('resized')"
+          />
+        </template>
       </DialogContent>
     </DialogPortal>
   </DialogRoot>

@@ -17,6 +17,7 @@ design agent's proposal)
 branches in one graph and a choice of clone behind every local action.
 
 **Rejected.**
+
 - Several clones per repository — too much complexity for too little gain (owner).
 
 ## D9
@@ -46,6 +47,7 @@ mechanism is the design agent's proposal):
 a first open shows rows after one request of about a second.
 
 > **Checked 2026-11-01:** measured with `gh api`:
+>
 > - branches and tags (`refs(first: 100)` twice, oids only): cost 1, 0.83–0.86 s on `nuxt/nuxt` (67 branches,
 >   339 tags, so tags need paging), 0.49–0.82 s on `kedrzu/githq`;
 > - 100 branches × `history(first: 20)` in one request on `nuxt/nuxt`: cost 21, 3.06 s — the reason to fetch
@@ -57,6 +59,7 @@ a first open shows rows after one request of about a second.
 > 30,000 commits fully scrolled would be roughly 9 MB (estimate from that one measurement).
 
 **Rejected.**
+
 - Fetching the whole history on first open — seconds to minutes for a large repository, for rows nobody
   scrolls to.
 - Fetching every branch's history up front, joined or not — cost and latency grow with the branch count
