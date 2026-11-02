@@ -40,6 +40,8 @@ kind of work has to show, not as a second product. [Proposed, not yet confirmed]
 
 ## What is still open
 
+Three candidate openings of the landing page, each for a different first reader, are in [headlines.md](headlines.md).
+
 - How the "manager" idea sits on the landing page: a section of its own, the opening of the features, or the
   subhead under the headline.
 - Who the first reader is: a solo developer running agents, an open-source maintainer, or a small team.
