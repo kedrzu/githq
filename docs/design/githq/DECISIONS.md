@@ -483,6 +483,18 @@ Settled while building it (PR #82, 2026-11-02):
 - **Dropped with the old screen:** the repositories suggested from My work, the size this browser keeps (Account
   still shows it), the owner menu, the Organisations panel (Account still lists approvals), and `T` / `⌫` on rows.
 
+### D25
+
+Settings lists **only what is tracked**, and adding is a **separate picker** (owner, 2026-11-02). Repositories and
+Projects each show the tracked ones grouped by owner, without ticks or an owner filter (the list is short), and a row
+opens that repository's or project's settings page (T16), because each now has settings of its own. Each row untracks
+with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
+owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
+gone from Settings. First sign-in keeps its chooser (G2). Replaces the Settings half of D24. Screens G8, T17.
+Still to pick in `githq.pen`: the picker's shape (T18 + T22, the sign-in chooser in a modal, recommended, or T19, a
+palette with an owner chip) and how untracking is confirmed (T20, at once with Undo, recommended, or T21, confirmed on
+the row).
+
 ## Open questions
 
 ### Q1
