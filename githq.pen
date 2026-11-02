@@ -238326,8 +238326,113 @@
                                   "width": "fill_container",
                                   "height": "fill_container",
                                   "descendants": {
+                                    "e4iltS/RxUsy": {
+                                      "content": "feat: preview a…"
+                                    },
+                                    "e4iltS/IebtI": {
+                                      "enabled": false
+                                    },
                                     "D8n9Va": {
                                       "fill": "$sel"
+                                    },
+                                    "D8n9Va/RxUsy": {
+                                      "content": "fix: booking time u…"
+                                    },
+                                    "D8n9Va/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "IVktp/RxUsy": {
+                                      "content": "Merge pull request #1226 from…"
+                                    },
+                                    "IVktp/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "Lagt8/RxUsy": {
+                                      "content": "fix: read the timezone from the studio…"
+                                    },
+                                    "Lagt8/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "gg9jq/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "xri7Z/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "MYTqu/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "StSpN/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "g8eHj/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "r0YQD7/RxUsy": {
+                                      "content": "fix: member list loads…"
+                                    },
+                                    "r0YQD7/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "dY8zA/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "hlQOn/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "WV0js/RxUsy": {
+                                      "content": "fix: export…"
+                                    },
+                                    "WV0js/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "w38JFH/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "b3WdrT/RxUsy": {
+                                      "content": "feat: let studios hide prices on the b…"
+                                    },
+                                    "b3WdrT/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "g7nsnt/RxUsy": {
+                                      "content": "fix: flaky login redirect on Safari (#…"
+                                    },
+                                    "g7nsnt/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "kLNw8/RxUsy": {
+                                      "content": "Merge pull request #1199 from fitloop/…"
+                                    },
+                                    "kLNw8/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "IjSa4/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "EEzCx/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "kpy5Q/RxUsy": {
+                                      "content": "feat: reminder emails in th…"
+                                    },
+                                    "kpy5Q/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "tSi34/RxUsy": {
+                                      "content": "spike: queue remind…"
+                                    },
+                                    "tSi34/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "yaNdz/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "HiIBx/IebtI": {
+                                      "enabled": false
+                                    },
+                                    "A6x5M/IebtI": {
+                                      "enabled": false
                                     }
                                   }
                                 },
@@ -240992,7 +241097,33 @@
                                       "ref": "Hg7DR",
                                       "name": "Graph",
                                       "width": "fill_container",
-                                      "height": "fill_container"
+                                      "height": "fill_container",
+                                      "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
+                                        }
+                                      }
                                     }
                                   ]
                                 },
@@ -242389,8 +242520,32 @@
                                       "width": "fill_container",
                                       "height": "fill_container",
                                       "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
                                         "D8n9Va": {
                                           "fill": "$sel"
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
                                         }
                                       }
                                     }
@@ -243166,8 +243321,32 @@
                                       "width": "fill_container",
                                       "height": "fill_container",
                                       "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
                                         "IVktp": {
                                           "fill": "$sel"
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
                                         }
                                       }
                                     }
@@ -246177,8 +246356,32 @@
                                       "width": "fill_container",
                                       "height": "fill_container",
                                       "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
                                         "D8n9Va": {
                                           "fill": "$sel"
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
                                         }
                                       }
                                     }
@@ -246590,8 +246793,32 @@
                                       "width": "fill_container",
                                       "height": "fill_container",
                                       "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
                                         "Lagt8": {
                                           "fill": "$sel"
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
                                         }
                                       }
                                     }
@@ -247044,8 +247271,104 @@
                                       "width": "fill_container",
                                       "height": "fill_container",
                                       "descendants": {
+                                        "e4iltS/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
+                                        "e4iltS/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "D8n9Va/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "D8n9Va/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "IVktp/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "IVktp/IebtI": {
+                                          "enabled": false
+                                        },
                                         "Lagt8": {
                                           "fill": "$sel"
+                                        },
+                                        "Lagt8/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "gg9jq/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "xri7Z/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "MYTqu/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "StSpN/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "g8eHj/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "r0YQD7/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "r0YQD7/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "dY8zA/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "hlQOn/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "WV0js/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "WV0js/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "w38JFH/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "b3WdrT/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#11…"
+                                        },
+                                        "b3WdrT/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "g7nsnt/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "kLNw8/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacr…"
+                                        },
+                                        "kLNw8/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "IjSa4/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "EEzCx/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "kpy5Q/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
+                                        },
+                                        "kpy5Q/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "tSi34/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "yaNdz/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "HiIBx/IebtI": {
+                                          "enabled": false
+                                        },
+                                        "A6x5M/IebtI": {
+                                          "enabled": false
                                         }
                                       }
                                     }
@@ -252453,7 +252776,33 @@
                                       "ref": "reUsZ",
                                       "name": "Graph",
                                       "width": "fill_container",
-                                      "height": "fill_container"
+                                      "height": "fill_container",
+                                      "descendants": {
+                                        "Xb62N/RxUsy": {
+                                          "content": "feat: preview a class while drag…"
+                                        },
+                                        "FmRZx/RxUsy": {
+                                          "content": "fix: booking time uses the studio's…"
+                                        },
+                                        "vVXsT/RxUsy": {
+                                          "content": "Merge pull request #1226 from fitloop/feat/mem…"
+                                        },
+                                        "Bl6oy/RxUsy": {
+                                          "content": "fix: member list loads twice on first o…"
+                                        },
+                                        "zYV8x/RxUsy": {
+                                          "content": "fix: export CSV header encodi…"
+                                        },
+                                        "ysEGV/RxUsy": {
+                                          "content": "feat: let studios hide prices on the booking page (#116…"
+                                        },
+                                        "NNztA/RxUsy": {
+                                          "content": "Merge pull request #1199 from fitloop/fix/search-diacri…"
+                                        },
+                                        "cElZZ/RxUsy": {
+                                          "content": "feat: reminder emails in the studio's timezo…"
+                                        }
+                                      }
                                     }
                                   ]
                                 },

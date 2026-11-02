@@ -293,13 +293,14 @@ of the pane instead of in the list's place (CH42).
 **A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page.
 `J` and `K` keep moving through the graph with the panel open and it follows; `P` goes to the first parent, `⇧P`
 to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub, `Esc`
-closes and the list comes back.** (2026-11-02, design agent's proposal; CH18–CH20, CH27–CH29)
+closes and the list comes back.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20,
+CH27–CH29)
 
 **Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
 it, which a modal or a page would hide.
 
 **Rejected.**
-- The details as a modal (CH19) — hides the graph that `J` and `K` move through.
+- The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
 
 ## D17
 

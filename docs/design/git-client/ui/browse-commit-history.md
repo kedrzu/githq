@@ -135,7 +135,7 @@ Amber frames are still to be picked; Variant A of each is recommended. Screens o
 |-|-|
 |1. The shape of the repository view|Sections on `1`–`4`, All removed, in two layouts chosen in Settings · Display (CH43): tabs, CH1–CH3; a column of the repository's own, CH4–CH6, CH42. Both are built and tried; the Work and Code shape was dropped (D14, D22)|
 |2. Where the branch and tag list lives|Tabs layout: a column right of the graph, always there on a wide window: CH3, CH15–CH17. Column layout: the lower part of the repository's column: CH6 (D15)|
-|3. How a commit's details open|Only in a panel, in the list's place; `J`/`K` keep moving and the panel follows: CH18; as a modal: CH19; a merge: CH20; in the column layout, on the right of the pane: CH42 (D16)|
+|3. How a commit's details open|Only in a panel, in the list's place; `J`/`K` keep moving and the panel follows: CH18; a merge: CH20; in the column layout, on the right of the pane: CH42 (D16)|
 |4. How much graph width a row gives up|A draggable divider, a tenth of the pane by default, lanes that don't fit fold: CH10; wide CH11; narrow CH44; dragging CH45 (D17)|
 |5. Branches, tags, pull request and CI on one row|Refs before the headline, pull request and CI right after it, author and age at the right, a faint stripe; a failure is a red dot and a red ✕: CH12 (D18)|
 |6. The keys|`1`–`4` sections, `J`/`K` rows, `B` the list, `↵` details, `P`/`⇧P` parents, `⇧↵` pull request, `O`, `Esc`: CH30; the walk CH22–CH29|
