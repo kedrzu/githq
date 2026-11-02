@@ -64,17 +64,7 @@ check that is not required may have just failed, and you merge before seeing it.
 next one. Merging several together stays out of this design. Every merge moves the target branch, so the later ones
 can fall behind or conflict, and handling that is a feature of its own: a queue of merges in githq, built later.
 
-## What gets built first
-
-Proposed order, each step usable on its own:
-
-1. A test of merging a pull request that changes `.github/workflows` with a token of exactly githq's scopes. If it
-   needs the `workflow` scope, everyone has to sign in again; that is the one open question, and its answer does not
-   change the rest of this design.
-2. A merge from the panel: the allowed methods, the proposed message, required checks marked, the merge shown once
-   GitHub confirms it.
-3. What stacks and queues need, then auto-merge, bypass and the commit email.
-4. The ordinary commands: updating the branch, deleting and restoring it, reverting, re-running checks.
+## What this leaves out
 
 Code review in githq and merging several together are not part of this.
 
@@ -82,6 +72,6 @@ How a stack looks in lists and how it merges as a whole is [its own design](../s
 
 ## Where this stands
 
-The design is closed. The screens come next, from [the brief for merging a pull
-request](ui/merge-a-pull-request.md), and then the build in the order above. The note in the pull request's merge
-panel saying that merging happens on GitHub stays true until the build changes it, so it goes with the build.
+The design is closed, and the screens are drawn: [the brief lists them](ui/merge-a-pull-request.md#the-screens). It is
+being built. The note in the pull request's merge panel saying that merging happens on GitHub stays true until the build
+changes it, so it goes with the build.
