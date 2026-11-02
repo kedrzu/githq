@@ -23,6 +23,12 @@ export type RepositoryKind = 'all' | 'issues' | 'pullRequests';
 /** The kinds in the order the tabs show them. */
 export const REPOSITORY_KINDS: readonly RepositoryKind[] = ['all', 'issues', 'pullRequests'];
 
+/** A tab of a repository's view: a kind of its items, or its workflows (actions D6), which are never among them. */
+export type RepositoryTab = RepositoryKind | 'workflows';
+
+/** The tabs in the order the view shows them: the workflows after the kinds of items. */
+export const REPOSITORY_TABS: readonly RepositoryTab[] = [...REPOSITORY_KINDS, 'workflows'];
+
 /** A repository's list as its view shows it. */
 export interface RepositoryList {
     readonly groups: readonly ListGroup<Item>[];

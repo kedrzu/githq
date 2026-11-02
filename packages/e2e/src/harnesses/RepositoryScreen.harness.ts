@@ -2,7 +2,8 @@ import type { Locator, Page } from '@playwright/test';
 
 /**
  * Playwright harness for a repository's view (`RepositoryView.vue`, on `/owner/name` and its lists
- * `/owner/name/issues` and `/owner/name/pulls`): the title opening its menu, the kind tabs, the toolbar's grouping and layout, its groups —
+ * `/owner/name/issues` and `/owner/name/pulls`, and its Workflows tab on `/owner/name/actions`): the title opening its
+ * menu, the tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups —
  * named sections, or a board's columns — and their rows; untracked, the lines saying what githq has of it (J3).
  */
 export class RepositoryScreenHarness {
@@ -30,8 +31,8 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('region');
     }
 
-    /** The kind tab `name`, a toggle button pressed while it is the kind listed; its count follows the name. */
-    kind(name: 'All' | 'Issues' | 'Pull requests'): Locator {
+    /** The tab `name`, a toggle button pressed while it is the one shown; its count follows the name. */
+    kind(name: 'All' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
         return this.root.getByRole('group', { name: 'Kinds' }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
     }
 
@@ -68,5 +69,15 @@ export class RepositoryScreenHarness {
     /** The row titled `title`, in any group. */
     row(title: string): Locator {
         return this.root.getByRole('listitem').filter({ hasText: title });
+    }
+
+    /** A workflow's row button in the Workflows tab, by the workflow's name. */
+    workflow(name: string): Locator {
+        return this.root.getByRole('button', { name, exact: true });
+    }
+
+    /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
+    get alertsBar(): Locator {
+        return this.root.getByTestId('workflow-alerts-bar');
     }
 }

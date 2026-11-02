@@ -6,8 +6,8 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 
-import { REPOSITORY_KINDS } from './buildRepositoryList.js';
-import type { RepositoryKind } from './buildRepositoryList.js';
+import { REPOSITORY_TABS } from './buildRepositoryList.js';
+import type { RepositoryTab } from './buildRepositoryList.js';
 
 /** Where the tabs are kept, per user: `githq.repositoryTabs.<login>`. */
 const KEY_PREFIX = 'githq.repositoryTabs.';
@@ -35,19 +35,19 @@ export const LastRepositoryTab = defineService({
         return { get, remember };
 
         /** The repository's last tab, read again: another tab may have changed it; `null` when it has none. */
-        function get(nameWithOwner: string): RepositoryKind | null {
+        function get(nameWithOwner: string): RepositoryTab | null {
             return slot.read()?.[nameWithOwner] ?? null;
         }
 
-        function remember(nameWithOwner: string, kind: RepositoryKind) {
+        function remember(nameWithOwner: string, kind: RepositoryTab) {
             slot.save({ ...slot.read(), [nameWithOwner]: kind });
         }
 
         function read(stored: unknown) {
-            const tabs: Record<string, RepositoryKind> = {};
+            const tabs: Record<string, RepositoryTab> = {};
             if (isPlainObject(stored)) {
                 for (const [nameWithOwner, kind] of Object.entries(stored)) {
-                    const known = REPOSITORY_KINDS.find(candidate => candidate === kind);
+                    const known = REPOSITORY_TABS.find(candidate => candidate === kind);
                     if (known) {
                         tabs[nameWithOwner] = known;
                     }

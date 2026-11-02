@@ -1,5 +1,6 @@
+import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import type { TrackedRepositoryWorkflowState } from './WorkflowStore.js';
-import type { WorkflowGroupState, WorkflowRowRef, WorkflowState, WorkflowsUnavailable } from './WorkflowTypes.js';
+import type { WorkflowRowRef, WorkflowState, WorkflowsUnavailable } from './WorkflowTypes.js';
 
 /** A broken workflow on the screen: one row. */
 export interface BrokenWorkflowEntry {
@@ -84,7 +85,7 @@ export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWor
                 key: `${nameWithOwner}#${workflow.workflow.id}`,
                 nameWithOwner,
                 workflow,
-                gitRef: shown ? toRowRef(shown) : null,
+                gitRef: shown ? getBrokenGroupRef(shown) : null,
                 moreRefCount: others.length,
             });
         }
@@ -100,12 +101,5 @@ export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWor
         brokenCount,
         brokenRepositoryCount,
         readCount,
-    };
-}
-
-function toRowRef({ group, failedRef }: WorkflowGroupState): WorkflowRowRef {
-    return {
-        name: group.kind === 'defaultBranch' ? group.branch : group.pattern,
-        kind: failedRef?.kind ?? 'branch',
     };
 }

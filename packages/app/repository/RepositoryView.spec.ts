@@ -13,7 +13,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
-import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
+import type { RepositoryListTexts, RepositoryState, RepositoryTab } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
 import RepositoryView from './RepositoryView.vue';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
@@ -60,7 +60,7 @@ test('the order and the properties sit on the toolbar while they fit; on a narro
     await expect.element(row.getByText('calendar', { exact: true })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
 
-    view.host.style.width = '960px';
+    view.host.style.width = '1060px';
     await expect.element(page.getByRole('button', { name: 'Properties' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
@@ -76,7 +76,7 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     await userEvent.click(page.getByRole('menuitemradio', { name: 'Closed', exact: true }));
     expect(view.state.value).toBe('closed');
 
-    view.host.style.width = '760px';
+    view.host.style.width = '860px';
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
 
@@ -102,7 +102,7 @@ test('J3: not tracked, it lists what concerns the user and points to Settings, w
 
     // The kind tabs narrow it as they do a tracked one's (`/owner/name/pulls`).
     await userEvent.click(page.getByRole('button', { name: /Pull requests/ }));
-    expect(view.kind.value).toBe('pullRequests');
+    expect(view.tab.value).toBe('pullRequests');
     await expect.element(page.getByRole('listitem').filter({ hasText: '#1203' })).toBeVisible();
     await expect
         .element(page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' }))
@@ -111,18 +111,42 @@ test('J3: not tracked, it lists what concerns the user and points to Settings, w
     // The line counts what concerns the user, not what the tab narrows it to.
     await expect.element(lines).toHaveTextContent('5 issues and 1 pull request');
     await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
+    // Its workflows are not read: no Workflows tab.
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
+});
+
+test('the Workflows tab comes fourth with the broken count, a dash until known, and shows its own body under a toolbar without view options', async () => {
+    const view = mount({ workflowCount: 2 });
+    const tabs = page.getByRole('group', { name: 'Kinds' }).getByRole('button');
+    await expect
+        .poll(() => tabs.elements().map(tab => tab.textContent?.trim()))
+        .toEqual(['All6', 'Issues5', 'Pull requests1', 'Workflows2']);
+
+    await userEvent.click(page.getByRole('button', { name: /^Workflows/ }));
+    expect(view.tab.value).toBe('workflows');
+    await expect.element(page.getByText('The workflows body')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Display' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
+    await expect.poll(groupNames).toEqual([]);
+
+    view.workflowCount.value = 'unknown';
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent('Workflows–');
+    view.workflowCount.value = null;
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent(/^Workflows$/);
 });
 
 interface MountOptions {
     readonly tracked?: boolean;
+    readonly workflowCount?: number | 'unknown' | null;
 }
 
 /** Mounts a tracked repository over the samples, building its list from the options it holds, as the page does. */
-function mount({ tracked = true }: MountOptions = {}) {
+function mount({ tracked = true, workflowCount = null }: MountOptions = {}) {
     const options = shallowRef<ListViewOptions<RepositoryGrouping, ItemSort>>(REPOSITORY_VIEW_DEFAULTS);
-    const kind = ref<RepositoryKind>('all');
+    const tab = ref<RepositoryTab>('all');
     const state = ref<RepositoryState>('open');
-    const view = { options, kind, state };
+    const workflowCountRef = ref(workflowCount);
+    const view = { options, tab, state, workflowCount: workflowCountRef };
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
@@ -134,34 +158,39 @@ function mount({ tracked = true }: MountOptions = {}) {
 
     const app = createApp({
         setup: () => () =>
-            h(RepositoryView, {
-                nameWithOwner: SAMPLE_REPOSITORY,
-                isPrivate: true,
-                tracked,
-                list: buildRepositoryList({
-                    items: SAMPLE_REPOSITORY_ITEMS,
-                    state: 'open',
-                    kind: kind.value,
-                    grouping: tracked ? options.value.grouping : 'none',
-                    sort: options.value.sort,
-                    texts: TEXTS,
-                }),
-                openCount: 6,
-                viewerLogin: SAMPLE_VIEWER.login,
-                now: SAMPLE_NOW,
-                options: options.value,
-                'onUpdate:options': (value: ListViewOptions<RepositoryGrouping, ItemSort>) => {
-                    options.value = value;
+            h(
+                RepositoryView,
+                {
+                    nameWithOwner: SAMPLE_REPOSITORY,
+                    isPrivate: true,
+                    tracked,
+                    list: buildRepositoryList({
+                        items: SAMPLE_REPOSITORY_ITEMS,
+                        state: 'open',
+                        kind: tab.value === 'workflows' ? 'all' : tab.value,
+                        grouping: tracked ? options.value.grouping : 'none',
+                        sort: options.value.sort,
+                        texts: TEXTS,
+                    }),
+                    openCount: 6,
+                    viewerLogin: SAMPLE_VIEWER.login,
+                    now: SAMPLE_NOW,
+                    options: options.value,
+                    'onUpdate:options': (value: ListViewOptions<RepositoryGrouping, ItemSort>) => {
+                        options.value = value;
+                    },
+                    state: state.value,
+                    'onUpdate:state': (value: RepositoryState) => {
+                        state.value = value;
+                    },
+                    tab: tab.value,
+                    'onUpdate:tab': (value: RepositoryTab) => {
+                        tab.value = value;
+                    },
+                    workflowCount: workflowCountRef.value,
                 },
-                state: state.value,
-                'onUpdate:state': (value: RepositoryState) => {
-                    state.value = value;
-                },
-                kind: kind.value,
-                'onUpdate:kind': (value: RepositoryKind) => {
-                    kind.value = value;
-                },
-            }),
+                { workflows: () => h('p', 'The workflows body') },
+            ),
     });
     app.use(IocPlugin, { container });
     // The Settings link of an untracked repository is a `RouterLink`.

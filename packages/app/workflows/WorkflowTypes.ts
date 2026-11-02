@@ -121,8 +121,6 @@ export interface WorkflowState extends WorkflowBreak {
     readonly brokenGroups: readonly WorkflowGroupState[];
     /** The latest 5 runs that count in any group, oldest first, any verdict or none. */
     readonly lastRuns: readonly GitHubWorkflowRun[];
-    /** The latest run among {@link lastRuns} that has not finished; `null` when none runs. */
-    readonly runningRun: GitHubWorkflowRun | null;
 }
 
 /** Whether a ref is a branch or a tag. */
@@ -152,3 +150,14 @@ export interface RepositoryWorkflowState {
     /** Some workflow broke less than a day ago: the marker shows bright. */
     readonly hasNewBreak: boolean;
 }
+
+/**
+ * Where a repository's Workflows tab places a workflow its state alone does not (actions W3a, W13, W14): one whose
+ * runs were all started by pull requests, one failing only on refs without alerts, one passing there, one with no
+ * verdict yet — `reading` while its runs were never read.
+ */
+export type WorkflowRowStanding =
+    | { readonly kind: 'pullRequestsOnly'; readonly failedCount: number }
+    | { readonly kind: 'noAlerts'; readonly ref: WorkflowRowRef; readonly alertsOff: boolean }
+    | { readonly kind: 'passing' }
+    | { readonly kind: 'notKnown'; readonly reading: boolean };

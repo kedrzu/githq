@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not, and `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`). Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -23,11 +23,14 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
-import { getProjectPath, getRepositoryKind, getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, getRepositoryPath, getRepositoryTab } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
+import { buildRepositoryWorkflows } from '@/workflows/buildRepositoryWorkflows.js';
+import RepositoryWorkflowsTab from '@/workflows/RepositoryWorkflowsTab.vue';
+import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
-import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
+import type { RepositoryListTexts, RepositoryState, RepositoryTab } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
 import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
@@ -42,6 +45,7 @@ const items = useService(ItemStore);
 const projects = useService(ProjectStore);
 const tracking = useService(TrackingStore);
 const repositories = useService(RepositoryStore);
+const workflows = useService(WorkflowStore);
 const editor = useService(ItemEditor);
 const route = useRoute();
 const router = useRouter();
@@ -56,27 +60,29 @@ const owner = computed(() => (typeof route.params.owner === 'string' ? route.par
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
 const nameWithOwner = computed(() => `${owner.value}/${name.value}`);
 /**
- * The kind of items listed is the address's (`/owner/name/issues`); a tab replaces it, keeping the query (an item
- * opened over the list) — the same page stays, with its selection and view options.
+ * The tab shown is the address's (`/owner/name/issues`, `/owner/name/actions`); another tab replaces it, keeping the
+ * query (an item opened over the list) — the same page stays, with its selection and view options.
  */
-const kind = computed({
-  get: () => getRepositoryKind(route.params.kind),
-  set: (value: RepositoryKind) => {
+const tab = computed({
+  get: () => getRepositoryTab(route.params.kind),
+  set: (value: RepositoryTab) => {
     void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
   },
 });
+/** The kind of items listed: all of them behind the Workflows tab, whose counts stay those of the item tabs. */
+const kind = computed(() => (tab.value === 'workflows' ? 'all' : tab.value));
 
 // Coming back to a repository at its own address opens the tab it was left on (D5); an address naming a tab is obeyed.
 const repositoryName = nameWithOwner.value;
 const lastTab = tabs.get(repositoryName);
-if (kind.value === 'all' && lastTab !== null) {
-  kind.value = lastTab;
+if (tab.value === 'all' && lastTab !== null) {
+  tab.value = lastTab;
 } else {
-  tabs.remember(repositoryName, kind.value);
+  tabs.remember(repositoryName, tab.value);
 }
 
 // Leaving, the address already names another repository or none, and this page's tab is not theirs.
-watch(kind, value => {
+watch(tab, value => {
   if (nameWithOwner.value === repositoryName) {
     tabs.remember(repositoryName, value);
   }
@@ -131,6 +137,14 @@ const shownList = computed(() => {
     }),
   };
 });
+/** Its Workflows tab (actions W3a), and the tab's count. */
+const workflowList = computed(() =>
+  buildRepositoryWorkflows({
+    stored: workflows.get(nameWithOwner.value),
+    settings: workflows.getRefSettings(nameWithOwner.value),
+    now: list.now,
+  }),
+);
 const openCount = computed(() => repositoryItems.value.filter(item => item.state === 'OPEN').length);
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
@@ -240,7 +254,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
   <RepositoryView
     v-if="auth.viewer"
     v-model:state="state"
-    v-model:kind="kind"
+    v-model:tab="tab"
     v-model:selected-id="list.selectedId"
     v-model:checked-ids="list.checkedIds"
     :options="view.options"
@@ -257,12 +271,20 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :opened-id="list.openedId"
     :undone="list.undone"
     :can-move="canMove"
+    :workflow-count="tracked ? workflowList.count : null"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
     @listed="list.setListed"
     @move="move"
   >
+    <template #workflows>
+      <RepositoryWorkflowsTab
+        :name-with-owner="nameWithOwner"
+        :list="workflowList"
+        :now="list.now"
+      />
+    </template>
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />
     </template>

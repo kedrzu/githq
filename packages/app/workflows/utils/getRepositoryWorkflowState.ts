@@ -89,7 +89,6 @@ function getWorkflowState({ stored, entry, groups, now }: GetWorkflowStateParams
         workflow,
         generated: workflow.path.startsWith('dynamic/'),
         lastRuns,
-        runningRun: lastRuns.findLast(run => run.status !== 'completed') ?? null,
     };
 
     if (workflow.state !== 'active') {

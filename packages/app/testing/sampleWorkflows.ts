@@ -28,6 +28,8 @@ export interface SampleRun {
     readonly ago: `${number}${'d' | 'h' | 'm'}`;
     /** `main` unless given: the default branch, which counts; a version (`v0.1.0`) is a tag. */
     readonly branch?: string;
+    /** `push` unless given; `pull_request` for one a pull request started. */
+    readonly event?: string;
 }
 
 /** A sample workflow and its runs. */
@@ -42,6 +44,8 @@ export interface SampleWorkflowParams {
     readonly runs: readonly SampleRun[];
     /** `fitloop/webapp` unless given. */
     readonly repository?: string;
+    /** Its runs were read, though none is given: GitHub lists none. */
+    readonly read?: boolean;
 }
 
 /**
@@ -111,7 +115,7 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             workflowId: params.id,
             runNumber: 200 + index,
             headBranch: sample.branch ?? 'main',
-            event: 'push',
+            event: sample.event ?? 'push',
             status: sample.conclusion === null ? 'in_progress' : 'completed',
             conclusion: sample.conclusion,
             createdAt: new Date(SAMPLE_WORKFLOWS_NOW - toMs(sample.ago)).toISOString(),
@@ -129,7 +133,7 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             htmlUrl: `https://github.com/${repository}/actions/workflows/${params.id}`,
         },
         runs: runs.toReversed(),
-        etags: {},
+        etags: params.read ? { 'branch:main': '"read"' } : {},
     };
 }
 
@@ -242,3 +246,61 @@ export const SAMPLE_WORKFLOWS = {
     /** No run known yet. */
     codeql: sampleWorkflowState({ id: 9, name: 'CodeQL', path: 'dynamic/github-code-scanning/codeql', runs: [] }),
 } satisfies Record<string, WorkflowState>;
+
+/**
+ * A repository's workflows as its Workflows tab shows them in the design's W13, one of each kind of row, counting the
+ * default branch `main`: Deploy broken, CLA run only by pull requests, Release failed on a tag and Nightly e2e on a
+ * branch without alerts, Probe and Dependabot passing, Nightly backup disabled.
+ */
+export const SAMPLE_TAB_WORKFLOWS: readonly SampleWorkflowParams[] = [
+    {
+        id: 1,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'success', ago: '30h' },
+            { conclusion: 'success', ago: '20h' },
+            { conclusion: 'failure', ago: '3h' },
+            { conclusion: 'failure', ago: '1h' },
+            { conclusion: 'failure', ago: '14m' },
+        ],
+    },
+    {
+        id: 2,
+        name: 'CLA',
+        runs: [
+            { conclusion: 'success', ago: '2h', branch: 'feature', event: 'pull_request_target' },
+            { conclusion: 'failure', ago: '1h', branch: 'feature', event: 'pull_request_target' },
+            { conclusion: 'success', ago: '12m', branch: 'other', event: 'pull_request' },
+        ],
+    },
+    {
+        id: 3,
+        name: 'Release',
+        runs: [
+            { conclusion: 'success', ago: '2d', branch: 'v0.1.0-rc.1' },
+            { conclusion: 'failure', ago: '6h', branch: 'v0.1.0-rc.3' },
+        ],
+    },
+    { id: 4, name: 'Nightly e2e', runs: [{ conclusion: 'failure', ago: '6h', branch: 'staging' }] },
+    {
+        id: 5,
+        name: 'Probe',
+        runs: [
+            { conclusion: 'success', ago: '2h' },
+            { conclusion: 'success', ago: '11m' },
+            { conclusion: null, ago: '1m' },
+        ],
+    },
+    {
+        id: 6,
+        name: 'Dependabot Updates',
+        path: 'dynamic/dependabot/dependabot-updates',
+        runs: [{ conclusion: 'success', ago: '3d' }],
+    },
+    {
+        id: 7,
+        name: 'Nightly backup',
+        state: 'disabled_inactivity',
+        runs: [{ conclusion: 'failure', ago: '82d' }],
+    },
+];

@@ -1,5 +1,5 @@
 import type { ProjectOwnerKind } from '@/projects/ProjectTypes.js';
-import type { RepositoryKind } from '@/repository/buildRepositoryList.js';
+import type { RepositoryTab } from '@/repository/buildRepositoryList.js';
 
 /** The first download (G6), after choosing what to track, under GitHub's reserved `/settings`. */
 export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
@@ -11,10 +11,11 @@ export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
 
 /**
- * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`) and its
- * lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`), all in one route.
+ * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`), its lists of
+ * issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`) and its workflows (`/owner/name/actions`,
+ * actions D6), all in one route. Its runs' pages under `actions/` are still handed off to GitHub.
  */
-export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls)?';
+export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls|actions)?';
 
 /**
  * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
@@ -22,11 +23,24 @@ export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls)?';
  */
 export const REPOSITORY_SETTINGS_PATH = '/:owner/:name/settings';
 
-/** The last segment of a repository's address listing one kind of its items, as on GitHub (`/owner/name/pulls`). */
-export const REPOSITORY_KIND_SEGMENTS = {
+/**
+ * The last segment of a repository's address showing one of its tabs, as on GitHub: one kind of its items
+ * (`/owner/name/pulls`), or its workflows (`/owner/name/actions`).
+ */
+export const REPOSITORY_TAB_SEGMENTS = {
     issues: 'issues',
     pullRequests: 'pulls',
-} as const satisfies Record<Exclude<RepositoryKind, 'all'>, string>;
+    workflows: 'actions',
+} as const satisfies Record<Exclude<RepositoryTab, 'all'>, string>;
+
+/** The sections of a tracked repository's settings page an address can point to, by their element's id. */
+export const REPOSITORY_SETTINGS_SECTIONS = {
+    /** Which branches and tags raise workflow alerts (actions D5). */
+    workflowAlerts: 'workflow-alerts',
+} as const;
+
+/** A section of a tracked repository's settings page. */
+export type RepositorySettingsSection = keyof typeof REPOSITORY_SETTINGS_SECTIONS;
 
 /** The origin every address githq does not show is handed off to; fixed here, never taken from an address. */
 export const GITHUB_ORIGIN = 'https://github.com';
@@ -98,36 +112,40 @@ export interface ProjectAddress {
 }
 
 /**
- * The address of a repository's view, as on GitHub (`/owner/name`), or of its list of one kind of its items
- * (`/owner/name/issues`, `/owner/name/pulls`).
+ * The address of a repository's view, as on GitHub (`/owner/name`), or of one of its tabs: its list of one kind of
+ * its items (`/owner/name/issues`, `/owner/name/pulls`) or its workflows (`/owner/name/actions`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryPath(nameWithOwner: string, kind: RepositoryKind = 'all') {
-    return kind === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_KIND_SEGMENTS[kind]}`;
+export function getRepositoryPath(nameWithOwner: string, tab: RepositoryTab = 'all') {
+    return tab === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_TAB_SEGMENTS[tab]}`;
 }
 
 /**
- * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`).
+ * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`), or of one of its
+ * sections (`/owner/name/settings#workflow-alerts`), which the page brings into view.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositorySettingsPath(nameWithOwner: string) {
-    return `/${nameWithOwner}/settings`;
+export function getRepositorySettingsPath(nameWithOwner: string, section?: RepositorySettingsSection) {
+    const path = `/${nameWithOwner}/settings`;
+    return section ? `${path}#${REPOSITORY_SETTINGS_SECTIONS[section]}` : path;
 }
 
 /**
- * The kind of items a repository's address lists, from its last segment (the route's `kind`): both when it names
+ * The tab a repository's address shows, from its last segment (the route's `kind`): all its items when it names
  * none.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryKind(segment: unknown): RepositoryKind {
+export function getRepositoryTab(segment: unknown): RepositoryTab {
     switch (segment) {
-        case REPOSITORY_KIND_SEGMENTS.issues:
+        case REPOSITORY_TAB_SEGMENTS.issues:
             return 'issues';
-        case REPOSITORY_KIND_SEGMENTS.pullRequests:
+        case REPOSITORY_TAB_SEGMENTS.pullRequests:
             return 'pullRequests';
+        case REPOSITORY_TAB_SEGMENTS.workflows:
+            return 'workflows';
         default:
             return 'all';
     }

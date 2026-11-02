@@ -14,7 +14,7 @@ import {
     getGitHubUrl,
     getProjectPath,
     getProjectSettingsPath,
-    getRepositoryKind,
+    getRepositoryTab,
     getRepositoryPath,
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
@@ -50,6 +50,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/users/kedrzu/projects/7', 'project-user'],
     // A tracked repository's and project's settings, at GitHub's addresses of them.
     ['/acme/web/settings', 'repository-settings'],
+    ['/acme/web/actions', 'repository'],
     ['/my-org/web.js/settings', 'repository-settings'],
     ['/orgs/acme/projects/3/settings', 'project-org-settings'],
     ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
@@ -81,7 +82,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme', 'github'],
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
-    ['/acme/web/actions', 'github'],
+    ['/acme/web/actions/runs/123', 'github'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],
@@ -168,6 +169,7 @@ test('the repository page is one instance for the repository and its lists', () 
     expect(keyOf('/acme/web')).toBe('acme/web');
     expect(keyOf('/acme/web/issues')).toBe('acme/web');
     expect(keyOf('/acme/web/pulls')).toBe('acme/web');
+    expect(keyOf('/acme/web/actions')).toBe('acme/web');
     expect(keyOf('/acme/api')).toBe('acme/api');
 });
 
@@ -176,8 +178,9 @@ test("a repository's lists are GitHub's addresses of them, and the address names
     expect(getRepositoryPath('acme/web', 'all')).toBe('/acme/web');
     expect(getRepositoryPath('acme/web', 'issues')).toBe('/acme/web/issues');
     expect(getRepositoryPath('acme/web', 'pullRequests')).toBe('/acme/web/pulls');
-    for (const kind of ['all', 'issues', 'pullRequests'] as const) {
-        expect(getRepositoryKind(router.resolve(getRepositoryPath('acme/web', kind)).params.kind), kind).toBe(kind);
+    expect(getRepositoryPath('acme/web', 'workflows')).toBe('/acme/web/actions');
+    for (const tab of ['all', 'issues', 'pullRequests', 'workflows'] as const) {
+        expect(getRepositoryTab(router.resolve(getRepositoryPath('acme/web', tab)).params.kind), tab).toBe(tab);
     }
 });
 
@@ -201,11 +204,13 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositoryPath('acme/web'), 'repository'],
         [getRepositoryPath('acme/web', 'issues'), 'repository'],
         [getRepositoryPath('acme/web', 'pullRequests'), 'repository'],
+        [getRepositoryPath('acme/web', 'workflows'), 'repository'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 12 }), 'item-issue'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
         [getRepositorySettingsPath('acme/web'), 'repository-settings'],
+        [getRepositorySettingsPath('acme/web', 'workflowAlerts'), 'repository-settings'],
         [getProjectSettingsPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org-settings'],
         [getProjectSettingsPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }), 'project-user-settings'],
         [BROKEN_WORKFLOWS_PATH, 'workflows'],

@@ -68,7 +68,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { BROKEN_WORKFLOWS_PATH, REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH, REPOSITORY_TAB_SEGMENTS } from '@/tracking/trackingRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
@@ -114,7 +114,7 @@ const nothingTracked = computed(() => projects.value.length === 0 && repositorie
 function isCurrentRepository(repository: SidebarTrackedEntry) {
   return (
     route.path === repository.to ||
-    Object.values(REPOSITORY_KIND_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
+    Object.values(REPOSITORY_TAB_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
   );
 }
 

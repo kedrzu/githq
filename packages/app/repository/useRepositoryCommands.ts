@@ -1,6 +1,16 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, CircleDot, EyeOff, GitPullRequest, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
+import {
+    ArrowRight,
+    CircleDot,
+    EyeOff,
+    GitPullRequest,
+    Github,
+    Link,
+    Settings,
+    SquarePen,
+    Workflow,
+} from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
@@ -16,6 +26,7 @@ export interface RepositoryCommands {
     readonly open: Command;
     readonly issues: Command;
     readonly pullRequests: Command;
+    readonly workflows: Command;
     readonly newIssue: Command;
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
@@ -24,8 +35,9 @@ export interface RepositoryCommands {
 }
 
 /**
- * The actions of a repository (`owner/name`): going to its view or one kind of its items, a new issue in it, its
- * page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is tracked). The sidebar's menu of a
+ * The actions of a repository (`owner/name`): going to its view, one kind of its items or its workflows (only while
+ * it is tracked, actions D4), a new issue in it, its page on GitHub and the link to it, its settings (T16) and no
+ * longer tracking it (both only while it is tracked). The sidebar's menu of a
  * repository offers them all; the repository's view offers its page on GitHub in the command menu.
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
@@ -58,6 +70,14 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 section: 'view',
                 icon: GitPullRequest,
                 run: () => void router.push(getRepositoryPath(nameWithOwner, 'pullRequests')),
+            },
+            workflows: {
+                id: 'repository.workflows',
+                title: t(l.workflows),
+                section: 'view',
+                icon: Workflow,
+                when: () => tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                run: () => void router.push(getRepositoryPath(nameWithOwner, 'workflows')),
             },
             newIssue: {
                 id: 'repository.newIssue',

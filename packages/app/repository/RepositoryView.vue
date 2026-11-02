@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, `UntrackedView`): githq has only what concerns the user here; it lists that — narrowed by the same kind tabs, a stack's pull requests as one entry — and says so, pointing to Settings. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Tracked, a fourth tab lists its workflows (actions D6, W3a), counting the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Not tracked (J3, `UntrackedView`): githq has only what concerns the user here; it lists that — narrowed by the same kind tabs, a stack's pull requests as one entry — and says so, pointing to Settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -40,8 +40,8 @@ import type { Item } from '@/store/ItemTypes.js';
 import * as untracked from '@/tracking/UntrackedView.loc.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 
-import type { RepositoryKind, RepositoryList, RepositoryState } from './buildRepositoryList.js';
-import { REPOSITORY_KINDS, REPOSITORY_STATES } from './buildRepositoryList.js';
+import type { RepositoryList, RepositoryState, RepositoryTab } from './buildRepositoryList.js';
+import { REPOSITORY_KINDS, REPOSITORY_STATES, REPOSITORY_TABS } from './buildRepositoryList.js';
 import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import * as l from './RepositoryView.loc.js';
@@ -83,6 +83,8 @@ const props = withDefaults(
     modified?: boolean;
     /** Whether the user may move the item from one group into another (set that milestone, label…). */
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
+    /** The Workflows tab's count: its broken workflows; `unknown` shows a dash, `null` none. */
+    workflowCount?: number | 'unknown' | null;
   }>(),
   {
     projects: () => [],
@@ -91,6 +93,7 @@ const props = withDefaults(
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
+    workflowCount: null,
   },
 );
 
@@ -104,7 +107,8 @@ const emit = defineEmits<{
 }>();
 
 const state = defineModel<RepositoryState>('state', { default: 'open' });
-const kind = defineModel<RepositoryKind>('kind', { default: 'all' });
+/** The tab shown: a kind of its items, or its workflows. */
+const tab = defineModel<RepositoryTab>('tab', { default: 'all' });
 /** The selected item's id. */
 const selectedId = defineModel<string | null>('selectedId', { default: null });
 /** The items edited together (`x`). */
@@ -121,16 +125,23 @@ defineSlots<{
   selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
+  /** The Workflows tab's body, under the toolbar. */
+  workflows?(): unknown;
 }>();
 
 const t = useTranslate();
 const choices = useItemListChoices();
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
-const KIND_LABELS = { all: l.all, issues: l.issues, pullRequests: l.pullRequests } as const;
+const TAB_LABELS = { all: l.all, issues: l.issues, pullRequests: l.pullRequests, workflows: l.workflows } as const;
 
-const kindOptions = computed((): SegmentedTabsOption<RepositoryKind>[] =>
-  REPOSITORY_KINDS.map(value => ({ value, label: t(KIND_LABELS[value]), count: props.list.counts[value] })),
+// An untracked repository's workflows are not read (actions D4): it has no Workflows tab.
+const tabOptions = computed((): SegmentedTabsOption<RepositoryTab>[] =>
+  (props.tracked ? REPOSITORY_TABS : REPOSITORY_KINDS).map(value => ({
+    value,
+    label: t(TAB_LABELS[value]),
+    count: getTabCount(value),
+  })),
 );
 const groupings = computed((): ListChoice<RepositoryGrouping>[] => {
   const section = t(l.fromGitHub);
@@ -194,6 +205,14 @@ const summary = computed(() => {
   return t(untracked.nothingConcerns, { name });
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
+
+function getTabCount(value: RepositoryTab) {
+  if (value !== 'workflows') {
+    return props.list.counts[value];
+  }
+
+  return props.workflowCount === 'unknown' ? '–' : (props.workflowCount ?? undefined);
+}
 </script>
 
 <template>
@@ -207,6 +226,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
         :properties="choices.properties.value"
         :filters="[stateOption]"
         :modified="modified"
+        :bare="tab === 'workflows'"
         @reset="emit('reset')"
       >
         <template
@@ -226,21 +246,26 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           </span>
         </template>
         <slot
-          v-if="checkedIds.length > 0"
+          v-if="checkedIds.length > 0 && tab !== 'workflows'"
           name="selection"
           :ids="checkedIds"
           :span="getSelectionSpan(list.groups, checkedIds)"
         />
         <SegmentedTabs
-          v-model="kind"
+          v-model="tab"
           :class="css.repositoryView_kinds"
           :label="t(l.kinds)"
-          :options="kindOptions"
+          :options="tabOptions"
         />
       </ListToolbar>
 
+      <slot
+        v-if="tab === 'workflows'"
+        name="workflows"
+      />
+
       <nav
-        v-if="projects.length > 0"
+        v-else-if="projects.length > 0"
         :class="css.repositoryView_projects"
         :aria-label="t(l.liveIn)"
       >
@@ -266,6 +291,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
       </nav>
 
       <ListView
+        v-if="tab !== 'workflows'"
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
         :groups="list.groups"
@@ -373,10 +399,10 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
     >
       <template #controls>
         <SegmentedTabs
-          v-model="kind"
+          v-model="tab"
           :class="css.repositoryView_kinds"
           :label="t(l.kinds)"
-          :options="kindOptions"
+          :options="tabOptions"
         />
       </template>
       <template
