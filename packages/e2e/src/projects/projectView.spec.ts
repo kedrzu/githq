@@ -155,6 +155,54 @@ test('on the board, ⇧→ and a drag set the Status on GitHub; one GitHub refus
     ]);
 });
 
+test('on the board, a stack spread over columns has a card in each ("2 of 5") and one alone in a column is its own card marked "5 of 5"; dragging a share moves all its pull requests', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    const project = sample.project;
+    const stack = sample.world.stack({
+        repository: 'acme/web',
+        number: 1,
+        pullRequests: [
+            { number: 31, title: 'Read stacks', projects: [{ project, status: 'Todo' }], minutesAgo: 50 },
+            { number: 32, title: 'Fold stacks', projects: [{ project, status: 'Todo' }], minutesAgo: 40 },
+            { number: 33, title: 'Draw the pips', projects: [{ project, status: 'In Progress' }], minutesAgo: 30 },
+            { number: 34, title: 'Map the stack', projects: [{ project, status: 'In Progress' }], minutesAgo: 20 },
+            { number: 35, title: 'Merge a stack', projects: [{ project, status: 'Done' }], minutesAgo: 10 },
+        ],
+    });
+    const { project: screen } = await openProject(page, github, sample);
+    await screen.tab('Board').click();
+
+    // A card for each share, named after the stack's first pull request; the one alone is a plain card, marked.
+    const todoShare = screen.rows('Todo').filter({ hasText: '2 of 5' });
+    await expect(todoShare).toHaveCount(1);
+    await expect(todoShare).toContainText('Read stacks');
+    await expect(screen.rows('Todo')).toHaveCount(4);
+    await expect(screen.rows('In Progress').filter({ hasText: '2 of 5' })).toContainText('Read stacks');
+    await expect(screen.rows('In Progress')).toHaveCount(2);
+    const lone = screen.rows('Done').filter({ hasText: 'Merge a stack' });
+    await expect(lone).toContainText('5 of 5');
+    await expect(lone.getByRole('img', { name: 'In a stack' })).toBeVisible();
+    for (const title of ['Fold stacks', 'Draw the pips', 'Map the stack']) {
+        await expect(screen.row(title)).toHaveCount(0);
+    }
+
+    // Dragged to "Done", the Todo share takes both its pull requests there, joining the one already in it.
+    await todoShare.dragTo(screen.group('Done'));
+    await expect(screen.rows('Done').filter({ hasText: '3 of 5' })).toContainText('Read stacks');
+    await expect(screen.rows('Todo')).toHaveCount(3);
+    await expect(screen.row('Merge a stack')).toHaveCount(0);
+    await expect
+        .poll(() => stack.map(id => sample.world.stateOf(id).projects[SAMPLE_PROJECT]))
+        .toEqual(['Done', 'Done', 'In Progress', 'In Progress', 'Done']);
+    expect(sample.world.edits.map(edit => [edit.mutation, edit.itemId])).toEqual([
+        ['SetProjectFieldValue', stack[0]],
+        ['SetProjectFieldValue', stack[1]],
+    ]);
+});
+
 test('a draft written in a column shows there at once, and stays once GitHub took it with that column’s Status', async ({
     page,
     github,

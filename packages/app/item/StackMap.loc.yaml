@@ -1,0 +1,66 @@
+label:
+  en: The stack
+pullRequests:
+  en: Pull requests of the stack
+place:
+  en: '{position} of {size}'
+unfold:
+  en: 'Show the stack:'
+earlier:
+  en: '{count} earlier'
+later:
+  en: '{count} later'
+foldWithSummary:
+  en: '{fold} · {summary}'
+foldLanded:
+  en: '{count} landed'
+foldReady:
+  en: '{count} ready'
+foldFailing:
+  en: '{count} failing'
+foldDrafts:
+  plural: count
+  en:
+    one: '{count} draft'
+    many: '{count} drafts'
+foldClosed:
+  en: '{count} closed'
+merged:
+  en: Merged
+closed:
+  en: Closed
+draft:
+  en: Draft
+ready:
+  en: Ready
+checksFailing:
+  plural: count
+  en:
+    one: '{count} check failing'
+    many: '{count} checks failing'
+checksFailingUncounted:
+  en: Checks failing
+changesRequested:
+  en: Changes requested
+conflicts:
+  en: Conflicts
+checksRunning:
+  en: Checks running
+needsRebaseRow:
+  en: Needs rebase
+waitingForReview:
+  en: Waiting for review
+cannotMergeYet:
+  en: Can't merge yet
+heldByDraft:
+  en: '#{number} is a draft'
+heldByChecks:
+  en: '#{number} checks running'
+heldByReview:
+  en: '#{number} is waiting for review'
+heldStopsLater:
+  en: '#{number} stops {later} later from landing'
+heldBlocksLater:
+  en: '#{number} blocks {later} later'
+heldAlone:
+  en: "#{number} can't merge yet"

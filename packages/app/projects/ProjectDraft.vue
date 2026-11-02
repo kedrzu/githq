@@ -72,7 +72,7 @@ const pending = computed(() => props.item.itemId.startsWith('pending:'));
         >{{ t(l.adding) }}</span
       >
       <ProjectEntryFields
-        :item="item"
+        :items="[item]"
         :fields="fields"
       />
     </div>
