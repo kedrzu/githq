@@ -23,24 +23,25 @@ we add next slots into it instead of contradicting it.
 
 ## The message
 
-**githq is an issue tracker.** Almost everyone who builds something wants to keep track of what is going on in
-their projects, and the dedicated tools either cost money per seat once you outgrow a free tier or have to be
-hosted yourself. GitHub is already there, holding the code. githq makes the tracker GitHub already has
-pleasant enough to use every day. [The owner's call](DECISIONS.md#d1).
+**githq is one place to run all your repositories, and the tracker comes with it.** Two promises in one
+sentence. You work in ten repositories, and GitHub shows each of them on its own pages: issues here, pull
+requests there, a failed deploy in a third repository's Actions tab. githq puts all of it on one fast screen.
+And because issues and Projects are already part of that GitHub, you do not need a separate tracker for those
+ten repositories either. Neither half is enough alone: "a tracker" sells a need the reader may not feel, and
+"one place for your GitHub" names no work to be done. [The owner's call](DECISIONS.md#d4).
 
-**It is measured against Linear.** Naming the tool githq replaces tells a reader at once what kind of thing
-this is and what it saves them. [The owner's call](DECISIONS.md#d2).
+**Linear is what it replaces, not what it is.** Naming Linear tells a reader at once what they no longer need
+to pay for and keep in sync, but githq is not described as "Linear on GitHub". [The owner's
+call](DECISIONS.md#d2).
 
 **Why now: even a solo developer is a manager.** With many repositories and agents opening pull requests in
 all of them, one person no longer writes most of the code; they hand out work, and then review, merge and fix
-whatever came back red. That job used to need a team before it needed a tracker. Now it needs one on day one,
-and it needs a tracker that shows not only the tasks but what came back: pull requests waiting, checks
-failing, a deploy broken overnight. That is where merging, stacks and Actions fit — as what a tracker for this
-kind of work has to show, not as a second product. [Proposed, not yet confirmed](DECISIONS.md#d3).
+whatever came back red. That is why both halves matter at once: the issues are what you hand out, and the pull
+requests, checks and broken deploys are what comes back. [Proposed, not yet confirmed](DECISIONS.md#d3).
 
 ## What is still open
 
-Three candidate openings of the landing page, each for a different first reader, are in [headlines.md](headlines.md).
+Candidate openings of the landing page, each carrying both promises, are in [headlines.md](headlines.md).
 
 - How the "manager" idea sits on the landing page: a section of its own, the opening of the features, or the
   subhead under the headline.

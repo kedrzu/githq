@@ -1,64 +1,44 @@
-# Three openings for the landing page
+# Openings for the landing page
 
-The owner does not yet know who the first reader is and will find out by talking to people. So instead of
-picking a reader, these are three openings of githq.dev, each written for a different one, to compare and to
-show people. Each covers what a visitor sees before scrolling far: the headline, the line under it, and the next
-two sections. All three keep what is settled: githq leads as an issue tracker
-([why](DECISIONS.md#d1)), it is measured against Linear ([why](DECISIONS.md#d2)), and nothing claims that every
-other tracker costs money, because free tiers exist.
+What a visitor to githq.dev sees before scrolling far. Every option carries both promises together: one place
+to run all your repositories, and no separate tracker for them because GitHub's issues and Projects are the
+tracker ([why both](DECISIONS.md#d4)). Linear appears as what githq replaces, never as what it is
+([why](DECISIONS.md#d2)).
 
-The landing page has no analytics, so these cannot be measured against each other on the live site. Their use is
-to be read aloud to people and to watch which one makes them say "that's me".
+The landing page has no analytics, so these cannot be measured against each other on the live site. Their use
+is to be read to people and to watch which one makes them say "that's me".
 
-## A: the tracker you already have
+## The headline and the line under it
 
-For anyone whose work already lives in GitHub Issues: open-source maintainers, small teams.
+**1. HQ, from the name.**
+*HQ for all your repositories.*
+Issues, pull requests, checks and deploys from every repository, on one fast, keyboard-first screen. Your
+issues and Projects are the tracker — no Linear, no second tool to keep in sync.
 
-- **Headline:** The issue tracker you already have. Finally fast.
-- **Under it:** githq turns GitHub Issues and Projects into a tracker as quick as Linear — every repository on
-  one screen, everything from the keyboard. No second tool, nothing to sync, no seats.
-- **Second section — "Not another tracker":** your issues, labels and project fields stay on GitHub; every
-  change here is an ordinary GitHub change, on github.com the same second.
-- **Third section — "More than you can watch":** a dozen repositories, pull requests from people and agents,
-  a deploy that failed overnight. My work, checks and failing workflows across all of them.
+Gives up: "HQ" is abstract until the line under it is read; on its own it is close to "everything for GitHub".
 
-Gives up: the reason it matters now arrives third, after a visitor may have decided "I already have GitHub".
+**2. The reader counts their own repositories.**
+*Ten repositories. One place to run them.*
+Hand out work in GitHub Issues, then see what came back — pull requests, failing checks, a deploy that broke
+overnight — across every repository. It's all GitHub, so you don't need another tracker.
 
-## B: you are the manager now
+Gives up: someone with two repositories may feel it is not for them.
 
-For a solo developer, or a small team, running many repositories and agents.
+**3. Both promises in the headline.**
+*Run every repository from one place. Skip the separate tracker.*
+githq puts GitHub Issues, Projects, pull requests and Actions from all your repositories on one fast screen.
+The tracker you would pay Linear for is already in your GitHub.
 
-- **Headline:** One person, ten repositories, a dozen agents. You need a tracker.
-- **Under it:** Even solo, you now hand out work and check what comes back. githq is the tracker for that,
-  on top of GitHub: issues to hand out, then the pull requests, checks and broken deploys that came back —
-  every repository on one screen.
-- **Second section — "Hand it out, see what came back, finish it":** plan in issues and Projects; follow
-  pull requests, checks and workflows; review and merge without leaving.
-- **Third section — "Everything Linear does for you, on the GitHub you already have":** the comparison table.
+Gives up: the longest headline, and "skip the separate tracker" means little to someone who never had one.
 
-Gives up: someone without agents may decide it is not for them; githq does nothing agent-specific yet, so the
-headline promises more than the product shows; and the message ages with the fashion.
+## The sections under it, shared by all three
 
-## C: Linear, on GitHub
-
-For people who know Linear, or pay for it, and keep their code on GitHub.
-
-- **Headline:** Linear's speed. GitHub's issues. No second tool.
-- **Under it:** githq is a free, keyboard-first tracker on top of GitHub Issues and Projects. Nothing to import,
-  nothing to sync, nothing stored outside GitHub.
-- **Second section:** the comparison table — github.com, a dedicated tracker, githq.
-- **Third section — "Built for how much is going on now":** many repositories, many pull requests, agents
-  working in parallel; checks, failing workflows and merging in the same place as the issues.
-
-Gives up: it makes githq "a Linear alternative" and invites a feature-by-feature comparison it loses (triage,
-cycles, integrations); it means nothing to someone who has never used Linear.
-
-## Side by side
-
-| | A: the tracker you already have | B: you are the manager now | C: Linear, on GitHub |
-|-|-|-|-|
-| First reader | anyone using GitHub Issues | solo developer with agents | Linear users on GitHub |
-| Why now | third section | headline | third section |
-| Linear | in the line under the headline | third section | headline |
-| Wins when | the audience is broad and unknown | most interested people run agents | people already pay for a tracker |
-| Loses when | visitors think GitHub Issues is good enough | visitors do not use agents | visitors have never used Linear |
+1. **Everything that needs you, from every repository.** Reviews waiting on you, your pull requests with their
+   checks, workflows failing on `main`, the issues assigned to you — one list, every repository. The "one
+   place" promise, shown.
+2. **Your tracker is already on GitHub.** Issues, labels, Projects with their fields, boards and iterations,
+   edited at once and visible on github.com the same second. Then the comparison: github.com, a dedicated
+   tracker, githq. The "no separate tracker" promise, shown.
+3. **Even solo, you are running a team.** Agents opening pull requests in ten repositories while you hand out
+   the next issue: githq is where you see what came back, review it and merge it.
+   ([Why this is the reason now](DECISIONS.md#d3).)

@@ -8,30 +8,15 @@ decisions, the journal and notes from reviews live in [history/](history/).
 they link to.** Reopening a rejected option is right when its premise changed; repeating it without
 knowing it was rejected is not.
 
-## D1
-
-**githq leads with being an issue tracker.** (2026-11-02, owner)
-
-**Why.** Owner: nearly everyone wants to track what happens in their projects, existing tools are paid or need
-self-hosting, and GitHub is simply there. A need people already know they have sells better than a better way
-to browse GitHub, which people feel only after using it.
-
-> **Checked 2026-11-02:** "existing tools are paid" holds only past a free tier. Linear's free plan is
-> reported as 250 issues and two teams with unlimited members, then $10 per user per month billed yearly
-> (secondary sources, e.g. [omidsaffari.com](https://omidsaffari.com/blog/linear-pricing); linear.app/pricing
-> did not render for the fetcher, so not confirmed first-hand). Plane's free cloud plan allows 12 users
-> ([plane.so/pricing](https://plane.so/pricing)); it is open source and self-hostable. So the honest claim is
-> "a second tool, a sync, and a bill once you grow", not "everything else costs money".
-
-**Rejected.**
-- "Everything for GitHub in one place" as the headline — it names no need; nobody feels that browsing GitHub
-  could be better until they have used githq (owner).
-
 ## D2
 
 **The comparison with Linear stays, as what githq replaces.** (2026-11-02, owner)
 
 **Why.** It tells a reader what kind of tool this is and what it saves them, in one name.
+
+**Rejected.**
+- "Linear on GitHub" as the identity, in the headline — it makes githq a clone to be compared feature by
+  feature, and drops the half about running all your repositories (owner, 2026-11-02).
 
 ## D3
 
@@ -46,3 +31,27 @@ what was handed out.
 **Rejected.**
 - Agents in the headline ("an HQ for developers running agents") — githq does nothing agent-specific today, so
   the promise would outrun the product and date quickly (design agent).
+
+## D4
+
+**githq leads with two promises at once: one place to run all your repositories, and no separate tracker for
+them, because GitHub's issues and Projects are the tracker.** (2026-11-02, owner)
+
+**Why.** Owner: openings that only said "it is a tracker, you need a tracker" did not land; the value is that a
+tracker on GitHub replaces the one you would otherwise use for your ten repositories with agents, and that the
+same place runs all of those repositories. "One place" on its own names no work; "a tracker" on its own sells
+a need the reader may not feel.
+
+> **Checked 2026-11-02:** "existing tools are paid" holds only past a free tier. Linear's free plan is
+> reported as 250 issues and two teams with unlimited members, then $10 per user per month billed yearly
+> (secondary sources, e.g. [omidsaffari.com](https://omidsaffari.com/blog/linear-pricing); linear.app/pricing
+> did not render for the fetcher, so not confirmed first-hand). Plane's free cloud plan allows 12 users
+> ([plane.so/pricing](https://plane.so/pricing)); it is open source and self-hostable. So the honest claim is
+> "a second tool, a sync, and a bill once you grow", not "everything else costs money".
+
+**Rejected.**
+- Leading with the issue tracker alone ([history](history/DECISIONS.md#d1)) — the three openings written
+  from it (the tracker you already have; you are the manager now; Linear on GitHub) all read as "you need a
+  tracker" (owner).
+- "Everything for GitHub in one place" — names no need (owner). D4's "one place" differs by being tied to the
+  reader's repositories and to the tracker.
