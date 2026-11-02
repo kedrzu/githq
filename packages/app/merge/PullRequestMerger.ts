@@ -22,11 +22,11 @@ export interface MergeParams {
     readonly item: PullRequestItem;
     readonly request: MergeRequest;
     /**
-     * Whether the merge panel still shows what GitHub answers. A refusal at once is the panel's to show only then;
-     * once it closed (or opened anew), the refusal is reported like a failed edit, so it is not lost.
+     * Whether the merge panel shows the pull request. A refusal is the panel's to show only then; once it closed (or
+     * opened for another), the refusal is reported like a failed edit, so it is not lost.
      */
     readonly shown: () => boolean;
-    /** Told when GitHub accepted the merge but it did not merge after all: refused while it ran, or no answer in time. */
+    /** Told how a merge GitHub accepted ended: merged, refused while it ran, or no answer in time. */
     readonly onLateEnd: (end: MergeLateEnd) => void;
 }
 
@@ -102,9 +102,9 @@ export const PullRequestMerger = defineService({
 
         /**
          * Merges the pull request as shown, with its head commit. Resolves once GitHub took the merge
-         * (`accepted`: it runs on, drawn as being merged, and a later refusal is reported like a failed edit) or
-         * refused it at once (`refused`: for the panel to show — reported elsewhere only when the panel no longer
-         * shows it, {@link MergeParams.shown}). Refused as not allowed without being sent when the user may not
+         * (`accepted`: it runs on, drawn as being merged) or refused it at once (`refused`); a refusal is the panel's
+         * to show, and reported like a failed edit only when the panel does not show the pull request
+         * ({@link MergeParams.shown}). Refused as not allowed without being sent when the user may not
          * merge it, or it is being merged already.
          */
         async function merge(params: MergeParams): Promise<MergeAnswer> {

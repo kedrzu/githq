@@ -1,14 +1,15 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowRight, FileDiff, GitBranch, GitMerge, Github } from 'lucide-vue-next';
+import { ArrowRight, CircleHelp, CircleX, FileDiff, GitBranch, GitMerge, Github, TriangleAlert } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import type { MergeRecord } from '@/merge/MergeTypes.js';
 import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -18,6 +19,7 @@ import * as l from './PullRequestMerge.loc.js';
 import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
 import { usePullRequestConditions } from './usePullRequestConditions.js';
 import { usePullRequestVerdict } from './usePullRequestVerdict.js';
+import type { PullRequestVerdict } from './usePullRequestVerdict.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -33,6 +35,8 @@ const props = defineProps<{
    * weighs only the required ones, as the merge panel does (PM38). `null` until then: the row's summary decides.
    */
   checks?: MergeCheckCounts | null;
+  /** What this session knows of its last merge that did not end merged (merging D15); `null` for none. */
+  record?: MergeRecord | null;
 }>();
 
 const emit = defineEmits<{
@@ -50,6 +54,39 @@ const mergeVerdict = usePullRequestVerdict(
 const lines = usePullRequestConditions(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
 const merging = computed(() => props.pr.merging !== undefined);
+/** How its last merge ended, while it still says something: open, and not being merged again. */
+const ended = computed(() => {
+  const { record } = props;
+  if (!record || !open.value || merging.value) {
+    return null;
+  }
+
+  // Sent with no answer: it may have reached GitHub, so it reads neither merged nor refused.
+  return record.kind === 'refused' && record.reason.kind === 'offline' ? { kind: 'unknown' as const } : record;
+});
+const verdict = computed((): PullRequestVerdict => {
+  const record = ended.value;
+  switch (record?.kind) {
+    case undefined:
+      return mergeVerdict.verdict;
+    case 'refused': {
+      const { reason } = record;
+      const aside = reason.kind === 'refused' ? (reason.message.trim().split('\n')[0] ?? null) : null;
+      return { tone: 'danger', icon: CircleX, text: t(l.refused), aside: aside || t(l.nothingMerged) };
+    }
+    case 'methodNotAllowed':
+      return { tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
+    case 'headMoved': {
+      const author = record.commit?.author;
+      const aside = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
+      return { tone: 'warning', icon: TriangleAlert, text: t(l.notMerged), aside };
+    }
+    case 'unknown':
+      return { tone: 'muted', icon: CircleHelp, text: t(l.outcomeUnknown), aside: t(l.notAnswered) };
+    default:
+      return assertNever(record);
+  }
+});
 /** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
 const note = computed(() => {
   if (!open.value || props.pr.merged) {
@@ -60,11 +97,19 @@ const note = computed(() => {
     return t(l.waitingForGitHub);
   }
 
+  if (ended.value?.kind === 'unknown') {
+    return t(l.nextRefreshSettles);
+  }
+
   // Stacked on another, it merges with its stack (stacked PRs D11), not offered yet — whatever the role.
   return props.canMerge === false && !isStackedOnAnother(props.pr) ? t(l.cannotMerge) : null;
 });
 /** "Merge…" opens the panel, and says the way forward it leads to (PM38). */
 const mergeLabel = computed(() => {
+  if (ended.value && ended.value.kind !== 'unknown') {
+    return t(l.backToMerge);
+  }
+
   const forward = mergeVerdict.forward;
   switch (forward) {
     case 'merge':
@@ -99,7 +144,7 @@ const filesUrl = computed(() => `${props.pr.url}/files`);
 <template>
   <section :class="css.pullRequestMerge">
     <PullRequestVerdictLine
-      :verdict="mergeVerdict.verdict"
+      :verdict="verdict"
       tag="h2"
     />
     <dl

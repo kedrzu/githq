@@ -1,7 +1,11 @@
 import { assertValue } from '@nzyme/utils/assert.js';
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { provideContext } from '@nzyme/vue-utils/context.js';
+import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
+import { defineComponent, h } from 'vue';
 
+import { MergeContext } from '@/merge/MergeContext.js';
+import type { MergeRecord } from '@/merge/MergeTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import {
@@ -136,6 +140,37 @@ export const PullRequestBehind: Story = {
 /** PM38: a draft — the conditions fold, and "Merge…" says the panel marks it ready first. */
 export const PullRequestDraft: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isDraft: true, mergeStateStatus: 'DRAFT' } },
+};
+
+/** Under a screen that knows how the pull request's last merge ended (merging D15). */
+function withMergeRecord(record: MergeRecord): Decorator {
+    return story =>
+        defineComponent({
+            setup() {
+                provideContext(MergeContext, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+                return () => h(story());
+            },
+        });
+}
+
+/** PM38: a merge GitHub refused after the user moved on — "Merge refused" with GitHub's words, "Back to the merge". */
+export const PullRequestMergeRefused: Story = {
+    args: PullRequestReady.args,
+    decorators: [
+        withMergeRecord({
+            kind: 'refused',
+            sent: { request: { method: 'SQUASH', title: 'Edited' }, edited: { title: 'Edited', body: '' }, head: 'a' },
+            reason: { kind: 'refused', message: 'At least 2 approving reviews are required' },
+        }),
+    ],
+};
+
+/** PM38: no answer in time — grey "Outcome not known yet", and the next refresh settles it. */
+export const PullRequestOutcomeUnknown: Story = {
+    args: PullRequestReady.args,
+    decorators: [
+        withMergeRecord({ kind: 'unknown', sent: { request: { method: 'SQUASH' }, edited: null, head: 'a' } }),
+    ],
 };
 
 /** K1b: the ready pull request seen by a contributor — no "Merge…", one line says they can't. */

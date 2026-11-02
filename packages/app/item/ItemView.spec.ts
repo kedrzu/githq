@@ -15,6 +15,8 @@ const {
     PullRequestBeingMerged,
     PullRequestBehind,
     PullRequestConflicts,
+    PullRequestMergeRefused,
+    PullRequestOutcomeUnknown,
     PullRequestContributorView,
     PullRequestDraft,
     PullRequestFailing,
@@ -438,4 +440,26 @@ test('PM38: a draft — the conditions fold, and "Mark ready…" in place of "Me
         .toHaveTextContent('DraftMark it ready for review first');
     await expect.element(page.getByRole('button', { name: 'Mark ready…' })).toBeVisible();
     await expect.element(page.getByText('Approved by olam and pnowak')).not.toBeInTheDocument();
+});
+
+test('PM38: a merge refused after the user moved on says so in the standing, and "Back to the merge" opens the panel', async () => {
+    await PullRequestMergeRefused.run();
+    const { onMerge } = PullRequestMergeRefused.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Merge refused/ }))
+        .toHaveTextContent('Merge refusedAt least 2 approving reviews are required');
+    await expect.element(page.getByText('Open', { exact: true })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Back to the merge' }));
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM38: no answer in time is grey, neither merged nor refused, until the next refresh settles it', async () => {
+    await PullRequestOutcomeUnknown.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Outcome not known yet/ }))
+        .toHaveTextContent("Outcome not known yetGitHub hasn't answered · not shown as merged");
+    await expect.element(page.getByText('The next refresh settles it')).toBeVisible();
+    await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
 });

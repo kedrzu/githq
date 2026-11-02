@@ -440,6 +440,7 @@ function sampleMerging(allowed: readonly string[]) {
     const context: MergeContext = {
         canOpen: id => allowed.includes(id),
         open: (id, options) => panels.push({ id, options }),
+        getRecord: () => null,
     };
     return { context, panels };
 }

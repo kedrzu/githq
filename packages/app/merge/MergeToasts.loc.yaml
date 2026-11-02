@@ -1,0 +1,8 @@
+backToMerge:
+  en: Back to the merge
+backToMergeCommand:
+  en: Back to the refused merge
+openOnGitHub:
+  en: Open on GitHub
+merged:
+  en: '{reference} merged into {base}'

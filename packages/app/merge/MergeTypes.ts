@@ -100,8 +100,9 @@ export type MergeRecord =
     | { readonly kind: 'methodNotAllowed'; readonly sent: SentMerge }
     | { readonly kind: 'unknown'; readonly sent: SentMerge };
 
-/** How a merge GitHub accepted ended when it did not merge: refused while it ran, or with no answer in time. */
+/** How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time. */
 export type MergeLateEnd =
+    | { readonly kind: 'merged' }
     | { readonly kind: 'refused'; readonly reason: EditFailureReason }
     | { readonly kind: 'unknown' };
 

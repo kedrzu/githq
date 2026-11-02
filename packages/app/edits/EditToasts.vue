@@ -1,4 +1,4 @@
-<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub, and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub, and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -52,6 +52,11 @@ function selectFailed(failure: EditFailure) {
   navigation.requestSelection(getFailedIds(failure));
 }
 
+/** Merging, said by its own toast: the way back to the panel (`MergeToasts`). */
+function isMergeFailure(failure: EditFailure) {
+  return failure.failed[0]?.edit.subject.kind === 'merged';
+}
+
 /** A comment that was not posted and is not in its box (it went back there unless something new was typed). */
 function getUnrestoredComment(failure: EditFailure) {
   const edit = failure.failed[0]?.edit;
@@ -96,7 +101,7 @@ function getLink(failure: EditFailure) {
     :key="failure.id"
   >
     <Toast
-      v-if="failure.toast"
+      v-if="failure.toast && !isMergeFailure(failure)"
       :title="texts.failureTitle(failure)"
       :tone="failure.failed.length < failure.editCount ? 'warning' : 'danger'"
       @update:open="queue.setToast(failure.id, $event)"

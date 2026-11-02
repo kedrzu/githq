@@ -187,6 +187,81 @@ test('PM29: accepted, then no answer within the time limit — recorded as not k
     expect(panel.getRecord('PR_1')).toEqual({ kind: 'unknown', sent: { ...EDITED, head: 'head-oid' } });
 });
 
+test('PM36: no answer in time goes once the regular sync brings a copy of the pull request read since — not before', async () => {
+    const { panel, queue, items, session, answers } = await setup();
+    answers.put = PENDING;
+
+    panel.open('PR_1');
+    const accepted = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED, reread: readAs('head-oid') });
+    await session.clock.advance(0);
+    await accepted;
+    await session.clock.advance(120_000);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'unknown' });
+    expect(panel.unanswered).toEqual(['PR_1']);
+    // Neither failed nor done: no toast of either.
+    expect(queue.failures).toEqual([]);
+    expect(panel.confirmations).toEqual([]);
+
+    // Another pull request's copy says nothing of this one.
+    items.upsertMany([samplePullRequest('PR_2')]);
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'unknown' });
+
+    // The sync reads the open pull requests' statuses again: still open, it reads as GitHub says, free to merge again.
+    items.upsertMany([samplePullRequest('PR_1')]);
+    expect(panel.getRecord('PR_1')).toBeNull();
+    expect(panel.unanswered).toEqual([]);
+});
+
+test('PM34: a merge GitHub confirms after the panel left is listed for its toast, until dismissed', async () => {
+    const { panel, session, answers } = await setup();
+
+    // Merged at once: the panel leaves as GitHub answers, and the toast says it.
+    answers.put = MERGED;
+    panel.open('PR_1');
+    const merged = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED, reread: readAs('head-oid') });
+    await session.clock.advance(0);
+    await merged;
+    await session.clock.advance(0);
+
+    expect(panel.confirmations).toEqual([{ id: 1, itemId: 'PR_1', reference: 'acme/web#2', base: 'main' }]);
+    panel.dismissConfirmation(1);
+    expect(panel.confirmations).toEqual([]);
+
+    // Merged while running, after the panel left.
+    answers.put = PENDING;
+    panel.open('PR_1');
+    const accepted = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED, reread: readAs('head-oid') });
+    await session.clock.advance(0);
+    await accepted;
+    expect(panel.confirmations).toEqual([]);
+    answers.read = MERGED;
+    await session.clock.advance(1000);
+    await session.clock.advance(0);
+    expect(panel.confirmations).toMatchObject([{ itemId: 'PR_1', reference: 'acme/web#2' }]);
+});
+
+test("PM24: a merge ending while the panel shows its pull request again is the panel's to say — no toast, no failed edit", async () => {
+    const { panel, queue, session, answers } = await setup();
+    answers.put = PENDING;
+
+    panel.open('PR_1');
+    const first = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED, reread: readAs('head-oid') });
+    await session.clock.advance(0);
+    await first;
+    // Back on it while it runs.
+    panel.open('PR_1');
+
+    answers.read = {
+        status: 200,
+        body: { status: 'failed', details: { message: 'Required status check "ci" is expected.' } },
+    };
+    await session.clock.advance(1000);
+    await session.clock.advance(0);
+
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused' });
+    expect(queue.failures).toEqual([]);
+});
+
 test('refused while it ran, after the panel left: GitHub is asked for the head itself, and a moved one is recorded', async () => {
     const { panel, session, answers } = await setup();
     answers.put = PENDING;
@@ -259,6 +334,7 @@ async function setup() {
     return {
         panel: session.container.resolve(MergePanelStore),
         queue: session.container.resolve(EditQueue),
+        items,
         session,
         answers,
         login,

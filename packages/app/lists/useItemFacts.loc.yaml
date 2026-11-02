@@ -47,3 +47,11 @@ merged:
   en: Merged
 mergedAgo:
   en: Merged · {age}
+mergeRefused:
+  en: Merge refused
+newCommitFrom:
+  en: Not merged · new commit from {author}
+newCommit:
+  en: Not merged · new commit
+outcomeUnknown:
+  en: Merge sent · outcome not known yet

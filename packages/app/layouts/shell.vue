@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so), else my work's — and its counts for the sidebar, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once); the toasts of failed edits and of merges the user moved on from (merging D15), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
@@ -19,6 +19,7 @@ import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { MergePanelStore } from '@/merge/MergePanelStore.js';
+import MergeToasts from '@/merge/MergeToasts.vue';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
@@ -71,6 +72,7 @@ provideContext(MergeContext, {
     return item?.kind === 'pullRequest' && editor.getPermissions(item).mergePanel;
   },
   open: (id, options) => mergePanel.open(id, options),
+  getRecord: id => mergePanel.getRecord(id),
 });
 
 const collapsed = preferences.sidebarCollapsed;
@@ -143,10 +145,18 @@ const overList = computed(() => (opened.value && !opened.value.onPage ? navigati
 const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
-// The user's edits (D15): the list's segment names the item being sent, the item's the fields.
+// The user's edits (D15): the list's segment names the item being sent, the item's the fields. A merge GitHub has not
+// said the end of is grey until the next refresh settles it (merging PM36), and said before an older failure.
 const listEdits = computed((): SegmentEdits | null => {
   if (queue.pending.length > 0) {
     return { kind: 'sending', text: editTexts.sending(queue.pending) };
+  }
+
+  const unanswered = mergePanel.unanswered.at(-1);
+  const pr = unanswered === undefined ? undefined : details.getItem(unanswered);
+  if (pr) {
+    const reference = `${pr.repository.nameWithOwner}#${pr.number}`;
+    return { kind: 'unanswered', text: editTexts.unanswered(reference) };
   }
 
   return lastFailure.value ? { kind: 'failed', text: editTexts.failed(lastFailure.value) } : null;
@@ -160,6 +170,10 @@ const itemEdits = computed((): SegmentEdits | null => {
   const pending = queue.pending.filter(edit => edit.itemId === id);
   if (pending.length > 0) {
     return { kind: 'sending', text: editTexts.sendingFields(pending) };
+  }
+
+  if (mergePanel.unanswered.includes(id)) {
+    return { kind: 'unanswered', text: editTexts.unanswered(null) };
   }
 
   const failure = queue.failures.findLast(candidate => candidate.failed.some(failed => failed.edit.itemId === id));
@@ -251,6 +265,7 @@ function showLastFailure() {
   />
   <Toaster v-if="auth.viewer">
     <EditToasts />
+    <MergeToasts />
     <SyncStoppedToast :login="auth.viewer.login" />
   </Toaster>
   <AppCommands v-if="auth.viewer" />

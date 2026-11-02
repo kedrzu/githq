@@ -94,6 +94,8 @@ reasonOffline:
   en: githq couldn't reach GitHub, so it was undone. Try again once you're online.
 reasonRefused:
   en: 'GitHub refused it: {message}. It was undone.'
+reasonMergeRefused:
+  en: 'GitHub refused it: “{message}” Nothing changed on GitHub.'
 reasonOfItem:
   en: '{reference} failed: {reason}'
 moreFailed:
@@ -134,6 +136,12 @@ itemCount:
     many: '{count} items'
 failedOne:
   en: 1 change failed · {subject} {reason}
+failedMerge:
+  en: Merge refused · {reference}
+unanswered:
+  en: GitHub hasn't answered · the next refresh will settle it
+unansweredOf:
+  en: "{reference} · GitHub hasn't answered · the next refresh will settle it"
 failedSome:
   en: '{failed} of {total} changes failed · {target}'
 

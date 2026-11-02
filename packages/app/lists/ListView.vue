@@ -281,7 +281,11 @@ watch(listedIds, ids => emit('listed', ids), { immediate: true });
 // The rows and the context menu merge through the list: their entry is selected, and once the merge is sent the list
 // moves on to the next row (PM32a).
 if (merging) {
-  provideContext(MergeContext, { canOpen: id => merging.canOpen(id), open: mergeFromList });
+  provideContext(MergeContext, {
+    canOpen: id => merging.canOpen(id),
+    open: mergeFromList,
+    getRecord: id => merging.getRecord(id),
+  });
 }
 
 // The list's keys are its own — handled below, before an opened item's — and listed in the help sheet; "Merge…" of

@@ -371,6 +371,8 @@ interface WorldMerge {
     readonly item: WorldItem;
     readonly pullRequest: WorldPullRequest;
     readonly uuid: string;
+    /** What GitHub said refusing it while it ran ({@link GitHubWorld.refuseHeldMerges}); `null` while it may merge. */
+    refusal: string | null;
 }
 
 /** A stack of pull requests, bottom first. */
@@ -743,9 +745,24 @@ export class GitHubWorld {
         return () => {
             this.mergesHeld = false;
             for (const merge of this.merges.values()) {
-                this.completeMerge(merge);
+                if (merge.refusal === null) {
+                    this.completeMerge(merge);
+                }
             }
         };
+    }
+
+    /**
+     * Refuses the merges {@link holdMerges} holds, as GitHub fails a merge while it runs (`failed`, saying `message`):
+     * the pull requests stay open, and merges accepted from now on are no longer held.
+     */
+    refuseHeldMerges(message: string): void {
+        this.mergesHeld = false;
+        for (const merge of this.merges.values()) {
+            if (!merge.pullRequest.merged) {
+                merge.refusal = message;
+            }
+        }
     }
 
     /**
@@ -1758,14 +1775,21 @@ export class GitHubWorld {
                 return { status: 400, json: { status: 'failed', details: { message } } };
             }
 
-            const merge: WorldMerge = { item, pullRequest, uuid: `merge-${slug(item.id)}-${this.merges.size + 1}` };
+            const uuid = `merge-${slug(item.id)}-${this.merges.size + 1}`;
+            const merge: WorldMerge = { item, pullRequest, uuid, refusal: null };
             this.merges.set(merge.uuid, merge);
-            github.rest('GET', `${path}/${merge.uuid}`, () => ({
-                status: 200,
-                json: pullRequest.merged
-                    ? { status: 'merged', details: { message: 'Pull request was merged.', sha: MERGE_COMMIT_OID } }
-                    : { status: 'pending', details: { message: 'Merge request is in progress.', uuid: merge.uuid } },
-            }));
+            github.rest('GET', `${path}/${merge.uuid}`, () => {
+                if (merge.refusal !== null) {
+                    return { status: 200, json: { status: 'failed', details: { message: merge.refusal } } };
+                }
+
+                return {
+                    status: 200,
+                    json: pullRequest.merged
+                        ? { status: 'merged', details: { message: 'Pull request was merged.', sha: MERGE_COMMIT_OID } }
+                        : { status: 'pending', details: { message: 'Merge request is in progress.', uuid } },
+                };
+            });
             if (!this.mergesHeld) {
                 this.completeMerge(merge);
             }

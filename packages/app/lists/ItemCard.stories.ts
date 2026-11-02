@@ -1,7 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { provideContext } from '@nzyme/vue-utils/context.js';
+import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, within } from 'storybook/test';
+import { defineComponent, h } from 'vue';
 
-import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { MergeContext } from '@/merge/MergeContext.js';
+import type { MergeRecord, SentMerge } from '@/merge/MergeTypes.js';
+import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_STACKS, sampleListStack } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
@@ -11,6 +15,26 @@ import { ITEM_PROPERTIES } from './ItemProperty.js';
 const [LONE] = SAMPLE_STACKS.needsRebase;
 if (!LONE) {
     throw new Error('The sample stack needs pull requests.');
+}
+
+/** Approved and ready to merge: what a merge refused or unanswered reads over. */
+const READY = D1_ITEMS.find(item => item.id === 'PR_477');
+if (!READY) {
+    throw new Error('The sample work needs PR_477.');
+}
+
+/** A merge sent from the panel, with GitHub's text. */
+const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: 'head-oid' };
+
+/** Under a screen that knows how the card's last merge ended (merging D15). */
+function withMergeRecord(record: MergeRecord): Decorator {
+    return story =>
+        defineComponent({
+            setup() {
+                provideContext(MergeContext, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+                return () => h(story());
+            },
+        });
 }
 
 const meta = {
@@ -43,5 +67,41 @@ export const LoneCard: Story = {
         const canvas = within(canvasElement);
         await expect(canvas.getByLabelText('In a stack')).toBeVisible();
         await expect(canvas.getByText('1 of 3')).toBeVisible();
+    },
+};
+
+/** PM37 on a board: a merge GitHub refused after the user moved on — the same line as the row's. */
+export const MergeRefused: Story = {
+    args: { item: READY },
+    decorators: [
+        withMergeRecord({ kind: 'refused', sent: SENT, reason: { kind: 'refused', message: 'Rule violations.' } }),
+    ],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Merge refused')).toBeVisible();
+    },
+};
+
+/** PM37 on a board: refused for a commit pushed meanwhile. */
+export const MergeNewCommit: Story = {
+    args: { item: READY },
+    decorators: [
+        withMergeRecord({
+            kind: 'headMoved',
+            sent: SENT,
+            head: 'new-head',
+            commit: { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' },
+        }),
+    ],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Not merged · new commit from dkim')).toBeVisible();
+    },
+};
+
+/** PM36, PM37 on a board: no answer in time — grey, neither merged nor refused. */
+export const MergeOutcomeUnknown: Story = {
+    args: { item: READY },
+    decorators: [withMergeRecord({ kind: 'unknown', sent: SENT })],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Merge sent · outcome not known yet')).toBeVisible();
     },
 };

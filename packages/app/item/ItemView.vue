@@ -3,6 +3,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -52,6 +53,7 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { countMergeChecks } from '@/merge/countMergeChecks.js';
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
@@ -136,6 +138,8 @@ const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
 const browser = useService(Browser);
+/** Merging, where the screen offers it: how the session's last merge of a pull request ended (PM38). */
+const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer');
@@ -691,6 +695,7 @@ function getProjectOptions(): CommandOption[] {
               :detail="prDetail"
               :can-merge="permissions ? permissions.mergePanel : null"
               :checks="checkCounts"
+              :record="merging?.getRecord(pr.id) ?? null"
               @merge="emit('merge')"
             />
 

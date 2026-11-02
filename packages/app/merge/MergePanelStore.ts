@@ -1,10 +1,14 @@
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { Clock } from '@/services/Clock.js';
+import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemStore } from '@/store/ItemStore.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import { allowsMergeMethod } from './allowsMergeMethod.js';
 import type { MergeAnswer, MergeOptions, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
@@ -31,25 +35,53 @@ export interface MergePanelMergeParams {
     readonly reread: () => Promise<MergeOptions | null>;
 }
 
+/** A merge GitHub confirmed while the merge panel did not show its pull request, for its toast (PM34). */
+export interface MergeConfirmation {
+    readonly id: number;
+    readonly itemId: string;
+    /** The pull request's `owner/name#number`. */
+    readonly reference: string;
+    /** The branch it was merged into. */
+    readonly base: string;
+}
+
+/** A record as the store keeps it: with the row it was made over and when, to tell a copy read since. */
+interface KeptRecord {
+    readonly record: MergeRecord;
+    readonly row: Item | undefined;
+    readonly at: number;
+}
+
 /**
  * The merge panel (merging D7, D11): the one pull request it is open for, over any screen, and the merges sent
  * from it. Opening it again, for the same pull request or another, starts a fresh panel. What the session knows of
  * a merge that did not end merged — refused, refused for a moved head or a method the rules don't allow, no answer
  * in time — stays per pull request ({@link MergeRecord}, D15) until the next merge of it is sent, in memory only,
- * and goes when another account signs in, or none.
+ * and goes when another account signs in, or none; no answer in time goes too once a copy of the pull request read
+ * since arrives, which says how it ended (D3, PM36). A merge confirmed while the panel did not show it is listed for
+ * its toast until the toast goes (PM34).
  */
 export type MergePanelStore = Resolved<typeof MergePanelStore>;
 export const MergePanelStore = defineService({
     name: 'MergePanelStore',
-    deps: { merger: PullRequestMerger, accounts: AccountSession },
-    setup({ merger, accounts }) {
+    deps: {
+        merger: PullRequestMerger,
+        accounts: AccountSession,
+        items: ItemStore,
+        details: ItemDetailStore,
+        clock: Clock,
+    },
+    setup({ merger, accounts, items, details, clock }) {
         const itemIdRef = shallowRef<string | null>(null);
         const openingRef = shallowRef(0);
-        const recordsRef = shallowRef<ReadonlyMap<string, MergeRecord>>(new Map());
+        const recordsRef = shallowRef<ReadonlyMap<string, KeptRecord>>(new Map());
+        const confirmationsRef = shallowRef<readonly MergeConfirmation[]>([]);
         let onSent: (() => void) | undefined;
+        let nextConfirmationId = 1;
 
         accounts.onChange(() => {
             recordsRef.value = new Map();
+            confirmationsRef.value = [];
         });
 
         return {
@@ -61,10 +93,19 @@ export const MergePanelStore = defineService({
             get opening() {
                 return openingRef.value;
             },
+            /** The merges confirmed while the panel did not show them, oldest first, until dismissed. Reactive. */
+            get confirmations() {
+                return confirmationsRef.value;
+            },
+            /** The pull requests whose last merge GitHub has not said the end of, oldest first. Reactive. */
+            get unanswered(): readonly string[] {
+                return [...recordsRef.value.keys()].filter(id => getRecord(id)?.kind === 'unknown');
+            },
             open,
             close,
             merge,
             getRecord,
+            dismissConfirmation,
         };
 
         /** Opens the panel for a pull request, in place of whatever it was open for. */
@@ -79,9 +120,26 @@ export const MergePanelStore = defineService({
             onSent = undefined;
         }
 
-        /** What this session knows of the pull request's last merge that did not end merged; `null` for none. Reactive. */
+        /**
+         * What this session knows of the pull request's last merge that did not end merged; `null` for none, and for
+         * no answer in time once a copy read since says how it ended. Reactive.
+         */
         function getRecord(itemId: string): MergeRecord | null {
-            return recordsRef.value.get(itemId) ?? null;
+            const kept = recordsRef.value.get(itemId);
+            return kept && !(kept.record.kind === 'unknown' && isReadSince(itemId, kept)) ? kept.record : null;
+        }
+
+        function dismissConfirmation(id: number) {
+            confirmationsRef.value = confirmationsRef.value.filter(confirmation => confirmation.id !== id);
+        }
+
+        /**
+         * A copy of the pull request read after the record was made arrived: its row replaced — the regular sync
+         * reads open pull requests' statuses each round — or its detail read since.
+         */
+        function isReadSince(itemId: string, kept: KeptRecord) {
+            const detail = details.get(itemId);
+            return items.getStored(itemId) !== kept.row || (detail !== undefined && detail.fetchedAt > kept.at);
         }
 
         /**
@@ -101,20 +159,44 @@ export const MergePanelStore = defineService({
                 recordsRef.value = records;
             }
 
+            // Merged before the answer was taken in: the panel may be about to leave, so it is told after.
+            let answered = false;
+            let mergedMeanwhile = false;
             const answer = await merger.merge({
                 item,
                 request: submission.request,
-                shown,
-                onLateEnd: end =>
-                    end.kind === 'unknown'
-                        ? keep({ kind: 'unknown', sent })
-                        : void recordRefusal(end.reason, () => merger.readOptions(item.id)),
+                shown: () => itemIdRef.value === item.id,
+                onLateEnd: end => {
+                    switch (end.kind) {
+                        case 'merged':
+                            if (answered) {
+                                confirm();
+                            } else {
+                                mergedMeanwhile = true;
+                            }
+
+                            return;
+                        case 'unknown':
+                            keep({ kind: 'unknown', sent });
+                            return;
+                        case 'refused':
+                            void recordRefusal(end.reason, () => merger.readOptions(item.id));
+                            return;
+                        default:
+                            assertNever(end);
+                    }
+                },
             });
+            answered = true;
             if (answer.kind === 'accepted') {
                 if (shown()) {
                     const sentFrom = onSent;
                     close();
                     sentFrom?.();
+                }
+
+                if (mergedMeanwhile) {
+                    confirm();
                 }
 
                 return answer;
@@ -139,9 +221,28 @@ export const MergePanelStore = defineService({
 
             /** Recorded while the account that sent it is still signed in: another one's records start empty. */
             function keep(record: MergeRecord) {
-                if (account && accounts.isCurrent(account)) {
-                    recordsRef.value = new Map(recordsRef.value).set(item.id, record);
+                if (isSender()) {
+                    const kept: KeptRecord = { record, row: items.getStored(item.id), at: clock.now() };
+                    recordsRef.value = new Map(recordsRef.value).set(item.id, kept);
                 }
+            }
+
+            /** Merged: said in a toast unless the panel shows it (PM34). */
+            function confirm() {
+                if (isSender() && itemIdRef.value !== item.id) {
+                    const reference = `${item.repository.nameWithOwner}#${item.number}`;
+                    const confirmation = {
+                        id: nextConfirmationId++,
+                        itemId: item.id,
+                        reference,
+                        base: item.baseRefName,
+                    };
+                    confirmationsRef.value = [...confirmationsRef.value, confirmation];
+                }
+            }
+
+            function isSender() {
+                return account !== null && accounts.isCurrent(account);
             }
         }
     },

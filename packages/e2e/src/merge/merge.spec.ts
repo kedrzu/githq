@@ -51,6 +51,10 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     await expect(myWork.selectedRow).toContainText(SECOND);
     expect(sample.world.stateOf(sample.first).merged).toBe(true);
     expect(sample.world.stateOf(sample.second).merged).toBe(false);
+    // PM34: the user moved on, so the confirmation comes to them — short, and gone by itself.
+    const merged = shell.toasts.filter({ hasText: 'acme/web#15 merged into main' });
+    await expect(merged).toBeVisible();
+    await expect(merged).toBeHidden({ timeout: 10_000 });
     await expect(shell.toasts).toHaveCount(0);
 });
 
@@ -92,7 +96,9 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
     await expect(item.statePill('Merged')).toBeVisible();
     await expect(item.root).not.toContainText('Being merged');
     expect(sample.world.stateOf(sample.first).merged).toBe(true);
-    await expect(shell.toasts).toHaveCount(0);
+    // The panel left at GitHub's answer: the confirmation is a toast, the only one.
+    await expect(shell.toasts).toHaveCount(1);
+    await expect(shell.toasts).toContainText('acme/web#15 merged into main');
 });
 
 test('⇧M on a pull request opened by its address, outside my work, opens the panel and merges it; the status bar says the merge is on the way', async ({
@@ -216,6 +222,50 @@ test('a merge GitHub refuses at once keeps the panel open with the edited text a
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
     // The panel says it: no toast besides.
     await expect(shell.toasts).toHaveCount(0);
+});
+
+test('PM35: a merge GitHub refuses after the user moved on reaches them in a toast that stays and says nothing merged; ⌥M goes back to the panel of that pull request with the edited text', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const sample = createSampleMergeableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
+    await page.keyboard.press('e');
+    await panel.titleField.fill('Redirect once, keeping the return address');
+    sample.world.holdMerges();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+    await expect(myWork.selectedRow).toContainText(SECOND);
+
+    const reason = 'At least 2 approving reviews are required by reviewers with write access.';
+    sample.world.refuseHeldMerges(reason);
+    await page.clock.fastForward('00:02');
+
+    const toast = shell.toasts.filter({ hasText: "acme/web#15 wasn't merged" });
+    await expect(toast).toBeVisible();
+    await expect(toast).toContainText(`GitHub refused it: “${reason}” Nothing changed on GitHub.`);
+    await expect(shell.statusBar.getByRole('button', { name: 'Merge refused · acme/web#15' })).toBeVisible();
+    await expect(myWork.row(FIRST)).toContainText('Merge refused');
+    await expect(myWork.row(FIRST)).not.toContainText('Being merged');
+    expect(sample.world.stateOf(sample.first).merged).toBe(false);
+
+    // It stays until dismissed, long past an edit's toast.
+    await page.clock.fastForward('00:30');
+    await expect(toast).toBeVisible();
+
+    // ⌥M is the toast's: the panel of the refused pull request, not of the row selected.
+    await expect(myWork.selectedRow).toContainText(SECOND);
+    await page.keyboard.press('Alt+M');
+    await expect(panel.root).toHaveAccessibleName('Merge acme/web#15');
+    await expect(panel.root).toContainText('GitHub refused the merge');
+    await expect(panel.line('Commit')).toContainText('Redirect once, keeping the return address');
+    await expect(toast).toBeHidden();
 });
 
 test('without write access in the repository nothing offers merging: the standing says so, ⇧M and the palette have nothing', async ({

@@ -1,9 +1,19 @@
-<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, amber with since when and why when it is not. Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again. -->
+<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, amber with since when and why when it is not. Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { Check, CircleX, Cloud, History, LoaderCircle, RefreshCw, Send, TriangleAlert } from 'lucide-vue-next';
+import {
+  Check,
+  CircleHelp,
+  CircleX,
+  Cloud,
+  History,
+  LoaderCircle,
+  RefreshCw,
+  Send,
+  TriangleAlert,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Tooltip from '@/components/Tooltip.vue';
@@ -17,7 +27,8 @@ import StatusSegment from './StatusSegment.vue';
 
 /** The user's own edits of what the segment shows, said instead of its freshness. */
 export interface SegmentEdits {
-  readonly kind: 'failed' | 'sending';
+  /** `unanswered`: a merge GitHub has not said the end of — neither failed nor done. */
+  readonly kind: 'failed' | 'sending' | 'unanswered';
   /** "Sending 2 changes · portal#1187". */
   readonly text: string;
 }
@@ -50,9 +61,16 @@ const now = useNow(TICK_MS, () => props.freshness.kind === 'fresh');
 const look = computed((): SegmentLook => {
   const { freshness, edits } = props;
   if (edits) {
-    return edits.kind === 'sending'
-      ? { icon: Send, tone: 'muted', text: edits.text }
-      : { icon: CircleX, tone: 'danger', text: edits.text };
+    switch (edits.kind) {
+      case 'sending':
+        return { icon: Send, tone: 'muted', text: edits.text };
+      case 'unanswered':
+        return { icon: CircleHelp, tone: 'muted', text: edits.text };
+      case 'failed':
+        return { icon: CircleX, tone: 'danger', text: edits.text };
+      default:
+        return assertNever(edits.kind);
+    }
   }
 
   switch (freshness.kind) {

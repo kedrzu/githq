@@ -53,3 +53,18 @@ export const PausedWithEditsHint: Story = { args: { ...Paused.args, editsHint: t
 export const AnsweredByGitHub: Story = {
     args: { freshness: { kind: 'answered', term: 'no:linked-pull-requests', checkedAt: AT_14_06 } },
 };
+
+/** PM35: a merge GitHub refused after the user moved on — red, as any failed edit (K1), until dismissed. */
+export const MergeRefused: Story = {
+    args: { edits: { kind: 'failed', text: 'Merge refused · fitloop/api#477' } },
+};
+
+/** PM36: a merge GitHub has not said the end of — grey, neither failed nor done, until the next refresh. */
+export const MergeUnanswered: Story = {
+    args: {
+        edits: {
+            kind: 'unanswered',
+            text: "fitloop/api#477 · GitHub hasn't answered · the next refresh will settle it",
+        },
+    },
+};

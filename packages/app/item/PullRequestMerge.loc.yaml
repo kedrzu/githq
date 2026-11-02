@@ -27,3 +27,21 @@ cannotMerge:
   en: You can't merge in this repository
 waitingForGitHub:
   en: Waiting for GitHub
+refused:
+  en: Merge refused
+nothingMerged:
+  en: Nothing was merged
+notMerged:
+  en: Not merged
+newCommitFrom:
+  en: New commit from {author}
+newCommit:
+  en: A new commit arrived
+outcomeUnknown:
+  en: Outcome not known yet
+notAnswered:
+  en: GitHub hasn't answered · not shown as merged
+nextRefreshSettles:
+  en: The next refresh settles it
+backToMerge:
+  en: Back to the merge

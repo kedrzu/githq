@@ -144,11 +144,11 @@ test('refused at once after the panel closed: the refusal is not lost — a fail
     expect(queue.failures[0]?.toast).toBe(true);
 });
 
-test('a failed answer while it runs is a failed edit with GitHub’s words; a request failing meanwhile is asked again', async () => {
+test('a failed answer while it runs, the panel gone, is a failed edit with GitHub’s words; a request failing meanwhile is asked again', async () => {
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = PENDING;
 
-    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
+    const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown: () => false, onLateEnd });
     await session.clock.advance(0);
     expect(await answering).toEqual({ kind: 'accepted' });
 
@@ -189,7 +189,7 @@ test('PM30: sent again after a reload, of a pull request GitHub merged meanwhile
     expect(await answering).toEqual({ kind: 'accepted' });
     expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'SQUASH', sha: 'merge-sha' } });
     expect(queue.failures).toEqual([]);
-    expect(lateEnds).toEqual([]);
+    expect(lateEnds).toEqual([{ kind: 'merged' }]);
 });
 
 test('PM30: sent again after a reload while one runs — 409 with its uuid: accepted, and followed until GitHub says merged', async () => {
@@ -391,12 +391,12 @@ interface MergeAnswers {
     read: TestRestAnswer | undefined;
 }
 
-/** The merge panel still shows what GitHub answers. */
+/** The merge panel shows the pull request. */
 function shown() {
     return true;
 }
 
-/** How the merges GitHub accepted ended, when they did not merge after all. */
+/** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];
 
 function onLateEnd(end: MergeLateEnd) {

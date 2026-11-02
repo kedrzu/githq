@@ -9,6 +9,7 @@ import { createApp, h } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { MergeContext } from '@/merge/MergeContext.js';
+import type { MergeRecord, SentMerge } from '@/merge/MergeTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -18,10 +19,12 @@ import ItemRow from './ItemRow.vue';
 
 /** Approved, every check passed: "approved · ready to merge". */
 const READY = findPullRequest('PR_477');
+/** A merge sent from the panel, with GitHub's text. */
+const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: 'head-oid' };
 
 test('ready to merge, a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel', async () => {
     const opened: string[] = [];
-    mount(READY, { canOpen: id => id === READY.id, open: id => opened.push(id) });
+    mount(READY, { canOpen: id => id === READY.id, open: id => opened.push(id), getRecord: () => null });
 
     const merge = page.getByRole('button', { name: /^Merge/ });
     await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
@@ -31,14 +34,14 @@ test('ready to merge, a pull request the viewer may merge is followed by "Merge 
 });
 
 test('ready to merge, one the viewer may not merge is followed by "Open on GitHub O"', async () => {
-    mount(READY, { canOpen: () => false, open: () => undefined });
+    mount(READY, { canOpen: () => false, open: () => undefined, getRecord: () => null });
 
     await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toHaveAttribute('aria-keyshortcuts', 'O');
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
 test('PM37: being merged, the row says so where the status sits and keeps the open icon — never merged until GitHub says so', async () => {
-    mount({ ...READY, merging: 'SQUASH' }, { canOpen: () => false, open: () => undefined });
+    mount({ ...READY, merging: 'SQUASH' }, { canOpen: () => false, open: () => undefined, getRecord: () => null });
 
     await expect.element(page.getByText('Being merged · not merged yet')).toBeVisible();
     await expect.element(page.getByRole('img', { name: 'Open pull request' })).toBeVisible();
@@ -50,6 +53,37 @@ test('PM37: being merged, the row says so where the status sits and keeps the op
     mount({ ...READY, merged: true, state: 'MERGED', closedAt }, null);
     await expect.element(page.getByRole('img', { name: 'Merged pull request' })).toBeVisible();
     await expect.element(page.getByText('Merged · 5m')).toBeVisible();
+});
+
+test('PM37: a merge refused says so on line two, followed by "Back to the merge ⇧M" for the row\'s own pull request', async () => {
+    const opened: string[] = [];
+    const record: MergeRecord = { kind: 'refused', sent: SENT, reason: { kind: 'refused', message: 'Rules.' } };
+    mount(READY, { canOpen: () => true, open: id => opened.push(id), getRecord: () => record });
+
+    await expect.element(page.getByText('Merge refused')).toBeVisible();
+    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
+    const back = page.getByRole('button', { name: /^Back to the merge/ });
+    await expect.element(back).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+    await userEvent.click(back);
+    expect(opened).toEqual([READY.id]);
+});
+
+test('PM37: refused for a new commit, the row says nothing merged and who pushed it', async () => {
+    const commit = { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' };
+    const record: MergeRecord = { kind: 'headMoved', sent: SENT, head: 'new-head', commit };
+    mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+
+    await expect.element(page.getByText('Not merged · new commit from dkim')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Back to the merge/ })).toBeVisible();
+});
+
+test('PM36, PM37: no answer in time, the row is grey — neither merged nor refused — with nothing to send again', async () => {
+    const record: MergeRecord = { kind: 'unknown', sent: SENT };
+    mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+
+    await expect.element(page.getByText('Merge sent · outcome not known yet')).toBeVisible();
+    await expect.element(page.getByRole('img', { name: 'Open pull request' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /merge/i })).not.toBeInTheDocument();
 });
 
 /** The row of `item`, every property shown, under the screen's merging (none for `null`). */

@@ -24,11 +24,11 @@ export interface CreateMergeEditParams {
     readonly clock: ClockShape;
     /** Told once how GitHub took the merge at first ({@link MergeAnswer}); not told when it was never sent. */
     readonly onAnswer: (answer: MergeAnswer) => void;
-    /** Told when a merge GitHub accepted did not merge after all: refused while it ran, or no answer in time. */
+    /** Told how a merge GitHub accepted ended: merged, refused while it ran, or no answer in time. */
     readonly onLateEnd: (end: MergeLateEnd) => void;
     /**
-     * Whether the merge panel still shows what GitHub answers: a refusal at once is then the panel's to show, and
-     * otherwise a failed edit, so a panel closed before GitHub answered does not lose it.
+     * Whether the merge panel shows the pull request: a refusal is then the panel's to show, and otherwise a failed
+     * edit, so a panel closed before GitHub answered does not lose it.
      */
     readonly shown: () => boolean;
 }
@@ -43,9 +43,9 @@ export const MERGE_TIME_LIMIT_MS = 2 * 60_000;
  * The merge of a pull request as an edit (merging D3, D5, D6). It draws the pull request as being merged
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
- * confirms it; a refusal at once is left to the merge panel to show (`quiet`) while the panel still shows it, one
- * while it runs or after the panel closed is a failed edit; put in a merge queue (`enqueued`), or with no answer in
- * time, the layer goes without a word and the next sync shows what GitHub holds.
+ * confirms it; a refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is
+ * a failed edit otherwise; put in a merge queue (`enqueued`), or with no answer in time, the layer goes without a word
+ * and the next sync shows what GitHub holds.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -86,6 +86,7 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
                 }
                 case 'merged':
                     onAnswer({ kind: 'accepted' });
+                    onLateEnd({ kind: 'merged' });
                     return merged(answer.sha);
                 case 'enqueued':
                     onAnswer({ kind: 'accepted' });
@@ -119,11 +120,12 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
 
             switch (answer.status) {
                 case 'merged':
+                    onLateEnd({ kind: 'merged' });
                     return merged(answer.sha);
                 case 'failed': {
                     const reason: EditFailureReason = { kind: 'refused', message: answer.message };
                     onLateEnd({ kind: 'refused', reason });
-                    return { kind: 'rejected', reason };
+                    return { kind: 'rejected', reason, quiet: shown() };
                 }
                 case 'enqueued':
                     return { kind: 'unknown' };

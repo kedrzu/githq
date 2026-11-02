@@ -18,8 +18,13 @@ export interface EditTexts {
     sending(edits: readonly Edit[]): string;
     /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merge on the way". */
     sendingFields(edits: readonly Edit[]): string;
-    /** The status bar after a failure: "1 change failed · label “regression” no longer exists". */
+    /** The status bar after a failure: "1 change failed · label “regression” no longer exists", "Merge refused · fitloop/api#477". */
     failed(failure: EditFailure): string;
+    /**
+     * The status bar while GitHub has not said how a merge ended (merging PM36): "fitloop/api#477 · GitHub hasn't
+     * answered · the next refresh will settle it"; without the pull request, an item's own.
+     */
+    unanswered(reference: string | null): string;
     /** A row's note on its edit undone: "“regression” label undone". */
     undone(subject: EditSubject): string;
 }
@@ -34,6 +39,7 @@ export function useEditTexts(): EditTexts {
         sending,
         sendingFields,
         failed,
+        unanswered,
         undone,
     };
 
@@ -94,6 +100,10 @@ export function useEditTexts(): EditTexts {
             return '';
         }
 
+        if (failure.editCount <= 1 && first.edit.subject.kind === 'merged') {
+            return t(l.failedMerge, { reference: first.edit.reference });
+        }
+
         if (failure.editCount <= 1) {
             return t(l.failedOne, { subject: noun(first.edit.subject), reason: shortReason(first.reason) });
         }
@@ -104,6 +114,10 @@ export function useEditTexts(): EditTexts {
             total: failure.editCount,
             target: references.join(', '),
         });
+    }
+
+    function unanswered(reference: string | null) {
+        return reference === null ? t(l.unanswered) : t(l.unansweredOf, { reference });
     }
 
     function undone(subject: EditSubject) {
@@ -253,6 +267,11 @@ export function useEditTexts(): EditTexts {
     }
 
     function reason(entry: FailedEdit) {
+        // A merge refused undoes nothing: nothing changed on GitHub (merging PM35).
+        if (entry.edit.subject.kind === 'merged' && entry.reason.kind === 'refused') {
+            return t(l.reasonMergeRefused, { message: entry.reason.message.trim() });
+        }
+
         const repository = entry.edit.reference.split('#')[0] ?? '';
         return reasonText(entry.reason, repository);
     }
