@@ -1,4 +1,4 @@
-<!-- The landing page's comparison (githq.pen "Landing — githq.dev", Comparison): githq against github.com and a dedicated tracker — next to the code, instant, keyboard, every repository at once, nothing to sync, the price —, a table with githq's column lit. Every mark has its word for screen readers. -->
+<!-- The landing page's second section under the hero (githq.pen "LP1 · All your repositories, no separate tracker", Section 2): the "no separate tracker" promise — GitHub's issues and Projects are the tracker —, then githq against github.com and a dedicated tracker — next to the code, instant, keyboard, every repository at once, pull requests and workflows next to the issues, nothing to sync, the price —, a table with githq's column lit. Every mark has its word for screen readers. -->
 <script lang="ts" setup>
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -11,8 +11,13 @@ import * as l from './LandingComparison.loc.js';
 import LandingSectionTitle from './LandingSectionTitle.vue';
 import { useReveal } from './useReveal.js';
 
-/** What a cell of the table says: a check, a dash, "Partly" or a word of its own (a price). */
-type Mark = 'no' | 'partly' | 'yes' | Translation;
+/** "Partly", with a note under it on how far. */
+interface PartlyMark {
+  partly: Translation;
+}
+
+/** What a cell of the table says: a check, a dash, "Partly" (perhaps with a note) or a word of its own (a price). */
+type Mark = 'no' | 'partly' | 'yes' | PartlyMark | Translation;
 
 /** A row of the table: what is compared, and the marks of github.com, a dedicated tracker and githq, in that order. */
 interface ComparisonRow {
@@ -24,11 +29,16 @@ const t = useTranslate();
 const headingId = useId();
 const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 
+function isPartlyMark(mark: Mark): mark is PartlyMark {
+  return typeof mark === 'object' && 'partly' in mark;
+}
+
 const rows: ComparisonRow[] = [
   { label: l.nextToCode, marks: ['yes', 'no', 'yes'] },
   { label: l.instant, marks: ['no', 'yes', 'yes'] },
   { label: l.keyboard, marks: ['partly', 'yes', 'yes'] },
   { label: l.allRepositories, marks: ['partly', 'yes', 'yes'] },
+  { label: l.nextToIssues, marks: [{ partly: l.oneRepositoryAtATime }, 'partly', 'yes'] },
   { label: l.nothingToSync, marks: ['yes', 'no', 'yes'] },
   { label: l.price, marks: [l.free, l.perSeat, l.free] },
 ];
@@ -41,12 +51,14 @@ const rows: ComparisonRow[] = [
     :aria-labelledby="headingId"
     :data-reveal="reveal"
   >
-    <LandingSectionTitle
-      :class="css.landingComparison_title"
-      :eyebrow="t(l.eyebrow)"
-      :lines="[t(l.titleLine1), t(l.titleLine2)]"
-      :heading-id="headingId"
-    />
+    <div :class="css.landingComparison_header">
+      <LandingSectionTitle
+        :eyebrow="t(l.eyebrow)"
+        :lines="[t(l.titleLine1), t(l.titleLine2)]"
+        :heading-id="headingId"
+      />
+      <p :class="css.landingComparison_body">{{ t(l.body) }}</p>
+    </div>
 
     <table
       :class="css.landingComparison_table"
@@ -110,6 +122,11 @@ const rows: ComparisonRow[] = [
               :class="css.landingComparison_partly"
               >{{ t(l.partly) }}</span
             >
+            <template v-else-if="isPartlyMark(mark)">
+              <span :class="css.landingComparison_partly">{{ t(l.partly) }}</span>
+              <span :class="css.landingComparison_hidden">, </span>
+              <span :class="css.landingComparison_note">{{ t(mark.partly) }}</span>
+            </template>
             <span
               v-else
               :class="css.landingComparison_value"
@@ -138,8 +155,23 @@ const rows: ComparisonRow[] = [
   }
 }
 
-.landingComparison_title {
+.landingComparison_header {
   @include landing-reveal;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.landingComparison_body {
+  max-width: 820px;
+  font-size: 20px;
+  line-height: 1.5;
+  color: $color-fg-2;
+
+  @include landing-mobile {
+    font-size: 17px;
+  }
 }
 
 // The design's 480 for the labels and 240 for each column at 1440; 74 for a column on a phone.
@@ -278,6 +310,18 @@ const rows: ComparisonRow[] = [
 
   @include landing-mobile {
     font-size: $font-size-2xs;
+  }
+}
+
+// How far "Partly" goes, on a line of its own under it.
+.landingComparison_note {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+
+  @include landing-mobile {
+    font-size: $font-size-2xs;
+    line-height: 1.25;
   }
 }
 

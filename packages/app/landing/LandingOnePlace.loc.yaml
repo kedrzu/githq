@@ -1,0 +1,19 @@
+kicker:
+  en: One place
+title:
+  en: |-
+    Everything that
+    needs you, from
+    every repository.
+body:
+  en: Reviews waiting on you, your pull requests with their checks, workflows failing on main, the issues assigned to you. One list across every repository you track, instead of a tab per repository.
+reviews:
+  en: Reviews requested from you, front and center
+pullRequests:
+  en: 'Your pull requests: checks, reviews, mergeable'
+workflows:
+  en: Workflows failing on main, in any repository
+issues:
+  en: Issues assigned to you
+alt:
+  en: githq’s “My work” list across several repositories, opening with the workflows failing on main, then a review requested from you, your pull requests and the issues assigned to you.

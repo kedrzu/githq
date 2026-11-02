@@ -90,7 +90,7 @@ test('every way off the page goes to githq on GitHub, and every link within it l
 test('the comparison says every mark in words, not only with an icon', async () => {
     await Landing.run();
 
-    const table = page.getByRole('table', { name: 'The best of both. Without the second tool.' });
+    const table = page.getByRole('table', { name: 'Your tracker is already on GitHub.' });
     await expect.element(table).toBeVisible();
     const columns = table.getByRole('columnheader').elements();
     expect(columns.map(textOf)).toEqual(['github.com', 'A dedicated tracker', 'git/hq']);
@@ -103,6 +103,12 @@ test('the comparison says every mark in words, not only with an icon', async () 
         ['Instant — no spinner on navigation', 'No', 'Yes', 'Yes'],
         ['Everything from the keyboard', 'Partly', 'Yes', 'Yes'],
         ['All your repositories in one view', 'Partly', 'Yes', 'Yes'],
+        [
+            'Pull requests, checks and failing workflows next to your issues',
+            'Partly, one repository at a time',
+            'Partly',
+            'Yes',
+        ],
         ['Nothing to import or keep in sync', 'Yes', 'No', 'Yes'],
         ['Price for your team', 'Free', 'Per seat', 'Free'],
     ]);
@@ -124,7 +130,7 @@ test('the hero screenshot loads first; the rest wait for the reader, with their 
     expect(hero?.getAttribute('src')).toBe('/landing/hero-my-work.webp');
     expect(hero?.getAttribute('fetchpriority')).toBe('high');
     expect(hero?.getAttribute('loading')).toBeNull();
-    expect(rest).toHaveLength(5);
+    expect(rest).toHaveLength(7);
     for (const image of rest) {
         expect(image.getAttribute('loading')).toBe('lazy');
         expect(image.getAttribute('decoding')).toBe('async');
@@ -235,7 +241,7 @@ function heroAddress(): Element {
 
 /** The hero's screenshot: how it moves with the loop is in `data-swap`. */
 function heroShot(): Element {
-    const image = page.getByRole('img', { name: /across GitHub/ }).element().parentElement;
+    const image = page.getByRole('img', { name: /across every repository/ }).element().parentElement;
     if (!image) {
         throw new Error('The hero has no screenshot');
     }

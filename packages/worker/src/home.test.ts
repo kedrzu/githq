@@ -8,7 +8,7 @@ import type { WorkerEnv } from './WorkerEnv.js';
 
 const ORIGIN = 'https://githq.test';
 const SHELL = '<html data-ssr="false">shell</html>';
-const LANDING = '<html>Your GitHub issues, landing</html>';
+const LANDING = '<html>All your repositories, landing</html>';
 
 function assets(overrides: Partial<Record<string, Response>> = {}) {
     const asked: Request[] = [];
