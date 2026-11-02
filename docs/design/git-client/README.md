@@ -129,7 +129,7 @@ repository's branches and tags as GitHub has them, each row with its pull reques
 kept as described above, the branch and tag list beside it, and the details of a commit. How the graph's
 lines are laid out is left to the implementation; it is a known problem with known algorithms and decides
 nothing about the product. The repository view's new shape is designed first, as several directions to pick
-from.
+from ([the brief for those screens](ui/browse-commit-history.md)).
 
 After that, on the desktop: adding a local clone, its local branches and how far they are ahead of GitHub,
 its worktrees as markers in the graph and entries in the branch list, and revealing a worktree's folder.
