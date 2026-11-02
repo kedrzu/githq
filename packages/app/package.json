@@ -38,6 +38,7 @@
         "@nzyme/logging": "workspace:*",
         "@nzyme/types": "workspace:*",
         "@nzyme/utils": "workspace:*",
+        "@nzyme/vue": "workspace:*",
         "@nzyme/vue-forms": "workspace:*",
         "@nzyme/vue-i18n": "workspace:*",
         "@nzyme/vue-ioc": "workspace:*",
