@@ -156593,7 +156593,7 @@
               "id": "Hx88c",
               "name": "Settings / Sections column",
               "reusable": true,
-              "width": 260,
+              "width": 232,
               "height": 874,
               "fill": "$bg-2",
               "stroke": "$border",
@@ -156659,9 +156659,6 @@
                           "enabled": true,
                           "content": "15"
                         },
-                        "MVpGi": {
-                          "content": "What githq keeps a copy of"
-                        },
                         "v5Hae9/luKkY": {
                           "content": "1"
                         }
@@ -156684,9 +156681,6 @@
                           "enabled": true,
                           "content": "2"
                         },
-                        "MVpGi": {
-                          "content": "The GitHub Projects you follow"
-                        },
                         "v5Hae9/luKkY": {
                           "content": "2"
                         }
@@ -156704,9 +156698,6 @@
                         },
                         "upTOT": {
                           "content": "Display"
-                        },
-                        "MVpGi": {
-                          "content": "How repositories are laid out"
                         },
                         "v5Hae9/luKkY": {
                           "content": "3"
@@ -156726,9 +156717,6 @@
                         "upTOT": {
                           "content": "Code review"
                         },
-                        "MVpGi": {
-                          "content": "How comments go out"
-                        },
                         "v5Hae9/luKkY": {
                           "content": "4"
                         }
@@ -156747,9 +156735,6 @@
                         "upTOT": {
                           "content": "Sync settings"
                         },
-                        "MVpGi": {
-                          "content": "Your settings across devices"
-                        },
                         "v5Hae9/luKkY": {
                           "content": "5"
                         }
@@ -156767,9 +156752,6 @@
                         },
                         "upTOT": {
                           "content": "Account"
-                        },
-                        "MVpGi": {
-                          "content": "Sign-in and organisations"
                         },
                         "v5Hae9/luKkY": {
                           "content": "6"
@@ -156797,11 +156779,12 @@
                   "cornerRadius": 7,
                   "gap": 10,
                   "padding": [
-                    9,
+                    10,
                     8,
                     10,
                     10
                   ],
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "icon",
@@ -156860,19 +156843,6 @@
                               "fontWeight": "normal"
                             }
                           ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "MVpGi",
-                          "name": "Description",
-                          "fill": "$fg-3",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "What githq keeps a copy of",
-                          "lineHeight": 1.35,
-                          "fontFamily": "$font",
-                          "fontSize": 11.5,
-                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -156905,9 +156875,6 @@
                     "upTOT": {
                       "fill": "$fg",
                       "fontWeight": "500"
-                    },
-                    "MVpGi": {
-                      "fill": "$fg-2"
                     }
                   }
                 }
@@ -157004,9 +156971,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -157637,9 +157601,6 @@
                             "as5l2/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "as5l2/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -158434,9 +158395,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -159356,9 +159314,6 @@
                             "BWGjI/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "BWGjI/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -160513,9 +160468,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -161240,9 +161192,6 @@
                             "gyIe7/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "gyIe7/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -161866,9 +161815,6 @@
                             "uQ9bQ/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "uQ9bQ/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -162208,9 +162154,6 @@
                             "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "L2bl9/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -162445,9 +162388,6 @@
                             "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "L2bl9/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -163008,9 +162948,6 @@
                             "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "L2bl9/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -163333,9 +163270,6 @@
                             "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "L2bl9/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -163875,9 +163809,6 @@
                             "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "L2bl9/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -166148,9 +166079,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -166595,9 +166523,6 @@
                             "BWGjI/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "BWGjI/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -166918,9 +166843,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -167376,9 +167298,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -167854,9 +167773,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -168332,9 +168248,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -168787,9 +168700,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -169256,9 +169166,6 @@
                             "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
-                            },
-                            "IKIGD/MVpGi": {
-                              "fill": "$fg-2"
                             }
                           }
                         },
