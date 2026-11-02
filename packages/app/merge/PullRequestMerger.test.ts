@@ -58,7 +58,7 @@ test('the head commit always goes with the merge, and the commit text only when 
 
     const unedited = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
-    expect(await unedited).toEqual({ kind: 'accepted' });
+    expect(await unedited).toEqual({ kind: 'merged' });
 
     const edited = merger.merge({
         item: open(),
@@ -67,7 +67,7 @@ test('the head commit always goes with the merge, and the commit text only when 
         onLateEnd,
     });
     await session.clock.advance(0);
-    expect(await edited).toEqual({ kind: 'accepted' });
+    expect(await edited).toEqual({ kind: 'merged' });
 
     expect(rest.puts()).toEqual([
         { merge_method: 'squash', sha: 'head-oid' },
@@ -81,7 +81,7 @@ test('merged at once: confirmed, and a sync copy read before the merge does not 
 
     const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
-    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(await answering).toEqual({ kind: 'merged' });
     // How it landed, for the panel (PM26): only this app's merge knows it.
     expect(items.get('PR_1')).toMatchObject({
         merged: true,
@@ -175,7 +175,7 @@ test('a failed answer while it runs, the panel gone, is a failed edit with GitHu
     ]);
 });
 
-test('PM30: sent again after a reload, of a pull request GitHub merged meanwhile — 200 merged: it reads merged, never refused', async () => {
+test('PM30: sent again after a reload, of a pull request GitHub merged meanwhile — 200 merged: the answer says merged, it reads merged, never refused', async () => {
     const { merger, items, queue, session, rest } = await setup();
     rest.answers.put = {
         status: 200,
@@ -186,10 +186,11 @@ test('PM30: sent again after a reload, of a pull request GitHub merged meanwhile
     const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
     await session.clock.advance(0);
 
-    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(await answering).toEqual({ kind: 'merged' });
     expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'SQUASH', sha: 'merge-sha' } });
     expect(queue.failures).toEqual([]);
-    expect(lateEnds).toEqual([{ kind: 'merged' }]);
+    // The answer says it: no end comes late.
+    expect(lateEnds).toEqual([]);
 });
 
 test('PM30: sent again after a reload while one runs — 409 with its uuid: accepted, and followed until GitHub says merged', async () => {

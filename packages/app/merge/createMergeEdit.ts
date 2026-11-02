@@ -24,7 +24,7 @@ export interface CreateMergeEditParams {
     readonly clock: ClockShape;
     /** Told once how GitHub took the merge at first ({@link MergeAnswer}); not told when it was never sent. */
     readonly onAnswer: (answer: MergeAnswer) => void;
-    /** Told how a merge GitHub accepted ended: merged, refused while it ran, or no answer in time. */
+    /** Told how a merge GitHub accepted ended while it ran: merged, refused, or no answer in time. */
     readonly onLateEnd: (end: MergeLateEnd) => void;
     /**
      * Whether the merge panel shows the pull request: a refusal is then the panel's to show, and otherwise a failed
@@ -84,9 +84,9 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
                     onAnswer({ kind: 'refused', reason });
                     return { kind: 'rejected', reason, quiet: shown() };
                 }
+                // Merged at once: GitHub answers so only for a pull request merged already (PM30).
                 case 'merged':
-                    onAnswer({ kind: 'accepted' });
-                    onLateEnd({ kind: 'merged' });
+                    onAnswer({ kind: 'merged' });
                     return merged(answer.sha);
                 case 'enqueued':
                     onAnswer({ kind: 'accepted' });

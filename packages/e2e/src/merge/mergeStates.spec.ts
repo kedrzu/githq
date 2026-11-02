@@ -54,7 +54,15 @@ test('PM20: behind a base branch that requires being up to date — ⌘↵ updat
     await expect(panel.root).toContainText('Updating the branch');
     await expect(panel.primary).toContainText('Update branch');
     expect(getMergeRequests(github)).toEqual([]);
+    const reads = countMergeOptionsReads();
     release();
+
+    // GitHub answers the update with the old head, still working out whether it merges: the panel keeps updating and
+    // ⌘↵ merges nothing, until a read again finds the head moved.
+    await expect.poll(countMergeOptionsReads).toBe(reads + 1);
+    await expect(panel.root).toContainText('Updating the branch');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    expect(getMergeRequests(github)).toEqual([]);
 
     // The panel read it again: up to date, at the merge commit that brought main in.
     await expect(panel.root).not.toContainText('Behind main');
@@ -74,8 +82,14 @@ test('PM20: behind a base branch that requires being up to date — ⌘↵ updat
     await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
     expect(sample.world.stateOf(sample.first).merged).toBe(true);
 
+    expect(countMergeOptionsReads()).toBeGreaterThanOrEqual(reads + 2);
+
     function updateBranchCalls() {
         return github.graphqlCalls.filter(call => call.name === 'UpdatePullRequestBranch').map(call => call.variables);
+    }
+
+    function countMergeOptionsReads() {
+        return github.graphqlCalls.filter(call => call.name === 'PullRequestMergeOptions').length;
     }
 });
 
@@ -150,10 +164,10 @@ test('PM27: a commit pushed after the panel read the head — GitHub refuses the
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: asked }]);
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
 
-    // The panel said it: the row says it too, and no toast besides.
+    // The panel said it: the row says it too — told by the head it holds, not who pushed it — and no toast besides.
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
-    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit from monalisa');
+    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit');
     await expect(myWork.row(FIRST_TITLE)).not.toContainText('Merge refused');
     await expect(shell.toasts).toHaveCount(0);
 

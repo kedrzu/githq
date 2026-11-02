@@ -1,6 +1,5 @@
 <!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, with nothing to open. -->
 <script lang="ts" setup>
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -8,9 +7,9 @@ import { computed } from 'vue';
 import IconButton from '@/components/IconButton.vue';
 import { compareChecks } from '@/item/compareChecks.js';
 import { getCheckIcon } from '@/item/getCheckIcon.js';
+import { getCheckTone } from '@/item/getCheckTone.js';
 import type { CheckSummary } from '@/item/useCheckTexts.js';
 import { useCheckTexts } from '@/item/useCheckTexts.js';
-import type { PullRequestVerdictTone } from '@/item/usePullRequestVerdict.js';
 import type { ItemCheckState } from '@/store/ItemDetailTypes.js';
 import type { ItemChecks } from '@/store/ItemTypes.js';
 
@@ -60,21 +59,6 @@ const groups = computed(() => {
 });
 
 const line = computed(() => (counts.value ? describeCounts() : checkTexts.summarize(props.summary)));
-
-function toneOf(state: ItemCheckState): PullRequestVerdictTone {
-  switch (state) {
-    case 'failing':
-      return 'danger';
-    case 'pending':
-      return 'warning';
-    case 'passing':
-      return 'success';
-    case 'skipped':
-      return 'muted';
-    default:
-      return assertNever(state);
-  }
-}
 
 function describeCounts(): CheckSummary {
   const current = counts.value;
@@ -135,7 +119,7 @@ function describeCounts(): CheckSummary {
   <div :class="css.mergeChecks">
     <MergeCondition
       :icon="getCheckIcon(line.state)"
-      :tone="toneOf(line.state)"
+      :tone="getCheckTone(line.state)"
       :label="t(l.checks)"
       :text="runAgain ? t(l.willRunAgain, { checks: line.text }) : line.text"
       :aside="counts && counts.required > 0 && !open ? t(l.requiredCount, { count: counts.required }) : null"

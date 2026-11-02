@@ -81,20 +81,35 @@ export interface SentMerge extends MergeSubmission {
 }
 
 /**
- * What this session knows of a pull request's last merge that did not end merged (merging D3, D15), for the merge
- * panel and the rows to say, with the text to give back: refused with GitHub's reason; refused because the head moved
- * since the merge named it — told by reading the head again, not by GitHub's words (PM27); refused for a method the
- * base branch's rules, read after it was sent, don't allow (PM28); or accepted with no answer in time (PM29). Kept in
- * memory only: a reload or another account forgets it.
+ * What this session knows of a pull request's last merge that did not end merged (merging D3, D15), as GitHub
+ * answered it: refused, with GitHub's reason (PM25, PM31), or no answer — accepted with no result in time (PM29), or
+ * the request itself unanswered, as it may have reached GitHub all the same. How it reads is told where it shows,
+ * from the pull request as it is then ({@link MergeEnd}). Kept in memory only: a reload or another account forgets it.
  */
 export type MergeRecord =
+    | {
+          readonly kind: 'refused';
+          readonly sent: SentMerge;
+          readonly reason: EditFailureReason;
+          /** Epoch ms GitHub answered: a copy of the pull request read after it says more. */
+          readonly at: number;
+      }
+    | { readonly kind: 'unknown'; readonly sent: SentMerge; readonly at: number };
+
+/**
+ * How the last merge that did not end merged reads, from its record and the pull request as it is now
+ * (`getMergeEnd`), for the merge panel and the rows to say, with the text to give back: refused with GitHub's reason;
+ * refused because the head moved since the merge named it — told by the head now, not by GitHub's words (PM27);
+ * refused for a method the base branch's rules, read after it was sent, don't allow (PM28); or no answer (PM29).
+ */
+export type MergeEnd =
     | { readonly kind: 'refused'; readonly sent: SentMerge; readonly reason: EditFailureReason }
     | {
           readonly kind: 'headMoved';
           readonly sent: SentMerge;
           /** The head GitHub holds now. */
           readonly head: string;
-          /** The commit at it, when the read brought it. */
+          /** The commit at it, when the merge panel's read brought it. */
           readonly commit: MergeHeadCommit | null;
       }
     | { readonly kind: 'methodNotAllowed'; readonly sent: SentMerge }
@@ -107,11 +122,13 @@ export type MergeLateEnd =
     | { readonly kind: 'unknown' };
 
 /**
- * How GitHub took a merge at first: it accepted it (it may still fail while it runs, reported like a failed edit),
- * or refused it at once — the merge panel stays with its text and says why.
+ * How GitHub took a merge at first: it accepted it (it may still fail while it runs, reported like a failed edit);
+ * it said merged at once, which it does only for a pull request merged already (PM30) — the merge panel stays and
+ * says so; or it refused it at once — the merge panel stays with its text and says why.
  */
 export type MergeAnswer =
     | { readonly kind: 'accepted' }
+    | { readonly kind: 'merged' }
     | { readonly kind: 'refused'; readonly reason: EditFailureReason };
 
 /**

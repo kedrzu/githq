@@ -1,18 +1,22 @@
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { shallowRef } from 'vue';
+import { shallowRef, watch } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { SyncLoop } from '@/store/ItemStoreTypes.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
 
-import { allowsMergeMethod } from './allowsMergeMethod.js';
-import type { MergeAnswer, MergeOptions, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
+import { getMergeEnd } from './getMergeEnd.js';
+import type { MergeAnswer, MergeRecord, MergeSubmission, SentMerge } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
+
+/** The loops of the regular sync that read pull requests again: a round of one says how a merge ended (D3). */
+const READING_LOOPS: readonly SyncLoop[] = ['myWork', 'pullRequestStatuses', 'repositories'];
 
 /** How the merge panel is opened. */
 export interface MergePanelOpenOptions {
@@ -28,11 +32,6 @@ export interface MergePanelMergeParams {
     /** The pull request as shown: its head commit is the one the merge names. */
     readonly item: PullRequestItem;
     readonly submission: MergeSubmission;
-    /**
-     * Reads the merge options again after GitHub refused the merge while the panel shows it: the panel's own read, so
-     * it shows what the refusal is told apart by. GitHub is asked directly otherwise.
-     */
-    readonly reread: () => Promise<MergeOptions | null>;
 }
 
 /** A merge GitHub confirmed while the merge panel did not show its pull request, for its toast (PM34). */
@@ -45,21 +44,16 @@ export interface MergeConfirmation {
     readonly base: string;
 }
 
-/** A record as the store keeps it: with the row it was made over and when, to tell a copy read since. */
-interface KeptRecord {
-    readonly record: MergeRecord;
-    readonly row: Item | undefined;
-    readonly at: number;
-}
-
 /**
  * The merge panel (merging D7, D11): the one pull request it is open for, over any screen, and the merges sent
  * from it. Opening it again, for the same pull request or another, starts a fresh panel. What the session knows of
- * a merge that did not end merged — refused, refused for a moved head or a method the rules don't allow, no answer
- * in time — stays per pull request ({@link MergeRecord}, D15) until the next merge of it is sent, in memory only,
- * and goes when another account signs in, or none; no answer in time goes too once a copy of the pull request read
- * since arrives, which says how it ended (D3, PM36). A merge confirmed while the panel did not show it is listed for
- * its toast until the toast goes (PM34).
+ * a merge that did not end merged — refused, or no answer — is recorded per pull request as GitHub answers
+ * ({@link MergeRecord}, D15), in memory only, and goes when another account signs in, or none. It speaks for the pull
+ * request until the next merge of it is sent, the panel takes a step towards the merge itself, or a copy of it read
+ * since arrives — its detail read again, or a round of the regular sync — which says what GitHub holds (D3, PM36);
+ * the panel's own reads don't (PM29). The method and text it was sent with stay for the session, for the panel to
+ * start on again (D15). A merge confirmed while the panel did not show it is listed for its toast until the toast
+ * goes (PM34).
  */
 export type MergePanelStore = Resolved<typeof MergePanelStore>;
 export const MergePanelStore = defineService({
@@ -74,15 +68,25 @@ export const MergePanelStore = defineService({
     setup({ merger, accounts, items, details, clock }) {
         const itemIdRef = shallowRef<string | null>(null);
         const openingRef = shallowRef(0);
-        const recordsRef = shallowRef<ReadonlyMap<string, KeptRecord>>(new Map());
+        const recordsRef = shallowRef<ReadonlyMap<string, MergeRecord>>(new Map());
+        const sentRef = shallowRef<ReadonlyMap<string, SentMerge>>(new Map());
         const confirmationsRef = shallowRef<readonly MergeConfirmation[]>([]);
         let onSent: (() => void) | undefined;
         let nextConfirmationId = 1;
 
         accounts.onChange(() => {
             recordsRef.value = new Map();
+            sentRef.value = new Map();
             confirmationsRef.value = [];
         });
+
+        // A copy read since the answer says what GitHub holds: the record no longer speaks for the pull request. Ended
+        // as the copy arrives, so a sync failing later does not bring it back.
+        watch(
+            () => [...recordsRef.value].filter(([itemId, record]) => isReadSince(itemId, record.at)),
+            read => forget(...read.map(([itemId]) => itemId)),
+            { flush: 'sync' },
+        );
 
         return {
             /** The pull request the panel is open for; `null` while it is closed. Reactive. */
@@ -99,12 +103,14 @@ export const MergePanelStore = defineService({
             },
             /** The pull requests whose last merge GitHub has not said the end of, oldest first. Reactive. */
             get unanswered(): readonly string[] {
-                return [...recordsRef.value.keys()].filter(id => getRecord(id)?.kind === 'unknown');
+                return [...recordsRef.value.keys()].filter(isUnanswered);
             },
             open,
             close,
             merge,
             getRecord,
+            getSent,
+            forget,
             dismissConfirmation,
         };
 
@@ -121,62 +127,70 @@ export const MergePanelStore = defineService({
         }
 
         /**
-         * What this session knows of the pull request's last merge that did not end merged; `null` for none, and for
-         * no answer in time once a copy read since says how it ended. Reactive.
+         * What this session knows of the pull request's last merge that did not end merged, while it still speaks for
+         * it; `null` for none. How it reads is told from the pull request as it is ({@link getMergeEnd}). Reactive.
          */
         function getRecord(itemId: string): MergeRecord | null {
-            const kept = recordsRef.value.get(itemId);
-            return kept && !(kept.record.kind === 'unknown' && isReadSince(itemId, kept)) ? kept.record : null;
+            return recordsRef.value.get(itemId) ?? null;
+        }
+
+        /** The method and text the pull request's last merge that did not end merged was sent with, for the session. */
+        function getSent(itemId: string): SentMerge | null {
+            return sentRef.value.get(itemId) ?? null;
+        }
+
+        /**
+         * Ends what the records of the pull requests say — the method and text sent stay: the panel took a step
+         * towards the merge itself, whose new head is no news of the merge (PM20, PM21).
+         */
+        function forget(...itemIds: string[]) {
+            const records = new Map(recordsRef.value);
+            const removed = itemIds.filter(itemId => records.delete(itemId));
+            if (removed.length > 0) {
+                recordsRef.value = records;
+            }
         }
 
         function dismissConfirmation(id: number) {
             confirmationsRef.value = confirmationsRef.value.filter(confirmation => confirmation.id !== id);
         }
 
-        /**
-         * A copy of the pull request read after the record was made arrived: its row replaced — the regular sync
-         * reads open pull requests' statuses each round — or its detail read since. The panel's own reads of the
-         * merge options write the row too, but say nothing of how the merge ended: only rows they did not write
-         * count.
-         */
-        function isReadSince(itemId: string, kept: KeptRecord) {
-            const detail = details.get(itemId);
-            return !isRowKept(itemId, kept) || (detail !== undefined && detail.fetchedAt > kept.at);
+        function isUnanswered(itemId: string) {
+            const pr = details.getItem(itemId);
+            return pr?.kind === 'pullRequest' && getMergeEnd(getRecord(itemId), pr, null)?.kind === 'unknown';
         }
 
-        /** Whether the row is the one the record was made over, or only the panel's reads wrote over it since. */
-        function isRowKept(itemId: string, kept: KeptRecord) {
-            let row = items.getStored(itemId);
-            while (row !== kept.row) {
-                row = row && merger.getReplacedRow(row);
-                if (row === undefined) {
-                    return false;
-                }
+        /**
+         * A copy of the pull request read after `at` arrived: its detail read again, or a round of the regular sync
+         * that started since succeeded — it reads open pull requests each round. The panel's reads of the merge options
+         * write its row too, but they are not it (D3, PM29).
+         */
+        function isReadSince(itemId: string, at: number) {
+            const detail = details.get(itemId);
+            if (detail !== undefined && detail.fetchedAt > at) {
+                return true;
             }
 
-            return true;
+            return READING_LOOPS.some(loop => {
+                const state = items.getSyncState(loop);
+                // A failure keeps the last success's time but not when its round started: only the latest round tells.
+                return state.lastError === null && state.lastAttemptAt !== null && state.lastAttemptAt > at;
+            });
         }
 
         /**
          * Sends the merge shown in the panel. Once GitHub accepts it, the panel leaves and the opener's `onSent`
-         * runs; refused at once, the panel stays and shows why — resolved once the refusal is told apart and recorded
-         * ({@link getRecord}). A refusal arriving after the panel closed or opened anew is reported like a failed edit
-         * as well ({@link PullRequestMerger}).
+         * runs; merged at once, as GitHub answers for one merged already (PM30), or refused at once, the panel stays
+         * and shows it — a refusal recorded as it arrives ({@link getRecord}). A refusal arriving after the panel
+         * closed or opened anew is reported like a failed edit as well ({@link PullRequestMerger}).
          */
         async function merge(params: MergePanelMergeParams): Promise<MergeAnswer> {
-            const { item, submission, reread } = params;
+            const { item, submission } = params;
             const opening = openingRef.value;
             const account = accounts.current;
             const sent: SentMerge = { ...submission, head: item.headRefOid };
-            if (recordsRef.value.has(item.id)) {
-                const records = new Map(recordsRef.value);
-                records.delete(item.id);
-                recordsRef.value = records;
-            }
+            forget(item.id);
 
-            // Merged before the answer was taken in: the panel may be about to leave, so it is told after.
-            let answered = false;
-            let mergedMeanwhile = false;
             const answer = await merger.merge({
                 item,
                 request: submission.request,
@@ -184,61 +198,50 @@ export const MergePanelStore = defineService({
                 onLateEnd: end => {
                     switch (end.kind) {
                         case 'merged':
-                            if (answered) {
-                                confirm();
-                            } else {
-                                mergedMeanwhile = true;
-                            }
-
+                            confirm();
                             return;
                         case 'unknown':
-                            keep({ kind: 'unknown', sent });
+                            keep({ kind: 'unknown', sent, at: clock.now() });
                             return;
                         case 'refused':
-                            void recordRefusal(end.reason, () => merger.readOptions(item.id));
+                            keep(toRecord(end.reason));
                             return;
                         default:
                             assertNever(end);
                     }
                 },
             });
-            answered = true;
-            if (answer.kind === 'accepted') {
-                if (shown()) {
-                    const sentFrom = onSent;
-                    close();
-                    sentFrom?.();
-                }
+            switch (answer.kind) {
+                case 'accepted':
+                    if (openingRef.value === opening && itemIdRef.value === item.id) {
+                        const sentFrom = onSent;
+                        close();
+                        sentFrom?.();
+                    }
 
-                if (mergedMeanwhile) {
-                    confirm();
-                }
-
-                return answer;
+                    return answer;
+                case 'merged':
+                    return answer;
+                case 'refused':
+                    keep(toRecord(answer.reason));
+                    return answer;
+                default:
+                    return assertNever(answer);
             }
 
-            await recordRefusal(answer.reason, shown() ? reread : () => merger.readOptions(item.id));
-            return answer;
-
-            function shown() {
-                return openingRef.value === opening && itemIdRef.value === item.id;
-            }
-
-            /**
-             * A refusal, told apart by reading the pull request again (PM27, PM28): GitHub's words for it are not
-             * documented. Only a refusal GitHub answered with is read again; one never sent, or unanswered, is what it
-             * is.
-             */
-            async function recordRefusal(reason: EditFailureReason, read: () => Promise<MergeOptions | null>) {
-                const options = reason.kind === 'refused' ? await read() : null;
-                keep(toRefusalRecord(sent, reason, options));
+            /** Unanswered, it may have reached GitHub all the same: neither merged nor refused. */
+            function toRecord(reason: EditFailureReason): MergeRecord {
+                const at = clock.now();
+                return reason.kind === 'offline'
+                    ? { kind: 'unknown', sent, at }
+                    : { kind: 'refused', sent, reason, at };
             }
 
             /** Recorded while the account that sent it is still signed in: another one's records start empty. */
             function keep(record: MergeRecord) {
                 if (isSender()) {
-                    const kept: KeptRecord = { record, row: items.getStored(item.id), at: clock.now() };
-                    recordsRef.value = new Map(recordsRef.value).set(item.id, kept);
+                    recordsRef.value = new Map(recordsRef.value).set(item.id, record);
+                    sentRef.value = new Map(sentRef.value).set(item.id, sent);
                 }
             }
 
@@ -262,16 +265,3 @@ export const MergePanelStore = defineService({
         }
     },
 });
-
-/** A moved head first: whatever else GitHub held against the merge, it named a commit that is no longer the head. */
-function toRefusalRecord(sent: SentMerge, reason: EditFailureReason, options: MergeOptions | null): MergeRecord {
-    if (options && options.status.headRefOid !== sent.head) {
-        return { kind: 'headMoved', sent, head: options.status.headRefOid, commit: options.headCommit };
-    }
-
-    if (options && !allowsMergeMethod(options, sent.request.method)) {
-        return { kind: 'methodNotAllowed', sent };
-    }
-
-    return { kind: 'refused', sent, reason };
-}

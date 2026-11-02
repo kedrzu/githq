@@ -9,6 +9,7 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import type { MergeRecord } from '@/merge/MergeTypes.js';
 import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
@@ -35,7 +36,7 @@ const props = defineProps<{
    * weighs only the required ones, as the merge panel does (PM38). `null` until then: the row's summary decides.
    */
   checks?: MergeCheckCounts | null;
-  /** What this session knows of its last merge that did not end merged (merging D15); `null` for none. */
+  /** What this session knows of its last merge that did not end merged, while it speaks for it (merging D15). */
   record?: MergeRecord | null;
 }>();
 
@@ -55,15 +56,7 @@ const lines = usePullRequestConditions(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
 const merging = computed(() => props.pr.merging !== undefined);
 /** How its last merge ended, while it still says something: open, and not being merged again. */
-const ended = computed(() => {
-  const { record } = props;
-  if (!record || !open.value || merging.value) {
-    return null;
-  }
-
-  // Sent with no answer: it may have reached GitHub, so it reads neither merged nor refused.
-  return record.kind === 'refused' && record.reason.kind === 'offline' ? { kind: 'unknown' as const } : record;
-});
+const ended = computed(() => getMergeEnd(props.record ?? null, props.pr, null));
 const verdict = computed((): PullRequestVerdict => {
   const record = ended.value;
   switch (record?.kind) {

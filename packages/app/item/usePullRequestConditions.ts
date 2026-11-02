@@ -9,8 +9,11 @@ import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
+import type { ItemCheckState } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
+import { getCheckTone } from './getCheckTone.js';
 import { useCheckTexts } from './useCheckTexts.js';
 import * as l from './usePullRequestConditions.loc.js';
 import type { PullRequestVerdictTone } from './usePullRequestVerdict.js';
@@ -51,15 +54,19 @@ export function usePullRequestConditions(pr: MaybeRefOrGetter<PullRequestItem>):
 
     function checksLine(): PullRequestCondition {
         const { state, text } = checkTexts.summarize(toValue(pr).checks);
+        return { tone: getCheckTone(state), icon: checksIcon(state), text, aside: null };
+    }
+
+    function checksIcon(state: ItemCheckState): LucideIcon {
         switch (state) {
             case 'skipped':
-                return { tone: 'muted', icon: CircleDashed, text, aside: null };
+                return CircleDashed;
             case 'passing':
-                return { tone: 'success', icon: CircleCheck, text, aside: null };
+                return CircleCheck;
             case 'failing':
-                return { tone: 'danger', icon: CircleX, text, aside: null };
+                return CircleX;
             case 'pending':
-                return { tone: 'warning', icon: Hourglass, text, aside: null };
+                return Hourglass;
             default:
                 return assertNever(state);
         }
@@ -117,7 +124,7 @@ export function usePullRequestConditions(pr: MaybeRefOrGetter<PullRequestItem>):
             };
         }
 
-        if (current.mergeable === 'UNKNOWN') {
+        if (isMergeabilityUnknown(current)) {
             return { tone: 'muted', icon: CircleDashed, text: t(l.mergeabilityUnknown), aside: null };
         }
 

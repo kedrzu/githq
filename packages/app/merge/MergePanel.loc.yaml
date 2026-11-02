@@ -12,8 +12,6 @@ nothingMerged:
   en: Nothing was merged
 outcomeUnknown:
   en: Outcome not known yet
-noAnswer:
-  en: GitHub didn't answer · not shown as merged
 notAnsweredYet:
   en: GitHub hasn't answered · not shown as merged
 nextRefreshSettles:
@@ -55,6 +53,8 @@ landedAs:
   en: '{landed} as {sha}'
 into:
   en: Into {base}
+alreadyMerged:
+  en: Already merged
 justNow:
   en: just now
 method:
@@ -118,8 +118,6 @@ nowOn:
   en: You were on {from}. It's {to} now.
 noneLeft:
   en: You were on {from}. No other method is left.
-reasonOffline:
-  en: GitHub didn't answer. The merge may have reached it — the next refresh will settle this.
 reasonNotAllowed:
   en: You can't merge this pull request
 reasonOther:

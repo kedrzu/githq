@@ -370,6 +370,11 @@ interface WorldPullRequest {
     readonly closes: readonly string[];
     behindBase: boolean;
     readonly mergeabilityUnknown: boolean;
+    /**
+     * An update of its branch GitHub accepted but has not made yet: as on GitHub, the pull request still reads the old
+     * head, its mergeability `UNKNOWN`, until the update lands — after the next read of the merge panel.
+     */
+    updatingBranch: boolean;
     /** The last commit pushed to its branch since the test began ({@link GitHubWorld.push}); `null` for none. */
     pushed: WorldCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
@@ -1091,6 +1096,7 @@ export class GitHubWorld {
                     },
                 },
             };
+            this.landBranchUpdate(item, item.pullRequest);
             return answer;
         });
         github.graphql('MoreComments', ({ variables }) => {
@@ -1511,16 +1517,14 @@ export class GitHubWorld {
             answer: item => ({ markPullRequestReadyForReview: { pullRequest: toPullRequestState(item) } }),
             refused: { markPullRequestReadyForReview: null },
         });
-        // Brings the base branch in with a merge commit by the viewer: no longer behind, at a new head.
+        // Brings the base branch in with a merge commit by the viewer — not at once, as on GitHub: the answer and the
+        // next read of the merge panel still find the old head (live, 2026-11-02), then it lands
+        // (`landBranchUpdate`).
         this.mutation(github, 'UpdatePullRequestBranch', {
             findItem: byItemId('pullRequestId'),
             apply: item => {
                 if (item.pullRequest) {
-                    item.pullRequest.behindBase = false;
-                    pushCommit(item, item.pullRequest, {
-                        author: this.viewer,
-                        headline: `Merge branch 'main' into ${toHeadRefName(item)}`,
-                    });
+                    item.pullRequest.updatingBranch = true;
                 }
             },
             answer: item => ({ updatePullRequestBranch: { pullRequest: { id: item.id } } }),
@@ -1873,6 +1877,7 @@ export class GitHubWorld {
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             mergeabilityUnknown: params.mergeabilityUnknown ?? false,
+            updatingBranch: false,
             pushed: null,
             stack,
             proposedTexts: params.proposedTexts ?? {},
@@ -2032,6 +2037,20 @@ export class GitHubWorld {
             issueType: item.issueType && { name: item.issueType, color: ISSUE_TYPE_COLORS[item.issueType] },
             subIssuesSummary: { total: 0, completed: 0 },
         };
+    }
+
+    /** Makes the update of the branch GitHub accepted: no longer behind, at a merge commit by the viewer. */
+    private landBranchUpdate(item: WorldItem, pullRequest: WorldPullRequest) {
+        if (!pullRequest.updatingBranch) {
+            return;
+        }
+
+        pullRequest.updatingBranch = false;
+        pullRequest.behindBase = false;
+        pushCommit(item, pullRequest, {
+            author: this.viewer,
+            headline: `Merge branch 'main' into ${toHeadRefName(item)}`,
+        });
     }
 
     private toPullRequestNode(item: WorldItem, pullRequest: WorldPullRequest): PullRequestFieldsFragment {
@@ -2461,7 +2480,7 @@ function findSearch(q: string): MyWorkSearch | undefined {
 
 /** Whether it merges, as GitHub has worked it out. */
 function getMergeable(pullRequest: WorldPullRequest): MergeableState {
-    if (pullRequest.mergeabilityUnknown) {
+    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
         return 'UNKNOWN';
     }
 
@@ -2470,7 +2489,7 @@ function getMergeable(pullRequest: WorldPullRequest): MergeableState {
 
 /** Where its merge stands, in the order GitHub tells it: not worked out, conflicts, a draft, behind, then the rest. */
 function getMergeStateStatus(pullRequest: WorldPullRequest, repository: WorldRepository): MergeStateStatus {
-    if (pullRequest.mergeabilityUnknown) {
+    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
         return 'UNKNOWN';
     }
 

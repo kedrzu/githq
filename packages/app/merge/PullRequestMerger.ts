@@ -10,7 +10,7 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import { createMergeEdit } from './createMergeEdit.js';
 import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
@@ -48,15 +48,13 @@ export const PullRequestMerger = defineService({
         logger: Logger,
     },
     setup({ accounts, editor, items, details, queue, clock, logger }) {
-        // Each row a read wrote, to the row it replaced.
-        const replacedRows = new WeakMap<Item, Item>();
-
-        return { readOptions, merge, getReplacedRow };
+        return { readOptions, merge };
 
         /**
          * Reads the merge options of a pull request fresh (`PullRequestMergeOptions`), and writes the status read
-         * with them into its row and its detail: the head commit the next merge names among it. `null` when it is no pull request GitHub shows the user, when GitHub could not be
-         * asked, or when the account changed meanwhile. Never rejects.
+         * with them into its row and its detail: the head commit the next merge names among it. `null` when it
+         * is no pull request GitHub shows the user, when GitHub could not be asked, or when the account changed
+         * meanwhile. Never rejects.
          */
         async function readOptions(itemId: string): Promise<MergeOptions | null> {
             const account = accounts.current;
@@ -91,9 +89,7 @@ export const PullRequestMerger = defineService({
                 const { status } = options;
                 const stored = items.getStored(itemId);
                 if (stored?.kind === 'pullRequest') {
-                    const row = { ...stored, ...status };
-                    replacedRows.set(row, stored);
-                    items.upsertMany([row]);
+                    items.upsertMany([{ ...stored, ...status }]);
                 }
 
                 // Opened from outside the lists, it has no row: its detail is what the panel shows.
@@ -106,17 +102,9 @@ export const PullRequestMerger = defineService({
         }
 
         /**
-         * The row {@link readOptions} replaced with `row`, writing the status it read; `undefined` for a row it did
-         * not write. Tells the panel's own reads apart from a copy the regular sync brought (D3: past the time limit,
-         * only the sync says how a merge ended).
-         */
-        function getReplacedRow(row: Item): Item | undefined {
-            return replacedRows.get(row);
-        }
-
-        /**
          * Merges the pull request as shown, with its head commit. Resolves once GitHub took the merge
-         * (`accepted`: it runs on, drawn as being merged) or refused it at once (`refused`); a refusal is the panel's
+         * (`accepted`: it runs on, drawn as being merged), said it merged at once (`merged`: merged already, PM30) or
+         * refused it at once (`refused`); a refusal is the panel's
          * to show, and reported like a failed edit only when the panel does not show the pull request
          * ({@link MergeParams.shown}). Refused as not allowed without being sent when the user may not
          * merge it, or it is being merged already.

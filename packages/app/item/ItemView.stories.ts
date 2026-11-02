@@ -132,6 +132,17 @@ export const PullRequestConflicts: Story = {
     },
 };
 
+/**
+ * PM22, PM38: GitHub still working out whether it merges — its merge state unknown while `mergeable` still reads the
+ * last answer: the conflicts line says it is not known, as the merge panel does.
+ */
+export const PullRequestMergeabilityUnknown: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: { ...F3_PULL_REQUEST, mergeable: 'MERGEABLE', mergeStateStatus: 'UNKNOWN' },
+    },
+};
+
 /** PM38: behind its base, which requires being up to date — "Merge…" says the panel updates the branch. */
 export const PullRequestBehind: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, mergeStateStatus: 'BEHIND' } },
@@ -159,8 +170,13 @@ export const PullRequestMergeRefused: Story = {
     decorators: [
         withMergeRecord({
             kind: 'refused',
-            sent: { request: { method: 'SQUASH', title: 'Edited' }, edited: { title: 'Edited', body: '' }, head: 'a' },
+            sent: {
+                request: { method: 'SQUASH', title: 'Edited' },
+                edited: { title: 'Edited', body: '' },
+                head: F3_PULL_REQUEST.headRefOid,
+            },
             reason: { kind: 'refused', message: 'At least 2 approving reviews are required' },
+            at: 0,
         }),
     ],
 };
@@ -169,7 +185,11 @@ export const PullRequestMergeRefused: Story = {
 export const PullRequestOutcomeUnknown: Story = {
     args: PullRequestReady.args,
     decorators: [
-        withMergeRecord({ kind: 'unknown', sent: { request: { method: 'SQUASH' }, edited: null, head: 'a' } }),
+        withMergeRecord({
+            kind: 'unknown',
+            sent: { request: { method: 'SQUASH' }, edited: null, head: F3_PULL_REQUEST.headRefOid },
+            at: 0,
+        }),
     ],
 };
 

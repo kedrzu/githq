@@ -7,7 +7,6 @@ import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
   ArrowUpRight,
-  CircleDashed,
   CircleHelp,
   CircleX,
   Eye,
@@ -49,12 +48,20 @@ import { countMergeChecks } from './countMergeChecks.js';
 import { MERGE_TIME_LIMIT_MS } from './createMergeEdit.js';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
+import { getMergeEnd } from './getMergeEnd.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
 import MergeChecks from './MergeChecks.vue';
 import MergeCondition from './MergeCondition.vue';
 import * as l from './MergePanel.loc.js';
-import type { MergeCommitText, MergeOptions, MergeRecord, MergeStep, MergeSubmission } from './MergeTypes.js';
+import type {
+  MergeCommitText,
+  MergeOptions,
+  MergeRecord,
+  MergeStep,
+  MergeSubmission,
+  SentMerge,
+} from './MergeTypes.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -75,11 +82,18 @@ const props = defineProps<{
    */
   sending: boolean;
   /**
-   * What this session knows of the pull request's last merge that did not end merged: refused (PM25, PM31), for a
-   * moved head (PM27) or a method the rules don't allow (PM28), or no answer in time (PM29). `null` for none, and
-   * while a merge is sent. A panel opened with it starts on the method and the edited text that merge was sent with.
+   * What this session knows of the pull request's last merge that did not end merged, while it speaks for it: refused
+   * (PM25, PM31) — for a moved head (PM27) or a method the rules don't allow (PM28), as the panel tells
+   * (`getMergeEnd`) — or no answer (PM29). `null` for none, and while a merge is sent.
    */
   record: MergeRecord | null;
+  /**
+   * The method and text this session's last merge of it that did not end merged was sent with: a panel opened starts
+   * on them (D15). `null` for none.
+   */
+  sent: SentMerge | null;
+  /** GitHub said at once the merge sent from this panel merged: it was merged already (PM30). */
+  alreadyMerged: boolean;
   /**
    * The step towards the merge asked for from the panel — marking it ready, updating its branch — until GitHub
    * answered and the panel's read came back: the primary stays that step's, busy, meanwhile.
@@ -172,8 +186,10 @@ const editWhenRead = ref(false);
 const checksOpen = ref(false);
 
 const merging = computed(() => shownPr.value.merging !== undefined);
-/** No answer in time (PM29): the merge may still land, so nothing is offered to send it again. */
-const outcomeUnknown = computed(() => props.record?.kind === 'unknown');
+/** How the last merge that did not end merged reads now: refused, a new commit, a method gone, or not known. */
+const end = computed(() => getMergeEnd(props.record, props.pr, props.options));
+/** No answer (PM29): the merge may still land, so nothing is offered to send it again. */
+const outcomeUnknown = computed(() => end.value?.kind === 'unknown');
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
 /** Merging is the way forward: ⌘↵ merges (D6, D12). */
@@ -202,9 +218,9 @@ const verdict = computed((): PanelVerdict => {
     return { kind: 'merged', ...standing.verdict, aside: mergedAside() };
   }
 
-  const record = recordVerdict();
-  if (record) {
-    return record;
+  const ended = endVerdict();
+  if (ended) {
+    return ended;
   }
 
   // The panel stays, and merging comes back when GitHub says so (PM20).
@@ -230,11 +246,11 @@ const conditions = computed((): ConditionLine[] => {
   }
 
   const base = pr.baseRefName;
-  if (now.conflicts) {
-    const text = t(l.conflictsWith, { base });
-    shown.push({ label: t(l.conflicts), tone: 'danger', icon: CircleX, text, aside: null });
-  } else if (isMergeabilityUnknown(pr)) {
-    shown.push({ label: t(l.conflicts), tone: 'muted', icon: CircleDashed, text: t(l.notKnownYet), aside: null });
+  // The opened item's line, in the panel's words: conflicts, or not known yet.
+  const conflicts = prConditions.conflicts;
+  if (conflicts.tone !== 'success') {
+    const text = conflicts.tone === 'danger' ? t(l.conflictsWith, { base }) : t(l.notKnownYet);
+    shown.push({ label: t(l.conflicts), ...conflicts, text });
   }
 
   if (pr.mergeStateStatus === 'BEHIND') {
@@ -352,7 +368,7 @@ const primaryLabel = computed(() => {
   }
 
   // Refused for what still holds: the same merge again. A moved head or a method gone make it another merge.
-  return props.record?.kind === 'refused' ? t(l.tryAgain) : primaryName(method.value);
+  return end.value?.kind === 'refused' ? t(l.tryAgain) : primaryName(method.value);
 });
 const checksHint = computed(() => {
   if (!props.options || props.options.checks.length === 0 || !showChecks.value) {
@@ -367,9 +383,9 @@ const checksHint = computed(() => {
 });
 const typeIcon = computed(() => getPullRequestKind(props.pr));
 const reference = computed(() => `${props.pr.repository.nameWithOwner}#${props.pr.number}`);
-/** What the record says beneath the verdict: GitHub's reason, the new commit, or that the next refresh settles it. */
+/** What the last merge's end says beneath the verdict: GitHub's reason, the new commit, or that the next refresh settles it. */
 const band = computed((): Band | null => {
-  const record = props.record;
+  const record = end.value;
   const base = props.pr.baseRefName;
   switch (record?.kind) {
     case undefined:
@@ -420,7 +436,7 @@ const band = computed((): Band | null => {
 const noticeText = computed(() => {
   const current = notice.value;
   // A merge refused for the method the read took away says it once, in its own band (PM28).
-  if (!current || props.record?.kind === 'methodNotAllowed') {
+  if (!current || end.value?.kind === 'methodNotAllowed') {
     return null;
   }
 
@@ -461,19 +477,16 @@ watch(proposal, text => {
 });
 
 /**
- * The verdict the record gives, where it has one (PM25, PM27–PM29): refused, a new commit, or not known — neither
- * merged nor failed.
+ * The verdict the last merge's end gives, where it has one (PM25, PM27–PM29): refused, a new commit, or not known —
+ * neither merged nor failed.
  */
-function recordVerdict(): PanelVerdict | null {
-  const record = props.record;
+function endVerdict(): PanelVerdict | null {
+  const record = end.value;
   switch (record?.kind) {
     case undefined:
       return null;
     case 'refused':
-      // Sent with no answer: it may have reached GitHub, so it reads neither merged nor refused.
-      return record.reason.kind === 'offline'
-        ? { kind: 'refused', tone: 'muted', icon: CircleHelp, text: t(l.outcomeUnknown), aside: t(l.noAnswer) }
-        : { kind: 'refused', tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
+      return { kind: 'refused', tone: 'danger', icon: CircleX, text: t(l.refused), aside: t(l.nothingMerged) };
     case 'headMoved':
       return { kind: 'newCommit', tone: 'warning', icon: TriangleAlert, text: t(l.newCommitArrived), aside: null };
     case 'methodNotAllowed': {
@@ -504,10 +517,10 @@ function refusalBand(reason: EditFailureReason): Band {
       const more = rest.join(' ').trim();
       return { tone: 'danger', icon: MessageSquareWarning, title, text: more ? `“${more}”` : null, link: null };
     }
-    case 'offline':
-      return { tone: 'muted', icon: Info, title: t(l.reasonOffline), text: null, link: null };
     case 'notAllowed':
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonNotAllowed), text: null, link: null };
+    // Unanswered is not a refusal: recorded as not known (`MergePanelStore`).
+    case 'offline':
     case 'dropped':
     case 'missing':
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonOther), text: null, link: null };
@@ -518,13 +531,13 @@ function refusalBand(reason: EditFailureReason): Band {
 
 /** The method a panel starts on: the one its last merge was sent with, while still offered; else the default. */
 function initialMethod() {
-  const sent = props.record?.sent.request.method;
+  const sent = props.sent?.request.method;
   return sent !== undefined && offered.value?.methods.includes(sent) ? sent : (offered.value?.defaultMethod ?? null);
 }
 
 /** The text its last merge was sent with, given back as the edit of the method it starts on (D15). */
 function initialEdits(): Partial<Record<CommitMethod, MergeCommitText>> {
-  const text = props.record?.sent.edited;
+  const text = props.sent?.edited;
   const key = toCommitMethod(method.value);
   return text && key ? { [key]: text } : {};
 }
@@ -573,14 +586,24 @@ function primaryName(value: PullRequestMergeMethod) {
 
 /**
  * How it landed (PM26): "Squashed into main as 6dcb09b · just now". The method and the commit only when this app's
- * merge confirmed them (`mergedAs`); GitHub's copy of it says neither.
+ * merge confirmed them (`mergedAs`); GitHub's copy of it says neither. Merged already when this panel's merge was
+ * sent, it says so, and not how — that merge was not this one (PM30).
  */
 function mergedAside() {
   const { pr } = props;
   const landed = pr.mergedAs;
-  const into = landed
-    ? t(l.landedAs, { landed: landedName(landed.method, pr.baseRefName), sha: landed.sha.slice(0, SHORT_SHA_LENGTH) })
-    : t(l.into, { base: pr.baseRefName });
+  let into: string;
+  if (props.alreadyMerged) {
+    into = t(l.alreadyMerged);
+  } else if (landed) {
+    into = t(l.landedAs, {
+      landed: landedName(landed.method, pr.baseRefName),
+      sha: landed.sha.slice(0, SHORT_SHA_LENGTH),
+    });
+  } else {
+    into = t(l.into, { base: pr.baseRefName });
+  }
+
   if (pr.closedAt === null) {
     return into;
   }
@@ -799,7 +822,7 @@ function onOpenFocus(event: Event) {
         <div
           v-if="band"
           :class="[css.mergePanel_band, css[`mergePanel_band_${band.tone}`]]"
-          :role="record?.kind === 'unknown' ? 'status' : 'alert'"
+          :role="outcomeUnknown ? 'status' : 'alert'"
         >
           <component
             :is="band.icon"
@@ -1031,7 +1054,7 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="record || verdict.kind === 'merged'"
+          v-else-if="end || verdict.kind === 'merged'"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span

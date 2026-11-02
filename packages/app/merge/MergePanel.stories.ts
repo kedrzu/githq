@@ -78,6 +78,9 @@ const SENT_EDITED: SentMerge = {
     head: PR.headRefOid,
 };
 
+/** The commit a merge landed as. */
+const MERGE_SHA = '6dcb09b5b57875f334f61aebed695e2e4193db5e';
+
 /** The head after dkim pushed: checks running on it again. */
 const NEW_HEAD = '4f1c9e2a7d3b5c6e8f9a0b1c2d3e4f5a6b7c8d9e';
 const PUSHED: PullRequestItem = {
@@ -88,9 +91,10 @@ const PUSHED: PullRequestItem = {
 
 /**
  * What GitHub answers the panel's merge with, in the harness: `pending` is no answer yet — the pull request drawn as
- * being merged meanwhile, as the merge's optimistic layer draws it — and `offline` none at all.
+ * being merged meanwhile, as the merge's optimistic layer draws it — `offline` none at all, and `merged` merged at
+ * once, as GitHub answers for a pull request merged already (PM30).
  */
-type HarnessAnswer = 'accepted' | 'headMoved' | 'methodNotAllowed' | 'offline' | 'pending' | 'refused';
+type HarnessAnswer = 'accepted' | 'merged' | 'offline' | 'pending' | 'refused';
 
 /** What the panel's read finds when it reads again after a refusal. */
 interface HarnessReread {
@@ -100,8 +104,8 @@ interface HarnessReread {
 
 /**
  * The panel as the app drives it: the merges and steps it asks for are written out under it (`sent`), GitHub answers
- * a merge at once (`answer`: accepted closes it, refused keeps it with the reason, told apart by what the read finds
- * again — `reread`, the pull request and its options as they are now), and with `readLater` the panel's
+ * a merge at once (`answer`: accepted closes it, refused keeps it with the reason, which the panel tells apart by what
+ * the read finds again — `reread`, the pull request and its options as they are now), and with `readLater` the panel's
  * read is on its way until the hidden `arrive` button is clicked. A step is on its way until the hidden `stepped`
  * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it.
  */
@@ -113,6 +117,8 @@ const Harness = defineComponent({
         readLater: { type: Boolean, default: false },
         /** What the session knows of its last merge as the panel opens. */
         record: { type: Object as PropType<MergeRecord | null>, default: null },
+        /** The method and text its last merge was sent with; the record's when not given. */
+        sent: { type: Object as PropType<SentMerge | null>, default: null },
         reread: { type: Object as PropType<HarnessReread | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
         allowed: { type: Boolean, default: true },
@@ -126,6 +132,7 @@ const Harness = defineComponent({
         const arrived = ref(!props.readLater);
         const sent = ref('Nothing sent');
         const record = shallowRef<MergeRecord | null>(props.record);
+        const alreadyMerged = ref(false);
         const options = shallowRef(props.options);
         const sending = ref(false);
         const advancing = ref<MergeStep | null>(props.advancing);
@@ -162,6 +169,8 @@ const Harness = defineComponent({
                     allowed: props.allowed,
                     sending: sending.value,
                     record: record.value,
+                    sent: props.sent ?? props.record?.sent ?? null,
+                    alreadyMerged: alreadyMerged.value,
                     advancing: advancing.value,
                     now: NOW,
                     onStep: (step: MergeStep) => {
@@ -186,26 +195,23 @@ const Harness = defineComponent({
                             case 'pending':
                                 sending.value = true;
                                 break;
-                            case 'refused':
-                                record.value = {
-                                    kind: 'refused',
-                                    sent: merge,
-                                    reason: { kind: 'refused', message: RULE_VIOLATION },
+                            case 'merged':
+                                current.value = {
+                                    ...current.value,
+                                    state: 'MERGED',
+                                    merged: true,
+                                    closedAt: new Date(NOW).toISOString(),
+                                    mergedAs: { method: submission.request.method, sha: MERGE_SHA },
                                 };
+                                alreadyMerged.value = true;
                                 break;
+                            case 'refused': {
+                                const reason = { kind: 'refused', message: RULE_VIOLATION } as const;
+                                record.value = { kind: 'refused', sent: merge, reason, at: NOW };
+                                break;
+                            }
                             case 'offline':
-                                record.value = { kind: 'refused', sent: merge, reason: { kind: 'offline' } };
-                                break;
-                            case 'headMoved':
-                                record.value = {
-                                    kind: 'headMoved',
-                                    sent: merge,
-                                    head: current.value.headRefOid,
-                                    commit: options.value?.headCommit ?? null,
-                                };
-                                break;
-                            case 'methodNotAllowed':
-                                record.value = { kind: 'methodNotAllowed', sent: merge };
+                                record.value = { kind: 'unknown', sent: merge, at: NOW };
                                 break;
                             default:
                                 assertNever(props.answer);
@@ -339,9 +345,15 @@ export const Refused: Story = { args: { answer: 'refused' } };
 export const RefusedReopened: Story = {
     args: {
         settings: SQUASH_ONLY,
-        record: { kind: 'refused', sent: SENT_EDITED, reason: { kind: 'refused', message: RULE_VIOLATION } },
+        record: { kind: 'refused', sent: SENT_EDITED, reason: { kind: 'refused', message: RULE_VIOLATION }, at: NOW },
     },
 };
+
+/**
+ * D15, after the refresh: refused earlier this session, and a copy of the pull request read since says what GitHub
+ * holds — the refusal no longer speaks, but the panel still starts on the text it was sent with.
+ */
+export const SentReopened: Story = { args: { settings: SQUASH_ONLY, sent: SENT_EDITED } };
 
 /**
  * PM27: someone pushed in the meantime — GitHub refuses the merge naming the old head; the read again finds the new
@@ -349,7 +361,7 @@ export const RefusedReopened: Story = {
  */
 export const HeadMoved: Story = {
     args: {
-        answer: 'headMoved',
+        answer: 'refused',
         settings: SQUASH_ONLY,
         reread: {
             pr: PUSHED,
@@ -368,7 +380,7 @@ export const HeadMoved: Story = {
  */
 export const MethodNotAllowed: Story = {
     args: {
-        answer: 'methodNotAllowed',
+        answer: 'refused',
         settings: { ...ALL_METHODS, viewerDefaultMergeMethod: 'MERGE' },
         reread: { pr: PR, options: { ...OPTIONS, allowedMergeMethods: ['SQUASH'] } },
     },
@@ -378,7 +390,7 @@ export const MethodNotAllowed: Story = {
  * PM29: reopened for a pull request whose merge got no answer in time — grey, neither merged nor failed; nothing
  * offers a second merge, and GitHub is a key away.
  */
-export const OutcomeUnknown: Story = { args: { record: { kind: 'unknown', sent: SENT_EDITED } } };
+export const OutcomeUnknown: Story = { args: { record: { kind: 'unknown', sent: SENT_EDITED, at: NOW } } };
 
 /** PM31: refused for a permission githq may lack — one more refusal with GitHub's reason (PM25's look). */
 export const RefusedForPermission: Story = {
@@ -391,6 +403,7 @@ export const RefusedForPermission: Story = {
                 message:
                     'refusing to allow an OAuth App to create or update workflow `.github/workflows/ci.yml` without `workflow` scope',
             },
+            at: NOW,
         },
     },
 };
@@ -398,8 +411,11 @@ export const RefusedForPermission: Story = {
 /** PM32a: sent, GitHub has not answered yet — the panel stays as it was, its primary busy, claiming nothing. */
 export const Sending: Story = { args: { answer: 'pending' } };
 
-/** Sent, and no answer came back (PM29's voice): it may have reached GitHub, so nothing is said to be merged or not. */
+/** Sent, and no answer came back (PM29): it may have reached GitHub, so nothing is said to be merged or not. */
 export const NoAnswer: Story = { args: { answer: 'offline' } };
+
+/** PM30: sent for a pull request merged already — GitHub says merged at once; the panel stays and says so. */
+export const AlreadyMerged: Story = { args: { answer: 'merged' } };
 
 /** PM26: merged from here a moment ago — how it landed, nothing else to do. */
 export const Merged: Story = {
@@ -409,7 +425,7 @@ export const Merged: Story = {
             state: 'MERGED',
             merged: true,
             closedAt: '2026-11-02T11:59:40Z',
-            mergedAs: { method: 'SQUASH', sha: '6dcb09b5b57875f334f61aebed695e2e4193db5e' },
+            mergedAs: { method: 'SQUASH', sha: MERGE_SHA },
         },
     },
 };

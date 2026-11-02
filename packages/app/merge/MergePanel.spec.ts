@@ -5,6 +5,7 @@ import { page, userEvent } from 'vitest/browser';
 import * as stories from './MergePanel.stories.js';
 
 const {
+    AlreadyMerged,
     Behind,
     BeingMerged,
     BeingRead,
@@ -26,6 +27,7 @@ const {
     RefusedReopened,
     RequiredFailed,
     Sending,
+    SentReopened,
 } = composeStories(stories);
 
 test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub writes its default (D6)', async () => {
@@ -271,15 +273,40 @@ test('PM32a: sent and not answered yet, the panel stays as it was, its primary b
     await expect.element(page.getByRole('button', { name: /Squash and merge/u })).toHaveAttribute('aria-busy', 'true');
 });
 
-test('PM29: sent and no answer came back — the outcome is not known, never "nothing was merged"', async () => {
+test('PM29: sent and no answer came back — the outcome is not known, never "nothing was merged", and no second merge on offer', async () => {
     await NoAnswer.run();
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
-    await expect.element(panel()).toHaveTextContent("Outcome not known yetGitHub didn't answer · not shown as merged");
-    await expect.element(page.getByRole('alert')).toHaveTextContent("GitHub didn't answer");
+    await expect
+        .element(panel())
+        .toHaveTextContent("Outcome not known yetGitHub hasn't answered · not shown as merged");
+    await expect.element(page.getByRole('status')).toHaveTextContent('The next refresh will settle this');
     await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
     await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
+    expect(page.getByRole('button', { name: /merge|try again/iu }).elements()).toEqual([]);
+});
+
+test('PM30: sent for a pull request merged already — GitHub says merged at once, and the panel stays and says so, not how this merge landed', async () => {
+    await AlreadyMerged.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(panel()).toHaveTextContent('MergedAlready merged · just now');
+    await expect.element(panel()).not.toHaveTextContent('Squashed into main');
+    expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
+});
+
+test('D15: reopened once a copy read since says what GitHub holds — no refusal said, the text it was sent with given back', async () => {
+    await SentReopened.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready to merge');
+    await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
+    await expect.element(panel().getByText('Edited', { exact: true })).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('"title":"Retry Stripe webhook delivery on 5xx, with a dead letter table (#477)"');
 });
 
 test('PM24: reopened while being merged, it says so and offers nothing to repeat', async () => {

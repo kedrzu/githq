@@ -19,12 +19,14 @@ if (!LONE) {
 
 /** Approved and ready to merge: what a merge refused or unanswered reads over. */
 const READY = D1_ITEMS.find(item => item.id === 'PR_477');
-if (!READY) {
-    throw new Error('The sample work needs PR_477.');
+if (READY?.kind !== 'pullRequest') {
+    throw new Error('The sample work needs the pull request PR_477.');
 }
 
-/** A merge sent from the panel, with GitHub's text. */
-const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: 'head-oid' };
+/** A merge sent from the panel, with GitHub's text, naming the head the card shows. */
+const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
+/** When GitHub answered it. */
+const AT = SAMPLE_NOW;
 
 /** Under a screen that knows how the card's last merge ended (merging D15). */
 function withMergeRecord(record: MergeRecord): Decorator {
@@ -74,33 +76,33 @@ export const LoneCard: Story = {
 export const MergeRefused: Story = {
     args: { item: READY },
     decorators: [
-        withMergeRecord({ kind: 'refused', sent: SENT, reason: { kind: 'refused', message: 'Rule violations.' } }),
+        withMergeRecord({
+            kind: 'refused',
+            sent: SENT,
+            reason: { kind: 'refused', message: 'Rule violations.' },
+            at: AT,
+        }),
     ],
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByText('Merge refused')).toBeVisible();
     },
 };
 
-/** PM37 on a board: refused for a commit pushed meanwhile. */
+/** PM37 on a board: refused for a commit pushed meanwhile — the card's head is no longer the one the merge named. */
 export const MergeNewCommit: Story = {
-    args: { item: READY },
+    args: { item: { ...READY, headRefOid: 'new-head' } },
     decorators: [
-        withMergeRecord({
-            kind: 'headMoved',
-            sent: SENT,
-            head: 'new-head',
-            commit: { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' },
-        }),
+        withMergeRecord({ kind: 'refused', sent: SENT, reason: { kind: 'refused', message: 'Modified.' }, at: AT }),
     ],
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByText('Not merged · new commit from dkim')).toBeVisible();
+        await expect(within(canvasElement).getByText('Not merged · new commit')).toBeVisible();
     },
 };
 
 /** PM36, PM37 on a board: no answer in time — grey, neither merged nor refused. */
 export const MergeOutcomeUnknown: Story = {
     args: { item: READY },
-    decorators: [withMergeRecord({ kind: 'unknown', sent: SENT })],
+    decorators: [withMergeRecord({ kind: 'unknown', sent: SENT, at: AT })],
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByText('Merge sent · outcome not known yet')).toBeVisible();
     },

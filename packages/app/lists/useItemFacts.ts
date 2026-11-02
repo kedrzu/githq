@@ -20,7 +20,8 @@ import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { MergeRecord } from '@/merge/MergeTypes.js';
+import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
@@ -45,7 +46,7 @@ export interface UseItemFactsOptions {
     readonly reviewRequested: MaybeRefOrGetter<boolean>;
     /** The people shown: who opened it (my work, where it is the user's own work), or who it is assigned to. */
     readonly people: MaybeRefOrGetter<'assignees' | 'author'>;
-    /** What this session knows of the pull request's last merge that did not end merged (merging D15). */
+    /** What this session knows of the pull request's last merge that did not end merged, while it speaks for it (D15). */
     readonly mergeRecord?: MaybeRefOrGetter<MergeRecord | null>;
 }
 
@@ -188,31 +189,27 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     }
 
     /** PM37: how the last merge of it ended when it did not merge — refused, a new commit, or not known yet. */
-    function getRecordStatus(record: MergeRecord): ItemStatusFact {
-        switch (record.kind) {
+    function getEndStatus(end: MergeEnd): ItemStatusFact {
+        switch (end.kind) {
             case 'refused':
-                // Sent with no answer: it may have reached GitHub, so it reads neither merged nor refused.
-                return record.reason.kind === 'offline' ? unknownStatus() : refusedStatus();
             case 'methodNotAllowed':
-                return refusedStatus();
+                return {
+                    icon: CircleX,
+                    tone: 'danger',
+                    text: t(l.mergeRefused),
+                    readyToMerge: false,
+                    backToMerge: true,
+                };
             case 'headMoved': {
-                const author = record.commit?.author;
+                const author = end.commit?.author;
                 const text = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
                 return { icon: TriangleAlert, tone: 'warning', text, readyToMerge: false, backToMerge: true };
             }
             case 'unknown':
-                return unknownStatus();
+                return { icon: CircleHelp, tone: 'muted', text: t(l.outcomeUnknown), readyToMerge: false };
             default:
-                return assertNever(record);
+                return assertNever(end);
         }
-    }
-
-    function refusedStatus(): ItemStatusFact {
-        return { icon: CircleX, tone: 'danger', text: t(l.mergeRefused), readyToMerge: false, backToMerge: true };
-    }
-
-    function unknownStatus(): ItemStatusFact {
-        return { icon: CircleHelp, tone: 'muted', text: t(l.outcomeUnknown), readyToMerge: false };
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {
@@ -221,9 +218,9 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
         }
 
-        const record = mergeRecord.value;
-        if (record) {
-            return getRecordStatus(record);
+        const end = getMergeEnd(mergeRecord.value, pr, null);
+        if (end) {
+            return getEndStatus(end);
         }
 
         const standing = getPullRequestStanding(pr);

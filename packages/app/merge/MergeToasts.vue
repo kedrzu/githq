@@ -14,6 +14,7 @@ import { EditQueue } from '@/edits/EditQueue.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 
+import { isMergeFailure } from './isMergeFailure.js';
 import { MergeContext } from './MergeContext.js';
 import { MergePanelStore } from './MergePanelStore.js';
 import * as l from './MergeToasts.loc.js';
@@ -34,7 +35,7 @@ const t = useTranslate();
 const refusals = computed(() =>
   queue.failures.flatMap(failure => {
     const edit = failure.failed[0]?.edit;
-    return edit?.subject.kind === 'merged' ? [{ failure, itemId: edit.itemId }] : [];
+    return edit && isMergeFailure(failure) ? [{ failure, itemId: edit.itemId }] : [];
   }),
 );
 

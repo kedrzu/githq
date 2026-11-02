@@ -8,6 +8,7 @@ import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { isMergeFailure } from '@/merge/isMergeFailure.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
@@ -50,11 +51,6 @@ function getFailedIds(failure: EditFailure): string[] {
 
 function selectFailed(failure: EditFailure) {
   navigation.requestSelection(getFailedIds(failure));
-}
-
-/** Merging, said by its own toast: the way back to the panel (`MergeToasts`). */
-function isMergeFailure(failure: EditFailure) {
-  return failure.failed[0]?.edit.subject.kind === 'merged';
 }
 
 /** A comment that was not posted and is not in its box (it went back there unless something new was typed). */

@@ -19,8 +19,8 @@ import ItemRow from './ItemRow.vue';
 
 /** Approved, every check passed: "approved · ready to merge". */
 const READY = findPullRequest('PR_477');
-/** A merge sent from the panel, with GitHub's text. */
-const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: 'head-oid' };
+/** A merge sent from the panel, with GitHub's text, naming the head the row shows. */
+const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
 
 test('ready to merge, a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel', async () => {
     const opened: string[] = [];
@@ -57,7 +57,8 @@ test('PM37: being merged, the row says so where the status sits and keeps the op
 
 test('PM37: a merge refused says so on line two, followed by "Back to the merge ⇧M" for the row\'s own pull request', async () => {
     const opened: string[] = [];
-    const record: MergeRecord = { kind: 'refused', sent: SENT, reason: { kind: 'refused', message: 'Rules.' } };
+    const reason = { kind: 'refused', message: 'Rules.' } as const;
+    const record: MergeRecord = { kind: 'refused', sent: SENT, reason, at: SAMPLE_NOW };
     mount(READY, { canOpen: () => true, open: id => opened.push(id), getRecord: () => record });
 
     await expect.element(page.getByText('Merge refused')).toBeVisible();
@@ -68,17 +69,21 @@ test('PM37: a merge refused says so on line two, followed by "Back to the merge 
     expect(opened).toEqual([READY.id]);
 });
 
-test('PM37: refused for a new commit, the row says nothing merged and who pushed it', async () => {
-    const commit = { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' };
-    const record: MergeRecord = { kind: 'headMoved', sent: SENT, head: 'new-head', commit };
-    mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+test('PM37: refused, with its head no longer the one the merge named, the row says nothing merged and a new commit', async () => {
+    const reason = { kind: 'refused', message: 'Pull request head branch was modified.' } as const;
+    const record: MergeRecord = { kind: 'refused', sent: SENT, reason, at: SAMPLE_NOW };
+    mount(
+        { ...READY, headRefOid: 'new-head' },
+        { canOpen: () => true, open: () => undefined, getRecord: () => record },
+    );
 
-    await expect.element(page.getByText('Not merged · new commit from dkim')).toBeVisible();
+    await expect.element(page.getByText('Not merged · new commit')).toBeVisible();
+    await expect.element(page.getByText('Merge refused')).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: /^Back to the merge/ })).toBeVisible();
 });
 
 test('PM36, PM37: no answer in time, the row is grey — neither merged nor refused — with nothing to send again', async () => {
-    const record: MergeRecord = { kind: 'unknown', sent: SENT };
+    const record: MergeRecord = { kind: 'unknown', sent: SENT, at: SAMPLE_NOW };
     mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
 
     await expect.element(page.getByText('Merge sent · outcome not known yet')).toBeVisible();

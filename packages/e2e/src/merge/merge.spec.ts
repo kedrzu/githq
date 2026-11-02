@@ -250,15 +250,17 @@ test('PM35: a merge GitHub refuses after the user moved on reaches them in a toa
     await expect(myWork.row(FIRST_TITLE)).not.toContainText('Being merged');
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
 
-    // It stays until dismissed, long past an edit's toast.
+    // It stays until dismissed, long past an edit's toast — and past the regular refresh, which reads the pull request
+    // again: the row then says what GitHub holds.
     await page.clock.fastForward('00:30');
     await expect(toast).toBeVisible();
+    await expect(myWork.row(FIRST_TITLE)).not.toContainText('Merge refused');
 
-    // ⌥M is the toast's: the panel of the refused pull request, not of the row selected.
+    // ⌥M is the toast's: the panel of the refused pull request, not of the row selected, with the text it was sent with.
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     await page.keyboard.press('Alt+M');
     await expect(panel.root).toHaveAccessibleName('Merge acme/web#15');
-    await expect(panel.root).toContainText('GitHub refused the merge');
+    await expect(panel.root).toContainText('Ready to merge');
     await expect(panel.line('Commit')).toContainText('Redirect once, keeping the return address');
     await expect(toast).toBeHidden();
 });

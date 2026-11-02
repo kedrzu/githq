@@ -20,6 +20,7 @@ const {
     PullRequestContributorView,
     PullRequestDraft,
     PullRequestFailing,
+    PullRequestMergeabilityUnknown,
     PullRequestOptionalFailing,
     PullRequestReady,
     StackOfTenInModal,
@@ -420,6 +421,13 @@ test('PM38: conflicts — the verdict the panel says, and "Merge…" names the w
     await expect.element(forward).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
     await userEvent.click(forward);
     expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM22, PM38: a merge state GitHub has not worked out yet reads as not known in the conflicts line, whatever `mergeable` still says — as the panel reads it', async () => {
+    await PullRequestMergeabilityUnknown.run();
+
+    await expect.element(page.getByText('GitHub is still checking', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('None with main')).not.toBeInTheDocument();
 });
 
 test('PM38: behind its base — "Update branch" in place of "Merge…", the conditions still shown', async () => {
