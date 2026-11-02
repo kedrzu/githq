@@ -1,5 +1,9 @@
 import type { LucideIcon } from 'lucide-vue-next';
 
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+import type { StackShare } from '@/store/stacks/describeStackShare.js';
+
 /**
  * How a list is laid out (D9): rows under group headers, or a board with a column per group. Every list —
  * my work, a repository, a project — offers both, with the same toolbar.
@@ -30,9 +34,46 @@ export interface ListContextMenuProps {
     readonly open: () => void;
 }
 
-/** A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. */
+/**
+ * A top-level entry and the entries nested under it — in my work, the pull requests closing an assigned issue. A
+ * stack's entry (D2, D3) has a synthetic `id` (`stack:<stack id>`, never an item's), its `stack`, the member `Enter`
+ * opens as its `value`, and the stack's pull requests in its group as `nested`, shown only while it is expanded — under a
+ * filter, all of them when any matches (`ListStack.unmatched`).
+ */
 export interface ListRow<T> extends ListEntry<T> {
     readonly nested: readonly ListEntry<T>[];
+    /** Set on a stack's entry. */
+    readonly stack?: ListStack | null;
+    /**
+     * Set on an open pull request of a stack listed as a plain row — alone in its group, or the last open one of its
+     * stack (D3, D16, SP13): the stack, described, for the row's marker.
+     */
+    readonly stackMarker?: StackDescription | null;
+    /**
+     * Stacks' entries nested under it, before `nested` — in my work, the user's stacks closing an assigned issue (stacked
+     * PRs D12, D23). With one, in the list the entry serves as the stack's header: it takes the stack's chevron, and the
+     * stack's pull requests are its rows while it is expanded. With two or more — and on the board — each is an entry of
+     * its own one step in.
+     */
+    readonly stacks?: readonly ListRow<T>[];
+}
+
+/** What a stack's entry stands for: the stack, described, and its pull requests in the entry's group. */
+export interface ListStack {
+    /** The stack's node id: what is expanded, in every list at once (D10). */
+    readonly id: string;
+    readonly description: StackDescription;
+    /** The id of the pull request `Enter` opens (D9): the first open one not yet approved, else the first open one. */
+    readonly open: string;
+    /** The entry's pull requests, in the stack's order: the entry's `nested`, as items. */
+    readonly pullRequests: readonly PullRequestItem[];
+    /** Set when they are a share of the stack's open pull requests, the others in other groups (D3, D16): "2 of 4". */
+    readonly share?: StackShare | null;
+    /**
+     * Set when the list's filter matches only some of its pull requests (D3, SP25): the ids of those it does not, shown
+     * because another of the entry does — de-emphasised, and the entry says "1 of 4 matches".
+     */
+    readonly unmatched?: ReadonlySet<string> | null;
 }
 
 /** What a group's header shows before its name. */
@@ -62,9 +103,10 @@ export interface ListGroup<T> {
     readonly droppable: boolean;
 }
 
-/** An entry moved from one group into another: the list's owner turns it into an edit. */
+/** An entry moved from one group into another: the list's owner turns it into an edit of each of its items. */
 export interface ListMove {
-    readonly id: string;
+    /** The items moved: the entry's own, or a stack entry's pull requests (D3) — never the entry's own id. */
+    readonly ids: readonly string[];
     /** The group keys. */
     readonly from: string;
     readonly to: string;

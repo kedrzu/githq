@@ -87,6 +87,27 @@ export interface PullRequestStatus {
     readonly reviewRequests: readonly ItemReviewRequest[];
     /** Each reviewer's latest approval or change request. */
     readonly latestReviews: readonly ItemReview[];
+    /** The GitHub stack it is part of; `null` outside any stack. */
+    readonly stack: PullRequestStackRef | null;
+    /**
+     * Its head no longer contains the tip of its base branch (the base moved since it was last updated). In a
+     * stack, a later pull request behind its base means the stack needs to be rebased: GitHub refuses the merge
+     * ("not a linear descendant") exactly then — a moved base under the first one alone does not block it
+     * (checked live, 2026-11-01). `false` when the base branch is gone.
+     */
+    readonly behindBase: boolean;
+}
+
+/** Where a pull request sits in a GitHub stack. */
+export interface PullRequestStackRef {
+    /** The stack's node id. */
+    readonly id: string;
+    /** The stack's number within its repository. */
+    readonly number: number;
+    /** How many pull requests the stack holds. */
+    readonly size: number;
+    /** 1 is the closest to the base branch, each next one is stacked on the one before. */
+    readonly position: number;
 }
 
 /** The check rollup of a pull request's head commit: check runs and commit statuses counted together. */

@@ -10,6 +10,21 @@ fragment PullRequestStatusFields on PullRequest {
     reviewDecision
     mergeable
     mergeStateStatus
+    # Joining or leaving a stack does not move `updatedAt`, so the stack is re-read here with the statuses.
+    stack {
+        id
+        number
+        size
+    }
+    stackEntry {
+        position
+    }
+    baseRefOid
+    baseRef {
+        target {
+            oid
+        }
+    }
     statusCheckRollup {
         state
         contexts {
