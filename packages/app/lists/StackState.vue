@@ -1,4 +1,4 @@
-<!-- A stack's pips and its state in words (D5, D6, SP14) from facts already worked out (`useStackFacts`): what a stack's row, its card and an issue serving as its header (stacked PRs D12) show. A share's own pips drawn in their state, the others hollow (SP24). On a card the icon is smaller and the sentence clipped to the card's width. Two siblings: the gap between them is the parent's. -->
+<!-- A stack's pips and its state in words (D5, D6, SP14) from facts already worked out (`useStackFacts`): what a stack's row, its card and an issue serving as its header (stacked PRs D12) show. A share's own pips drawn in their state, the others hollow (SP24); the pip of the pull request opened over the list tall (D14). On a card the icon is smaller and the sentence clipped to the card's width. Two siblings: the gap between them is the parent's. -->
 <script lang="ts" setup>
 import type { StackPip } from '@/store/stacks/describeStack.js';
 
@@ -11,11 +11,13 @@ withDefaults(
     pips: readonly StackPip[];
     /** The share's own pull requests, drawn in their state (`StackPips`); `null` for all. */
     filled?: ReadonlySet<string> | null;
+    /** The id of the pull request opened over the list: its pip is tall (D14). */
+    current?: string | null;
     state: StackStateFact;
     /** On a board's card: a 12px icon, the sentence clipped rather than kept whole. */
     compact?: boolean;
   }>(),
-  { filled: null, compact: false },
+  { filled: null, current: null, compact: false },
 );
 </script>
 
@@ -23,6 +25,7 @@ withDefaults(
   <StackPips
     :pips="pips"
     :filled="filled"
+    :current="current"
   />
   <StackTone
     :look="state"

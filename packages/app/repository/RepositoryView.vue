@@ -284,6 +284,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :now="now"
             :checked="checked"
             :half-checked="halfChecked"
+            :opened-id="openedId"
           />
           <ItemRow
             v-else
@@ -310,6 +311,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
             :now="now"
             :checked="checked"
             :half-checked="halfChecked"
+            :opened-id="openedId"
             :expanded="expanded"
             :selected-member="selectedMember"
             @toggle="toggleStack"
@@ -428,6 +430,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
               :now="now"
               :checked="checked"
               :half-checked="halfChecked"
+              :opened-id="openedId"
             />
             <ItemRow
               v-else

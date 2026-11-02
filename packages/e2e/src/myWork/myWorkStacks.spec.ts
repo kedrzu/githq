@@ -60,7 +60,7 @@ test('a stack is one entry in my work, whole when only one of its pull requests 
     await expect(theirs).toHaveText([/^Split the rate limiter in two/]);
     await expect(theirs.getByText('3', { exact: true })).toBeVisible();
     const mine = myWork.rows('My pull requests');
-    await expect(mine).toContainText('1 of 3 ready, #102 blocks');
+    await expect(mine).toContainText('1 of 3 ready, #102 waiting for review');
     await expect(mine).toHaveText([/^Read the stack of each pull request/]);
     for (const title of [
         'Move the limits to the config',
@@ -116,4 +116,34 @@ test('a stack is one entry in my work, whole when only one of its pull requests 
     await expect(page).toHaveURL('/?pane=issue&issue=acme%7Capi%7C203');
     await expect(item.title).toHaveText('Document the new limits');
     await expect(myWork.selectedRow).toContainText('Split the rate limiter in two');
+});
+
+test('a pull request of a stack opened in the panel shows the whole stack beside it, its own row marked; a click on another row opens that one, and J moves the mark', async ({
+    page,
+    github,
+}) => {
+    const { myWork } = await openMyWork(page, github, createStacksWorld());
+    const item = new ItemViewHarness(page);
+
+    await page.keyboard.press('j');
+    await page.keyboard.press('j');
+    await expect(myWork.selectedRow).toContainText('Read the stack of each pull request');
+    await page.keyboard.press('Enter');
+    await expect(item.title).toHaveText('Fold a stack into one entry');
+    await expect(item.stackMapRows).toHaveText([
+        /#101\s*Read the stack of each pull request/,
+        /#102\s*Fold a stack into one entry/,
+        /#103\s*Open the next pull request of a stack/,
+    ]);
+    await expect(item.stackMapCurrent).toHaveText(/#102/);
+
+    await item.stackMapRows.filter({ hasText: '#101' }).click();
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C101');
+    await expect(item.title).toHaveText('Read the stack of each pull request');
+    await expect(item.stackMapCurrent).toHaveText(/#101/);
+
+    await page.keyboard.press('j');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C102');
+    await expect(item.stackMapCurrent).toHaveText(/#102/);
+    await expect(item.stackMapRows).toHaveCount(3);
 });

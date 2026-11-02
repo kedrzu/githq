@@ -38,6 +38,8 @@ const props = withDefaults(
     deep?: boolean;
     /** The stack this issue serves as the header of (`ListRow.stacks`, D12): its pips and state. */
     header?: ListStack | null;
+    /** The item opened over the list: a pull request of the stack the row is the header of has its pip tall (D14). */
+    openedId?: string | null;
     /** In the selection several items are edited together in (`x`). */
     checked?: boolean;
     /** An edit of it GitHub just refused, said for a moment ("“regression” label undone"). */
@@ -52,6 +54,7 @@ const props = withDefaults(
     parent: null,
     deep: false,
     header: null,
+    openedId: null,
     undone: null,
     stack: null,
   },
@@ -121,6 +124,7 @@ const shown = computed(() => new Set(props.properties));
           :stack="header"
           :now="now"
           :viewer-login="viewerLogin"
+          :opened-id="openedId"
         />
         <span
           v-if="facts.status && shown.has('status')"

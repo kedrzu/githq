@@ -207,20 +207,26 @@ test('a stack with nothing open and not all merged reads closed', () => {
     expect(description.state).toEqual({ kind: 'closed' });
 });
 
-test("someone else's stack says on how many open ones the viewer's review is asked, and how many are ready", () => {
+test("someone else's stack says on how many open ones the viewer's review is asked, how many are ready and what stops it", () => {
     const asked: ItemReviewRequest[] = [{ kind: 'user', login: 'me' }];
     const team: ItemReviewRequest[] = [{ kind: 'team', slug: 'web', name: 'Web' }];
     const description = describeMembers(
         [
             pr(1, { reviewRequests: asked }),
-            pr(2, { mergeStateStatus: 'BLOCKED', reviewRequests: team }),
+            pr(2, { isDraft: true, mergeStateStatus: 'DRAFT', reviewRequests: team }),
             pr(3, { mergeStateStatus: 'BLOCKED', reviewRequests: asked }),
             pr(4, { mergeStateStatus: 'BLOCKED' }),
         ],
         { size: 4, viewer: 'me' },
     );
 
-    expect(description.state).toEqual({ kind: 'reviewRequested', requestedCount: 2, openCount: 4, readyCount: 1 });
+    expect(description.state).toEqual({
+        kind: 'reviewRequested',
+        requestedCount: 2,
+        openCount: 4,
+        readyCount: 1,
+        blocker: { number: 102, kind: 'draft', waitingForReview: false },
+    });
 });
 
 test("the viewer's own stack never reads as asking for their review", () => {

@@ -1,7 +1,5 @@
 inGithq:
   en: '{held} of {size} in githq'
-ready:
-  en: All {count} ready
 held:
   en: '{ready} of {open} ready, #{number} blocks'
 heldByDraft:
@@ -10,18 +8,6 @@ heldByChecks:
   en: '{ready} of {open} ready, #{number} checks running'
 heldByReview:
   en: '{ready} of {open} ready, #{number} waiting for review'
-needsRebase:
-  en: Needs rebase · nothing can merge
-closedInside:
-  en: '#{number} closed · {stuck} later stuck, dissolve and link again'
-closed:
-  en: Closed
-incomplete:
-  en: Still reading this stack
-merged:
-  en: Merged
-reviewRequested:
-  en: Your review on {requested} of {open} · {ready} ready
 landed:
   en: '{count} landed · {state}'
 more:
@@ -39,8 +25,6 @@ share:
   en: '{count} of {size}'
 matches:
   en: '{count} of {size} matches'
-bothReady:
-  en: Both ready
 shareHeld:
   en: '#{number} blocks'
 shareHeldByDraft:

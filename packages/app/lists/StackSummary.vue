@@ -10,6 +10,8 @@ const props = defineProps<{
   now: number;
   /** The signed-in user. */
   viewerLogin: string | null;
+  /** The item opened over the list: when one of the stack's pull requests, its pip is tall (D14). */
+  openedId?: string | null;
 }>();
 
 const stackFacts = useStackFacts({
@@ -24,6 +26,7 @@ const stackFacts = useStackFacts({
   <StackState
     :pips="stack.description.pips"
     :filled="stackFacts.filled"
+    :current="openedId"
     :state="stackFacts.state"
   />
 </template>
