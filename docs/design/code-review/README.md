@@ -1,5 +1,7 @@
 # Code review in githq
 
+> Closed 2026-11-02, ready to build the first step.
+
 ## What this is
 
 Reviewing a pull request — reading its changes file by file, reading and writing comments on lines, and approving
@@ -145,4 +147,5 @@ Applying suggestions, a combined diff across a stack (GitHub has none either), a
 
 ## Where this stands
 
-The decisions are recorded and nothing is open; the screens have not been designed yet.
+The design is closed, with nothing open. The screens have not been designed yet; reading, with the open-draft
+warnings, is built first.

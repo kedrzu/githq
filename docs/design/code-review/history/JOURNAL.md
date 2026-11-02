@@ -58,3 +58,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   only for computing, by measurement → D20 rewritten (old forms in history); file contents kept in IndexedDB, clean-up
   later → D19; agent's keys and landing confirmed → D16. Agent added root-only .gitattributes (D8) and dropping
   expanded context when a file changes (D14). README updated. Nothing open; proposing to close.
+- 2026-11-02 — Owner closed the design. Next on the owner's word: a UI brief for the design agent, then /dev:deliver.
