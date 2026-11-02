@@ -200,7 +200,7 @@ const filesUrl = computed(() => `${props.pr.url}/files`);
     <div :class="css.pullRequestMerge_actions">
       <Button
         v-if="canMerge && !merging"
-        :variant="mergeVerdict.mergeable ? 'light' : 'secondary'"
+        :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"
         :kbd="EDIT_KEYS.merge"
