@@ -2,7 +2,6 @@ import type { RepositoryPermission } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { Item } from '@/store/ItemTypes.js';
 
 /** Which edits of an item the user may make (D14): the others are not offered at all (K1b). */
@@ -23,8 +22,8 @@ export interface EditPermissions {
     /** Add it to a project (the project's own permission is the project's). */
     readonly addToProject: boolean;
     /**
-     * Open the merge panel: an open pull request by WRITE and above, not stacked on another (merging it would merge
-     * those below too, stacked PRs D11) — also while it is being merged, to see that (PM24).
+     * Open the merge panel: an open pull request by WRITE and above — in a stack any open one, the panel showing what
+     * merges with it (stacked PRs D11) — also while it is being merged, to see that (PM24).
      */
     readonly mergePanel: boolean;
     /** Send a merge: what {@link mergePanel} allows, while it is not being merged already. */
@@ -66,9 +65,8 @@ export const NO_EDITS: EditPermissions = {
  * - TRIAGE: apply labels and milestones, assign, close and reopen any issue or pull request, request reviews.
  * - WRITE: also mark a draft ready for review or convert one to a draft (an author may do it to their own), set
  *   the issue type — the REST docs say "only users with push access can set the type"; the roles table does not
- *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it). One stacked on another
- *   is not offered: GitHub merges it with those below it, a stack's merge githq does not make yet (stacked PRs D11).
- *   Updating a pull request's branch pushes to it: WRITE, or its author, whose branch it is.
+ *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it), in a stack together
+ *   with every open one before it (stacked PRs D11). Updating a pull request's branch pushes to it: WRITE, or its author, whose branch it is.
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
@@ -87,7 +85,7 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
     const author = item.author?.login === viewerLogin;
     const merged = item.kind === 'pullRequest' && item.merged;
     const pullRequest = item.kind === 'pullRequest';
-    const mergePanel = item.kind === 'pullRequest' && isOpenPullRequest(item) && write && !isStackedOnAnother(item);
+    const mergePanel = item.kind === 'pullRequest' && isOpenPullRequest(item) && write;
     const merging = item.kind === 'pullRequest' && item.merging !== undefined;
 
     return {

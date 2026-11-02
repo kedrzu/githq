@@ -76,20 +76,21 @@ test('merging: an open pull request, not merged nor being merged, by WRITE, MAIN
     );
 });
 
-test('in a stack only the first pull request merges alone: one stacked on another is not offered (stacked PRs D11)', () => {
+test('any open pull request of a stack may open the merge panel, whatever its place (stacked PRs D11)', () => {
     const pr = samplePullRequest('PR_1');
     const stack = { id: 'PRS_1', number: 3, size: 3 };
 
-    expect(permissions({ ...pr, stack: { ...stack, position: 1 } }, 'ADMIN')).toMatchObject({
-        mergePanel: true,
-        merge: true,
-    });
-    for (const position of [2, 3]) {
+    for (const position of [1, 2, 3]) {
         expect(permissions({ ...pr, stack: { ...stack, position } }, 'ADMIN')).toMatchObject({
-            mergePanel: false,
-            merge: false,
+            mergePanel: true,
+            merge: true,
         });
     }
+
+    expect(permissions({ ...pr, stack: { ...stack, position: 2 } }, 'TRIAGE')).toMatchObject({
+        mergePanel: false,
+        merge: false,
+    });
 });
 
 test('a role is held at or above it: WRITE, MAINTAIN and ADMIN can push; no role holds none', () => {

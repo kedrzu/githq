@@ -1,0 +1,166 @@
+/// <reference types="bun" />
+import { expect, test } from 'bun:test';
+
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
+
+import { getStackMerge } from './getStackMerge.js';
+import { getStackMergeEnd } from './getStackMergeEnd.js';
+import { moveStackMergeEnd } from './moveStackMergeEnd.js';
+import type { StackMerge } from './StackMergeTypes.js';
+
+const MERGED = { state: 'MERGED', merged: true } as const;
+const CLOSED = { state: 'CLOSED' } as const;
+const BLOCKED = { mergeStateStatus: 'BLOCKED' } as const;
+
+test('the range starts at the first open member, merged ones before it listed but not going (D11)', () => {
+    const description = stackOf([MERGED, {}, {}, {}]);
+
+    const merge = getStackMerge({ description, end: null });
+
+    expect(merge.members.map(pip => pip.kind)).toEqual(['merged', 'ready', 'ready', 'ready']);
+    expect(numbers(merge.going)).toEqual([2, 3, 4]);
+    expect(merge.top?.number).toBe(4);
+    expect(merge.forward).toMatchObject({ kind: 'merge', top: { number: 4 }, count: 3 });
+    expect(merge.ordinary).toBe(false);
+    // A line on a merged one moves to the first open one: the range never starts later or earlier.
+    expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
+});
+
+test('↑ and ↓ move the line one open member at a time, clamped to the first and the last open one (D18)', () => {
+    const description = stackOf([MERGED, {}, {}, {}]);
+    const at = (end: number | null) => getStackMerge({ description, end });
+
+    expect(moveStackMergeEnd(at(4), 'earlier')).toBe(3);
+    expect(moveStackMergeEnd(at(3), 'earlier')).toBe(2);
+    expect(moveStackMergeEnd(at(2), 'earlier')).toBe(2);
+    expect(moveStackMergeEnd(at(2), 'later')).toBe(3);
+    expect(moveStackMergeEnd(at(4), 'later')).toBe(4);
+    expect(moveStackMergeEnd(getStackMerge({ description: stackOf([MERGED, MERGED]), end: null }), 'later')).toBe(null);
+});
+
+test('the line never sits on a closed member: it moves over it, and the range keeps everything before (D11)', () => {
+    const description = stackOf([{}, CLOSED, {}]);
+
+    expect(moveStackMergeEnd(getStackMerge({ description, end: 1 }), 'later')).toBe(3);
+    expect(moveStackMergeEnd(getStackMerge({ description, end: 3 }), 'earlier')).toBe(1);
+    expect(numbers(getStackMerge({ description, end: 2 }).going)).toEqual([1]);
+});
+
+test('with exactly one going it is an ordinary merge (SP43)', () => {
+    const description = stackOf([MERGED, {}, {}]);
+
+    expect(getStackMerge({ description, end: 2 })).toMatchObject({ ordinary: true, going: [{ number: 2 }] });
+    expect(getStackMerge({ description, end: 3 }).ordinary).toBe(false);
+});
+
+test('a default line: the whole stack from the entry, everything up to it from a pull request (D11)', () => {
+    const description = stackOf([MERGED, {}, {}, {}]);
+
+    expect(getStackMergeEnd({ description, openedOn: null })).toBe(4);
+    expect(getStackMergeEnd({ description, openedOn: 3 })).toBe(3);
+    expect(getStackMergeEnd({ description: stackOf([MERGED, MERGED]), openedOn: null })).toBe(null);
+});
+
+test('held, the line sits at the last that can land and what holds the next one is named (SP45, D19)', () => {
+    const description = stackOf([{}, {}, BLOCKED, {}]);
+
+    const end = getStackMergeEnd({ description, openedOn: null });
+    expect(end).toBe(2);
+
+    const merge = getStackMerge({ description, end });
+    expect(merge).toMatchObject({ canLand: 2, block: null, forward: { kind: 'merge', count: 2 } });
+    expect(merge.holder).toEqual({ number: 3, kind: 'waiting', waitingForReview: false });
+
+    // Moved past it, the range is held and nothing is sent.
+    const past = getStackMerge({ description, end: 4 });
+    expect(past.block).toEqual({ kind: 'held', blocker: { number: 3, kind: 'waiting', waitingForReview: false } });
+    expect(past.forward).toBe(null);
+});
+
+test('held at the first open one, the line stays where it was opened and nothing can land', () => {
+    const description = stackOf([BLOCKED, {}]);
+
+    expect(getStackMergeEnd({ description, openedOn: null })).toBe(2);
+    expect(getStackMerge({ description, end: 2 })).toMatchObject({
+        canLand: 0,
+        forward: null,
+        block: { kind: 'held' },
+    });
+});
+
+test('a closed member mid-range blocks only those after it; earlier ones can land (SP48)', () => {
+    const description = stackOf([{}, {}, CLOSED, {}]);
+
+    expect(getStackMergeEnd({ description, openedOn: null })).toBe(2);
+    expect(getStackMerge({ description, end: 2 })).toMatchObject({
+        canLand: 2,
+        block: null,
+        forward: { kind: 'merge', count: 2 },
+    });
+    expect(getStackMerge({ description, end: 4 })).toMatchObject({
+        block: { kind: 'closed', closedNumber: 3 },
+        forward: null,
+    });
+});
+
+test('a draft in the range holds it, and the way forward marks it ready (SP49)', () => {
+    const description = stackOf([{}, { isDraft: true }, {}]);
+
+    const merge = getStackMerge({ description, end: 3 });
+
+    expect(merge.block).toMatchObject({ kind: 'held', blocker: { number: 2, kind: 'draft' } });
+    expect(merge.forward).toMatchObject({ kind: 'markReady', pullRequest: { number: 2 } });
+});
+
+test('an incomplete copy never reads ready, and ⌘↵ does nothing (D7, SP50)', () => {
+    const description = stackOf([{}, {}], { size: 3 });
+
+    for (const end of [null, 1, 2]) {
+        const merge = getStackMerge({ description, end });
+        expect(merge).toMatchObject({ canLand: 0, holder: null, block: { kind: 'incomplete' }, forward: null });
+    }
+
+    expect(getStackMergeEnd({ description, openedOn: null })).toBe(2);
+});
+
+test('needing a rebase blocks the whole range, and the way forward is the top open one on GitHub (SP46, D8)', () => {
+    const members = sampleStack({
+        id: 'S_1',
+        number: 1,
+        members: [
+            { headRefName: 'part-1' },
+            { headRefName: 'part-2', baseRefName: 'part-1', behindBase: true },
+            { headRefName: 'part-3', baseRefName: 'part-2' },
+        ],
+    });
+    const description = sampleStackDescription(members);
+
+    for (const end of [1, 2, 3]) {
+        const merge = getStackMerge({ description, end });
+        expect(merge).toMatchObject({
+            canLand: 0,
+            block: { kind: 'needsRebase', behindNumber: 2, cause: { kind: 'earlierPush', pushedNumber: 1 } },
+            forward: { kind: 'rebaseOnGitHub', url: members[2]?.url },
+        });
+    }
+});
+
+test('a rebase needed with a base other than the one before it reads as the target moved (SP47)', () => {
+    const description = stackOf([{ headRefName: 'part-1' }, { baseRefName: 'main', behindBase: true }]);
+
+    expect(getStackMerge({ description, end: null }).block).toMatchObject({ cause: { kind: 'targetMoved' } });
+});
+
+interface DescribeOptions {
+    readonly size?: number;
+}
+
+function stackOf(members: readonly Partial<PullRequestItem>[], options: DescribeOptions = {}): StackDescription {
+    return sampleStackDescription(sampleStack({ id: 'S_1', number: 1, members, size: options.size }));
+}
+
+function numbers(prs: StackMerge['going']): number[] {
+    return prs.map(pr => pr.number);
+}

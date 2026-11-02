@@ -14,7 +14,6 @@ import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { getReasonTitle } from '@/merge/getReasonTitle.js';
 import type { MergeRecord } from '@/merge/MergeTypes.js';
-import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -98,8 +97,7 @@ const note = computed(() => {
     return t(l.nextRefreshSettles);
   }
 
-  // Stacked on another, it merges with its stack (stacked PRs D11), not offered yet — whatever the role.
-  return props.canMerge === false && !isStackedOnAnother(props.pr) ? t(l.cannotMerge) : null;
+  return props.canMerge === false ? t(l.cannotMerge) : null;
 });
 /** "Merge…" opens the panel, and says the way forward it leads to (PM38). */
 const mergeLabel = computed(() => {
