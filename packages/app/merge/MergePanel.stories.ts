@@ -1,4 +1,3 @@
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
@@ -86,7 +85,7 @@ const Harness = defineComponent({
         readLater: { type: Boolean, default: false },
         refusal: { type: Object as PropType<EditFailureReason | null>, default: null },
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
-        sentMethod: { type: String as PropType<PullRequestMergeMethod | null>, default: null },
+        allowed: { type: Boolean, default: true },
     },
     setup(props) {
         const open = ref(true);
@@ -109,10 +108,9 @@ const Harness = defineComponent({
                     settings: props.settings,
                     options: arrived.value ? props.options : null,
                     reading: !arrived.value,
-                    allowed: true,
+                    allowed: props.allowed,
                     sending: false,
                     refusal: refusal.value,
-                    sentMethod: props.sentMethod,
                     now: NOW,
                     onMerge: (request: MergeRequest) => {
                         sent.value = JSON.stringify(request);
@@ -213,7 +211,18 @@ export const RequiredRunning: Story = {
 };
 
 /** PM24: reopened while being merged — amber, nothing to repeat; Esc closes and the merge goes on. */
-export const BeingMerged: Story = { args: { pr: { ...PR, merging: true }, sentMethod: 'SQUASH' } };
+export const BeingMerged: Story = { args: { pr: { ...PR, merging: 'SQUASH' } } };
+
+/**
+ * Merged on GitHub meanwhile (the panel's read, a sync): the primary says so — the viewer, no longer offered to merge
+ * it, is not told they can't merge in the repository.
+ */
+export const MergedMeanwhile: Story = {
+    args: { pr: { ...PR, state: 'MERGED', merged: true, closedAt: '2026-11-02T11:59:00Z' }, allowed: false },
+};
+
+/** Without write access: the primary says the viewer can't merge in this repository. */
+export const NotAllowed: Story = { args: { allowed: false } };
 
 /** PM25: refused at once — GitHub's reason in place; the panel and its text stay, ⌘↵ tries again. */
 export const Refused: Story = { args: { answer: 'refused' } };

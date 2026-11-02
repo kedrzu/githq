@@ -9,6 +9,7 @@ import {
     CircleSlash,
     CircleX,
     Eye,
+    GitMerge,
     GitPullRequestDraft,
     Hourglass,
     Loader,
@@ -53,7 +54,7 @@ export interface ItemKindFact {
 /** Where a pull request stands, in one line ("2 checks failing · changes requested"). */
 export interface ItemStatusFact {
     readonly icon: LucideIcon;
-    readonly tone: 'danger' | 'dim' | 'muted' | 'success' | 'warning';
+    readonly tone: 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
     readonly text: string;
     /** Ready to merge: "Merge" follows where the viewer may merge it, else "Open on GitHub". */
     readonly readyToMerge: boolean;
@@ -121,7 +122,15 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const age = computed(() => formatAge(Date.parse(item.value.updatedAt), now.value));
     const status = computed(() => {
         const listed = item.value;
-        return listed.kind === 'pullRequest' && listed.state === 'OPEN' ? getStatus(listed) : null;
+        if (listed.kind !== 'pullRequest') {
+            return null;
+        }
+
+        if (listed.merged) {
+            return getMergedStatus(listed);
+        }
+
+        return listed.state === 'OPEN' ? getStatus(listed) : null;
     });
     const size = computed(() => {
         const listed = item.value;
@@ -163,6 +172,17 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
         const pullRequestKind = getPullRequestKind(listed);
         return { ...pullRequestKind, label: t(PULL_REQUEST_LABELS[pullRequestKind.tone]) };
+    }
+
+    /** PM37: "Merged · 2m"; without GitHub's time of the merge, merged alone. */
+    function getMergedStatus(pr: PullRequestItem): ItemStatusFact {
+        const at = pr.closedAt;
+        return {
+            icon: GitMerge,
+            tone: 'done',
+            text: at === null ? t(l.merged) : t(l.mergedAgo, { age: formatAge(Date.parse(at), now.value) }),
+            readyToMerge: false,
+        };
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {

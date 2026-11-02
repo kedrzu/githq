@@ -92,6 +92,62 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
     await expect(shell.toasts).toHaveCount(0);
 });
 
+test('PM24: ⇧M on a pull request being merged opens the panel in its being-merged state, with the method sent and no primary action', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
+    const release = sample.world.holdMerges();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+    await expect(myWork.selectedRow).toContainText(SECOND);
+
+    // Back on it: the row still reads being merged.
+    await page.keyboard.press('k');
+    await expect(myWork.selectedRow).toContainText(FIRST);
+    await page.keyboard.press('Shift+M');
+    await expect(panel.root).toContainText('Being merged');
+    await expect(panel.line('Method')).toContainText('Merge commit');
+    await expect(panel.line('Commit')).toHaveCount(0);
+    await expect(panel.root.getByRole('button', { name: /merge/i })).toHaveCount(0);
+    await page.keyboard.press('ControlOrMeta+Enter');
+    expect(getMergeRequests(github)).toHaveLength(1);
+
+    await page.keyboard.press('Escape');
+    await expect(panel.root).toBeHidden();
+    release();
+    await expect(myWork.row(FIRST)).toHaveCount(0, { timeout: 10_000 });
+});
+
+test('D9, PM32a: one pull request checked and merged with ⇧M is unchecked once sent, and the list moves past it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST);
+    await page.keyboard.press('x');
+    await expect(page.getByRole('toolbar')).toContainText('1 selected');
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
+    const release = sample.world.holdMerges();
+    await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(panel.root).toBeHidden();
+    await expect(page.getByRole('toolbar')).toHaveCount(0);
+    await expect(myWork.selectedRow).toContainText(SECOND);
+    release();
+    await expect(myWork.row(FIRST)).toHaveCount(0, { timeout: 10_000 });
+});
+
 test('a merge GitHub refuses at once keeps the panel open with the edited text and says why; nothing is being merged', async ({
     page,
     github,

@@ -8,8 +8,11 @@ import type { MergePanelOpenOptions } from './MergePanelStore.js';
  * is sent (PM32a). Where nobody provides it — a component on its own, in a story — merging is not offered.
  */
 export interface MergeContext {
-    /** Whether the viewer may merge the pull request now (`EditPermissions.merge`); reactive. */
-    canMerge(itemId: string): boolean;
+    /**
+     * Whether the merge panel opens for the pull request (`EditPermissions.mergePanel`): the viewer may merge it, or it
+     * is being merged and the panel shows that (PM24); reactive.
+     */
+    canOpen(itemId: string): boolean;
     /** Opens the merge panel for the pull request. */
     open(itemId: string, options?: MergePanelOpenOptions): void;
 }

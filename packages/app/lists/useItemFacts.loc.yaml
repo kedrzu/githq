@@ -42,4 +42,8 @@ projectField:
 moreProjects:
   en: '+{count}'
 beingMerged:
-  en: Being merged
+  en: Being merged · not merged yet
+merged:
+  en: Merged
+mergedAgo:
+  en: Merged · {age}

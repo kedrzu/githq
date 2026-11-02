@@ -687,7 +687,7 @@ function getProjectOptions(): CommandOption[] {
               v-if="pr"
               :pr="pr"
               :detail="prDetail"
-              :can-merge="permissions ? permissions.merge : null"
+              :can-merge="permissions ? permissions.mergePanel : null"
               @merge="emit('merge')"
             />
 

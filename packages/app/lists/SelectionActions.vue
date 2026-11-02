@@ -1,9 +1,8 @@
-<!-- What can be done to the items selected together in a list (E2, `x`) — with stacks' entries among them, it says how many pull requests and how many entries and rows they span (D20, SP28): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, merge one pull request checked alone (`⇧M`, merging D9 — never several), and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. -->
+<!-- What can be done to the items selected together in a list (E2, `x`) — with stacks' entries among them, it says how many pull requests and how many entries and rows they span (D20, SP28): assign (`A`), label (`L`), set the milestone (`M`) and close (`⇧X`) all of them at once, and clear the selection (Esc). Each action changes only the items the user may change that way — the picker says "2 of 3 editable" — and the others are reported with whatever GitHub refused (K2). A label or a person some of the items have shows half-chosen. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { injectContext } from '@nzyme/vue-utils/context.js';
 import { CircleCheckBig, CircleSlash, Milestone, Tag, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -20,7 +19,6 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import type { EditPermissions } from '@/edits/getEditPermissions.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
-import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Clock } from '@/services/Clock.js';
@@ -53,7 +51,6 @@ const editor = useService(ItemEditor);
 const options = usePickerOptions();
 const editCommands = useEditCommands();
 const clock = useService(Clock);
-const merging = injectContext(MergeContext, { optional: true });
 const opened = ref<SelectionPicker | null>(null);
 const closeMenuOpen = ref(false);
 
@@ -134,8 +131,6 @@ useCommands(
         : [],
       stateTitle: t(l.closeCommand, { count: props.ids.length }),
       edit: apply,
-      // One pull request alone (merging D9): several are never merged together.
-      merge: merging ? pr => merging.open(pr.id) : undefined,
       setField: (place, field, value) =>
         apply({ kind: 'projectFieldInProject', projectId: place.projectId, fieldId: field.id, value }),
       inline: {

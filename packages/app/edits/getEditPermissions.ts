@@ -1,6 +1,8 @@
 import type { RepositoryPermission } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
+import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { Item } from '@/store/ItemTypes.js';
 
 /** Which edits of an item the user may make (D14): the others are not offered at all (K1b). */
@@ -18,7 +20,12 @@ export interface EditPermissions {
     readonly draft: boolean;
     /** Add it to a project (the project's own permission is the project's). */
     readonly addToProject: boolean;
-    /** Merge an open pull request not being merged already. */
+    /**
+     * Open the merge panel: an open pull request by WRITE and above, not stacked on another (merging it would merge
+     * those below too, stacked PRs D11) — also while it is being merged, to see that (PM24).
+     */
+    readonly mergePanel: boolean;
+    /** Send a merge: what {@link mergePanel} allows, while it is not being merged already. */
     readonly merge: boolean;
 }
 
@@ -44,6 +51,7 @@ export const NO_EDITS: EditPermissions = {
     reviewers: false,
     draft: false,
     addToProject: false,
+    mergePanel: false,
     merge: false,
 };
 
@@ -55,7 +63,8 @@ export const NO_EDITS: EditPermissions = {
  * - TRIAGE: apply labels and milestones, assign, close and reopen any issue or pull request, request reviews.
  * - WRITE: also mark a draft ready for review or convert one to a draft (an author may do it to their own), set
  *   the issue type — the REST docs say "only users with push access can set the type"; the roles table does not
- *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it).
+ *   list types — and merge a pull request (GitHub's rules of the branch may still refuse it). One stacked on another
+ *   is not offered: GitHub merges it with those below it, a stack's merge githq does not make yet (stacked PRs D11).
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
@@ -74,6 +83,8 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
     const author = item.author?.login === viewerLogin;
     const merged = item.kind === 'pullRequest' && item.merged;
     const pullRequest = item.kind === 'pullRequest';
+    const mergePanel = item.kind === 'pullRequest' && isOpenPullRequest(item) && write && !isStackedOnAnother(item);
+    const merging = item.kind === 'pullRequest' && item.merging !== undefined;
 
     return {
         comment: true,
@@ -85,7 +96,8 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
         reviewers: pullRequest && triage,
         draft: pullRequest && !merged && item.state === 'OPEN' && (write || author),
         addToProject: true,
-        merge: pullRequest && item.state === 'OPEN' && !merged && !item.merging && write,
+        mergePanel,
+        merge: mergePanel && !merging,
     };
 }
 

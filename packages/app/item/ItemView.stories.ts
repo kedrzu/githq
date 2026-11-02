@@ -84,7 +84,7 @@ export const PullRequestReady: Story = {
 export const PullRequestBeingMerged: Story = {
     args: {
         ...PullRequestReady.args,
-        item: { ...F3_PULL_REQUEST, merging: true },
+        item: { ...F3_PULL_REQUEST, merging: 'SQUASH' },
         editing: {
             ...SAMPLE_MAINTAINER_EDITING,
             permissions: { ...SAMPLE_MAINTAINER_EDITING.permissions, merge: false },

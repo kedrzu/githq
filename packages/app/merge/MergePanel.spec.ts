@@ -4,7 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './MergePanel.stories.js';
 
-const { BeingMerged, BeingRead, MethodGone, Ready, Refused, RequiredFailed } = composeStories(stories);
+const { BeingMerged, BeingRead, MergedMeanwhile, MethodGone, NotAllowed, Ready, Refused, RequiredFailed } =
+    composeStories(stories);
 
 test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub writes its default (D6)', async () => {
     await BeingRead.run();
@@ -119,9 +120,27 @@ test('PM24: reopened while being merged, it says so and offers nothing to repeat
     await BeingMerged.run();
 
     await expect.element(panel()).toHaveTextContent('Being merged');
+    // The method it was sent with, from the merge on its way; the commit text sent is not kept.
+    await expect.element(panel()).toHaveTextContent('MethodSquash');
+    await expect.element(panel()).not.toHaveTextContent('Commit');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
     expect(page.getByRole('button', { name: /merge/iu }).elements()).toEqual([]);
+});
+
+test('found merged meanwhile, the primary says merged — not that the viewer cannot merge here; without write access it does', async () => {
+    await MergedMeanwhile.run();
+
+    await expect.element(page.getByRole('button', { name: 'Merged' })).toBeDisabled();
+    await expect.element(panel()).not.toHaveTextContent("You can't merge in this repository");
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('without write access the primary says the viewer cannot merge in this repository', async () => {
+    await NotAllowed.run();
+
+    await expect.element(page.getByRole('button', { name: "You can't merge in this repository" })).toBeDisabled();
 });
 
 function panel() {

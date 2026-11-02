@@ -56,7 +56,7 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
         reference: `${item.repository.nameWithOwner}#${item.number}`,
         subject: { kind: 'merged' },
         optimistic: {
-            item: current => (current.kind === 'pullRequest' ? { ...current, merging: true } : current),
+            item: current => (current.kind === 'pullRequest' ? { ...current, merging: request.method } : current),
             // GitHub's own copy says it is merged.
             supersededBy: isMerged,
         },
@@ -87,7 +87,7 @@ export function createMergeEdit(params: CreateMergeEditParams): Edit {
                     return merged(clock);
                 case 'pending':
                     onAnswer({ kind: 'accepted' });
-                    return await follow(rest, answer.uuid);
+                    return { kind: 'following', follow: () => follow(rest, answer.uuid) };
                 default:
                     return assertNever(answer);
             }

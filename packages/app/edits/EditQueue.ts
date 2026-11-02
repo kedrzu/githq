@@ -15,7 +15,7 @@ import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, ItemConfirmation } from '@/store/ItemTypes.js';
 
-import type { Edit, EditFailureReason, EditSubject, EditVerdict } from './EditTypes.js';
+import type { Edit, EditAnswer, EditFailureReason, EditSubject, EditVerdict } from './EditTypes.js';
 import { toEditFailureReason } from './toEditFailureReason.js';
 
 /** An edit GitHub did not take, and why. */
@@ -193,7 +193,7 @@ export const EditQueue = defineService({
         /** Runs the edit after the item's edits queued before it, a few items at once. */
         function enqueue(current: Session, edit: Edit): Promise<readonly FailedEdit[]> {
             const previous = current.tails.get(edit.itemId) ?? Promise.resolve();
-            const run = previous.then(() => current.semaphore.run(() => send(current, edit)));
+            const run = previous.then(() => send(current, edit));
             current.tails.set(edit.itemId, run);
             void run.finally(() => {
                 if (current.tails.get(edit.itemId) === run) {
@@ -204,22 +204,19 @@ export const EditQueue = defineService({
         }
 
         async function send(current: Session, edit: Edit): Promise<readonly FailedEdit[]> {
-            // Signed out while it waited: it goes nowhere, never with another account's token.
-            if (!isCurrent(current) || !edit.send) {
+            const answer = await current.semaphore.run(async () => {
+                // Signed out while it waited: it goes nowhere, never with another account's token.
+                const { send: request } = edit;
+                return isCurrent(current) && request
+                    ? await readAnswer(current, edit, () => request(current.account))
+                    : null;
+            });
+            if (answer === null) {
                 return [];
             }
 
-            let verdict: EditVerdict;
-            try {
-                verdict = await edit.send(current.account);
-            } catch (error) {
-                if (isCurrent(current)) {
-                    logger.warn('An edit failed', { subject: edit.subject.kind, reference: edit.reference, error });
-                }
-
-                verdict = { kind: 'rejected', reason: toEditFailureReason(error) };
-            }
-
+            // GitHub goes on with it: asked outside the edits sent at once, so the others do not wait for it.
+            const verdict = answer.kind === 'following' ? await readAnswer(current, edit, answer.follow) : answer;
             if (!isCurrent(current)) {
                 return [];
             }
@@ -259,6 +256,23 @@ export const EditQueue = defineService({
 
             markUndone(current, edit);
             return [{ edit, reason: verdict.reason }];
+        }
+
+        /** GitHub's answer to `request`; one that rejects — not reached, or an error — is a rejection of the edit. */
+        async function readAnswer<T extends EditAnswer>(
+            current: Session,
+            edit: Edit,
+            request: () => Promise<T>,
+        ): Promise<T | EditVerdict> {
+            try {
+                return await request();
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('An edit failed', { subject: edit.subject.kind, reference: edit.reference, error });
+                }
+
+                return { kind: 'rejected', reason: toEditFailureReason(error) };
+            }
         }
 
         /**

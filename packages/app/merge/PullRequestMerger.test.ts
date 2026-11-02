@@ -32,13 +32,13 @@ test('accepted: the panel learns at once; the row reads being merged — not mer
     await session.clock.advance(0);
 
     expect(await answering).toEqual({ kind: 'accepted' });
-    expect(items.get('PR_1')).toMatchObject({ merging: true, merged: false, state: 'OPEN' });
+    expect(items.get('PR_1')).toMatchObject({ merging: 'SQUASH', merged: false, state: 'OPEN' });
     expect(queue.pending).toHaveLength(1);
 
     // Asked again and again while GitHub runs it.
     await session.clock.advance(3000);
     expect(rest.reads()).toBe(2);
-    expect(items.get('PR_1')).toMatchObject({ merging: true, merged: false, state: 'OPEN' });
+    expect(items.get('PR_1')).toMatchObject({ merging: 'SQUASH', merged: false, state: 'OPEN' });
 
     rest.answers.read = MERGED;
     await session.clock.advance(4000);
@@ -148,7 +148,7 @@ test('a failed answer while it runs is a failed edit with GitHub’s words; a re
     rest.answers.read = undefined;
     await session.clock.advance(3000);
     expect(rest.reads()).toBe(2);
-    expect(items.get('PR_1')).toMatchObject({ merging: true });
+    expect(items.get('PR_1')).toMatchObject({ merging: 'SQUASH' });
 
     rest.answers.read = {
         status: 200,
@@ -173,7 +173,7 @@ test('no answer within the time limit: being merged goes, with no failure, and n
     expect(await answering).toEqual({ kind: 'accepted' });
 
     await session.clock.advance(119_000);
-    expect(items.get('PR_1')).toMatchObject({ merging: true });
+    expect(items.get('PR_1')).toMatchObject({ merging: 'SQUASH' });
 
     await session.clock.advance(1000);
 
@@ -207,9 +207,9 @@ test('never sent for a non-writer, a closed or merged pull request, or one being
             shown,
         }),
     ).toEqual(notAllowed);
-    expect(await merger.merge({ item: { ...open(), merging: true }, request: { method: 'SQUASH' }, shown })).toEqual(
-        notAllowed,
-    );
+    expect(
+        await merger.merge({ item: { ...open(), merging: 'SQUASH' }, request: { method: 'SQUASH' }, shown }),
+    ).toEqual(notAllowed);
     expect(rest.puts()).toEqual([]);
 
     // The row the panel holds may not show it yet: the merge on its way says so.

@@ -28,6 +28,7 @@ import { usePullRequestVerdict } from '@/item/usePullRequestVerdict.js';
 import type { PullRequestVerdictTone } from '@/item/usePullRequestVerdict.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
@@ -47,14 +48,15 @@ const props = defineProps<{
   options: MergeOptions | null;
   /** The read is on its way. */
   reading: boolean;
-  /** The viewer may merge it (`ItemEditor`'s permissions). */
+  /**
+   * The viewer may merge it, as far as their role and its place go (`EditPermissions.mergePanel`): open, by WRITE and
+   * above. Being merged it still is; what may be sent the panel works out itself.
+   */
   allowed: boolean;
   /** A merge is sent and GitHub has not answered yet. */
   sending: boolean;
   /** Why GitHub refused the merge sent from this panel at once (PM25). */
   refusal: EditFailureReason | null;
-  /** The method of the merge GitHub accepted, for a panel reopened while it runs (PM24); `null` when not known. */
-  sentMethod: PullRequestMergeMethod | null;
   /** Epoch ms a running check's time is counted to. */
   now: number;
 }>();
@@ -106,7 +108,7 @@ const editing = ref(false);
 const editWhenRead = ref(false);
 const checksOpen = ref(false);
 
-const merging = computed(() => props.pr.merging === true);
+const merging = computed(() => props.pr.merging !== undefined);
 const counts = computed(() => (props.options ? countMergeChecks(props.options.checks) : null));
 const hasAttention = computed(() => props.options !== null && getAttentionChecks(props.options.checks).length > 0);
 
@@ -185,14 +187,14 @@ const bodyLineCount = computed(() => (draft.value?.body.trimEnd() ?? '').split('
 
 const canSend = computed(() => props.allowed && ready.value && method.value !== null && !props.sending);
 const choosable = computed(() => !props.reading && methods.value.length > 1 && !editing.value && !merging.value);
-const shownMethod = computed(() => (merging.value ? props.sentMethod : method.value));
+/** While being merged, the method it was sent with (PM24). */
+const shownMethod = computed(() => props.pr.merging ?? method.value);
 const showChecks = computed(
   () => !editing.value && (verdict.value.kind === 'ready' || verdict.value.kind === 'blocked'),
 );
 const showLanding = computed(() => {
   switch (verdict.value.kind) {
     case 'merging':
-      return props.sentMethod !== null;
     case 'refused':
       return true;
     case 'ready':
@@ -204,7 +206,8 @@ const showLanding = computed(() => {
   }
 });
 const primaryLabel = computed(() => {
-  if (!props.allowed) {
+  // Merged or closed meanwhile (the read, a sync): that is what stops it, whatever the role.
+  if (!props.allowed && isOpenPullRequest(props.pr)) {
     return t(l.notAllowed);
   }
 

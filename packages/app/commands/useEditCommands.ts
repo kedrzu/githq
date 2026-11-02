@@ -311,13 +311,14 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     }
 
     /**
-     * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — the first of the
-     * actions; never for several items, which merge one at a time.
+     * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
+     * merged, for the panel to say so (PM24) — the first of the actions; never for several items, which merge one at
+     * a time.
      */
     function mergeCommand(params: EditCommandsParams): Command | null {
         const pr = getOnePullRequest(params);
         const { merge } = params;
-        if (!pr || !merge || !params.getPermissions(pr).merge) {
+        if (!pr || !merge || !params.getPermissions(pr).mergePanel) {
             return null;
         }
 

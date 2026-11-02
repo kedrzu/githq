@@ -438,7 +438,7 @@ interface OpenedMerge {
 function sampleMerging(allowed: readonly string[]) {
     const panels: OpenedMerge[] = [];
     const context: MergeContext = {
-        canMerge: id => allowed.includes(id),
+        canOpen: id => allowed.includes(id),
         open: (id, options) => panels.push({ id, options }),
     };
     return { context, panels };
@@ -450,7 +450,7 @@ const MergeButton = defineComponent({
     setup(props) {
         const merging = injectContext(MergeContext, { optional: true });
         return () =>
-            merging?.canMerge(props.id)
+            merging?.canOpen(props.id)
                 ? h(
                       'button',
                       {
@@ -494,7 +494,7 @@ test('without a context menu, or off the rows, a right-click leaves the browser 
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });
 
-test('⇧M merges the selected pull request the viewer may merge — never one they may not, never with rows checked; once sent, the list moves to the next row (PM32a)', async () => {
+test('⇧M merges the selected pull request the viewer may merge — never one they may not, never several checked; once sent, the list moves to the next row (PM32a)', async () => {
     const merging = sampleMerging(['a1', 'a2']);
     const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
     const registry = view.container.resolve(CommandRegistry);
@@ -510,8 +510,8 @@ test('⇧M merges the selected pull request the viewer may merge — never one t
     merging.panels[0]?.options?.onSent?.();
     await expect.poll(() => view.selectedId.value).toBe('a2');
 
-    // One checked is the selection's to merge, several never are: the selected row's is not offered.
-    view.checkedIds.value = ['a2'];
+    // Several are never merged together: nothing is offered.
+    view.checkedIds.value = ['a1', 'a2'];
     await expect.poll(offered).toBe(false);
     await userEvent.keyboard('{Shift>}M{/Shift}');
     view.checkedIds.value = [];
@@ -521,6 +521,29 @@ test('⇧M merges the selected pull request the viewer may merge — never one t
     expect(offered()).toBe(false);
     await userEvent.keyboard('{Shift>}M{/Shift}');
     expect(merging.panels.map(panel => panel.id)).toEqual(['a1']);
+});
+
+test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected row is; once sent it is unchecked and the list moves past it', async () => {
+    const merging = sampleMerging(['a2']);
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
+    const registry = view.container.resolve(CommandRegistry);
+
+    await userEvent.keyboard('j');
+    await expect.poll(() => view.selectedId.value).toBe('a1');
+    view.checkedIds.value = ['a2'];
+    // Ahead of an opened item's, in the selection's section.
+    await expect
+        .poll(() => registry.commands.some(command => command.id === 'selection.merge' && registry.isEnabled(command)))
+        .toBe(true);
+
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => panel.id)).toEqual(['a2']);
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+    expect(view.checkedIds.value).toEqual(['a2']);
+
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(() => view.selectedId.value).toBe('a3');
+    expect(view.checkedIds.value).toEqual([]);
 });
 
 test('a row\'s "Merge" selects its row and opens the panel; once sent, the list moves on from it', async () => {

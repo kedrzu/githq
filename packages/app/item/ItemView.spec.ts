@@ -372,8 +372,9 @@ test('PM33: being merged never reads merged — the pill stays Open, the verdict
     await expect.element(page.getByText('Waiting for GitHub')).toBeVisible();
     await expect.element(page.getByText("You can't merge in this repository")).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Merge…' })).not.toBeInTheDocument();
+    // PM24: ⇧M still opens the panel, which says it is being merged.
     await userEvent.keyboard('{Shift>}M{/Shift}');
-    expect(onMerge).not.toHaveBeenCalled();
+    expect(onMerge).toHaveBeenCalledOnce();
 });
 
 test('JKPLA: a failing check the base branch requires is tagged "Required"; a running one is not', async () => {

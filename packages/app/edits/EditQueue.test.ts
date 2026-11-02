@@ -31,6 +31,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
 import type { EditFailure } from './EditQueue.js';
+import type { Edit, EditAnswer, EditVerdict } from './EditTypes.js';
 import { ItemEditor } from './ItemEditor.js';
 
 const BUG: ItemLabel = { name: 'bug', color: 'd73a4a' };
@@ -228,6 +229,57 @@ test('a change of several items reports the ones that failed of all, and undoes 
     expect(items.get('I_2')?.labels).toEqual([BUG]);
     expect(items.get('I_3')?.labels).toEqual([BUG]);
     expect(github.mutations().map(request => request.variables.labelableId)).toEqual(['I_1', 'I_2']);
+});
+
+test('an edit GitHub took and goes on with holds no slot: with four running another item’s edit goes at once, while the item’s own later edit waits', async () => {
+    const { editor, queue, github, session } = await setup();
+    const account = { login: github.viewer, token: github.token };
+    const running = createPromise<EditVerdict>();
+    const follow = () => running.promise;
+    const sent: string[] = [];
+
+    const followed = queue.submit({
+        edits: ['PR_1', 'PR_2', 'PR_3', 'PR_4'].map(id => sampleEdit(id, { kind: 'following', follow })),
+        account,
+        itemCount: 4,
+    });
+    await session.clock.advance(0);
+
+    const other = editor.edit(['I_1'], { kind: 'labels', add: ['regression'], remove: [] });
+    await session.clock.advance(0);
+    expect(github.mutations()).toHaveLength(1);
+    expect(await other).toEqual({ failed: [] });
+
+    const later = queue.submit({
+        edits: [{ ...sampleEdit('PR_1', { kind: 'unknown' }), send: sendLater }],
+        account,
+        itemCount: 1,
+    });
+    await session.clock.advance(0);
+    expect(sent).toEqual([]);
+
+    running.resolve({ kind: 'unknown' });
+    expect(await followed).toEqual({ failed: [] });
+    expect(await later).toEqual({ failed: [] });
+    expect(sent).toEqual(['PR_1']);
+    expect(queue.pending).toEqual([]);
+
+    function sendLater() {
+        sent.push('PR_1');
+        return Promise.resolve<EditAnswer>({ kind: 'unknown' });
+    }
+});
+
+test('asking how an edit GitHub took ended rejects: it is undone and reported like one refused', async () => {
+    const { queue, github, session } = await setup();
+    const account = { login: github.viewer, token: github.token };
+    const answer: EditAnswer = { kind: 'following', follow: () => Promise.reject(new Error('Offline')) };
+
+    const outcome = await queue.submit({ edits: [sampleEdit('PR_1', answer)], account, itemCount: 1 });
+    await session.clock.advance(0);
+
+    expect(outcome.failed).toHaveLength(1);
+    expect(queue.pending).toEqual([]);
 });
 
 test('the edits waiting when the user signs out are dropped, never sent with the next account’s token', async () => {
@@ -526,6 +578,17 @@ async function setup(options: SetupOptions = {}) {
             data: adding ? { addLabelsToLabelable: { labelable } } : { removeLabelsFromLabelable: { labelable } },
         };
     }
+}
+
+/** An edit of `itemId` drawing nothing, that GitHub answers with `answer`. */
+function sampleEdit(itemId: string, answer: EditAnswer): Edit {
+    return {
+        itemId,
+        reference: `acme/web#${itemId}`,
+        subject: { kind: 'merged' },
+        optimistic: { item: current => current },
+        send: () => Promise.resolve(answer),
+    };
 }
 
 function stored(id = 'I_1'): IssueItem {

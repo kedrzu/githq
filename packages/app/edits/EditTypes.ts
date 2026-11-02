@@ -119,6 +119,20 @@ export type EditVerdict =
      */
     | { readonly kind: 'unknown' };
 
+/**
+ * What sending an edit answers: GitHub's verdict, or that GitHub took it and works on (`EditFollowUp`).
+ */
+export type EditAnswer = EditVerdict | EditFollowUp;
+
+/**
+ * GitHub took the edit and goes on with it (a merge, for up to minutes). `follow` asks how it ended, outside the few
+ * edits sent at once: the rest of the app's edits do not wait for it, only the item's later ones (merging D3).
+ */
+export interface EditFollowUp {
+    readonly kind: 'following';
+    readonly follow: () => Promise<EditVerdict>;
+}
+
 /** The parts of a confirmed edit GitHub did not take. */
 export interface EditPartialFailure {
     /** The item as GitHub names it now (an issue created under a temporary id). */
@@ -147,7 +161,7 @@ export interface Edit {
      * Sends it and reads GitHub's answer; rejects when GitHub could not be reached or answered with an error. Not
      * there for an edit that cannot be sent at all (`failure` says why).
      */
-    readonly send?: (account: Account) => Promise<EditVerdict>;
+    readonly send?: (account: Account) => Promise<EditAnswer>;
     /** Why it fails without being sent. */
     readonly failure?: EditFailureReason;
 }

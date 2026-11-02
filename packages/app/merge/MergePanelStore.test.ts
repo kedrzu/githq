@@ -44,7 +44,6 @@ test('accepted: the panel leaves and the opener moves on; refused at once: it st
     expect(await accepted).toEqual({ kind: 'accepted' });
     expect(panel.itemId).toBeNull();
     expect(sent).toEqual(['PR_1']);
-    expect(panel.getSentMethod('PR_1')).toBe('SQUASH');
 });
 
 test('closed before GitHub answers: the opener does not move on, and a refusal is reported like a failed edit', async () => {

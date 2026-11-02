@@ -297,6 +297,10 @@ const hasFooter = computed(
   color: $color-amber;
 }
 
+.itemCard_status_done {
+  color: $color-purple;
+}
+
 .itemCard_status_success {
   color: $color-green;
 }

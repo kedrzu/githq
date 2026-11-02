@@ -88,10 +88,9 @@ async function merge(request: MergeRequest) {
     :settings="settings"
     :options="read.options"
     :reading="read.reading"
-    :allowed="editor.getPermissions(pr).merge"
+    :allowed="editor.getPermissions(pr).mergePanel"
     :sending="sending"
     :refusal="refusal"
-    :sent-method="store.getSentMethod(pr.id)"
     :now="now"
     @merge="merge"
   />

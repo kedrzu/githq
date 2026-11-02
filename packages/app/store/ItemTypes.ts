@@ -5,6 +5,7 @@ import type {
     MergeableState,
     MergeStateStatus,
     ProjectV2SingleSelectFieldOptionColor,
+    PullRequestMergeMethod,
     PullRequestReviewDecision,
     PullRequestReviewState,
     PullRequestState,
@@ -72,9 +73,10 @@ export interface PullRequestItem extends ItemBase, PullRequestStatus {
     /**
      * The user's merge of it is on its way: GitHub accepted it, or has not answered yet (merging D3, D14). The app's
      * own mark, never from GitHub nor stored: only the merge's optimistic layer draws it, and it goes with the layer
-     * — merged once GitHub confirms, as before when it refuses or does not say in time.
+     * — merged once GitHub confirms, as before when it refuses or does not say in time. The method it was sent with:
+     * the merge panel reopened meanwhile says it (PM24).
      */
-    readonly merging?: true;
+    readonly merging?: PullRequestMergeMethod;
 }
 
 /**

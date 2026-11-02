@@ -21,6 +21,7 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { isStackedOnAnother } from '@/store/isStackedOnAnother.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -35,8 +36,8 @@ const props = defineProps<{
   /** Read with the opened item; the branch's owner comes from it. */
   detail?: PullRequestDetail | null;
   /**
-   * The viewer may merge it (`EditPermissions.merge`): "Merge…" is offered; `false` says they can't, while it is
-   * open and not being merged. `null` when not known: neither shows.
+   * The viewer may merge it (`EditPermissions.mergePanel`): "Merge…" is offered while it is not being merged; `false`
+   * says they can't, while it is open, not being merged and merges alone. `null` when not known: neither shows.
    */
   canMerge?: boolean | null;
 }>();
@@ -62,7 +63,7 @@ const names = new Intl.ListFormat(APP_LANGUAGE);
 const standing = computed(() => getPullRequestStanding(props.pr));
 const { verdict, mergeable } = usePullRequestVerdict(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
-const merging = computed(() => props.pr.merging === true);
+const merging = computed(() => props.pr.merging !== undefined);
 /** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
 const note = computed(() => {
   if (!open.value || props.pr.merged) {
@@ -73,7 +74,8 @@ const note = computed(() => {
     return t(l.waitingForGitHub);
   }
 
-  return props.canMerge === false ? t(l.cannotMerge) : null;
+  // Stacked on another, it merges with its stack (stacked PRs D11), not offered yet — whatever the role.
+  return props.canMerge === false && !isStackedOnAnother(props.pr) ? t(l.cannotMerge) : null;
 });
 
 const conditions = computed((): { label: string; line: Line }[] => [
@@ -232,7 +234,7 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        v-if="canMerge"
+        v-if="canMerge && !merging"
         :variant="mergeable ? 'light' : 'secondary'"
         size="sm"
         :icon="GitMerge"

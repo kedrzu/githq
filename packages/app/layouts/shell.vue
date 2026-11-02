@@ -66,9 +66,9 @@ const mergePanel = useService(MergePanelStore);
 
 // Merging from the screens' lists (merging D9): the rows and keys of a pull request the viewer may merge offer it.
 provideContext(MergeContext, {
-  canMerge: id => {
+  canOpen: id => {
     const item = items.get(id);
-    return item?.kind === 'pullRequest' && editor.getPermissions(item).merge;
+    return item?.kind === 'pullRequest' && editor.getPermissions(item).mergePanel;
   },
   open: (id, options) => mergePanel.open(id, options),
 });

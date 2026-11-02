@@ -44,23 +44,43 @@ test('nothing is editable in an archived repository, one GitHub does not say the
     });
 });
 
-test('merging: an open pull request, not merged nor being merged, by WRITE, MAINTAIN or ADMIN', () => {
+test('merging: an open pull request, not merged nor being merged, by WRITE, MAINTAIN or ADMIN; the panel opens while it is being merged', () => {
     const pr = samplePullRequest('PR_1');
+    const both = { mergePanel: true, merge: true };
+    const neither = { mergePanel: false, merge: false };
     for (const role of ['WRITE', 'MAINTAIN', 'ADMIN'] as const) {
-        expect(permissions(pr, role).merge).toBe(true);
+        expect(permissions(pr, role)).toMatchObject(both);
     }
 
     for (const role of ['READ', 'TRIAGE', 'TRIAGE_PLUS', null] as const) {
-        expect(permissions(mine(pr), role).merge).toBe(false);
+        expect(permissions(mine(pr), role)).toMatchObject(neither);
     }
 
-    expect(permissions({ ...pr, state: 'CLOSED' }, 'ADMIN').merge).toBe(false);
-    expect(permissions({ ...pr, state: 'MERGED', merged: true }, 'ADMIN').merge).toBe(false);
-    expect(permissions({ ...pr, merging: true }, 'ADMIN').merge).toBe(false);
-    expect(permissions(sampleIssue('I_1'), 'ADMIN').merge).toBe(false);
-    expect(getEditPermissions({ item: pr, viewerLogin: VIEWER, permission: 'ADMIN', archived: true }).merge).toBe(
-        false,
+    expect(permissions({ ...pr, state: 'CLOSED' }, 'ADMIN')).toMatchObject(neither);
+    expect(permissions({ ...pr, state: 'MERGED', merged: true }, 'ADMIN')).toMatchObject(neither);
+    // PM24: the panel shows the merge on its way; nothing is sent again.
+    expect(permissions({ ...pr, merging: 'SQUASH' }, 'ADMIN')).toMatchObject({ mergePanel: true, merge: false });
+    expect(permissions({ ...pr, merging: 'SQUASH' }, 'TRIAGE')).toMatchObject(neither);
+    expect(permissions(sampleIssue('I_1'), 'ADMIN')).toMatchObject(neither);
+    expect(getEditPermissions({ item: pr, viewerLogin: VIEWER, permission: 'ADMIN', archived: true })).toMatchObject(
+        neither,
     );
+});
+
+test('in a stack only the first pull request merges alone: one stacked on another is not offered (stacked PRs D11)', () => {
+    const pr = samplePullRequest('PR_1');
+    const stack = { id: 'PRS_1', number: 3, size: 3 };
+
+    expect(permissions({ ...pr, stack: { ...stack, position: 1 } }, 'ADMIN')).toMatchObject({
+        mergePanel: true,
+        merge: true,
+    });
+    for (const position of [2, 3]) {
+        expect(permissions({ ...pr, stack: { ...stack, position } }, 'ADMIN')).toMatchObject({
+            mergePanel: false,
+            merge: false,
+        });
+    }
 });
 
 test('a role is held at or above it: WRITE, MAINTAIN and ADMIN can push; no role holds none', () => {

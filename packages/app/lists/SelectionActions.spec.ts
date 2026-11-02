@@ -1,14 +1,12 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { provideContext } from '@nzyme/vue-utils/context.js';
 import { expect, onTestFinished, test } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { page } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import { MergeContext } from '@/merge/MergeContext.js';
 import { Browser } from '@/services/Browser.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -45,33 +43,8 @@ test('with an issue among them they are items; without a stack the count stands 
     await expect.element(toolbar).toHaveTextContent(/^4 selected/);
 });
 
-test('D9: ⇧M opens the merge panel for one pull request checked alone', async () => {
-    const opened: string[] = [];
-    await mount(
-        PULL_REQUESTS.slice(0, 1),
-        { entries: 0, rows: 1 },
-        { canMerge: () => true, open: id => opened.push(id) },
-    );
-
-    await userEvent.keyboard('{Shift>}M{/Shift}');
-    expect(opened).toEqual(['PR_1']);
-});
-
-test('D9: several checked pull requests are never merged together — no "Merge…", ⇧M does nothing', async () => {
-    const opened: string[] = [];
-    const view = await mount(
-        PULL_REQUESTS.slice(0, 2),
-        { entries: 0, rows: 2 },
-        { canMerge: () => true, open: id => opened.push(id) },
-    );
-
-    expect(view.registry.commands.some(command => command.id === 'selection.merge')).toBe(false);
-    await userEvent.keyboard('{Shift>}M{/Shift}');
-    expect(opened).toEqual([]);
-});
-
-/** The bar over `items`, all selected, spanning `span` in the list; merging offered when `merging` is given. */
-async function mount(items: readonly Item[], initial: SelectionSpan, merging?: MergeContext) {
+/** The bar over `items`, all selected, spanning `span` in the list. */
+async function mount(items: readonly Item[], initial: SelectionSpan) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     // Nothing reaches GitHub: the pickers' options stay loading.
@@ -85,13 +58,7 @@ async function mount(items: readonly Item[], initial: SelectionSpan, merging?: M
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({
-        setup: () => {
-            if (merging) {
-                provideContext(MergeContext, merging);
-            }
-
-            return () => h(SelectionActions, { ids: items.map(item => item.id), span: span.value });
-        },
+        setup: () => () => h(SelectionActions, { ids: items.map(item => item.id), span: span.value }),
     });
     app.use(IocPlugin, { container });
     app.mount(host);

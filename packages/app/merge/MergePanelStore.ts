@@ -1,4 +1,3 @@
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { shallowRef } from 'vue';
@@ -29,8 +28,6 @@ export const MergePanelStore = defineService({
         const itemIdRef = shallowRef<string | null>(null);
         const openingRef = shallowRef(0);
         let onSent: (() => void) | undefined;
-        /** The method of the merge GitHub accepted last, per pull request: the panel reopened while it runs says it. */
-        const sentMethods = new Map<string, PullRequestMergeMethod>();
 
         return {
             /** The pull request the panel is open for; `null` while it is closed. Reactive. */
@@ -44,7 +41,6 @@ export const MergePanelStore = defineService({
             open,
             close,
             merge,
-            getSentMethod,
         };
 
         /** Opens the panel for a pull request, in place of whatever it was open for. */
@@ -67,13 +63,10 @@ export const MergePanelStore = defineService({
         async function merge(item: PullRequestItem, request: MergeRequest): Promise<MergeAnswer> {
             const opening = openingRef.value;
             const answer = await merger.merge({ item, request, shown });
-            if (answer.kind === 'accepted') {
-                sentMethods.set(item.id, request.method);
-                if (shown()) {
-                    const sent = onSent;
-                    close();
-                    sent?.();
-                }
+            if (answer.kind === 'accepted' && shown()) {
+                const sent = onSent;
+                close();
+                sent?.();
             }
 
             return answer;
@@ -81,11 +74,6 @@ export const MergePanelStore = defineService({
             function shown() {
                 return openingRef.value === opening && itemIdRef.value === item.id;
             }
-        }
-
-        /** The method of the merge GitHub accepted last for the pull request, in this session; `null` for none. */
-        function getSentMethod(itemId: string) {
-            return sentMethods.get(itemId) ?? null;
         }
     },
 });
