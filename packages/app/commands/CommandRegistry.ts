@@ -21,7 +21,7 @@ export interface CommandMenuRequest {
 }
 
 /** The keys of the app's own actions, wherever the app draws them: the command menu, the help sheet, the sidebar. */
-export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', sidebar: '[' } as const;
+export const APP_KEYS = { commandMenu: 'Mod+K', help: '?', settings: ',', sidebar: '[' } as const;
 
 /** The key of a new issue (H1): the app's, and a project's own where it starts in that project (H5). */
 export const NEW_ISSUE_KEY = 'C';
@@ -152,10 +152,10 @@ export const CommandRegistry = defineService({
 /**
  * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
- * the items behind it).
+ * the items behind it), nor from an open menu, which would stay open over wherever the key went.
  */
 function isFreeTarget(target: EventTarget | null, key: string) {
-    if (target instanceof Element && target.closest('[data-no-commands]') !== null) {
+    if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 

@@ -1,8 +1,7 @@
-<!-- `/settings/tracking` (`?tab=projects` for the projects): changing what is tracked, later (G8). Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the page opens, once a session) and anyone's by name, and keeps the organisations hiding their data in view. -->
+<!-- The Repositories and Projects sections of Settings (G8): changing what is tracked, later. Lists what is tracked with how fresh it is, suggests the repositories the user's work lives in, offers what the user and their organisations have (read from GitHub when the section opens, once a session) and anyone's by name, and keeps the organisations hiding their data in view. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 import { useNow } from '@/services/useNow.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -23,23 +22,23 @@ import { haveOpenItemsArrived } from './utils/haveOpenItemsArrived.js';
 
 /** How often the rows' "14s ago" move on. */
 const TICK_MS = 15_000;
-/** How many of the repositories "my work" lives in the page suggests. */
+/** How many of the repositories "my work" lives in the section suggests. */
 const SUGGESTED = 8;
+
+defineProps<{
+  /** Which of the two sections it is. */
+  tab: TrackingTab;
+  /** What its search field holds when it opens (`?q=`, from an untracked repository's or project's screen). */
+  initialSearch?: string;
+}>();
 
 const tracking = useService(TrackingStore);
 const approvals = useService(ApprovalRequests);
 const items = useService(ItemStore);
 const trackedItems = useService(TrackedItems);
 const sync = useService(SyncEngine);
-const route = useRoute();
-const router = useRouter();
 
 const now = useNow(TICK_MS);
-
-const tab = computed({
-  get: (): TrackingTab => (route.query.tab === 'projects' ? 'projects' : 'repositories'),
-  set: value => void router.replace({ query: value === 'projects' ? { tab: 'projects' } : {} }),
-});
 
 const tracked = computed(() => ({
   repositories: tracking.repositories.map((repository): TrackedRow => {
@@ -142,7 +141,8 @@ function track(candidate: CandidateProject | CandidateRepository) {
 
 <template>
   <TrackingView
-    v-model:tab="tab"
+    :tab="tab"
+    :initial-search="initialSearch"
     :tracked="tracked"
     :suggested="suggested"
     :candidates="tracking.candidates"

@@ -4,10 +4,10 @@ import { stringifyQuery } from 'vue-router';
 
 import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
-import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
-import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
+import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
 import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
+import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
     FIRST_DOWNLOAD_PATH,
@@ -94,19 +94,17 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         component: () => import('@/tracking/FirstDownloadPage.vue'),
         meta: { auth: 'signedIn', firstSignIn: 'download' },
     };
-    // Changing what is tracked, later (G8).
+    // Settings, one screen (D15), its section in `?tab=`. The address tracking used to have settles on it, so an
+    // old link never hands off to github.com.
     yield {
-        path: TRACKING_PATH,
-        name: 'tracking',
-        component: () => import('@/tracking/TrackingPage.vue'),
+        path: SETTINGS_PATH,
+        name: 'settings',
+        component: () => import('@/settings/SettingsPage.vue'),
         meta: { auth: 'signedIn', layout: 'shell' },
     };
-    // The account (G9).
     yield {
-        path: ACCOUNT_PATH,
-        name: 'account',
-        component: () => import('@/account/AccountPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell' },
+        path: `${SETTINGS_PATH}/tracking`,
+        redirect: to => ({ path: SETTINGS_PATH, query: to.query, hash: to.hash }),
     };
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
     // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.

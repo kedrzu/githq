@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository offers to track it; its copy then arrives in place. -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -49,8 +49,6 @@ const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
 
 const state = ref<RepositoryState>('open');
-const notFound = ref(false);
-const trackBusy = ref(false);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
@@ -153,7 +151,6 @@ useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, de
 watch(
   [nameWithOwner, tracked],
   ([repository, isTracked]) => {
-    notFound.value = false;
     if (isTracked) {
       void repositories.ensure(repository);
     }
@@ -218,20 +215,6 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       return assertNever(grouping);
   }
 }
-
-async function track() {
-  trackBusy.value = true;
-  try {
-    const found = await tracking.findCandidate({ kind: 'repository', owner: owner.value, name: name.value });
-    if (found && 'nameWithOwner' in found) {
-      tracking.track({ repository: { nameWithOwner: found.nameWithOwner, id: found.id } });
-    } else {
-      notFound.value = true;
-    }
-  } finally {
-    trackBusy.value = false;
-  }
-}
 </script>
 
 <template>
@@ -255,14 +238,11 @@ async function track() {
     :opened-id="list.openedId"
     :undone="list.undone"
     :can-move="canMove"
-    :not-found="notFound"
-    :track-busy="trackBusy"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
     @listed="list.setListed"
     @move="move"
-    @track="track"
   >
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />

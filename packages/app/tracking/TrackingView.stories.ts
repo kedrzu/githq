@@ -56,7 +56,6 @@ const meta = {
         approvals: { 'acme-health': Date.parse('2026-10-28T10:00:00Z') },
         now: SAMPLE_NOW,
         find: fn(() => Promise.resolve(null)),
-        'onUpdate:tab': fn(),
         onUntrack: fn(),
         onTrackSuggested: fn(),
         onTrack: fn(),

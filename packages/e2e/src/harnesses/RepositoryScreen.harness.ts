@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 /**
  * Playwright harness for a repository's view (`RepositoryView.vue`, on `/owner/name` and its lists
  * `/owner/name/issues` and `/owner/name/pulls`): the title opening its menu, the kind tabs, the toolbar's grouping and layout, its groups —
- * named sections, or a board's columns — and their rows; untracked, the callout offering to track it (J3).
+ * named sections, or a board's columns — and their rows; untracked, the lines saying what githq has of it (J3).
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -45,14 +45,9 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('group', { name: 'Layout' }).getByRole('button', { name, exact: true });
     }
 
-    /** The callout of an untracked repository (J3). */
+    /** The lines under an untracked repository's list (J3). */
     notTracked(nameWithOwner: string): Locator {
         return this.root.getByRole('region', { name: `You're not tracking ${nameWithOwner}` });
-    }
-
-    /** The callout's "Track owner/name". */
-    trackButton(nameWithOwner: string): Locator {
-        return this.root.getByRole('button', { name: `Track ${nameWithOwner}` });
     }
 
     /** The row or card selected with j/k or a click (`aria-current="true"`). */

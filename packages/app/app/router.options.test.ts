@@ -3,10 +3,10 @@ import { expect, test } from 'bun:test';
 import type { RouteLocation } from 'vue-router';
 import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 
-import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
-import { TRACKING_CHOICE_PATH, TRACKING_PATH } from '@/auth/routeAccess.js';
+import { TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import { getItemPagePath } from '@/item/itemRoutes.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
     FIRST_DOWNLOAD_PATH,
@@ -45,8 +45,8 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3', 'project-org'],
     ['/orgs/acme/projects/3/views/2', 'project-org'],
     ['/users/kedrzu/projects/7', 'project-user'],
-    ['/settings', 'account'],
-    ['/settings/tracking', 'tracking'],
+    ['/settings', 'settings'],
+    ['/settings?tab=saving', 'settings'],
     ['/settings/tracking/new', 'tracking-choice'],
     ['/settings/tracking/download', 'first-download'],
     ['/auth/callback', 'auth-callback'],
@@ -55,6 +55,8 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/people', 'github-orgs'],
     ['/users/kedrzu', 'github-users'],
     ['/settings/profile', 'github-settings'],
+    ['/settings/foo', 'github-settings'],
+    ['/settings/tracking/foo', 'github-settings'],
     ['/login/oauth/authorize', 'github-login'],
     ['/issues', 'github-issues'],
     ['/issues/created', 'github-issues'],
@@ -101,6 +103,23 @@ test("GitHub's sign-in address leads home, keeping where to go after signing in 
     expect(settle('/login?next=/pulls&return_to=/acme&failed=failed')).toBe(
         '/?next=/pulls&return_to=/acme&failed=failed',
     );
+});
+
+test("tracking's old address settles on Settings, keeping the section, and never hands off", () => {
+    expect(settle('/settings/tracking')).toBe('/settings');
+    expect(settle('/settings/tracking?tab=projects')).toBe('/settings?tab=projects');
+    expect(settle('/settings/tracking?tab=projects#top')).toBe('/settings?tab=projects#top');
+});
+
+test("Settings' section is its `?tab=`; none or an unknown one is the first", () => {
+    for (const section of SETTINGS_SECTIONS) {
+        expect(readSettingsSection(router.resolve(getSettingsPath(section)).query.tab)).toBe(section);
+    }
+
+    expect(getSettingsPath('repositories')).toBe('/settings');
+    expect(readSettingsSection(undefined)).toBe('repositories');
+    expect(readSettingsSection('unknown')).toBe('repositories');
+    expect(readSettingsSection(['account'])).toBe('repositories');
 });
 
 test('home and every group of "my work" are one page instance', () => {
@@ -166,8 +185,8 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
-        [ACCOUNT_PATH, 'account'],
-        [TRACKING_PATH, 'tracking'],
+        [SETTINGS_PATH, 'settings'],
+        ...SETTINGS_SECTIONS.map(section => [getSettingsPath(section), 'settings'] as const),
         [TRACKING_CHOICE_PATH, 'tracking-choice'],
         [FIRST_DOWNLOAD_PATH, 'first-download'],
     ];

@@ -1,14 +1,20 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). The account page is a place it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3 offers to track it). -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { CircleArrowDown, CircleHelp, Clock, Command as CommandIcon, LogOut, SquarePen } from 'lucide-vue-next';
+import {
+  CircleArrowDown,
+  CircleHelp,
+  Clock,
+  Command as CommandIcon,
+  LogOut,
+  Settings,
+  SquarePen,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { ACCOUNT_PATH } from '@/account/accountRoutes.js';
 import { AuthStore } from '@/auth/AuthStore.js';
-import { TRACKING_PATH } from '@/auth/routeAccess.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
@@ -18,6 +24,8 @@ import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
+import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
+import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -100,6 +108,18 @@ useCommands(() => [
     icon: SquarePen,
     keywords: [t(l.createKeyword)],
     run: startNewIssue,
+  },
+  {
+    id: 'app.settings',
+    title: t(l.settings),
+    section: 'app',
+    key: APP_KEYS.settings,
+    icon: Settings,
+    // The key and the help sheet's line: the menu offers Settings as a place, under "Go to" (E5).
+    menu: false,
+    run: () => {
+      void router.push(SETTINGS_PATH);
+    },
   },
   {
     id: 'app.signOut',
@@ -195,8 +215,21 @@ function getPlaces(): NavigationPlace[] {
   }
 
   places.push(
-    { id: 'tracking', group: 'goTo', kind: 'tracking', title: t(l.trackRepositories), path: TRACKING_PATH },
-    { id: 'account', group: 'goTo', kind: 'account', title: t(l.account), path: ACCOUNT_PATH },
+    {
+      id: 'settings',
+      group: 'goTo',
+      kind: 'settings',
+      title: t(l.settings),
+      key: APP_KEYS.settings,
+      path: SETTINGS_PATH,
+    },
+    ...SETTINGS_SECTIONS.map((section): NavigationPlace => ({
+      id: `settings:${section}`,
+      group: 'goTo',
+      kind: section,
+      title: t(l.settingsSection, { section: t(settingsSectionLabels[section]) }),
+      path: getSettingsPath(section),
+    })),
   );
   return places;
 }

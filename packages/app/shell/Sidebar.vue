@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): the account, search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; `+` and "Track repositories…" open the tracking page (G8). Expanded, or collapsed to a rail of icons. Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put as the sidebar scrolls. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -42,22 +42,25 @@ import {
   Lock,
   PanelLeftClose,
   PanelLeftOpen,
-  Plus,
   Search,
+  Settings,
   SquareKanban,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { TRACKING_PATH } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
+import Sygnet from '@/components/Sygnet.vue';
+import Wordmark from '@/components/Wordmark.vue';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
@@ -93,6 +96,10 @@ defineSlots<{
 const t = useTranslate();
 const route = useRoute();
 
+const projects = computed(() => props.tracked?.projects ?? []);
+const repositories = computed(() => props.tracked?.repositories ?? []);
+const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
+
 /** A repository's row is the current page on its view whichever list of it the address names (`/owner/name/issues`). */
 function isCurrentRepository(repository: SidebarTrackedEntry) {
   return (
@@ -117,6 +124,13 @@ function statusText(status: SidebarTrackedStatus) {
       return assertNever(status);
   }
 }
+
+/** A project's mark on the rail: "Platform Q4" → "PQ", the first two letters of a single word ("Docs" → "DO"). */
+function getProjectMark(title: string) {
+  const [first = '', second] = title.trim().split(/\s+/u);
+  const letters = second === undefined ? [...first].slice(0, 2) : [[...first][0], [...second][0]];
+  return letters.join('').toUpperCase();
+}
 </script>
 
 <template>
@@ -130,11 +144,8 @@ function statusText(status: SidebarTrackedStatus) {
       data-tauri-drag-region
     />
     <template v-if="!collapsed">
-      <div :class="css.sidebar_account">
-        <AccountMenu
-          :viewer="viewer"
-          @sign-out="emit('signOut')"
-        />
+      <div :class="css.sidebar_logo">
+        <Wordmark :class="css.sidebar_wordmark" />
         <IconButton
           :icon="PanelLeftClose"
           :label="t(l.collapse)"
@@ -156,136 +167,134 @@ function statusText(status: SidebarTrackedStatus) {
         {{ t(l.search) }}
       </Button>
 
-      <ul :class="css.sidebar_list">
-        <li>
-          <RouterLink
-            to="/"
-            :class="css.sidebar_item"
-            :active-class="css.sidebar_item_active"
-          >
-            <Inbox
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ t(l.myWork) }}</span>
-            <span :class="css.sidebar_count">{{ countText('total') }}</span>
-          </RouterLink>
-        </li>
-        <li
-          v-for="group in MY_WORK_GROUPS"
-          :key="group"
-        >
-          <RouterLink
-            :to="getMyWorkGroupPath(group)"
-            :class="[css.sidebar_item, group !== 'mentioned' && css.sidebar_item_sub]"
-            :active-class="css.sidebar_item_active"
-          >
-            <AtSign
-              v-if="group === 'mentioned'"
-              :class="css.sidebar_itemIcon"
-              aria-hidden="true"
-            />
-            <span :class="css.sidebar_itemLabel">{{ t(groupLabels[group]) }}</span>
-            <span :class="css.sidebar_count">{{ countText(group) }}</span>
-          </RouterLink>
-        </li>
-      </ul>
-
-      <div :class="css.sidebar_section">
-        <h2 :class="css.sidebar_sectionTitle">{{ t(l.projects) }}</h2>
-        <IconButton
-          :icon="Plus"
-          :label="t(l.trackProjects)"
-          :link="{ path: TRACKING_PATH, query: { tab: 'projects' } }"
-        />
-      </div>
-      <ul
-        v-if="tracked?.projects.length"
-        :class="css.sidebar_list"
-      >
-        <li
-          v-for="project in tracked.projects"
-          :key="project.key"
-        >
-          <ContextMenu :disabled="!$slots.trackedMenu">
+      <div :class="css.sidebar_scroll">
+        <ul :class="css.sidebar_list">
+          <li>
             <RouterLink
-              :to="project.to"
+              to="/"
               :class="css.sidebar_item"
               :active-class="css.sidebar_item_active"
             >
-              <SquareKanban
+              <Inbox
                 :class="css.sidebar_itemIcon"
                 aria-hidden="true"
               />
-              <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
-              <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
+              <span :class="css.sidebar_itemLabel">{{ t(l.myWork) }}</span>
+              <span :class="css.sidebar_count">{{ countText('total') }}</span>
             </RouterLink>
-            <template #content>
-              <slot
-                name="trackedMenu"
-                :target="project.target"
-              />
-            </template>
-          </ContextMenu>
-        </li>
-      </ul>
-
-      <div :class="css.sidebar_section">
-        <h2 :class="css.sidebar_sectionTitle">{{ t(l.repositories) }}</h2>
-        <IconButton
-          :icon="Plus"
-          :label="t(l.trackRepository)"
-          :link="TRACKING_PATH"
-        />
-      </div>
-      <ul
-        v-if="tracked?.repositories.length"
-        :class="css.sidebar_list"
-      >
-        <li
-          v-for="repository in tracked.repositories"
-          :key="repository.key"
-        >
-          <ContextMenu :disabled="!$slots.trackedMenu">
+          </li>
+          <li
+            v-for="group in MY_WORK_GROUPS"
+            :key="group"
+          >
             <RouterLink
-              :to="repository.to"
-              :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
-              :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
+              :to="getMyWorkGroupPath(group)"
+              :class="[css.sidebar_item, group !== 'mentioned' && css.sidebar_item_sub]"
+              :active-class="css.sidebar_item_active"
             >
-              <component
-                :is="repository.isPrivate ? Lock : BookMarked"
+              <AtSign
+                v-if="group === 'mentioned'"
                 :class="css.sidebar_itemIcon"
                 aria-hidden="true"
               />
-              <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
-              <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
+              <span :class="css.sidebar_itemLabel">{{ t(groupLabels[group]) }}</span>
+              <span :class="css.sidebar_count">{{ countText(group) }}</span>
             </RouterLink>
-            <template #content>
-              <slot
-                name="trackedMenu"
-                :target="repository.target"
-              />
-            </template>
-          </ContextMenu>
-        </li>
-      </ul>
-      <Button
-        variant="ghost"
-        block
-        :icon="Plus"
-        :link="TRACKING_PATH"
-        :class="css.sidebar_track"
-      >
-        {{ t(l.trackRepositories) }}
-      </Button>
+          </li>
+        </ul>
+
+        <template v-if="projects.length > 0">
+          <h2 :class="css.sidebar_section">{{ t(l.projects) }}</h2>
+          <ul :class="css.sidebar_list">
+            <li
+              v-for="project in projects"
+              :key="project.key"
+            >
+              <ContextMenu :disabled="!$slots.trackedMenu">
+                <RouterLink
+                  :to="project.to"
+                  :class="css.sidebar_item"
+                  :active-class="css.sidebar_item_active"
+                >
+                  <SquareKanban
+                    :class="css.sidebar_itemIcon"
+                    aria-hidden="true"
+                  />
+                  <span :class="css.sidebar_itemLabel">{{ project.label }}</span>
+                  <span :class="css.sidebar_count">{{ statusText(project.status) }}</span>
+                </RouterLink>
+                <template #content>
+                  <slot
+                    name="trackedMenu"
+                    :target="project.target"
+                  />
+                </template>
+              </ContextMenu>
+            </li>
+          </ul>
+        </template>
+
+        <template v-if="repositories.length > 0">
+          <h2 :class="css.sidebar_section">{{ t(l.repositories) }}</h2>
+          <ul :class="css.sidebar_list">
+            <li
+              v-for="repository in repositories"
+              :key="repository.key"
+            >
+              <ContextMenu :disabled="!$slots.trackedMenu">
+                <RouterLink
+                  :to="repository.to"
+                  :class="[css.sidebar_item, isCurrentRepository(repository) && css.sidebar_item_active]"
+                  :aria-current="isCurrentRepository(repository) ? 'page' : undefined"
+                >
+                  <component
+                    :is="repository.isPrivate ? Lock : BookMarked"
+                    :class="css.sidebar_itemIcon"
+                    aria-hidden="true"
+                  />
+                  <span :class="css.sidebar_itemLabel">{{ repository.label }}</span>
+                  <span :class="css.sidebar_count">{{ statusText(repository.status) }}</span>
+                </RouterLink>
+                <template #content>
+                  <slot
+                    name="trackedMenu"
+                    :target="repository.target"
+                  />
+                </template>
+              </ContextMenu>
+            </li>
+          </ul>
+        </template>
+
+        <div
+          v-if="nothingTracked"
+          :class="css.sidebar_nothingTracked"
+        >
+          <p :class="css.sidebar_note">{{ t(l.nothingTracked) }}</p>
+          <RouterLink
+            :to="SETTINGS_PATH"
+            :class="css.sidebar_item"
+            :active-class="css.sidebar_item_active"
+          >
+            <Settings
+              :class="css.sidebar_itemIcon"
+              aria-hidden="true"
+            />
+            <span :class="css.sidebar_itemLabel">{{ t(l.settings) }}</span>
+          </RouterLink>
+        </div>
+      </div>
+
+      <AccountMenu
+        :viewer="viewer"
+        @sign-out="emit('signOut')"
+      />
     </template>
 
     <template v-else>
-      <AccountMenu
-        :viewer="viewer"
-        compact
-        @sign-out="emit('signOut')"
-      />
+      <div :class="css.sidebar_railLogo">
+        <Sygnet :class="css.sidebar_sygnet" />
+      </div>
       <IconButton
         size="md"
         :icon="PanelLeftOpen"
@@ -302,29 +311,66 @@ function statusText(status: SidebarTrackedStatus) {
         :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       />
-      <hr :class="css.sidebar_divider" />
-      <RouterLink
-        to="/"
-        :class="css.sidebar_railLink"
-        :active-class="css.sidebar_railLink_active"
-        :aria-label="t(l.myWork)"
-      >
-        <Inbox aria-hidden="true" />
-      </RouterLink>
-      <RouterLink
-        :to="getMyWorkGroupPath('mentioned')"
-        :class="css.sidebar_railLink"
-        :active-class="css.sidebar_railLink_active"
-        :aria-label="t(groupLabels.mentioned)"
-      >
-        <AtSign aria-hidden="true" />
-      </RouterLink>
-      <hr :class="css.sidebar_divider" />
-      <IconButton
-        size="md"
-        :icon="BookMarked"
-        :label="t(l.trackRepositories)"
-        :link="TRACKING_PATH"
+      <div :class="[css.sidebar_scroll, css.sidebar_scroll_rail]">
+        <hr :class="css.sidebar_divider" />
+        <RouterLink
+          to="/"
+          :class="css.sidebar_railLink"
+          :active-class="css.sidebar_railLink_active"
+          :aria-label="t(l.myWork)"
+        >
+          <Inbox aria-hidden="true" />
+        </RouterLink>
+        <RouterLink
+          :to="getMyWorkGroupPath('mentioned')"
+          :class="css.sidebar_railLink"
+          :active-class="css.sidebar_railLink_active"
+          :aria-label="t(groupLabels.mentioned)"
+        >
+          <AtSign aria-hidden="true" />
+        </RouterLink>
+        <template v-if="projects.length > 0">
+          <hr :class="css.sidebar_divider" />
+          <ContextMenu
+            v-for="project in projects"
+            :key="project.key"
+            :disabled="!$slots.trackedMenu"
+          >
+            <RouterLink
+              :to="project.to"
+              :class="css.sidebar_railLink"
+              :active-class="css.sidebar_railLink_active"
+            >
+              <span
+                :class="css.sidebar_railMark"
+                aria-hidden="true"
+                >{{ getProjectMark(project.label) }}</span
+              >
+              <span :class="css.sidebar_railName">{{ project.label }}</span>
+            </RouterLink>
+            <template #content>
+              <slot
+                name="trackedMenu"
+                :target="project.target"
+              />
+            </template>
+          </ContextMenu>
+        </template>
+        <RouterLink
+          v-if="nothingTracked"
+          :to="SETTINGS_PATH"
+          :class="css.sidebar_railLink"
+          :active-class="css.sidebar_railLink_active"
+          :aria-label="t(l.settings)"
+        >
+          <Settings aria-hidden="true" />
+        </RouterLink>
+      </div>
+
+      <AccountMenu
+        :viewer="viewer"
+        compact
+        @sign-out="emit('signOut')"
       />
     </template>
   </nav>
@@ -338,7 +384,7 @@ function statusText(status: SidebarTrackedStatus) {
   width: 100%;
   height: 100%;
   padding: $spacing-12 $spacing-10;
-  overflow-y: auto;
+  overflow: hidden;
   background: $color-bg-2;
   border-right: 1px solid $color-border;
 }
@@ -369,15 +415,43 @@ function statusText(status: SidebarTrackedStatus) {
   }
 }
 
-.sidebar_account {
+.sidebar_logo {
   display: flex;
+  flex: none;
+  gap: $spacing-8;
   align-items: center;
   justify-content: space-between;
+  padding: 6px $spacing-8;
   margin-bottom: $spacing-10;
+}
+
+.sidebar_wordmark {
+  --wordmark-size: 18px;
 }
 
 .sidebar_search {
   margin-bottom: $spacing-10;
+}
+
+// What scrolls when the lists are long, leaving the user at the bottom. Reaching over the sidebar's padding, it does
+// not clip the rows' focus rings.
+.sidebar_scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-2;
+  min-height: 0;
+  padding: 3px $spacing-10;
+  margin: -3px (-$spacing-10);
+  overflow-y: auto;
+}
+
+.sidebar_scroll_rail {
+  gap: $spacing-4;
+  align-items: center;
+  align-self: stretch;
+  padding: 3px 0;
+  margin: -3px 0;
 }
 
 .sidebar_list {
@@ -441,31 +515,53 @@ function statusText(status: SidebarTrackedStatus) {
 }
 
 .sidebar_section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0 $spacing-2 $spacing-8;
-}
-
-.sidebar_sectionTitle {
+  padding: 14px $spacing-8 $spacing-4;
   font-size: $font-size-2xs;
   font-weight: $font-weight-medium;
   color: $color-fg-dim;
 }
 
-.sidebar_track {
+.sidebar_nothingTracked {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-6;
+  padding-top: 14px;
+}
+
+.sidebar_note {
+  padding: 0 $spacing-8;
+  margin: 0;
+  font-size: $font-size-xs;
+  line-height: 1.45;
   color: $color-fg-dim;
+}
+
+.sidebar_railLogo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 34px;
+}
+
+.sidebar_sygnet {
+  --sygnet-size: 28px;
+  --sygnet-glyph-size: 13px;
 }
 
 .sidebar_railLink {
   @include focus-ring;
 
+  position: relative;
   display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 38px;
   height: 34px;
   color: $color-fg-2;
+  text-decoration: none;
   border-radius: 7px;
 
   &:hover {
@@ -484,7 +580,24 @@ function statusText(status: SidebarTrackedStatus) {
   background: $color-bg-3;
 }
 
+.sidebar_railMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 9.5px;
+  font-weight: $font-weight-semibold;
+  border: 1px solid $color-border-2;
+  border-radius: 5px;
+}
+
+.sidebar_railName {
+  @include visually-hidden;
+}
+
 .sidebar_divider {
+  flex: none;
   width: 24px;
   height: 1px;
   margin: $spacing-4 0;
