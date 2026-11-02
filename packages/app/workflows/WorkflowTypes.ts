@@ -110,8 +110,6 @@ export interface RepositoryWorkflowState {
     /** In the stored order; empty unless `read`. */
     readonly workflows: readonly WorkflowState[];
     readonly brokenCount: number;
-    /** The latest `breakStartedAt` of a broken workflow (epoch ms); `null` with none broken. */
-    readonly newestBreakAt: number | null;
     /** Some workflow broke less than a day ago: the marker shows bright. */
     readonly hasNewBreak: boolean;
 }

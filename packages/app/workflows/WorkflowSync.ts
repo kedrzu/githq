@@ -97,7 +97,6 @@ export const WorkflowSync = defineService({
             const changes = await listRepositoryRuns(context.rest, {
                 nameWithOwner,
                 etag: stored?.runsEtag ?? undefined,
-                perPage: RUNS_PAGE_SIZE,
             });
             if (!isWanted(context, nameWithOwner)) {
                 return;

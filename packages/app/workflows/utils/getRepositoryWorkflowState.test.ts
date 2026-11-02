@@ -19,7 +19,6 @@ test('a repository not read yet, or one GitHub shows nothing of, is neither heal
         defaultBranch: null,
         workflows: [],
         brokenCount: 0,
-        newestBreakAt: null,
         hasNewBreak: false,
     });
     expect(
@@ -78,7 +77,7 @@ test('the break starts at the oldest failure after the last pass, and is new for
         isNew: true,
         latestFailedRun: latestFailure,
     });
-    expect(state).toMatchObject({ newestBreakAt: Date.parse('2026-11-02T08:00:00Z'), hasNewBreak: true });
+    expect(state).toMatchObject({ hasNewBreak: true });
 });
 
 test('with no pass stored, the break starts at the oldest failure stored, and after a day is no longer new', () => {
@@ -114,7 +113,7 @@ test('a pass after a failure heals the workflow; no verdict leaves it unknown', 
 
     expect(state.workflows.map(entry => entry.state)).toEqual(['passing', 'unknown', 'unknown']);
     expect(state.workflows[0]).toMatchObject({ breakStartedAt: null, isNew: false, latestFailedRun: null });
-    expect(state).toMatchObject({ status: 'read', brokenCount: 0, newestBreakAt: null, hasNewBreak: false });
+    expect(state).toMatchObject({ status: 'read', brokenCount: 0, hasNewBreak: false });
 });
 
 test.each(['disabled_manually', 'disabled_inactivity', 'disabled_fork', 'deleted'])(
@@ -159,7 +158,6 @@ test('only refs that count are read: a failure on a feature branch lights nothin
     expect(getRepositoryWorkflowState(repo, DEFAULT_REFS, NOW).brokenCount).toBe(0);
     expect(getRepositoryWorkflowState(repo, { countDefaultBranch: true, patterns: ['v*'] }, NOW)).toMatchObject({
         brokenCount: 1,
-        newestBreakAt: Date.parse('2026-11-02T10:00:00Z'),
     });
     expect(
         getRepositoryWorkflowState(repo, { countDefaultBranch: false, patterns: [] }, NOW).workflows[0],
@@ -199,7 +197,6 @@ test('a workflow GitHub generates counts like any other and says so', () => {
     expect(state.workflows.map(entry => entry.generated)).toEqual([true, false]);
     expect(state).toMatchObject({
         brokenCount: 2,
-        newestBreakAt: Date.parse('2026-11-02T10:00:00Z'),
         hasNewBreak: true,
     });
 });

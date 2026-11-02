@@ -10,7 +10,6 @@ const HEALTHY: RepositoryWorkflowState = {
     defaultBranch: 'main',
     workflows: [],
     brokenCount: 0,
-    newestBreakAt: null,
     hasNewBreak: false,
 };
 
@@ -19,8 +18,8 @@ test('a repository read with nothing broken has no marker', () => {
 });
 
 test('a break under a day old is bright, older ones quiet', () => {
-    expect(getSidebarWorkflowMarker({ ...HEALTHY, brokenCount: 2, newestBreakAt: 1, hasNewBreak: true })).toBe('new');
-    expect(getSidebarWorkflowMarker({ ...HEALTHY, brokenCount: 1, newestBreakAt: 1 })).toBe('settled');
+    expect(getSidebarWorkflowMarker({ ...HEALTHY, brokenCount: 2, hasNewBreak: true })).toBe('new');
+    expect(getSidebarWorkflowMarker({ ...HEALTHY, brokenCount: 1 })).toBe('settled');
 });
 
 test('a repository not read yet has a hollow ring', () => {

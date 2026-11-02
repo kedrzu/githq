@@ -23,8 +23,7 @@ export interface GitHubWorkflowRun {
 }
 
 /**
- * Reads the runs of a run list answer (`{ total_count, workflow_runs }`) — the repository's and a workflow's
- * lists answer alike.
+ * Reads the runs of a workflow's run list answer (`{ total_count, workflow_runs }`).
  *
  * Throws {@link GitHubApiError} when the answer is not a list of runs, so nothing malformed is stored.
  * @__NO_SIDE_EFFECTS__

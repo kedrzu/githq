@@ -18,9 +18,9 @@ export const RUN_STRIP_SLOTS = 5;
 
 /**
  * Works out how a repository's workflows stand from what is stored of them — `undefined` while nothing is (actions
- * D1, D2): every workflow's state on the refs that count, and the total, the marker and the newest break for the
- * sidebar. A workflow GitHub does not list as active never counts; the stored runs are filtered by `refs` again, so a
- * changed pattern applies at once.
+ * D1, D2): every workflow's state on the refs that count, and the total and the marker for the sidebar. A workflow
+ * GitHub does not list as active never counts; the stored runs are filtered by `refs` again, so a changed pattern
+ * applies at once.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
@@ -36,7 +36,6 @@ export function getRepositoryWorkflowState(
             defaultBranch: stored?.defaultBranch ?? null,
             workflows: [],
             brokenCount: 0,
-            newestBreakAt: null,
             hasNewBreak: false,
         };
     }
@@ -44,7 +43,6 @@ export function getRepositoryWorkflowState(
     const counted: IsRunCountedParams = { ...refs, defaultBranch: stored.defaultBranch };
     const workflows = stored.workflows.map(entry => getWorkflowState(entry, counted, now));
     let brokenCount = 0;
-    let newestBreakAt: number | null = null;
     let hasNewBreak = false;
     for (const workflow of workflows) {
         if (workflow.breakStartedAt === null) {
@@ -52,7 +50,6 @@ export function getRepositoryWorkflowState(
         }
 
         brokenCount += 1;
-        newestBreakAt = Math.max(newestBreakAt ?? workflow.breakStartedAt, workflow.breakStartedAt);
         hasNewBreak ||= workflow.isNew;
     }
 
@@ -62,7 +59,6 @@ export function getRepositoryWorkflowState(
         defaultBranch: stored.defaultBranch,
         workflows,
         brokenCount,
-        newestBreakAt,
         hasNewBreak,
     };
 }
