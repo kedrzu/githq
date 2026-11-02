@@ -27,3 +27,6 @@ Append-only; one line per turn that settled something.
   batched branch history and the matching-refs ETag. Proposed D9 (paging and cache); recorded D10.
   Folded into README. Open: does the graph need the repository tracked.
 - 2026-11-01 — Owner: ok to the Commits tab working without tracking (D11). Folded into README.
+- 2026-11-02 — Owner agreed: branch list scrolls to the tip (D12), commit details without files or diff (D13);
+  graph line layout left to implementation; asked to close. README: branch list, commit details, first
+  version and what follows. Next: rightsize before closing.

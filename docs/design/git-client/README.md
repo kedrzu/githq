@@ -108,3 +108,27 @@ picking one. [Commits as a tab of the repository](DECISIONS.md#d10).
 The tab works in every repository you can see, tracked in githq or not: the graph is fetched when the tab is
 opened and nothing about it is synced in the background, so there is nothing tracking would add.
 [Commits without tracking](DECISIONS.md#d11).
+
+## Beside the graph, and behind a commit
+
+Beside the graph is the list of the repository's branches and tags (on the desktop, later, also local
+branches and worktrees). Choosing one scrolls the graph to the commit it points at; it does not narrow the
+graph to that branch's history. [The branch list scrolls](DECISIONS.md#d12).
+
+Choosing a commit opens its details: the full message, the author, its parents (each a way to that commit),
+the branches and tags that point at it, its pull request and CI state, and a way to open it on GitHub. No
+files and no diff yet. [What a commit shows](DECISIONS.md#d13).
+
+## What ships first, and what comes after
+
+First, on the web and the desktop alike: the Commits tab of the repository view, with the graph of the
+repository's branches and tags as GitHub has them, each row with its pull request and CI state, paged and
+kept as described above, the branch and tag list beside it, and the details of a commit. How the graph's
+lines are laid out is left to the implementation; it is a known problem with known algorithms and decides
+nothing about the product. The repository view's new shape is designed first, as several directions to pick
+from.
+
+After that, on the desktop: adding a local clone, its local branches and how far they are ahead of GitHub,
+its worktrees as markers in the graph and entries in the branch list, and revealing a worktree's folder.
+Writing to the repository — committing, fetching, pushing, managing worktrees — and diffs come later still,
+and get their own pass through this design when they do.

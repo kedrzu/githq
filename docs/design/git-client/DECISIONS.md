@@ -206,3 +206,23 @@ fetched only when the tab is opened ([D9](#d9)), so tracking would add nothing t
 **Rejected.**
 - Commits only in tracked repositories — a user coming from a pull request link into someone else's
   repository would have to track it to see its history, for no gain.
+
+## D12
+
+**Choosing a branch or tag in the list beside the graph scrolls the graph to the commit it points at.**
+(2026-11-02, design agent's proposal, owner agreed)
+
+**Why.** It is the simplest behaviour that answers "where is this branch", and keeps one graph on screen.
+
+**Rejected.**
+- Narrowing the graph to the chosen branch's history — more to build and a second mode of the view; may come
+  later.
+
+## D13
+
+**A commit's details show its full message, author, parents (each navigable), the branches and tags pointing
+at it, its pull request and CI state, and a link to it on GitHub — no files and no diff in the first
+version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now" is the owner's)
+
+**Why.** Everything here is already fetched for the graph ([D8](#d8), [D9](#d9)); files and diffs are the
+owner's explicit "not yet".
