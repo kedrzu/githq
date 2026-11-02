@@ -11,6 +11,7 @@ import type { ItemProperty } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ListContextMenuProps, ListGroup, ListRow } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
+import StackRow from '@/lists/StackRow.vue';
 import type { Item } from '@/store/ItemTypes.js';
 
 import * as l from './UntrackedView.loc.js';
@@ -119,14 +120,26 @@ const groups = computed((): ListGroup<Item>[] =>
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"
       >
-        <template #row="{ entry, checked }">
+        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
+          <StackRow
+            v-if="stack"
+            :stack="stack"
+            :properties="properties"
+            :now="now"
+            :checked="checked"
+            :half-checked="halfChecked"
+            :opened-id="openedId"
+          />
           <ItemRow
+            v-else
             :item="entry.value"
+            :parent="parent?.value"
             :properties="properties"
             :viewer-login="viewerLogin"
             :now="now"
             :checked="checked"
             :undone="undone.get(entry.id)"
+            :stack="stackMarker"
           />
         </template>
         <template #card="{ entry, checked }">

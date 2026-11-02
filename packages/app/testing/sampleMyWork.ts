@@ -2,6 +2,7 @@ import { buildMyWork } from '@/myWork/buildMyWork.js';
 import type { MyWork, MyWorkFilter } from '@/myWork/buildMyWork.js';
 import type { MyWorkGroup, MyWorkMembership } from '@/store/ItemStoreTypes.js';
 import type { IssueItem, Item, ItemBase, ItemProject, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { sampleIssue, samplePullRequest } from './sampleItems.js';
@@ -85,10 +86,16 @@ export const D1_MEMBERSHIP: MyWorkMembership = sampleMembership({
     mentioned: ['I_463', 'PR_94', 'I_1187'],
 });
 
-/** "My work" of `items` and `groups` under `filter`, newest first. */
+/** "My work" of `items` and `groups` under `filter`, newest first, each stack one entry — as the page builds it. */
 export function sampleMyWork(items: readonly Item[], groups: MyWorkMembership, filter: MyWorkFilter): MyWork {
     const byId = new Map(items.map(item => [item.id, item]));
-    return buildMyWork({ membership: groups, getItem: id => byId.get(id), filter, sort: 'updated' });
+    return buildMyWork({
+        membership: groups,
+        getItem: id => byId.get(id),
+        stacks: groupStacks(items),
+        filter,
+        sort: 'updated',
+    });
 }
 
 /** The membership of "my work" from lists of ids, every group arrived (empty unless listed). */

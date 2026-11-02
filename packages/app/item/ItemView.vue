@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -57,6 +57,7 @@ import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
@@ -78,6 +79,8 @@ import LinkedItems from './LinkedItems.vue';
 import PullRequestChecks from './PullRequestChecks.vue';
 import PullRequestMerge from './PullRequestMerge.vue';
 import PullRequestReviews from './PullRequestReviews.vue';
+import StackMap from './StackMap.vue';
+import type { StackNeighbours } from './StackMap.vue';
 
 const props = defineProps<{
   /** The item's row: what shows at once. */
@@ -95,6 +98,10 @@ const props = defineProps<{
   loadAllComments: () => Promise<void>;
   /** What the user may change and the pickers offer; without it the view only shows. */
   editing?: ItemEditing | null;
+  /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
+  stack?: StackDescription | null;
+  /** What `K` and `J` open from it: the stack's map marks those rows. */
+  neighbours?: StackNeighbours | null;
 }>();
 
 const emit = defineEmits<{
@@ -104,6 +111,8 @@ const emit = defineEmits<{
   arrange: [arrangement: ItemArrangement];
   /** A linked item was picked. */
   open: [reference: ItemReference];
+  /** A pull request picked in the stack's map: it takes this one's place, as `K`/`J` do. */
+  openInPlace: [id: string];
   /** The user changed something. */
   edit: [request: EditRequest];
   /** "Add to project" opened: the projects to offer are wanted. */
@@ -126,9 +135,25 @@ const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer'
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
 const itemMenuOpen = ref(false);
+/** The stack's map in a panel, folded to one line once the content scrolls down (D17, SP32). */
+const stackMapFolded = ref(false);
+let lastScrollTop = 0;
 /** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
 const itemMenuStart = ref<string | null>(null);
+
+// D17: every pull request of a stack opens at the top with its map unfolded — `J`/`K` never scroll.
+watch(
+  () => props.item.id,
+  () => {
+    if (props.stack) {
+      stackMapFolded.value = false;
+      lastScrollTop = 0;
+      scrollRef.value?.scrollTo({ top: 0 });
+    }
+  },
+);
 
 watch(itemMenuOpen, isOpen => {
   if (!isOpen) {
@@ -308,6 +333,29 @@ onWindowEvent('keydown', event => {
       emit('previous');
   }
 });
+
+/**
+ * Folds the panel's stack map while the content scrolls down; at the top it unfolds again — when the content still
+ * scrolls. Content a little taller than the panel fits once the map folds: the browser clamps it to the top, and
+ * unfolding then would start it over, the map flickering and the end never reached. It stays folded; a click unfolds.
+ */
+function onContentScroll() {
+  const scroll = scrollRef.value;
+  if (!scroll) {
+    return;
+  }
+
+  const top = scroll.scrollTop;
+  if (top <= 0) {
+    if (scroll.scrollHeight > scroll.clientHeight) {
+      stackMapFolded.value = false;
+    }
+  } else if (top > lastScrollTop) {
+    stackMapFolded.value = true;
+  }
+
+  lastScrollTop = top;
+}
 
 function getEditCommands(): Command[] {
   const { editing, item } = props;
@@ -573,59 +621,115 @@ function getProjectOptions(): CommandOption[] {
       />
     </header>
 
-    <SplitterGroup
-      direction="horizontal"
-      :class="css.itemView_columns"
-      @layout="onColumnsLayout"
-    >
-      <SplitterPanel
-        id="item-main"
-        :order="0"
-        :min-size="40"
-        :class="css.itemView_main"
+    <div :class="css.itemView_body">
+      <StackMap
+        v-if="stack && arrangement === 'page'"
+        :stack="stack"
+        :current-id="item.id"
+        :neighbours="neighbours"
+        arrangement="page"
+        @open="emit('openInPlace', $event)"
+      />
+      <SplitterGroup
+        direction="horizontal"
+        :class="css.itemView_columns"
+        @layout="onColumnsLayout"
       >
-        <div :class="css.itemView_scroll">
-          <div :class="css.itemView_heading">
-            <h1 :class="css.itemView_title">{{ item.title }}</h1>
-            <p :class="css.itemView_state">
-              <StatePill
-                :icon="state.icon"
-                :tone="state.tone"
-                >{{ state.text }}</StatePill
-              >
-              <LabelPill
-                v-if="issueType"
-                :name="issueType.name"
-                :color="getGitHubColor(issueType.color)"
-              />
-              <Avatar
-                v-if="opened.author"
-                :name="opened.author.login"
-                :src="opened.author.avatarUrl"
-                size="xs"
-                decorative
-              />
-              <span :class="css.itemView_opened">{{ opened.text }}</span>
-            </p>
-          </div>
-
-          <PullRequestMerge
-            v-if="pr"
-            :pr="pr"
-            :detail="prDetail"
+        <SplitterPanel
+          id="item-main"
+          :order="0"
+          :min-size="40"
+          :class="css.itemView_main"
+        >
+          <StackMap
+            v-if="stack && arrangement === 'panel'"
+            :stack="stack"
+            :current-id="item.id"
+            :neighbours="neighbours"
+            arrangement="panel"
+            :folded="stackMapFolded"
+            @open="emit('openInPlace', $event)"
+            @unfold="stackMapFolded = false"
           />
+          <div
+            ref="scroll"
+            :class="css.itemView_scroll"
+            @scroll.passive="onContentScroll"
+          >
+            <div :class="css.itemView_heading">
+              <h1 :class="css.itemView_title">{{ item.title }}</h1>
+              <p :class="css.itemView_state">
+                <StatePill
+                  :icon="state.icon"
+                  :tone="state.tone"
+                  >{{ state.text }}</StatePill
+                >
+                <LabelPill
+                  v-if="issueType"
+                  :name="issueType.name"
+                  :color="getGitHubColor(issueType.color)"
+                />
+                <Avatar
+                  v-if="opened.author"
+                  :name="opened.author.login"
+                  :src="opened.author.avatarUrl"
+                  size="xs"
+                  decorative
+                />
+                <span :class="css.itemView_opened">{{ opened.text }}</span>
+              </p>
+            </div>
 
-          <!-- One column: everything in reading order. -->
-          <template v-if="!split">
-            <template v-if="pr">
-              <PullRequestReviews
-                v-if="prDetail"
-                ref="reviews"
-                :detail="prDetail"
-                :now="now"
-                :reviewer-options="reviewerOptions"
-                @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+            <PullRequestMerge
+              v-if="pr"
+              :pr="pr"
+              :detail="prDetail"
+            />
+
+            <!-- One column: everything in reading order. -->
+            <template v-if="!split">
+              <template v-if="pr">
+                <PullRequestReviews
+                  v-if="prDetail"
+                  ref="reviews"
+                  :detail="prDetail"
+                  :now="now"
+                  :reviewer-options="reviewerOptions"
+                  @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+                />
+                <PullRequestChecks
+                  v-if="prDetail"
+                  :detail="prDetail"
+                  :now="now"
+                />
+                <LinkedItems
+                  :title="t(l.closes)"
+                  :items="closes ?? []"
+                  :repository="item.repository.nameWithOwner"
+                  @open="emit('open', $event)"
+                />
+              </template>
+              <ItemProperties
+                ref="properties"
+                :item="item"
+                :detail="issueDetail"
+                :editing="editing"
+                @open="emit('open', $event)"
+                @edit="emit('edit', $event)"
               />
+              <ItemProjects
+                ref="projects"
+                :projects="item.projects"
+                :detail-projects="detail?.projects"
+                :now="now"
+                :editable="editing != null"
+                :can-add-to-project="permissions?.addToProject"
+                :viewer-projects="editing?.viewerProjects"
+                @edit="emit('edit', $event)"
+                @need-projects="emit('needProjects')"
+              />
+            </template>
+            <template v-else-if="pr">
               <PullRequestChecks
                 v-if="prDetail"
                 :detail="prDetail"
@@ -638,117 +742,93 @@ function getProjectOptions(): CommandOption[] {
                 @open="emit('open', $event)"
               />
             </template>
-            <ItemProperties
-              ref="properties"
-              :item="item"
-              :detail="issueDetail"
-              :editing="editing"
-              @open="emit('open', $event)"
-              @edit="emit('edit', $event)"
-            />
-            <ItemProjects
-              ref="projects"
-              :projects="item.projects"
-              :detail-projects="detail?.projects"
-              :now="now"
-              :editable="editing != null"
-              :can-add-to-project="permissions?.addToProject"
-              :viewer-projects="editing?.viewerProjects"
-              @edit="emit('edit', $event)"
-              @need-projects="emit('needProjects')"
-            />
-          </template>
-          <template v-else-if="pr">
-            <PullRequestChecks
-              v-if="prDetail"
-              :detail="prDetail"
-              :now="now"
-            />
-            <LinkedItems
-              :title="t(l.closes)"
-              :items="closes ?? []"
-              :repository="item.repository.nameWithOwner"
-              @open="emit('open', $event)"
-            />
-          </template>
 
-          <template v-if="detail">
-            <GitHubHtml
-              v-if="detail.bodyHtml"
-              :html="detail.bodyHtml"
-            />
-            <p
-              v-else
-              :class="css.itemView_note"
-            >
-              {{ t(l.noDescription) }}
-            </p>
-          </template>
+            <template v-if="detail">
+              <GitHubHtml
+                v-if="detail.bodyHtml"
+                :html="detail.bodyHtml"
+              />
+              <p
+                v-else
+                :class="css.itemView_note"
+              >
+                {{ t(l.noDescription) }}
+              </p>
+            </template>
 
-          <ItemActivity
-            :comments="detail?.comments ?? null"
-            :now="now"
-            :load-all="loadAllComments"
-          />
-        </div>
-        <footer :class="css.itemView_composer">
-          <ItemComposer
-            ref="composer"
-            v-model:text="commentDraft"
-            :disabled="editing != null && !permissions?.comment"
-            @submit="emit('edit', { kind: 'comment', body: $event })"
-          />
-        </footer>
-      </SplitterPanel>
-
-      <template v-if="split">
-        <ResizeHandle
-          :label="t(l.resizeSide)"
-          @resized="sideWidth.save()"
-        />
-        <SplitterPanel
-          id="item-side"
-          :key="arrangement"
-          as="aside"
-          :order="1"
-          size-unit="px"
-          :default-size="sideWidth.stored"
-          :min-size="sideWidth.min"
-          :max-size="sideWidth.max"
-          :style="sideWidth.style"
-        >
-          <div :class="css.itemView_side">
-            <PullRequestReviews
-              v-if="prDetail"
-              ref="reviews"
-              :detail="prDetail"
+            <ItemActivity
+              :comments="detail?.comments ?? null"
               :now="now"
-              :reviewer-options="reviewerOptions"
-              @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
-            />
-            <ItemProperties
-              ref="properties"
-              :item="item"
-              :detail="issueDetail"
-              :editing="editing"
-              @open="emit('open', $event)"
-              @edit="emit('edit', $event)"
-            />
-            <ItemProjects
-              ref="projects"
-              :projects="item.projects"
-              :detail-projects="detail?.projects"
-              :now="now"
-              :editable="editing != null"
-              :can-add-to-project="permissions?.addToProject"
-              :viewer-projects="editing?.viewerProjects"
-              @edit="emit('edit', $event)"
-              @need-projects="emit('needProjects')"
+              :load-all="loadAllComments"
             />
           </div>
+          <footer :class="css.itemView_composer">
+            <ItemComposer
+              ref="composer"
+              v-model:text="commentDraft"
+              :disabled="editing != null && !permissions?.comment"
+              @submit="emit('edit', { kind: 'comment', body: $event })"
+            />
+          </footer>
         </SplitterPanel>
-      </template>
-    </SplitterGroup>
+
+        <template v-if="split">
+          <ResizeHandle
+            :label="t(l.resizeSide)"
+            @resized="sideWidth.save()"
+          />
+          <SplitterPanel
+            id="item-side"
+            :key="arrangement"
+            as="aside"
+            :order="1"
+            size-unit="px"
+            :default-size="sideWidth.stored"
+            :min-size="sideWidth.min"
+            :max-size="sideWidth.max"
+            :style="sideWidth.style"
+          >
+            <div :class="css.itemView_side">
+              <StackMap
+                v-if="stack && arrangement === 'modal'"
+                :stack="stack"
+                :current-id="item.id"
+                :neighbours="neighbours"
+                arrangement="modal"
+                @open="emit('openInPlace', $event)"
+              />
+              <PullRequestReviews
+                v-if="prDetail"
+                ref="reviews"
+                :detail="prDetail"
+                :now="now"
+                :reviewer-options="reviewerOptions"
+                @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+              />
+              <ItemProperties
+                ref="properties"
+                :item="item"
+                :detail="issueDetail"
+                :editing="editing"
+                @open="emit('open', $event)"
+                @edit="emit('edit', $event)"
+              />
+              <ItemProjects
+                ref="projects"
+                :projects="item.projects"
+                :detail-projects="detail?.projects"
+                :now="now"
+                :editable="editing != null"
+                :can-add-to-project="permissions?.addToProject"
+                :viewer-projects="editing?.viewerProjects"
+                @edit="emit('edit', $event)"
+                @need-projects="emit('needProjects')"
+              />
+            </div>
+          </SplitterPanel>
+        </template>
+      </SplitterGroup>
+    </div>
   </article>
 </template>
 
@@ -863,8 +943,15 @@ function getProjectOptions(): CommandOption[] {
   background: $color-border-2;
 }
 
+.itemView_body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 .itemView_columns {
   flex: 1;
+  min-width: 0;
   min-height: 0;
 }
 
