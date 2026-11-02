@@ -1,0 +1,16 @@
+title:
+  en: Track repositories
+description:
+  en: What you tick is copied into this browser and kept in sync from now on.
+summary:
+  plural: count
+  en:
+    zero: Nothing picked yet
+    one: '1 picked: {names}'
+    many: '{count} picked: {names}'
+track:
+  plural: count
+  en:
+    zero: Track repositories
+    one: Track 1 repository
+    many: Track {count} repositories

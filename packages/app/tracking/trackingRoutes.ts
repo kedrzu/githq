@@ -10,6 +10,12 @@ export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
  */
 export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls)?';
 
+/**
+ * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
+ * static last segment outranks the hand-off of every other address (`/owner/name/tree/main`).
+ */
+export const REPOSITORY_SETTINGS_PATH = '/:owner/:name/settings';
+
 /** The last segment of a repository's address listing one kind of its items, as on GitHub (`/owner/name/pulls`). */
 export const REPOSITORY_KIND_SEGMENTS = {
     issues: 'issues',
@@ -72,6 +78,12 @@ export const PROJECT_PATHS = [
     '/users/:owner/projects/:number(\\d+)/:views(views)?/:view(\\d+)?',
 ] as const;
 
+/** The route paths of a tracked project's settings (T17), at GitHub's own addresses of a project's settings. */
+export const PROJECT_SETTINGS_PATHS = [
+    '/orgs/:owner/projects/:number(\\d+)/settings',
+    '/users/:owner/projects/:number(\\d+)/settings',
+] as const;
+
 /** A project as its address names it. */
 export interface ProjectAddress {
     readonly owner: string;
@@ -87,6 +99,15 @@ export interface ProjectAddress {
  */
 export function getRepositoryPath(nameWithOwner: string, kind: RepositoryKind = 'all') {
     return kind === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_KIND_SEGMENTS[kind]}`;
+}
+
+/**
+ * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getRepositorySettingsPath(nameWithOwner: string) {
+    return `/${nameWithOwner}/settings`;
 }
 
 /**
@@ -126,4 +147,13 @@ export function getGitHubUrl(fullPath: string) {
 export function getProjectPath(project: ProjectAddress, view?: number) {
     const path = `/${project.ownerKind === 'org' ? 'orgs' : 'users'}/${project.owner}/projects/${project.number}`;
     return view === undefined ? path : `${path}/views/${view}`;
+}
+
+/**
+ * The address of a tracked project's settings (T17), as on GitHub (`/orgs/acme/projects/3/settings`).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getProjectSettingsPath(project: ProjectAddress) {
+    return `${getProjectPath(project)}/settings`;
 }

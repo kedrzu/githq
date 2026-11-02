@@ -1,8 +1,9 @@
-<!-- A message about something that went wrong in the background (reka-ui's `Toast`, inside a `Toaster`): an icon in its tone, the title, what happened below it, and its actions — always "Dismiss" (Esc). It closes by itself after a while (not while hovered or focused), or when dismissed; Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
+<!-- A message about something that went wrong in the background, or a neutral one about what the user just did (T20) (reka-ui's `Toast`, inside a `Toaster`): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc). It closes by itself after a while (not while hovered or focused), or when dismissed; Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
 <script lang="ts" setup>
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleX, TriangleAlert, X } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
 import { ToastDescription, ToastRoot, ToastTitle } from 'reka-ui';
 
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
@@ -15,8 +16,10 @@ import * as l from './Toast.loc.js';
 withDefaults(
   defineProps<{
     title: string;
-    /** `danger`: a change failed; `warning`: some of it went through. */
-    tone?: 'danger' | 'warning';
+    /** `danger`: a change failed; `warning`: some of it went through; `neutral`: nothing is wrong (give it an `icon`). */
+    tone?: 'danger' | 'warning' | 'neutral';
+    /** Instead of the tone's own. */
+    icon?: LucideIcon;
     /** How long it stays, in ms. */
     duration?: number;
   }>(),
@@ -88,7 +91,7 @@ function onOpenChange(value: boolean) {
     @escape-key-down="onEscapeKeyDown"
   >
     <component
-      :is="tone === 'danger' ? CircleX : TriangleAlert"
+      :is="icon ?? (tone === 'danger' ? CircleX : TriangleAlert)"
       :class="css.toast_icon"
       aria-hidden="true"
     />
@@ -148,6 +151,10 @@ function onOpenChange(value: boolean) {
 
   .toast_warning & {
     color: $color-amber;
+  }
+
+  .toast_neutral & {
+    color: $color-fg-2;
   }
 }
 

@@ -1,4 +1,4 @@
-<!-- An organisation that hides its private data from githq (G5, D14): it restricts third-party apps and has not approved githq, so GitHub shows none of its private repositories and projects. Says that this is GitHub's rule and not a fault, and links to GitHub's page where the user requests approval — remembering the click, since githq cannot read whether a request is pending. `panel`: the whole explanation, with the steps (G5); `banner`: one line in the list of repositories, pointing to the panel (G2). -->
+<!-- An organisation that hides its private data from githq (G5, D14): it restricts third-party apps and has not approved githq, so GitHub shows none of its private repositories and projects. Says that this is GitHub's rule and not a fault, and links to GitHub's page where the user requests approval — remembering the click, since githq cannot read whether a request is pending. `panel`: the whole explanation, with the steps (G5); `banner`: one line in the list of repositories (G2) or of projects (T22), pointing to the panel. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -14,6 +14,8 @@ import { getApprovalUrl } from './utils/getApprovalUrl.js';
 defineProps<{
   organization: string;
   variant: 'banner' | 'panel';
+  /** What the banner says can't be listed: the private repositories (G2), or the projects (T22). */
+  subject?: 'repositories' | 'projects';
   /** How many public repositories GitHub still lists; `null` when it listed none of the organisation's. */
   publicCount?: number | null;
   /** When the user last opened GitHub's page to request approval (epoch ms), or `null`. */
@@ -43,7 +45,7 @@ const approvalUrl = getApprovalUrl(browser.origin);
       aria-hidden="true"
     />
     <p :class="css.hiddenOrganizationNotice_bannerText">
-      {{ t(l.bannerText, { organization }) }}
+      {{ t(subject === 'projects' ? l.bannerProjects : l.bannerText, { organization }) }}
       <template v-if="publicCount != null">{{ t(l.bannerPublic, { count: publicCount }) }}</template>
     </p>
     <Button

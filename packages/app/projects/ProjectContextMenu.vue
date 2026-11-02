@@ -1,4 +1,4 @@
-<!-- The menu of a tracked project — its context menu in the sidebar (R3), and what its view's title opens (R2): under its title and owner, going to its view or to one of its saved views; a new issue in it, where the user may add one; its page on GitHub and copying the link to it; no longer tracking it. -->
+<!-- The menu of a tracked project — its context menu in the sidebar (R3), and what its view's title opens (R2): under its title and owner, going to its view or to one of its saved views; a new issue in it, where the user may add one; its page on GitHub, copying the link to it and its settings; no longer tracking it. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -29,7 +29,7 @@ const sections = computed(() => {
   return [
     [commands.open, commands.views],
     [{ ...commands.newIssue, key: props.newIssueKey }],
-    [commands.openOnGitHub, commands.copyLink],
+    [commands.openOnGitHub, commands.copyLink, commands.settings],
     [commands.untrack],
   ].map(section => section.filter(command => command.when?.() ?? true));
 });

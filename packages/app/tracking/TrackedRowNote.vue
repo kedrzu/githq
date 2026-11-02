@@ -1,9 +1,4 @@
-<!-- What Settings' chooser says at the end of a row (G8): a tick that differs from what is tracked says what saving will do — "will be tracked" (accent), "will be untracked" (amber) — and a tracked row otherwise says how it stands: synced how long ago, downloading, not shown to githq or refused (amber). -->
-<script lang="ts">
-/** What saving will do to a row whose tick differs from what is tracked. */
-export type TrackedChange = 'track' | 'untrack';
-</script>
-
+<!-- What a tracked row says of how it stands (G8): synced how long ago, downloading, not shown to githq or refused (amber). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -15,10 +10,7 @@ import * as l from './TrackedRowNote.loc.js';
 import type { TrackedStatus } from './TrackingTypes.js';
 
 const props = defineProps<{
-  /** Said first: what saving will do. */
-  change: TrackedChange | null;
-  /** How the tracked row stands; said when nothing is staged for it. */
-  status: TrackedStatus | null;
+  status: TrackedStatus;
   /** What "synced 14s ago" is counted from. */
   now: number;
 }>();
@@ -26,16 +18,8 @@ const props = defineProps<{
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
-const text = computed(() => {
-  if (props.change) {
-    return t(props.change === 'track' ? l.willTrack : l.willUntrack);
-  }
-
-  return props.status ? statusText(props.status) : '';
-});
-const amber = computed(() =>
-  props.change ? props.change === 'untrack' : props.status?.kind === 'hidden' || props.status?.kind === 'refused',
-);
+const text = computed(() => statusText(props.status));
+const amber = computed(() => props.status.kind === 'hidden' || props.status.kind === 'refused');
 
 function statusText(status: TrackedStatus) {
   switch (status.kind) {
@@ -56,10 +40,7 @@ function statusText(status: TrackedStatus) {
 </script>
 
 <template>
-  <span
-    :class="[css.trackedRowNote, change === 'track' && css.trackedRowNote_accent, amber && css.trackedRowNote_amber]"
-    >{{ text }}</span
-  >
+  <span :class="[css.trackedRowNote, amber && css.trackedRowNote_amber]">{{ text }}</span>
 </template>
 
 <style lang="scss" module="css">
@@ -68,10 +49,6 @@ function statusText(status: TrackedStatus) {
 }
 
 // Over the colour of the column the row puts it in.
-.trackedRowNote.trackedRowNote_accent {
-  color: $color-accent;
-}
-
 .trackedRowNote.trackedRowNote_amber {
   color: $color-amber;
 }

@@ -1,0 +1,28 @@
+repositoriesTitle:
+  plural: count
+  en:
+    zero: 0 tracked repositories
+    one: 1 tracked repository
+    many: '{formatted} tracked repositories'
+projectsTitle:
+  plural: count
+  en:
+    zero: 0 tracked projects
+    one: 1 tracked project
+    many: '{formatted} tracked projects'
+repositoriesDescription:
+  en: githq keeps a full copy of these in this browser and syncs it in the background. Open one for its settings.
+projectsDescription:
+  en: githq keeps every item of these, from any repository, in this browser and syncs it in the background. Open one for its settings.
+addRepositories:
+  en: Track repositories
+addProjects:
+  en: Track projects
+next:
+  en: Next
+previous:
+  en: Previous
+open:
+  en: Open settings
+untrack:
+  en: Untrack
