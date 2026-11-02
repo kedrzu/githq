@@ -74,16 +74,16 @@ in VS Code — `.png`, or `docs/**/*.png` — with a toggle for a regular expres
 Hiding things is useful only if it never hides a conversation. So each thread is shown with its code wherever it
 is.
 
-A thread on code that has changed since is placed where that line is now. githq knows the commit the comment was
-written on, so it compares the file then with the file now and follows the line down the changes; only when the
-line itself was rewritten is the place approximate, and the thread says so. A thread on a file that is gone from the
-diff — deleted, or created and deleted again within the pull request — gets an entry of its own in the file list,
-until it is resolved. [Outdated threads](DECISIONS.md#d12).
+A thread on code that has changed since is still shown in its file. GitHub sends each comment with the few lines of
+code it was written on, so githq looks for the commented line in the file as it is now; found exactly once, the
+thread sits there, otherwise at the top of its file with the old code beside it. Either way it is marked outdated. A
+thread on a file that is gone from the diff — deleted, or created and deleted again within the pull request — gets
+an entry of its own in the file list, until it is resolved. [Outdated threads](DECISIONS.md#d12).
 
 A thread on a line you cannot see — inside collapsed context, on a whitespace change you hid, in a collapsed file —
 is shown with a line or three of code around it and a mark saying how far it is from the rest, instead of expanding
-everything in between. A collapsed file shows just those pieces under its header, and expands whole and collapses
-back. [Comments on hidden lines](DECISIONS.md#d13). And a file with an unresolved thread is never filtered out as
+everything in between. A collapsed file shows just those pieces under its header, with the code as it was when the
+comment was written, so the file still is not fetched; it expands whole and collapses back. [Comments on hidden lines](DECISIONS.md#d13). And a file with an unresolved thread is never filtered out as
 viewed: a colleague's new comment on a file you already ticked would otherwise appear nowhere.
 [Unresolved threads stay](DECISIONS.md#d15).
 
@@ -126,12 +126,12 @@ suggestion stays on github.com, because GitHub offers no API for it. [Suggestion
 ## Speed
 
 github.com stutters on large pull requests, so in githq speed is the only criterion for how the work is split, ahead
-of effort or complexity. Only the lines on screen are drawn, never a whole file. The likely shape is a Web Worker
-that fetches the files itself, computes the diff, the syntax colours and where threads go, and sends the screen only
-the rows about to be drawn. It is adopted if a measurement on a large pull request shows it beats doing the same on
-the main thread, with WebAssembly only where JavaScript proves to be the bottleneck. [Measured, not
-assumed](DECISIONS.md#d20). Files are fetched when a review is opened and kept by their content's id, which never
-changes; fetching ahead of time for pull requests waiting on you may come later ([fetching](DECISIONS.md#d19)).
+of effort or complexity. Only the lines on screen are drawn, never a whole file. Whether computing the diff, the
+syntax colours and where threads go moves to a Web Worker, which would send the screen only the rows about to be
+drawn, is settled by measuring both on a large pull request, with WebAssembly only where JavaScript proves to be the
+bottleneck. [Measured, not assumed](DECISIONS.md#d20). Files are fetched when a review is opened and kept in the
+browser's database by their content's id, which never changes, so a pull request read once reopens at once;
+fetching ahead of time for pull requests waiting on you may come later ([fetching](DECISIONS.md#d19)).
 
 ## What ships first
 

@@ -53,3 +53,8 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   what the second key does while a draft is open.
 - 2026-11-02 — Owner agreed: second key with a draft open adds and submits the draft → D22 (Q8 closed); reading + draft warnings first, writing second → D23. Next: README story, rightsize.
 - 2026-11-02 — Owner's 'ok' taken for D22 and D23. README written; githq D6 and README pointed here. Rightsize (3 passes): candidates put to owner — outdated placement by text search vs computed (D12), diffHunk snippets in collapsed files vs fetching them (D13 vs D8 contradiction), worker fetching itself (D20), blob cache persisted vs session (D19), unconfirmed keys (D16); agent recommends keeping D6, D7, D14, D21, the collapsed-comments option and .gitattributes (owner's own asks or simpler versions break them).
+- 2026-11-02 — Owner on rightsize: outdated threads placed by text search of the diffHunk line → D12 rewritten;
+  collapsed files show the diffHunk code, staying unfetched → D13 rewritten; files fetched by the app's client, worker
+  only for computing, by measurement → D20 rewritten (old forms in history); file contents kept in IndexedDB, clean-up
+  later → D19; agent's keys and landing confirmed → D16. Agent added root-only .gitattributes (D8) and dropping
+  expanded context when a file changes (D14). README updated. Nothing open; proposing to close.

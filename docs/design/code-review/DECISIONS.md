@@ -120,7 +120,8 @@ whitespace-only change after hiding whitespace), the view lands on the nearest v
 **Generated files start collapsed — those marked `linguist-generated` in the repository's `.gitattributes`, and
 known lock files by name — and so do very large files. A collapsed file is neither fetched nor diffed until
 opened.** (2026-11-02, owner: "nobody reads lock files", collapsing is needed "not only for performance"; the
-threshold for size is not set)
+threshold for size is not set) Only the `.gitattributes` at the repository's root is read, at the pull request's
+head; nested ones may come later (agent, after the rightsize pass).
 
 **Why.** Some files are simply not read, and a large pull request should cost only what you open.
 
@@ -182,40 +183,46 @@ pattern to a regular expression. Next to it, the viewed filter of [D9](#d9).** (
 
 ## D12
 
-**Every thread is shown with the code it belongs to, outdated ones included. An outdated thread sits where its line
-is now, marked as outdated and placed approximately. A thread on a file that is no longer in the diff — deleted, or
-created and deleted again within the pull request so that the diff shows nothing — gets an entry of its own in the
-file list and the diff, holding only its threads. Once such a thread is resolved, the entry is gone.** (2026-11-02,
-owner: "it's a big problem of mine, a thread interests me or is unresolved, but it's outdated, so I simply don't see
-it")
+**Every thread is shown with the code it belongs to, outdated ones included. An outdated thread is placed by looking
+for the commented line — the last line of its `diffHunk` — in the current file: found exactly once, the thread sits
+there; otherwise at the top of its file, showing the code it was written on. Either way it is marked outdated. A
+thread on a file that is no longer in the diff — deleted, or created and deleted again within the pull request so
+that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
+such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
+me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
+pass)
 
 **Why.** File comments belong with the files, consistently, rather than in the pull request's own conversation
-(owner). Where the line is now can be computed rather than guessed: githq already diffs files itself ([D6](#d6)), so
-it diffs the file at the comment's original commit against the current head and follows the line through; when the
-line itself was rewritten, the thread goes to its nearest surviving neighbour — that is the "approximate" case.
+(owner). An approximate place is enough (owner), and the search needs nothing beyond what GitHub sends with the
+comment. It misses on lines that repeat in a file (`}`, `return null`), which then go to the top of the file.
 
 > **Checked 2026-11-02:** `PullRequestReviewComment` has `originalCommit`, `originalLine`, `originalStartLine`,
 > `commit`, `line`, `outdated`, `diffHunk` (`packages/github/src/schema.graphql`, type `PullRequestReviewComment`).
 
 **Rejected.**
 
+- Fetching the file at the comment's original commit, diffing it against head and following the line
+  ([history](history/DECISIONS.md#d12)) — one more fetch per original version for a precision the owner did not ask for.
 - Outdated threads only in the pull request's conversation sidebar (agent) — file comments stay with files (owner).
 - Hiding outdated threads, as github.com mostly does — exactly the owner's complaint.
 
 ## D13
 
-**A thread on a line that is not on screen — hidden context, a hidden whitespace change, a collapsed file — is shown
-with one to three lines of code around it, separated from the rest by a mark saying how far away it is, without
-expanding what lies between. A collapsed file shows such pieces under its header, marked as collapsed, and can be
-expanded whole and collapsed back. "Show comments in collapsed files" is a view option, on by default, kept in local
-preferences.** (2026-11-02, owner)
+**A thread on a line that is not on screen is shown with one to three lines of code around it, separated from the
+rest by a mark saying how far away it is, without expanding what lies between. In an open file — hidden context, a
+hidden whitespace change — that is the current code. A collapsed file shows its threads under its header with the
+code they were written on (the comment's `diffHunk`), so the file stays unfetched ([D8](#d8)); expanded, it shows the
+current code, and collapses back. "Show comments in collapsed files" is a view option, on by default, kept in local
+preferences.** (2026-11-02, owner; the `diffHunk` for collapsed files agreed after the rightsize pass)
 
 **Why.** Expanding a whole file or its context only to show one comment defeats the collapsing. On github.com a
 collapsed file — generated, viewed or collapsed by hand — hides its comments, and once expanded a generated file
-stays expanded (owner).
+stays expanded (owner). Accepted: in a collapsed file the code beside an outdated thread is old.
 
 **Rejected.**
 
+- Current code around threads in collapsed files ([history](history/DECISIONS.md#d13)) — means fetching and diffing
+  the file [D8](#d8) keeps unfetched.
 - Expanding the context or the file up to the comment — renders everything in between for one comment.
 - A comment above the code with an arrow pointing to its line, without the line (owner's first thought) — a few lines
   of code tell more.
@@ -227,6 +234,9 @@ collapsed by hand, the filters, expanded context and the reading position ([D7](
 whitespace ([D4](#d4)), the sidebars ([D5](#d5)) and "show comments in collapsed files" ([D13](#d13)) are global
 preferences, also local.** (2026-11-02, owner: "I was halfway through a pull request, switch away and lose all of
 it")
+
+Expanded context of a file is dropped when the author changes that file, since its line ranges no longer
+mean the same lines (agent).
 
 **Why.** Moving between the pull requests of a stack should cost nothing. Nothing of this goes to the synced
 settings, which hold only what is tracked ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
@@ -248,11 +258,11 @@ complains about. Accepted cost: a thread deliberately left open keeps its file i
 
 **In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
 today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
-and the command palette goes to any of them.** (2026-11-02, owner: consistency with the pull request view; the
-rest agent's proposal, not yet confirmed: review is a full-screen route of its own, so Back returns; one key opens it
-from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys jumps
-between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on the
-remembered position ([D14](#d14)))
+and the command palette goes to any of them. Review is a full-screen route of its own, so Back returns; one key
+opens it from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys
+jumps between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on
+the remembered position ([D14](#d14)).** (2026-11-02, owner: `J` / `K` and `[` / `]` for consistency with the pull
+request view; the rest the agent's proposal, confirmed after the rightsize pass)
 
 **Why.** Walking pull requests with `J` / `K` already exists and crosses from one stack into the next
 ([stacked-prs D9](../stacked-prs/DECISIONS.md#d9)); review keeps the same meaning, so the end of a stack is not a
@@ -309,22 +319,35 @@ commit it to the branch itself.
 
 ## D19
 
-**File contents are fetched when a pull request's review is opened, not ahead of time, and kept by their blob SHA,
-which never changes. Fetching ahead for pull requests waiting on your review is an option for later.** (2026-11-02,
-owner; keeping by SHA agent's proposal)
+**File contents are fetched when a pull request's review is opened, not ahead of time, and kept in IndexedDB by their
+blob SHA, which never changes. How that store is cleaned up is for later. Fetching ahead for pull requests waiting on
+your review is an option for later.** (2026-11-02, owner; keeping by SHA agent's proposal, on disk owner's choice)
+
+**Why.** A pull request read once reopens at once, also after a restart (owner chose this over memory only).
+Accepted: the store grows until a clean-up exists.
+
+**Rejected.**
+
+- Keeping contents in memory for the session only (rightsize pass) — a large pull request would be fetched again
+  after every restart (owner).
 
 ## D20
 
-**What runs where is decided by measurement, and speed is the only criterion — not effort or complexity.** The
-candidate: a Web Worker fetches file contents itself, so the text never crosses to the main thread, computes the
-diff, syntax highlighting and the placement of threads, and hands the main thread only the rows about to be drawn
-plus the row counts the scroll needs ([D7](#d7)). The list is virtualized per line, not per file. It is adopted if
-it beats doing the same on the main thread on a large pull request — time to the first drawn rows and dropped frames
-while scrolling; WebAssembly only where the JavaScript is shown to be the bottleneck. (2026-11-02, owner: "we
-optimise for speed"; the candidate is the agent's)
+**What runs where is decided by measurement, and speed is the only criterion — not effort or complexity. Files are
+fetched by the app's GitHub client like everything else. Whether the diff, syntax highlighting and thread placement
+run in a Web Worker, which hands the main thread the rows about to be drawn and the row counts the scroll needs
+([D7](#d7)), is decided by measuring it against the main thread on a large pull request: time to the first drawn rows
+and dropped frames while scrolling. WebAssembly only where the JavaScript is shown to be the bottleneck. The list is
+virtualized per line, not per file.** (2026-11-02, owner: "we optimise for speed"; the worker candidate is the
+agent's)
 
-**Why.** github.com stutters on large pull requests (owner). Fetching inside the worker removes the cost the owner
-worried about, sending texts there and back.
+**Why.** github.com stutters on large pull requests (owner). Copying a file's text to a worker is cheap next to
+diffing and highlighting it; one GitHub client keeps the token, rate-limit handling and caching in one place.
+
+**Rejected.**
+
+- The worker fetching files itself so the text never crosses threads ([history](history/DECISIONS.md#d20)) — saves
+  an unmeasured copy and splits GitHub access in two.
 
 ## D21
 
