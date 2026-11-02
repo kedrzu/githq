@@ -63,7 +63,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
    - a reply in a thread, and resolving a thread;
    - submitting a review as a comment, an approval or a request for changes, with a summary.
 7. **Settings** (second step). One setting chooses what a comment does by default: go out at once as a single
-   comment, or join a draft review. It sits in the existing settings screen.
+   comment, or join a draft review. It sits in the Code review section of the settings screen.
 
 ## What's on each screen
 
@@ -182,3 +182,35 @@ state (checks, review, merged), and which ones have the user's open draft.
 6. **The view options.** Where they live, given they are set rarely and remembered.
 7. **Writing.** How the comment box makes clear what each of its two keys will do, in both settings and with a
    draft open.
+
+## The screens
+
+In `githq.pen`, frame **"App · Code review"** (`CEDLB`). The numbers are the frame's. No variants are waiting. Decisions: [DECISIONS](../DECISIONS.md), D24 onward.
+
+|Question|Answer in the frame|
+|-|-|
+|1. The open draft warning|A toolbar at the foot of the diff, in a stack and outside one: CR35, CR36; asking before discarding CR39 and before submitting CR75; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
+|2. The file list hidden, and how viewed shows|⌘B, as the conversation's ⌥⌘B: CR6, CR50; files indented under their folder, an eye after a viewed file's name: CR46|
+|3. Stack and file list together|The stack's rows on top of the file list: CR47; scrolled, a thin pinned bar and the filter under it: CR48|
+|4. Code shown out of place|The distance mark: CR11; a collapsed file with only its threads: CR12, expanded CR13|
+|5. Outdated threads and gone files|Placed approximately: CR2; line gone: CR10; a gone file: CR14|
+|6. The view options|One button naming layout and whitespace, a menu: CR50|
+|7. Writing|CR70 (single by default), CR71 (draft by default), CR72 (draft open)|
+
+Reading: an opened pull request and D, CR1; large screen split with the conversation CR2, unified without it CR3;
+laptop split CR4, unified with the conversation CR5, both columns hidden CR6. Threads: CR10–CR15 (jumping between
+threads CR15). Settled by the owner: the pending review's toolbar (CR35, CR36, D28), where the stack sits (CR47, CR48, D25), the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
+once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the keys CR29. States and failures:
+files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
+binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
+range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
+
+Still open, not settled by the screens:
+
+- **The keys** D (open the review), N ⇧N (threads), C (comment), ⇧S (submit) and ⌘G (suggestion) are the agent's
+  (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
+- **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
+- **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
+- **Wording left as it was:** lists still say "Your draft review · 3 comments unsent" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72). The owner has reworded the toolbar and named the sidebar entry "Draft reviews".
+- **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
+  the drafts list (CR34) shows the pull requests themselves.
