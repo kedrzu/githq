@@ -502,7 +502,8 @@ browser is deleted only when the toast goes. No confirmation on the row.
 ### D26
 
 Settings is **a column of sections**, as the repository's column layout, rather than tabs along the top (owner,
-2026-11-03): Repositories, Projects, Display, Code review, Sync settings, Account, on `1`–`6`. The page's header holds
+2026-11-03): Repositories, Projects, Display, Code review, Sync settings, Account, on `1`–`6`, each roomy enough to click with a
+one-line description of what it holds. The page's header holds
 only the section's name, and with a column there is room for more sections, so a setting goes where it belongs: the
 repository layout in Display, what a comment does by default in Code review. Where settings are saved is no longer a
 line on the page but part of the status bar ("Up to date · settings saved in …"). Screens: App · Settings, all of

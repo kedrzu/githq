@@ -156593,7 +156593,7 @@
               "id": "Hx88c",
               "name": "Settings / Sections column",
               "reusable": true,
-              "width": 232,
+              "width": 260,
               "height": 874,
               "fill": "$bg-2",
               "stroke": "$border",
@@ -156636,139 +156636,280 @@
                   "name": "Sections",
                   "width": "fill_container",
                   "layout": "vertical",
-                  "gap": 1,
+                  "gap": 2,
                   "padding": [
                     8,
                     6
                   ],
                   "children": [
                     {
-                      "id": "ASpvf",
+                      "id": "IKIGD",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Repositories",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "book-marked"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Repositories"
                         },
-                        "F8d2ET": {
+                        "C7ZTnY": {
+                          "enabled": true,
                           "content": "15"
                         },
-                        "utBWV/luKkY": {
+                        "MVpGi": {
+                          "content": "What githq keeps a copy of"
+                        },
+                        "v5Hae9/luKkY": {
                           "content": "1"
                         }
                       }
                     },
                     {
-                      "id": "j3IrCE",
+                      "id": "BWGjI",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Projects",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "square-kanban"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Projects"
                         },
-                        "F8d2ET": {
+                        "C7ZTnY": {
+                          "enabled": true,
                           "content": "2"
                         },
-                        "utBWV/luKkY": {
+                        "MVpGi": {
+                          "content": "The GitHub Projects you follow"
+                        },
+                        "v5Hae9/luKkY": {
                           "content": "2"
                         }
                       }
                     },
                     {
-                      "id": "anOlh",
+                      "id": "gyIe7",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Display",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "panels-top-left"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Display"
                         },
-                        "F8d2ET": {
-                          "enabled": false
+                        "MVpGi": {
+                          "content": "How repositories are laid out"
                         },
-                        "utBWV/luKkY": {
+                        "v5Hae9/luKkY": {
                           "content": "3"
                         }
                       }
                     },
                     {
-                      "id": "P8iph",
+                      "id": "uQ9bQ",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Code review",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "file-diff"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Code review"
                         },
-                        "F8d2ET": {
-                          "enabled": false
+                        "MVpGi": {
+                          "content": "How comments go out"
                         },
-                        "utBWV/luKkY": {
+                        "v5Hae9/luKkY": {
                           "content": "4"
                         }
                       }
                     },
                     {
-                      "id": "fXd0L",
+                      "id": "L2bl9",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Sync settings",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "cloud"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Sync settings"
                         },
-                        "F8d2ET": {
-                          "enabled": false
+                        "MVpGi": {
+                          "content": "Your settings across devices"
                         },
-                        "utBWV/luKkY": {
+                        "v5Hae9/luKkY": {
                           "content": "5"
                         }
                       }
                     },
                     {
-                      "id": "KZ7lm",
+                      "id": "as5l2",
                       "type": "ref",
-                      "ref": "I8wOQ",
+                      "ref": "N8UMD",
                       "name": "Section Account",
                       "width": "fill_container",
                       "descendants": {
-                        "G59Us": {
+                        "kk8BQ": {
                           "icon": "user"
                         },
-                        "r2R5mQ": {
+                        "upTOT": {
                           "content": "Account"
                         },
-                        "F8d2ET": {
-                          "enabled": false
+                        "MVpGi": {
+                          "content": "Sign-in and organisations"
                         },
-                        "utBWV/luKkY": {
+                        "v5Hae9/luKkY": {
                           "content": "6"
                         }
                       }
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "l1Gu6",
+              "name": "Section items",
+              "width": 248,
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "N8UMD",
+                  "name": "Settings / Section item",
+                  "reusable": true,
+                  "width": "fill_container",
+                  "cornerRadius": 7,
+                  "gap": 10,
+                  "padding": [
+                    9,
+                    8,
+                    10,
+                    10
+                  ],
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "kk8BQ",
+                      "name": "Icon",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "book-marked",
+                      "library": "lucide",
+                      "fill": "$fg-2"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UMj6l",
+                      "name": "Text",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 3,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "WXQ6B",
+                          "name": "Top",
+                          "width": "fill_container",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "upTOT",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Repositories",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A89BdO",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "text",
+                              "id": "C7ZTnY",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Count",
+                              "enabled": false,
+                              "fill": "$fg-3",
+                              "content": "15",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "MVpGi",
+                          "name": "Description",
+                          "fill": "$fg-3",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "What githq keeps a copy of",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font",
+                          "fontSize": 11.5,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "v5Hae9",
+                      "type": "ref",
+                      "ref": "w9kS9",
+                      "name": "Kbd",
+                      "opacity": 0.7,
+                      "descendants": {
+                        "luKkY": {
+                          "content": "1"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "g4arI",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "N8UMD",
+                  "name": "Settings / Section item · selected",
+                  "width": "fill_container",
+                  "fill": "$bg-3",
+                  "descendants": {
+                    "kk8BQ": {
+                      "fill": "$fg"
+                    },
+                    "upTOT": {
+                      "fill": "$fg",
+                      "fontWeight": "500"
+                    },
+                    "MVpGi": {
+                      "fill": "$fg-2"
+                    }
+                  }
                 }
               ]
             }
@@ -156854,15 +156995,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -157484,15 +157628,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "KZ7lm": {
+                            "as5l2": {
                               "fill": "$bg-3"
                             },
-                            "KZ7lm/G59Us": {
+                            "as5l2/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "KZ7lm/r2R5mQ": {
+                            "as5l2/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "as5l2/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -158278,15 +158425,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -159197,15 +159347,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "j3IrCE": {
+                            "BWGjI": {
                               "fill": "$bg-3"
                             },
-                            "j3IrCE/G59Us": {
+                            "BWGjI/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "j3IrCE/r2R5mQ": {
+                            "BWGjI/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "BWGjI/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -160351,15 +160504,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -161075,15 +161231,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "anOlh": {
+                            "gyIe7": {
                               "fill": "$bg-3"
                             },
-                            "anOlh/G59Us": {
+                            "gyIe7/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "anOlh/r2R5mQ": {
+                            "gyIe7/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "gyIe7/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -161698,25 +161857,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "anOlh": {
-                              "fill": "#00000000"
-                            },
-                            "anOlh/G59Us": {
-                              "fill": "$fg-2"
-                            },
-                            "anOlh/r2R5mQ": {
-                              "fill": "$fg-2",
-                              "fontWeight": "normal"
-                            },
-                            "P8iph": {
+                            "uQ9bQ": {
                               "fill": "$bg-3"
                             },
-                            "P8iph/G59Us": {
+                            "uQ9bQ/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "P8iph/r2R5mQ": {
+                            "uQ9bQ/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "uQ9bQ/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -162047,15 +162199,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "fXd0L": {
+                            "L2bl9": {
                               "fill": "$bg-3"
                             },
-                            "fXd0L/G59Us": {
+                            "L2bl9/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "fXd0L/r2R5mQ": {
+                            "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "L2bl9/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -162281,15 +162436,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "fXd0L": {
+                            "L2bl9": {
                               "fill": "$bg-3"
                             },
-                            "fXd0L/G59Us": {
+                            "L2bl9/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "fXd0L/r2R5mQ": {
+                            "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "L2bl9/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -162841,15 +162999,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "fXd0L": {
+                            "L2bl9": {
                               "fill": "$bg-3"
                             },
-                            "fXd0L/G59Us": {
+                            "L2bl9/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "fXd0L/r2R5mQ": {
+                            "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "L2bl9/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -163163,15 +163324,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "fXd0L": {
+                            "L2bl9": {
                               "fill": "$bg-3"
                             },
-                            "fXd0L/G59Us": {
+                            "L2bl9/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "fXd0L/r2R5mQ": {
+                            "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "L2bl9/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -163702,15 +163866,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "fXd0L": {
+                            "L2bl9": {
                               "fill": "$bg-3"
                             },
-                            "fXd0L/G59Us": {
+                            "L2bl9/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "fXd0L/r2R5mQ": {
+                            "L2bl9/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "L2bl9/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -165972,15 +166139,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -166416,15 +166586,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "j3IrCE": {
+                            "BWGjI": {
                               "fill": "$bg-3"
                             },
-                            "j3IrCE/G59Us": {
+                            "BWGjI/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "j3IrCE/r2R5mQ": {
+                            "BWGjI/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "BWGjI/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -166736,15 +166909,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -167191,15 +167367,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -167666,15 +167845,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -168141,15 +168323,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -168593,15 +168778,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
@@ -169059,15 +169247,18 @@
                           "name": "Settings column",
                           "height": "fill_container",
                           "descendants": {
-                            "ASpvf": {
+                            "IKIGD": {
                               "fill": "$bg-3"
                             },
-                            "ASpvf/G59Us": {
+                            "IKIGD/kk8BQ": {
                               "fill": "$fg"
                             },
-                            "ASpvf/r2R5mQ": {
+                            "IKIGD/upTOT": {
                               "fill": "$fg",
                               "fontWeight": "500"
+                            },
+                            "IKIGD/MVpGi": {
+                              "fill": "$fg-2"
                             }
                           }
                         },
