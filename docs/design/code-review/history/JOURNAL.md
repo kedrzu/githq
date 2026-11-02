@@ -41,3 +41,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   "show comments in collapsed files" option, default on, local → D13. Per-PR state (expanded/collapsed files,
   filters, context, position) kept in local cache → D14. Raised Q6: viewed filter vs unresolved threads.
 - 2026-11-02 — Owner chose: the viewed filter keeps files with unresolved threads (header + comment pieces) → D15 (Q6 closed).
+- 2026-11-02 — Owner: J/K walk pull requests in review as in the PR view (consistency); [ / ] for files → D16. Agent's unconfirmed parts listed in D16 (route, entry key, {/} selection, thread keys, landing on first unviewed file).

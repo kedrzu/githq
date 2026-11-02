@@ -244,6 +244,26 @@ complains about. Accepted cost: a thread deliberately left open keeps its file i
 
 - The filter wins and the list shrinks to nothing — a new comment on a viewed file is missed.
 
+## D16
+
+**In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
+today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
+and the command palette goes to any of them.** (2026-11-02, owner: consistency with the pull request view; the
+rest agent's proposal, not yet confirmed: review is a full-screen route of its own, so Back returns; one key opens it
+from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys jumps
+between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on the
+remembered position ([D14](#d14)))
+
+**Why.** Walking pull requests with `J` / `K` already exists and crosses from one stack into the next
+([stacked-prs D9](../stacked-prs/DECISIONS.md#d9)); review keeps the same meaning, so the end of a stack is not a
+special case.
+
+**Rejected.**
+
+- `J` / `K` for files and `[` / `]` for pull requests in review (agent) — the same key would mean different things
+  in the pull request view and in its review (owner).
+- `Shift+J` / `Shift+K` extending the file selection — they belong with `J` / `K`, which here walk pull requests.
+
 ## Q5
 
 **Open: what runs off the main thread.** Owner: github.com stutters on large pull requests, probably too much on the
