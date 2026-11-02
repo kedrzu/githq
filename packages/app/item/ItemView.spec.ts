@@ -264,6 +264,36 @@ test('D17: in a panel the stack map folds to one line once the content scrolls d
     await expect.element(rows).toBeVisible();
 });
 
+test('D17: content that fits once the map folds keeps it folded — the browser clamping it to the top does not unfold it, and the end shows', async () => {
+    await StackOfTenInPanel.run();
+    const rows = page.getByRole('list', { name: 'Pull requests of the stack' });
+    await expect.element(rows).toBeVisible();
+    const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
+    const frame = scroll?.closest<HTMLElement>('[style*="100vh"]');
+    if (!scroll || !frame) {
+        throw new Error('The content has no scrolling column in a frame.');
+    }
+
+    // The content overflows by 40px, less than the height the fold frees.
+    const overflow = scroll.scrollHeight - scroll.clientHeight;
+    frame.style.height = `${frame.clientHeight + overflow - 40}px`;
+    await expect.poll(() => scroll.scrollHeight - scroll.clientHeight).toBe(40);
+
+    scroll.scrollTop = 40;
+    scroll.dispatchEvent(new Event('scroll'));
+    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10/u });
+    await expect.element(strip).toBeVisible();
+    await expect.poll(() => scroll.scrollTop).toBe(0);
+    scroll.dispatchEvent(new Event('scroll'));
+    await new Promise<void>(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+
+    await expect.element(strip).toBeVisible();
+    expect(rows.query()).toBeNull();
+    expect(scroll.scrollHeight).toBeLessThanOrEqual(scroll.clientHeight);
+});
+
 test('a row of the stack map opens its pull request in place of this one', async () => {
     await StackOfTenInModal.run();
     const { onOpenInPlace } = StackOfTenInModal.args;

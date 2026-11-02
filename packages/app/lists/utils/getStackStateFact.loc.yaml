@@ -1,0 +1,16 @@
+bothReady:
+  en: Both ready
+allReady:
+  en: All {count} ready
+needsRebase:
+  en: Needs rebase · nothing can merge
+closedInside:
+  en: '#{number} closed · {stuck} later stuck, dissolve and link again'
+closed:
+  en: Closed
+incomplete:
+  en: Still reading this stack
+merged:
+  en: Merged
+reviewRequested:
+  en: Your review on {requested} of {open} · {ready} ready

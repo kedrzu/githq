@@ -52,10 +52,6 @@ waitingForReview:
   en: Waiting for review
 cannotMergeYet:
   en: Can't merge yet
-bothReady:
-  en: Both ready
-allReady:
-  en: All {count} ready
 heldByDraft:
   en: '#{number} is a draft'
 heldByChecks:
@@ -64,17 +60,7 @@ heldByReview:
   en: '#{number} is waiting for review'
 heldStopsLater:
   en: '#{number} stops {later} later from landing'
+heldBlocksLater:
+  en: '#{number} blocks {later} later'
 heldAlone:
   en: "#{number} can't merge yet"
-needsRebase:
-  en: Needs rebase · nothing can merge
-closedInside:
-  en: '#{number} closed · {stuck} later stuck, dissolve and link again'
-closedStack:
-  en: Closed
-incomplete:
-  en: Still reading this stack
-mergedStack:
-  en: Merged
-reviewRequested:
-  en: Your review on {requested} of {open} · {ready} ready

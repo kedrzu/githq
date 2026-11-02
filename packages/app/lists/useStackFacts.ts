@@ -4,30 +4,28 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import {
-    CircleCheck,
-    CircleDashed,
-    CircleX,
-    Eye,
-    GitCompareArrows,
-    GitMerge,
-    GitPullRequestClosed,
-    GitPullRequestDraft,
-    Hourglass,
-    Loader,
-} from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
-import type { StackBlocker, StackDescription, StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
+import type {
+    StackBlocker,
+    StackDescription,
+    StackHeldState,
+    StackPullRequestPipKind,
+} from '@/store/stacks/describeStack.js';
 import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ListStack } from './ListTypes.js';
 import * as l from './useStackFacts.loc.js';
+import { getHeldReason } from './utils/getHeldReason.js';
+import type { HeldReason } from './utils/getHeldReason.js';
+import { getBlockerLook } from './utils/getBlockerLook.js';
 import { getItemPeople } from './utils/getItemPeople.js';
+import { getPullRequestLook } from './utils/getPullRequestLook.js';
+import { getStackStateFact } from './utils/getStackStateFact.js';
 
 /** The faces shown before "+N" (D15). */
 const MAX_PEOPLE = 3;
@@ -102,9 +100,6 @@ interface HeldTextParams {
 interface ShareHeldTextParams {
     readonly number: number;
 }
-
-/** What holds a stack, as its held sentence names it: a draft, running checks, a review awaited, or that it blocks. */
-export type HeldReason = 'checks' | 'draft' | 'other' | 'review';
 
 /** The stack's held sentence for each reason: "2 of 4 ready, #1206 is a draft" (SP14). */
 const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
@@ -258,57 +253,19 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
     }
 
     function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
-        const fact = share ? getShareStateFact(share) : getOpenStateFact(stack);
         const { state } = stack;
+        const fact = share ? getShareStateFact(share) : getStackStateFact({ state, t, getHeldText });
         const open = state.kind !== 'merged' && state.kind !== 'closed' && state.kind !== 'incomplete';
         return open && stack.landed > 0
             ? { ...fact, text: t(l.landed, { count: stack.landed, state: fact.text }) }
             : fact;
     }
 
-    function getOpenStateFact({ state }: StackDescription): StackStateFact {
-        switch (state.kind) {
-            case 'ready':
-                return getReadyFact(state.openCount);
-            case 'held': {
-                const { blocker, readyCount, openCount } = state;
-                const params = { ready: readyCount, open: openCount, number: blocker.number };
-                return { ...getBlockerLook(blocker.kind), text: getHeldText(blocker, params) };
-            }
-            case 'needsRebase':
-                return { icon: GitCompareArrows, tone: 'warning', text: t(l.needsRebase) };
-            case 'closedInside':
-                return {
-                    icon: GitPullRequestClosed,
-                    tone: 'danger',
-                    text: t(l.closedInside, { number: state.closedNumber, stuck: state.stuckCount }),
-                };
-            case 'closed':
-                return { icon: GitPullRequestClosed, tone: 'dim', text: t(l.closed) };
-            case 'incomplete':
-                return { icon: CircleDashed, tone: 'dim', text: t(l.incomplete) };
-            case 'merged':
-                return { icon: GitMerge, tone: 'done', text: t(l.merged) };
-            case 'reviewRequested':
-                return {
-                    icon: Eye,
-                    tone: 'muted',
-                    text: t(l.reviewRequested, {
-                        requested: state.requestedCount,
-                        open: state.openCount,
-                        ready: state.readyCount,
-                    }),
-                };
-            default:
-                return assertNever(state);
-        }
-    }
-
     /** A share's sentence (SP24): ready, or what holds it, named without the stack's count. */
     function getShareStateFact(share: StackShareState): StackStateFact {
         switch (share.kind) {
             case 'ready':
-                return getReadyFact(share.count);
+                return getStackStateFact({ state: { kind: 'ready', openCount: share.count }, t, getHeldText });
             case 'held':
                 return { ...getBlockerLook(share.blocker.kind), text: getShareHeldText(share.blocker) };
             default:
@@ -316,89 +273,13 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
         }
     }
 
-    /** "Both ready" for two (SP24), "All 3 ready" for more. */
-    function getReadyFact(readyCount: number): StackStateFact {
-        const text = readyCount === 2 ? t(l.bothReady) : t(l.ready, { count: readyCount });
-        return { icon: CircleCheck, tone: 'success', text };
-    }
-
     /** What holds a share, as {@link getHeldText} names it: "#1206 blocks", "#1216 checks running". */
     function getShareHeldText(blocker: StackBlocker): string {
         return t(SHARE_HELD_TEXTS[getHeldReason(blocker)], { number: blocker.number });
     }
 
-    /** The held sentence names what holds the stack (SP14): "#1216 checks running", "#97 waiting for review". */
-    function getHeldText(blocker: StackBlocker, params: HeldTextParams): string {
-        return t(HELD_TEXTS[getHeldReason(blocker)], params);
-    }
-}
-
-/**
- * What a held sentence names about the pull request holding the stack (SP14) — the list's and the stack map's.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getHeldReason(blocker: StackBlocker): HeldReason {
-    switch (blocker.kind) {
-        case 'draft':
-            return 'draft';
-        case 'moving':
-            return 'checks';
-        case 'waiting':
-            return blocker.waitingForReview ? 'review' : 'other';
-        case 'broken':
-        case 'ready':
-        case 'merged':
-        case 'closed':
-            return 'other';
-        default:
-            return assertNever(blocker.kind);
-    }
-}
-
-/**
- * A held stack reads in the colour of what holds it (SP14): red when broken, amber when moving, grey otherwise.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getBlockerLook(kind: StackPullRequestPipKind): StackLook {
-    switch (kind) {
-        case 'broken':
-            return { icon: CircleX, tone: 'danger' };
-        case 'moving':
-            return { icon: Loader, tone: 'warning' };
-        case 'draft':
-            return { icon: GitPullRequestDraft, tone: 'dim' };
-        case 'waiting':
-        case 'ready':
-        case 'merged':
-        case 'closed':
-            return { icon: Hourglass, tone: 'muted' };
-        default:
-            return assertNever(kind);
-    }
-}
-
-/**
- * A pull request in its own state, as its pip draws it (D6): the icon and colour its line in an expanded card and its
- * row in the stack map show.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getPullRequestLook(kind: StackPullRequestPipKind): StackLook {
-    switch (kind) {
-        case 'ready':
-            return { icon: CircleCheck, tone: 'success' };
-        case 'merged':
-            return { icon: GitMerge, tone: 'done' };
-        case 'closed':
-            return { icon: GitPullRequestClosed, tone: 'danger' };
-        case 'broken':
-        case 'moving':
-        case 'draft':
-        case 'waiting':
-            return getBlockerLook(kind);
-        default:
-            return assertNever(kind);
+    /** The held sentence names what holds the stack (SP14): "2 of 4 ready, #1216 checks running". */
+    function getHeldText({ blocker, readyCount, openCount }: StackHeldState): string {
+        return t(HELD_TEXTS[getHeldReason(blocker)], { ready: readyCount, open: openCount, number: blocker.number });
     }
 }

@@ -63,7 +63,7 @@ test('SP32: folded, the map is one line â€” place, what blocks, the neighbours â
     const { onUnfold } = PanelFolded.args;
 
     expect(page.getByRole('list', { name: 'Pull requests of the stack' }).query()).toBeNull();
-    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10 #65 stops 4 later from landing/u });
+    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10 #65 blocks 4 later/u });
     await expect.element(strip).toHaveTextContent(/#64.*K.*J.*#66/u);
 
     await strip.click();

@@ -334,11 +334,22 @@ onWindowEvent('keydown', event => {
   }
 });
 
-/** Folds the panel's stack map while the content scrolls down; at the top it unfolds again. */
+/**
+ * Folds the panel's stack map while the content scrolls down; at the top it unfolds again — when the content still
+ * scrolls. Content a little taller than the panel fits once the map folds: the browser clamps it to the top, and
+ * unfolding then would start it over, the map flickering and the end never reached. It stays folded; a click unfolds.
+ */
 function onContentScroll() {
-  const top = scrollRef.value?.scrollTop ?? 0;
+  const scroll = scrollRef.value;
+  if (!scroll) {
+    return;
+  }
+
+  const top = scroll.scrollTop;
   if (top <= 0) {
-    stackMapFolded.value = false;
+    if (scroll.scrollHeight > scroll.clientHeight) {
+      stackMapFolded.value = false;
+    }
   } else if (top > lastScrollTop) {
     stackMapFolded.value = true;
   }

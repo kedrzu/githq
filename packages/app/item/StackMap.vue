@@ -10,34 +10,25 @@ export interface StackNeighbours {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import {
-  ChevronDown,
-  CircleCheck,
-  CircleDashed,
-  Eye,
-  GitCompareArrows,
-  GitMerge,
-  GitPullRequestClosed,
-  Ellipsis,
-  Layers,
-} from 'lucide-vue-next';
+import { ChevronDown, Ellipsis, Layers } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import StackPips from '@/lists/StackPips.vue';
 import StackTone from '@/lists/StackTone.vue';
-import { getBlockerLook, getHeldReason, getPullRequestLook } from '@/lists/useStackFacts.js';
 import type { StackLook, StackStateFact } from '@/lists/useStackFacts.js';
+import { getHeldReason } from '@/lists/utils/getHeldReason.js';
+import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
+import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type {
-  StackBlocker,
   StackDescription,
+  StackHeldState,
   StackPip,
   StackPullRequestPip,
   StackPullRequestPipKind,
-  StackState,
 } from '@/store/stacks/describeStack.js';
 
 import { getStackMapWindow } from './getStackMapWindow.js';
@@ -118,7 +109,9 @@ const lines = computed((): readonly (StackMapFold | StackMapRow)[] => {
 
   return shown;
 });
-const verdict = computed(() => getVerdict(props.stack.state));
+const verdict = computed(() => getVerdict(l.heldStopsLater));
+// SP32: the folded strip is short of room, so its sentence is too.
+const stripVerdict = computed(() => getVerdict(l.heldBlocksLater));
 const neighbourNumbers = computed(() => ({
   previous: findMember(props.neighbours?.previous)?.number ?? null,
   next: findMember(props.neighbours?.next)?.number ?? null,
@@ -187,16 +180,21 @@ function getRowText(kind: StackPullRequestPipKind, pr: PullRequestItem): string 
 
 /** "4 earlier · 2 landed, 2 ready" (SP31): how many, then those landed, ready, failing, drafts and closed. */
 function getFold(side: StackMapFold['side'], folded: readonly StackPullRequestPip[]): StackMapFold {
-  const count = (kind: StackPullRequestPipKind) => folded.filter(pip => pip.kind === kind).length;
-  const parts: string[] = [];
-  const counts = [
-    [count('merged'), l.foldLanded],
-    [count('ready'), l.foldReady],
-    [count('broken'), l.foldFailing],
-    [count('draft'), l.foldDrafts],
-    [count('closed'), l.foldClosed],
+  const counts = new Map<StackPullRequestPipKind, number>();
+  for (const pip of folded) {
+    counts.set(pip.kind, (counts.get(pip.kind) ?? 0) + 1);
+  }
+
+  const summaries = [
+    ['merged', l.foldLanded],
+    ['ready', l.foldReady],
+    ['broken', l.foldFailing],
+    ['draft', l.foldDrafts],
+    ['closed', l.foldClosed],
   ] as const;
-  for (const [held, text] of counts) {
+  const parts: string[] = [];
+  for (const [kind, text] of summaries) {
+    const held = counts.get(kind) ?? 0;
     if (held > 0) {
       parts.push(t(text, { count: held }));
     }
@@ -212,46 +210,12 @@ function getFold(side: StackMapFold['side'], folded: readonly StackPullRequestPi
 }
 
 /** What stops the stack merging, or that nothing does — worded as the list's sentence, without the counts it shows. */
-function getVerdict(state: StackState): StackStateFact {
-  switch (state.kind) {
-    case 'held': {
-      const { blocker } = state;
-      const later = state.openCount - state.readyCount - 1;
-      return { ...getBlockerLook(blocker.kind), text: getHeldText(blocker, later) };
-    }
-    case 'ready':
-      return {
-        icon: CircleCheck,
-        tone: 'success',
-        text: state.openCount === 2 ? t(l.bothReady) : t(l.allReady, { count: state.openCount }),
-      };
-    case 'needsRebase':
-      return { icon: GitCompareArrows, tone: 'warning', text: t(l.needsRebase) };
-    case 'closedInside':
-      return {
-        icon: GitPullRequestClosed,
-        tone: 'danger',
-        text: t(l.closedInside, { number: state.closedNumber, stuck: state.stuckCount }),
-      };
-    case 'closed':
-      return { icon: GitPullRequestClosed, tone: 'dim', text: t(l.closedStack) };
-    case 'incomplete':
-      return { icon: CircleDashed, tone: 'dim', text: t(l.incomplete) };
-    case 'merged':
-      return { icon: GitMerge, tone: 'done', text: t(l.mergedStack) };
-    case 'reviewRequested':
-      return {
-        icon: Eye,
-        tone: 'muted',
-        text: t(l.reviewRequested, { requested: state.requestedCount, open: state.openCount, ready: state.readyCount }),
-      };
-    default:
-      return assertNever(state);
-  }
+function getVerdict(stopsLater: typeof l.heldStopsLater): StackStateFact {
+  return getStackStateFact({ state: props.stack.state, t, getHeldText: state => getHeldText(state, stopsLater) });
 }
 
-/** "#41 is waiting for review", "#65 stops 4 later from landing". */
-function getHeldText(blocker: StackBlocker, later: number): string {
+/** "#41 is waiting for review", "#65 stops 4 later from landing" — or, in the strip, "#65 blocks 4 later". */
+function getHeldText({ blocker, openCount, readyCount }: StackHeldState, stopsLater: typeof l.heldStopsLater): string {
   const { number } = blocker;
   const reason = getHeldReason(blocker);
   switch (reason) {
@@ -261,8 +225,10 @@ function getHeldText(blocker: StackBlocker, later: number): string {
       return t(l.heldByChecks, { number });
     case 'review':
       return t(l.heldByReview, { number });
-    case 'other':
-      return later > 0 ? t(l.heldStopsLater, { number, later }) : t(l.heldAlone, { number });
+    case 'other': {
+      const later = openCount - readyCount - 1;
+      return later > 0 ? t(stopsLater, { number, later }) : t(l.heldAlone, { number });
+    }
     default:
       return assertNever(reason);
   }
@@ -301,10 +267,10 @@ function openRow(row: StackMapRow) {
       />
       <span :class="css.stackMap_place">{{ place }}</span>
       <StackTone
-        :look="verdict"
+        :look="stripVerdict"
         :class="css.stackMap_stripVerdict"
       >
-        {{ verdict.text }}
+        {{ stripVerdict.text }}
       </StackTone>
       <span :class="css.stackMap_neighbours">
         <span v-if="neighbourNumbers.previous !== null">#{{ neighbourNumbers.previous }}</span>
@@ -367,11 +333,14 @@ function openRow(row: StackMapRow) {
             />
             <span :class="css.stackMap_number">#{{ line.pullRequest.number }}</span>
             <span :class="css.stackMap_title">{{ line.pullRequest.title }}</span>
-            <span
+            <StackTone
               v-if="line.text"
-              :class="[css.stackMap_rowText, css[`stackMap_rowText_${line.tone}`]]"
-              >{{ line.text }}</span
+              :look="line"
+              words-only
+              :class="[css.stackMap_rowText, line.tone === 'muted' && css.stackMap_rowText_muted]"
             >
+              {{ line.text }}
+            </StackTone>
             <Kbd
               v-if="line.key"
               :keys="line.key"
@@ -523,24 +492,8 @@ function openRow(row: StackMapRow) {
   white-space: nowrap;
 }
 
-.stackMap_rowText_danger {
-  color: $color-red;
-}
-
-.stackMap_rowText_warning {
-  color: $color-amber;
-}
-
-.stackMap_rowText_success {
-  color: $color-green;
-}
-
-.stackMap_rowText_done {
-  color: $color-purple;
-}
-
-.stackMap_rowText_muted,
-.stackMap_rowText_dim {
+// A row's "Waiting for review" is quieter than the list's grey for the same tone (SP30, SP31).
+.stackMap_rowText.stackMap_rowText_muted {
   color: $color-fg-dim;
 }
 

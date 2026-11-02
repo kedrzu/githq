@@ -46,7 +46,7 @@ export const PanelTen: Story = {
     },
 };
 
-/** SP32: the panel's content scrolled — the map folded to one line: pips, "6 of 10", what blocks, `#64 K J #66`. */
+/** SP32: the panel's content scrolled — the map folded to one line: pips, "6 of 10", "#65 blocks 4 later", `#64 K J #66`. */
 export const PanelFolded: Story = { args: { ...PanelTen.args, folded: true } };
 
 /** SP33: a stack of two at the top of a modal's side column — the icons carry each state. */
