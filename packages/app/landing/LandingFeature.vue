@@ -10,6 +10,7 @@ export interface LandingFeaturePoint {
 </script>
 
 <script lang="ts" setup>
+import { NuxtImg } from '#components';
 import { useId, useTemplateRef } from 'vue';
 
 import { useReveal } from './useReveal.js';
@@ -88,9 +89,10 @@ const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
     </div>
 
     <div :class="css.landingFeature_visual">
-      <img
+      <NuxtImg
         :class="css.landingFeature_image"
         :src="image"
+        sizes="320:640px 720:84vw 1080:640px"
         width="1280"
         height="1120"
         loading="lazy"
