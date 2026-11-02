@@ -441,16 +441,16 @@ read like the folder icons; CR46)
 ## D28
 
 **A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,
-under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard… and
-Submit… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
+under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard review… and
+Submit review… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
 an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
 In the app sidebar, "Draft reviews" with a count at the very top, above My work, only while there is at least one,
 opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
 red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation
 in the title, and doesn't single out one person; CR35, CR36; lists and sidebar CR33, CR34)
 
-**Neither way out is one click.** Discard… opens a dialog in the middle of the screen naming the comments that go and
-that they can't be brought back; focus starts on Cancel, and only the red button or ⌘↵ deletes (owner, CR39). Submit…
+**Neither way out is one click.** Discard review… opens a dialog in the middle of the screen naming the comments that go and
+that they can't be brought back; focus starts on Cancel, and only the red button or ⌘↵ deletes (owner, CR39). Submit review…
 opens the submit dialog of [D33](#d33).
 
 **Why.** The diff column is wide enough for all of it in one row, and the toolbar exists only while a review is

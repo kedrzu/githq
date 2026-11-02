@@ -262423,7 +262423,7 @@
                           "name": "Discard",
                           "descendants": {
                             "tzW1W": {
-                              "content": "Discard…"
+                              "content": "Discard review…"
                             }
                           }
                         },
@@ -262447,7 +262447,7 @@
                               "id": "RMOTL",
                               "name": "Label",
                               "fill": "#0E1013",
-                              "content": "Submit…",
+                              "content": "Submit review…",
                               "fontFamily": "$font",
                               "fontSize": 12,
                               "fontWeight": "600"
@@ -262499,7 +262499,7 @@
                           "content": "GitHub refused engine.ts:48: \"must be part of the diff\". Everything is kept."
                         },
                         "wqUGr/tzW1W": {
-                          "content": "Edit…"
+                          "content": "Edit review…"
                         },
                         "p7BfB7": {
                           "fill": "$red"
@@ -280745,7 +280745,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "One row pinned to the foot of the diff column, under the code: the count in bold, what it means, Discard… and Submit… (⇧S). It takes 44 px of height only while a review is pending, and with the conversation on it stays under the diff. Both buttons ask first: CR39 and CR75. #1202's row in the stack has an amber dot.",
+                      "content": "One row pinned to the foot of the diff column, under the code: the count in bold, what it means, Discard review… and Submit review… (⇧S). It takes 44 px of height only while a review is pending, and with the conversation on it stays under the diff. Both buttons ask first: CR39 and CR75. #1202's row in the stack has an amber dot.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -282643,7 +282643,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Discard… has no key and doesn't act by itself. This dialog in the middle of the screen says what goes and that it can't be brought back, focus starts on Cancel, and only the red button or ⌘↵ deletes the review on GitHub.",
+                      "content": "Discard review… has no key and doesn't act by itself. This dialog in the middle of the screen says what goes and that it can't be brought back, focus starts on Cancel, and only the red button or ⌘↵ deletes the review on GitHub.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -295836,7 +295836,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Submit… (⇧S, or from the toolbar) opens this in the middle of the screen, so sending is never one click. An optional comment that goes on the pull request itself, not on a file; then what the review is, a comment by default: Tab out of the field, then 1 2 3. The button takes the choice's name and colour. ⌘↵ sends it all as one review, and the toolbar and the sidebar entry go with it.",
+                      "content": "Submit review… (⇧S, or from the toolbar) opens this in the middle of the screen, so sending is never one click. An optional comment that goes on the pull request itself, not on a file; then what the review is, a comment by default: Tab out of the field, then 1 2 3. The button takes the choice's name and colour. ⌘↵ sends it all as one review, and the toolbar and the sidebar entry go with it.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -297509,7 +297509,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "GitHub refused the review, so nothing was sent: the toolbar turns red and says why, in GitHub's words. The comment, the verdict and the three pending comments are all still here, and the review is still pending on GitHub; Try again sends the same one, Edit… reopens the dialog. Nothing is dropped silently.",
+                      "content": "GitHub refused the review, so nothing was sent: the toolbar turns red and says why, in GitHub's words. The comment, the verdict and the three pending comments are all still here, and the review is still pending on GitHub; Try again sends the same one, Edit review… reopens the dialog. Nothing is dropped silently.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
