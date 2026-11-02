@@ -16,10 +16,14 @@ Several tasks run at once, each in its own Paseo worktree on its own branch with
 standing authorization to commit, push and open PRs without asking is in `AGENTS.md` → "Worktrees and
 pull requests"; this skill holds the commands.
 
-Facts this rests on (checked 2026-10-31):
+Facts this rests on (checked 2026-11-03):
 
-- Remote `origin` = `https://github.com/kedrzu/githq.git` (public, no branch protection or
-  rulesets), main line `main`; `gh` is logged in as `kedrzu`. The repo deletes a PR's branch on merge.
+- Remote `origin` = `https://github.com/kedrzu/githq.git` (public), main line `main`; `gh` is logged
+  in as `kedrzu`. The repo deletes a PR's branch on merge.
+- `main` has a ruleset with no bypass actors (`gh api repos/kedrzu/githq/rules/branches/main`; classic
+  branch protection is not used): changes arrive by PR, squash only, no force-push or deletion. A merge
+  needs no approval, but the `title` check must pass and every review thread must be resolved. The branch
+  need not be up to date with `main`, so nothing but Sync catches that.
 - Agents never push to `main`: `.claude/git.json` lists it in `protectedBranches`, and the `git`
   plugin's hook blocks such a push.
 - Tracker: GitHub Issues in the same repository. A task may have no issue.
@@ -29,7 +33,7 @@ Facts this rests on (checked 2026-10-31):
 - PR descriptions, issues and issue comments are in English too (`AGENTS.md`): Polish is only for
   the conversation with the owner.
 - Branch names: `<type>/<slug>`, with an issue `<type>/<N>-<slug>`; types `feat`, `fix`, `chore`,
-  `design`, `docs` (`feat/12-my-work-list`).
+  `design`, `docs` (`feat/12-my-work-list`). `design` exists only here: such a branch's PR title is `docs: …`.
 - `nzyme` is a git submodule (`https://github.com/kedrzu/nzyme.git`, no `branch =`); the gitlink is
   the pin.
 
@@ -90,9 +94,13 @@ the pinned nzyme (and, once the workspace exists, built everything).
    (`somber-rabbit`, `null`, `githq`); leave a meaningful one. No Paseo tools → skip.
 3. No draft PR at start: the PR opens at the first push (Publish).
 
-Outside a worktree (the main checkout `~/Dev/githq` on `main`): `git fetch origin main` and
-`git switch -c <type>/<N>-<slug> origin/main`. Other sessions may share that directory, so ask
-once before switching branches there.
+Not in a fresh worktree: `git fetch origin main` and `git switch -c <type>/<N>-<slug> origin/main --no-track`
+(otherwise the branch tracks `origin/main` until its first push).
+
+- In the main checkout `~/Dev/githq`, other sessions may share the directory, so ask once before
+  switching branches there.
+- In the same worktree, when the owner asks for a new PR there after the last one merged: once
+  on the new branch, `git branch -D <old branch>`. The squash makes it look unmerged, so `-d` refuses.
 
 ## Sync
 
@@ -166,6 +174,8 @@ and its title and description are current. The pipeline supplies the texts.
   EOF
   ```
   `Closes #<N>` only when the branch has an issue; keep that line whenever the body is rewritten.
+  GitHub refuses a PR with no diff from `main`. When the owner wants it open before there is anything
+  to commit, one `git commit --allow-empty` gives it a diff; the commit vanishes in the squash.
 - **PR exists:** read the body with `gh pr view --json body --jq .body`, write the new one with
   `gh pr edit --body-file - <<'EOF' … EOF`; `gh pr edit --title "…"` when the scope changed.
 - **A draft exists anyway** (opened by hand): `gh pr ready`.
@@ -215,8 +225,10 @@ Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`)
 
 Only on the owner's word („mergujemy”, „merge it”) — it is irreversible and lands on `main`.
 
-1. Sync, the full `verify`, push; the PR must be out of draft.
-2. Merge:
+1. Sync, the full `verify` (it says what a change with no code needs), push; the PR must be out of draft.
+2. Wait for the `title` check, which every push and title edit restarts:
+   `gh pr checks <PR> --watch --required --interval 5` (in a stack, on each PR).
+3. Merge:
    - **One PR:** `gh pr merge <PR> --squash --match-head-commit "$(git rev-parse HEAD)"` — the PR
      title becomes the commit on `main`; the branch is deleted on merge.
    - **A stack:** `gh pr merge` cannot merge a stacked PR. Merge the **top** PR asynchronously; GitHub
@@ -227,7 +239,23 @@ Only on the owner's word („mergujemy”, „merge it”) — it is irreversibl
        | gh api -X PUT repos/kedrzu/githq/pulls/<top PR>/merge-async --input - --jq .uuid)
      gh api repos/kedrzu/githq/pulls/<top PR>/merge-async/$uuid --jq .status   # poll until not pending
      ```
-3. `gh pr view <PR> --json state,mergeCommit` confirms `MERGED`. A merged PR with `Closes #<N>`
+4. `gh pr view <PR> --json state,mergeCommit` confirms `MERGED`. A merged PR with `Closes #<N>`
    closes its issue.
 
-Deploying to Cloudflare is not part of landing; it is the owner's call.
+**"the base branch policy prohibits the merge"** is the ruleset refusing; nothing has happened, so find
+out why and merge again. The way out is one of these, not the `--admin` the message offers (nobody can
+bypass this ruleset):
+
+- **`title` is running.** A new run takes a few seconds to appear, and until then `gh pr checks` shows the
+  previous result. Watch again.
+- **`title` failed.** Fix the title (Titles) with `gh pr edit --title`, then watch again.
+- **A review thread is unresolved.** List them:
+  ```bash
+  gh api graphql -f query='{repository(owner:"kedrzu",name:"githq"){pullRequest(number:<PR>){reviewThreads(first:100){nodes{isResolved path line comments(first:1){nodes{body}}}}}}}' \
+    --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved | not)'
+  ```
+  Each one is a comment someone is waiting on: act on it or bring it to the owner, rather than resolving
+  it to clear the way.
+
+Landing deploys: the push to `main` runs `.github/workflows/deploy.yml`, whose checks a PR does not go
+through first. One that goes red there blocks every later deploy until someone fixes `main`.

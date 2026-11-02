@@ -382,9 +382,9 @@ actions can grow without crowding the row.
 
 ## D22
 
-**Settings gains a Display section, between Projects and Sync settings (`3`; Sync settings and Account move to `4` and
-`5`). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
-once, and a line under it says the choice is saved with the settings.** (2026-11-02, owner asked for the setting in "a
+**Settings gains a Display section, between Projects and Code review (`3`; Settings is now a column of sections,
+[githq D26](../githq/DECISIONS.md)). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
+once; where it is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a
 tab like General or Display"; the section's name and place are the design agent's; CH43)
 
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General

@@ -280,9 +280,9 @@ special case.
 pending review — submitted later as one review. A setting chooses which one `Cmd+Enter` does when no draft is open;
 `Cmd+Shift+Enter` does the other. While a draft is open on the pull request, a comment can only join it, and the second
 key submits the draft ([D22](#d22)).** (2026-11-02, owner: "some prefer to write a draft review and then throw it all
-as one review, others prefer single comments; GitHub imposes one way") The setting is local, like every preference
-so far — agent's reading, the synced settings holding only what is tracked
-([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
+as one review, others prefer single comments; GitHub imposes one way") The setting is saved with the synced
+settings, so every device behaves the same ([D34](#d34); owner, 2026-11-02, reversing the agent's first reading that
+it was local).
 
 **Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
 review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
@@ -389,3 +389,152 @@ proposal)
 
 **Why.** Reading already replaces most of github.com's review screen and is where the worker is measured
 ([D20](#d20)); draft warnings catch drafts started on github.com today.
+
+## D24
+
+**The review is a page of its own: the app sidebar as a rail, the review's toolbar, then three columns — on the left
+the stack and the file list (300 px), the diff, the conversation (340 px, right) — and the status bar. A file is a
+block with its header pinned while it is in view; threads sit under their line on the side they belong to, in split
+as in unified.** (2026-11-02, agent, screens CR1–CR6)
+
+**Why.** The same shell as an opened pull request on a full page, so nothing moves when D opens the review; the
+status bar already says how fresh things are and serves for loading and the API allowance (CR60, CR68).
+
+## D25
+
+**The stack sits at the top of the left column, above the file list: a head with its name and "2 of 4", then one row
+per pull request, first to last, each a click, the open one highlighted, a row with your draft carrying an amber dot.
+Once the list scrolls, the rows scroll away and a 32 px bar stays pinned in their place, with the stack's name and
+one square per pull request, as the pull request's stack bar in a panel ([stacked-prs D25](../stacked-prs/DECISIONS.md#d25));
+the file list's head (filter, viewed toggle) stays pinned right under it. A pull request outside a stack has no stack
+section.** (2026-11-02, owner's pick of the agent's third variant, with the pinned bar added by the owner; CR47, CR48)
+
+**Why.** The rows say what each pull request is, the bar keeps one click per pull request once you are reading, and
+nothing takes height from the diff.
+
+**Rejected.**
+
+- The Stack bar across the top of the review, above both columns (agent's first recommendation, CR40).
+- The squares in the review's toolbar (CR41) — the stack loses its name and the toolbar crowds on a laptop.
+
+## D26
+
+**The file list hides like the conversation: ⌘B for the file list and ⌥⌘B for the conversation, as VS Code's two side
+bars, both remembered (D14), both also in the View options.** (2026-11-02, agent, settles the brief's assumption; CR6)
+
+## D27
+
+**The file list is GitHub's tree order: folders are quiet labels, and a file sits indented under its folder (compact
+folders, as VS Code); files at the root are not indented. While a filter is on, only the matching files show, each
+followed by its folder. A row has no checkbox: change letter (M, A, D, R), name, a tag for collapsed files ("lock
+file", "generated", "binary"), open threads in amber, size, and at the right end a status icon only when there is one
+(loading, failed, waiting for the API allowance, gone). A viewed file has a small eye right after its name, the name
+slightly dimmed. Files are ticked on their header (Viewed V) or with V.** (2026-11-02, owner: checkboxes in the list
+read like the folder icons; CR46)
+
+**Rejected.**
+
+- A checkbox per row, ticked when viewed (agent's first proposal, CR43) — an empty box next to a folder icon looks
+  like one more icon, and both read alike (owner).
+- Colour only, or the box only (CR44, CR45) — dropped with the box.
+
+## D28
+
+**A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,
+under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard review… and
+Submit review… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
+an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
+In the app sidebar, "Draft reviews" with a count at the very top, above My work, only while there is at least one,
+opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
+red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation
+in the title, and doesn't single out one person; CR35, CR36; lists and sidebar CR33, CR34)
+
+**Neither way out is one click.** Discard review… opens a dialog in the middle of the screen naming the comments that go and
+that they can't be brought back; focus starts on Cancel, and only the red button or ⌘↵ deletes (owner, CR39). Submit review…
+opens the submit dialog of [D33](#d33).
+
+**Why.** The diff column is wide enough for all of it in one row, and the toolbar exists only while a review is
+pending. Above My work because it is the one thing in the sidebar that blocks someone else.
+
+**Rejected.**
+
+- A strip across the review under the toolbar (CR30) — takes height from the code (owner).
+- The review's toolbar tinted amber (CR31) — ugly, and the toolbar's buttons look wrong on it (owner).
+- A bar floating over the diff (CR32) — covers the screen (owner).
+- A block or a toolbar in the file list's column, at its foot or top (first CR35–CR38) — too narrow for one row; the
+  owner meant the diff column.
+- "Your draft review isn't sent" and "claude[bot] can't see them or reply" as the wording (owner).
+
+## D29
+
+**Code shown out of place has its own mark: a row with a vertical arrow, how far ("172 lines further down"), why
+("shown for its thread; nothing between is expanded"), a rule, and "Expand to here". It differs from the gap between
+hunks, which is a filled row offering "Show 20 · Show all". In a collapsed file, the code above a thread sits in a
+small box labelled "as it was when commented", because it is the comment's `diffHunk`, not the file.** (2026-11-02,
+agent, CR11–CR13)
+
+## D30
+
+**An outdated thread carries an amber "Outdated" head that says how it was placed: "placed by finding its line
+again, so the place is approximate", or, when the line is gone, the thread moves into a box of its own above the
+file's first change, with the old code and the commit it was written on, closed off before the diff begins. A file
+gone from the diff is a block with a file-x icon, a struck-through name and the reason ("added in 3f0c2aa, deleted
+again in 9b7e411"), holding only its threads; its row in the list says "not in the diff".** (2026-11-02, agent,
+CR2, CR10, CR14)
+
+## D31
+
+**The view options live behind one button in the review's toolbar that names what's on ("Split · whitespace
+hidden"); it opens a menu with the layout, whitespace, comments in collapsed files and the two columns, and the note
+that they are kept for every pull request on this device. The two column toggles also sit beside it.** (2026-11-02,
+agent, CR50)
+
+**Why.** Set rarely, but which layout and whether whitespace is hidden must be visible, or a hidden change looks
+like no change.
+
+## D32
+
+**Keys of the review: D opens it from an opened pull request (the merge section's "Review files" moves from ⇧O,
+which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `}` select, Space collapses a file, /
+filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
+submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
+
+**Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
+
+## D33
+
+**The comment box's two buttons carry their label and key, and that is all it says: Comment ⌘↵ / Start a review ⌘⇧↵, or
+Start a review ⌘↵ / Comment now ⌘⇧↵. With a draft open: Add to draft ⌘↵ / Submit draft (4 comments) ⌘⇧↵. Submitting opens a dialog in the middle of the screen: an
+optional comment, which goes on the pull request itself rather than on a file, then Comment (the default), Approve or
+Request changes on 1 2 3, the pending comments listed — and a refused submission turns the pending toolbar red with
+GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
+
+> **Checked 2026-11-03:** `SubmitPullRequestReviewInput` has `body: String`, the review's own text (`packages/github/src/schema.graphql`). Not tried live.
+
+**Why.** The buttons say what each key does. A line explaining the default broke the layout and repeats what someone who
+chose that setting already knows (owner, 2026-11-03).
+
+**Rejected.**
+
+- A line in the box saying what ⌘↵ will do and where it is set (agent) — reminds you of your own choice every time (owner).
+
+## D34
+
+**The comment setting sits in Settings, in a section of its own, Code review: Send it at once / Add it to a draft
+review. It is saved with the synced settings.** (2026-11-03, owner: "synchronised", and a section of its own once
+Settings became a column of sections; CR77, now in App · Settings)
+
+## D35
+
+**Loading and failure, in place: a file whose content hasn't arrived is its header and quiet bars, and its row's box
+is a spinner; files that may be generated show only their header until `.gitattributes` is read, so nothing flips
+open to collapsed; a jump to an unfetched file fetches it first and holds its header in place; a push since the last
+visit shows one quiet accent line naming the files that lost their viewed mark, each also tagged in the list; 3,000
+listed files out of more say "3,000+" and pin a note at the foot of the list, using `PullRequest.changedFiles` for the
+total; a failed file says GitHub's answer with Try again and Open on GitHub; the API allowance running out pauses the
+missing files with the time they'll come, while edits still go through.** (2026-11-02, agent, CR60–CR68)
+
+> **Checked 2026-11-02:** `PullRequest.changedFiles: Int!` exists (`packages/github/src/schema.graphql`).
+
+Open: the size past which a file is "too large to diff here" (CR67 says 1 MB) is a placeholder; D8 left the threshold
+unset. GitHub's wording in the failure screens (CR67, CR76) is a placeholder for its real messages.
