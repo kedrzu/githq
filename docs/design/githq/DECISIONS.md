@@ -491,9 +491,10 @@ opens that repository's or project's settings page (T16), because each now has s
 with one button (⌫). "Track repositories" / "Track projects", or a group's "Track more", opens a picker with search,
 owner filter and multi-select; it commits on its own button, so the staged save and the Pending changes bar of D24 are
 gone from Settings. First sign-in keeps its chooser (G2). Replaces the Settings half of D24. Screens G8, T17.
-Still to pick in `githq.pen`: the picker's shape (T18 + T22, the sign-in chooser in a modal, recommended, or T19, a
-palette with an owner chip) and how untracking is confirmed (T20, at once with Undo, recommended, or T21, confirmed on
-the row).
+The picker is **the first sign-in chooser in a modal of its own** (owner, 2026-11-02), not a palette shaped like the
+command menu: the same chooser both times, for repositories (T18) and projects (T22). **Untrack acts at once, with
+Undo** (owner, 2026-11-02; T20): the row leaves the list and a toast offers Undo (⌘Z) for 10 seconds; the copy in this
+browser is deleted only when the toast goes. No confirmation on the row.
 
 ## Open questions
 

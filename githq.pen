@@ -47553,21 +47553,6 @@
                       "fontWeight": "normal"
                     }
                   ]
-                },
-                {
-                  "id": "wajor",
-                  "type": "ref",
-                  "ref": "xfbOl",
-                  "name": "Hint Settings",
-                  "enabled": false,
-                  "descendants": {
-                    "m5wIG9/luKkY": {
-                      "content": "↵"
-                    },
-                    "IOvfA": {
-                      "content": "Settings"
-                    }
-                  }
                 }
               ]
             },
@@ -150083,7 +150068,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "One screen with four sections: Repositories, Projects, Sync settings, Account. Keys 1 to 4 switch between them, and it opens from the menu on the signed-in user, the command menu or the , key. It is the only place to start tracking, and Repositories and Projects are the first sign-in chooser's two halves, so both look and work the same. Each tracked repository has a settings page of its own (T16), opened with Enter on its row, from the repository's menu, or from its Workflows tab; it holds every per-repository setting, workflow alerts first. The account stays a section rather than a page of its own, so the user menu needs one entry and there is one place to look. An organisation that hides its private data is flagged in the owners list and in Account.",
+              "content": "One screen with four sections: Repositories, Projects, Sync settings, Account. Keys 1 to 4 switch between them, and it opens from the menu on the signed-in user, the command menu or the , key. It is the only place to start tracking. Repositories and Projects list only what is tracked, grouped by owner, each row opening its own settings page (T16 for a repository) and untracked from the row; adding is a separate step, a picker opened with Track repositories or Track projects (T18–T22; first sign-in keeps its chooser, G2). The account stays a section rather than a page of its own, so the user menu needs one entry and there is one place to look. An organisation that hides its private data is flagged in the picker and in Account.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -151485,6 +151470,29 @@
                       "fill": "$fg-3"
                     }
                   }
+                },
+                {
+                  "id": "aThGZ",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "Vy3ob",
+                  "name": "Track / Project row · tracked",
+                  "descendants": {
+                    "LTZiE": {
+                      "fill": "$bg-3",
+                      "stroke": "$border-2"
+                    },
+                    "ooekR": {
+                      "fill": "$fg-3"
+                    },
+                    "TzPa4": {
+                      "fill": "$fg-2"
+                    },
+                    "wKoHs": {
+                      "content": "tracked",
+                      "fill": "$fg-3"
+                    }
+                  }
                 }
               ]
             }
@@ -151528,7 +151536,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Only what is tracked, grouped by owner (your own first, then organisations, then owners you aren't a member of), alphabetical inside a group. No ticks and no owner filter: the list is short. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; how it is confirmed is an open question (T20, T21). Adding is a separate step: Track repositories (A) opens the picker (T18, T19); a group's Track more opens it filtered to that owner, and is hidden when the owner has nothing left to track or can't be listed. Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
+                      "content": "Only what is tracked, grouped by owner (your own first, then organisations, then owners you aren't a member of), alphabetical inside a group. No ticks and no owner filter: the list is short. A row opens that repository's settings (T16) on click or Enter, which the chevron says. Untrack sits on the row, shown on the hovered or selected row, ⌫ from the keyboard; it acts at once, with Undo (T20). Adding is a separate step: Track repositories (A) opens the picker (T18); a group's Track more opens it filtered to that owner, and is hidden when the owner has nothing left to track or can't be listed. Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections. While the lists are first read the tracked rows already show, since they come from what this browser keeps.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -153015,381 +153023,19 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "frame",
-              "id": "SE7Ec",
-              "name": "Slot · T1 · Settings · Repositories, searching a long list",
-              "layout": "vertical",
-              "gap": 14,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "aBPHl",
-                  "name": "Caption",
-                  "width": 1440,
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "g9X8yL",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "T1 · Settings · Repositories, searching a long list",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "s3vuRX",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "An organisation with 312 repositories: typing in the search above the list narrows every owner at once, including what's already tracked, and picking an owner on the left narrows it further. Sorted by recent activity. The list isn't paged by hand, it just runs on as you move down. A group's \"Track all\" ticks every match in it.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "fE2iz",
-                  "name": "T1 · Sidebar expanded · Settings · Repositories, searching",
-                  "clip": true,
-                  "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "layout": "vertical",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "RBcy0",
-                      "name": "Main",
-                      "width": "fill_container",
-                      "height": "fill_container",
-                      "children": [
-                        {
-                          "id": "IweCS",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "LZJkc",
-                          "name": "Page pane",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "rLfNe",
-                              "name": "Page header",
-                              "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 10,
-                              "padding": [
-                                0,
-                                20
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "go1LT",
-                                  "name": "Settings",
-                                  "fill": "$fg",
-                                  "content": "Settings",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "L2kiK",
-                                  "name": "Tabs",
-                                  "gap": 2,
-                                  "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    12
-                                  ],
-                                  "children": [
-                                    {
-                                      "id": "rpiJY",
-                                      "type": "ref",
-                                      "ref": "Cthgz",
-                                      "name": "Tab Repositories",
-                                      "descendants": {
-                                        "l6WOZ": {
-                                          "content": "Repositories"
-                                        },
-                                        "Mv9uV": {
-                                          "content": "15"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "AsppD",
-                                      "type": "ref",
-                                      "ref": "Cthgz",
-                                      "name": "Tab Projects",
-                                      "fill": "#00000000",
-                                      "enabled": true,
-                                      "descendants": {
-                                        "l6WOZ": {
-                                          "name": "Projects",
-                                          "fill": "$fg-2",
-                                          "content": "Projects"
-                                        },
-                                        "Mv9uV": {
-                                          "content": "2"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "T0cEsZ",
-                                      "type": "ref",
-                                      "ref": "qOqH0",
-                                      "name": "Tab Sync settings",
-                                      "cornerRadius": 6,
-                                      "gap": 6,
-                                      "padding": [
-                                        4,
-                                        9
-                                      ],
-                                      "alignItems": "center",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "r4dWM": {
-                                          "name": "Saving to GitHub",
-                                          "fill": "$fg-2",
-                                          "content": "Sync settings"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "HsxfL",
-                                      "type": "ref",
-                                      "ref": "qOqH0",
-                                      "name": "Tab Account",
-                                      "cornerRadius": 6,
-                                      "gap": 6,
-                                      "padding": [
-                                        4,
-                                        9
-                                      ],
-                                      "alignItems": "center",
-                                      "fill": "#00000000",
-                                      "descendants": {
-                                        "r4dWM": {
-                                          "name": "Account",
-                                          "fill": "$fg-2",
-                                          "content": "Account"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "jTqkm",
-                              "name": "Body",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "layout": "vertical",
-                              "gap": 16,
-                              "padding": [
-                                16,
-                                12
-                              ],
-                              "children": [
-                                {
-                                  "id": "FRfyo",
-                                  "type": "ref",
-                                  "ref": "scvkE",
-                                  "name": "Choose what to track",
-                                  "descendants": {
-                                    "jU4wA": {
-                                      "content": "4"
-                                    },
-                                    "DYbgH": {
-                                      "content": "0"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "4"
-                                    },
-                                    "HF7KL": {
-                                      "content": "0"
-                                    },
-                                    "yJNxy": {
-                                      "content": "web",
-                                      "fill": "$fg"
-                                    },
-                                    "HVWch": {
-                                      "enabled": false
-                                    },
-                                    "pQKfe": {
-                                      "enabled": false
-                                    },
-                                    "uT0Ug": {
-                                      "enabled": false
-                                    },
-                                    "xCatZ": {
-                                      "enabled": false
-                                    },
-                                    "TctAS": {
-                                      "enabled": false
-                                    },
-                                    "TlIIZ": {
-                                      "enabled": false
-                                    },
-                                    "S7SQwQ": {
-                                      "content": "organisation · 4 matches for “web” · 2 tracked"
-                                    },
-                                    "e45quU/tzW1W": {
-                                      "content": "Track all"
-                                    },
-                                    "n2FnLV/Eaa85": {
-                                      "icon": "lock"
-                                    },
-                                    "n2FnLV/y4AID": {
-                                      "content": "webapp"
-                                    },
-                                    "n2FnLV/iAq87": {
-                                      "content": "private"
-                                    },
-                                    "n2FnLV/f0wAmf": {
-                                      "content": "142 open"
-                                    },
-                                    "n2FnLV/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "vzZcV/Eaa85": {
-                                      "icon": "lock"
-                                    },
-                                    "vzZcV/y4AID": {
-                                      "content": "web-admin"
-                                    },
-                                    "vzZcV/iAq87": {
-                                      "content": "private"
-                                    },
-                                    "vzZcV/f0wAmf": {
-                                      "content": "88 open"
-                                    },
-                                    "vzZcV/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "Dpha1/bxYNn": {
-                                      "icon": "lock"
-                                    },
-                                    "Dpha1/YTiuN": {
-                                      "content": "webhooks"
-                                    },
-                                    "Dpha1/JucDo": {
-                                      "content": "private"
-                                    },
-                                    "Dpha1/QDjR3": {
-                                      "content": "214 open"
-                                    },
-                                    "Dpha1/nFaW2": {
-                                      "content": "active 1d ago"
-                                    },
-                                    "pXeri/bxYNn": {
-                                      "icon": "book-marked"
-                                    },
-                                    "pXeri/YTiuN": {
-                                      "content": "website"
-                                    },
-                                    "pXeri/JucDo": {
-                                      "content": "public"
-                                    },
-                                    "pXeri/QDjR3": {
-                                      "content": "31 open"
-                                    },
-                                    "pXeri/nFaW2": {
-                                      "content": "active 2w ago"
-                                    },
-                                    "HAXoD": {
-                                      "enabled": false
-                                    },
-                                    "O4f7D": {
-                                      "enabled": false
-                                    },
-                                    "s1IcC": {
-                                      "enabled": false
-                                    },
-                                    "s1IcC/JgwBd": {
-                                      "content": "1 of 5 tracked"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "iAyeM",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
-                        },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD": {
-                          "name": "Segment · Page pane"
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
             }
           ]
         },
         {
           "type": "frame",
-          "id": "qMREC",
-          "name": "Variants · How repositories are added",
-          "fill": "#D6A23A1A",
-          "stroke": "#D6A23A",
-          "strokeWidth": 2,
+          "id": "ZGXRa",
+          "name": "Row of screens",
           "gap": 80,
-          "padding": 24,
           "children": [
             {
               "type": "frame",
               "id": "BlV8O",
-              "name": "Slot · T18 · Variant A · The sign-in chooser in a modal",
+              "name": "Slot · T18 · The sign-in chooser in a modal",
               "layout": "vertical",
               "gap": 14,
               "children": [
@@ -153406,7 +153052,7 @@
                       "id": "Naawp",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "T18 · Variant A · The sign-in chooser in a modal (recommended)",
+                      "content": "T18 · The sign-in chooser in a modal",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -153418,7 +153064,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Recommended. Track repositories (A) or a group's Track more opens the first sign-in chooser (G2) in a modal, so choosing what to track looks and works the same both times: owners on the left with tracked / all counts, the filter (/) and sort above the list, repositories grouped by owner. Tracked repositories show with a grey, fixed tick and \"tracked\", so the list answers \"is it already in?\"; an owner whose every repository is tracked folds to its header. A tick here only selects; nothing changes until Track 2 repositories (⌘↵). Esc or Cancel closes it without asking. Shown: opened with Track repositories, two picked. Keys: J and K move, Space ticks, / filters, ⌘↵ tracks, Esc closes.",
+                      "content": "Track repositories (A) or a group's Track more opens the first sign-in chooser (G2) in a modal, so choosing what to track looks and works the same both times: owners on the left with tracked / all counts, the filter (/) and sort above the list, repositories grouped by owner. Tracked repositories show with a grey, fixed tick and \"tracked\", so the list answers \"is it already in?\"; an owner whose every repository is tracked folds to its header. A tick here only selects; nothing changes until Track 2 repositories (⌘↵). Esc or Cancel closes it without asking. Shown: opened with Track repositories, two picked. Keys: J and K move, Space ticks, / filters, ⌘↵ tracks, Esc closes.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -153429,7 +153075,7 @@
                 {
                   "type": "frame",
                   "id": "ucYIy",
-                  "name": "T18 · Variant A · The sign-in chooser in a modal",
+                  "name": "T18 · The sign-in chooser in a modal",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -154374,14 +154020,14 @@
             },
             {
               "type": "frame",
-              "id": "PmBlF",
-              "name": "Slot · T19 · Variant B · A palette with an owner filter",
+              "id": "VDiGm",
+              "name": "Slot · T22 · Track projects, the same modal",
               "layout": "vertical",
               "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "iNLEJ",
+                  "id": "AlQlX",
                   "name": "Caption",
                   "width": 1440,
                   "layout": "vertical",
@@ -154389,22 +154035,22 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "om57B",
+                      "id": "t74i0B",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "T19 · Variant B · A palette with an owner filter",
+                      "content": "T22 · Track projects, the same modal",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
                     },
                     {
                       "type": "text",
-                      "id": "Pyy9e",
+                      "id": "hSsqa",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same rows in a palette shaped like ⌘K: one input that filters as you type, the owner as a chip in it instead of a column (@ lists owners, Tab cycles them, ⌫ on an empty input drops the chip), results grouped by owner. Typing owner/name finds a public repository of anyone, so it also reaches what you aren't a member of. Faster for someone who knows the name, but a second way of choosing next to first sign-in's, and the hidden-organisation notice only shows when that owner is the chip. Space ticks, ⌘↵ tracks what is ticked, Esc closes. Shown: fitloop as the chip, \"mo\" typed, one picked.",
+                      "content": "Track projects (A) opens the same modal as T18 with Settings' projects chooser in it: owners with tracked / all counts, filter and sort, projects grouped by owner, tracked ones with a grey fixed tick, closed projects behind Show closed, and the organisation that can't list its projects saying so. The note under the filter says what tracking a project brings in. Shown: Bug triage picked.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -154414,8 +154060,8 @@
                 },
                 {
                   "type": "frame",
-                  "id": "qhT10",
-                  "name": "T19 · Variant B · A palette with an owner filter",
+                  "id": "HYryd",
+                  "name": "T22 · Track projects, the same modal",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -154427,13 +154073,13 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "Xpk7N",
+                      "id": "uXpPs",
                       "name": "Main",
                       "width": "fill_container",
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "ZwOOX",
+                          "id": "a5mWZ",
                           "type": "ref",
                           "ref": "ZPurg",
                           "name": "Sidebar",
@@ -154441,7 +154087,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "ljrgF",
+                          "id": "oCzxf",
                           "name": "Page pane",
                           "width": "fill_container",
                           "height": "fill_container",
@@ -154449,7 +154095,7 @@
                           "children": [
                             {
                               "type": "frame",
-                              "id": "ywD4s",
+                              "id": "J4Z2A",
                               "name": "Page header",
                               "width": "fill_container",
                               "height": 48,
@@ -154466,7 +154112,7 @@
                               "children": [
                                 {
                                   "type": "text",
-                                  "id": "J1m6NJ",
+                                  "id": "ozP5B",
                                   "name": "Settings",
                                   "fill": "$fg",
                                   "content": "Settings",
@@ -154476,7 +154122,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "ycVHx",
+                                  "id": "gNz8V",
                                   "name": "Tabs",
                                   "gap": 2,
                                   "padding": [
@@ -154487,13 +154133,15 @@
                                   ],
                                   "children": [
                                     {
-                                      "id": "ukHAM",
+                                      "id": "fmnQh",
                                       "type": "ref",
                                       "ref": "Cthgz",
                                       "name": "Tab Repositories",
+                                      "fill": "#00000000",
                                       "descendants": {
                                         "l6WOZ": {
-                                          "content": "Repositories"
+                                          "content": "Repositories",
+                                          "fill": "$fg-2"
                                         },
                                         "Mv9uV": {
                                           "content": "15"
@@ -154501,25 +154149,25 @@
                                       }
                                     },
                                     {
-                                      "id": "QDv7h",
+                                      "id": "wGOWr",
                                       "type": "ref",
                                       "ref": "Cthgz",
                                       "name": "Tab Projects",
-                                      "fill": "#00000000",
+                                      "fill": "$bg-3",
                                       "enabled": true,
                                       "descendants": {
                                         "l6WOZ": {
                                           "name": "Projects",
-                                          "fill": "$fg-2",
+                                          "fill": "$fg",
                                           "content": "Projects"
                                         },
                                         "Mv9uV": {
-                                          "content": "2"
+                                          "content": "3"
                                         }
                                       }
                                     },
                                     {
-                                      "id": "vkBur",
+                                      "id": "qNahw",
                                       "type": "ref",
                                       "ref": "qOqH0",
                                       "name": "Tab Sync settings",
@@ -154540,7 +154188,7 @@
                                       }
                                     },
                                     {
-                                      "id": "ZvLoq",
+                                      "id": "vGb5j",
                                       "type": "ref",
                                       "ref": "qOqH0",
                                       "name": "Tab Account",
@@ -154566,7 +154214,7 @@
                             },
                             {
                               "type": "frame",
-                              "id": "MmCqX",
+                              "id": "SBKmZ",
                               "name": "Body",
                               "width": "fill_container",
                               "height": "fill_container",
@@ -154579,19 +154227,1239 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "NZXF0",
+                                  "id": "FDzTu",
+                                  "name": "Tracked projects",
+                                  "width": 960,
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "r3894",
+                                      "type": "ref",
+                                      "ref": "QpXtY",
+                                      "name": "List head",
+                                      "descendants": {
+                                        "JyYd2": {
+                                          "content": "3 tracked projects"
+                                        },
+                                        "FRn8O": {
+                                          "content": "githq keeps every item of these, from any repository, in this browser and syncs it in the background. Open one for its settings."
+                                        },
+                                        "a77QJ7/i9UKWn": {
+                                          "content": "Track projects"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "g7ifnS",
+                                      "type": "ref",
+                                      "ref": "r7z5p0",
+                                      "name": "Group mlaine",
+                                      "descendants": {
+                                        "piBcu": {
+                                          "icon": "user"
+                                        },
+                                        "y4HhD": {
+                                          "content": "mlaine"
+                                        },
+                                        "WoxAZ": {
+                                          "content": "your projects · 1 of 1 tracked"
+                                        },
+                                        "KSeXE": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "WRNPA",
+                                      "type": "ref",
+                                      "ref": "L5sxR",
+                                      "name": "Project tasklet Roadmap",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "tasklet Roadmap"
+                                        },
+                                        "whDqI": {
+                                          "content": "#1"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "public"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from mlaine/tasklet"
+                                        },
+                                        "gMM7c": {
+                                          "content": "34 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "lv6Bi",
+                                      "type": "ref",
+                                      "ref": "r7z5p0",
+                                      "name": "Group fitloop",
+                                      "descendants": {
+                                        "piBcu": {
+                                          "icon": "building-2"
+                                        },
+                                        "y4HhD": {
+                                          "content": "fitloop"
+                                        },
+                                        "WoxAZ": {
+                                          "content": "organisation · 2 of 6 tracked"
+                                        },
+                                        "KSeXE": {
+                                          "enabled": true
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "V7Jlb",
+                                      "type": "ref",
+                                      "ref": "L5sxR",
+                                      "name": "Project Docs revamp",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "Docs revamp"
+                                        },
+                                        "whDqI": {
+                                          "content": "#9"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "private"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from fitloop/webapp"
+                                        },
+                                        "gMM7c": {
+                                          "content": "12 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "VlTS5",
+                                      "type": "ref",
+                                      "ref": "jbKD6",
+                                      "name": "Project Platform Q4",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "Platform Q4"
+                                        },
+                                        "whDqI": {
+                                          "content": "#12"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "private"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from 4 repositories, 2 tracked"
+                                        },
+                                        "gMM7c": {
+                                          "content": "128 items"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "F7OKF",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD": {
+                          "name": "Segment · Page pane"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zp5RR",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Scrim",
+                      "width": 1440,
+                      "height": 900,
+                      "fill": "#05060899"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "m8wlm",
+                      "layoutPosition": "absolute",
+                      "x": 200,
+                      "y": 56,
+                      "name": "Modal Track projects",
+                      "clip": true,
+                      "width": 1040,
+                      "fill": "$bg-2",
+                      "cornerRadius": 12,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#000000C0",
+                        "offset": {
+                          "x": 0,
+                          "y": 24
+                        },
+                        "blur": 64
+                      },
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yCe22",
+                          "name": "Head",
+                          "width": "fill_container",
+                          "gap": 12,
+                          "padding": [
+                            16,
+                            20,
+                            12,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "pRNBv",
+                              "name": "Text",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "t6uJwP",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Track projects",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "M3qReI",
+                                  "name": "Description",
+                                  "fill": "$fg-2",
+                                  "content": "What you tick is copied into this browser, with every item it holds, and kept in sync from now on.",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "id": "U5QmRJ",
+                              "type": "ref",
+                              "ref": "w9kS9",
+                              "name": "Kbd Esc",
+                              "descendants": {
+                                "luKkY": {
+                                  "content": "Esc"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eRCkU",
+                          "name": "Body",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            4,
+                            20,
+                            16,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "xEw3U",
+                              "name": "Choose projects",
+                              "width": "fill_container",
+                              "gap": 28,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "VKalC",
+                                  "name": "Owners",
+                                  "width": 200,
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "id": "T5N5m5",
+                                      "type": "ref",
+                                      "ref": "R3CmsE",
+                                      "name": "Owner All owners",
+                                      "width": "fill_container",
+                                      "fill": "$bg-3",
+                                      "descendants": {
+                                        "glwb1": {
+                                          "enabled": false
+                                        },
+                                        "jAK6g": {
+                                          "content": "All owners",
+                                          "fill": "$fg"
+                                        },
+                                        "LZuw5": {
+                                          "content": "3 / 7",
+                                          "fill": "$fg-3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "bCBx1",
+                                      "type": "ref",
+                                      "ref": "R3CmsE",
+                                      "name": "Owner mlaine",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "glwb1": {
+                                          "icon": "user",
+                                          "fill": "$fg-3"
+                                        },
+                                        "jAK6g": {
+                                          "content": "mlaine",
+                                          "fill": "$fg-2"
+                                        },
+                                        "LZuw5": {
+                                          "content": "1 / 1",
+                                          "fill": "$fg-3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "fYnXI",
+                                      "type": "ref",
+                                      "ref": "R3CmsE",
+                                      "name": "Owner fitloop",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "glwb1": {
+                                          "icon": "building-2",
+                                          "fill": "$fg-3"
+                                        },
+                                        "jAK6g": {
+                                          "content": "fitloop",
+                                          "fill": "$fg-2"
+                                        },
+                                        "LZuw5": {
+                                          "content": "2 / 6",
+                                          "fill": "$fg-3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "UuCFC",
+                                      "type": "ref",
+                                      "ref": "R3CmsE",
+                                      "name": "Owner acme-health",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "glwb1": {
+                                          "icon": "lock",
+                                          "fill": "$amber"
+                                        },
+                                        "jAK6g": {
+                                          "content": "acme-health",
+                                          "fill": "$fg-2"
+                                        },
+                                        "LZuw5": {
+                                          "content": "– / –",
+                                          "fill": "$amber"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "utPkU",
+                                  "name": "Projects",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ZOFwp",
+                                      "name": "Tools",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        8,
+                                        0
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "b6iNN",
+                                          "name": "Search",
+                                          "width": "fill_container",
+                                          "cornerRadius": 7,
+                                          "stroke": "$border-2",
+                                          "strokeWidth": 1,
+                                          "gap": 8,
+                                          "padding": [
+                                            7,
+                                            10
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "li8nn",
+                                              "name": "icon search",
+                                              "width": 14,
+                                              "height": 14,
+                                              "icon": "search",
+                                              "library": "lucide",
+                                              "fill": "$fg-3"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "R2LAy",
+                                              "name": "Placeholder",
+                                              "fill": "$fg-3",
+                                              "content": "Filter 7 projects…",
+                                              "fontFamily": "$font",
+                                              "fontSize": 13,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "jSGVs",
+                                              "name": "spacer",
+                                              "width": "fill_container",
+                                              "height": 1
+                                            },
+                                            {
+                                              "id": "DYTOn",
+                                              "type": "ref",
+                                              "ref": "w9kS9",
+                                              "name": "Kbd /",
+                                              "descendants": {
+                                                "luKkY": {
+                                                  "content": "/"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "f4j4bS",
+                                          "name": "Sort",
+                                          "cornerRadius": 7,
+                                          "stroke": "$border",
+                                          "strokeWidth": 1,
+                                          "gap": 6,
+                                          "padding": [
+                                            7,
+                                            10
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "qQEbQ",
+                                              "name": "icon sort",
+                                              "width": 13,
+                                              "height": 13,
+                                              "icon": "arrow-down-wide-narrow",
+                                              "library": "lucide",
+                                              "fill": "$fg-3"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "fDExq",
+                                              "name": "Sort label",
+                                              "fill": "$fg-2",
+                                              "content": "Recently updated",
+                                              "fontFamily": "$font",
+                                              "fontSize": 12.5,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "f8pTVX",
+                                      "name": "About",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        0,
+                                        12,
+                                        4,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "uCC1o",
+                                          "name": "icon info",
+                                          "width": 13,
+                                          "height": 13,
+                                          "icon": "info",
+                                          "library": "lucide",
+                                          "fill": "$fg-3"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "OFYYz",
+                                          "name": "Text",
+                                          "fill": "$fg-3",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "A tracked project brings all its items with it, including those in repositories you don't track. Its views, fields and iterations come along.",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "w7Zf3",
+                                      "name": "Group mlaine",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        4,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Cvp8j",
+                                          "name": "Owner",
+                                          "fill": "$fg-2",
+                                          "content": "mlaine",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "FixMs",
+                                          "name": "Summary",
+                                          "fill": "$fg-3",
+                                          "content": "your projects · all 1 tracked",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "YwxBO",
+                                          "name": "spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "id": "qA73k",
+                                          "type": "ref",
+                                          "ref": "gQ61z",
+                                          "name": "Action Untrack all",
+                                          "descendants": {
+                                            "tzW1W": {
+                                              "content": "Show"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "rA4nI",
+                                      "type": "ref",
+                                      "ref": "aThGZ",
+                                      "name": "Project tasklet Roadmap",
+                                      "width": "fill_container(0)",
+                                      "enabled": false,
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "tasklet Roadmap"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#1"
+                                        },
+                                        "BFOa0": {
+                                          "content": "public"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "from mlaine/tasklet"
+                                        },
+                                        "x3ypF": {
+                                          "content": "34 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "EMRkO",
+                                      "name": "Group fitloop",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        4,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "CyuHS",
+                                          "name": "Owner",
+                                          "fill": "$fg-2",
+                                          "content": "fitloop",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zFDVi",
+                                          "name": "Summary",
+                                          "fill": "$fg-3",
+                                          "content": "organisation · 2 of 6 tracked · 1 picked",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "tJPqM",
+                                          "name": "spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "id": "UxJ9M",
+                                          "type": "ref",
+                                          "ref": "gQ61z",
+                                          "name": "Action Track all",
+                                          "descendants": {
+                                            "tzW1W": {
+                                              "content": "Select all"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "zmozg",
+                                      "type": "ref",
+                                      "ref": "aThGZ",
+                                      "name": "Project Platform Q4",
+                                      "width": "fill_container",
+                                      "enabled": true,
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "Platform Q4"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#12"
+                                        },
+                                        "BFOa0": {
+                                          "content": "private"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "from 4 repositories, 2 tracked"
+                                        },
+                                        "x3ypF": {
+                                          "content": "128 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "mAbER",
+                                      "type": "ref",
+                                      "ref": "aThGZ",
+                                      "name": "Project Docs revamp",
+                                      "width": "fill_container",
+                                      "enabled": true,
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "Docs revamp"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#9"
+                                        },
+                                        "BFOa0": {
+                                          "content": "private"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "from fitloop/webapp"
+                                        },
+                                        "x3ypF": {
+                                          "content": "12 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "XLPhD",
+                                      "type": "ref",
+                                      "ref": "Vy3ob",
+                                      "name": "Project Bug triage",
+                                      "width": "fill_container",
+                                      "fill": "$sel",
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "Bug triage"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#7"
+                                        },
+                                        "BFOa0": {
+                                          "content": "private"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "from 6 repositories, 2 tracked"
+                                        },
+                                        "x3ypF": {
+                                          "content": "61 items"
+                                        },
+                                        "wKoHs": {
+                                          "content": "updated 1d ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "F7Z9k7",
+                                      "type": "ref",
+                                      "ref": "z2Nei",
+                                      "name": "Project Mobile 2.0",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "Mobile 2.0"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#15"
+                                        },
+                                        "BFOa0": {
+                                          "content": "private"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "from fitloop/mobile"
+                                        },
+                                        "x3ypF": {
+                                          "content": "210 items"
+                                        },
+                                        "wKoHs": {
+                                          "content": "updated 2d ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "xQGQk",
+                                      "type": "ref",
+                                      "ref": "z2Nei",
+                                      "name": "Project Hiring pipeline",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "TzPa4": {
+                                          "content": "Hiring pipeline"
+                                        },
+                                        "CfJgn": {
+                                          "content": "#3"
+                                        },
+                                        "BFOa0": {
+                                          "content": "private"
+                                        },
+                                        "p3xeCY": {
+                                          "content": "drafts only"
+                                        },
+                                        "x3ypF": {
+                                          "content": "19 items"
+                                        },
+                                        "wKoHs": {
+                                          "content": "updated 3w ago"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "NTol7",
+                                      "name": "Closed",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        4,
+                                        12,
+                                        4,
+                                        37
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "bZBU0",
+                                          "name": "Text",
+                                          "fill": "$fg-3",
+                                          "content": "1 closed project hidden: Q3 Launch (#11)",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "id": "SEfd2",
+                                          "type": "ref",
+                                          "ref": "gQ61z",
+                                          "name": "Action Show closed",
+                                          "descendants": {
+                                            "tzW1W": {
+                                              "content": "Show closed"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "dICmh",
+                                      "name": "Group acme-health",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "padding": [
+                                        12,
+                                        12,
+                                        4,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "FFrDX",
+                                          "name": "Owner",
+                                          "fill": "$fg-2",
+                                          "content": "acme-health",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "t2iwB",
+                                          "name": "Summary",
+                                          "fill": "$fg-3",
+                                          "content": "organisation · projects hidden",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "wlKgt",
+                                          "name": "spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "H4CSu",
+                                      "name": "Hidden notice",
+                                      "width": "fill_container",
+                                      "fill": "#D6A23A14",
+                                      "cornerRadius": 8,
+                                      "stroke": "#D6A23A40",
+                                      "strokeWidth": 1,
+                                      "gap": 10,
+                                      "padding": [
+                                        10,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ytX5t",
+                                          "name": "icon lock",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "lock",
+                                          "library": "lucide",
+                                          "fill": "$amber"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "ZZT4T",
+                                          "name": "Text",
+                                          "fill": "$fg",
+                                          "content": "acme-health hasn't approved githq, so its projects can't be listed.",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "pCPh4",
+                                          "name": "spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "zKQCA",
+                                          "name": "Link",
+                                          "fill": "$amber",
+                                          "content": "Why, and how to fix",
+                                          "fontFamily": "$font",
+                                          "fontSize": 12.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "v8LmaO",
+                          "name": "Footer",
+                          "width": "fill_container",
+                          "fill": "$bg",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "top": 1
+                          },
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E1PST",
+                              "name": "Summary",
+                              "fill": "$fg-2",
+                              "content": "1 picked: fitloop/Bug triage",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "D7AJ85",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "id": "a4qY8",
+                              "type": "ref",
+                              "ref": "JOjbe",
+                              "name": "Button Cancel",
+                              "descendants": {
+                                "KpHhX": {
+                                  "content": "Cancel"
+                                }
+                              }
+                            },
+                            {
+                              "id": "h5bs9",
+                              "type": "ref",
+                              "ref": "EoODS",
+                              "name": "Button Track",
+                              "descendants": {
+                                "F9mRc": {
+                                  "icon": "plus"
+                                },
+                                "Cenjq": {
+                                  "content": "Track 1 project"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "RxnkN",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "gkp3i",
+              "name": "Slot · T20 · At once, with Undo",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "CNoKQ",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "k4mJ54",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "T20 · At once, with Undo",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "y8baJ",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Untrack (⌫, or the button on the row) acts at once, like every other edit in the app: the row leaves the list, the selection moves to the next row, and a toast offers Undo (⌘Z) for 10 seconds. The copy in this browser is deleted only when the toast goes, so Undo is instant and costs no download; leaving Settings meanwhile still deletes it. Re-tracking later is always possible from Track repositories. Shown: fitloop/api just untracked.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GlcNe",
+                  "name": "T20 · At once, with Undo",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "v0X9nc",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "UOMTS",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "j3CFH": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OPv3J",
+                          "name": "Page pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "K8O9ME",
+                              "name": "Page header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "kHG2c",
+                                  "name": "Settings",
+                                  "fill": "$fg",
+                                  "content": "Settings",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "YpzVK",
+                                  "name": "Tabs",
+                                  "gap": 2,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    12
+                                  ],
+                                  "children": [
+                                    {
+                                      "id": "Ph2xg",
+                                      "type": "ref",
+                                      "ref": "Cthgz",
+                                      "name": "Tab Repositories",
+                                      "descendants": {
+                                        "l6WOZ": {
+                                          "content": "Repositories"
+                                        },
+                                        "Mv9uV": {
+                                          "content": "14"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "ImMHI",
+                                      "type": "ref",
+                                      "ref": "Cthgz",
+                                      "name": "Tab Projects",
+                                      "fill": "#00000000",
+                                      "enabled": true,
+                                      "descendants": {
+                                        "l6WOZ": {
+                                          "name": "Projects",
+                                          "fill": "$fg-2",
+                                          "content": "Projects"
+                                        },
+                                        "Mv9uV": {
+                                          "content": "2"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "fBbtH",
+                                      "type": "ref",
+                                      "ref": "qOqH0",
+                                      "name": "Tab Sync settings",
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        4,
+                                        9
+                                      ],
+                                      "alignItems": "center",
+                                      "fill": "#00000000",
+                                      "descendants": {
+                                        "r4dWM": {
+                                          "name": "Saving to GitHub",
+                                          "fill": "$fg-2",
+                                          "content": "Sync settings"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "VoFQw",
+                                      "type": "ref",
+                                      "ref": "qOqH0",
+                                      "name": "Tab Account",
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        4,
+                                        9
+                                      ],
+                                      "alignItems": "center",
+                                      "fill": "#00000000",
+                                      "descendants": {
+                                        "r4dWM": {
+                                          "name": "Account",
+                                          "fill": "$fg-2",
+                                          "content": "Account"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "EP06H",
+                              "name": "Body",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "padding": [
+                                16,
+                                12
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "S8jkj",
                                   "name": "Tracked repositories",
                                   "width": 960,
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "AKBlO",
+                                      "id": "ZYeux",
                                       "type": "ref",
                                       "ref": "QpXtY",
-                                      "name": "List head"
+                                      "name": "List head",
+                                      "descendants": {
+                                        "JyYd2": {
+                                          "content": "14 tracked repositories"
+                                        }
+                                      }
                                     },
                                     {
-                                      "id": "oYMWM",
+                                      "id": "bOcXQ",
                                       "type": "ref",
                                       "ref": "r7z5p0",
                                       "name": "Group mlaine",
@@ -154611,7 +155479,7 @@
                                       }
                                     },
                                     {
-                                      "id": "dF6Yq",
+                                      "id": "tEl8B",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo advent-2025",
@@ -154634,7 +155502,7 @@
                                       }
                                     },
                                     {
-                                      "id": "AcDwB",
+                                      "id": "T2LXAT",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo blog",
@@ -154657,7 +155525,7 @@
                                       }
                                     },
                                     {
-                                      "id": "cTVER",
+                                      "id": "Jz6tY",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo cli-tools",
@@ -154680,7 +155548,7 @@
                                       }
                                     },
                                     {
-                                      "id": "nFU1H",
+                                      "id": "e05m07",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo dotfiles",
@@ -154703,7 +155571,7 @@
                                       }
                                     },
                                     {
-                                      "id": "Ea6G6",
+                                      "id": "hkNHl",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo githq-settings",
@@ -154726,7 +155594,7 @@
                                       }
                                     },
                                     {
-                                      "id": "cCyPa",
+                                      "id": "Xhinf",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo homebrew-tap",
@@ -154749,7 +155617,7 @@
                                       }
                                     },
                                     {
-                                      "id": "BTgiW",
+                                      "id": "lImv9",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo mdlint",
@@ -154772,7 +155640,7 @@
                                       }
                                     },
                                     {
-                                      "id": "y6Kb3",
+                                      "id": "ypnPS",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo mlaine.github.io",
@@ -154795,7 +155663,7 @@
                                       }
                                     },
                                     {
-                                      "id": "sG7Qd",
+                                      "id": "EhNSB",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo notes",
@@ -154818,7 +155686,7 @@
                                       }
                                     },
                                     {
-                                      "id": "IHJFG",
+                                      "id": "Pii1S",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo skills",
@@ -154841,7 +155709,7 @@
                                       }
                                     },
                                     {
-                                      "id": "NJuWQ",
+                                      "id": "z8SRw",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo talks",
@@ -154864,7 +155732,7 @@
                                       }
                                     },
                                     {
-                                      "id": "yMRpw",
+                                      "id": "UrVkc",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo tasklet",
@@ -154887,7 +155755,7 @@
                                       }
                                     },
                                     {
-                                      "id": "g7QUB0",
+                                      "id": "w5emu",
                                       "type": "ref",
                                       "ref": "r7z5p0",
                                       "name": "Group fitloop",
@@ -154899,7 +155767,7 @@
                                           "content": "fitloop"
                                         },
                                         "WoxAZ": {
-                                          "content": "organisation · 2 of 312 tracked"
+                                          "content": "organisation · 1 of 312 tracked"
                                         },
                                         "KSeXE": {
                                           "enabled": true
@@ -154907,30 +155775,7 @@
                                       }
                                     },
                                     {
-                                      "id": "Qd9jl",
-                                      "type": "ref",
-                                      "ref": "CqvD4",
-                                      "name": "Repo api",
-                                      "descendants": {
-                                        "w8FwE": {
-                                          "icon": "lock"
-                                        },
-                                        "xEjfJ": {
-                                          "content": "api"
-                                        },
-                                        "xpvMy": {
-                                          "content": "private"
-                                        },
-                                        "L6OsQ": {
-                                          "content": "96 open"
-                                        },
-                                        "RvPJ3": {
-                                          "content": "synced 14s ago"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "HWZwe",
+                                      "id": "Eawos",
                                       "type": "ref",
                                       "ref": "Dht0d",
                                       "name": "Repo webapp",
@@ -154953,7 +155798,7 @@
                                       }
                                     },
                                     {
-                                      "id": "iBQqO",
+                                      "id": "xzWPK",
                                       "type": "ref",
                                       "ref": "r7z5p0",
                                       "name": "Group nuxt",
@@ -154973,7 +155818,7 @@
                                       }
                                     },
                                     {
-                                      "id": "aj3mf",
+                                      "id": "WLmXu",
                                       "type": "ref",
                                       "ref": "CqvD4",
                                       "name": "Repo nuxt",
@@ -155004,7 +155849,7 @@
                       ]
                     },
                     {
-                      "id": "DKWms",
+                      "id": "E2qMj",
                       "type": "ref",
                       "ref": "BFhwj",
                       "name": "Status bar",
@@ -155028,413 +155873,98 @@
                     },
                     {
                       "type": "frame",
-                      "id": "yd8PE",
+                      "id": "hFYmM",
                       "layoutPosition": "absolute",
-                      "x": 0,
-                      "y": 0,
-                      "name": "Scrim",
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "#05060899"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "YimLo",
-                      "layoutPosition": "absolute",
-                      "x": 380,
-                      "y": 96,
-                      "name": "Palette Track repositories",
-                      "clip": true,
-                      "width": 680,
+                      "x": 618,
+                      "y": 790,
+                      "name": "Toast",
+                      "width": 440,
                       "fill": "$bg-2",
-                      "cornerRadius": 12,
+                      "cornerRadius": 10,
                       "stroke": "$border-2",
                       "strokeWidth": 1,
                       "effect": {
                         "type": "shadow",
                         "shadowType": "outer",
-                        "color": "#000000C0",
+                        "color": "#000000B0",
                         "offset": {
                           "x": 0,
-                          "y": 24
+                          "y": 14
                         },
-                        "blur": 64
+                        "blur": 40
                       },
-                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        10,
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "dtzLk",
-                          "name": "Input row",
-                          "width": "fill_container",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 8,
-                          "padding": [
-                            12,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "ebTaz",
-                              "name": "Context chip",
-                              "fill": "$bg-3",
-                              "cornerRadius": 6,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 6,
-                              "padding": [
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "UJxQr",
-                                  "name": "icon plus",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "plus",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "k5ESe",
-                                  "name": "Label",
-                                  "fill": "$fg-2",
-                                  "content": "Track",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "i8BM4j",
-                              "name": "Owner chip",
-                              "fill": "#7C6CF21F",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                3,
-                                6,
-                                3,
-                                8
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "x5Wnxm",
-                                  "name": "icon building-2",
-                                  "width": 12,
-                                  "height": 12,
-                                  "icon": "building-2",
-                                  "library": "lucide",
-                                  "fill": "$accent"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "tzSfW",
-                                  "name": "Owner",
-                                  "fill": "$fg",
-                                  "content": "fitloop",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "type": "icon",
-                                  "id": "WbacU",
-                                  "name": "icon x",
-                                  "width": 11,
-                                  "height": 11,
-                                  "icon": "x",
-                                  "library": "lucide",
-                                  "fill": "$fg-3"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "Ln1N2",
-                              "name": "Query",
-                              "fill": "$fg",
-                              "content": "mo",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "YHDNk",
-                              "name": "Caret",
-                              "width": 1.5,
-                              "height": 18,
-                              "fill": "$accent"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "X1WFX",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "GKfN0",
-                              "name": "Count",
-                              "fill": "$fg-3",
-                              "content": "5 of 312",
-                              "fontFamily": "$mono",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                          "type": "icon",
+                          "id": "T8TYU",
+                          "name": "icon eye-off",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "eye-off",
+                          "library": "lucide",
+                          "fill": "$fg-2"
                         },
                         {
                           "type": "frame",
-                          "id": "V2INP",
-                          "name": "Results",
+                          "id": "wStl5",
+                          "name": "Text",
                           "width": "fill_container",
                           "layout": "vertical",
                           "gap": 2,
-                          "padding": [
-                            4,
-                            6,
-                            8,
-                            6
-                          ],
                           "children": [
                             {
-                              "id": "v8t8By",
-                              "type": "ref",
-                              "ref": "n8kYNM",
-                              "name": "Section fitloop",
-                              "width": "fill_container",
-                              "gap": 8,
-                              "padding": [
-                                10,
-                                10,
-                                4,
-                                10
-                              ],
-                              "descendants": {
-                                "CcUdj": {
-                                  "content": "fitloop · 2 of 312 tracked"
-                                }
-                              }
+                              "type": "text",
+                              "id": "XcSNn",
+                              "name": "Title",
+                              "fill": "$fg",
+                              "content": "Stopped tracking fitloop/api",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "600"
                             },
                             {
-                              "id": "Ww79V",
-                              "type": "ref",
-                              "ref": "EzonN",
-                              "name": "Repo mobile",
-                              "width": "fill_container",
-                              "descendants": {
-                                "Eaa85": {
-                                  "name": "icon lock",
-                                  "icon": "lock"
-                                },
-                                "bPkN3": {
-                                  "content": "fitloop/"
-                                },
-                                "y4AID": {
-                                  "content": "mobile"
-                                },
-                                "iAq87": {
-                                  "name": "private",
-                                  "content": "private"
-                                },
-                                "f0wAmf": {
-                                  "content": "58 open"
-                                },
-                                "ncBdU": {
-                                  "content": "active 1h ago"
-                                }
-                              }
-                            },
-                            {
-                              "id": "jwacB",
-                              "type": "ref",
-                              "ref": "PInZ1",
-                              "name": "Repo mobile-design",
-                              "width": "fill_container",
-                              "fill": "$sel",
-                              "descendants": {
-                                "YTiuN": {
-                                  "content": "mobile-design"
-                                },
-                                "QDjR3": {
-                                  "content": "4 open"
-                                },
-                                "nFaW2": {
-                                  "content": "active 3w ago"
-                                }
-                              }
-                            },
-                            {
-                              "id": "johxz",
-                              "type": "ref",
-                              "ref": "FynUy",
-                              "name": "Repo monorepo-tools",
-                              "width": "fill_container",
-                              "descendants": {
-                                "Eaa85": {
-                                  "name": "icon lock",
-                                  "icon": "lock"
-                                },
-                                "bPkN3": {
-                                  "content": "fitloop/"
-                                },
-                                "y4AID": {
-                                  "content": "monorepo-tools"
-                                },
-                                "iAq87": {
-                                  "name": "private",
-                                  "content": "private"
-                                },
-                                "f0wAmf": {
-                                  "content": "12 open"
-                                }
-                              }
-                            },
-                            {
-                              "id": "o9lv8",
-                              "type": "ref",
-                              "ref": "PInZ1",
-                              "name": "Repo motion",
-                              "width": "fill_container",
-                              "descendants": {
-                                "bxYNn": {
-                                  "icon": "book-marked"
-                                },
-                                "YTiuN": {
-                                  "content": "motion"
-                                },
-                                "JucDo": {
-                                  "content": "public"
-                                },
-                                "QDjR3": {
-                                  "content": "0 open"
-                                },
-                                "nFaW2": {
-                                  "content": "active 5mo ago",
-                                  "fill": "$fg-3"
-                                }
-                              }
-                            },
-                            {
-                              "id": "b9x27Q",
-                              "type": "ref",
-                              "ref": "PInZ1",
-                              "name": "Repo mock-server",
-                              "width": "fill_container",
-                              "descendants": {
-                                "YTiuN": {
-                                  "content": "mock-server"
-                                },
-                                "QDjR3": {
-                                  "content": "2 open"
-                                },
-                                "nFaW2": {
-                                  "content": "active 8mo ago",
-                                  "fill": "$fg-3"
-                                }
-                              }
+                              "type": "text",
+                              "id": "iu6N7",
+                              "name": "Detail",
+                              "fill": "$fg-2",
+                              "content": "Its copy in this browser goes when this closes.",
+                              "fontFamily": "$font",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
                         {
-                          "type": "frame",
-                          "id": "rVMPd",
-                          "name": "Footer",
-                          "width": "fill_container",
-                          "fill": "$bg",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "top": 1
-                          },
-                          "gap": 14,
-                          "padding": [
-                            8,
-                            14
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "QVVxp",
-                              "type": "ref",
-                              "ref": "XSeiZ",
-                              "name": "Hint Move"
+                          "id": "NiV5t",
+                          "type": "ref",
+                          "ref": "JOjbe",
+                          "name": "Button Undo",
+                          "descendants": {
+                            "KpHhX": {
+                              "content": "Undo"
                             },
-                            {
-                              "id": "AfUBo",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Tick",
-                              "descendants": {
-                                "m5wIG9/luKkY": {
-                                  "content": "Space"
-                                },
-                                "IOvfA": {
-                                  "content": "Tick"
-                                }
-                              }
-                            },
-                            {
-                              "id": "M2DME",
-                              "type": "ref",
-                              "ref": "xfbOl",
-                              "name": "Hint Owner",
-                              "descendants": {
-                                "m5wIG9/luKkY": {
-                                  "content": "@"
-                                },
-                                "IOvfA": {
-                                  "content": "Owner"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Z7fho",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
-                            },
-                            {
-                              "type": "text",
-                              "id": "GBGc2",
-                              "name": "Picked",
-                              "fill": "$fg-2",
-                              "content": "1 picked",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "id": "Lgvn1",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Track",
-                              "descendants": {
-                                "KpHhX": {
-                                  "content": "Track 1 repository"
-                                },
-                                "oCNhh/luKkY": {
-                                  "content": "⌘↵"
-                                }
-                              }
+                            "oCNhh/luKkY": {
+                              "content": "⌘Z"
                             }
-                          ]
+                          }
+                        },
+                        {
+                          "type": "icon",
+                          "id": "C6zwY",
+                          "name": "icon x",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "x",
+                          "library": "lucide",
+                          "fill": "$fg-3"
                         }
                       ]
                     }
@@ -159693,7 +160223,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Every per-repository setting on one page: Settings › Repositories › owner/name. It opens with Enter on a tracked row in Repositories (G8), with Settings in the repository's menu, and with P from its Workflows tab, which lands on Workflow alerts with its first row selected; Esc goes back where it came from. Sections stack, each with its name and what it changes on the left and its controls on the right, so new settings are new sections. Workflow alerts save as they change, like every edit in the app; tracking keeps the staged save of Repositories, because untracking deletes data. Shown: only the default branch alerts, its switch selected. It is a switch with GitHub's name for the branch, not a pattern, so it has no edit or remove. Below the list, the branches and tags githq has seen runs on that raise no alert, so the reason a failure lit nothing is on the screen. Keys: J and K move, Space switches the default branch, Enter edits a pattern, A adds one, ⌫ removes one, Esc goes back.",
+                      "content": "Every per-repository setting on one page: Settings › Repositories › owner/name. It opens with Enter on a tracked row in Repositories (G8), with Settings in the repository's menu, and with P from its Workflows tab, which lands on Workflow alerts with its first row selected; Esc goes back where it came from. Sections stack, each with its name and what it changes on the left and its controls on the right, so new settings are new sections. Workflow alerts save as they change, like every edit in the app; Untrack works as on the repository's row in Repositories. Shown: only the default branch alerts, its switch selected. It is a switch with GitHub's name for the branch, not a pattern, so it has no edit or remove. Below the list, the branches and tags githq has seen runs on that raise no alert, so the reason a failure lit nothing is on the screen. Keys: J and K move, Space switches the default branch, Enter edits a pattern, A adds one, ⌫ removes one, Esc goes back.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -160060,7 +160590,7 @@
                                                   "name": "Stop tracking",
                                                   "descendants": {
                                                     "tzW1W": {
-                                                      "content": "Stop tracking…"
+                                                      "content": "Untrack"
                                                     }
                                                   }
                                                 },
@@ -160069,7 +160599,7 @@
                                                   "id": "F6bAW",
                                                   "name": "Note",
                                                   "fill": "$fg-3",
-                                                  "content": "Staged in Repositories, like unticking its row: untracking deletes the copy in this browser.",
+                                                  "content": "The same as Untrack on its row in Repositories (T20), then back to Repositories.",
                                                   "fontFamily": "$font",
                                                   "fontSize": 12,
                                                   "fontWeight": "normal"
@@ -160207,7 +160737,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Projects are their own section next to Repositories, laid out like it so both read and work the same: owners on the left with tracked / all counts, a filter (/) and sort above the list, projects grouped by owner with ticks, a group action (Track all, Untrack all), and the same staged save at the bottom. Each row: the project's name and number, visibility, where its items come from (and how many of those repositories are tracked, since a tracked project brings its items even from untracked ones), its item count, and its sync status or the staged change. Closed projects are hidden behind Show closed. An organisation that hasn't approved githq can't list its projects and says so, as in Repositories. Keys: J and K move, Space ticks, 1 to 4 switch sections.",
+                      "content": "Projects work like Repositories (G8): only what is tracked, grouped by owner, no ticks. A row shows where its items come from (a tracked project brings its items even from repositories you don't track, so it says how many of those are tracked), its item count and sync status. Click or Enter opens the project's settings, a page like T16 for when projects get settings of their own; until then it holds Tracking alone. Untrack on the row, at once with Undo, as in Repositories (T20). Track projects (A) and a group's Track more open the picker (T22). Keys: J and K move, Enter opens, ⌫ untracks, A tracks more, 1 to 4 switch sections.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -160384,771 +160914,138 @@
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "ZCJCO",
-                                  "name": "Choose projects",
-                                  "width": "fill_container",
-                                  "gap": 28,
+                                  "id": "V2uS8",
+                                  "name": "Tracked projects",
+                                  "width": 960,
+                                  "layout": "vertical",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "RT8mW",
-                                      "name": "Owners",
-                                      "width": 200,
-                                      "layout": "vertical",
-                                      "gap": 2,
-                                      "children": [
-                                        {
-                                          "id": "l46ke2",
-                                          "type": "ref",
-                                          "ref": "R3CmsE",
-                                          "name": "Owner All owners",
-                                          "width": "fill_container",
-                                          "fill": "$bg-3",
-                                          "descendants": {
-                                            "glwb1": {
-                                              "enabled": false
-                                            },
-                                            "jAK6g": {
-                                              "content": "All owners",
-                                              "fill": "$fg"
-                                            },
-                                            "LZuw5": {
-                                              "content": "3 / 7",
-                                              "fill": "$fg-3"
-                                            }
-                                          }
+                                      "id": "SYprA",
+                                      "type": "ref",
+                                      "ref": "QpXtY",
+                                      "name": "List head",
+                                      "descendants": {
+                                        "JyYd2": {
+                                          "content": "3 tracked projects"
                                         },
-                                        {
-                                          "id": "e8duFU",
-                                          "type": "ref",
-                                          "ref": "R3CmsE",
-                                          "name": "Owner mlaine",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "glwb1": {
-                                              "icon": "user",
-                                              "fill": "$fg-3"
-                                            },
-                                            "jAK6g": {
-                                              "content": "mlaine",
-                                              "fill": "$fg-2"
-                                            },
-                                            "LZuw5": {
-                                              "content": "1 / 1",
-                                              "fill": "$fg-3"
-                                            }
-                                          }
+                                        "FRn8O": {
+                                          "content": "githq keeps every item of these, from any repository, in this browser and syncs it in the background. Open one for its settings."
                                         },
-                                        {
-                                          "id": "Ud1zJ",
-                                          "type": "ref",
-                                          "ref": "R3CmsE",
-                                          "name": "Owner fitloop",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "glwb1": {
-                                              "icon": "building-2",
-                                              "fill": "$fg-3"
-                                            },
-                                            "jAK6g": {
-                                              "content": "fitloop",
-                                              "fill": "$fg-2"
-                                            },
-                                            "LZuw5": {
-                                              "content": "2 / 6",
-                                              "fill": "$fg-3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "EinKo",
-                                          "type": "ref",
-                                          "ref": "R3CmsE",
-                                          "name": "Owner acme-health",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "glwb1": {
-                                              "icon": "lock",
-                                              "fill": "$amber"
-                                            },
-                                            "jAK6g": {
-                                              "content": "acme-health",
-                                              "fill": "$fg-2"
-                                            },
-                                            "LZuw5": {
-                                              "content": "– / –",
-                                              "fill": "$amber"
-                                            }
-                                          }
+                                        "a77QJ7/i9UKWn": {
+                                          "content": "Track projects"
                                         }
-                                      ]
+                                      }
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "FqGxw",
-                                      "name": "Projects",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 4,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "HcLei",
-                                          "name": "Tools",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            0,
-                                            0,
-                                            8,
-                                            0
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "frame",
-                                              "id": "pJIe2",
-                                              "name": "Search",
-                                              "width": "fill_container",
-                                              "cornerRadius": 7,
-                                              "stroke": "$border-2",
-                                              "strokeWidth": 1,
-                                              "gap": 8,
-                                              "padding": [
-                                                7,
-                                                10
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "uf7td",
-                                                  "name": "icon search",
-                                                  "width": 14,
-                                                  "height": 14,
-                                                  "icon": "search",
-                                                  "library": "lucide",
-                                                  "fill": "$fg-3"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "n2Uhpe",
-                                                  "name": "Placeholder",
-                                                  "fill": "$fg-3",
-                                                  "content": "Filter 7 projects…",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 13,
-                                                  "fontWeight": "normal"
-                                                },
-                                                {
-                                                  "type": "frame",
-                                                  "id": "T4D7l8",
-                                                  "name": "spacer",
-                                                  "width": "fill_container",
-                                                  "height": 1
-                                                },
-                                                {
-                                                  "id": "zbBGX",
-                                                  "type": "ref",
-                                                  "ref": "w9kS9",
-                                                  "name": "Kbd /",
-                                                  "descendants": {
-                                                    "luKkY": {
-                                                      "content": "/"
-                                                    }
-                                                  }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "M0kgUh",
-                                              "name": "Sort",
-                                              "cornerRadius": 7,
-                                              "stroke": "$border",
-                                              "strokeWidth": 1,
-                                              "gap": 6,
-                                              "padding": [
-                                                7,
-                                                10
-                                              ],
-                                              "alignItems": "center",
-                                              "children": [
-                                                {
-                                                  "type": "icon",
-                                                  "id": "zIdLb",
-                                                  "name": "icon sort",
-                                                  "width": 13,
-                                                  "height": 13,
-                                                  "icon": "arrow-down-wide-narrow",
-                                                  "library": "lucide",
-                                                  "fill": "$fg-3"
-                                                },
-                                                {
-                                                  "type": "text",
-                                                  "id": "ThYly",
-                                                  "name": "Sort label",
-                                                  "fill": "$fg-2",
-                                                  "content": "Recently updated",
-                                                  "fontFamily": "$font",
-                                                  "fontSize": 12.5,
-                                                  "fontWeight": "normal"
-                                                }
-                                              ]
-                                            }
-                                          ]
+                                      "id": "T9agL",
+                                      "type": "ref",
+                                      "ref": "r7z5p0",
+                                      "name": "Group mlaine",
+                                      "descendants": {
+                                        "piBcu": {
+                                          "icon": "user"
                                         },
-                                        {
-                                          "type": "frame",
-                                          "id": "BsX7j",
-                                          "name": "About",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            0,
-                                            12,
-                                            4,
-                                            12
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "qQ8rc",
-                                              "name": "icon info",
-                                              "width": 13,
-                                              "height": 13,
-                                              "icon": "info",
-                                              "library": "lucide",
-                                              "fill": "$fg-3"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "X0lCVS",
-                                              "name": "Text",
-                                              "fill": "$fg-3",
-                                              "content": "A tracked project brings all its items with it, including those in repositories you don't track. Its views, fields and iterations come along.",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
+                                        "y4HhD": {
+                                          "content": "mlaine"
                                         },
-                                        {
-                                          "type": "frame",
-                                          "id": "Shohc",
-                                          "name": "Group mlaine",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            12,
-                                            12,
-                                            4,
-                                            12
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "OWKGM",
-                                              "name": "Owner",
-                                              "fill": "$fg-2",
-                                              "content": "mlaine",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12.5,
-                                              "fontWeight": "600"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "LFC2O",
-                                              "name": "Summary",
-                                              "fill": "$fg-3",
-                                              "content": "your projects · 1 of 1 tracked",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "QG5GO",
-                                              "name": "spacer",
-                                              "width": "fill_container",
-                                              "height": 1
-                                            },
-                                            {
-                                              "id": "nZJMf",
-                                              "type": "ref",
-                                              "ref": "gQ61z",
-                                              "name": "Action Untrack all",
-                                              "descendants": {
-                                                "tzW1W": {
-                                                  "content": "Untrack all"
-                                                }
-                                              }
-                                            }
-                                          ]
+                                        "WoxAZ": {
+                                          "content": "your projects · 1 of 1 tracked"
                                         },
-                                        {
-                                          "id": "erJhG",
-                                          "type": "ref",
-                                          "ref": "Vy3ob",
-                                          "name": "Project tasklet Roadmap",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "tasklet Roadmap"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#1"
-                                            },
-                                            "BFOa0": {
-                                              "content": "public"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "from mlaine/tasklet"
-                                            },
-                                            "x3ypF": {
-                                              "content": "34 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "synced 14s ago"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "M3v8P",
-                                          "name": "Group fitloop",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            12,
-                                            12,
-                                            4,
-                                            12
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "xcVUP",
-                                              "name": "Owner",
-                                              "fill": "$fg-2",
-                                              "content": "fitloop",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12.5,
-                                              "fontWeight": "600"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "K1udFp",
-                                              "name": "Summary",
-                                              "fill": "$fg-3",
-                                              "content": "organisation · 2 of 6 tracked",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "ZBpch",
-                                              "name": "spacer",
-                                              "width": "fill_container",
-                                              "height": 1
-                                            },
-                                            {
-                                              "id": "ztbTQ",
-                                              "type": "ref",
-                                              "ref": "gQ61z",
-                                              "name": "Action Track all",
-                                              "descendants": {
-                                                "tzW1W": {
-                                                  "content": "Track all"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "id": "nWHZK",
-                                          "type": "ref",
-                                          "ref": "Vy3ob",
-                                          "name": "Project Platform Q4",
-                                          "width": "fill_container",
-                                          "fill": "$sel",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "Platform Q4"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#12"
-                                            },
-                                            "BFOa0": {
-                                              "content": "private"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "from 4 repositories, 2 tracked"
-                                            },
-                                            "x3ypF": {
-                                              "content": "128 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "synced 14s ago"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "P2ovr",
-                                          "type": "ref",
-                                          "ref": "Vy3ob",
-                                          "name": "Project Docs revamp",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "Docs revamp"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#9"
-                                            },
-                                            "BFOa0": {
-                                              "content": "private"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "from fitloop/webapp"
-                                            },
-                                            "x3ypF": {
-                                              "content": "12 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "synced 14s ago"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "zXQlh",
-                                          "type": "ref",
-                                          "ref": "Vy3ob",
-                                          "name": "Project Bug triage",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "Bug triage"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#7"
-                                            },
-                                            "BFOa0": {
-                                              "content": "private"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "from 6 repositories, 2 tracked"
-                                            },
-                                            "x3ypF": {
-                                              "content": "61 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "will be tracked",
-                                              "fill": "$accent"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "U4whSG",
-                                          "type": "ref",
-                                          "ref": "z2Nei",
-                                          "name": "Project Mobile 2.0",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "Mobile 2.0"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#15"
-                                            },
-                                            "BFOa0": {
-                                              "content": "private"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "from fitloop/mobile"
-                                            },
-                                            "x3ypF": {
-                                              "content": "210 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "updated 2d ago"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "E5yds",
-                                          "type": "ref",
-                                          "ref": "z2Nei",
-                                          "name": "Project Hiring pipeline",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "TzPa4": {
-                                              "content": "Hiring pipeline"
-                                            },
-                                            "CfJgn": {
-                                              "content": "#3"
-                                            },
-                                            "BFOa0": {
-                                              "content": "private"
-                                            },
-                                            "p3xeCY": {
-                                              "content": "drafts only"
-                                            },
-                                            "x3ypF": {
-                                              "content": "19 items"
-                                            },
-                                            "wKoHs": {
-                                              "content": "updated 3w ago"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "rpoa1",
-                                          "name": "Closed",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            4,
-                                            12,
-                                            4,
-                                            37
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "yK1fy",
-                                              "name": "Text",
-                                              "fill": "$fg-3",
-                                              "content": "1 closed project hidden: Q3 Launch (#11)",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "id": "JaeWx",
-                                              "type": "ref",
-                                              "ref": "gQ61z",
-                                              "name": "Action Show closed",
-                                              "descendants": {
-                                                "tzW1W": {
-                                                  "content": "Show closed"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "WmjWY",
-                                          "name": "Group acme-health",
-                                          "width": "fill_container",
-                                          "gap": 8,
-                                          "padding": [
-                                            12,
-                                            12,
-                                            4,
-                                            12
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "R4WUo7",
-                                              "name": "Owner",
-                                              "fill": "$fg-2",
-                                              "content": "acme-health",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12.5,
-                                              "fontWeight": "600"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "ZDTVm",
-                                              "name": "Summary",
-                                              "fill": "$fg-3",
-                                              "content": "organisation · projects hidden",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "kpNBE",
-                                              "name": "spacer",
-                                              "width": "fill_container",
-                                              "height": 1
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "XK3Ql",
-                                          "name": "Hidden notice",
-                                          "width": "fill_container",
-                                          "fill": "#D6A23A14",
-                                          "cornerRadius": 8,
-                                          "stroke": "#D6A23A40",
-                                          "strokeWidth": 1,
-                                          "gap": 10,
-                                          "padding": [
-                                            10,
-                                            12
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "O69fN",
-                                              "name": "icon lock",
-                                              "width": 14,
-                                              "height": 14,
-                                              "icon": "lock",
-                                              "library": "lucide",
-                                              "fill": "$amber"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "S6Yx9",
-                                              "name": "Text",
-                                              "fill": "$fg",
-                                              "content": "acme-health hasn't approved githq, so its projects can't be listed.",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12.5,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "frame",
-                                              "id": "ADdTB",
-                                              "name": "spacer",
-                                              "width": "fill_container",
-                                              "height": 1
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "lo9is",
-                                              "name": "Link",
-                                              "fill": "$amber",
-                                              "content": "Why, and how to fix",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12.5,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
+                                        "KSeXE": {
+                                          "enabled": false
                                         }
-                                      ]
+                                      }
+                                    },
+                                    {
+                                      "id": "xfRBK",
+                                      "type": "ref",
+                                      "ref": "L5sxR",
+                                      "name": "Project tasklet Roadmap",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "tasklet Roadmap"
+                                        },
+                                        "whDqI": {
+                                          "content": "#1"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "public"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from mlaine/tasklet"
+                                        },
+                                        "gMM7c": {
+                                          "content": "34 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "SG3nx",
+                                      "type": "ref",
+                                      "ref": "r7z5p0",
+                                      "name": "Group fitloop",
+                                      "descendants": {
+                                        "piBcu": {
+                                          "icon": "building-2"
+                                        },
+                                        "y4HhD": {
+                                          "content": "fitloop"
+                                        },
+                                        "WoxAZ": {
+                                          "content": "organisation · 2 of 6 tracked"
+                                        },
+                                        "KSeXE": {
+                                          "enabled": true
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "SnwCp",
+                                      "type": "ref",
+                                      "ref": "L5sxR",
+                                      "name": "Project Docs revamp",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "Docs revamp"
+                                        },
+                                        "whDqI": {
+                                          "content": "#9"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "private"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from fitloop/webapp"
+                                        },
+                                        "gMM7c": {
+                                          "content": "12 items"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "M8vJ5",
+                                      "type": "ref",
+                                      "ref": "jbKD6",
+                                      "name": "Project Platform Q4",
+                                      "descendants": {
+                                        "wQGJH": {
+                                          "content": "Platform Q4"
+                                        },
+                                        "whDqI": {
+                                          "content": "#12"
+                                        },
+                                        "TgDBQ": {
+                                          "content": "private"
+                                        },
+                                        "bfJHr": {
+                                          "content": "from 4 repositories, 2 tracked"
+                                        },
+                                        "gMM7c": {
+                                          "content": "128 items"
+                                        }
+                                      }
                                     }
                                   ]
-                                },
-                                {
-                                  "id": "bJwdK",
-                                  "type": "ref",
-                                  "ref": "scvkE",
-                                  "name": "Choose what to track",
-                                  "enabled": false,
-                                  "descendants": {
-                                    "jU4wA": {
-                                      "content": "15 / 327"
-                                    },
-                                    "DYbgH": {
-                                      "content": "11 / 12"
-                                    },
-                                    "IQEpZ": {
-                                      "content": "3 / 312"
-                                    },
-                                    "yJNxy": {
-                                      "content": "Filter 327 repositories…"
-                                    },
-                                    "AAcJG": {
-                                      "content": "your repositories · 11 of 12 tracked"
-                                    },
-                                    "QCqjt/tzW1W": {
-                                      "content": "Track all"
-                                    },
-                                    "pQKfe/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "uT0Ug/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "xCatZ/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "TctAS/JxYlj": {
-                                      "fill": "#00000000",
-                                      "stroke": "$border-2"
-                                    },
-                                    "TctAS/IwFpt": {
-                                      "enabled": false
-                                    },
-                                    "TctAS/ncBdU": {
-                                      "content": "will be untracked",
-                                      "fill": "$amber"
-                                    },
-                                    "ravjQ": {
-                                      "content": "8 more of yours, all tracked"
-                                    },
-                                    "S7SQwQ": {
-                                      "content": "organisation · 3 of 312 tracked"
-                                    },
-                                    "n2FnLV": {
-                                      "fill": "$sel"
-                                    },
-                                    "n2FnLV/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "n2FnLV/wajor": {
-                                      "enabled": true
-                                    },
-                                    "vzZcV/ncBdU": {
-                                      "content": "synced 14s ago"
-                                    },
-                                    "Dpha1/k4aDS8": {
-                                      "fill": "$accent",
-                                      "stroke": "$accent"
-                                    },
-                                    "Dpha1/nFaW2": {
-                                      "content": "will be tracked",
-                                      "fill": "$accent"
-                                    },
-                                    "s1IcC": {
-                                      "enabled": false
-                                    },
-                                    "s1IcC/JgwBd": {
-                                      "content": "1 of 5 tracked"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "xj7ll",
-                                  "name": "spacer",
-                                  "width": 1,
-                                  "height": "fill_container"
-                                },
-                                {
-                                  "id": "ewyA6",
-                                  "type": "ref",
-                                  "ref": "j5sdqa",
-                                  "name": "Pending changes",
-                                  "width": "fill_container",
-                                  "enabled": true,
-                                  "descendants": {
-                                    "nfHoK": {
-                                      "content": "1 change · start tracking fitloop/Bug triage"
-                                    },
-                                    "C0i7IE": {
-                                      "content": "Its 61 items are read in the background; the project opens at once."
-                                    },
-                                    "VynTp/Cenjq": {
-                                      "content": "Save 1 change"
-                                    }
-                                  }
                                 }
                               ]
                             }
