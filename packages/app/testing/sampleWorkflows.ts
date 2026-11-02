@@ -26,8 +26,8 @@ export interface SampleRun {
     readonly conclusion: string | null;
     /** How long ago, in minutes (`m`), hours (`h`) or days (`d`): `14m`, `3h`, `4d`. */
     readonly ago: `${number}${'d' | 'h' | 'm'}`;
-    /** `main` unless given: the default branch, which counts; a version (`v0.1.0`) is a tag. */
-    readonly branch?: string;
+    /** `main` unless given: the default branch, which counts; a version (`v0.1.0`) is a tag; `null`: GitHub names none. */
+    readonly branch?: string | null;
     /** `push` unless given; `pull_request` for one a pull request started. */
     readonly event?: string;
     /** Its title (the commit's or the pull request's); none unless given. */
@@ -130,7 +130,7 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             id,
             workflowId: params.id,
             runNumber: 200 + number,
-            headBranch: sample.branch ?? 'main',
+            headBranch: sample.branch === undefined ? 'main' : sample.branch,
             event: sample.event ?? 'push',
             status: sample.conclusion === null ? 'in_progress' : 'completed',
             conclusion: sample.conclusion,

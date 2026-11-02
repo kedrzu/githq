@@ -72,7 +72,7 @@ test('W14: with alerts off the bar says so and every failure is under No alerts'
     await expect
         .element(bar())
         .toHaveTextContent(like('Nothing\\. Failures here never mark this repository broken\\.'));
-    expect(groupNames()).toEqual(['Pull requests only', 'No alerts', 'Passing', 'Disabled']);
+    expect(groupNames()).toEqual(['No alerts', 'Pull requests only', 'Passing', 'Disabled']);
     await expect.element(group('No alerts')).toHaveTextContent(like('workflow alerts are off for this repository'));
     await expect.element(group('No alerts')).toHaveTextContent(like('Deploy.*Failing, alerts are off'));
 });

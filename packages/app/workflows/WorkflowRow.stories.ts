@@ -96,6 +96,15 @@ export const CrossRepository: Story = {
 };
 
 /** W3a: a repository's own tab — no repository column, passing and disabled workflows too. */
+export const FailingOnNoRef: Story = {
+    args: {
+        workflow: SAMPLE_WORKFLOWS.release,
+        gitRef: null,
+        standing: { kind: 'noAlerts', ref: null, alertsOff: false },
+    },
+};
+
+/** In a repository's Workflows tab. */
 export const RepositoryTab: Story = {
     render: () => ({
         setup: () => () =>

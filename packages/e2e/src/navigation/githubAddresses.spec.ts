@@ -88,6 +88,12 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     await page.goto('/my/assigned');
     await expect(repository.notTracked('my/assigned')).toBeVisible();
     await expect(page).toHaveURL('/my/assigned');
+
+    // Only a tracked repository has a Workflows tab (actions D4): an untracked one's is GitHub's page.
+    const actions = answerGitHubPage(github, '/acme/web/actions');
+    await page.goto('/acme/web/actions');
+    expect((await actions).href).toBe('https://github.com/acme/web/actions');
+    await expect(page).toHaveURL('https://github.com/acme/web/actions');
 });
 
 test("a tracked repository and its lists, a project and its saved view, the account and tracking open at GitHub's addresses", async ({
@@ -224,6 +230,7 @@ test('an address githq does not show leaves for the same address on github.com, 
         '/acme?tab=repositories#top',
         '/orgs/acme',
         '/acme/web/tree/main/src?plain=1#L3',
+        '/acme/web/actions',
         '/acme/web/actions/runs/1',
         '/notifications?query=mentioned',
         '/issues/created',

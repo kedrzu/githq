@@ -175,3 +175,21 @@ test('a pattern that stops a broken workflow counting names it', () => {
     expect(preview.kind === 'preview' && preview.stopCounting).toEqual(['Release']);
     expect(preview.kind === 'preview' && preview.staysBroken).toEqual([]);
 });
+
+test('the first read under way: the default branch is named, nothing is matched or counted yet (W10)', () => {
+    const alerts = buildWorkflowAlerts({
+        stored: sampleStoredWorkflows({
+            nameWithOwner: 'fitloop/webapp',
+            workflows: [
+                { id: 1, name: 'Deploy', runs: [{ conclusion: 'failure', ago: '2h' }] },
+                { id: 2, name: 'Release', runs: [] },
+            ],
+        }),
+        settings: { defaultBranch: true, refs: ['v*'] },
+        now: SAMPLE_WORKFLOWS_NOW,
+    });
+
+    expect(alerts.read).toBe(false);
+    expect(alerts.defaultBranch).toMatchObject({ name: 'main', brokenCount: null });
+    expect(alerts.patterns[0]?.brokenCount).toBeNull();
+});

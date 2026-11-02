@@ -15,6 +15,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { getRefGroups } from './utils/getRefGroups.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import { isRunInGroup } from './utils/isRunInGroup.js';
+import { isWorkflowNeverRead } from './utils/isWorkflowNeverRead.js';
 import { mergeWorkflowRuns } from './utils/mergeWorkflowRuns.js';
 import { WorkflowStore } from './WorkflowStore.js';
 import type { StoredWorkflow, WorkflowRefGroup } from './WorkflowTypes.js';
@@ -70,7 +71,8 @@ interface MarkUnavailableParams {
  * — older pages, on the first read for these patterns only, while a pattern's group has no run with a verdict, since
  * later reads go on from it. Up to {@link MAX_RUN_PAGES} pages each. A repository on screen is asked all of that at
  * every poll, as a run off the latest runs' page may have moved, all of it conditional, and nothing is written while
- * nothing moved. A workflow gone from GitHub's list is dropped.
+ * nothing moved. A workflow gone from GitHub's list is dropped. While some workflow's runs were never read, what is
+ * known is stored as it arrives — the default branch and the list first, then a workflow at a time (W3c, W10).
  *
  * A repository whose Actions GitHub refuses (403) or does not show (404: Actions turned off, or the repository gone)
  * is marked unavailable, asked again at the next poll like any other, and does not fail the loop; only what may
@@ -205,6 +207,39 @@ export const WorkflowSync = defineService({
                 return;
             }
 
+            const listed =
+                list.status === 200 ? list.workflows : (stored?.workflows.map(entry => entry.workflow) ?? []);
+            const findKept = (id: number) => stored?.workflows.find(entry => entry.workflow.id === id);
+            const showsProgress =
+                queries.length > 0 &&
+                listed.some(workflow => {
+                    const kept = findKept(workflow.id);
+                    return workflow.state === 'active' && (!kept || isWorkflowNeverRead(kept));
+                });
+            // What has been read shows at once, a workflow at a time. Its ETags stay the old ones until all of it is
+            // read: this read cut short, the next one is not told that nothing changed, and goes on.
+            const showRead = (read: readonly StoredWorkflow[], tags: readonly string[]) => {
+                workflows.set({
+                    nameWithOwner,
+                    defaultBranch,
+                    repositoryEtag: stored?.repositoryEtag ?? null,
+                    runsEtag: stored?.runsEtag ?? null,
+                    workflowsEtag: stored?.workflowsEtag ?? null,
+                    tagsEtag: stored?.tagsEtag ?? null,
+                    workflows: [
+                        ...read,
+                        ...listed
+                            .slice(read.length)
+                            .map(workflow => findKept(workflow.id) ?? { workflow, runs: [], etags: {} }),
+                    ],
+                    tags,
+                    unavailable: null,
+                });
+            };
+            if (showsProgress) {
+                showRead([], stored?.tags ?? []);
+            }
+
             context.checkAllowance('core');
             const tags = await listRepositoryTags(context.rest, {
                 nameWithOwner,
@@ -214,12 +249,11 @@ export const WorkflowSync = defineService({
                 return;
             }
 
-            const listed =
-                list.status === 200 ? list.workflows : (stored?.workflows.map(entry => entry.workflow) ?? []);
+            const tagNames = tags.status === 200 ? tags.tags : (stored?.tags ?? []);
             const read: StoredWorkflow[] = [];
             let runsMoved = false;
             for (const workflow of listed) {
-                const kept = stored?.workflows.find(entry => entry.workflow.id === workflow.id);
+                const kept = findKept(workflow.id);
                 // The any-ref query's ETag stays while not asked, so the tab's next read of it is free.
                 let entry: StoredWorkflow = {
                     workflow,
@@ -261,6 +295,9 @@ export const WorkflowSync = defineService({
                 }
 
                 read.push(entry);
+                if (showsProgress && read.length < listed.length) {
+                    showRead(read, tagNames);
+                }
             }
 
             // Asked because a screen shows them, and nothing moved: nothing to write.
@@ -284,7 +321,7 @@ export const WorkflowSync = defineService({
                 workflowsEtag: list.status === 200 ? (list.etag ?? null) : (stored?.workflowsEtag ?? null),
                 tagsEtag: tags.status === 200 ? (tags.etag ?? null) : (stored?.tagsEtag ?? null),
                 workflows: read,
-                tags: tags.status === 200 ? tags.tags : (stored?.tags ?? []),
+                tags: tagNames,
                 unavailable: null,
             });
             logger.debug('Workflows of a tracked repository read', {

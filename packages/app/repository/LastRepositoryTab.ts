@@ -7,6 +7,7 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { REPOSITORY_TABS } from './buildRepositoryList.js';
 import type { RepositoryTab } from './buildRepositoryList.js';
@@ -26,8 +27,9 @@ export const LastRepositoryTab = defineService({
     deps: {
         accounts: AccountSession,
         browser: Browser,
+        tracking: TrackingStore,
     },
-    setup({ accounts, browser }) {
+    setup({ accounts, browser, tracking }) {
         const tabsRef = shallowRef<Readonly<Record<string, RepositoryTab>>>({});
         const slot = createAccountSlot({
             accounts,
@@ -46,9 +48,13 @@ export const LastRepositoryTab = defineService({
 
         return { get, getPath, remember };
 
-        /** The repository's last tab, `null` when it has none; reactive. */
+        /**
+         * The repository's last tab, `null` when it has none, or when that was its Workflows tab and it is no longer
+         * tracked, which has none (actions D4); reactive.
+         */
         function get(nameWithOwner: string): RepositoryTab | null {
-            return tabsRef.value[nameWithOwner] ?? null;
+            const tab = tabsRef.value[nameWithOwner] ?? null;
+            return tab === 'workflows' && !tracking.isTracked({ kind: 'repository', nameWithOwner }) ? null : tab;
         }
 
         /** The address of the repository's view on the tab it was last on (`/owner/name/issues`); reactive. */

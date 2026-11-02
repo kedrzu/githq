@@ -13,6 +13,7 @@ const {
     Cancelled,
     CrossRepository,
     Disabled,
+    FailingOnNoRef,
     FewerRuns,
     NoRuns,
     Passing,
@@ -37,6 +38,11 @@ test('the row is a button reached by Tab, named by the workflow, described by ho
     // of the text — the point of it.
     await userEvent.click(page.getByText('failed 14m ago'), { force: true });
     expect(open).toHaveBeenCalledTimes(2);
+});
+
+test('a failure on no named ref says so in words, with no ref', async () => {
+    await FailingOnNoRef.run();
+    await expect.element(page.getByText('Failing without alerts')).toBeVisible();
 });
 
 test('a generated workflow says "by GitHub" in its name', async () => {

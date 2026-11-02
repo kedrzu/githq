@@ -5,6 +5,7 @@ import { getKnownRefs } from './utils/getKnownRefs.js';
 import type { KnownRef } from './utils/getKnownRefs.js';
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
 import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
+import { getWorkflowReadProgress } from './utils/getWorkflowReadProgress.js';
 import { isRefCounted } from './utils/isRefCounted.js';
 import { isWorkflowAlertsOff } from './utils/isWorkflowAlertsOff.js';
 import { matchRefPattern } from './utils/matchRefPattern.js';
@@ -95,7 +96,8 @@ export interface BuildWorkflowAlertsParams {
 /**
  * The Workflow alerts section of a repository's settings (actions D5, D13, T16): the default branch and each pattern,
  * what each matches of the refs githq has seen runs on and how many workflows are broken there, and the other refs
- * with recent runs that raise no alert. Before the first read nothing is matched and nothing counted — not zero (W10).
+ * with recent runs that raise no alert. Until the first read of the runs finishes nothing is matched and nothing
+ * counted — not zero —, while the default branch is named from the moment it is known (W10).
  * @__NO_SIDE_EFFECTS__
  */
 export function buildWorkflowAlerts(params: BuildWorkflowAlertsParams): WorkflowAlerts {
@@ -106,7 +108,7 @@ export function buildWorkflowAlerts(params: BuildWorkflowAlertsParams): Workflow
     const patterns = getWorkflowPatterns(settings);
 
     return {
-        read: stored !== undefined,
+        read: stored !== undefined && getWorkflowReadProgress(stored) === null,
         alertsOff: isWorkflowAlertsOff(settings),
         defaultBranch: {
             on: settings.defaultBranch,
@@ -248,7 +250,7 @@ function getPatternMatches(stored: RepositoryWorkflows | undefined, refs: readon
 
 /** How many workflows are broken in a group; `null` until the runs are read and while GitHub shows nothing. */
 function countBroken(state: RepositoryWorkflowState, group: WorkflowRefGroup): number | null {
-    if (state.status !== 'read') {
+    if (state.status !== 'read' || state.reading) {
         return null;
     }
 

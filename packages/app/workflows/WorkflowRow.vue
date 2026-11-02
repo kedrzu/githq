@@ -127,6 +127,10 @@ function getStandingLook(standing: WorkflowRowStanding): RowLook {
         return { icon: CircleDashed, tone: 'muted', status: t(l.failingAlertsOff) };
       }
 
+      if (standing.ref === null) {
+        return { icon: CircleDashed, tone: 'muted', status: t(l.failingWithoutAlerts) };
+      }
+
       return standing.ref.kind === 'tag'
         ? { icon: CircleDashed, tone: 'aside', status: t(l.failedOnTag, { ref: standing.ref.name }) }
         : { icon: CircleDashed, tone: 'muted', status: t(l.failingOnBranch) };

@@ -124,23 +124,31 @@ test('Enter unfolds a workflow in place — the kept runs at once, older ones re
     await expect(repository.workflow('Probe')).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the tab', async ({
+test('P opens the repository’s settings on Workflow alerts, and Esc there comes back to the same row, unfolded as it was', async ({
     page,
     github,
 }) => {
     const { world } = createSampleTrackedWork();
     world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Probe', runs: [{ conclusion: 'success', minutesAgo: 20 }] });
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Lint', runs: [{ conclusion: 'success', minutesAgo: 25 }] });
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
     const repository = new RepositoryScreenHarness(page);
     await expect(repository.group('Passing')).toContainText('Probe');
+    await expect(repository.workflow('Probe')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('j');
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('ArrowRight');
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('p');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings#workflow-alerts`);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
-    await expect(repository.group('Passing')).toContainText('Probe');
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-current', 'true');
+    await expect(repository.workflow('Lint')).toHaveAttribute('aria-expanded', 'true');
+    await expect(repository.runsOf('Lint')).toBeVisible();
 });
 
 test('an address opened directly reads the runs on any ref too: a workflow only pull requests run is placed, not left unknown', async ({

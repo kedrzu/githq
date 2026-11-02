@@ -15,8 +15,14 @@ import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
+import { getWorkflowReadProgress } from './utils/getWorkflowReadProgress.js';
 import { WorkflowPersistence } from './WorkflowPersistence.js';
-import type { RepositoryWorkflowState, RepositoryWorkflows, WorkflowRefSettings } from './WorkflowTypes.js';
+import type {
+    RepositoryWorkflowState,
+    RepositoryWorkflows,
+    WorkflowReadProgress,
+    WorkflowRefSettings,
+} from './WorkflowTypes.js';
 
 /** A tracked repository's workflows' state, for the cross-repository screen and the sidebar's markers. */
 export interface TrackedRepositoryWorkflowState {
@@ -90,7 +96,7 @@ export const WorkflowStore = defineService({
             for (const { state } of repositories.value) {
                 brokenCount += state.brokenCount;
                 hasNewBreak ||= state.hasNewBreak;
-                hasUnread ||= state.status === 'unread';
+                hasUnread ||= state.status === 'unread' || state.reading;
             }
 
             return { brokenCount, hasNewBreak, hasUnread };
@@ -123,6 +129,7 @@ export const WorkflowStore = defineService({
             get,
             getState,
             getRefSettings,
+            getReadProgress,
             set,
             remove,
         };
@@ -156,6 +163,12 @@ export const WorkflowStore = defineService({
             return readWorkflowSettings(
                 tracking.document.repositories.find(entry => entry.nameWithOwner === nameWithOwner),
             );
+        }
+
+        /** How far the read of the repository's workflows' runs is; `null` when none is under way. Reactive. */
+        function getReadProgress(nameWithOwner: string): WorkflowReadProgress | null {
+            const stored = storedRef.value.get(nameWithOwner);
+            return stored ? getWorkflowReadProgress(stored) : null;
         }
 
         /** Keeps what the sync read of a tracked repository; ignored while signed out or once it is no longer tracked. */

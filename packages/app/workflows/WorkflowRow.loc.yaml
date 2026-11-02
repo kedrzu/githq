@@ -57,5 +57,7 @@ failedOnTag:
   en: Failed on {ref}, a tag without alerts
 failingOnBranch:
   en: Failing on a branch without alerts
+failingWithoutAlerts:
+  en: Failing without alerts
 reading:
   en: Reading…

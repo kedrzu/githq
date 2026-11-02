@@ -54,6 +54,9 @@ const emit = defineEmits<{
   openOnGitHub: [url: string];
 }>();
 
+/** The selected row's key; `null` until the user moves, the first row being selected. */
+const selected = defineModel<string | null>('selected', { default: null });
+
 const t = useTranslate();
 const root = useTemplateRef('root');
 
@@ -96,6 +99,7 @@ const selection = useRowSelection({
   root,
   keyAttribute: 'data-workflow-key',
   selectFirst: true,
+  chosenKey: selected,
   open: openSelected,
 });
 const selectedRow = computed(() => rows.value.find(row => row.key === selection.selectedKey) ?? null);
@@ -209,7 +213,15 @@ useCommands(() => [
 ]);
 
 // Arrived from a tab or the menu, the keys are the screen's: Enter no longer presses what was clicked.
-onMounted(() => root.value?.focus({ preventScroll: true }));
+onMounted(() => {
+  root.value?.focus({ preventScroll: true });
+  // Back on a row the user had moved to: it is in sight again.
+  if (selected.value !== null) {
+    root.value
+      ?.querySelector(`[data-workflow-key="${CSS.escape(selected.value)}"]`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }
+});
 
 function openRow(entry: RepositoryWorkflowEntry) {
   selection.select(entry.key);

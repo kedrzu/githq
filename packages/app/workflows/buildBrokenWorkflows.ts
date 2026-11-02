@@ -68,7 +68,12 @@ export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWor
             continue;
         }
 
-        readCount += 1;
+        // Being read, what it has is shown, and the repository is not yet told healthy.
+        if (state.reading) {
+            unread.push(nameWithOwner);
+        } else {
+            readCount += 1;
+        }
 
         brokenCount += state.brokenCount;
         if (state.brokenCount > 0) {

@@ -61,12 +61,34 @@ test('a failure on a ref without alerts names that ref and its kind; with a patt
     expect(withTags.count).toBe(2);
 });
 
+test('a failure on no named ref is under No alerts, not passing, with no ref to name', () => {
+    const list = build({
+        workflows: [
+            {
+                id: 1,
+                name: 'Detached',
+                runs: [
+                    { conclusion: 'success', ago: '2d', branch: 'staging' },
+                    { conclusion: 'failure', ago: '1h', branch: null },
+                ],
+            },
+        ],
+    });
+
+    expect(namesByGroup(list)).toEqual([['noAlerts', ['Detached']]]);
+    expect(list.groups[0]?.rows[0]).toMatchObject({
+        standing: { kind: 'noAlerts', ref: null, alertsOff: false },
+        gitRef: null,
+    });
+});
+
 test('with alerts off nothing is broken and the tab has no count: every failure is under No alerts', () => {
     const list = build({ workflows: SAMPLE_TAB_WORKFLOWS }, OFF);
 
-    expect(namesByGroup(list)[1]).toEqual(['noAlerts', ['Deploy', 'Release', 'Nightly e2e']]);
-    expect(list.groups.some(group => group.kind === 'broken')).toBe(false);
-    expect(list.groups[1]?.rows[0]?.standing).toMatchObject({ kind: 'noAlerts', alertsOff: true });
+    // W14: the failures first, before the calm rows.
+    expect(list.groups.map(group => group.kind)).toEqual(['noAlerts', 'pullRequestsOnly', 'passing', 'disabled']);
+    expect(namesByGroup(list)[0]).toEqual(['noAlerts', ['Deploy', 'Release', 'Nightly e2e']]);
+    expect(list.groups[0]?.rows[0]?.standing).toMatchObject({ kind: 'noAlerts', alertsOff: true });
     expect(list).toMatchObject({ alertsOff: true, count: null });
     expect(list.alerts).toEqual({ defaultBranch: false, defaultBranchName: 'main', patterns: [] });
 });

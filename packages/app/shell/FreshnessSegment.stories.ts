@@ -32,6 +32,9 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** A repository's workflows listed, the first read of their runs under way (actions W3c). */
+export const ReadingRuns: Story = { args: { freshness: { kind: 'reading', read: 2, total: 6 } } };
+
 /** Offline: amber, as of the last success. */
 export const Offline: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'offline' } } };
 

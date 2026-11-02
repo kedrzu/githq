@@ -15,6 +15,7 @@ import { getRowRef } from './getRowRef.js';
 import { getRunVerdict } from './getRunVerdict.js';
 import { getWorkflowVerdict } from './getWorkflowVerdict.js';
 import { isRunInGroup } from './isRunInGroup.js';
+import { isWorkflowNeverRead } from './isWorkflowNeverRead.js';
 import { sortRunsByCreation } from './sortRunsByCreation.js';
 
 /** How long a break shows as new: the sidebar marker is bright, and the list puts it under New. */
@@ -42,6 +43,7 @@ export function getRepositoryWorkflowState(
         return {
             status: stored ? 'unavailable' : 'unread',
             unavailable: stored?.unavailable ?? null,
+            reading: false,
             workflows: [],
             brokenCount: 0,
             hasNewBreak: false,
@@ -64,6 +66,7 @@ export function getRepositoryWorkflowState(
     return {
         status: 'read',
         unavailable: null,
+        reading: groups.length > 0 && stored.workflows.some(isWorkflowNeverRead),
         workflows,
         brokenCount,
         hasNewBreak,

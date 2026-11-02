@@ -1,7 +1,7 @@
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, nextTick, ref, toValue, watch } from 'vue';
-import type { MaybeRefOrGetter } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
 
 import { followSelection } from './followSelection.js';
 import { isActivatableTarget } from './isActivatableTarget.js';
@@ -19,6 +19,11 @@ export interface UseRowSelectionOptions<T> {
     readonly keyAttribute: string;
     /** Whether the first row is the selected one until the user moves; otherwise nothing is selected until then. */
     readonly selectFirst?: boolean;
+    /**
+     * The row the user moved to, for a screen that keeps it after it is gone; held here otherwise. One no longer listed
+     * selects as if the user had not moved.
+     */
+    readonly chosenKey?: Ref<string | null>;
     /** Enter on the selected row. */
     open(row: T): void;
 }
@@ -40,12 +45,17 @@ export interface RowSelectionViewModel {
  */
 export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel {
     /** The row the user moved to; `null` until they do. */
-    const chosenKey = ref<string | null>(null);
+    const chosenKey = options.chosenKey ?? ref<string | null>(null);
 
     const keys = computed(() => toValue(options.rows).map(row => options.getKey(row)));
-    const selectedKey = computed(() =>
-        options.selectFirst ? (chosenKey.value ?? keys.value[0] ?? null) : chosenKey.value,
-    );
+    const selectedKey = computed(() => {
+        const chosen = chosenKey.value;
+        if (!options.selectFirst) {
+            return chosen;
+        }
+
+        return chosen !== null && keys.value.includes(chosen) ? chosen : (keys.value[0] ?? null);
+    });
     const selectedRow = computed(
         () => toValue(options.rows).find(row => options.getKey(row) === selectedKey.value) ?? null,
     );

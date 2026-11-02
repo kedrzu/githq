@@ -516,6 +516,60 @@ test('a tab that does not sync, with a repository on screen, has the syncing tab
     expect(actionsRequests(syncing.session.github.requests)).toHaveLength(6);
 });
 
+test('the first read shows as it goes: the list and the default branch at once, a workflow at a time, nothing passing or lowering the total before its runs are in', async () => {
+    const world = sampleWorld();
+    const { session, tracking, workflows } = await setup(world);
+    const heldCi = createPromise();
+    session.github.holdIf = request =>
+        request.operation === `GET /repos/acme/web/actions/workflows/${CI}/runs` ? heldCi.promise : null;
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+
+    expect(workflows.get('acme/web')).toMatchObject({ defaultBranch: 'main', runsEtag: null, workflowsEtag: null });
+    expect(workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
+    expect(workflows.getState('acme/web')).toMatchObject({ status: 'read', reading: true, brokenCount: 1 });
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'unknown'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(workflows.totals).toMatchObject({ brokenCount: 1, hasUnread: true });
+
+    heldCi.resolve();
+    await session.clock.advance(0);
+    expect(workflows.getReadProgress('acme/web')).toBeNull();
+    expect(workflows.getState('acme/web')).toMatchObject({ reading: false, brokenCount: 1 });
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(workflows.totals).toEqual({ brokenCount: 1, hasNewBreak: true, hasUnread: false });
+});
+
+test('a first read cut short goes on from what it stored at the next poll, though nothing changed on GitHub', async () => {
+    const world = sampleWorld();
+    world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
+    const { session, tracking, workflows } = await setup(world);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(workflows.getReadProgress('acme/web')).toEqual({ read: 1, total: 2 });
+
+    world.failing.clear();
+    session.github.requests.length = 0;
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toContain(
+        `GET /repos/acme/web/actions/workflows/${CI}/runs branch=main per_page=10`,
+    );
+    expect(workflows.getReadProgress('acme/web')).toBeNull();
+    expect(stateOf(workflows, 'acme/web')).toEqual([
+        ['Deploy', 'broken'],
+        ['CI', 'passing'],
+        ['Retired', 'disabled'],
+    ]);
+    expect(workflows.get('acme/web')?.runsEtag).not.toBeNull();
+});
+
 test('a repository whose Actions GitHub refuses or turned off is said so without failing the loop, and asked again at every poll', async () => {
     const world = sampleWorld();
     world.actions.repository('acme/web').refusal = 403;

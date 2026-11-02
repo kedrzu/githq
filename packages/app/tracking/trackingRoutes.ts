@@ -13,7 +13,8 @@ export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
 /**
  * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`), its lists of
  * issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`) and its workflows (`/owner/name/actions`,
- * actions D6), all in one route. Its runs' pages under `actions/` are still handed off to GitHub.
+ * actions D6), all in one route. Its runs' pages under `actions/` are still handed off to GitHub, and so is the
+ * workflows' address of a repository not tracked (`middleware/auth.global.ts`, actions D4).
  */
 export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls|actions)?';
 

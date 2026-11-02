@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not, and `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`). Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
+<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not, and `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -30,6 +30,7 @@ import { buildRepositoryWorkflows } from '@/workflows/buildRepositoryWorkflows.j
 import RepositoryWorkflowsHints from '@/workflows/RepositoryWorkflowsHints.vue';
 import RepositoryWorkflowsTab from '@/workflows/RepositoryWorkflowsTab.vue';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
+import { WorkflowTabPlaces } from '@/workflows/WorkflowTabPlaces.js';
 
 import type { RepositoryListTexts, RepositoryState, RepositoryTab } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
@@ -54,10 +55,9 @@ const t = useTranslate();
 const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
+const workflowPlaces = useService(WorkflowTabPlaces);
 
 const state = ref<RepositoryState>('open');
-/** The workflow unfolded in the Workflows tab (actions W3b), which the toolbar's key hints follow; `null` with none. */
-const unfoldedWorkflow = ref<string | null>(null);
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
@@ -79,11 +79,11 @@ const kind = computed(() => (tab.value === 'workflows' ? 'all' : tab.value));
 const repositoryName = nameWithOwner.value;
 tabs.remember(repositoryName, tab.value);
 
-// Another repository's workflows have nothing unfolded.
-watch(nameWithOwner, () => {
-  unfoldedWorkflow.value = null;
+/** The workflow unfolded in the Workflows tab (actions W3b), which the toolbar's key hints follow; `null` with none. */
+const unfoldedWorkflow = computed({
+  get: () => workflowPlaces.get(repositoryName).unfolded,
+  set: (unfolded: string | null) => workflowPlaces.update(repositoryName, { unfolded }),
 });
-
 // Leaving, the address already names another repository or none, and this page's tab is not theirs.
 watch(tab, value => {
   if (nameWithOwner.value === repositoryName) {
@@ -182,6 +182,16 @@ const projectLinks = computed(() => {
 
 // The repository's page on GitHub is in the command menu too, named, as the screen is about it.
 useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
+
+// No longer tracked, here or elsewhere, its Workflows tab goes (actions D4): its other items stay on screen.
+watch(
+  () => tab.value === 'workflows' && nameWithOwner.value === repositoryName && tracking.loaded && !tracked.value,
+  leave => {
+    if (leave) {
+      tab.value = 'all';
+    }
+  },
+);
 
 // What the user may set here (labels, milestones, people) is read with the repository's permission.
 watch(

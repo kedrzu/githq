@@ -2,6 +2,8 @@ upToDate:
   en: Up to date
 checking:
   en: Checking…
+readingRuns:
+  en: Reading runs · {read} of {total} workflows
 asOf:
   en: As of {time}
 offline:

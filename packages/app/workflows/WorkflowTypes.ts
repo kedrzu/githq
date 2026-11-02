@@ -133,6 +133,14 @@ export interface WorkflowRowRef {
     readonly kind: RefKind;
 }
 
+/** How far the read of a repository's workflows' runs is: "2 of 6 workflows". */
+export interface WorkflowReadProgress {
+    /** The active workflows whose runs were read. */
+    readonly read: number;
+    /** Its active workflows. */
+    readonly total: number;
+}
+
 /** A repository's workflows' states, and what its sidebar marker and the total need. */
 export interface RepositoryWorkflowState {
     /**
@@ -142,6 +150,11 @@ export interface RepositoryWorkflowState {
     readonly status: 'unread' | 'unavailable' | 'read';
     /** Why GitHub shows nothing, while `unavailable`; `null` otherwise. */
     readonly unavailable: WorkflowsUnavailable | null;
+    /**
+     * Some active workflow's runs were never read while a ref counts: the workflows are listed, but what it counts may
+     * be short and nothing claims it healthy. `false` unless `read`.
+     */
+    readonly reading: boolean;
     /** In the stored order; empty unless `read`. */
     readonly workflows: readonly WorkflowState[];
     readonly brokenCount: number;
@@ -156,6 +169,11 @@ export interface RepositoryWorkflowState {
  */
 export type WorkflowRowStanding =
     | { readonly kind: 'pullRequestsOnly'; readonly failedCount: number }
-    | { readonly kind: 'noAlerts'; readonly ref: WorkflowRowRef; readonly alertsOff: boolean }
+    | {
+          readonly kind: 'noAlerts';
+          /** The ref its latest failure is on; `null` when GitHub names none. */
+          readonly ref: WorkflowRowRef | null;
+          readonly alertsOff: boolean;
+      }
     | { readonly kind: 'passing' }
     | { readonly kind: 'notKnown'; readonly reading: boolean };

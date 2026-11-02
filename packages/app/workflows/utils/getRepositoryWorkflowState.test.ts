@@ -16,6 +16,7 @@ test('a repository not read yet, or one GitHub shows nothing of, is neither heal
     expect(getRepositoryWorkflowState(undefined, DEFAULT_REFS, NOW)).toEqual({
         status: 'unread',
         unavailable: null,
+        reading: false,
         workflows: [],
         brokenCount: 0,
         hasNewBreak: false,

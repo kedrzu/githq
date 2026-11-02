@@ -8,6 +8,7 @@ import { getRunVerdict } from './utils/getRunVerdict.js';
 import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
 import { isPullRequestRun } from './utils/isPullRequestRun.js';
 import { isWorkflowAlertsOff } from './utils/isWorkflowAlertsOff.js';
+import { isWorkflowNeverRead } from './utils/isWorkflowNeverRead.js';
 import { sortRunsByCreation } from './utils/sortRunsByCreation.js';
 import type {
     RepositoryWorkflows,
@@ -27,6 +28,15 @@ export type RepositoryWorkflowGroupKind =
     | 'passing'
     | 'notKnown'
     | 'disabled';
+
+/** With alerts off the failures come first, as nothing else says them: nothing there is broken (actions W14). */
+const ALERTS_OFF_GROUP_ORDER: readonly RepositoryWorkflowGroupKind[] = [
+    'noAlerts',
+    'pullRequestsOnly',
+    'passing',
+    'notKnown',
+    'disabled',
+];
 
 const GROUP_ORDER: readonly RepositoryWorkflowGroupKind[] = [
     'broken',
@@ -102,7 +112,7 @@ export interface BuildRepositoryWorkflowsParams {
  * Every workflow of a repository, one row each, grouped for its Workflows tab (actions D7, W3a): broken ones (the
  * newest break first), those only pull requests ran (which never raise alerts), those failing only on refs without
  * alerts — the latest of their runs with a verdict, not started by a pull request, failed —, passing ones, those with
- * no verdict yet, and disabled ones; in GitHub's order within a group. A workflow GitHub generates is a row like any
+ * no verdict yet, and disabled ones; with alerts off, those failing come first (W14); in GitHub's order within a group. A workflow GitHub generates is a row like any
  * other (D9). While GitHub shows nothing of the repository, the rows last read stay (W3e).
  * @__NO_SIDE_EFFECTS__
  */
@@ -124,10 +134,12 @@ export function buildRepositoryWorkflows(params: BuildRepositoryWorkflowsParams)
         const entry = stored.workflows[index];
         return entry ? [placeWorkflow({ stored, entry, workflow, alertsOff })] : [];
     });
-    const groups = GROUP_ORDER.map((kind): RepositoryWorkflowGroup => {
-        const rows = placed.filter(row => row.group === kind).map(row => row.entry);
-        return { kind, rows: kind === 'broken' ? sortByBreak(rows) : rows };
-    }).filter(group => group.rows.length > 0);
+    const groups = (alertsOff ? ALERTS_OFF_GROUP_ORDER : GROUP_ORDER)
+        .map((kind): RepositoryWorkflowGroup => {
+            const rows = placed.filter(row => row.group === kind).map(row => row.entry);
+            return { kind, rows: kind === 'broken' ? sortByBreak(rows) : rows };
+        })
+        .filter(group => group.rows.length > 0);
     const reading = placed.some(row => row.entry.standing?.kind === 'notKnown' && row.entry.standing.reading);
 
     return {
@@ -201,8 +213,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
             return assertNever(workflow.state);
     }
 
-    // Never read: no run of it is known, nor that it has none.
-    if (runs.length === 0 && Object.keys(entry.etags).length === 0) {
+    if (isWorkflowNeverRead(entry)) {
         return {
             group: 'notKnown',
             entry: { ...row, standing: { kind: 'notKnown', reading: true }, gitRef: null, runs: [] },
@@ -223,7 +234,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
     const latest = ownRuns.findLast(run => getRunVerdict(run) !== null);
     const latestRef = getRowRef(stored, latest?.headBranch ?? null);
     // A failure on a ref with alerts would have broken it: the latest one failing is on a ref without.
-    if (latest && latestRef && getRunVerdict(latest) === 'failed') {
+    if (latest && getRunVerdict(latest) === 'failed') {
         return {
             group: 'noAlerts',
             entry: {
