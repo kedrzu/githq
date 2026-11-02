@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import type { StorybookConfig } from '@storybook/vue3-vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
@@ -17,7 +19,8 @@ const config: StorybookConfig = {
         },
     },
     // Storybook builds the app's components without Nuxt, so this repeats what Nuxt's Vite setup gives them:
-    // the Vue and Vue JSX plugins, the shared CSS options, the build-time constants and the `@` alias. The Vitest
+    // the Vue and Vue JSX plugins, the shared CSS options, the build-time constants, the `@` alias and Nuxt's
+    // components (`nuxtComponents.ts`). The Vitest
     // plugin (`vitest.config.ts`) takes its Vite config from here too.
     viteFinal: viteConfig =>
         mergeConfig(viteConfig, {
@@ -32,6 +35,7 @@ const config: StorybookConfig = {
             resolve: {
                 alias: {
                     '@': appPath,
+                    '#components': fileURLToPath(new URL('./nuxtComponents.ts', import.meta.url)),
                 },
             },
         }),

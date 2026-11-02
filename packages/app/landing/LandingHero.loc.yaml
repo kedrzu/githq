@@ -1,12 +1,13 @@
 headline:
   en: |-
-    Your GitHub issues,
-    at the speed of thought.
+    All your repositories
+    in one place.
+    No separate tracker.
 subhead:
-  en: githq is a keyboard-first task manager on top of GitHub Issues and Projects. Linear’s speed, GitHub’s data — free, open source, and nothing to keep in sync.
+  en: githq puts GitHub Issues, Projects, pull requests and Actions from every repository on one fast screen. The issue tracker you would pay for is already in your GitHub.
 reassuranceSetup:
   en: No install · No new tracker
 reassuranceStorage:
   en: Nothing stored outside GitHub
 heroAlt:
-  en: githq’s “My work” list, with the issues and pull requests that need you across GitHub.
+  en: githq’s “My work” across every repository, with the sidebar marking the repositories whose workflows are broken.

@@ -1,3 +1,4 @@
+import Beasties from 'beasties';
 import { defineNuxtConfig } from 'nuxt/config';
 
 import { cssOptions } from './viteShared.js';
@@ -24,6 +25,10 @@ const DESKTOP = TARGET === 'desktop';
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     compatibilityDate: '2024-11-01',
+    // The landing page's screenshots (`<NuxtImg>`), resized at prerender into `_ipx/` for the widths their `sizes`
+    // ask for. Every URL carries one modifier, the size (`s_1200x750`): no `quality` or `format`, as the sources
+    // are WebP already. Two would be joined by `&`, which Cloudflare's assets answer with a redirect to `%26`.
+    modules: ['@nuxt/image'],
     // Pinned instead of left to Nuxt's guess: Nuxt switches `srcDir` to `app/` as soon as that folder holds
     // anything besides `router.options.ts`.
     srcDir: '.',
@@ -103,10 +108,13 @@ export default defineNuxtConfig({
         hooks: DESKTOP
             ? {}
             : {
-                  // The landing page goes to `_landing.html`, leaving `index.html` to the shell.
-                  'prerender:generate'(route) {
+                  // The landing page goes to `_landing.html`, leaving `index.html` to the shell, with its critical CSS
+                  // inlined: the rules it uses go into the page, and its stylesheets load without blocking the
+                  // first paint (`media="print"` until loaded). The shell stays as it is.
+                  async 'prerender:generate'(route, nitro) {
                       if (route.route === '/') {
                           route.fileName = '/_landing.html';
+                          route.contents = await inlineCriticalCss(route.contents ?? '', nitro.options.publicAssets);
                       }
                   },
               },
@@ -138,6 +146,27 @@ export default defineNuxtConfig({
         },
     },
 });
+
+/**
+ * Inlines the CSS `html` uses (Beasties, the maintained fork of Critters). While Nitro prerenders, the client's
+ * files are not in the output yet: the stylesheets are read from the folder Nitro serves `/_nuxt` from.
+ */
+async function inlineCriticalCss(html: string, publicAssets: readonly { baseURL?: string; dir: string }[]) {
+    const assets = publicAssets.find(asset => asset.baseURL === '/_nuxt');
+    if (!assets) {
+        throw new Error('The client build (`/_nuxt`) is not among Nitro public assets: no critical CSS to inline');
+    }
+
+    const beasties = new Beasties({
+        path: assets.dir,
+        publicPath: '/_nuxt/',
+        preload: 'media',
+        inlineFonts: false,
+        preloadFonts: false,
+        logLevel: 'warn',
+    });
+    return await beasties.process(html);
+}
 
 function readTarget(value: string | undefined): 'desktop' | 'local' | 'production' {
     if (value === undefined || value === 'production' || value === 'local' || value === 'desktop') {

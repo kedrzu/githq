@@ -1,6 +1,6 @@
 # githq
 
-A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects — the Linear experience, free, with GitHub as the only backend.
+All your repositories in one place, no separate tracker: a fast, keyboard-first command center for GitHub Issues, Projects, pull requests and Actions across every repository — the Linear experience, free, with GitHub as the only backend. How we describe it: `docs/design/positioning/`.
 
 ## What this is
 
@@ -18,7 +18,7 @@ A fast, keyboard-first task manager on top of GitHub Issues and GitHub Projects 
 
 ## Status
 
-Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`.
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`.
 
 ## Stack & commands
 
@@ -49,6 +49,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
   against a mocked GitHub.
 - `bun run lint`, `bun run format`.
+- `bun run lighthouse [url]` — Lighthouse with PageSpeed Insights' settings (mobile and desktop, medians of 3 runs);
+  by default against `bun run preview` on 8787, or e.g. `https://githq.dev/`.
 
 `zsh setup.sh` prepares a checkout or worktree (Paseo runs it via `paseo.json`); until the first package exists it does no build.
 
