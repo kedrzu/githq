@@ -440,25 +440,29 @@ read like the folder icons; CR46)
 
 ## D28
 
-**A pending review shows four ways, all amber. On the review, a toolbar pinned to the foot of the file list's column:
-the count in bold, "3 pending comments", then "Others can't see them until you submit.", Submit… (⇧S), and Discard
-behind its ⋯ menu; there is no close button. The stack row of that pull request (and its square in the pinned bar)
-carries an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other
-state. In the app sidebar, "Unsent drafts" with a count at the very top, above My work, only while there is at least
-one, opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
-red.** (2026-11-03, owner: a toolbar at the foot of the file list's column; the wording states what is, without a
-negation in the title, and doesn't single out one person; CR35, CR36; lists and sidebar CR33, CR34)
+**A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,
+under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard… and
+Submit… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
+an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
+In the app sidebar, "Unsent drafts" with a count at the very top, above My work, only while there is at least one,
+opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
+red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation
+in the title, and doesn't single out one person; CR35, CR36; lists and sidebar CR33, CR34)
 
-**Why.** The left column has room the diff doesn't need, and at its foot the toolbar takes nothing from the stack or
-the filter and stays put while the list scrolls. Above My work because it is the one thing in the sidebar that blocks
-someone else.
+**Neither way out is one click.** Discard… opens a dialog in the middle of the screen naming the comments that go and
+that they can't be brought back; focus starts on Cancel, and only the red button or ⌘↵ deletes (owner, CR39). Submit…
+opens the submit dialog of [D33](#d33).
+
+**Why.** The diff column is wide enough for all of it in one row, and the toolbar exists only while a review is
+pending. Above My work because it is the one thing in the sidebar that blocks someone else.
 
 **Rejected.**
 
 - A strip across the review under the toolbar (CR30) — takes height from the code (owner).
 - The review's toolbar tinted amber (CR31) — ugly, and the toolbar's buttons look wrong on it (owner).
 - A bar floating over the diff (CR32) — covers the screen (owner).
-- A taller block at the foot or the top of the column (first CR35–CR38) — the owner chose a toolbar at the foot.
+- A block or a toolbar in the file list's column, at its foot or top (first CR35–CR38) — too narrow for one row; the
+  owner meant the diff column.
 - "Your draft review isn't sent" and "claude[bot] can't see them or reply" as the wording (owner).
 
 ## D29
@@ -502,9 +506,12 @@ submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
 **The comment box says in words what ⌘↵ will do, under the text ("Goes out at once, as a single comment. Your
 default, set in Settings."), and both buttons carry their label and key: Comment ⌘↵ / Start a review ⌘⇧↵, or Start a
 review ⌘↵ / Comment now ⌘⇧↵. With a draft open: Add to draft ⌘↵ / Submit draft (4 comments) ⌘⇧↵, and the line under
-the text, in amber, says a single comment isn't possible. Submitting opens a dialog over the review — summary, then
-Comment, Approve or Request changes on 1 2 3, the draft's comments listed — and a refused submission turns the pending
-toolbar red with GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76)
+the text, in amber, says a single comment isn't possible. Submitting opens a dialog in the middle of the screen: an
+optional comment, which goes on the pull request itself rather than on a file, then Comment (the default), Approve or
+Request changes on 1 2 3, the pending comments listed — and a refused submission turns the pending toolbar red with
+GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
+
+> **Checked 2026-11-02:** a review's own text goes in `submitPullRequestReview`'s body, per [D1](#d1)'s mutations; not tried live.
 
 **Why.** The two keys swap meaning with a setting and with a draft, so the screen has to say it every time.
 

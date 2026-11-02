@@ -189,7 +189,7 @@ In `githq.pen`, frame **"App · Code review"** (`CEDLB`). The numbers are the fr
 
 |Question|Answer in the frame|
 |-|-|
-|1. The open draft warning|A toolbar at the foot of the file list's column, in a stack and outside one: CR35, CR36; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
+|1. The open draft warning|A toolbar at the foot of the diff, in a stack and outside one: CR35, CR36; asking before discarding CR39 and before submitting CR75; the stack row's dot CR35; lists CR33; the sidebar entry and its list CR33, CR34|
 |2. The file list hidden, and how viewed shows|⌘B, as the conversation's ⌥⌘B: CR6, CR50; files indented under their folder, an eye after a viewed file's name: CR46|
 |3. Stack and file list together|The stack's rows on top of the file list: CR47; scrolled, a thin pinned bar and the filter under it: CR48|
 |4. Code shown out of place|The distance mark: CR11; a collapsed file with only its threads: CR12, expanded CR13|
@@ -210,6 +210,7 @@ Still open, not settled by the screens:
 - **The keys** D (open the review), N ⇧N (threads), C (comment), ⇧S (submit) and ⌘G (suggestion) are the agent's
   (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
+- **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
 - **Wording left as it was:** lists and the sidebar still say "Your draft review · 3 comments unsent" and "Unsent drafts" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72); the owner has only reworded the toolbar so far.
 - **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
   the drafts list (CR34) shows the pull requests themselves.
