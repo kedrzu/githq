@@ -59,3 +59,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   later → D19; agent's keys and landing confirmed → D16. Agent added root-only .gitattributes (D8) and dropping
   expanded context when a file changes (D14). README updated. Nothing open; proposing to close.
 - 2026-11-02 — Owner closed the design. Next on the owner's word: a UI brief for the design agent, then /dev:deliver.
+- 2026-11-02 — Owner asked for the UI brief and the merge: ui/review-a-pull-request.md and ui/design-agent-prompt.md written.

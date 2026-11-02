@@ -147,5 +147,5 @@ Applying suggestions, a combined diff across a stack (GitHub has none either), a
 
 ## Where this stands
 
-The design is closed, with nothing open. The screens have not been designed yet; reading, with the open-draft
+The design is closed, with nothing open. The screens are being designed from [the brief](ui/review-a-pull-request.md); reading, with the open-draft
 warnings, is built first.
