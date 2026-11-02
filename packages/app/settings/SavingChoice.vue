@@ -1,4 +1,4 @@
-<!-- The choice to save what is tracked to the user's GitHub account (settings-sync D2, D3; T3, G2): the checkbox and what it does, in Settings. Space or a click ticks it; `busy` shows it ticked and still while GitHub is asked; `disabled` keeps it still while what it started goes on. -->
+<!-- The choice to save what is tracked to the user's GitHub account (settings-sync D2, D3; T3, G2): the checkbox and what it does, in Settings. Space or a click ticks it; `busy` shows it ticked and still while GitHub is asked; `disabled` keeps it still while what it started goes on. Held still, it keeps its focus (`readonly`, not `disabled`): the screen it is on may stay. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { LoaderCircle } from 'lucide-vue-next';
@@ -26,7 +26,7 @@ const t = useTranslate();
   >
     <Checkbox
       v-model="model"
-      :disabled="busy || disabled"
+      :readonly="busy || disabled"
       :class="css.savingChoice_checkbox"
     >
       <span :class="css.savingChoice_label">{{ t(l.label) }}</span>

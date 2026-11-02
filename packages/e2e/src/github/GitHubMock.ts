@@ -132,6 +132,8 @@ export class GitHubPartialAnswer<TName extends GitHubOperationName> {
 const GRAPHQL_URL = 'https://api.github.com/graphql';
 const SEARCH_ISSUES_URL = 'https://api.github.com/search/issues';
 const API_HOST = 'api.github.com';
+/** The user's settings repository (`GET /repos/<login>/githq-settings`), which every first sign-in looks for. */
+const SETTINGS_REPOSITORY_PATH = /^\/repos\/[^/]+\/githq-settings$/;
 
 /** GitHub's hosts, subdomains included: nothing of the tests may reach them. */
 const GITHUB_HOSTS = ['github.com', 'githubusercontent.com', 'githubassets.com'];
@@ -175,7 +177,9 @@ const AVATAR_PNG = Buffer.from(
  * GitHub has said anything, as after a reload on a slow connection.
  *
  * Other REST endpoints — the conditional requests that poll tracked repositories and projects — are answered by
- * method and path ({@link rest}); one not registered is unrouted.
+ * method and path ({@link rest}); one not registered is unrouted. The settings repository, which every first
+ * sign-in looks for (`GET /repos/<login>/githq-settings`), is the exception: until a test registers it, there is none
+ * (404).
  *
  * To extend: a new GraphQL operation needs nothing here (its name and `data` type come from the generated SDK).
  */
@@ -389,7 +393,11 @@ export class GitHubMock {
             return;
         }
 
-        const rest = url.hostname === API_HOST ? this.restHandlers.get(`${method} ${url.pathname}`) : undefined;
+        const rest =
+            url.hostname === API_HOST
+                ? (this.restHandlers.get(`${method} ${url.pathname}`) ??
+                  (method === 'GET' && SETTINGS_REPOSITORY_PATH.test(url.pathname) ? answerNoRepository : undefined))
+                : undefined;
         if (rest) {
             const request = route.request();
             const ifNoneMatch = (await request.allHeaders())['if-none-match'] ?? null;
@@ -550,4 +558,9 @@ function parseJson(text: string | null): unknown {
     } catch {
         return undefined;
     }
+}
+
+/** No such repository, as GitHub answers it. */
+function answerNoRepository(): GitHubRestAnswer {
+    return { status: 404, json: { message: 'Not Found' } };
 }

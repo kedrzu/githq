@@ -13,7 +13,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
-import { readSettingsSaving } from './SettingsSaving.js';
+import { getUntoldStop, readSettingsSaving } from './SettingsSaving.js';
 import type { SettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
@@ -73,6 +73,55 @@ test('first contact keeps what either side tracks, and what the file untracked e
     expect(tracking.repositories).toEqual([DOCS, WEB]);
     expect(github.file?.text).toBe(serializeSettings(merged));
     expect(sync.state).toMatchObject({ state: 'on', base: merged, sha: github.file?.sha });
+});
+
+test('settings found count as the choice made as soon as they are taken in: a reload before GitHub answers finds it made, and syncing on', async () => {
+    const { session, tracking, sync, github, login } = await open();
+    github.repository = { private: true };
+    const saved = documentOf([{ ...DOCS, tracking: true }]);
+    github.writeFile(saved);
+    const found = await inspectUsable(sync);
+    expect(tracking.chosen).toBe(false);
+
+    const turningOn = sync.turnOn(found);
+    expect(JSON.parse(session.localStorage.get(`githq.settings.${login}`) ?? 'null')).toMatchObject({
+        chosen: true,
+        document: saved,
+        saving: { state: 'on', base: saved },
+    });
+    await turningOn;
+
+    expect(tracking.chosen).toBe(true);
+    expect(tracking.repositories).toEqual([DOCS]);
+});
+
+test('settings found are not taken in, nor the choice made, while syncing is not off', async () => {
+    const { tracking, sync, github } = await open();
+    github.repository = { private: true };
+    github.writeFile(documentOf([{ ...DOCS, tracking: true }]));
+    const found = await inspectUsable(sync);
+    tracking.saveSaving({ state: 'stopped', reason: { kind: 'deleted' } });
+
+    await sync.turnOn(found);
+
+    expect(tracking.chosen).toBe(false);
+    expect(tracking.repositories).toEqual([]);
+    expect(sync.state).toEqual({ state: 'stopped', reason: { kind: 'deleted' } });
+});
+
+test('turned on twice at once, the repository is created once: the second creation, refused as already there, leaves syncing on', async () => {
+    const { session, tracking, sync, github } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+    const inspection = await inspectUsable(sync);
+
+    const turningOn = Promise.all([sync.turnOn(inspection), sync.turnOn(inspection)]);
+    await session.clock.advance(1000);
+    await turningOn;
+    await session.clock.advance(0);
+
+    expect(rest(session.operations()).filter(operation => operation === 'POST /user/repos')).toHaveLength(2);
+    expect(github.file && parseSettings(github.file.text)).toEqual({ kind: 'ok', document: tracking.document });
+    expect(sync.state).toMatchObject({ state: 'on', sha: github.file?.sha });
 });
 
 test.each([
@@ -501,6 +550,54 @@ test("a file found for a user who signed out since is not combined into the next
     expect(writes(session.operations())).toEqual([]);
 });
 
+test('a stop is told once (T9): remembered across a reload, told again for another reason or after syncing went on', async () => {
+    const { session, tracking, sync, github, login } = await turnedOn();
+    github.repository = null;
+    github.file = null;
+    session.setVisible(true);
+    await session.clock.advance(0);
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'deleted' });
+
+    sync.markTold();
+    expect(getUntoldStop(sync.state)).toBeNull();
+
+    // The same reason found again on trying again: still told.
+    await sync.retry();
+    expect(sync.state).toMatchObject({ state: 'stopped', reason: { kind: 'deleted' }, told: 'deleted' });
+    expect(getUntoldStop(sync.state)).toBeNull();
+
+    // A reload remembers it.
+    const reloaded = await open(login, session.localStorage);
+    expect(reloaded.sync.state).toMatchObject({ state: 'stopped', told: 'deleted' });
+
+    // Another reason: told again.
+    github.repository = { private: false };
+    await sync.retry();
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'public' });
+    sync.markTold();
+
+    // On again, and stopped again for the first reason: a new stop, told again.
+    github.repository = { private: true };
+    github.writeFile(tracking.document);
+    await sync.retry();
+    expect(sync.state).toMatchObject({ state: 'on' });
+    github.repository = null;
+    github.file = null;
+    session.setVisible(true);
+    await session.clock.advance(0);
+    expect(getUntoldStop(sync.state)).toEqual({ kind: 'deleted' });
+});
+
+test('telling is not remembered while syncing is on or off', async () => {
+    const { sync } = await turnedOn();
+    sync.markTold();
+    expect(sync.state).not.toHaveProperty('told');
+
+    sync.turnOff();
+    sync.markTold();
+    expect(sync.state).toEqual({ state: 'off', repositoryLeft: true });
+});
+
 test('the slot of an earlier build, stopped with an ETag kept, is read without it', () => {
     expect(
         readSettingsSaving({
@@ -545,10 +642,12 @@ interface SettingsGitHub {
     writeFile(content: SettingsDocument | string): void;
 }
 
-async function open(login = `user-${crypto.randomUUID()}`) {
+/** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
+async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);
     const session = createTestSession({
         login,
+        localStorage,
         answer: () => undefined,
         answerRest: request => github.answer(request),
     });
@@ -617,6 +716,10 @@ function createSettingsGitHub(login: string) {
             case 'POST /user/repos':
                 if (state.refuseCreate !== null) {
                     return { status: 422, body: { message: state.refuseCreate } };
+                }
+
+                if (state.repository) {
+                    return { status: 422, body: { message: 'name already exists on this account' } };
                 }
 
                 state.repository = { private: true, empty: true };

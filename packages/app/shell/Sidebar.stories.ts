@@ -1,7 +1,7 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 import { defineComponent, h } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -103,6 +103,18 @@ export const LongLogin: Story = {
     args: { viewer: { ...SAMPLE_VIEWER, login: 'a-very-long-login-that-the-sidebar-cannot-hold-whole' } },
 };
 
+/**
+ * Syncing the settings stopped (settings-sync T9, T10): an amber dot on the avatar, and the menu's Settings row says
+ * so and opens Saving to GitHub. The address it went to is on the wrapper's `data-route`.
+ */
+export const SyncStopped: Story = { args: { settingsSyncStopped: true }, decorators: [showingRoute()] };
+
+/** The same on the rail. */
+export const CollapsedSyncStopped: Story = {
+    args: { collapsed: true, settingsSyncStopped: true },
+    decorators: [showingRoute()],
+};
+
 /** On a tracked repository's list of issues (`/kedrzu/githq/issues`): its row is still the current one. */
 export const OnRepositoryIssues: Story = { decorators: [onPage('/kedrzu/githq/issues')] };
 
@@ -155,6 +167,19 @@ export const CollapsedNothingTracked: Story = {
 };
 
 /** A decorator opening the story at an address. */
+/** The story's address, on a wrapper's `data-route`, for a spec to see where a link or menu item went. */
+function showingRoute(): Decorator {
+    return story => {
+        const Story = story();
+        return defineComponent({
+            setup: () => {
+                const route = useRoute();
+                return () => h('div', { 'data-route': route.fullPath, style: { display: 'contents' } }, [h(Story)]);
+            },
+        });
+    };
+}
+
 function onPage(path: string): Decorator {
     return story => {
         const Story = story();

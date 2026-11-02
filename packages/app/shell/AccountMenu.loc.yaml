@@ -1,8 +1,12 @@
 accountMenu:
   en: 'Account: {login}'
+accountMenuSyncStopped:
+  en: 'Account: {login} · syncing stopped'
 signedInAs:
   en: Signed in as {login}
 settings:
   en: Settings
 signOut:
   en: Sign out
+syncStopped:
+  en: Syncing stopped

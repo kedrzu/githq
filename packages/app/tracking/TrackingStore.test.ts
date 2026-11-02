@@ -181,6 +181,21 @@ test('a tab that has not heard of another tab’s change yet writes on top of it
     });
 });
 
+test('settings loaded instead of choosing count as the choice, what they track kept as it is', async () => {
+    const { tracking, localStorage, login } = await open();
+    const loaded: SettingsDocument = { version: 1, repositories: [{ ...API, tracking: true }], projects: [] };
+    tracking.replaceDocument(loaded);
+    expect(tracking.chosen).toBe(false);
+
+    tracking.markChosen();
+    expect(tracking.chosen).toBe(true);
+    expect(tracking.document).toEqual(loaded);
+    expect(JSON.parse(localStorage.get(`githq.settings.${login}`) ?? 'null')).toMatchObject({
+        chosen: true,
+        document: loaded,
+    });
+});
+
 test('signing out deletes the kept choice', async () => {
     const { tracking, session, localStorage, login } = await open();
     tracking.choose({ repositories: [WEB], projects: [] });

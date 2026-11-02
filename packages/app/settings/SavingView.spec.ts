@@ -72,8 +72,11 @@ test('while combining, the box cannot be unticked', async () => {
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     expect(combine).toHaveBeenCalledOnce();
-    await expect.element(page.getByRole('checkbox', { name: CHOICE })).toBeDisabled();
+    const choice = page.getByRole('checkbox', { name: CHOICE });
+    await expect.element(choice).toHaveAttribute('aria-readonly', 'true');
     await expect.element(page.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await userEvent.click(choice);
+    await expect.element(choice).toBeChecked();
 });
 
 test('a file found while saving is no longer off: ⌘↵ and Esc do nothing', async () => {

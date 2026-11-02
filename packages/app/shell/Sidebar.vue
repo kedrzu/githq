@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — and the tracked projects and repositories in the user's order — a private repository with a lock — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -78,6 +78,8 @@ const props = defineProps<{
   counts?: MyWorkCounts | null;
   /** The tracked projects and repositories; none when not given. */
   tracked?: SidebarTracked;
+  /** Syncing the settings stopped (settings-sync T9, T10): the user's avatar and menu say so. */
+  settingsSyncStopped?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -287,6 +289,7 @@ function getProjectMark(title: string) {
 
       <AccountMenu
         :viewer="viewer"
+        :settings-sync-stopped="settingsSyncStopped"
         @sign-out="emit('signOut')"
       />
     </template>
@@ -369,6 +372,7 @@ function getProjectMark(title: string) {
 
       <AccountMenu
         :viewer="viewer"
+        :settings-sync-stopped="settingsSyncStopped"
         compact
         @sign-out="emit('signOut')"
       />

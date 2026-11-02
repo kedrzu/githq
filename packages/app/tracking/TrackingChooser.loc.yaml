@@ -1,7 +1,7 @@
 title:
   en: Which of these do you work on?
 subtitle:
-  en: githq copies what you pick in full, including other people's issues. Issues and pull requests that concern you come along anyway, from any repository. You can change this any time.
+  en: githq copies what you pick in full, including other people's issues. Issues and pull requests that concern you come along anyway, from any repository. You can change this any time in Settings.
 owners:
   en: Owners
 allOwners:
@@ -107,6 +107,8 @@ summaryDetail:
     zero: nothing to copy but what concerns you
     one: 1 open issue or pull request first, closed ones after
     many: '{count} open issues and pull requests first, closed ones after'
+summaryThenCreates:
+  en: '{detail} · then creates {repository}'
 onlyMine:
   en: Only my repositories
 track:
