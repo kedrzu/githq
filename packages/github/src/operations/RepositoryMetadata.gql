@@ -1,6 +1,6 @@
-# What the pickers of a repository offer, and what the viewer may edit there (D14), read when a picker or an item
-# of the repository opens. Labels and assignable users beyond the first 100 are read with `RepositoryLabels` and
-# `RepositoryAssignableUsers`.
+# What the pickers of a repository offer, what the viewer may edit there (D14) and how its pull requests merge,
+# read when a picker or an item of the repository opens. Labels and assignable users beyond the first 100 are read
+# with `RepositoryLabels` and `RepositoryAssignableUsers`.
 query RepositoryMetadata($owner: String!, $name: String!) {
     repository(owner: $owner, name: $name) {
         id
@@ -8,6 +8,15 @@ query RepositoryMetadata($owner: String!, $name: String!) {
         viewerPermission
         isArchived
         hasIssuesEnabled
+        # How its pull requests may be merged, and the viewer's choices last time (the merge panel's defaults).
+        mergeCommitAllowed
+        squashMergeAllowed
+        rebaseMergeAllowed
+        viewerDefaultMergeMethod
+        autoMergeAllowed
+        deleteBranchOnMerge
+        viewerDefaultCommitEmail
+        viewerPossibleCommitEmails
         labels(first: 100, orderBy: { field: NAME, direction: ASC }) {
             pageInfo {
                 hasNextPage

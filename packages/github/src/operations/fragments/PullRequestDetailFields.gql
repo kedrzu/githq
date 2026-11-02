@@ -22,31 +22,7 @@ fragment PullRequestDetailFields on PullRequest {
         contextPage: contexts(first: 100) {
             totalCount
             nodes {
-                ... on CheckRun {
-                    __typename
-                    id
-                    name
-                    status
-                    conclusion
-                    detailsUrl
-                    startedAt
-                    completedAt
-                    checkSuite {
-                        workflowRun {
-                            workflow {
-                                name
-                            }
-                        }
-                    }
-                }
-                ... on StatusContext {
-                    __typename
-                    id
-                    context
-                    state
-                    targetUrl
-                    createdAt
-                }
+                ...PullRequestCheckFields
             }
         }
     }

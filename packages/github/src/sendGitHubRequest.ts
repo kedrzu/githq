@@ -70,6 +70,7 @@ export async function sendGitHubRequest(
             githubMessage,
             errors: readGitHubErrors(payload),
             retryAfter,
+            body: payload,
         });
     }
 

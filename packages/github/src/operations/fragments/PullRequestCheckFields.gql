@@ -1,0 +1,29 @@
+# One check of a pull request's head commit as the opened item lists it, shared by `PullRequestDetailFields` and
+# `PullRequestMergeOptions` so both map it the same way.
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+    ... on CheckRun {
+        __typename
+        id
+        name
+        status
+        conclusion
+        detailsUrl
+        startedAt
+        completedAt
+        checkSuite {
+            workflowRun {
+                workflow {
+                    name
+                }
+            }
+        }
+    }
+    ... on StatusContext {
+        __typename
+        id
+        context
+        state
+        targetUrl
+        createdAt
+    }
+}

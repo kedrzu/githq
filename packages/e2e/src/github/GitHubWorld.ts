@@ -714,6 +714,14 @@ export class GitHubWorld {
                     viewerPermission: repository.viewerPermission,
                     isArchived: repository.isArchived,
                     hasIssuesEnabled: !repository.issuesDisabled,
+                    mergeCommitAllowed: true,
+                    squashMergeAllowed: true,
+                    rebaseMergeAllowed: true,
+                    viewerDefaultMergeMethod: 'MERGE',
+                    autoMergeAllowed: false,
+                    deleteBranchOnMerge: false,
+                    viewerDefaultCommitEmail: null,
+                    viewerPossibleCommitEmails: [],
                     labels: {
                         pageInfo: LAST_PAGE,
                         nodes: repository.labels.map(label => ({
@@ -1772,6 +1780,7 @@ export class GitHubWorld {
             latestOpinionatedReviews: { nodes: [] },
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
+            headRefOid: toHeadRefOid(item),
             baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : BASE_OID,
             baseRef: { target: { oid: BASE_OID } },
             additions: 12 * item.number,
@@ -2209,6 +2218,11 @@ function parseCursor(value: unknown): number | undefined {
 /** The branch a pull request of the world is opened from. */
 function toHeadRefName(item: WorldItem) {
     return `change-${item.number}`;
+}
+
+/** The head commit of a pull request: one of its own, so a merge naming another one can be told apart. */
+function toHeadRefOid(item: WorldItem) {
+    return item.number.toString(16).padStart(40, 'f');
 }
 
 function slug(text: string) {

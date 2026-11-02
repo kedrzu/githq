@@ -601,6 +601,14 @@ function repositoryMetadata(): RepositoryMetadataQuery {
             viewerPermission: null,
             isArchived: false,
             hasIssuesEnabled: true,
+            mergeCommitAllowed: true,
+            squashMergeAllowed: true,
+            rebaseMergeAllowed: true,
+            viewerDefaultMergeMethod: 'MERGE',
+            autoMergeAllowed: false,
+            deleteBranchOnMerge: false,
+            viewerDefaultCommitEmail: null,
+            viewerPossibleCommitEmails: [],
             labels: {
                 pageInfo: { hasNextPage: false, endCursor: null },
                 nodes: [

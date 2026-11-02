@@ -917,6 +917,7 @@ function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragme
         reviewDecision: 'REVIEW_REQUIRED',
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'BLOCKED',
+        headRefOid: 'head-oid',
         createdAt: MONDAY,
         updatedAt,
         closedAt: null,

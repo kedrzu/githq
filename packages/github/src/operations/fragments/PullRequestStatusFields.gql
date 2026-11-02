@@ -19,6 +19,8 @@ fragment PullRequestStatusFields on PullRequest {
     stackEntry {
         position
     }
+    # The commit a merge names (`sha`), so GitHub refuses it when the head moved since.
+    headRefOid
     baseRefOid
     baseRef {
         target {

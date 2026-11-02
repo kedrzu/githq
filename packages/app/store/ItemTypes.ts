@@ -82,6 +82,8 @@ export interface PullRequestStatus {
     readonly reviewDecision: PullRequestReviewDecision | null;
     readonly mergeable: MergeableState;
     readonly mergeStateStatus: MergeStateStatus;
+    /** The head commit: a merge names it, so GitHub refuses the merge once the branch moved since. */
+    readonly headRefOid: string;
     /** `null` when nothing runs on the head commit. */
     readonly checks: ItemChecks | null;
     readonly reviewRequests: readonly ItemReviewRequest[];

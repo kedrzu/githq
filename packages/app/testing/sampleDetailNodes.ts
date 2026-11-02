@@ -54,6 +54,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         reviewDecision: 'REVIEW_REQUIRED',
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'BLOCKED',
+        headRefOid: 'head-oid',
         createdAt: '2026-10-01T10:00:00Z',
         updatedAt,
         closedAt: null,

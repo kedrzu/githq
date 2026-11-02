@@ -55,6 +55,7 @@ export function samplePullRequest(id: string): PullRequestItem {
         reviewDecision: null,
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'CLEAN',
+        headRefOid: 'head-oid',
         checks: null,
         reviewRequests: [],
         latestReviews: [],

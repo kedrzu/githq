@@ -1,0 +1,56 @@
+# What the merge panel of a pull request needs, read fresh when it opens: the status, the texts GitHub proposes
+# for the commit, what the base branch's rulesets and protection allow, and the checks with which of them are
+# required. `branchProtectionRule` is unreadable without admin rights: read with partial errors allowed.
+query PullRequestMergeOptions($id: ID!) {
+    node(id: $id) {
+        ... on PullRequest {
+            ...PullRequestStatusFields
+            baseRefName
+            mergeHeadline: viewerMergeHeadlineText(mergeType: MERGE)
+            mergeBody: viewerMergeBodyText(mergeType: MERGE)
+            squashHeadline: viewerMergeHeadlineText(mergeType: SQUASH)
+            squashBody: viewerMergeBodyText(mergeType: SQUASH)
+            viewerCanMergeAsAdmin
+            viewerCanEnableAutoMerge
+            isMergeQueueEnabled
+            baseRef {
+                rules(first: 50) {
+                    nodes {
+                        type
+                        parameters {
+                            ... on PullRequestParameters {
+                                allowedMergeMethods
+                            }
+                        }
+                    }
+                }
+                branchProtectionRule {
+                    requiresLinearHistory
+                }
+            }
+            statusCheckRollup {
+                # Aliased: the status's `contexts` reads only the counts.
+                contextPage: contexts(first: 100) {
+                    totalCount
+                    nodes {
+                        ...PullRequestCheckFields
+                        ... on CheckRun {
+                            isRequired(pullRequestId: $id)
+                            checkSuite {
+                                app {
+                                    slug
+                                }
+                                workflowRun {
+                                    databaseId
+                                }
+                            }
+                        }
+                        ... on StatusContext {
+                            isRequired(pullRequestId: $id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

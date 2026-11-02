@@ -256,6 +256,24 @@ export type ProjectV2ViewLayout =
     /** Table layout */
     | 'TABLE_LAYOUT';
 
+/** Array of allowed merge methods. Allowed values include `merge`, `squash`, and `rebase`. At least one option must be enabled. */
+export type PullRequestAllowedMergeMethods =
+    /** Add all commits from the head branch to the base branch with a merge commit. */
+    | 'MERGE'
+    /** Add all commits from the head branch onto the base branch individually. */
+    | 'REBASE'
+    /** Combine all commits from the head branch into a single commit in the base branch. */
+    | 'SQUASH';
+
+/** Represents available types of methods to use when merging a pull request. */
+export type PullRequestMergeMethod =
+    /** Add all commits from the head branch to the base branch with a merge commit. */
+    | 'MERGE'
+    /** Add all commits from the head branch onto the base branch individually. */
+    | 'REBASE'
+    /** Combine all commits from the head branch into a single commit in the base branch. */
+    | 'SQUASH';
+
 /** The review status of a pull request. */
 export type PullRequestReviewDecision =
     /** The pull request has received an approving review. */
@@ -323,6 +341,105 @@ export type RepositoryPermission =
     | 'TRIAGE_PLUS'
     /** Can read, clone, and push to this repository. Can also manage issues and pull requests */
     | 'WRITE';
+
+/** The rule types supported in rulesets */
+export type RepositoryRuleType =
+    /** Authorization */
+    | 'AUTHORIZATION'
+    /** Branch name pattern */
+    | 'BRANCH_NAME_PATTERN'
+    /**
+     * Enforce minimum line coverage thresholds on pull requests. This rule evaluates
+     * uploaded coverage data but does not wait for coverage uploads. To ensure
+     * coverage is evaluated before merging, make each status check associated with a
+     * coverage upload a required status check.
+     */
+    | 'CODE_COVERAGE'
+    /**
+     * Choose which severity levels of code quality results should block pull request
+     * merges. When configured, a code quality analysis must be done on the pull
+     * request before the changes can be merged.
+     */
+    | 'CODE_QUALITY'
+    /**
+     * Choose which tools must provide code scanning results before the reference is
+     * updated. When configured, code scanning must be enabled and have results for
+     * both the commit and the reference being updated.
+     */
+    | 'CODE_SCANNING'
+    /** Committer email pattern */
+    | 'COMMITTER_EMAIL_PATTERN'
+    /** Commit author email pattern */
+    | 'COMMIT_AUTHOR_EMAIL_PATTERN'
+    /** Commit message pattern */
+    | 'COMMIT_MESSAGE_PATTERN'
+    /**
+     * Request Copilot code review for new pull requests automatically if the author
+     * has access to Copilot code review and AI credits.
+     */
+    | 'COPILOT_CODE_REVIEW'
+    /** Only allow users with bypass permission to create matching refs. */
+    | 'CREATION'
+    /** Only allow users with bypass permissions to delete matching refs. */
+    | 'DELETION'
+    /** Prevent commits that include files with specified file extensions from being pushed to the commit graph. */
+    | 'FILE_EXTENSION_RESTRICTION'
+    /**
+     * Prevent commits that include changes in specified file and folder paths from
+     * being pushed to the commit graph. This includes absolute paths that contain file names.
+     */
+    | 'FILE_PATH_RESTRICTION'
+    /** Enforce any added or changed dependencies to comply with the organization's license policy. */
+    | 'LICENSE_COMPLIANCE_SCANNING'
+    /** Branch is read-only. Users cannot push to the branch. */
+    | 'LOCK_BRANCH'
+    /** Prevent commits that include file paths that exceed the specified character limit from being pushed to the commit graph. */
+    | 'MAX_FILE_PATH_LENGTH'
+    /** Prevent commits with individual files that exceed the specified limit from being pushed to the commit graph. */
+    | 'MAX_FILE_SIZE'
+    /** Max ref updates */
+    | 'MAX_REF_UPDATES'
+    /** Merges must be performed via a merge queue. */
+    | 'MERGE_QUEUE'
+    /** Merge queue locked ref */
+    | 'MERGE_QUEUE_LOCKED_REF'
+    /** Prevent users with push access from force pushing to refs. */
+    | 'NON_FAST_FORWARD'
+    /** Require all commits be made to a non-target branch and submitted via a pull request before they can be merged. */
+    | 'PULL_REQUEST'
+    /** Choose which environments must be successfully deployed to before refs can be pushed into a ref that matches this rule. */
+    | 'REQUIRED_DEPLOYMENTS'
+    /** Prevent merge commits from being pushed to matching refs. */
+    | 'REQUIRED_LINEAR_HISTORY'
+    /**
+     * When enabled, all conversations on code must be resolved before a pull request
+     * can be merged into a branch that matches this rule.
+     */
+    | 'REQUIRED_REVIEW_THREAD_RESOLUTION'
+    /** Commits pushed to matching refs must have verified signatures. */
+    | 'REQUIRED_SIGNATURES'
+    /**
+     * Choose which status checks must pass before the ref is updated. When enabled,
+     * commits must first be pushed to another ref where the checks pass.
+     */
+    | 'REQUIRED_STATUS_CHECKS'
+    /**
+     * Require all commits be made to a non-target branch and submitted via a pull
+     * request and required workflow checks to pass before they can be merged.
+     */
+    | 'REQUIRED_WORKFLOW_STATUS_CHECKS'
+    /** Secret scanning */
+    | 'SECRET_SCANNING'
+    /** Tag */
+    | 'TAG'
+    /** Tag name pattern */
+    | 'TAG_NAME_PATTERN'
+    /** Only allow users with bypass permission to update matching refs. */
+    | 'UPDATE'
+    /** Require all changes made to a targeted branch to pass the specified workflows before they can be merged. */
+    | 'WORKFLOWS'
+    /** Workflow files cannot be modified. */
+    | 'WORKFLOW_UPDATES';
 
 /** The possible commit status states. */
 export type StatusState =
@@ -592,6 +709,7 @@ export type ItemDetailQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
               reactionGroups: Array<{
                   content: ReactionContent;
@@ -1075,6 +1193,7 @@ export type ItemDetailsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
               reactionGroups: Array<{
                   content: ReactionContent;
@@ -1385,6 +1504,7 @@ export type ItemsByIdsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
               author:
                   | { login: string; avatarUrl: string }
@@ -1770,6 +1890,7 @@ export type ProjectFullQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                headRefOid: string;
                                 baseRefOid: string;
                                 author:
                                     | { login: string; avatarUrl: string }
@@ -2005,6 +2126,7 @@ export type ProjectItemsQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                headRefOid: string;
                                 baseRefOid: string;
                                 author:
                                     | { login: string; avatarUrl: string }
@@ -2242,6 +2364,110 @@ export type ProjectUpdatedAtQueryVariables = Exact<{
 
 export type ProjectUpdatedAtQuery = { node: { updatedAt: string } | Record<PropertyKey, never> | null };
 
+export type PullRequestMergeOptionsQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type PullRequestMergeOptionsQuery = {
+    node:
+        | {
+              __typename: 'PullRequest';
+              baseRefName: string;
+              viewerCanMergeAsAdmin: boolean;
+              viewerCanEnableAutoMerge: boolean;
+              isMergeQueueEnabled: boolean;
+              id: string;
+              updatedAt: string;
+              state: PullRequestState;
+              isDraft: boolean;
+              merged: boolean;
+              reviewDecision: PullRequestReviewDecision | null;
+              mergeable: MergeableState;
+              mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
+              baseRefOid: string;
+              mergeHeadline: string;
+              mergeBody: string;
+              squashHeadline: string;
+              squashBody: string;
+              baseRef: {
+                  rules: {
+                      nodes: Array<{
+                          type: RepositoryRuleType;
+                          parameters:
+                              | { allowedMergeMethods: Array<PullRequestAllowedMergeMethods> | null }
+                              | Record<PropertyKey, never>
+                              | null;
+                      } | null> | null;
+                  } | null;
+                  branchProtectionRule: { requiresLinearHistory: boolean } | null;
+                  target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
+              } | null;
+              statusCheckRollup: {
+                  state: StatusState;
+                  contextPage: {
+                      totalCount: number;
+                      nodes: Array<
+                          | {
+                                __typename: 'CheckRun';
+                                isRequired: boolean;
+                                id: string;
+                                name: string;
+                                status: CheckStatusState;
+                                conclusion: CheckConclusionState | null;
+                                detailsUrl: string | null;
+                                startedAt: string | null;
+                                completedAt: string | null;
+                                checkSuite: {
+                                    app: { slug: string } | null;
+                                    workflowRun: { databaseId: number | null; workflow: { name: string } } | null;
+                                };
+                            }
+                          | {
+                                __typename: 'StatusContext';
+                                isRequired: boolean;
+                                id: string;
+                                context: string;
+                                state: StatusState;
+                                targetUrl: string | null;
+                                createdAt: string;
+                            }
+                          | null
+                      > | null;
+                  };
+                  contexts: {
+                      checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
+                      statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
+                  };
+              } | null;
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              reviewRequests: {
+                  nodes: Array<{
+                      requestedReviewer:
+                          | { slug: string; name: string }
+                          | { login: string }
+                          | Record<PropertyKey, never>
+                          | null;
+                  } | null> | null;
+              } | null;
+              latestOpinionatedReviews: {
+                  nodes: Array<{
+                      state: PullRequestReviewState;
+                      author:
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | null;
+                  } | null> | null;
+              } | null;
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type PullRequestStacksQueryVariables = Exact<{
     ids: Array<string> | string;
     first: number;
@@ -2274,6 +2500,7 @@ export type PullRequestStacksQuery = {
                           reviewDecision: PullRequestReviewDecision | null;
                           mergeable: MergeableState;
                           mergeStateStatus: MergeStateStatus;
+                          headRefOid: string;
                           baseRefOid: string;
                           author:
                               | { login: string; avatarUrl: string }
@@ -2367,6 +2594,7 @@ export type PullRequestStatusesQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
@@ -2570,6 +2798,14 @@ export type RepositoryMetadataQuery = {
         viewerPermission: RepositoryPermission | null;
         isArchived: boolean;
         hasIssuesEnabled: boolean;
+        mergeCommitAllowed: boolean;
+        squashMergeAllowed: boolean;
+        rebaseMergeAllowed: boolean;
+        viewerDefaultMergeMethod: PullRequestMergeMethod;
+        autoMergeAllowed: boolean;
+        deleteBranchOnMerge: boolean;
+        viewerDefaultCommitEmail: string | null;
+        viewerPossibleCommitEmails: Array<string> | null;
         labels: {
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
             nodes: Array<{ id: string; name: string; color: string; description: string | null } | null> | null;
@@ -2627,6 +2863,7 @@ export type RepositoryPullRequestsQuery = {
                 reviewDecision: PullRequestReviewDecision | null;
                 mergeable: MergeableState;
                 mergeStateStatus: MergeStateStatus;
+                headRefOid: string;
                 baseRefOid: string;
                 author:
                     | { login: string; avatarUrl: string }
@@ -3633,6 +3870,7 @@ export type ProjectItemPageFieldsFragment = {
                   reviewDecision: PullRequestReviewDecision | null;
                   mergeable: MergeableState;
                   mergeStateStatus: MergeStateStatus;
+                  headRefOid: string;
                   baseRefOid: string;
                   author:
                       | { login: string; avatarUrl: string }
@@ -3842,6 +4080,7 @@ export type ProjectItemRowFieldsFragment = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
               author:
                   | { login: string; avatarUrl: string }
@@ -4058,6 +4297,31 @@ export type ProjectViewFieldsFragment = {
     } | null;
 };
 
+type PullRequestCheckFields_CheckRun_Fragment = {
+    __typename: 'CheckRun';
+    id: string;
+    name: string;
+    status: CheckStatusState;
+    conclusion: CheckConclusionState | null;
+    detailsUrl: string | null;
+    startedAt: string | null;
+    completedAt: string | null;
+    checkSuite: { workflowRun: { workflow: { name: string } } | null };
+};
+
+type PullRequestCheckFields_StatusContext_Fragment = {
+    __typename: 'StatusContext';
+    id: string;
+    context: string;
+    state: StatusState;
+    targetUrl: string | null;
+    createdAt: string;
+};
+
+export type PullRequestCheckFieldsFragment =
+    | PullRequestCheckFields_CheckRun_Fragment
+    | PullRequestCheckFields_StatusContext_Fragment;
+
 export type PullRequestDetailFieldsFragment = {
     __typename: 'PullRequest';
     body: string;
@@ -4080,6 +4344,7 @@ export type PullRequestDetailFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
     reactionGroups: Array<{
         content: ReactionContent;
@@ -4324,6 +4589,7 @@ export type PullRequestFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
     author:
         | { login: string; avatarUrl: string }
@@ -4402,6 +4668,7 @@ export type PullRequestStatusFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
@@ -4635,6 +4902,7 @@ export type AddDraftIssueMutation = {
                       reviewDecision: PullRequestReviewDecision | null;
                       mergeable: MergeableState;
                       mergeStateStatus: MergeStateStatus;
+                      headRefOid: string;
                       baseRefOid: string;
                       author:
                           | { login: string; avatarUrl: string }
@@ -6225,6 +6493,7 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -6364,6 +6633,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -6672,6 +6942,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -6967,6 +7238,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -7061,6 +7333,38 @@ export const ProjectViewFieldsFragmentDoc = new TypedDocumentString(
 }`,
     { fragmentName: 'ProjectViewFields' },
 );
+export const PullRequestCheckFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
+    `,
+    { fragmentName: 'PullRequestCheckFields' },
+);
 export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment PullRequestDetailFields on PullRequest {
@@ -7083,31 +7387,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -7294,6 +7574,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestFields on PullRequest {
   ...PullRequestStatusFields
   url
@@ -7361,6 +7668,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -7817,6 +8125,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
@@ -7837,31 +8172,7 @@ fragment PullRequestDetailFields on PullRequest {
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -7957,6 +8268,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -8273,6 +8585,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
@@ -8293,31 +8632,7 @@ fragment PullRequestDetailFields on PullRequest {
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -8413,6 +8728,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -8616,6 +8932,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -9123,6 +9440,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -9424,6 +9742,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -9570,6 +9889,146 @@ export const ProjectUpdatedAtDocument = new TypedDocumentString(`
   }
 }
     `);
+export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
+    query PullRequestMergeOptions($id: ID!) {
+  node(id: $id) {
+    ... on PullRequest {
+      ...PullRequestStatusFields
+      baseRefName
+      mergeHeadline: viewerMergeHeadlineText(mergeType: MERGE)
+      mergeBody: viewerMergeBodyText(mergeType: MERGE)
+      squashHeadline: viewerMergeHeadlineText(mergeType: SQUASH)
+      squashBody: viewerMergeBodyText(mergeType: SQUASH)
+      viewerCanMergeAsAdmin
+      viewerCanEnableAutoMerge
+      isMergeQueueEnabled
+      baseRef {
+        rules(first: 50) {
+          nodes {
+            type
+            parameters {
+              ... on PullRequestParameters {
+                allowedMergeMethods
+              }
+            }
+          }
+        }
+        branchProtectionRule {
+          requiresLinearHistory
+        }
+      }
+      statusCheckRollup {
+        contextPage: contexts(first: 100) {
+          totalCount
+          nodes {
+            ...PullRequestCheckFields
+            ... on CheckRun {
+              isRequired(pullRequestId: $id)
+              checkSuite {
+                app {
+                  slug
+                }
+                workflowRun {
+                  databaseId
+                }
+              }
+            }
+            ... on StatusContext {
+              isRequired(pullRequestId: $id)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
+  __typename
+  id
+  updatedAt
+  state
+  isDraft
+  merged
+  reviewDecision
+  mergeable
+  mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  headRefOid
+  baseRefOid
+  baseRef {
+    target {
+      oid
+    }
+  }
+  statusCheckRollup {
+    state
+    contexts {
+      checkRunCountsByState {
+        state
+        count
+      }
+      statusContextCountsByState {
+        state
+        count
+      }
+    }
+  }
+  reviewRequests(first: 10) {
+    nodes {
+      requestedReviewer {
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+          name
+        }
+      }
+    }
+  }
+  latestOpinionatedReviews(first: 10) {
+    nodes {
+      author {
+        login
+      }
+      state
+    }
+  }
+}`);
 export const PullRequestStacksDocument = new TypedDocumentString(`
     query PullRequestStacks($ids: [ID!]!, $first: Int!) {
   nodes(ids: $ids) {
@@ -9679,6 +10138,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -9746,6 +10206,7 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -10010,6 +10471,14 @@ export const RepositoryMetadataDocument = new TypedDocumentString(`
     viewerPermission
     isArchived
     hasIssuesEnabled
+    mergeCommitAllowed
+    squashMergeAllowed
+    rebaseMergeAllowed
+    viewerDefaultMergeMethod
+    autoMergeAllowed
+    deleteBranchOnMerge
+    viewerDefaultCommitEmail
+    viewerPossibleCommitEmails
     labels(first: 100, orderBy: {field: NAME, direction: ASC}) {
       pageInfo {
         hasNextPage
@@ -10172,6 +10641,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -10716,6 +11186,7 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
   baseRef {
     target {
@@ -11462,6 +11933,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ProjectUpdatedAtQuery>;
+        },
+        PullRequestMergeOptions(
+            variables: PullRequestMergeOptionsQueryVariables,
+            options?: C,
+        ): Promise<PullRequestMergeOptionsQuery> {
+            return requester<PullRequestMergeOptionsQuery, PullRequestMergeOptionsQueryVariables>(
+                PullRequestMergeOptionsDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestMergeOptionsQuery>;
         },
         PullRequestStacks(variables: PullRequestStacksQueryVariables, options?: C): Promise<PullRequestStacksQuery> {
             return requester<PullRequestStacksQuery, PullRequestStacksQueryVariables>(
