@@ -20,6 +20,6 @@ to browse GitHub, which people feel only after using it.
 > "a second tool, a sync, and a bill once you grow", not "everything else costs money".
 
 **Rejected.**
+
 - "Everything for GitHub in one place" as the headline — it names no need; nobody feels that browsing GitHub
   could be better until they have used githq (owner).
-

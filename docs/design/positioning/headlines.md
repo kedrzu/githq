@@ -1,5 +1,7 @@
 # Openings for the landing page
 
+The owner picked the third, *All your repositories in one place* ([D6](DECISIONS.md#d6)); it is built.
+
 What a visitor to githq.dev sees before scrolling far. Every option carries both promises together: one place
 to manage all your repositories, and no separate tracker for them because GitHub's issues and Projects are the
 tracker ([why both](DECISIONS.md#d4)). Linear appears as what githq replaces, never as what it is

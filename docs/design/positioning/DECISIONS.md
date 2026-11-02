@@ -15,6 +15,7 @@ knowing it was rejected is not.
 **Why.** It tells a reader what kind of tool this is and what it saves them, in one name.
 
 **Rejected.**
+
 - "Linear on GitHub" as the identity, in the headline — it makes githq a clone to be compared feature by
   feature, and drops the half about running all your repositories (owner, 2026-11-02).
 
@@ -29,6 +30,7 @@ repositories and agents working in them, and once they do, the tracker has to sh
 what was handed out.
 
 **Rejected.**
+
 - Agents in the headline ("an HQ for developers running agents") — githq does nothing agent-specific today, so
   the promise would outrun the product and date quickly (design agent).
 
@@ -50,6 +52,7 @@ a need the reader may not feel.
 > "a second tool, a sync, and a bill once you grow", not "everything else costs money".
 
 **Rejected.**
+
 - Leading with the issue tracker alone ([history](history/DECISIONS.md#d1)) — the three openings written
   from it (the tracker you already have; you are the manager now; Linear on GitHub) all read as "you need a
   tracker" (owner).
@@ -65,6 +68,23 @@ a need the reader may not feel.
 is the owner's preferred phrase for the name's idea.
 
 **Rejected.**
+
 - "HQ" as the word in the copy — owner prefers "command center".
 - "Run" as the verb for what githq lets you do with repositories — reads as hosting (owner).
 
+## D6
+
+**The landing page opens with "All your repositories in one place. No separate tracker.", followed by three
+sections: everything that needs you from every repository; your tracker is already on GitHub, with the
+comparison; even solo, you are leading a team.** (2026-11-02, owner)
+
+**Why.** Of the three openings drawn in `githq.pen` (`LP1`–`LP3`), it is the one that puts both promises of
+[D4](#d4) in the headline itself. The design agent's subhead drops Linear's name ("the issue tracker you would
+pay for"), which [D2](#d2) allows: Linear stays in the comparison.
+
+**Rejected.**
+
+- "The command center for all your repositories." (`LP2`) — "command center" promises little until the line
+  under it is read; kept for one-line places such as the share image (owner chose `LP1`).
+- "Ten repositories. One place to manage them." (`LP3`) — someone with two repositories may feel it is not for
+  them (owner chose `LP1`).

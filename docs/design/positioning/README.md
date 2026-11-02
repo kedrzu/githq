@@ -39,11 +39,18 @@ all of them, one person no longer writes most of the code; they hand out work, a
 whatever came back red. That is why both halves matter at once: the issues are what you hand out, and the pull
 requests, checks and broken deploys are what comes back. [Proposed, not yet confirmed](DECISIONS.md#d3).
 
+## What the landing page says
+
+It opens with *All your repositories in one place. No separate tracker.*, then shows the first promise with My
+work across repositories, the second with the comparison against github.com and a dedicated tracker, and ends
+the opening with why it matters now. The variants it was chosen from are in [headlines.md](headlines.md);
+[the owner's pick](DECISIONS.md#d6).
+
 ## What is still open
 
-Candidate openings of the landing page, each carrying both promises, are in [headlines.md](headlines.md).
-
-- How the "manager" idea sits on the landing page: a section of its own, the opening of the features, or the
-  subhead under the headline.
-- Who the first reader is: a solo developer running agents, an open-source maintainer, or a small team.
-- Which surfaces change, and in what order.
+- The page promises merging and failing workflows across repositories before either is built; stacked pull
+  requests are.
+- The mobile landing page, the sign-in screen that shows the landing, and the share images in `githq.pen` still
+  carry the old headline.
+- The repository's description on GitHub still says "task manager".
+- Who the first reader is: to be learned from talking to people, not decided here.

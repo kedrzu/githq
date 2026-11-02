@@ -34,16 +34,19 @@ plus the three sections under it. Everything below those sections stays as it is
 The headline and the line under it differ per variant. Use the copy as written; you may break lines, not reword.
 
 **Variant A (recommended, the owner's favourite):**
+
 - Headline: *All your repositories in one place. No separate tracker.*
 - Under it: *githq puts GitHub Issues, Projects, pull requests and Actions from every repository on one fast
   screen. The tracker you would pay Linear for is already in your GitHub.*
 
 **Variant B:**
+
 - Headline: *The command center for all your repositories.*
 - Under it: *Issues, pull requests, checks and deploys from every repository, on one fast, keyboard-first
   screen. Your issues and Projects are the tracker — no Linear, no second tool to keep in sync.*
 
 **Variant C:**
+
 - Headline: *Ten repositories. One place to manage them.*
 - Under it: *Hand out work in GitHub Issues, then see what came back — pull requests, failing checks, a deploy
   that broke overnight — across every repository. It's all GitHub, so you don't need another tracker.*

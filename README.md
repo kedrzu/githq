@@ -2,7 +2,7 @@
 
 <a href="https://githq.dev"><img src="docs/assets/readme/wordmark.svg" alt="githq" height="80"></a>
 
-A keyboard-first client for GitHub Issues, pull requests and Projects.
+All your repositories in one place. No separate tracker.
 
 [githq.dev](https://githq.dev) · [Design](docs/design/githq/README.md) · [Issues](https://github.com/kedrzu/githq/issues)
 
@@ -11,24 +11,28 @@ A keyboard-first client for GitHub Issues, pull requests and Projects.
 
 </div>
 
-<img src="docs/assets/readme/my-work.png" alt="githq: My work across every repository, with an issue open in the side panel" width="100%">
+<img src="docs/assets/readme/my-work.png" alt="githq: My work across every repository, with the sidebar marking the repositories whose workflows are broken" width="100%">
 
 ## Why
 
-GitHub is a fine place to keep issues: next to the code, open to contributors, free. It is a slow place to work
-them. Every view is a page load, there is no single list of what concerns you across repositories, and the
-mouse is never optional. The usual answer is a dedicated tracker, which means a second tool, a sync, and seats
-to pay for.
+Even solo, you are leading a team now. Agents open pull requests in ten repositories while you hand out the
+next issue, and GitHub shows each repository on its own pages: issues here, pull requests there, a deploy that
+failed overnight in a third repository's Actions tab. What needs you gets lost in the noise. The usual answer for
+the planning half is a dedicated tracker, which means a second tool, a sync, and seats to pay for once you grow.
 
-githq is the other answer: a fast client for the tracker you already have. It shows what GitHub has and
-nothing else, and every change you make is an ordinary GitHub change, visible on github.com at once.
+githq is the other answer: one place for all your repositories, on the tracker you already have. Issues,
+Projects, pull requests and Actions from every repository on one fast, keyboard-first screen. It shows what
+GitHub has and nothing else, and every change you make is an ordinary GitHub change, visible on github.com at
+once.
 
 ## What it does
 
 - **My work** — issues assigned to you, your pull requests with checks and reviews, reviews waiting on you and
   mentions, from every repository, including other people's.
-- **Repositories and Projects** — tracked repositories and GitHub Projects as lists or boards, with the
-  fields, views and iterations each project defines.
+- **Your tracker, on GitHub** — tracked repositories and GitHub Projects as lists or boards, with the fields,
+  views and iterations each project defines.
+- **Stacked pull requests** — a stack shows as one entry in your lists, and you walk through it in order.
+  Merging and the workflows failing on `main` in any repository are next.
 - **Keyboard first** — a command menu (<kbd>⌘</kbd> <kbd>K</kbd>) and single-key actions on the selected
   items.
 - **Instant** — screens open from a copy in your browser; edits show at once and are written to GitHub behind
