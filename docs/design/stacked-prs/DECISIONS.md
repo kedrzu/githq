@@ -214,6 +214,10 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 > **Checked 2026-11-02 (live, `nzymejs/githq-merge-sandbox`, stack #22 of #19–#21):** one `merge-async` `squash` on the top
 > pull request, with `commit_title` "CUSTOM TITLE probe", landed all three as one squash commit each: #19 and #20 under their own
 > titles (`Probe stack part 1 (#19)`), #21 under the custom title. A title given applies to the top pull request only.
+>
+> **Checked 2026-11-02 (live, stack #26 of #23–#25, #24's required check failing):** a `merge-async` on #25 answered `202`
+> pending, then `failed` with "Required status check "ci" is failing." — and nothing landed, #23 (ready on its own) included. A
+> stack refused for a failing requirement is all or none; a failure while landing midway was not reproduced.
 
 **Rejected.**
 
