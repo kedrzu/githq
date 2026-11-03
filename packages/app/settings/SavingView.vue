@@ -29,7 +29,7 @@ export type SavingConnect =
 </script>
 
 <script lang="ts" setup>
-import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
+import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUp, ArrowUpRight, CircleCheck, Plus, TriangleAlert } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -88,7 +88,7 @@ const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const combining = ref(false);
 
-const repository = computed(() => `${props.login}/${SETTINGS_REPOSITORY_NAME}`);
+const repository = computed(() => getSettingsNameWithOwner(props.login));
 const repositoryUrl = computed(() => `https://github.com/${repository.value}`);
 
 const ticked = computed({
@@ -394,18 +394,13 @@ function turnOff() {
 
 <style lang="scss" module="css">
 .savingView {
-  flex: 1;
-  min-height: 0;
-  padding: 32px 20px;
-  overflow-y: auto;
+  @include settings-screen;
 }
 
 .savingView_column {
-  display: flex;
-  flex-direction: column;
+  @include settings-screen-column;
+
   gap: 28px;
-  max-width: 680px;
-  margin: 0 auto;
 }
 
 .savingView_box {

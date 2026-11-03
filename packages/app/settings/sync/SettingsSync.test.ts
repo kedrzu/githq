@@ -642,6 +642,91 @@ interface SettingsGitHub {
     writeFile(content: SettingsDocument | string): void;
 }
 
+test('a file without the repository layout reads as tabs and is not rewritten by reading it', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const text = github.file?.text;
+
+    await sync.sync();
+
+    expect(tracking.repositoryLayout).toBe('tabs');
+    expect(tracking.document).not.toHaveProperty('repositoryLayout');
+    expect(writes(session.operations())).toEqual([]);
+    expect(github.file?.text).toBe(text);
+});
+
+test('the repository layout chosen here is written at once, and one chosen elsewhere comes in', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+
+    tracking.setRepositoryLayout('column');
+    await sync.sync();
+
+    expect(tracking.repositoryLayout).toBe('column');
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { repositoryLayout: 'column' },
+    });
+
+    session.github.requests.length = 0;
+    tracking.setRepositoryLayout('column');
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), repositoryLayout: 'tabs' });
+    await sync.sync();
+    expect(tracking.repositoryLayout).toBe('tabs');
+});
+
+test('a layout of a newer build reads as tabs and stays in the file until the user picks another', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), repositoryLayout: 'split' });
+    await sync.sync();
+    expect(tracking.repositoryLayout).toBe('tabs');
+
+    // Picking what it already reads as is no change: nothing is overwritten.
+    session.github.requests.length = 0;
+    tracking.setRepositoryLayout('tabs');
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+
+    // Another change writes the file with the value in it.
+    tracking.track({ repository: API });
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { repositoryLayout: 'split' },
+    });
+
+    tracking.setRepositoryLayout('column');
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { repositoryLayout: 'column' },
+    });
+});
+
+test('with saving off the layout chosen stays on this device, through a reload, and nothing is asked of GitHub', async () => {
+    const { session, tracking, login } = await open();
+    tracking.choose({ repositories: [WEB], projects: [] });
+
+    tracking.setRepositoryLayout('column');
+    await session.clock.advance(0);
+
+    expect(rest(session.operations())).toEqual([]);
+    const reopened = await open(login, session.localStorage);
+    expect(reopened.tracking.repositoryLayout).toBe('column');
+    // Not the user's choice of what to track.
+    expect(reopened.tracking.repositories).toEqual([WEB]);
+    expect(reopened.tracking.chosen).toBe(true);
+});
+
+test('picking the layout before the first choice of what to track does not count as that choice', async () => {
+    const { tracking } = await open();
+
+    tracking.setRepositoryLayout('column');
+
+    expect(tracking.chosen).toBe(false);
+});
+
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
 async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);

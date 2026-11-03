@@ -263,7 +263,7 @@ details are the design agent's)
 repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
 decides it. The layout is a preference of the user, not of a view, so it travels with the settings
 ([settings-sync D4](../settings-sync/DECISIONS.md#d4)). This adds the first synced setting beyond what is tracked, which
-[settings-sync D7](../settings-sync/DECISIONS.md#d7) does not list yet.
+[settings-sync D7](../settings-sync/DECISIONS.md#d7) lists.
 
 **Rejected.**
 
@@ -288,7 +288,8 @@ right it leaves the app's sidebar and the graph's left edge alone.
 > `committedDate` in the refs request of [D9](#d9) and a local sort.
 
 In the column layout the list is the column's lower part on Commits (CH6), and a commit's details open on the right
-of the pane instead of in the list's place (CH42).
+of the pane instead of in the list's place (CH42); below the same 1,200 px of window they open over the graph, one
+threshold in both layouts (owner, 2026-11-03).
 
 **Rejected.**
 
@@ -296,6 +297,8 @@ of the pane instead of in the list's place (CH42).
   typable (owner, 2026-11-03).
 - Building the list on `FilterList` — it always highlights its first row, has one message per list and a plain heading;
   extending it for this one list costs more than the keys it would share (owner, 2026-11-03).
+- In the column, judging the threshold on the window less the column — a threshold nobody can tell from the window's
+  width, for little more graph (owner, 2026-11-03).
 - The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
   screen says where branches stand.
 
@@ -404,6 +407,9 @@ actions can grow without crowding the row.
 [githq D26](../githq/DECISIONS.md)). Its first setting is the repository layout of [D14](#d14), two cards with a sketch of each; the change applies at
 once; where it is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a
 tab like General or Display"; the section's name and place are the design agent's; CH43)
+
+Until the Settings column and that status bar are built, a line under the cards says where the choice is saved, so a
+synced setting never looks unsaved (owner, 2026-11-03).
 
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
 would collect anything.

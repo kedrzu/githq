@@ -1,4 +1,4 @@
-<!-- The title of a screen's header, opening a menu of what can be done with it when given one (`menu`). -->
+<!-- The title of a screen's header, opening a menu of what can be done with it when given one (`menu`). `narrow`, for a column's head: under the screen's own title, smaller and cut to the room it has. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown } from 'lucide-vue-next';
@@ -9,6 +9,8 @@ import * as l from './ListTitle.loc.js';
 
 defineProps<{
   title: string;
+  /** In a column's head: a heading under the screen's own, cut to the room there is. */
+  narrow?: boolean;
 }>();
 
 defineSlots<{
@@ -20,7 +22,10 @@ const t = useTranslate();
 </script>
 
 <template>
-  <h1 :class="css.listTitle">
+  <component
+    :is="narrow ? 'h2' : 'h1'"
+    :class="[css.listTitle, narrow && css.listTitle_narrow]"
+  >
     <Menu
       v-if="$slots.menu"
       align="start"
@@ -31,7 +36,11 @@ const t = useTranslate();
           :class="css.listTitle_button"
           :aria-label="t(l.menuLabel, { title })"
         >
-          {{ title }}
+          <span
+            :class="css.listTitle_text"
+            :title="narrow ? title : undefined"
+            >{{ title }}</span
+          >
           <ChevronDown
             :class="css.listTitle_chevron"
             aria-hidden="true"
@@ -40,8 +49,13 @@ const t = useTranslate();
       </template>
       <slot name="menu" />
     </Menu>
-    <template v-else>{{ title }}</template>
-  </h1>
+    <span
+      v-else
+      :class="css.listTitle_text"
+      :title="narrow ? title : undefined"
+      >{{ title }}</span
+    >
+  </component>
 </template>
 
 <style lang="scss" module="css">
@@ -49,6 +63,24 @@ const t = useTranslate();
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   white-space: nowrap;
+}
+
+/* The button may not outgrow the column; its negative margin stays visible, so the text is what is cut. */
+.listTitle_narrow {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-md;
+
+  .listTitle_button {
+    max-width: 100%;
+  }
+
+  .listTitle_text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* As the opened item's reference opens its menu (M1). */

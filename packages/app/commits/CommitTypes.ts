@@ -1,5 +1,8 @@
 import type { PullRequestState, StatusState } from '@githq/github/generated.gen.js';
 
+/** The id of the element in a repository's column that the list of branches and tags renders in (git-client D14, CH6). */
+export const COMMIT_REF_LIST_TARGET_ID = 'commit-ref-list-target';
+
 /**
  * A commit as githq keeps it: only what never changes (git-client D8), kept for good per repository. Its pull
  * request and CI state change, so they are read apart and not kept here.

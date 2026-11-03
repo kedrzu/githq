@@ -56,7 +56,9 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3/settings', 'project-org-settings'],
     ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
     ['/settings', 'settings'],
+    ['/settings?tab=display', 'settings'],
     ['/settings?tab=sync', 'settings'],
+    ['/settings?tab=account', 'settings'],
     // The broken workflows of every tracked repository, under GitHub's reserved `/dashboard`.
     ['/dashboard/workflows', 'workflows'],
     ['/dashboard', 'github-dashboard'],
@@ -138,6 +140,8 @@ test("Settings' section is its `?tab=`; none, an unknown or an old one is the fi
     }
 
     expect(getSettingsPath('repositories')).toBe('/settings');
+    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'sync', 'account']);
+    expect(getSettingsPath('display')).toBe('/settings?tab=display');
     expect(readSettingsSection(undefined)).toBe('repositories');
     expect(readSettingsSection('unknown')).toBe('repositories');
     expect(readSettingsSection(['account'])).toBe('repositories');

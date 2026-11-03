@@ -15,6 +15,7 @@ import {
   GitPullRequest,
   Inbox,
   Layers,
+  PanelsTopLeft,
   Settings,
   SquareKanban,
   Workflow,
@@ -89,6 +90,7 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   settings: Settings,
   repositories: BookMarked,
   projects: SquareKanban,
+  display: PanelsTopLeft,
   sync: CloudUpload,
   account: CircleUser,
 };

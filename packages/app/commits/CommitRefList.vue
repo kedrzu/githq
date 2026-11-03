@@ -22,6 +22,8 @@ const props = defineProps<{
   refs: KeptCommitRefs;
   /** Epoch ms the ages are counted to. */
   now: number;
+  /** In a repository's column (git-client D15, CH6): as wide and as tall as the place it is put in. */
+  filling?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -302,7 +304,7 @@ function getRowId(row: RefRow) {
 
 <template>
   <section
-    :class="css.commitRefList"
+    :class="[css.commitRefList, filling && css.commitRefList_filling]"
     :aria-label="t(l.title)"
     @keydown="onKeydown"
   >
@@ -399,6 +401,12 @@ function getRowId(row: RefRow) {
   width: 280px;
   min-height: 0;
   border-left: 1px solid $color-border;
+}
+
+.commitRefList_filling {
+  flex: 1;
+  width: auto;
+  border-left: none;
 }
 
 .commitRefList_filter {

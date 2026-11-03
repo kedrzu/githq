@@ -104,11 +104,17 @@ $spacing-6: 6px;
 // Above and below the content of a list's row.
 $spacing-7: 7px;
 $spacing-8: 8px;
+// Between an icon and its label in a navigation row.
+$spacing-9: 9px;
 $spacing-10: 10px;
 $spacing-12: 12px;
+// The inset of a repository's column, lining its head up with its rows' icons.
+$spacing-14: 14px;
 $spacing-16: 16px;
 $spacing-20: 20px;
 $spacing-24: 24px;
+// Above and below a screen of Settings.
+$spacing-32: 32px;
 
 $radius-sm: 4px;
 $radius-md: 6px;
@@ -127,6 +133,8 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
+// The column a screen of Settings keeps its content in.
+$settings-column-width: 680px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
 
@@ -240,6 +248,65 @@ $landing-reveal-stagger: 80ms;
     height: $list-header-height;
     padding: 0 $spacing-16;
     border-bottom: 1px solid $color-border;
+}
+
+// A row of navigation, in the sidebar or a repository's column: an icon, its label, a dim count. Its parts are the
+// mixins after it.
+@mixin nav-row {
+    @include focus-ring;
+
+    display: flex;
+    gap: $spacing-9;
+    align-items: center;
+    width: 100%;
+    padding: $spacing-5 $spacing-8;
+    font-size: $font-size-md;
+    line-height: 18px;
+    color: $color-fg-2;
+    text-decoration: none;
+    border-radius: $radius-md;
+
+    &:hover {
+        color: $color-fg;
+        background: $color-bg-3;
+    }
+}
+
+@mixin nav-row-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin nav-row-count {
+    flex: none;
+    font-family: $font-family-mono;
+    font-size: $font-size-2xs;
+    color: $color-fg-dim;
+}
+
+// The row of what is shown; after the row itself, so hovering it changes nothing.
+@mixin nav-row-current {
+    font-weight: $font-weight-medium;
+    color: $color-fg;
+    background: $color-bg-3;
+}
+
+// A screen of Settings, scrolling under its header, and the column its content keeps to.
+@mixin settings-screen {
+    flex: 1;
+    min-height: 0;
+    padding: $spacing-32 $spacing-20;
+    overflow-y: auto;
+}
+
+@mixin settings-screen-column {
+    display: flex;
+    flex-direction: column;
+    max-width: $settings-column-width;
+    margin: 0 auto;
 }
 
 // Text for screen readers only: out of sight, still in the accessibility tree.

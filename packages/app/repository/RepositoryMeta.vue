@@ -1,19 +1,15 @@
 <!-- Whether a repository is public or private, beside its title: a lock when private; nothing while it is not known. -->
 <script lang="ts" setup>
-import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Lock } from 'lucide-vue-next';
-import { computed } from 'vue';
 
-import * as l from './RepositoryView.loc.js';
+import { useRepositoryMeta } from './useRepositoryMeta.js';
 
 const props = defineProps<{
   /** `null` while nothing of it is in the local copy to tell. */
   isPrivate: boolean | null;
 }>();
 
-const t = useTranslate();
-
-const meta = computed(() => (props.isPrivate === null ? '' : t(props.isPrivate ? l.private : l.public)));
+const meta = useRepositoryMeta(() => props.isPrivate);
 </script>
 
 <template>

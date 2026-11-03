@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and ←/→ move between them. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -24,6 +24,8 @@ export interface SegmentedTabsOption<T extends string> {
 import type { AcceptableValue } from 'reka-ui';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 
+import Kbd from './Kbd.vue';
+
 const props = withDefaults(
   defineProps<{
     options: readonly SegmentedTabsOption<T>[];
@@ -33,6 +35,8 @@ const props = withDefaults(
     variant?: 'boxed' | 'plain';
     /** The options wrap onto more lines when they don't fit (a long choice inline in the display options). */
     wrap?: boolean;
+    /** `vertical`: rows, each with its icon, label, count and key, moved through by ↑/↓. Unset: side by side. */
+    orientation?: 'vertical';
   }>(),
   { variant: 'plain', wrap: false },
 );
@@ -53,7 +57,13 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     type="single"
     :model-value="model"
     :aria-label="label"
-    :class="[css.segmentedTabs, css[`segmentedTabs_${variant}`], wrap && css.segmentedTabs_wrap]"
+    :orientation="orientation"
+    :class="[
+      css.segmentedTabs,
+      css[`segmentedTabs_${variant}`],
+      wrap && css.segmentedTabs_wrap,
+      orientation === 'vertical' && css.segmentedTabs_vertical,
+    ]"
     @update:model-value="choose"
   >
     <ToggleGroupItem
@@ -71,7 +81,11 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
         :class="css.segmentedTabs_icon"
         aria-hidden="true"
       />
-      <template v-if="!option.iconOnly">{{ option.label }}</template>
+      <span
+        v-if="!option.iconOnly"
+        :class="css.segmentedTabs_label"
+        >{{ option.label }}</span
+      >
       <span
         v-if="option.count != null"
         :class="css.segmentedTabs_count"
@@ -82,6 +96,11 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
         :class="css.segmentedTabs_attention"
         role="img"
         :aria-label="option.attention"
+      />
+      <Kbd
+        v-if="orientation === 'vertical' && option.keyshortcuts"
+        :keys="option.keyshortcuts"
+        size="sm"
       />
     </ToggleGroupItem>
   </ToggleGroupRoot>
@@ -109,6 +128,12 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   padding: $spacing-2;
   border: 1px solid $color-border;
   border-radius: $radius-md;
+}
+
+.segmentedTabs_vertical {
+  flex-direction: column;
+  gap: 1px;
+  align-items: stretch;
 }
 
 .segmentedTabs_item {
@@ -146,6 +171,18 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     border: none;
     border-radius: $radius-sm;
   }
+
+  .segmentedTabs_vertical & {
+    @include nav-row;
+
+    font-family: inherit;
+    text-align: left;
+    border: none;
+
+    &[data-state='on'] {
+      @include nav-row-current;
+    }
+  }
 }
 
 .segmentedTabs_item_icon {
@@ -155,11 +192,28 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
 .segmentedTabs_icon {
   width: 14px;
   height: 14px;
+
+  .segmentedTabs_vertical & {
+    flex: none;
+    width: 15px;
+    height: 15px;
+  }
 }
+
+.segmentedTabs_label {
+  .segmentedTabs_vertical & {
+    @include nav-row-label;
+  }
+}
+
 .segmentedTabs_count {
   font-family: $font-family-mono;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+
+  .segmentedTabs_vertical & {
+    @include nav-row-count;
+  }
 }
 
 .segmentedTabs_attention {

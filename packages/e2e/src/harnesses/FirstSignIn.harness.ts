@@ -56,7 +56,7 @@ export class FirstSignInHarness {
 
     /** The box to save what is tracked to the user's GitHub account (settings-sync G2, G12). */
     get savingChoice(): Locator {
-        return this.root.getByRole('checkbox', { name: 'Save what I track to my GitHub account' });
+        return this.root.getByRole('checkbox', { name: 'Save my settings to my GitHub account' });
     }
 
     /** "Continue to My work", when there was nothing to choose (G10). */

@@ -1,6 +1,6 @@
 <!-- Syncing the settings stopped (settings-sync D12, T9): a toast saying why in short, that githq goes on from what this device has, and "Open settings" (⌥S) to Sync settings. It comes once for each reason syncing stops for — remembered with the saving state, so not again on reload or in another tab — and stays until dismissed; syncing on again, or turned off, takes it away. On Sync settings itself it is not shown: the reason is there in full, and counts as told. -->
 <script lang="ts" setup>
-import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
+import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -42,7 +42,7 @@ const sentence = computed(() => {
     return '';
   }
 
-  const repository = `${props.login}/${SETTINGS_REPOSITORY_NAME}`;
+  const repository = getSettingsNameWithOwner(props.login);
   switch (reason.kind) {
     case 'deleted':
       return t(l.deleted, { repository });
