@@ -82,7 +82,7 @@ const SEARCH_PAGE_SIZE = 100;
 const NODES_BATCH_SIZE = 50;
 /** How many of "my work"'s items one `ItemsByIds` asks for: its time grows with them, 50 pull requests take 6 seconds. */
 const MY_WORK_BATCH_SIZE = 20;
-/** How many of those are read at once (D26). */
+/** How many of those are read at once (D27). */
 const MY_WORK_READS = 3;
 /** The most pull requests a GitHub stack holds, and the most `PullRequestStacks` asks of one. */
 const STACK_MAX_SIZE = 100;
@@ -146,7 +146,7 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   and their first download ({@link TrackingSync}), which starts once "my work" has arrived and runs again
  *   when the user tracks more;
  * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
- *   every 3 minutes (actions D2), waiting for the open items of the first download (D26), once more when they are in,
+ *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
  *   and at once when a screen showing them opens ({@link pollWorkflowsNow}).
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
@@ -683,7 +683,7 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * The four searches at once, as "my work" is what the user waits for (D26). As each answers, its items whose
+         * The four searches at once, as "my work" is what the user waits for (D27). As each answers, its items whose
          * `updated_at` moved — or that are new — are read again, the ones GitHub no longer returns removed, and its
          * group set to what it found: on the first download the groups arrive one by one, and one failing leaves the
          * others in place. Once all have answered, an item no search found leaves "my work" and the store.

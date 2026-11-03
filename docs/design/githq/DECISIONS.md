@@ -525,7 +525,7 @@ closed pull requests (2.5 s to 1.4 s a page, measured on `healedcare/healed`): r
 
 ## Open questions
 
-### D26
+### D27
 
 Settings is **a column of sections**, as the repository's column layout, rather than tabs along the top (owner,
 2026-11-03): Repositories, Projects, Display, Code review, Sync settings, Account, on `1`–`6`, the rows roomy enough to click

@@ -81,11 +81,11 @@ export const PROJECT_PROBE_INTERVAL_MS = 5 * 60_000;
 /** The phases of the first download the user waits for, and those that only matter for search and history. */
 const OPEN_PHASES: readonly RepositoryDownloadPhase[] = ['openIssues', 'openPullRequests'];
 const CLOSED_PHASES: readonly RepositoryDownloadPhase[] = ['closedIssues', 'closedPullRequests'];
-/** How many repositories' open items are read at once: a short burst, of what the user waits for (D26). */
+/** How many repositories' open items are read at once: a short burst, of what the user waits for (D27). */
 const OPEN_DOWNLOADS = 4;
 /**
  * How many repositories' closed items are read at once: they go on for minutes, against GitHub's 60 seconds of
- * GraphQL CPU time a minute (D26).
+ * GraphQL CPU time a minute (D27).
  */
 const CLOSED_DOWNLOADS = 2;
 
@@ -98,7 +98,7 @@ const PULL_REQUEST_STATES = { openPullRequests: ['OPEN'], closedPullRequests: ['
  * three loops the sync engine runs, paces and pauses:
  *
  * - {@link download}: the first download, resumable page by page — every tracked repository's open items, then
- *   every tracked project, then the repositories' closed items (G6), a few repositories at once (D26). "My work"
+ *   every tracked project, then the repositories' closed items (G6), a few repositories at once (D27). "My work"
  *   comes before it.
  * - {@link pollRepositories}: each downloaded repository's changes since the last poll
  *   (`GET /repos/{o}/{r}/issues?since=` with the last ETag — a 304 is free); on a 200, only the items whose
