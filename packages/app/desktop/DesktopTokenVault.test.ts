@@ -105,6 +105,7 @@ function setup(options: SetupOptions) {
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: () => {},
         replaceLocation: () => {},
         writeCookie: () => {},

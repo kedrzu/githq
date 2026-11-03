@@ -41,6 +41,8 @@ export interface BrowserShape {
     navigate(url: string): void;
     /** Leaves the app for `url` in place of the current page in history, so going back skips it. */
     replaceLocation(url: string): void;
+    /** Loads the page again, from the network: the app as deployed now. */
+    reload(): void;
     /** Writes a cookie (`document.cookie = cookie`): one `name=value` with its attributes, as the header carries it. */
     writeCookie(cookie: string): void;
     /** Opens `url` in a new tab, the app staying where it is. */
@@ -93,6 +95,9 @@ export const Browser = defineInterface<BrowserShape>({
         },
         replaceLocation: url => {
             window.location.replace(url);
+        },
+        reload: () => {
+            window.location.reload();
         },
         writeCookie: cookie => {
             document.cookie = cookie;

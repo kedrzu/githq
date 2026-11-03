@@ -720,8 +720,10 @@ live queries). Open, raised with user 2026-10-30.
 Several tabs open at once would each run the sync loop and multiply API use. Agent's proposal: one tab holds a
 Web Lock and syncs, others receive changes over BroadcastChannel. Proposed to user 2026-10-30, not objected to; treated as the
 default for the first version unless they say otherwise.
-Built that way (2026-10-31): lock `githq-sync-<login>`, the syncing tab sends its store changes over the
-channel, the others apply them to memory only; without Web Locks every tab syncs.
+Built that way (2026-10-31): lock `githq-sync-<login>-v<N>`, the syncing tab sends its store changes over the
+channel, the others apply them to memory only; without Web Locks every tab syncs. `N` is the local copy's layout, as in
+the channel's name: a tab left open across a deploy that raised it must not hold the new one back. Told of a newer
+layout, such a tab gives the lock up and reloads once that loses nothing (`OutdatedTabReload`).
 
 ### Q11
 
