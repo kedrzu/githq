@@ -68,6 +68,10 @@ export interface MergeRequest {
     readonly title?: string;
     /** The commit's message, only when the user edited it: GitHub's own default goes otherwise (D6). */
     readonly body?: string;
+    /** Past the requirements not met, by the panel's own chord (D12, PM12a). */
+    readonly bypassRules?: boolean;
+    /** The commit's author, only when the user chose another than their default: it goes through GraphQL (D5, PM6). */
+    readonly authorEmail?: string;
 }
 
 /** A merge as the merge panel sends it: the request, and the commit text the user edited, whole, to give it back. */
@@ -145,9 +149,13 @@ export type MergeEnd =
           readonly refusal?: EditFailureReason;
       };
 
-/** How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time. */
+/**
+ * How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time; or, of a stack's pull
+ * request, in the merge queue as read: the session then knows it was there when it no longer is (SP54).
+ */
 export type MergeLateEnd =
     | { readonly kind: 'merged' }
+    | { readonly kind: 'enqueued' }
     | { readonly kind: 'refused'; readonly reason: EditFailureReason }
     | { readonly kind: 'unknown' };
 

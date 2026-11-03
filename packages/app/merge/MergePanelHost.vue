@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -79,7 +79,7 @@ const stackMerge = computed(() => {
   }
 
   const end = movedEnd.value === undefined ? getStackMergeEnd({ description: stack, openedOn }) : movedEnd.value;
-  return getStackMerge({ description: stack, end });
+  return getStackMerge({ description: stack, end, queued: store.stack ? store.getQueued(store.stack.id) : [] });
 });
 /** The stack's pull requests the copy holds, first to last. */
 const stackMembers = computed(() =>
@@ -171,6 +171,22 @@ watch(
     alreadyMerged.value = false;
     movedEnd.value = undefined;
     checksOpen.value = false;
+    // Seen in a merge queue before: what the stack holds now says whether it is still there (SP54).
+    const stack = store.stack;
+    const size = description.value?.size;
+    if (stack && size !== undefined && store.getQueued(stack.id).length > 0) {
+      void merger.readStack(stack.id, size);
+    }
+  },
+);
+// Seen in a merge queue: once a member has no entry and is still open, it was thrown out (SP54).
+watch(
+  () => stackMembers.value.filter(member => member.mergeQueueEntry).map(member => member.id),
+  ids => {
+    const stack = store.stack;
+    if (stack) {
+      store.noteQueued(stack.id, ids);
+    }
   },
 );
 watch(repository, name => {
@@ -184,7 +200,7 @@ watch(repository, name => {
  * is told apart by (PM27, PM28). The head commit read is noted on the refusal, for the rows and the opened item to
  * name who pushed it (PM37); a stack's merge of two or more is recorded under its top, whose head the store reads.
  */
-async function merge(submission: MergeSubmission) {
+async function merge(submission: MergeSubmission, firstAlone = false) {
   const item = pr.value;
   if (!item) {
     return;
@@ -193,7 +209,7 @@ async function merge(submission: MergeSubmission) {
   const opening = store.opening;
   sending.value = true;
   // Two or more of a stack: one merge of the top of the range lands them all (D11).
-  const going = stackMerge.value?.going ?? [];
+  const going = firstAlone ? [] : (stackMerge.value?.going ?? []);
   const top = going.at(-1);
   const stack = description.value;
   const stackId = store.stack?.id;
@@ -339,7 +355,10 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :advancing="advancing"
     :now="now"
     :stack="stackView"
-    @merge="merge"
+    :emails="settings"
+    :viewer-login="auth.viewer?.login ?? null"
+    @merge="submission => merge(submission)"
+    @bypass="submission => merge(submission, true)"
     @move="moveLine"
     @step="takeStep"
     @enable-auto-merge="enableAutoMerge"

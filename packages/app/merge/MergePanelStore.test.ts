@@ -654,6 +654,68 @@ test("a stack's refusal after the panel left is reported once, naming its top (D
     expect(queue.failures).toHaveLength(1);
 });
 
+test('PM34: merged with a chosen email the panel leaves first, and the merge is told in a toast', async () => {
+    const { panel, session, answers } = await setup();
+    answers.merged = { data: { mergePullRequest: { pullRequest: { mergeCommit: { oid: 'email-sha' } } } } };
+
+    panel.open('PR_1');
+    const merging = panel.merge({
+        item: samplePullRequest('PR_1'),
+        submission: { request: { method: 'MERGE', authorEmail: 'other@acme.dev' }, edited: null },
+    });
+    await session.clock.advance(0);
+    expect(await merging).toEqual({ kind: 'accepted' });
+    expect(panel.itemId).toBeNull();
+
+    await session.clock.advance(0);
+    expect(panel.confirmations).toHaveLength(1);
+});
+
+test('SP54: a stack seen in the queue is remembered per stack until its next merge, and forgotten with the account', async () => {
+    const { panel, session, answers } = await setup();
+    answers.put = ENQUEUED;
+    panel.noteQueued('S_1', ['PR_0']);
+    panel.noteQueued('S_1', ['PR_0', 'PR_1']);
+    expect(panel.getQueued('S_1')).toEqual(['PR_0', 'PR_1']);
+    expect(panel.getQueued('S_2')).toEqual([]);
+
+    const merging = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    expect(panel.getQueued('S_1')).toEqual([]);
+    await session.clock.advance(0);
+    await merging;
+    await session.clock.advance(0);
+
+    // Its state not read: nothing says it got there, so nothing may later say it was thrown out.
+    expect(panel.getQueued('S_1')).toEqual([]);
+});
+
+test('SP54: enqueued and read with its entry, the stack is noted as being there', async () => {
+    const { panel, session, answers } = await setup();
+    answers.put = ENQUEUED;
+    answers.statuses = {
+        data: {
+            nodes: [
+                samplePullRequestNode('PR_1', { repository: 'acme/web', number: 2, updatedAt: '2026-10-30T13:00:00Z' }),
+            ],
+        },
+    };
+
+    const merging = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await merging;
+    await session.clock.advance(0);
+
+    expect(panel.getQueued('S_1')).toEqual(STACK.map(member => member.id));
+});
+
 async function setup() {
     const login = `user-${crypto.randomUUID()}`;
     const answers: {
@@ -665,6 +727,10 @@ async function setup() {
         optionsHead: string;
         /** What reading the stack again is answered: none is a failed request. */
         stacks: TestGraphQLAnswer | undefined;
+        /** What `MergePullRequest` is answered: none is a failed request. */
+        merged?: TestGraphQLAnswer;
+        /** What `PullRequestStatuses` is answered: none is a failed request. */
+        statuses?: TestGraphQLAnswer;
     } = {
         put: undefined,
         firstPut: undefined,
@@ -682,6 +748,10 @@ async function setup() {
                     return { data: { node: samplePullRequestDetailNode('PR_1', '2026-10-20T10:00:00Z') } };
                 case 'PullRequestStacks':
                     return answers.stacks;
+                case 'MergePullRequest':
+                    return answers.merged;
+                case 'PullRequestStatuses':
+                    return answers.statuses;
                 default:
                     return undefined;
             }

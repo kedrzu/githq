@@ -25,6 +25,49 @@ test('the range starts at the first open member, merged ones before it listed bu
     expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
 });
 
+test('SP54: in a queue the first one’s entry is the group’s; none noted and none held, it is no queue’s business', () => {
+    const entry = {
+        position: 2,
+        state: 'QUEUED',
+        estimatedTimeToMerge: null,
+        enqueuedAt: '',
+        enqueuer: 'a',
+        jump: false,
+    } as const;
+
+    expect(getStackMerge({ description: stackOf([{}, {}]), end: null }).queue).toBeNull();
+    expect(
+        getStackMerge({ description: stackOf([{ mergeQueueEntry: entry }, { mergeQueueEntry: entry }]), end: null })
+            .queue,
+    ).toEqual({ kind: 'in', entry });
+});
+
+test('SP54: thrown out: GitHub says UNMERGEABLE, or the entry is gone and it is still open — the first such, later ones with it', () => {
+    const entry = {
+        position: 2,
+        state: 'QUEUED',
+        estimatedTimeToMerge: null,
+        enqueuedAt: '',
+        enqueuer: 'a',
+        jump: false,
+    } as const;
+    const unmergeable = { ...entry, state: 'UNMERGEABLE' } as const;
+
+    const said = getStackMerge({
+        description: stackOf([{ mergeQueueEntry: unmergeable }, { mergeQueueEntry: entry }]),
+        end: null,
+    }).queue;
+    expect(said).toMatchObject({ kind: 'out', thrownOut: { number: 1 }, stillThere: true });
+
+    const description = stackOf([MERGED, {}, {}]);
+    const ids = description.pips.flatMap(pip => (pip.kind === 'missing' ? [] : [pip.pullRequest.id]));
+    const gone = getStackMerge({ description, end: null, queued: ids }).queue;
+    expect(gone).toMatchObject({ kind: 'out', thrownOut: { number: 2 }, left: [{ number: 3 }], stillThere: false });
+
+    // Never seen in a queue, an entry gone says nothing.
+    expect(getStackMerge({ description, end: null }).queue).toBeNull();
+});
+
 test('↑ and ↓ move the line one open member at a time, clamped to the first and the last open one (D18)', () => {
     const description = stackOf([MERGED, {}, {}, {}]);
     const at = (end: number | null) => getStackMerge({ description, end });

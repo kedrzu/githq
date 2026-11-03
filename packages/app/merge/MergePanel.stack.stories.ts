@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 import { sampleStack, sampleStackDescription, SAMPLE_STACKS } from '@/testing/sampleStacks.js';
 
@@ -73,6 +73,11 @@ const Harness = defineComponent({
         answer: { type: String as PropType<HarnessAnswer>, default: 'accepted' },
         /** The methods the base branch's rules allow, as read; `null` when none restricts them. */
         allowedMergeMethods: { type: Array as PropType<readonly PullRequestMergeMethod[] | null>, default: null },
+        /** GitHub says the viewer may merge past what isn't met. */
+        admin: { type: Boolean, default: false },
+        /** The members this session saw in a merge queue. */
+        queued: { type: Array as PropType<readonly string[]>, default: () => [] },
+        viewerEmail: { type: String as PropType<string | null>, default: null },
     },
     setup(props) {
         const open = ref(true);
@@ -92,6 +97,7 @@ const Harness = defineComponent({
                     movedEnd.value === undefined
                         ? getStackMergeEnd({ description: description.value, openedOn: props.openedOn })
                         : movedEnd.value,
+                queued: props.queued,
             }),
         );
         const pr = computed(() => members.value.find(member => member.state === 'OPEN') ?? members.value[0]);
@@ -115,10 +121,10 @@ const Harness = defineComponent({
                       },
                       allowedMergeMethods: props.allowedMergeMethods,
                       requiresLinearHistory: false,
-                      viewerCanMergeAsAdmin: false,
+                      viewerCanMergeAsAdmin: props.admin,
                       viewerCanEnableAutoMerge: false,
                       autoMergeBody: null,
-                      mergeQueueMethod: null,
+                      mergeQueueMethod: first.isMergeQueueEnabled ? 'SQUASH' : null,
                       checks: [],
                       headCommit: null,
                   }
@@ -200,7 +206,17 @@ const Harness = defineComponent({
                             sent.value = `Step: ${step}`;
                             advancing.value = step;
                         },
+                        emails: props.viewerEmail
+                            ? {
+                                  viewerDefaultCommitEmail: props.viewerEmail,
+                                  viewerPossibleCommitEmails: [props.viewerEmail, 'other@fitloop.dev'],
+                              }
+                            : null,
+                        viewerLogin: first.author?.login ?? null,
                         onVisit: (url: string) => (sent.value = `Visit: ${url}`),
+                        onBypass: (submission: MergeSubmission) => {
+                            sent.value = `Bypass: ${JSON.stringify({ request: submission.request, to: first.number })}`;
+                        },
                         onMerge: (submission: MergeSubmission) => onMerge(submission),
                     }),
             ]);
@@ -467,5 +483,104 @@ export const OneGoingNewCommit: Story = {
             reason: { kind: 'refused', message: 'Head branch was modified. Review and try the merge again.' },
             at: NOW,
         },
+    },
+};
+
+/** A stack of three on a merge queue's branch: SP53's. */
+const SEARCH = sampleStack({
+    id: 'S_search',
+    number: 1212,
+    members: [
+        { title: 'Index members', isMergeQueueEnabled: true },
+        { title: 'Fuzzy matching', isMergeQueueEnabled: true },
+        { title: 'Search box', isMergeQueueEnabled: true },
+    ],
+});
+
+const SEARCH_ENTRY: PullRequestQueueEntry = {
+    position: 2,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: 12 * 60,
+    enqueuedAt: new Date(NOW - 9 * 60_000).toISOString(),
+    enqueuer: 'mlaine',
+    jump: false,
+};
+
+/** {@link SEARCH} in the queue, as one group sharing one position. */
+function searchInQueue(entry: Partial<PullRequestQueueEntry> = {}): PullRequestItem[] {
+    return SEARCH.map(member => ({ ...member, mergeQueueEntry: { ...SEARCH_ENTRY, ...entry } }));
+}
+
+/** SP53: all three enter as one group; no method to choose, no text, no jump. */
+export const QueueWhole: Story = { args: { members: SEARCH } };
+
+/** SP53, the line moved: two of the three enter. */
+export const QueueSome: Story = { args: { members: SEARCH, openedOn: 1213 } };
+
+/** SP53, exactly one going: still no method to choose and no text. */
+export const QueueOneGoing: Story = { args: { members: SEARCH, openedOn: 1212, viewerEmail: 'm.laine@fitloop.dev' } };
+
+/** SP54: in the queue, one position for the group; nothing left to do here. */
+export const InQueue: Story = { args: { members: searchInQueue(), admin: true } };
+
+/** SP54: GitHub says the first won't merge: thrown out, the later ones with it; nothing to add again until they are out. */
+export const ThrownOutUnmergeable: Story = {
+    args: {
+        members: searchInQueue().map((member, index) =>
+            index === 0 ? { ...member, mergeQueueEntry: { ...SEARCH_ENTRY, state: 'UNMERGEABLE' as const } } : member,
+        ),
+    },
+};
+
+/** SP54: seen in the queue, no entry now and still open: it says which one and adds again; why is GitHub's to say. */
+export const ThrownOutEntryGone: Story = {
+    args: { members: SEARCH, queued: SEARCH.map(member => member.id) },
+};
+
+/** SP54: the first went through the queue and the second was thrown out: the last left with it. */
+export const ThrownOutAfterOneLanded: Story = {
+    args: {
+        members: SEARCH.map((member, index) => (index === 0 ? { ...member, state: 'MERGED', merged: true } : member)),
+        queued: SEARCH.map(member => member.id),
+    },
+};
+
+/** SP54: the last one thrown out, none after it. */
+export const ThrownOutLast: Story = {
+    args: {
+        members: SEARCH.map((member, index) => (index < 2 ? { ...member, state: 'MERGED', merged: true } : member)),
+        queued: SEARCH.map(member => member.id),
+    },
+};
+
+/** SP55's first: waiting for a review. */
+const WAITING_FIRST = sampleStack({
+    id: 'S_calendar',
+    number: 1203,
+    members: [
+        { title: 'Swap the date picker component', mergeStateStatus: 'BLOCKED', reviewDecision: 'REVIEW_REQUIRED' },
+        { title: 'Move recurring rules to the new picker' },
+        { title: 'Timezones in the picker' },
+        { title: 'Remove the old picker' },
+    ],
+});
+
+/** SP55: the line speaks of the first alone, and lands it alone; the primary stays last, off. */
+export const BypassFirst: Story = {
+    args: { members: WAITING_FIRST, admin: true, viewerEmail: 'm.laine@fitloop.dev' },
+};
+
+/** SP55: the first is ready and the second holds the rest: nothing it can reach, so no line. */
+export const BypassNotTheSecond: Story = {
+    args: {
+        members: sampleStack({
+            id: 'S_calendar',
+            number: 1203,
+            members: [
+                { title: 'Swap the date picker component' },
+                { title: 'Move recurring rules', mergeStateStatus: 'BLOCKED', reviewDecision: 'REVIEW_REQUIRED' },
+            ],
+        }),
+        admin: true,
     },
 };

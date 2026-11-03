@@ -1,4 +1,4 @@
-import type { ItemChecks, PullRequestItem } from '@/store/ItemTypes.js';
+import type { ItemChecks, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 import type {
     StackBlocker,
     StackDescription,
@@ -46,7 +46,25 @@ export interface StackMerge {
     readonly freshChecks: boolean;
     /** What stops the range as the line has it; `null` when every one going can land. */
     readonly block: StackMergeBlock | null;
+    /** Where the stack stands in a merge queue, when it is there or was thrown out (SP54); `null` otherwise. */
+    readonly queue: StackMergeQueue | null;
 }
+
+/**
+ * A stack in a merge queue, as one group sharing one position; or out of it: the first the queue took back — GitHub
+ * says it won't merge, or it has no entry any more and is still open — the later ones leaving with it (SP54). GitHub's
+ * entry doesn't say why, so neither does the panel.
+ */
+export type StackMergeQueue =
+    | { readonly kind: 'in'; readonly entry: PullRequestQueueEntry }
+    | {
+          readonly kind: 'out';
+          readonly thrownOut: PullRequestItem;
+          /** The open ones after it. */
+          readonly left: readonly PullRequestItem[];
+          /** One of them still holds an entry: adding it again has to wait until GitHub takes it out. */
+          readonly stillThere: boolean;
+      };
 
 /** What stops a stack's range. */
 export type StackMergeBlock = StackIncompleteBlock | StackNeedsRebaseBlock | StackClosedBlock | StackHeldBlock;
@@ -111,7 +129,7 @@ export interface StackMergeMissingRow {
 /**
  * What a row says of its pull request: its own state as its pip shows it; staying open below the line (SP41); held
  * by an earlier one — blocked, or green itself (SP45, SP48); its checks running again after earlier ones landed (SP58);
- * being merged (SP56).
+ * being merged (SP56); in a merge queue, thrown out of it, or left it with the one thrown out (SP54).
  */
 export type StackMergeRowState =
     | { readonly kind: 'own'; readonly pip: StackPullRequestPipKind }
@@ -119,7 +137,10 @@ export type StackMergeRowState =
     | { readonly kind: 'blocked' }
     | { readonly kind: 'heldBy'; readonly number: number }
     | { readonly kind: 'freshChecks' }
-    | { readonly kind: 'merging' };
+    | { readonly kind: 'merging' }
+    | { readonly kind: 'queued'; readonly entry: PullRequestQueueEntry }
+    | { readonly kind: 'thrownOut' }
+    | { readonly kind: 'leftWithIt' };
 
 /** A stack's merge as the merge panel shows it (stacked PRs D11). */
 export interface StackMergeView {

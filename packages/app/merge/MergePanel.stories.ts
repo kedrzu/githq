@@ -8,6 +8,7 @@ import type { PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.j
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
+import type { ViewerCommitEmails } from './getCommitEmails.js';
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
 import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
@@ -128,6 +129,8 @@ const Harness = defineComponent({
         stepped: { type: Object as PropType<PullRequestItem | null>, default: null },
         /** A step asked for before, still on its way. */
         advancing: { type: String as PropType<MergeStep | null>, default: null },
+        emails: { type: Object as PropType<ViewerCommitEmails | null>, default: null },
+        viewerLogin: { type: String as PropType<string | null>, default: null },
     },
     setup(props) {
         const open = ref(true);
@@ -175,6 +178,24 @@ const Harness = defineComponent({
                     alreadyMerged: alreadyMerged.value,
                     advancing: advancing.value,
                     now: NOW,
+                    emails: props.emails,
+                    viewerLogin: props.viewerLogin,
+                    onBypass: (submission: MergeSubmission) => {
+                        sent.value = `Bypass: ${JSON.stringify(submission.request)}`;
+                        const merge: SentMerge = { ...submission, head: current.value.headRefOid };
+                        switch (props.answer) {
+                            case 'pending':
+                                sending.value = true;
+                                break;
+                            case 'refused': {
+                                const reason = { kind: 'refused', message: RULE_VIOLATION } as const;
+                                record.value = { kind: 'refused', sent: merge, reason, at: NOW };
+                                break;
+                            }
+                            default:
+                                open.value = false;
+                        }
+                    },
                     onStep: (step: MergeStep) => {
                         sent.value = `Step: ${step}`;
                         if (step !== 'resolveConflicts') {
@@ -659,4 +680,177 @@ export const QueueLocked: Story = {
 /** PM16: GitHub says it won't merge. */
 export const QueueUnmergeable: Story = {
     args: { pr: inQueue({ position: 2, state: 'UNMERGEABLE', estimatedTimeToMerge: null }) },
+};
+
+/** A viewer GitHub says may merge past what isn't met, with what isn't: `ci / test (node 20)` failed, no review yet. */
+const ADMIN_OPTIONS: MergeOptions = {
+    ...OPTIONS,
+    viewerCanMergeAsAdmin: true,
+    checks: SAMPLE_PASSED_CHECKS.map(check =>
+        check.name === 'test (node 20)' ? { ...check, state: 'failing' } : check,
+    ),
+};
+
+const NOT_APPROVED: PullRequestItem = {
+    ...PR,
+    mergeStateStatus: 'BLOCKED',
+    reviewDecision: 'REVIEW_REQUIRED',
+    checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 },
+};
+
+/** The viewer's addresses, as the repository's metadata brings them. */
+const EMAILS: ViewerCommitEmails = {
+    viewerDefaultCommitEmail: 'm.laine@fitloop.dev',
+    viewerPossibleCommitEmails: ['m.laine@fitloop.dev', 'mikko@laine.fi', 'mlaine@users.noreply.github.com'],
+};
+
+/** PM12a: its own line above the footer, what it skips and the email it commits with; the primary stays last. */
+export const BypassBesideAutoMerge: Story = {
+    args: {
+        pr: NOT_APPROVED,
+        settings: AUTO_MERGE_SETTINGS,
+        options: { ...ADMIN_OPTIONS, viewerCanEnableAutoMerge: true },
+        emails: EMAILS,
+    },
+};
+
+/** PM12a over PM13: neither auto-merge nor anything else to do, the primary off and bypass the only way. */
+export const BypassAlone: Story = { args: { pr: NOT_APPROVED, options: ADMIN_OPTIONS, emails: EMAILS } };
+
+/** PM12a: a required check still running is skipped by name too, and GitHub not naming a default is said so. */
+export const BypassRequiredRunning: Story = {
+    args: {
+        pr: { ...PR, mergeStateStatus: 'BLOCKED', checks: { state: 'PENDING', passing: 8, failing: 0, pending: 1 } },
+        options: {
+            ...OPTIONS,
+            viewerCanMergeAsAdmin: true,
+            checks: SAMPLE_PASSED_CHECKS.map(check =>
+                check.name === 'lint' ? { ...check, state: 'pending', completedAt: null } : check,
+            ),
+        },
+    },
+};
+
+/** PM12a over PM20: behind is a requirement it skips; ⌘↵ still updates the branch. */
+export const BypassBehind: Story = {
+    args: {
+        pr: { ...PR, mergeStateStatus: 'BEHIND' },
+        options: { ...OPTIONS, viewerCanMergeAsAdmin: true },
+        emails: EMAILS,
+    },
+};
+
+/** PM12a: GitHub says blocked, nothing the panel reads says why. */
+export const BypassBlockedUnnamed: Story = {
+    args: {
+        pr: { ...PR, mergeStateStatus: 'BLOCKED' },
+        options: { ...OPTIONS, viewerCanMergeAsAdmin: true },
+    },
+};
+
+/** PM12a on a rebase: it makes no commit of its own, so no email is named. */
+export const BypassRebase: Story = {
+    args: {
+        pr: NOT_APPROVED,
+        settings: {
+            ...ALL_METHODS,
+            squashMergeAllowed: false,
+            mergeCommitAllowed: false,
+            viewerDefaultMergeMethod: 'REBASE',
+        },
+        options: ADMIN_OPTIONS,
+        emails: EMAILS,
+    },
+};
+
+/** PM12a on a queue's branch: it goes outside the queue, directly, and says so. */
+export const BypassOnQueueBranch: Story = {
+    args: {
+        pr: { ...NOT_APPROVED, isMergeQueueEnabled: true },
+        options: { ...ADMIN_OPTIONS, mergeQueueMethod: 'SQUASH' },
+        emails: EMAILS,
+    },
+};
+
+/** PM12a, sent: its own button busy until GitHub answers, the primary as it was. */
+export const BypassSending: Story = {
+    args: { pr: NOT_APPROVED, options: ADMIN_OPTIONS, emails: EMAILS, answer: 'pending' },
+};
+
+/** PM25 after bypass: a rule the viewer may not bypass comes back in GitHub's words. */
+export const BypassRefused: Story = {
+    args: { pr: NOT_APPROVED, options: ADMIN_OPTIONS, emails: EMAILS, answer: 'refused' },
+};
+
+/** No line: ready by itself, whoever the viewer is. */
+export const AdminReady: Story = { args: { options: { ...OPTIONS, viewerCanMergeAsAdmin: true } } };
+
+/** No line: already in the queue. */
+export const AdminInQueue: Story = { args: { pr: inQueue({}), options: ADMIN_OPTIONS } };
+
+/** No line: under auto-merge. */
+export const AdminAutoMergeOn: Story = {
+    args: {
+        pr: {
+            ...NOT_APPROVED,
+            autoMerge: { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: 'mlaine', commitHeadline: null },
+        },
+        settings: AUTO_MERGE_SETTINGS,
+        options: ADMIN_OPTIONS,
+    },
+};
+
+/** No line: being merged. */
+export const AdminBeingMerged: Story = {
+    args: { pr: { ...NOT_APPROVED, merging: 'SQUASH' }, options: ADMIN_OPTIONS },
+};
+
+/** No line: GitHub refuses a draft whoever asks; marking it ready is the way. */
+export const AdminDraft: Story = { args: { pr: { ...NOT_APPROVED, isDraft: true }, options: ADMIN_OPTIONS } };
+
+/** No line: GitHub refuses conflicts whoever asks. */
+export const AdminConflicts: Story = {
+    args: { pr: { ...NOT_APPROVED, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' }, options: ADMIN_OPTIONS },
+};
+
+/** PM6: a squash by the pull request's author with several addresses: the line, on the default; `Y` moves on. */
+export const EmailSquashByAuthor: Story = { args: { emails: EMAILS, viewerLogin: PR.author?.login ?? null } };
+
+/** PM6: a merge commit takes an email from anyone with several addresses. */
+export const EmailMergeCommit: Story = {
+    args: { settings: { ...ALL_METHODS, viewerDefaultMergeMethod: 'MERGE' }, emails: EMAILS, viewerLogin: 'mlaine' },
+};
+
+/** No line: a squash by someone other than the author. */
+export const EmailSquashNotAuthor: Story = { args: { emails: EMAILS, viewerLogin: 'mlaine' } };
+
+/** No line: a single address is no choice. */
+export const EmailOneAddress: Story = {
+    args: {
+        emails: {
+            viewerDefaultCommitEmail: 'm.laine@fitloop.dev',
+            viewerPossibleCommitEmails: ['m.laine@fitloop.dev'],
+        },
+        viewerLogin: PR.author?.login ?? null,
+    },
+};
+
+/** No line: a queue writes its own commits. */
+export const EmailOnQueueBranch: Story = {
+    args: {
+        pr: { ...PR, isMergeQueueEnabled: true },
+        options: { ...OPTIONS, mergeQueueMethod: 'MERGE' },
+        settings: { ...ALL_METHODS, viewerDefaultMergeMethod: 'MERGE' },
+        emails: EMAILS,
+        viewerLogin: PR.author?.login ?? null,
+    },
+};
+
+/** D15: reopened after a refused merge sent with another address, it starts on that one. */
+export const EmailSentReopened: Story = {
+    args: {
+        emails: EMAILS,
+        viewerLogin: PR.author?.login ?? null,
+        sent: { request: { method: 'SQUASH', authorEmail: 'mikko@laine.fi' }, edited: null, head: PR.headRefOid },
+    },
 };

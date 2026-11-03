@@ -20,6 +20,42 @@ test('those going before the line, later ones dimmed and staying open (SP41)', (
     ]);
 });
 
+test('SP54: in the queue each row says its entry, thrown out and left with it say so, and none is marked as going', () => {
+    const entry = {
+        position: 2,
+        state: 'QUEUED',
+        estimatedTimeToMerge: null,
+        enqueuedAt: '',
+        enqueuer: 'a',
+        jump: false,
+    } as const;
+    const members = sampleStack({
+        id: 'S_q',
+        number: 1,
+        members: [{ mergeQueueEntry: entry }, { mergeQueueEntry: entry }],
+    });
+    const description = sampleStackDescription(members);
+    const queued = getStackMergeRows({ merge: getStackMerge({ description, end: null }) });
+    expect(queued.map(row => (row.kind === 'pullRequest' ? [row.state.kind, row.going] : null))).toEqual([
+        ['queued', false],
+        ['queued', false],
+    ]);
+
+    const left = sampleStack({ id: 'S_q', number: 1, members: [{}, {}, {}] });
+    const out = getStackMergeRows({
+        merge: getStackMerge({
+            description: sampleStackDescription(left),
+            end: null,
+            queued: left.map(member => member.id),
+        }),
+    });
+    expect(out.map(row => (row.kind === 'pullRequest' ? [row.state.kind, row.going, row.dimmed] : null))).toEqual([
+        ['thrownOut', false, false],
+        ['leftWithIt', false, false],
+        ['leftWithIt', false, false],
+    ]);
+});
+
 test('held: the one holding says its own state, those after it are blocked or green and held (SP45)', () => {
     const rows = rowsOf([{}, {}, BLOCKED, {}, BLOCKED], { end: 2 });
     expect(summary(rows)).toEqual([

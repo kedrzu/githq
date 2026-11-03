@@ -10,6 +10,27 @@ const {
     AutoMergeNotForViewer,
     AutoMergeOffered,
     AutoMergeOn,
+    AdminAutoMergeOn,
+    AdminBeingMerged,
+    AdminConflicts,
+    AdminDraft,
+    AdminInQueue,
+    AdminReady,
+    BypassAlone,
+    BypassBehind,
+    BypassBesideAutoMerge,
+    BypassBlockedUnnamed,
+    BypassOnQueueBranch,
+    BypassRebase,
+    BypassRefused,
+    BypassRequiredRunning,
+    BypassSending,
+    EmailMergeCommit,
+    EmailOneAddress,
+    EmailOnQueueBranch,
+    EmailSentReopened,
+    EmailSquashByAuthor,
+    EmailSquashNotAuthor,
     InQueue,
     QueueLocked,
     QueueMergeable,
@@ -647,6 +668,160 @@ test('PM16: locked for merging', async () => {
 test("PM16: unmergeable — in the queue, won't merge", async () => {
     await QueueUnmergeable.run();
     await expect.element(panel()).toHaveTextContent("In the queue, won't merge2nd · unmergeable");
+});
+
+test('PM12a, D12: ⌥⌘↵ sends bypass_rules and the method chosen; ⌘↵ never bypasses — here it turns auto-merge on', async () => {
+    await BypassBesideAutoMerge.run();
+
+    await expect.element(panel()).toHaveTextContent('You may merge past these requirements');
+    await expect.element(panel()).toHaveTextContent('Skips ci / test (node 20) and a required review');
+    await expect.element(panel()).toHaveTextContent('Commits as your default, m.laine@fitloop.dev');
+    await expect.element(page.getByRole('button', { name: /^Bypass rules and merge/u })).toBeVisible();
+    expect(panel().element().querySelector('footer')?.textContent).toContain('Enable auto-merge');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Enable: {"method":"SQUASH"}');
+});
+
+test('D12: with nothing else to do ⌘↵ still does nothing past the rules; ⌥⌘↵ alone sends it, with the text edited', async () => {
+    await BypassAlone.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    await expect.element(page.getByRole('button', { name: "Can't merge yet", exact: true })).toBeDisabled();
+
+    await userEvent.keyboard('e');
+    await userEvent.type(page.getByRole('textbox', { name: 'Commit title' }), ', past the rules');
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent(
+            'Bypass: {"method":"SQUASH","title":"Retry Stripe webhook delivery on 5xx (#477), past the rules","bypassRules":true}',
+        );
+});
+
+test('PM12a: a required check still running is skipped by name, and with no default known it says so', async () => {
+    await BypassRequiredRunning.run();
+
+    await expect.element(panel()).toHaveTextContent('Skips ci / lint');
+    await expect.element(panel()).toHaveTextContent('Commits as your default email');
+});
+
+test('PM12a: behind is what it skips; ⌘↵ stays updating the branch', async () => {
+    await BypassBehind.run();
+
+    await expect.element(panel()).toHaveTextContent('Skips being up to date with main');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+});
+
+test('PM12a: blocked for what nothing read names — it says GitHub holds it, and invents no reason', async () => {
+    await BypassBlockedUnnamed.run();
+
+    await expect.element(panel()).toHaveTextContent('Skips what GitHub says still holds it');
+});
+
+test('PM12a: a rebase makes no commit of its own, so the line names no email', async () => {
+    await BypassRebase.run();
+
+    await expect.element(panel()).toHaveTextContent('You may merge past these requirements');
+    await expect.element(panel()).not.toHaveTextContent('Commits as your default');
+});
+
+test('on a queue branch bypass goes outside the queue and says so; the method it sends is the queue’s', async () => {
+    await BypassOnQueueBranch.run();
+
+    await expect.element(panel()).toHaveTextContent('Merges directly, outside the queue.');
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Bypass: {"method":"SQUASH","bypassRules":true}');
+});
+
+test('PM32a: sent, its own button is busy and nothing is said of the primary; a second chord sends nothing', async () => {
+    await BypassSending.run();
+
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect
+        .element(page.getByRole('button', { name: /^Bypass rules and merge/u }))
+        .toHaveAttribute('aria-busy', 'true');
+    await expect.element(page.getByRole('button', { name: "Can't merge yet", exact: true })).toBeDisabled();
+});
+
+test('PM25: refused, GitHub’s words show, the line stays and ⌘↵ still doesn’t bypass', async () => {
+    await BypassRefused.run();
+
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(panel()).toHaveTextContent('Repository rule violations found');
+    await expect.element(panel()).toHaveTextContent('You may merge past these requirements');
+});
+
+test.each([
+    ['without viewerCanMergeAsAdmin', RequiredFailed],
+    ['ready by itself', AdminReady],
+    ['already in the queue', AdminInQueue],
+    ['under auto-merge', AdminAutoMergeOn],
+    ['being merged', AdminBeingMerged],
+    ['a draft', AdminDraft],
+    ['with conflicts', AdminConflicts],
+])('no bypass %s: no line, and ⌥⌘↵ sends nothing', async (_, story) => {
+    await story.run();
+
+    await expect.element(panel()).not.toHaveTextContent('past these requirements');
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).not.toHaveTextContent('Bypass');
+});
+
+test('PM6: a squash by the author starts on the default, sends no email; Y moves on, and only then one goes', async () => {
+    await EmailSquashByAuthor.run();
+
+    await expect.element(panel()).toHaveTextContent('m.laine@fitloop.dev');
+    await expect.element(panel()).toHaveTextContent('2 more');
+    await userEvent.keyboard('y');
+    await expect.element(panel()).toHaveTextContent('mikko@laine.fi');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('{"method":"SQUASH","authorEmail":"mikko@laine.fi"}');
+});
+
+test('PM6: back on the default after the last address, none goes; the method leaving for a rebase takes the line and the email', async () => {
+    await EmailSquashByAuthor.run();
+
+    await userEvent.keyboard('yyy');
+    await expect.element(panel()).toHaveTextContent('m.laine@fitloop.dev');
+    await userEvent.keyboard('y');
+    await userEvent.keyboard('3');
+    await expect.element(panel()).not.toHaveTextContent('Email');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"REBASE"}');
+});
+
+test('PM6: a merge commit offers it to anyone with several addresses; a squash by someone else does not', async () => {
+    await EmailMergeCommit.run();
+    await expect.element(panel()).toHaveTextContent('m.laine@fitloop.dev');
+
+    await userEvent.keyboard('1');
+    await expect.element(panel()).not.toHaveTextContent('m.laine@fitloop.dev');
+});
+
+test.each([
+    ['a squash by someone other than the author', EmailSquashNotAuthor],
+    ['a single address', EmailOneAddress],
+    ['a queue branch', EmailOnQueueBranch],
+])('without a choice the line does not exist: %s', async (_, story) => {
+    await story.run();
+
+    await expect.element(panel()).not.toHaveTextContent('Email');
+    await userEvent.keyboard('y');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).not.toHaveTextContent('authorEmail');
+});
+
+test('D15: reopened, it starts on the address its last merge was sent with', async () => {
+    await EmailSentReopened.run();
+
+    await expect.element(panel()).toHaveTextContent('mikko@laine.fi');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"authorEmail":"mikko@laine.fi"');
 });
 
 function panel() {

@@ -298,3 +298,63 @@ queuePlace:
   en: "{place} in {base}'s queue"
 addedBy:
   en: added by {login} {ago}
+stackReadyForQueue:
+  en: Ready for the queue
+stackAllEnter:
+  en: All {count} enter as one group
+stackEnterWithLanded:
+  en: '{count} enter as one group · {landed} landed before'
+stackSomeEnter:
+  en: '{count} enter as one group · {rest} stay open'
+addAllToQueue:
+  en: Add all {count} to the queue
+addCountToQueue:
+  en: Add {count} to the queue
+addCountOfToQueue:
+  en: Add {count} of {open} to the queue
+setByQueueLine:
+  en: Set by the queue
+eachOwnCommit:
+  en: each its own commit
+stackOutOfQueue:
+  en: Out of the queue
+stackThrownOut:
+  en: '#{number} was thrown out, the later ones left with it'
+stackThrownOutAlone:
+  en: '#{number} was thrown out'
+addAgain:
+  en: Add again
+numberOnGitHub:
+  en: '#{number} on GitHub'
+bypassTitle:
+  en: You may merge past these requirements
+bypassTitleOf:
+  en: 'You may merge #{number} past these requirements'
+bypassSkips:
+  en: Skips {list}
+bypassSkipsFirst:
+  en: Skips {list}. Only the first open pull request of a stack can go past them, so this lands one.
+bypassSkipsReviewRequired:
+  en: a required review
+bypassSkipsChangesRequested:
+  en: the changes requested
+bypassSkipsBehind:
+  en: being up to date with {base}
+bypassSkipsOther:
+  en: what GitHub says still holds it
+bypassOutsideQueue:
+  en: Merges directly, outside the queue.
+bypassCommitsAs:
+  en: Commits as your default, {email}
+bypassCommitsAsDefault:
+  en: Commits as your default email
+bypassMerge:
+  en: Bypass rules and merge
+bypassMergeNumber:
+  en: 'Bypass rules and merge #{number}'
+email:
+  en: Email
+emailMore:
+  en: '{count} more'
+changeEmail:
+  en: Change

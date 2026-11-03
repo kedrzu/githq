@@ -1,8 +1,8 @@
-<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, its checks running again after earlier ones landed (SP58), being merged — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
+<!-- The pull requests of a stack in its merge panel, first to last (stacked PRs D11, D18; SP40–SP62): each with its number, title and what it says now — its own state, staying open below the line, held by an earlier one, its checks running again after earlier ones landed (SP58), being merged, in a merge queue, thrown out of it or left with the one thrown out (SP54) — those going marked as landing, the line after the last of them with `↑` `↓` beside it ("Stops here", or "Can go up to here" where the next one holds the rest, SP45), later ones dimmed; places the copy does not hold yet in one row each run (SP50). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Ellipsis, GitMerge, Loader, LoaderCircle } from 'lucide-vue-next';
+import { CircleX, Ellipsis, GitMerge, Loader, LoaderCircle } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -15,6 +15,8 @@ import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type { StackPullRequestPipKind } from '@/store/stacks/describeStack.js';
 
+import { useMergeQueueTexts } from '../useMergeQueueTexts.js';
+
 import * as l from './StackMergeMembers.loc.js';
 import type { StackMergeRow, StackMergeRowState } from './StackMergeTypes.js';
 
@@ -25,7 +27,7 @@ const props = defineProps<{
 }>();
 
 /** A row's state drawn with its pull request's own icon, in words alone: the others have an icon of their own. */
-type WordedState = Exclude<StackMergeRowState, { readonly kind: 'freshChecks' | 'merging' }>;
+type WordedState = Exclude<StackMergeRowState, { readonly kind: 'freshChecks' | 'merging' | 'thrownOut' }>;
 
 /** A row as drawn: its pull request, its icon, and its state in words. */
 interface DrawnRow {
@@ -51,6 +53,7 @@ interface DrawnWords {
 }
 
 const t = useTranslate();
+const queueTexts = useMergeQueueTexts();
 
 const lastGoing = computed(() => props.rows.findLastIndex(row => row.kind === 'pullRequest' && row.going));
 const drawn = computed(() => props.rows.map((row, index) => draw(row, index)));
@@ -95,6 +98,9 @@ function draw(row: StackMergeRow, index: number): DrawnRow {
         text: t(l.freshChecks),
         tone: 'warning',
       };
+    // GitHub's entry doesn't say why: the row doesn't either.
+    case 'thrownOut':
+      return { ...base, icon: CircleX, iconTone: 'danger', spin: false, text: t(l.thrownOut), tone: 'danger' };
     default: {
       const look = getPullRequestKind(pullRequest);
       const { text, tone } = describe(state, pullRequest);
@@ -116,6 +122,11 @@ function describe(state: WordedState, pr: PullRequestItem): DrawnWords {
       return { text: t(l.blocked), tone: 'dim' };
     case 'heldBy':
       return { text: t(l.heldBy, { number: state.number }), tone: 'dim' };
+    // One position for the group: each row says it, as GitHub holds it.
+    case 'queued':
+      return { text: queueTexts.summary(state.entry), tone: 'dim' };
+    case 'leftWithIt':
+      return { text: t(l.leftWithIt), tone: 'dim' };
     default:
       return assertNever(state);
   }

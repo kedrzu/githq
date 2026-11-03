@@ -466,6 +466,124 @@ test('the options read on opening come back, partial errors and all, and their s
     expect(session.operations()).toContain('PullRequestMergeOptions');
 });
 
+test('D12: bypass goes through merge-async with bypass_rules, the method and the text edited, naming the head', async () => {
+    const { merger, session, rest } = await setup();
+    rest.answers.put = PENDING;
+
+    const answering = merger.merge({
+        item: open(),
+        request: { method: 'SQUASH', title: 'Past the rules', bypassRules: true },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+
+    expect(rest.puts()).toEqual([
+        { merge_method: 'squash', sha: open().headRefOid, commit_title: 'Past the rules', bypass_rules: true },
+    ]);
+});
+
+test('D12: bypass on a queue branch asks to merge directly, with the method: the queue would take it otherwise', async () => {
+    const { merger, session, rest } = await setup();
+    rest.answers.put = PENDING;
+
+    const answering = merger.merge({
+        item: onQueue(),
+        request: { method: 'SQUASH', bypassRules: true },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    await answering;
+
+    expect(rest.puts()).toEqual([
+        { merge_method: 'squash', sha: open().headRefOid, bypass_rules: true, merge_action: 'direct_merge' },
+    ]);
+});
+
+test('D5: a chosen email goes through GraphQL with the head, never REST: accepted, then merged by the commit it answers', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    mergeMutation = { data: { mergePullRequest: { pullRequest: { mergeCommit: { oid: 'email-sha' } } } } };
+
+    const answering = merger.merge({
+        item: open(),
+        request: { method: 'MERGE', title: 'Merge it', authorEmail: 'other@acme.dev' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+
+    expect(rest.puts()).toEqual([]);
+    expect(session.github.requests.find(request => request.operation === 'MergePullRequest')?.variables).toEqual({
+        pullRequestId: 'PR_1',
+        expectedHeadOid: open().headRefOid,
+        mergeMethod: 'MERGE',
+        authorEmail: 'other@acme.dev',
+        commitHeadline: 'Merge it',
+    });
+
+    await session.clock.advance(0);
+    expect(lateEnds).toEqual([{ kind: 'merged' }]);
+    expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'MERGE', sha: 'email-sha' } });
+    expect(queue.failures).toEqual([]);
+});
+
+test("D5: GitHub's error on a chosen email is the refusal the panel shows, in GitHub's words; nothing reads merged", async () => {
+    const { merger, items, queue, session } = await setup();
+    mergeMutation = { data: null, errors: [{ type: 'UNPROCESSABLE', message: 'Head branch was modified.' }] };
+
+    const answering = merger.merge({
+        item: open(),
+        request: { method: 'SQUASH', authorEmail: 'other@acme.dev' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({
+        kind: 'refused',
+        reason: { kind: 'refused', message: 'Head branch was modified.' },
+    });
+    expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN' });
+    expect(items.get('PR_1')).not.toHaveProperty('merging');
+    expect(queue.failures).toEqual([]);
+});
+
+test('SP53: a stack on a queue branch sends the sha alone to its top — whose own base is no queue’s — and all read their entries', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    const first: PullRequestItem = {
+        ...earlier(),
+        isMergeQueueEnabled: true,
+        stack: { id: 'S_1', number: 1, size: 2, position: 1 },
+    };
+    const top: PullRequestItem = { ...open(), stack: { id: 'S_1', number: 1, size: 2, position: 2 } };
+    items.upsertMany([first, top]);
+    rest.answers.put = ENQUEUED;
+    statusNode = queuedNode();
+    earlierStatusNode = {
+        ...queuedNode(),
+        ...samplePullRequestNode('PR_0', { repository: 'acme/web', number: 1, updatedAt: '2026-10-30T13:00:00Z' }),
+        isMergeQueueEnabled: true,
+        mergeQueueEntry: queuedNode().mergeQueueEntry,
+    };
+
+    const answering = merger.merge({ item: top, members: [first], request: { method: 'SQUASH' }, shown, onLateEnd });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+    await session.clock.advance(0);
+
+    expect(rest.puts()).toEqual([{ sha: top.headRefOid }]);
+    for (const id of ['PR_0', 'PR_1']) {
+        expect(items.get(id)).toMatchObject({ merged: false, mergeQueueEntry: { position: 3 } });
+        expect(items.get(id)).not.toHaveProperty('merging');
+    }
+
+    expect(lateEnds).toEqual([{ kind: 'enqueued' }]);
+    expect(queue.failures).toEqual([]);
+});
+
 async function setup() {
     const login = `user-${crypto.randomUUID()}`;
     const answers: MergeAnswers = { put: undefined, read: STILL_PENDING };
@@ -490,6 +608,8 @@ async function setup() {
     stackTotalCount = 2;
     stackAnswered = true;
     statusNode = null;
+    earlierStatusNode = null;
+    mergeMutation = undefined;
 
     return { merger, items, queue, session, rest };
 
@@ -521,7 +641,12 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
     }
 
     if (request.operation === 'PullRequestStatuses') {
-        return statusNode ? { data: { nodes: [statusNode] } } : undefined;
+        const nodes = [statusNode, earlierStatusNode].filter(node => node !== null);
+        return nodes.length > 0 ? { data: { nodes } } : undefined;
+    }
+
+    if (request.operation === 'MergePullRequest') {
+        return mergeMutation;
     }
 
     if (request.operation !== 'PullRequestMergeOptions') {
@@ -579,6 +704,10 @@ let stackAnswered = true;
 
 /** What the fake GitHub answers re-reading a pull request's status; a 502 when `null`. */
 let statusNode: PullRequestFieldsFragment | null = null;
+/** And of the pull request before it in its stack. */
+let earlierStatusNode: PullRequestFieldsFragment | null = null;
+/** What the fake GitHub answers `MergePullRequest`; a 502 when `undefined`. */
+let mergeMutation: TestGraphQLAnswer | undefined;
 
 /** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];

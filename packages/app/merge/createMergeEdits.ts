@@ -20,6 +20,12 @@ import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
 
+/** `mergePullRequest` merged it: it answers at once, unlike `merge-async`, with the commit it made. */
+interface MergedWithEmail {
+    readonly status: 'mergedWithEmail';
+    readonly sha: string | null;
+}
+
 /** What {@link createMergeEdits} makes the merge of. */
 export interface CreateMergeEditsParams {
     /** The pull request as shown: its head commit is the one the merge names. */
@@ -120,14 +126,17 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
 
     /**
      * Merged as the merge was: without a commit of its own to say, as GitHub's answer names only the top's. A top put
-     * in a merge queue is confirmed with nothing merged: nor is any of these.
+     * in a merge queue is confirmed with nothing merged: nor is any of these, each in the queue as GitHub answered,
+     * the top's layer holding the status of all (SP54).
      */
     function toMemberVerdict(verdict: EditVerdict): EditVerdict {
-        if (verdict.kind !== 'confirmed' || !isMerged(verdict.layer.item(params.item))) {
+        if (verdict.kind !== 'confirmed') {
             return { kind: 'unknown' };
         }
 
-        return { kind: 'confirmed', layer: getMergedLayer(clock.now()) };
+        return isMerged(verdict.layer.item(params.item))
+            ? { kind: 'confirmed', layer: getMergedLayer(clock.now()) }
+            : verdict;
     }
 }
 
@@ -135,15 +144,19 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
  * The merge of the pull request itself as an edit (merging D3, D5, D6). It draws the pull request as being merged
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
  * head commit the user saw, and the commit's title and message only when the user edited them. On a merge queue's
- * branch the head commit goes alone: GitHub refuses a method or a text there, the queue has its own. GitHub's `merged`
- * confirms it, and so does `enqueued`, with the pull request as GitHub then holds it: in the queue, not merged. A
+ * branch the head commit goes alone: GitHub refuses a method or a text there, the queue has its own. A stack's top has
+ * another member's branch for its base, so whether a queue takes it is told by the first going, whose base is the
+ * stack's. Bypass names itself, and on a queue's branch asks to merge directly, as GitHub would queue it otherwise. A
+ * chosen commit email goes through GraphQL (D5), which answers at once: accepted and merged, or refused. GitHub's
+ * `merged` confirms it, and so does `enqueued`, with the pull requests as GitHub then holds them: in the queue, not merged. A
  * refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is a failed edit
  * otherwise; with no answer in time, or with the request itself unanswered, the layer goes without a word and the next
  * sync shows what GitHub holds.
  */
 function createMergeEdit(params: CreateMergeEditsParams): Edit {
-    const { item, request, clock, onAnswer, onLateEnd, shown } = params;
+    const { item, members = [], request, clock, onAnswer, onLateEnd, shown } = params;
     const target = getItemReference(item);
+    const onQueueBranch = (members[0] ?? item).isMergeQueueEnabled;
 
     return {
         itemId: item.id,
@@ -151,20 +164,12 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         subject: { kind: 'merged' },
         optimistic: getBeingMergedLayer(request.method),
         send: async ({ rest, sdk }) => {
-            let answer: AsyncMergeAnswer;
+            let answer: AsyncMergeAnswer | MergedWithEmail;
             try {
-                answer = await requestAsyncMerge(
-                    rest,
-                    item.isMergeQueueEnabled
-                        ? { ...target, sha: item.headRefOid }
-                        : {
-                              ...target,
-                              mergeMethod: toRestMergeMethod(request.method),
-                              sha: item.headRefOid,
-                              ...(request.title === undefined ? {} : { commitTitle: request.title }),
-                              ...(request.body === undefined ? {} : { commitMessage: request.body }),
-                          },
-                );
+                answer =
+                    request.authorEmail === undefined
+                        ? await requestAsyncMerge(rest, toAsyncMergeParams())
+                        : await mergeWithEmail(sdk, request.authorEmail);
             } catch (error) {
                 const reason = toEditFailureReason(error);
                 onAnswer({ kind: 'refused', reason });
@@ -183,6 +188,17 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
                 case 'merged':
                     onAnswer({ kind: 'merged' });
                     return merged(answer.sha);
+                // Accepted, the panel leaving first (a turn of the clock) so the merge is told in a toast (PM34).
+                case 'mergedWithEmail':
+                    onAnswer({ kind: 'accepted' });
+                    return {
+                        kind: 'following',
+                        follow: async () => {
+                            await pause(clock, 0);
+                            onLateEnd({ kind: 'merged' });
+                            return merged(answer.sha);
+                        },
+                    };
                 case 'enqueued':
                     onAnswer({ kind: 'accepted' });
                     return await readEnqueued(sdk);
@@ -194,6 +210,35 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
             }
         },
     };
+
+    function toAsyncMergeParams(): RequestAsyncMergeParams {
+        const bypassRules = request.bypassRules === true;
+        if (onQueueBranch && !bypassRules) {
+            return { ...target, sha: item.headRefOid };
+        }
+
+        return {
+            ...target,
+            mergeMethod: toRestMergeMethod(request.method),
+            sha: item.headRefOid,
+            ...(request.title === undefined ? {} : { commitTitle: request.title }),
+            ...(request.body === undefined ? {} : { commitMessage: request.body }),
+            ...(bypassRules ? { bypassRules } : {}),
+            ...(bypassRules && onQueueBranch ? { mergeAction: 'direct_merge' as const } : {}),
+        };
+    }
+
+    async function mergeWithEmail(sdk: GitHubSdk, authorEmail: string): Promise<MergedWithEmail> {
+        const { mergePullRequest } = await sdk.MergePullRequest({
+            pullRequestId: item.id,
+            expectedHeadOid: item.headRefOid,
+            mergeMethod: request.method,
+            authorEmail,
+            ...(request.title === undefined ? {} : { commitHeadline: request.title }),
+            ...(request.body === undefined ? {} : { commitBody: request.body }),
+        });
+        return { status: 'mergedWithEmail', sha: mergePullRequest?.pullRequest?.mergeCommit?.oid ?? null };
+    }
 
     /**
      * Asks how the merge GitHub accepted ended, with growing waits, until it says or the time limit passes. A
@@ -236,13 +281,13 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
     }
 
     /**
-     * GitHub put it in the merge queue: the row confirmed with the status GitHub holds now, its place in the queue
-     * among it. Left to the next sync when that could not be read.
+     * GitHub put it in the merge queue, and those going with it: each row confirmed with the status GitHub holds now,
+     * its place in the queue among it. Left to the next sync when that could not be read.
      */
     async function readEnqueued(sdk: GitHubSdk): Promise<EditVerdict> {
         let nodes;
         try {
-            ({ nodes } = await sdk.PullRequestStatuses({ ids: [item.id] }));
+            ({ nodes } = await sdk.PullRequestStatuses({ ids: [item.id, ...members.map(member => member.id)] }));
         } catch {
             return { kind: 'unknown' };
         }
@@ -252,14 +297,22 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
             return { kind: 'unknown' };
         }
 
-        const status = toPullRequestStatus(node);
-        const { updatedAt } = node;
+        const read = new Map(nodes.flatMap(each => (isPresent(each) ? [[each.id, each] as const] : [])));
+        if (item.stack) {
+            onLateEnd({ kind: 'enqueued' });
+        }
+
         return {
             kind: 'confirmed',
             layer: {
-                item: current => (current.kind === 'pullRequest' ? { ...current, ...status } : current),
-                supersededBy: stored => stored.updatedAt > updatedAt,
-                confirmedAt: updatedAt,
+                item: current => {
+                    const found = read.get(current.id);
+                    return found && current.kind === 'pullRequest'
+                        ? { ...current, ...toPullRequestStatus(found) }
+                        : current;
+                },
+                supersededBy: stored => stored.updatedAt > (read.get(stored.id)?.updatedAt ?? node.updatedAt),
+                confirmedAt: node.updatedAt,
             },
         };
     }
@@ -268,8 +321,9 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
      * GitHub merged it. Drawn until GitHub's own copy says so: without GitHub's time of the merge, the row keeps no
      * confirmation mark, so any copy a sync reads takes the row's place, and an older one only shows under the layer.
      */
-    function merged(sha: string): EditVerdict {
-        return { kind: 'confirmed', layer: getMergedLayer(clock.now(), { method: request.method, sha }) };
+    function merged(sha: string | null): EditVerdict {
+        const mergedAs = sha === null ? undefined : { method: request.method, sha };
+        return { kind: 'confirmed', layer: getMergedLayer(clock.now(), mergedAs) };
     }
 }
 

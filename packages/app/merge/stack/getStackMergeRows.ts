@@ -25,7 +25,8 @@ export interface GetStackMergeRowsParams {
 export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRow[] {
     const { merge, outcomeUnknown = false } = params;
     // Nothing lands while the whole range is blocked (D7, D21): none is marked as going then.
-    const blocked = outcomeUnknown || isWholeRangeBlocked(merge);
+    const { queue } = merge;
+    const blocked = outcomeUnknown || isWholeRangeBlocked(merge) || queue !== null;
     const goingIds = new Set(merge.going.map(pr => pr.id));
     const { holder } = merge;
     const holderIndex = merge.members.findIndex(
@@ -54,7 +55,7 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
     function getRow(pip: StackPullRequestPip, index: number): StackMergePullRequestRow {
         const { pullRequest } = pip;
         const inRange = goingIds.has(pullRequest.id);
-        const after = !outcomeUnknown && lastGoingIndex >= 0 && index > lastGoingIndex;
+        const after = !outcomeUnknown && queue === null && lastGoingIndex >= 0 && index > lastGoingIndex;
         return {
             kind: 'pullRequest',
             pullRequest,
@@ -77,6 +78,18 @@ export function getStackMergeRows(params: GetStackMergeRowsParams): StackMergeRo
 
         if (outcomeUnknown) {
             return own;
+        }
+
+        if (queue?.kind === 'in' && pullRequest.mergeQueueEntry) {
+            return { kind: 'queued', entry: pullRequest.mergeQueueEntry };
+        }
+
+        if (queue?.kind === 'out' && queue.thrownOut.id === pullRequest.id) {
+            return { kind: 'thrownOut' };
+        }
+
+        if (queue?.kind === 'out' && queue.left.some(pr => pr.id === pullRequest.id)) {
+            return { kind: 'leftWithIt' };
         }
 
         if (merge.freshChecks && pip.kind === 'moving') {

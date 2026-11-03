@@ -20,6 +20,8 @@ export interface RequestAsyncMergeParams {
     readonly commitMessage?: string;
     /** Merges past the requirements not met, for a viewer allowed to. */
     readonly bypassRules?: boolean;
+    /** Merges without the base branch's merge queue; GitHub otherwise uses the queue where there is one. */
+    readonly mergeAction?: 'direct_merge';
 }
 
 /**
@@ -32,7 +34,7 @@ export function requestAsyncMerge(
     rest: GitHubRestRequester,
     params: RequestAsyncMergeParams,
 ): Promise<AsyncMergeAnswer> {
-    const { owner, name, number, mergeMethod, sha, commitTitle, commitMessage, bypassRules } = params;
+    const { owner, name, number, mergeMethod, sha, commitTitle, commitMessage, bypassRules, mergeAction } = params;
     return sendAsyncMergeRequest(rest, {
         method: 'PUT',
         url: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/pulls/${number}/merge-async`,
@@ -42,6 +44,7 @@ export function requestAsyncMerge(
             ...(commitTitle === undefined ? {} : { commit_title: commitTitle }),
             ...(commitMessage === undefined ? {} : { commit_message: commitMessage }),
             ...(bypassRules ? { bypass_rules: true } : {}),
+            ...(mergeAction === undefined ? {} : { merge_action: mergeAction }),
         },
     });
 }

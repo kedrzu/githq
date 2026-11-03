@@ -42,6 +42,21 @@ test('asks for the merge with the method and the head, and no title or message k
     });
 });
 
+test('bypass names itself, and on a queue branch asks to merge directly', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const rest = restAnswering(() => Response.json(ENQUEUED, { status: 202 }), requests);
+
+    await requestAsyncMerge(rest, { ...PARAMS, bypassRules: true, mergeAction: 'direct_merge' });
+
+    const [, init] = requests[0] ?? [];
+    expect(JSON.parse(typeof init?.body === 'string' ? init.body : '')).toEqual({
+        merge_method: 'squash',
+        sha: 'f66a',
+        bypass_rules: true,
+        merge_action: 'direct_merge',
+    });
+});
+
 test('sends the commit title and message when given', async () => {
     const requests: Parameters<Fetch>[] = [];
     const rest = restAnswering(() => Response.json(ENQUEUED, { status: 202 }), requests);

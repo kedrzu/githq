@@ -9,6 +9,16 @@ import * as stories from './MergePanel.stack.stories.js';
 const {
     BeingMerged,
     BeingRead,
+    BypassFirst,
+    BypassNotTheSecond,
+    InQueue,
+    QueueOneGoing,
+    QueueSome,
+    QueueWhole,
+    ThrownOutAfterOneLanded,
+    ThrownOutEntryGone,
+    ThrownOutLast,
+    ThrownOutUnmergeable,
     ClosedInside,
     DraftInside,
     Held,
@@ -401,6 +411,124 @@ test('SS3, SP58: partly merged, GitHub checking those left — nothing to merge 
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('SP53: all enter as one group — set by the queue, no text; ⌘↵ sends the top with no method chosen, and no jump', async () => {
+    await QueueWhole.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready for the queue');
+    await expect.element(panel()).toHaveTextContent('All 3 enter as one group');
+    await expect.element(panel()).toHaveTextContent('Set by the queue');
+    await expect.element(panel()).toHaveTextContent('each its own commit');
+    expect(page.getByRole('button', { name: 'Squash', exact: true }).elements()).toHaveLength(0);
+    expect(page.getByRole('button', { name: /Jump/u }).elements()).toHaveLength(0);
+    await expect.element(primary('Add all 3 to the queue')).toBeVisible();
+
+    await userEvent.keyboard('e');
+    expect(page.getByRole('textbox', { name: 'Commit title' }).elements()).toHaveLength(0);
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"top":1214');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1212,1213,1214]');
+});
+
+test('SP53: the line moved, those going enter and the rest stay open', async () => {
+    await QueueSome.run();
+
+    await expect.element(panel()).toHaveTextContent('2 enter as one group · 1 stay open');
+    await expect.element(primary('Add 2 of 3 to the queue')).toBeVisible();
+});
+
+test('SP53: with exactly one going still no method to choose, no text — and no email line, in a stack', async () => {
+    await QueueOneGoing.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready for the queue');
+    await expect.element(panel()).toHaveTextContent('Set by the queue');
+    await expect.element(panel()).not.toHaveTextContent('Written by the queue');
+    await expect.element(panel()).not.toHaveTextContent('Email');
+    await expect.element(primary('Add to queue')).toBeVisible();
+});
+
+test('SP54: in the queue the group shares one position; no primary, nothing to bypass, ⌘↵ does nothing', async () => {
+    await InQueue.run();
+
+    await expect.element(panel()).toHaveTextContent('In the queue');
+    await expect.element(panel()).toHaveTextContent('2nd · waiting for checks');
+    for (const number of [1212, 1213, 1214]) {
+        await expect.element(member(number)).toHaveTextContent('2nd · waiting for checks');
+    }
+
+    await expect.element(panel()).not.toHaveTextContent('past these requirements');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('SP54: UNMERGEABLE — it names the one, the later ones left with it, no reason made up; nothing to add again yet', async () => {
+    await ThrownOutUnmergeable.run();
+
+    await expect.element(panel()).toHaveTextContent('Out of the queue');
+    await expect.element(panel()).toHaveTextContent('#1212 was thrown out, the later ones left with it');
+    await expect.element(member(1212)).toHaveTextContent('Thrown out of the queue');
+    await expect.element(member(1213)).toHaveTextContent('Left with it');
+    await expect.element(panel()).not.toHaveTextContent('Checks failed');
+    await expect.element(primary('Add again')).toBeDisabled();
+});
+
+test('SP54: the entry gone with it still open — ⌘↵ adds again, O goes to the one thrown out', async () => {
+    await ThrownOutEntryGone.run();
+
+    await expect.element(panel()).toHaveTextContent('#1212 was thrown out, the later ones left with it');
+    await expect.element(footer()).toHaveTextContent('#1212 on GitHub');
+    await userEvent.keyboard('o');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('Visit: https://github.com/fitloop/webapp/pull/1212');
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1212,1213,1214]');
+});
+
+test('SP54: those that went through read merged; the thrown out one is the first still open', async () => {
+    await ThrownOutAfterOneLanded.run();
+
+    await expect.element(member(1212)).toHaveTextContent('Merged');
+    await expect.element(panel()).toHaveTextContent('#1213 was thrown out, the later ones left with it');
+    await expect.element(member(1214)).toHaveTextContent('Left with it');
+});
+
+test('SP54: the last one thrown out has no later ones to speak of', async () => {
+    await ThrownOutLast.run();
+
+    await expect.element(panel()).toHaveTextContent('#1214 was thrown out');
+    await expect.element(panel()).not.toHaveTextContent('later ones');
+});
+
+test('SP55: the line speaks of the first alone, ⌥⌘↵ lands exactly that one; ⌘↵ never does', async () => {
+    await BypassFirst.run();
+
+    await expect.element(panel()).toHaveTextContent('You may merge #1203 past these requirements');
+    await expect
+        .element(panel())
+        .toHaveTextContent(
+            'Skips a required review. Only the first open pull request of a stack can go past them, so this lands one.',
+        );
+    await expect.element(panel()).toHaveTextContent('Commits as your default, m.laine@fitloop.dev');
+    await expect.element(page.getByRole('button', { name: /^Bypass rules and merge #1203/u })).toBeVisible();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('Bypass: {"request":{"method":"SQUASH","bypassRules":true},"to":1203}');
+});
+
+test('SP55: the first ready and a later one holding the rest — bypass can’t reach it, so no line', async () => {
+    await BypassNotTheSecond.run();
+
+    await expect.element(panel()).not.toHaveTextContent('past these requirements');
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).not.toHaveTextContent('Bypass');
 });
 
 function panel() {
