@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
-import { expect, test } from 'bun:test';
+import { expect, spyOn, test } from 'bun:test';
 import { computed } from 'vue';
 
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
@@ -849,6 +849,78 @@ test('a push in the middle of reading the list starts it over at the new head', 
     expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'pushed' });
 });
 
+test('a push found on a list of many pages keeps the old list, and marks set meanwhile, until the new one is whole, then shows it at once', async () => {
+    const github = createGitHub();
+    for (const path of ['a.ts', 'b.ts', 'c.ts']) {
+        github.file({ path, changeType: 'ADDED', after: path });
+    }
+
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+    const shown = model.files;
+
+    github.file({ path: 'd.ts', changeType: 'ADDED', after: 'd.ts' });
+    github.moveHead('head-2');
+    for (const path of ['a.ts', 'b.ts', 'c.ts', 'd.ts']) {
+        github.blobAt(`head-2:${path}`, { text: path });
+    }
+
+    const laterPage = createSilentHold(isLaterPage);
+    session.github.holdIf = laterPage.hold;
+    files.open(REFERENCE);
+    await waitUntil(() => session.github.requests.some(isLaterPage), { timeoutMs: 2000 });
+    await session.clock.advance(20);
+
+    expect(model.headRefOid).toBe(HEAD);
+    expect(model.files).toBe(shown);
+    expect(model.listComplete).toBe(true);
+    expect(model.getState('c.ts').kind).toBe('ready');
+
+    model.setViewed(['c.ts'], true);
+    laterPage.release();
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts', 'c.ts', 'd.ts']);
+    expect(model.listComplete).toBe(true);
+    expect(viewedOf(model, 'c.ts')).toBe('VIEWED');
+});
+
+test('a push found, with a later page of the new list failing, leaves the old list and warns; opening again shows the new one', async () => {
+    const github = createGitHub();
+    for (const path of ['a.ts', 'b.ts', 'c.ts']) {
+        github.file({ path, changeType: 'ADDED', after: path });
+        github.blobAt(`head-2:${path}`, { text: `pushed ${path}` });
+    }
+
+    let failLaterPage = false;
+    const { model, files, session } = open(uniqueLogin(), github, request => {
+        if (failLaterPage && isLaterPage(request)) {
+            failLaterPage = false;
+            github.failNext('PullRequestReviewFiles');
+        }
+
+        return null;
+    });
+    await settled(model);
+    const shown = model.files;
+
+    github.moveHead('head-2');
+    failLaterPage = true;
+    files.open(REFERENCE);
+    await waitUntil(() => model.listFailing, { timeoutMs: 2000 });
+
+    expect(model.headRefOid).toBe(HEAD);
+    expect(model.files).toBe(shown);
+    expect(model.listComplete).toBe(true);
+    expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
+
+    files.open(REFERENCE);
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+    await settled(model);
+
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'pushed a.ts' });
+});
+
 test('a base whose tip moved on starts nothing over while the merge base stays; a new merge base shows what is new', async () => {
     const github = createGitHub();
     github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
@@ -964,6 +1036,63 @@ test('signing out with every kind of answer on its way: the kept list, oids and 
 
     expect(model.files).toEqual([]);
     expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
+});
+
+test('signing out while .gitattributes is being asked of GitHub neither opens the disk again nor asks for its text', async () => {
+    const github = createGitHub();
+    github.blobAt(`${HEAD}:.gitattributes`, { text: '*.gen.ts linguist-generated\n' });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const login = uniqueLogin();
+    const hold = createSilentHold(request => request.operation === 'ReviewBlobOids');
+    const { session } = open(login, github, hold.hold);
+    session.container.resolve(ItemStore);
+    await waitUntil(() => session.operations().includes('ReviewBlobOids'), { timeoutMs: 2000 });
+    await waitUntil(async () => (await databaseNames()).includes(getReviewBlobDatabaseName(login)), {
+        timeoutMs: 2000,
+    });
+
+    session.signOutFromAnotherTab();
+    await waitUntil(async () => !(await databaseNames()).includes(getReviewBlobDatabaseName(login)), {
+        timeoutMs: 2000,
+    });
+
+    hold.release();
+    await session.clock.advance(100);
+    await Bun.sleep(20);
+
+    expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
+    expect(session.operations()).not.toContain('ReviewBlobTexts');
+});
+
+test('signing out while .gitattributes is being looked for on the disk asks GitHub nothing', async () => {
+    const github = createGitHub();
+    github.blobAt(`${HEAD}:.gitattributes`, { text: '*.gen.ts linguist-generated\n' });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    let release = () => {};
+    const held = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const session = createTestSession({ login: uniqueLogin(), answer: github.answer, answerRest: github.answerRest });
+    setIndexedDbPersistence(session.container);
+    session.container.resolve(ItemStore);
+    const store = session.container.resolve(ReviewBlobStore);
+    const readResolutions = store.readResolutions.bind(store);
+    let reading = false;
+    spyOn(store, 'readResolutions').mockImplementation(async (...args) => {
+        const answer = await readResolutions(...args);
+        reading = true;
+        await held;
+        return answer;
+    });
+    session.container.resolve(ReviewFiles).open(REFERENCE);
+    await waitUntil(() => reading, { timeoutMs: 2000 });
+
+    session.signOutFromAnotherTab();
+    release();
+    await session.clock.advance(100);
+    await Bun.sleep(20);
+
+    expect(session.operations()).not.toContain('ReviewBlobOids');
 });
 
 test('a viewed file shows its header, nothing of it read; opened it is read and collapses back, and with its mark gone it is simply open (D13)', async () => {
@@ -1224,6 +1353,21 @@ test('.gitattributes is read once per head, then from the disk; failing to read 
     expect(failing.model.getState('a.gen.ts')).toEqual({ kind: 'ready', before: null, after: 'generated' });
 });
 
+test('a .gitattributes with too many rules collapses nothing, and says so in the log once', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    const rule = '*.gen.ts linguist-generated';
+    github.blobAt(`${HEAD}:.gitattributes`, {
+        text: `${rule}\n`.repeat(Math.ceil((16 * 1024) / rule.length) + 1),
+    });
+    github.file({ path: 'a.gen.ts', changeType: 'ADDED', after: 'generated' });
+    const { model, session } = open(uniqueLogin(), github);
+
+    await settled(model);
+
+    expect(model.getCollapse('a.gen.ts')).toBeNull();
+    expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
+});
+
 test('a file collapsed by hand before its turn is not fetched, one collapsed once read opens again at once, and either keeps the reason it has', async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'read.ts', changeType: 'ADDED', after: 'read' });
@@ -1365,6 +1509,34 @@ test('a re-read list has the last word when nothing is on its way, but not over 
     github.setViewed('b.ts', 'VIEWED');
     files.open(REFERENCE);
     await waitUntil(() => viewedOf(model, 'b.ts') === 'VIEWED', { timeoutMs: 2000 });
+});
+
+test('a refused request reads the list again after a read under way, whose pages lose to the marks it put back', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    const reads = () => session.operations().filter(operation => operation === 'PullRequestReviewFiles').length;
+    const before = reads();
+    const list = createSilentHold(request => request.operation === 'PullRequestReviewFiles');
+    session.github.holdIf = list.hold;
+    files.open(REFERENCE);
+    await waitUntil(() => reads() === before + 1, { timeoutMs: 2000 });
+    session.github.holdIf = null;
+
+    // GitHub took a.ts of the two, however it answered.
+    github.setViewed('a.ts', 'VIEWED');
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['a.ts', 'b.ts'], true);
+    await waitUntil(() => viewedOf(model, 'a.ts') === 'UNVIEWED', { timeoutMs: 2000 });
+
+    list.release();
+    await waitUntil(() => viewedOf(model, 'a.ts') === 'VIEWED', { timeoutMs: 2000 });
+
+    expect(viewedOf(model, 'b.ts')).toBe('UNVIEWED');
+    expect(reads()).toBe(before + 2);
 });
 
 interface TestFile {
@@ -1681,6 +1853,10 @@ function reviewOperations(session: TestSession) {
 }
 
 /** A query for the oids of a pull request's files, not of what collapses them. */
+function isLaterPage(request: TestGraphQLRequest) {
+    return request.operation === 'PullRequestReviewFiles' && !!request.variables.after;
+}
+
 function isOidQuery(request: TestGraphQLRequest) {
     return request.operation === 'ReviewBlobOids' && !String(request.variables.e0).endsWith(':.gitattributes');
 }

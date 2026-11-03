@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test';
+import { expect, mock, test } from 'bun:test';
 
 import { parseLinguistGenerated } from './parseLinguistGenerated.js';
 
@@ -30,6 +30,26 @@ test.each([
     ['*.ts linguist-generated=false', 'a.ts', false],
 ])('%s on %s: %p', (line, path, expected) => {
     expect(parseLinguistGenerated(line)(path)).toBe(expected);
+});
+
+// Each checked against `git check-attr linguist-generated`.
+test.each([
+    ['[attr]gen linguist-generated\n*.ts gen', 'a.ts', true],
+    ['*.ts gen\n[attr]gen linguist-generated', 'a.ts', true],
+    ['[attr]gen linguist-generated\n[attr]outer other gen\n*.ts outer', 'a.ts', true],
+    ['[attr]gen linguist-generated\n[attr]gen -linguist-generated\n*.ts gen', 'a.ts', false],
+    ['[attr]gen -linguist-generated\n* linguist-generated\n*.ts gen', 'a.ts', false],
+    ['[attr]gen linguist-generated\n*.css -gen', 'a.css', false],
+    ['[attr]gen linguist-generated\n*.css !gen', 'a.css', false],
+    ['[attr]gen linguist-generated\n*.css gen=x', 'a.css', false],
+    ['[attr]gen linguist-generated\n*.ts gen -gen', 'a.ts', false],
+    ['[attr]gen linguist-generated\n*.ts -gen gen', 'a.ts', true],
+    ['[attr]gen linguist-generated\n*.ts gen -linguist-generated', 'a.ts', false],
+    ['[attr]gen linguist-generated\n*.ts -linguist-generated gen', 'a.ts', true],
+    ['[attr]a b\n[attr]b a\n*.ts a', 'a.ts', false],
+    ['[attr]a b\n[attr]b a linguist-generated\n*.ts a', 'a.ts', true],
+])('macros, as for git: %j on %s: %p', (text, path, expected) => {
+    expect(parseLinguistGenerated(text)(path)).toBe(expected);
 });
 
 test('later lines win, either way', () => {
@@ -78,7 +98,10 @@ test('over 16 KiB of rules for this attribute the file marks nothing generated',
     const within = Math.floor((16 * 1024) / rule.length);
 
     expect(parseLinguistGenerated(Array.from({ length: within }, () => rule).join('\n'))('a.gen.ts')).toBe(true);
-    expect(parseLinguistGenerated(Array.from({ length: within + 1 }, () => rule).join('\n'))('a.gen.ts')).toBe(false);
+    const onGaveUp = mock();
+    const tooMany = Array.from({ length: within + 1 }, () => rule).join('\n');
+    expect(parseLinguistGenerated(tooMany, onGaveUp)('a.gen.ts')).toBe(false);
+    expect(onGaveUp).toHaveBeenCalledTimes(1);
 });
 
 test('rules of other attributes, however many, cost nothing of it', () => {
@@ -87,8 +110,23 @@ test('rules of other attributes, however many, cost nothing of it', () => {
     expect(parseLinguistGenerated([...lfs, '*.gen.ts linguist-generated'].join('\n'))('a.gen.ts')).toBe(true);
 });
 
+test('macros cost nothing of it either, nor lines using one that says nothing of this attribute; one that does is a rule', () => {
+    const macros = Array.from({ length: 2000 }, (_, index) => `[attr]other${index} filter=lfs -text`);
+    const uses = Array.from({ length: 2000 }, (_, index) => `assets/${index}.bin other${index}`);
+    const text = [...macros, ...uses, '[attr]gen linguist-generated', '*.gen.ts gen'].join('\n');
+
+    expect(parseLinguistGenerated(text)('a.gen.ts')).toBe(true);
+
+    const rules = Array.from({ length: Math.ceil((16 * 1024) / '*.gen.ts gen'.length) + 1 }, () => '*.gen.ts gen');
+    expect(parseLinguistGenerated(['[attr]gen linguist-generated', ...rules].join('\n'))('a.gen.ts')).toBe(false);
+});
+
 test('a tree and rules made to cost too much stop being matched, in well under a second', () => {
-    const isGenerated = parseLinguistGenerated(Array.from({ length: 780 }, () => 'z/ linguist-generated').join('\n'));
+    const onGaveUp = mock();
+    const isGenerated = parseLinguistGenerated(
+        Array.from({ length: 780 }, () => 'z/ linguist-generated').join('\n'),
+        onGaveUp,
+    );
     const deep = `${'a/'.repeat(2047)}z/file.ts`;
 
     const start = performance.now();
@@ -98,4 +136,41 @@ test('a tree and rules made to cost too much stop being matched, in well under a
     expect(answers[0]).toBe(true);
     expect(answers.at(-1)).toBe(false);
     expect(elapsed).toBeLessThan(3000);
+    expect(onGaveUp).toHaveBeenCalledTimes(1);
+});
+
+test.each([
+    ['stars', Array.from({ length: 222 }, () => `*${'a'.repeat(50)}b`), 'a'.repeat(253)],
+    ['a long class', Array.from({ length: 7 }, () => `*[${'b'.repeat(2000)}]c`), 'a'.repeat(253)],
+    ['what follows the name', Array.from({ length: 7 }, () => `a${'*'.repeat(2000)}b/`), `${'a/'.repeat(2047)}f`],
+])('rules made to cost too much on shallow paths, by %s, give up quickly on what is left', (_, patterns, path) => {
+    const onGaveUp = mock();
+    const isGenerated = parseLinguistGenerated(
+        patterns.map(pattern => `${pattern} linguist-generated`).join('\n'),
+        onGaveUp,
+    );
+
+    const start = performance.now();
+    for (let index = 0; index < 3000; index++) {
+        isGenerated(path);
+    }
+
+    expect(performance.now() - start).toBeLessThan(3000);
+    expect(onGaveUp).toHaveBeenCalledTimes(1);
+});
+
+test('16 KB of ordinary rules still match every one of 3,000 files, eight folders deep', () => {
+    const rules: string[] = [];
+    for (let bytes = 0, index = 0; bytes < 16 * 1024 - 60; index++) {
+        const rule = `*.gen${index}.ts linguist-generated`;
+        rules.push(rule);
+        bytes += rule.length;
+    }
+
+    const onGaveUp = mock();
+    const isGenerated = parseLinguistGenerated([...rules, '**/*.client.ts linguist-generated'].join('\n'), onGaveUp);
+    const paths = Array.from({ length: 3000 }, (_, index) => `a/b/c/d/e/f/g/file${index}.client.ts`);
+
+    expect(paths.filter(path => isGenerated(path))).toEqual(paths);
+    expect(onGaveUp).not.toHaveBeenCalled();
 });

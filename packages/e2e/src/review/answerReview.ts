@@ -41,6 +41,8 @@ export interface AnsweredReview {
     readonly marked: readonly string[];
     /** How many requests set marks. */
     readonly markRequests: () => number;
+    /** Runs `act` once, the next time the list is read, before its answer goes out. */
+    beforeNextList(act: () => void): void;
 }
 
 const HEAD_OID = 'head0000';
@@ -59,6 +61,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     let markRequests = 0;
     const asked: string[] = [];
     let marksRefused: string | null = null;
+    let beforeNextList: (() => void) | null = null;
     const repositoryPath = `/repos/${params.repository}`;
     const blobs = new Map<string, { file: SampleReviewFile; text: string }>();
     for (const file of params.files) {
@@ -71,25 +74,30 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         }
     }
 
-    github.graphql('PullRequestReviewFiles', {
-        repository: {
-            pullRequest: {
-                id: `PR_${params.number}`,
-                headRefOid: HEAD_OID,
-                baseRefOid: BASE_OID,
-                changedFiles: params.files.length,
-                files: {
-                    pageInfo: { hasNextPage: false, endCursor: null },
-                    nodes: params.files.map(file => ({
-                        path: file.path,
-                        changeType: file.changeType ?? 'MODIFIED',
-                        additions: file.additions ?? countLines(file.after),
-                        deletions: countLines(file.before),
-                        viewerViewedState: file.viewed ?? 'UNVIEWED',
-                    })),
+    github.graphql('PullRequestReviewFiles', () => {
+        const act = beforeNextList;
+        beforeNextList = null;
+        act?.();
+        return {
+            repository: {
+                pullRequest: {
+                    id: `PR_${params.number}`,
+                    headRefOid: HEAD_OID,
+                    baseRefOid: BASE_OID,
+                    changedFiles: params.files.length,
+                    files: {
+                        pageInfo: { hasNextPage: false, endCursor: null },
+                        nodes: params.files.map(file => ({
+                            path: file.path,
+                            changeType: file.changeType ?? 'MODIFIED',
+                            additions: file.additions ?? countLines(file.after),
+                            deletions: countLines(file.before),
+                            viewerViewedState: file.viewed ?? 'UNVIEWED',
+                        })),
+                    },
                 },
             },
-        },
+        };
     });
     github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${HEAD_OID}`, () => ({
         status: 200,
@@ -166,6 +174,9 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         asked,
         marked,
         markRequests: () => markRequests,
+        beforeNextList: act => {
+            beforeNextList = act;
+        },
         refuseMarks: message => {
             marksRefused = message;
         },

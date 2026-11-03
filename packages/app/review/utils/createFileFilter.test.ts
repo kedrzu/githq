@@ -99,6 +99,47 @@ describe('a pattern (D11)', () => {
         ]);
     });
 
+    test('braces hold alternatives, whose commas part nothing, in any number of groups', () => {
+        expect(matching('*.{md,yml}')).toEqual(['README.md', 'docs/guide.md', '.github/workflows/e2e.yml']);
+        expect(matching('*.{md, yml}')).toEqual(['README.md', 'docs/guide.md', '.github/workflows/e2e.yml']);
+        expect(matching('docs/{logo,guide}.{png,md}, public/**.pngx')).toEqual([
+            'docs/logo.png',
+            'docs/guide.md',
+            'public/banner.pngx',
+        ]);
+    });
+
+    test.each([
+        ['[id].vue', 'pages/[id].vue', true],
+        ['*/[id].vue', 'pages/[id].vue', true],
+        ['[id].vue', 'pages/i.vue', false],
+        ['{id}.vue', 'pages/{id}.vue', true],
+        // Never closed, or past what they may multiply into: just characters.
+        ['{a,b.ts', '{a', true],
+        ['{a,b.ts', 'b.ts', true],
+        [`${'{a,b}'.repeat(7)}.ts`, 'aaaaaaa.ts', false],
+        [`${'{a,b}'.repeat(6)}.ts`, 'bbbbbb.ts', true],
+    ])('%s on %s: %p', (pattern, path, expected) => {
+        const filter = createFileFilter({ pattern, regex: false });
+        expect(filter.kind === 'on' && filter.matches(path)).toBe(expected);
+    });
+
+    test.each([
+        ['./a.ts', 'a.ts', true],
+        ['/a.ts', 'a.ts', true],
+        ['/a.ts', 'x/a.ts', false],
+        ['./a.ts', 'x/a.ts', false],
+        ['/a.ts', 'a.tsx', false],
+        ['/docs', 'docs/a.ts', true],
+        ['/docs/', 'docs/a.ts', true],
+        ['/docs', 'src/docs/a.ts', false],
+        ['/docs', 'docs2/a.ts', false],
+        ['/', 'docs/a.ts', true],
+    ])('a plain path from the root, %s on %s: %p', (pattern, path, expected) => {
+        const filter = createFileFilter({ pattern, regex: false });
+        expect(filter.kind === 'on' && filter.matches(path)).toBe(expected);
+    });
+
     test('nothing typed, or only commas and spaces, filters nothing', () => {
         for (const pattern of ['', '   ', ' , ,']) {
             expect(createFileFilter({ pattern, regex: false }).kind).toBe('off');

@@ -87,6 +87,12 @@ defineExpose({
   focusFilter: () => filterField.value?.focus(),
 });
 
+/** One still undecided shows as open, spinner and all, until `.gitattributes` says (D35). */
+function isCollapsed(path: string) {
+  const collapse = props.getCollapse(path);
+  return collapse !== null && collapse !== 'undecided';
+}
+
 function onRowClick(path: string, event: MouseEvent) {
   if (event.shiftKey) {
     emit('selectRange', path);
@@ -213,7 +219,7 @@ function onFilterKeydown(event: KeyboardEvent) {
               <ReviewFileRow
                 :file="file"
                 :state="getState(file.path)"
-                :collapsed="getCollapse(file.path) !== null"
+                :collapsed="isCollapsed(file.path)"
                 :collapse-reason="getCollapseReason(file.path)"
                 :current="file.path === currentPath"
                 :indented="group.folder !== null"

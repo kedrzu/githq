@@ -17,6 +17,7 @@ import type { FileViewedMark } from '@githq/github/markFilesViewed.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { createSingleRunner } from '@nzyme/utils/createSingleRunner.js';
 import type { SingleRunnerState } from '@nzyme/utils/createSingleRunner.js';
@@ -307,6 +308,15 @@ interface Model {
 type FileListPage = NonNullable<NonNullable<PullRequestReviewFilesQuery['repository']>['pullRequest']>;
 type FileListNode = NonNullable<NonNullable<NonNullable<FileListPage['files']>['nodes']>[number]>;
 
+interface TakeListPageParams {
+    readonly run: FileRun;
+    readonly page: FileListPage;
+    /** On {@link ViewedMark.changedAt}'s count. */
+    readonly askedAt: number;
+    /** The paths listed so far, which it adds to. */
+    readonly listed: Set<string>;
+}
+
 /**
  * Loads what a pull request's review shows (D6, D19): its files, and for each the text at the merge base — not the
  * base branch's tip, which moves on — and at the head. A pull request read before starts from the
@@ -406,10 +416,12 @@ export const ReviewFiles = defineService({
             let cancelResume: (() => void) | null = null;
             /** A pause stopped reading the list: it is read when the pause ends. */
             let listHeld = false;
+            /** A read under way has to be followed by one more: its pages were asked before what happened since. */
+            let listAskedAgain = false;
             /** The files marked viewed when the list was last whole, on disk or in memory. */
             let viewedBefore: ReadonlySet<string> = new Set();
 
-            const listReader = createSingleRunner({ handler: readList });
+            const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
 
             void load();
@@ -805,7 +817,9 @@ export const ReviewFiles = defineService({
                         sent.map(mark => mark.path),
                         getFailureText(failure),
                     );
-                    // Others of the request may have gone through: GitHub says which.
+                    // Others of the request may have gone through: GitHub says which. Pages asked before this settled
+                    // lose to the marks it just put back, so a read under way can't say.
+                    listAskedAgain = true;
                     void listReader.execute();
                 }
             }
@@ -837,6 +851,7 @@ export const ReviewFiles = defineService({
             /** They signed out: nothing of the private files stays reachable from a model a screen may still hold. */
             function drop() {
                 dropped = true;
+                listAskedAgain = false;
                 unsentMarks.clear();
                 viewedMarks.clear();
                 collapseChoices.clear();
@@ -872,6 +887,13 @@ export const ReviewFiles = defineService({
                 }
 
                 await listReader.execute();
+            }
+
+            async function readListsAsked() {
+                do {
+                    listAskedAgain = false;
+                    await readList();
+                } while (listAskedAgain);
             }
 
             /** Reads the list from GitHub into what is shown; with something to show, failing only leaves that as it is. */
@@ -922,9 +944,16 @@ export const ReviewFiles = defineService({
                 keepOnDisk(() => blobs.deleteFileList(login, listKey));
             }
 
+            /**
+             * A first open shows the list page by page. A list replacing one that moved is shown whole, once all its pages
+             * are in: the old one stays until then, and stays if a page fails, for one page of it would lose the reader's
+             * place and selection beyond that page.
+             */
             async function readPages(): Promise<void> {
                 let run = runRef.value;
                 const listed = new Set<string>();
+                let replacement: FileListPage | null = null;
+                const waiting: { readonly page: FileListPage; readonly askedAt: number }[] = [];
                 let after: string | null = null;
                 do {
                     const askedAt = markCount;
@@ -933,7 +962,8 @@ export const ReviewFiles = defineService({
                         return;
                     }
 
-                    const moved: boolean = run !== null && (await hasMoved(run, page));
+                    const known: FileListPage | FileRun | null = replacement ?? run;
+                    const moved: boolean = known !== null && (await hasMoved(known, page));
                     if (dropped) {
                         return;
                     }
@@ -944,24 +974,41 @@ export const ReviewFiles = defineService({
                         return;
                     }
 
-                    if (!run || moved) {
-                        run = startRun(page);
+                    if (moved) {
+                        replacement = { ...page };
                     }
 
-                    const files = (page.files?.nodes ?? [])
-                        .filter(node => node !== null)
-                        .map(node => withFresherMark(toReviewFile(node), askedAt));
-                    for (const file of files) {
-                        listed.add(file.path);
+                    if (replacement) {
+                        waiting.push({ page, askedAt });
+                    } else {
+                        run ??= startRun(page);
+                        takeListPage({ run, page, askedAt, listed });
                     }
 
-                    noteLostViewed(files);
-
-                    addFiles(run, files);
                     after = page.files?.pageInfo.hasNextPage ? (page.files.pageInfo.endCursor ?? null) : null;
                 } while (after !== null);
 
+                if (replacement) {
+                    run = startRun(replacement);
+                    for (const { page, askedAt } of waiting) {
+                        takeListPage({ run, page, askedAt, listed });
+                    }
+                }
+
+                assert(run);
                 endList(run, listed);
+            }
+
+            function takeListPage({ run, page, askedAt, listed }: TakeListPageParams) {
+                const files = (page.files?.nodes ?? [])
+                    .filter(node => node !== null)
+                    .map(node => withFresherMark(toReviewFile(node), askedAt));
+                for (const file of files) {
+                    listed.add(file.path);
+                }
+
+                noteLostViewed(files);
+                addFiles(run, files);
             }
 
             /** Page by page, so that what GitHub took off is named even if a later page never comes. */
@@ -1015,7 +1062,7 @@ export const ReviewFiles = defineService({
              * Whether what the run holds is out of date. The tip of a base moves on all the time: as long as the merge
              * base stays, the diff is the same and nothing needs to start over.
              */
-            async function hasMoved(run: FileRun, page: FileListPage) {
+            async function hasMoved(run: Pick<FileRun, 'baseRefOid' | 'headRefOid'>, page: FileListPage) {
                 if (page.headRefOid !== run.headRefOid) {
                     return true;
                 }
@@ -1146,7 +1193,11 @@ export const ReviewFiles = defineService({
                 try {
                     const text = await readGitAttributesText(run);
                     if (text !== null) {
-                        isGenerated = parseLinguistGenerated(text);
+                        isGenerated = parseLinguistGenerated(text, () => {
+                            logger.warn(
+                                'A .gitattributes costs too much to match: files are left unmarked as generated',
+                            );
+                        });
                     }
                 } catch (error) {
                     if (readPauseOf(error)) {
@@ -1174,6 +1225,11 @@ export const ReviewFiles = defineService({
             async function readGitAttributesText(run: FileRun) {
                 const expression = `${run.headRefOid}:.gitattributes`;
                 const answers = await readKeptAnswers([expression]);
+                // Signed out by now, the disk is not to be opened again, nor GitHub asked.
+                if (!isLive(run)) {
+                    return null;
+                }
+
                 if (!answers.has(expression)) {
                     assertMayAsk();
                     const answered = await readReviewBlobOids({
@@ -1196,7 +1252,15 @@ export const ReviewFiles = defineService({
                     return null;
                 }
 
+                if (!isLive(run)) {
+                    return null;
+                }
+
                 await readKept(run, [answer.oid]);
+                if (!isLive(run)) {
+                    return null;
+                }
+
                 const kept = run.texts.get(answer.oid);
                 return kept ?? (await fetchGitAttributesText(run, answer.oid));
             }

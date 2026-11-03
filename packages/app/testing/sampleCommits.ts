@@ -2,6 +2,8 @@ import type { PullRequestState } from '@githq/github/generated.gen.js';
 
 import type { CommitPullRequest, CommitRef, CommitState, KeptCommit } from '@/commits/CommitTypes.js';
 
+import { createSeededRandom } from './createSeededRandom.js';
+
 const EPOCH = Date.parse('2026-10-01T00:00:00Z');
 
 /** A commit for tests and stories, committed `minutes` after a fixed epoch, its parents named by oid. */
@@ -31,7 +33,7 @@ export interface SampleHistoryOptions {
  * aren't loaded. Listed oldest first.
  */
 export function sampleHistory(options: SampleHistoryOptions): KeptCommit[] {
-    const random = createRandom(options.seed);
+    const random = createSeededRandom(options.seed);
     const commits: KeptCommit[] = [];
 
     for (let i = 0; i < options.count; i++) {
@@ -53,17 +55,6 @@ export function sampleHistory(options: SampleHistoryOptions): KeptCommit[] {
     }
 
     return commits;
-}
-
-/** mulberry32: a small seeded generator of numbers in [0, 1). */
-function createRandom(seed: number) {
-    let state = seed;
-    return function next() {
-        state = (state + 0x6d2b79f5) | 0;
-        let t = Math.imul(state ^ (state >>> 15), 1 | state);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
-    };
 }
 
 /** A branch or tag named `name` pointing at the sample commit `oid`. */

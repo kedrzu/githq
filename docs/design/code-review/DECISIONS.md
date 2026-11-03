@@ -121,7 +121,9 @@ whitespace-only change after hiding whitespace), the view lands on the nearest v
 known lock files by name — and so do very large files. A collapsed file is neither fetched nor diffed until
 opened.** (2026-11-02, owner: "nobody reads lock files", collapsing is needed "not only for performance"; the
 threshold for size is not set) Only the `.gitattributes` at the repository's root is read, at the pull request's
-head; nested ones may come later (agent, after the rightsize pass).
+head; nested ones may come later (agent, after the rightsize pass). Past 16 KB of rules for this attribute, or once
+matching them has cost 100 million steps, what is left stays open rather than freeze the tab, with a warning in the log
+and nothing in the UI (agent, 2026-11-03).
 
 **Why.** Some files are simply not read, and a large pull request should cost only what you open.
 

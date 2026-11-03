@@ -300,11 +300,14 @@ test('the allowance running out pauses the missing files, saying when, while a v
     const review = new ReviewScreenHarness(page);
     await page.clock.install();
     let answered: AnsweredReview | undefined;
+    const resetAt = new Date(Date.now() + 3_600_000);
     await openPullRequest(page, github, sample => {
         answered = sample;
+        // With the list's own answer, as any of the item's answers coming in earlier would pause the list itself.
+        sample.beforeNextList(() => {
+            github.rateLimit = { limit: 5000, remaining: 50, resetAt };
+        });
     });
-    const resetAt = new Date(Date.now() + 3_600_000);
-    github.rateLimit = { limit: 5000, remaining: 50, resetAt };
 
     await page.keyboard.press('d');
     await expect(review.diff.getByText("Waiting for GitHub's API allowance").first()).toBeVisible();
