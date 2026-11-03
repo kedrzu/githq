@@ -82,6 +82,7 @@ export function createTestSession(params: CreateTestSessionParams) {
     let visible = true;
     /** The pages opened in a new tab, in order. */
     const openedTabs: string[] = [];
+    let reloads = 0;
 
     const tab = (params.tabs ?? createTestTabs()).open();
 
@@ -114,6 +115,9 @@ export function createTestSession(params: CreateTestSessionParams) {
             crypto.getRandomValues(bytes);
         },
         navigate: () => {},
+        reload: () => {
+            reloads++;
+        },
         replaceLocation: () => {},
         openInNewTab: url => {
             openedTabs.push(url);
@@ -148,6 +152,9 @@ export function createTestSession(params: CreateTestSessionParams) {
         clock,
         github,
         openedTabs,
+        get reloads() {
+            return reloads;
+        },
         /** What this tab's `localStorage` holds, by key: give it to a later session to reload the tab. */
         localStorage: local,
         /** This tab: close it, or freeze it. */

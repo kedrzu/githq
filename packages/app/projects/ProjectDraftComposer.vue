@@ -1,9 +1,11 @@
 <!-- Writing a draft issue straight into a project (D4, H5): one line for its title, at the end of a group or at the bottom of a board's column — the draft takes that group's value. Enter adds it and leaves the line open for the next one; Escape, or leaving it empty, closes it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { onMounted, ref, useTemplateRef } from 'vue';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { onMounted, onScopeDispose, ref, useTemplateRef } from 'vue';
 
 import TextField from '@/components/TextField.vue';
+import { ReloadHolds } from '@/sync/ReloadHolds.js';
 
 import * as l from './ProjectDraftComposer.loc.js';
 
@@ -20,10 +22,12 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const reloadHolds = useService(ReloadHolds);
 const title = ref('');
 const fieldRef = useTemplateRef<InstanceType<typeof TextField>>('field');
 
 onMounted(() => fieldRef.value?.focus());
+onScopeDispose(reloadHolds.holdWhile(() => title.value !== ''));
 
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
