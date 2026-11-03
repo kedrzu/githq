@@ -101,14 +101,26 @@ test('every GitHub address opens the matching screen, or hands off to github.com
 });
 
 test("an item's sub-addresses settle on the item's own, keeping the query and the fragment", () => {
-    expect(settle('/acme/web/pull/15/files')).toBe('/acme/web/pull/15');
-    expect(settle('/acme/web/pull/15/files?w=1#diff-abc')).toBe('/acme/web/pull/15?w=1#diff-abc');
+    expect(settle('/acme/web/pull/15/commits?w=1#diff-abc')).toBe('/acme/web/pull/15?w=1#diff-abc');
+    expect(settle('/acme/web/pull/15/files/abc123')).toBe('/acme/web/pull/15');
+    expect(settle('/acme/web/issues/12/files')).toBe('/acme/web/issues/12');
     expect(settle('/acme/web/pull/15/commits')).toBe('/acme/web/pull/15');
     expect(settle('/acme/web/pull/15/checks?check_run_id=9')).toBe('/acme/web/pull/15?check_run_id=9');
     expect(settle('/acme/web/issues/12/linked_closing_reference?x=1#issuecomment-5')).toBe(
         '/acme/web/issues/12?x=1#issuecomment-5',
     );
     expect(settle('/my-org/web.js/issues/12/a/b/c')).toBe('/my-org/web.js/issues/12');
+});
+
+test("a pull request's changed files, at either of GitHub's addresses, are its review, on a page of its own", () => {
+    for (const address of ['/acme/web/pull/15/files', '/acme/web/pull/15/changes', '/acme/web/pull/15/files?w=1#a']) {
+        const route = router.resolve(address);
+        expect(route.name, address).toBe('review');
+        expect(route.meta.railForced, address).toBe(true);
+        expect(route.fullPath).toBe(address);
+    }
+
+    expect(router.resolve('/acme/web/pull/15').name).toBe('item-pull');
 });
 
 test("GitHub's sign-in address leads home, keeping where to go after signing in and why it last failed", () => {

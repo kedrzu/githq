@@ -28,7 +28,7 @@ import { groupStacks } from '@/store/stacks/groupStacks.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
-import { getItemPagePath, getItemReference, getOpenedItemQuery } from './itemRoutes.js';
+import { getItemPagePath, getItemReference, getOpenedItemQuery, getReviewPath } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
@@ -203,6 +203,11 @@ function open(reference: ItemReference) {
   void router.push(locate(reference, props.arrangement));
 }
 
+/** Always the full page, whatever the arrangement (code review's D2); Back returns. */
+function openReview() {
+  void router.push(getReviewPath(props.reference));
+}
+
 function close() {
   void router.push(
     props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
@@ -299,6 +304,7 @@ async function loadAllComments() {
       @arrange="arrange"
       @open="open"
       @open-in-place="openInPlace"
+      @review="openReview"
     />
     <EmptyState
       v-else
@@ -329,6 +335,7 @@ async function loadAllComments() {
     @arrange="arrange"
     @open="open"
     @open-in-place="openInPlace"
+    @review="openReview"
   />
   <div
     v-else

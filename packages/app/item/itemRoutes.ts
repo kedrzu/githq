@@ -36,6 +36,13 @@ export interface OpenedItemRoute {
  */
 export const ITEM_PAGE_PATHS = ['/:owner/:name/issues/:number(\\d+)', '/:owner/:name/pull/:number(\\d+)'] as const;
 
+/**
+ * The route path of a pull request's review, GitHub's address of its changed files, and the one GitHub's newer view
+ * uses: a github.com link pasted after the app's host opens the same screen.
+ */
+export const REVIEW_PAGE_PATH = '/:owner/:name/pull/:number(\\d+)/files';
+export const REVIEW_PAGE_ALIAS = '/:owner/:name/pull/:number(\\d+)/changes';
+
 /** The query parameter of GitHub's project pane: `issue` when the pane shows an issue or a pull request. */
 const PANE_PARAM = 'pane';
 /** What {@link PANE_PARAM} says for an item. */
@@ -99,6 +106,25 @@ export function getItemPagePath(reference: ItemReference, kind: Item['kind'] = '
 }
 
 /**
+ * The address of a pull request's review (D2), always a page of its own.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewPath(reference: ItemReference) {
+    return `${getItemPagePath(reference, 'pullRequest')}/files`;
+}
+
+/**
+ * The pull request a review's address names, or `null` for a number no pull request can have.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewReference(route: Pick<RouteLocation, 'params'>): ItemReference | null {
+    const { owner, name, number } = route.params;
+    return typeof owner === 'string' && typeof name === 'string' ? toReference(owner, name, number) : null;
+}
+
+/**
  * The reference of an item the app holds.
  *
  * @__NO_SIDE_EFFECTS__
@@ -149,5 +175,10 @@ declare module 'vue-router' {
     interface RouteMeta {
         /** The route is an item's own page (`ITEM_PAGE_PATHS`). */
         itemPage?: boolean;
+        /**
+         * The screen wants the app sidebar as the rail (code review's D24), whatever the user keeps it as: it is forced
+         * by the shell for as long as the route lasts and never written to their preference.
+         */
+        railForced?: boolean;
     }
 }

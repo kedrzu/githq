@@ -1,0 +1,105 @@
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { fn } from 'storybook/test';
+
+import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import type { DiffLayout } from './diff/buildDiffRows.js';
+import { computeFileDiff } from './diff/computeFileDiff.js';
+import ReviewDiffRow from './ReviewDiffRow.vue';
+import type { ReviewFile } from './ReviewFiles.js';
+
+const BEFORE = `import { db } from '../db/client'
+import { PendingStore } from './pending'
+
+const MAX_BATCH = 20
+const RETRY_DELAY_MS = 2_000
+
+${Array.from({ length: 30 }, (_, index) => `// A line nobody changed, number ${index + 1}`).join('\n')}
+
+export class SyncEngine {
+  private pending = new PendingStore(db)
+  private conflicts: Workout[] = []
+  private running = false
+}
+`;
+const AFTER = BEFORE.replace(
+    "import { PendingStore } from './pending'",
+    `import { Outbox } from './outbox'
+import { replayQueue } from './queue'`,
+)
+    .replace('MAX_BATCH = 20', 'MAX_BATCH = 50')
+    .replace(
+        'private pending = new PendingStore(db)',
+        `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has' })`,
+    );
+const DIFF = computeFileDiff(BEFORE, AFTER, { ignoreWhitespace: false });
+
+const FILE = file('src/sync/engine.ts', 6, 3);
+
+const meta = {
+    component: ReviewDiffRow,
+    args: {
+        row: { kind: 'end', key: 'end' },
+        githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files',
+        onRetry: fn(),
+    },
+} satisfies Meta<typeof ReviewDiffRow>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+/** CR4: a file's block, split: header, changed and unchanged lines, a line that wraps, the lines left out. */
+export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') })) };
+
+/** CR5: unified. */
+export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
+
+/** A renamed file says where it came from. */
+export const Renamed: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('src/sync/outbox.ts', 2, 1, { changeType: 'RENAMED', previousPath: 'src/sync/pending.ts' }), {
+                kind: 'lines',
+                rows: lines('split'),
+            }),
+        ),
+};
+
+/** CR60: on its way, quiet bars. */
+export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder' })) };
+
+/** CR67: failed, in place. */
+export const Failed: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'failed', error: new Error('GitHub answered 502.') })),
+};
+
+/** CR67: too large. */
+export const TooLarge: Story = { render: () => renderRows(fileRows(FILE, { kind: 'tooLarge' })) };
+
+/** CR65: binary. */
+export const Binary: Story = { render: () => renderRows(fileRows(FILE, { kind: 'binary' })) };
+
+/** A new file with nothing in it. */
+export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
+
+function lines(layout: DiffLayout) {
+    return buildFileLineRows(FILE.path, DIFF, layout);
+}
+
+/** The rows the diff would draw for the file, without the room left under the last one. */
+function fileRows(shown: ReviewFile, content: ReviewFileContent): ReviewRow[] {
+    return buildReviewRows({ files: [shown], getContent: () => content }).filter(row => row.kind !== 'tail');
+}
+
+function renderRows(rows: readonly ReviewRow[]) {
+    return {
+        components: { ReviewDiffRow },
+        setup: () => ({ rows, githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files' }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
+    };
+}
+
+function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {
+    return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED', ...more };
+}

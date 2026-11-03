@@ -1,0 +1,159 @@
+import type { FileViewedState, PatchStatus } from '@githq/github/generated.gen.js';
+
+import type { GitHubMock } from '../github/GitHubMock.js';
+
+/** A file of a pull request as {@link answerReview} answers it. */
+export interface SampleReviewFile {
+    readonly path: string;
+    /** `null` where the file does not exist. */
+    readonly before: string | null;
+    readonly after: string | null;
+    readonly changeType?: PatchStatus;
+    readonly previousPath?: string;
+    readonly viewed?: FileViewedState;
+    readonly binary?: boolean;
+    /** Its size in bytes, when it is to look larger than it is. */
+    readonly byteSize?: number;
+}
+
+export interface AnswerReviewParams {
+    /** `owner/name`. */
+    readonly repository: string;
+    readonly number: number;
+    readonly files: readonly SampleReviewFile[];
+}
+
+/** What a test can do to the review answered. */
+export interface AnsweredReview {
+    /** GitHub fails this file's content until {@link heal}. */
+    fail(path: string, message: string): void;
+    heal(path: string): void;
+    /** This file's content waits until the returned function is called. */
+    hold(path: string): () => void;
+}
+
+const HEAD_OID = 'head0000';
+const BASE_OID = 'base0000';
+const MERGE_BASE_OID = 'fork0000';
+
+/**
+ * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), the merge base (the compare request),
+ * where renamed files came from, and the blobs (`ReviewBlobOids`, `ReviewBlobTexts`), an oid being made of its commit and
+ * path. A file's failure is on its text alone, the query's other objects answered.
+ */
+export function answerReview(github: GitHubMock, params: AnswerReviewParams): AnsweredReview {
+    const failures = new Map<string, string>();
+    const held = new Map<string, Promise<void>>();
+    const repositoryPath = `/repos/${params.repository}`;
+    const blobs = new Map<string, { file: SampleReviewFile; text: string }>();
+    for (const file of params.files) {
+        if (file.before !== null) {
+            blobs.set(oidOf(MERGE_BASE_OID, file.previousPath ?? file.path), { file, text: file.before });
+        }
+
+        if (file.after !== null) {
+            blobs.set(oidOf(HEAD_OID, file.path), { file, text: file.after });
+        }
+    }
+
+    github.graphql('PullRequestReviewFiles', {
+        repository: {
+            pullRequest: {
+                id: `PR_${params.number}`,
+                headRefOid: HEAD_OID,
+                baseRefOid: BASE_OID,
+                changedFiles: params.files.length,
+                files: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: params.files.map(file => ({
+                        path: file.path,
+                        changeType: file.changeType ?? 'MODIFIED',
+                        additions: countLines(file.after),
+                        deletions: countLines(file.before),
+                        viewerViewedState: file.viewed ?? 'UNVIEWED',
+                    })),
+                },
+            },
+        },
+    });
+    github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${HEAD_OID}`, () => ({
+        status: 200,
+        json: { merge_base_commit: { sha: MERGE_BASE_OID } },
+    }));
+    github.rest('GET', `${repositoryPath}/pulls/${params.number}/files`, () => ({
+        status: 200,
+        json: params.files.flatMap(file =>
+            file.previousPath ? [{ filename: file.path, previous_filename: file.previousPath }] : [],
+        ),
+    }));
+    github.graphqlDocument('ReviewBlobOids', ({ variables }) => {
+        const repository: Record<string, unknown> = {};
+        for (const [name, expression] of Object.entries(variables)) {
+            if (/^e\d+$/u.test(name) && typeof expression === 'string') {
+                const separator = expression.indexOf(':');
+                const oid = oidOf(expression.slice(0, separator), expression.slice(separator + 1));
+                const blob = blobs.get(oid);
+                repository[`b${name.slice(1)}`] = blob
+                    ? {
+                          oid,
+                          byteSize: blob.file.byteSize ?? blob.text.length,
+                          isBinary: blob.file.binary === true,
+                      }
+                    : null;
+            }
+        }
+
+        return { data: { repository } };
+    });
+    github.graphqlDocument('ReviewBlobTexts', async ({ variables }) => {
+        const repository: Record<string, unknown> = {};
+        const errors: { message: string; path: string[] }[] = [];
+        const wanted = Object.entries(variables).filter(([name]) => /^o\d+$/u.test(name));
+        for (const [name, oid] of wanted) {
+            const blob = typeof oid === 'string' ? blobs.get(oid) : undefined;
+            await held.get(blob?.file.path ?? '');
+            const failure = failures.get(blob?.file.path ?? '');
+            const alias = `b${name.slice(1)}`;
+            if (failure !== undefined) {
+                repository[alias] = null;
+                errors.push({ message: failure, path: ['repository', alias] });
+            } else {
+                repository[alias] = blob && {
+                    oid,
+                    text: blob.text,
+                    isTruncated: false,
+                    isBinary: blob.file.binary === true,
+                    byteSize: blob.text.length,
+                };
+            }
+        }
+
+        return errors.length > 0 ? { data: { repository }, errors } : { data: { repository } };
+    });
+
+    return {
+        fail: (path, message) => failures.set(path, message),
+        heal: path => failures.delete(path),
+        hold(path) {
+            let release = () => {};
+            held.set(
+                path,
+                new Promise<void>(resolve => {
+                    release = resolve;
+                }),
+            );
+            return () => {
+                held.delete(path);
+                release();
+            };
+        },
+    };
+}
+
+function oidOf(commit: string, path: string) {
+    return `${commit}${encodeURIComponent(path)}`;
+}
+
+function countLines(text: string | null) {
+    return text === null ? 0 : text.split('\n').length - 1;
+}

@@ -54,6 +54,10 @@ $color-red-quiet: #a6474c;
 $color-amber: #d6a23a;
 $color-purple: #a57bf5;
 
+// A deleted and an added line of a diff: its background (9%, `#3FB95017` in the design).
+$color-diff-deleted: rgba($color-red, 0.09);
+$color-diff-added: rgba($color-green, 0.09);
+
 // The light button's fill.
 $color-button-light: #e4e6ea;
 $color-button-light-hover: #ffffff;
@@ -117,6 +121,8 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
+// The review's list of files, beside its diff (code review's D24).
+$review-file-list-width: 300px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
 

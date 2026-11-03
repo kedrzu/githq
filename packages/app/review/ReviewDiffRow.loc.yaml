@@ -1,0 +1,19 @@
+hiddenLines:
+  plural: count
+  en:
+    one: 1 line
+    many: '{formatted} lines'
+binary:
+  en: Binary file, nothing to diff
+tooLarge:
+  en: Too large to diff here
+tooLargeDetail:
+  en: githq diffs files up to 1 MB.
+empty:
+  en: The file is empty, nothing to diff
+failed:
+  en: Couldn't fetch this file
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub

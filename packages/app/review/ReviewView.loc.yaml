@@ -1,0 +1,20 @@
+previousFile:
+  en: Previous file
+nextFile:
+  en: Next file
+diff:
+  en: Changes
+reading:
+  en: Reading the files of {reference}
+listFailed:
+  en: Couldn't read this pull request's files
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
+noChanges:
+  en: No changes
+noChangesDetail:
+  en: '{head} has the same content as {base}. The branch may be waiting for a push, or the changes landed elsewhere.'
+noChangesPlain:
+  en: The branch has the same content as its base. It may be waiting for a push, or the changes landed elsewhere.

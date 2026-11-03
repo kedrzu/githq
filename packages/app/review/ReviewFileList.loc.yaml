@@ -1,0 +1,8 @@
+files:
+  en: Files
+viewed:
+  en: '{viewed} of {total} viewed'
+moreThanListed:
+  en: '{listed}+'
+listedOnly:
+  en: GitHub lists the first {listed} of {total} files; the rest are on github.com.

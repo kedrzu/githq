@@ -1,0 +1,20 @@
+back:
+  en: Back
+review:
+  en: Review
+viewOptions:
+  en: View options
+split:
+  en: Split
+unified:
+  en: Unified
+whitespaceHidden:
+  en: whitespace hidden
+layout:
+  en: Layout
+hideWhitespace:
+  en: Hide whitespace changes
+keptNote:
+  en: Kept for every pull request on this device.
+openOnGitHub:
+  en: Open on GitHub

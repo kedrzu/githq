@@ -25,6 +25,7 @@ import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
+import { getItemReference, getReviewPath } from './itemRoutes.js';
 import * as l from './PullRequestMerge.loc.js';
 
 const props = defineProps<{
@@ -133,7 +134,7 @@ const head = computed(() => {
   return owner && owner !== pr.repository.owner ? `${owner}:${pr.headRefName}` : pr.headRefName;
 });
 
-const filesUrl = computed(() => `${props.pr.url}/files`);
+const reviewPath = computed(() => getReviewPath(getItemReference(props.pr)));
 
 function checksLine(): Line {
   const { checks } = props.pr;
@@ -306,11 +307,9 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         variant="ghost"
         size="sm"
         :icon="FileDiff"
-        :link="filesUrl"
-        kbd="Shift+O"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-keyshortcuts="Shift+O"
+        :link="reviewPath"
+        kbd="D"
+        aria-keyshortcuts="D"
       >
         {{ t(l.reviewFiles) }}
       </Button>

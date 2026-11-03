@@ -62,6 +62,8 @@ requestReviewers:
   en: Request reviewers…
 addToProject:
   en: Add to project…
+review:
+  en: Review files
 openFiles:
   en: Open changed files on GitHub
 copyLink:

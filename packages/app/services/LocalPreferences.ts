@@ -6,16 +6,20 @@ import { effectScope } from 'vue';
 
 import { ITEM_ARRANGEMENTS } from '@/item/itemRoutes.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
+import type { DiffLayout } from '@/review/diff/buildDiffRows.js';
 
 import { Browser } from './Browser.js';
 
 const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
+const REVIEW_LAYOUT_KEY = 'githq.reviewLayout';
+const REVIEW_HIDE_WHITESPACE_KEY = 'githq.reviewHideWhitespace';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed and the widths the user dragged the panels to. The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to and how a code
+ * review shows a diff (D4, D14: for every pull request). The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -45,6 +49,20 @@ export const LocalPreferences = defineService({
             serialize: String,
             deserialize: raw => raw === 'true',
         });
+        const reviewLayout = storageRef<DiffLayout>({
+            key: REVIEW_LAYOUT_KEY,
+            storage,
+            default: () => 'split',
+            serialize: value => value,
+            deserialize: raw => (raw === 'unified' ? 'unified' : 'split'),
+        });
+        const reviewHideWhitespace = storageRef<boolean>({
+            key: REVIEW_HIDE_WHITESPACE_KEY,
+            storage,
+            default: () => false,
+            serialize: String,
+            deserialize: raw => raw === 'true',
+        });
         const panelWidths = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -59,6 +77,14 @@ export const LocalPreferences = defineService({
                 sidebarCollapsed.reload();
             }
 
+            if (key === null || key === REVIEW_LAYOUT_KEY) {
+                reviewLayout.reload();
+            }
+
+            if (key === null || key === REVIEW_HIDE_WHITESPACE_KEY) {
+                reviewHideWhitespace.reload();
+            }
+
             for (const [panel, width] of panelWidths) {
                 if (key === null || key === PANEL_WIDTH_KEY_PREFIX + panel) {
                     width.reload();
@@ -71,6 +97,10 @@ export const LocalPreferences = defineService({
             itemArrangement,
             /** Whether the sidebar is collapsed to its icons. */
             sidebarCollapsed,
+            /** Split or unified, in every code review. */
+            reviewLayout,
+            /** Whether a code review leaves whitespace changes out, in every one. */
+            reviewHideWhitespace,
             getPanelWidth,
         };
 

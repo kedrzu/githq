@@ -6,7 +6,7 @@ import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
 import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import HomePage from '@/home/HomePage.vue';
-import { ITEM_PAGE_PATHS } from '@/item/itemRoutes.js';
+import { ITEM_PAGE_PATHS, REVIEW_PAGE_ALIAS, REVIEW_PAGE_PATH } from '@/item/itemRoutes.js';
 import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -65,6 +65,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group },
         };
     }
+    // A pull request's review, at GitHub's address of its changed files: before the addresses that settle on the item.
+    yield {
+        path: REVIEW_PAGE_PATH,
+        alias: REVIEW_PAGE_ALIAS,
+        name: 'review',
+        component: () => import('@/review/ReviewPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell', key: 'review', railForced: true },
+    };
     // An item on a page of its own, at GitHub's address of it; one page instance for both (`key`), so stepping
     // from an issue to a pull request keeps it.
     for (const [index, path] of ITEM_PAGE_PATHS.entries()) {
@@ -74,7 +82,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             component: () => import('@/item/ItemPage.vue'),
             meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: true },
         };
-        // GitHub's addresses under an item (a pull request's `/files`, `/commits`, `/checks`, …) settle on the
+        // GitHub's other addresses under an item (a pull request's `/commits`, `/checks`, …) settle on the
         // item's own, keeping the query and the fragment.
         yield {
             path: `${path}/:rest(.*)+`,

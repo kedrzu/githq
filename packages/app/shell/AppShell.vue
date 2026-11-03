@@ -1,4 +1,4 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -25,7 +25,7 @@ import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
 import { WINDOW_CONTROLS_OVERLAID } from './windowControls.js';
 
-defineProps<{
+const props = defineProps<{
   viewer: Viewer;
   /** GitHub's GraphQL allowance, for the sidebar's segment of the status bar. */
   rateLimit: GitHubRateLimit | null;
@@ -49,6 +49,8 @@ defineProps<{
   settingsSyncStopped?: boolean;
   /** The sidebar's entry "Broken workflows" (actions W1); not drawn when `null`. */
   brokenWorkflows?: SidebarBrokenWorkflows | null;
+  /** The screen wants the rail (a code review): shown as long as this is on, the remembered `collapsed` left as it is. */
+  railForced?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -68,8 +70,10 @@ defineSlots<{
   trackedMenu?(props: { target: TrackedTarget }): unknown;
 }>();
 
-/** The sidebar collapsed to the rail. */
+/** The sidebar collapsed to the rail, as the user keeps it. */
 const collapsed = defineModel<boolean>('collapsed', { default: false });
+/** Whether the rail shows: what the user keeps, unless the screen asks for it. */
+const rail = computed(() => props.railForced || collapsed.value);
 
 /** `$sidebar-rail-width`, or room for macOS's window controls over it: the rail is not resized. */
 const SIDEBAR_RAIL_WIDTH = WINDOW_CONTROLS_OVERLAID ? 80 : 56;
@@ -91,7 +95,7 @@ const screenMinSize = computed(() => Math.min(100, (SCREEN_MIN_WIDTH / surfacesW
 const panelMaxWidth = computed(() =>
   Math.max(
     panelWidth.min,
-    surfacesWidth.value - (collapsed.value ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
+    surfacesWidth.value - (rail.value ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
   ),
 );
 
@@ -109,7 +113,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => observer?.disconnect());
 
-// `[` collapses or expands the sidebar, unless the key is being typed into something.
+// `[` collapses or expands the sidebar, unless the key is being typed into something; a forced rail doesn't toggle.
 useCommands(() => [
   {
     id: 'app.sidebar',
@@ -117,6 +121,7 @@ useCommands(() => [
     section: 'app',
     key: APP_KEYS.sidebar,
     icon: collapsed.value ? PanelLeftOpen : PanelLeftClose,
+    when: () => !props.railForced,
     run: toggle,
   },
 ]);
@@ -129,7 +134,7 @@ function toggle() {
 // when it mounted, not the one it has now: once it has, the widths the user chose since are put back.
 async function restoreWidths() {
   await nextTick();
-  if (!collapsed.value) {
+  if (!rail.value) {
     sidebarPanel.value?.resize(sidebarWidth.stored);
   }
 
@@ -137,12 +142,12 @@ async function restoreWidths() {
 }
 
 // A new minimum or maximum lays the panels out anew as well.
-watch([collapsed, screenMinSize, panelMaxWidth], restoreWidths);
+watch([rail, screenMinSize, panelMaxWidth], restoreWidths);
 
 // The panels' widths now, in pixels but the screen's: `[sidebar, screen, panel?]`. The rail's is not the sidebar's.
 function onLayout(sizes: number[]) {
   const [sidebar, , panel] = sizes;
-  if (sidebar !== undefined && !collapsed.value) {
+  if (sidebar !== undefined && !rail.value) {
     sidebarWidth.current = sidebar;
   }
 
@@ -173,14 +178,15 @@ function onLayout(sizes: number[]) {
         ref="sidebarPanel"
         :order="0"
         size-unit="px"
-        :default-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored"
-        :min-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.min"
-        :max-size="collapsed ? SIDEBAR_RAIL_WIDTH : sidebarWidth.max"
-        :style="collapsed ? undefined : sidebarWidth.style"
+        :default-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored"
+        :min-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.min"
+        :max-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.max"
+        :style="rail ? undefined : sidebarWidth.style"
       >
         <Sidebar
           :viewer="viewer"
-          :collapsed="collapsed"
+          :collapsed="rail"
+          :rail-forced="railForced"
           :window-controls="WINDOW_CONTROLS_OVERLAID"
           :counts="myWorkCounts"
           :tracked="tracked"
@@ -202,7 +208,7 @@ function onLayout(sizes: number[]) {
         </Sidebar>
       </SplitterPanel>
       <ResizeHandle
-        v-if="!collapsed"
+        v-if="!rail"
         :label="t(l.resizeSidebar)"
         @resized="sidebarWidth.save()"
       />
@@ -240,7 +246,7 @@ function onLayout(sizes: number[]) {
     <StatusBar
       :rate-limit="rateLimit"
       :notice="notice"
-      :collapsed="collapsed"
+      :collapsed="rail"
       :last-refreshed-at="lastRefreshedAt"
     >
       <FreshnessSegment

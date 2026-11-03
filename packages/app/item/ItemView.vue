@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `⇧O` opens its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -113,6 +113,8 @@ const emit = defineEmits<{
   open: [reference: ItemReference];
   /** A pull request picked in the stack's map: it takes this one's place, as `K`/`J` do. */
   openInPlace: [id: string];
+  /** `D`: the pull request's review (code review's D2, always a page of its own). */
+  review: [];
   /** The user changed something. */
   edit: [request: EditRequest];
   /** "Add to project" opened: the projects to offer are wanted. */
@@ -271,7 +273,7 @@ const opened = computed(() => {
 });
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
-const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', itemMenu: 'Mod+.' } as const;
+const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', review: 'D', itemMenu: 'Mod+.' } as const;
 
 /**
  * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
@@ -444,6 +446,15 @@ function getItemCommands(): Command[] {
       key: ITEM_KEYS.openOnGitHub,
       icon: Github,
       run: () => browser.openInNewTab(item.url),
+    },
+    {
+      id: 'item.review',
+      title: t(l.review),
+      section: 'item',
+      key: ITEM_KEYS.review,
+      icon: FileDiff,
+      when: () => pr.value !== null,
+      run: () => emit('review'),
     },
     {
       id: 'item.openFiles',

@@ -15,7 +15,7 @@ const LAYOUT: Readonly<Record<Item['kind'], readonly (readonly string[])[]>> = {
         ['state'],
     ],
     pullRequest: [
-        ['open', 'openPage', 'openOnGitHub', 'openFiles'],
+        ['open', 'openPage', 'review', 'openOnGitHub', 'openFiles'],
         ['reviewers', 'draft'],
         ['assignees', 'labels', 'milestone', 'status', 'priority', 'iteration', 'addToProject'],
         ['comment', 'copyLink', 'copyBranch'],
