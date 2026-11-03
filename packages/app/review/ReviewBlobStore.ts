@@ -2,7 +2,9 @@ import type { ReviewBlobOidAnswer } from '@githq/github/readReviewBlobs.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { openDB } from 'idb';
-import type { DBSchema, IDBPDatabase } from 'idb';
+import type { DBSchema } from 'idb';
+
+import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 
 import type { ReviewFile } from './ReviewFiles.js';
 
@@ -36,6 +38,20 @@ export interface ReviewKeptFileList {
     readonly files: readonly ReviewFile[];
 }
 
+/** What a review keeps on disk, by login. A `read` opens the login's database; a `write` rejects when it is not open (anymore). */
+export interface ReviewBlobStoreShape {
+    /** The texts of those of `oids` it holds, by oid. */
+    read(login: string, oids: readonly string[]): Promise<Map<string, string>>;
+    write(login: string, blobs: readonly ReviewBlob[]): Promise<void>;
+    /** Those of `keys` it holds, by key, in one transaction. */
+    readResolutions(login: string, keys: readonly string[]): Promise<Map<string, ReviewKeptResolution>>;
+    writeResolutions(login: string, resolutions: ReadonlyMap<string, ReviewKeptResolution>): Promise<void>;
+    readMergeBase(login: string, key: string): Promise<string | undefined>;
+    writeMergeBase(login: string, key: string, oid: string): Promise<void>;
+    readFileList(login: string, key: string): Promise<ReviewKeptFileList | undefined>;
+    writeFileList(login: string, key: string, list: ReviewKeptFileList): Promise<void>;
+}
+
 interface ReviewBlobDatabase extends DBSchema {
     blobs: { key: string; value: ReviewBlob };
     resolutions: { key: string; value: ReviewKeptResolution };
@@ -56,8 +72,8 @@ interface ReviewBlobDatabase extends DBSchema {
 export type ReviewBlobStore = Resolved<typeof ReviewBlobStore>;
 export const ReviewBlobStore = defineService({
     name: 'ReviewBlobStore',
-    setup() {
-        const connections = new Map<string, Promise<IDBPDatabase<ReviewBlobDatabase>>>();
+    setup(): ReviewBlobStoreShape {
+        const { connect, getOpen } = createDatabaseConnections(openDatabase);
 
         return {
             read,
@@ -70,7 +86,6 @@ export const ReviewBlobStore = defineService({
             writeFileList,
         };
 
-        /** Opens `login`'s database when it isn't, and returns the texts of those of `oids` it holds, by oid. */
         async function read(login: string, oids: readonly string[]) {
             const db = await connect(login);
             const tx = db.transaction('blobs');
@@ -85,14 +100,12 @@ export const ReviewBlobStore = defineService({
             return texts;
         }
 
-        /** Keeps `blobs` in the database a read opened; rejects when it is not open (anymore). */
         async function write(login: string, blobs: readonly ReviewBlob[]) {
             const db = await getOpen(login);
             const tx = db.transaction('blobs', 'readwrite');
             await Promise.all([...blobs.map(blob => tx.store.put(blob)), tx.done]);
         }
 
-        /** Those of `keys` it holds, by key, in one transaction. */
         async function readResolutions(login: string, keys: readonly string[]) {
             const db = await connect(login);
             const tx = db.transaction('resolutions');
@@ -108,7 +121,6 @@ export const ReviewBlobStore = defineService({
             return resolutions;
         }
 
-        /** Like {@link write}. */
         async function writeResolutions(login: string, resolutions: ReadonlyMap<string, ReviewKeptResolution>) {
             const db = await getOpen(login);
             const tx = db.transaction('resolutions', 'readwrite');
@@ -120,7 +132,6 @@ export const ReviewBlobStore = defineService({
             return await db.get('mergeBases', key);
         }
 
-        /** Like {@link write}. */
         async function writeMergeBase(login: string, key: string, oid: string) {
             const db = await getOpen(login);
             await db.put('mergeBases', oid, key);
@@ -131,54 +142,20 @@ export const ReviewBlobStore = defineService({
             return await db.get('fileLists', key);
         }
 
-        /** Like {@link write}. */
         async function writeFileList(login: string, key: string, list: ReviewKeptFileList) {
             const db = await getOpen(login);
             await db.put('fileLists', list, key);
         }
-
-        async function getOpen(login: string) {
-            const connection = connections.get(login);
-            if (!connection) {
-                throw new Error(`What ${login} keeps is not open`);
-            }
-
-            return await connection;
-        }
-
-        function connect(login: string) {
-            let connection = connections.get(login);
-            if (!connection) {
-                connection = openDB<ReviewBlobDatabase>(
-                    getReviewBlobDatabaseName(login),
-                    REVIEW_BLOB_DATABASE_VERSION,
-                    {
-                        upgrade(db) {
-                            db.createObjectStore('blobs', { keyPath: 'oid' });
-                            db.createObjectStore('resolutions');
-                            db.createObjectStore('mergeBases');
-                            db.createObjectStore('fileLists');
-                        },
-                    },
-                ).then(db => {
-                    db.addEventListener('versionchange', () => {
-                        db.close();
-                        forget(login, connection);
-                    });
-                    return db;
-                });
-
-                connections.set(login, connection);
-                connection.catch(() => forget(login, connection));
-            }
-
-            return connection;
-        }
-
-        function forget(login: string, connection: Promise<IDBPDatabase<ReviewBlobDatabase>> | undefined) {
-            if (connections.get(login) === connection) {
-                connections.delete(login);
-            }
-        }
     },
 });
+
+function openDatabase(login: string) {
+    return openDB<ReviewBlobDatabase>(getReviewBlobDatabaseName(login), REVIEW_BLOB_DATABASE_VERSION, {
+        upgrade(db) {
+            db.createObjectStore('blobs', { keyPath: 'oid' });
+            db.createObjectStore('resolutions');
+            db.createObjectStore('mergeBases');
+            db.createObjectStore('fileLists');
+        },
+    });
+}

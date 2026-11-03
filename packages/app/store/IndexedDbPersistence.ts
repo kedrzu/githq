@@ -1,5 +1,5 @@
 import { deleteDB, openDB } from 'idb';
-import type { DBSchema, IDBPDatabase } from 'idb';
+import type { DBSchema } from 'idb';
 
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
@@ -16,6 +16,7 @@ import { getReviewBlobDatabaseName } from '@/review/ReviewBlobStore.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
+import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 import type { WorkflowPersistenceShape } from '@/workflows/WorkflowPersistence.js';
 import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
@@ -87,7 +88,7 @@ interface LocalDatabase extends DBSchema {
  * the next `load`: a write or read must never bring back a database deleted on sign-out.
  */
 export function createIndexedDbPersistence(): IndexedDbPersistence {
-    const connections = new Map<string, Promise<IDBPDatabase<LocalDatabase>>>();
+    const { connect, getOpen, forget } = createDatabaseConnections(login => open(getLocalDatabaseName(login)));
 
     return {
         load,
@@ -167,7 +168,7 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function destroy(login: string) {
         // Not waiting for this tab's connection to close: the deletion is queued behind it by IndexedDB itself,
         // and a `load` called after this one is queued behind the deletion.
-        connections.delete(login);
+        forget(login);
         // The contents of the files they reviewed go with it: `ReviewBlobStore` keeps them apart only so that they
         // survive a raise of this database's version.
         await Promise.all([deleteDB(getLocalDatabaseName(login)), deleteDB(getReviewBlobDatabaseName(login))]);
@@ -298,40 +299,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function deleteWorkflows(login: string, nameWithOwner: string) {
         const db = await getOpen(login);
         await db.delete('workflows', nameWithOwner);
-    }
-
-    /** The connection `load` opened; rejects when there is none (anymore). */
-    async function getOpen(login: string) {
-        const connection = connections.get(login);
-        if (!connection) {
-            throw new Error(`The local copy of ${login} is not open`);
-        }
-
-        return await connection;
-    }
-
-    function connect(login: string) {
-        let connection = connections.get(login);
-        if (!connection) {
-            connection = open(getLocalDatabaseName(login)).then(db => {
-                db.addEventListener('versionchange', () => {
-                    db.close();
-                    if (connections.get(login) === connection) {
-                        connections.delete(login);
-                    }
-                });
-                return db;
-            });
-
-            connections.set(login, connection);
-            connection.catch(() => {
-                if (connections.get(login) === connection) {
-                    connections.delete(login);
-                }
-            });
-        }
-
-        return connection;
     }
 }
 
