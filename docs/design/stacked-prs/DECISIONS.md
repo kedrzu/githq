@@ -221,6 +221,10 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 >
 > **Checked 2026-11-02 (live, the same sandbox):** `enablePullRequestAutoMerge` on a member of a stack answers UNPROCESSABLE "Auto-merge
 > is not supported for stacked pull requests.", while `viewerCanEnableAutoMerge` reads true. So githq doesn't offer it in a stack (SP52).
+>
+> **Checked 2026-11-03 (live, stack #44 of #41, #42 on a queue branch):** `merge-async` with `sha` only on the top answers `enqueued`, and each
+> member gets its own entry and position (1 and 2), not one shared. `dequeuePullRequest` on the top is refused ("No merge queue found for
+> branch"), on the first it takes the whole stack out. Under a ruleset with no bypass list `viewerCanMergeAsAdmin` is false.
 
 **Rejected.**
 
