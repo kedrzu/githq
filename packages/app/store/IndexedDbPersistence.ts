@@ -12,6 +12,7 @@ import type {
 import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/RepositoryPersistence.js';
 import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
+import { getReviewBlobDatabaseName } from '@/review/ReviewBlobStore.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
@@ -167,7 +168,9 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         // Not waiting for this tab's connection to close: the deletion is queued behind it by IndexedDB itself,
         // and a `load` called after this one is queued behind the deletion.
         connections.delete(login);
-        await deleteDB(getLocalDatabaseName(login));
+        // The contents of the files they reviewed go with it: `ReviewBlobStore` keeps them apart only so that they
+        // survive a raise of this database's version.
+        await Promise.all([deleteDB(getLocalDatabaseName(login)), deleteDB(getReviewBlobDatabaseName(login))]);
     }
 
     async function loadDetailVersions(login: string) {

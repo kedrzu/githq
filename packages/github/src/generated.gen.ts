@@ -75,6 +75,15 @@ export type CheckStatusState =
     /** The check suite or run is in waiting state. */
     | 'WAITING';
 
+/** The possible viewed states of a file . */
+export type FileViewedState =
+    /** The file has new changes since last viewed. */
+    | 'DISMISSED'
+    /** The file has not been marked as viewed. */
+    | 'UNVIEWED'
+    /** The file has been marked as viewed. */
+    | 'VIEWED';
+
 /** The possible state reasons of a closed issue. */
 export type IssueClosedStateReason =
     /** An issue that has been closed as completed */
@@ -155,6 +164,21 @@ export type OrderDirection =
     | 'ASC'
     /** Specifies a descending order for a given `orderBy` argument. */
     | 'DESC';
+
+/** The possible types of patch statuses. */
+export type PatchStatus =
+    /** The file was added. Git status 'A'. */
+    | 'ADDED'
+    /** The file's type was changed. Git status 'T'. */
+    | 'CHANGED'
+    /** The file was copied. Git status 'C'. */
+    | 'COPIED'
+    /** The file was deleted. Git status 'D'. */
+    | 'DELETED'
+    /** The file's contents were changed. Git status 'M'. */
+    | 'MODIFIED'
+    /** The file was renamed. Git status 'R'. */
+    | 'RENAMED';
 
 /** The type of a project field. */
 export type ProjectV2FieldType =
@@ -2241,6 +2265,34 @@ export type ProjectUpdatedAtQueryVariables = Exact<{
 }>;
 
 export type ProjectUpdatedAtQuery = { node: { updatedAt: string } | Record<PropertyKey, never> | null };
+
+export type PullRequestReviewFilesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    number: number;
+    after?: string | null | undefined;
+}>;
+
+export type PullRequestReviewFilesQuery = {
+    repository: {
+        pullRequest: {
+            id: string;
+            headRefOid: string;
+            baseRefOid: string;
+            changedFiles: number;
+            files: {
+                pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                nodes: Array<{
+                    path: string;
+                    changeType: PatchStatus;
+                    additions: number;
+                    deletions: number;
+                    viewerViewedState: FileViewedState;
+                } | null> | null;
+            } | null;
+        } | null;
+    } | null;
+};
 
 export type PullRequestStacksQueryVariables = Exact<{
     ids: Array<string> | string;
@@ -9570,6 +9622,31 @@ export const ProjectUpdatedAtDocument = new TypedDocumentString(`
   }
 }
     `);
+export const PullRequestReviewFilesDocument = new TypedDocumentString(`
+    query PullRequestReviewFiles($owner: String!, $name: String!, $number: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      id
+      headRefOid
+      baseRefOid
+      changedFiles
+      files(first: 100, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          path
+          changeType
+          additions
+          deletions
+          viewerViewedState
+        }
+      }
+    }
+  }
+}
+    `);
 export const PullRequestStacksDocument = new TypedDocumentString(`
     query PullRequestStacks($ids: [ID!]!, $first: Int!) {
   nodes(ids: $ids) {
@@ -11462,6 +11539,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ProjectUpdatedAtQuery>;
+        },
+        PullRequestReviewFiles(
+            variables: PullRequestReviewFilesQueryVariables,
+            options?: C,
+        ): Promise<PullRequestReviewFilesQuery> {
+            return requester<PullRequestReviewFilesQuery, PullRequestReviewFilesQueryVariables>(
+                PullRequestReviewFilesDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestReviewFilesQuery>;
         },
         PullRequestStacks(variables: PullRequestStacksQueryVariables, options?: C): Promise<PullRequestStacksQuery> {
             return requester<PullRequestStacksQuery, PullRequestStacksQueryVariables>(
