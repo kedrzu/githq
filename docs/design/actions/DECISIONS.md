@@ -116,12 +116,25 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 > 1 minute" ([workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs)), so it is fetched per read.
 
 > **Checked 2026-11-01 (live, same job):** the log has 2,086 lines and one `##[error]` line, at 2070, which
-> carries the step's final message. The failed check run's annotation repeats that message but says
-> `start_line` 839, which is an unrelated line of the log, so annotations cannot locate the failure. The jobs
-> endpoint names the failed step (`Run tauri-apps/tauri-action@v0`).
+> carries the step's final message. The failed check run's annotation repeats that message and says `start_line`
+> 839. The jobs endpoint names the failed step (`Run tauri-apps/tauri-action@v0`).
+
+> **Checked 2026-11-03 (live, 60-odd jobs of public repositories):** an annotation's `start_line` counts within its
+> step, `##[endgroup]` lines included, not in the log: 52 of 54 landed exactly on the error's line counted that way, so
+> the 839 above was probably such a count, though that job was not re-read. Annotations do locate a failure, given the
+> step's start. The log's own marker needs no second request, so the decision stands.
 
 > **Checked 2026-11-01:** no log streaming endpoint is documented for a running job; the logs endpoint returns
 > a plain-text file — [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs).
+
+**The desktop app reads a log through its Rust side.** (2026-11-04, owner, on the agent's recommendation) Its content
+security policy allows only `api.github.com`, and a log redirects to Azure Blob Storage. A native command that asks
+only for job logs adds no way out of the webview, which holds the token.
+
+**Rejected.**
+
+- Adding `https://*.blob.core.windows.net` to the policy: one line, but the webview could then reach any Azure Storage
+  account.
 
 The screen says what happened when there is nothing normal to show (2026-11-01 failure sweep, accepted when closing the design): no
 jobs because the workflow file is invalid, a log past GitHub's retention, a re-run GitHub refuses. With no error
@@ -129,7 +142,8 @@ marker in the log, it starts at the log's end.
 
 **Rejected.**
 
-- Check-run annotations as the pointer into the log: see the check above.
+- Check-run annotations as the pointer into the log: one more request per failed job for what the log already marks.
+  This line first said they cannot locate the failure, which was wrong; see the checks above.
 
 ## D4
 

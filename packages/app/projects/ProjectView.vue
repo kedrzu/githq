@@ -176,7 +176,7 @@ const groupings = computed((): ListChoice[] => {
   return choices;
 });
 const properties = computed((): ListChoice[] => [
-  ...(['status', 'labels', 'milestone', 'people', 'updated'] as const).map(property => ({
+  ...(['status', 'size', 'labels', 'milestone', 'people', 'updated'] as const).map(property => ({
     value: property,
     label: t(propertyLabels[property]),
   })),

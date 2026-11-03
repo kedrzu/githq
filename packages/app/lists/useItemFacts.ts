@@ -19,7 +19,6 @@ import {
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
@@ -86,6 +85,12 @@ export interface ItemProjectFieldFact {
     readonly more: string | null;
 }
 
+/** The lines a pull request adds and removes. */
+export interface ItemSizeFact {
+    readonly additions: number;
+    readonly deletions: number;
+}
+
 /** What a row and a card of an item show, worked out once for both. */
 export interface ItemFactsViewModel {
     readonly kind: ItemKindFact;
@@ -94,8 +99,8 @@ export interface ItemFactsViewModel {
     readonly people: readonly ItemUser[];
     readonly age: string;
     readonly status: ItemStatusFact | null;
-    /** A pull request's lines added and removed; not for one nested under an issue. */
-    readonly size: string | null;
+    /** A pull request's lines added and removed, nested under an issue or not; an issue and a draft have none. */
+    readonly size: ItemSizeFact | null;
     readonly projectField: ItemProjectFieldFact | null;
 }
 
@@ -108,7 +113,6 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
     const queueTexts = useMergeQueueTexts();
     const getMethodName = useMergeMethodName();
-    const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
     const item = makeRef(options.item);
     const parent = makeRef(options.parent);
@@ -144,11 +148,9 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
         return listed.state === 'OPEN' ? getStatus(listed) : null;
     });
-    const size = computed(() => {
+    const size = computed((): ItemSizeFact | null => {
         const listed = item.value;
-        return listed.kind === 'pullRequest' && !parent.value
-            ? t(l.size, { additions: numbers.format(listed.additions), deletions: numbers.format(listed.deletions) })
-            : null;
+        return listed.kind === 'pullRequest' ? { additions: listed.additions, deletions: listed.deletions } : null;
     });
     // D12: the row field of the first project — nothing of it when empty — and how many more projects it is in; the
     // marker stays for "+N" alone. The item comes with its projects in the sidebar's order and each tracked one's row
