@@ -23,5 +23,5 @@ export const REPOSITORY_VIEW_DEFAULTS: ListViewOptions<RepositoryGrouping, ItemS
     layout: 'list',
     grouping: 'milestone',
     sort: 'updated',
-    properties: ['status', 'projectField', 'labels', 'people', 'updated'],
+    properties: ['status', 'size', 'projectField', 'labels', 'people', 'updated'],
 };

@@ -26,7 +26,15 @@ describe('a saved view as the view options', () => {
                 layout: 'list',
                 grouping: 'field:F_status',
                 sort: 'field:F_priority:asc',
-                properties: ['status', 'people', 'field:F_status', 'field:F_priority', 'labels', 'field:F_estimate'],
+                properties: [
+                    'status',
+                    'size',
+                    'people',
+                    'field:F_status',
+                    'field:F_priority',
+                    'labels',
+                    'field:F_estimate',
+                ],
                 filter: 'iteration:@current',
             },
             roadmap: false,
@@ -72,7 +80,7 @@ describe('a saved view as the view options', () => {
             layout: 'list',
             grouping: 'repository',
             sort: 'field:F_status:desc,title:asc',
-            properties: ['status', 'milestone'],
+            properties: ['status', 'size', 'milestone'],
             filter: 'iteration:@current',
         });
     });
@@ -109,6 +117,7 @@ test('the choices: every field to group and sort by both ways, the view’s own 
     expect(choices.sorts).toContain('title:desc');
     expect(choices.properties).toEqual([
         'status',
+        'size',
         'labels',
         'milestone',
         'people',

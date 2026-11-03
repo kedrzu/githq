@@ -9,6 +9,7 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import PullRequestSize from '@/lists/PullRequestSize.vue';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
@@ -211,8 +212,10 @@ function refusedAside(reason: EditFailureReason) {
         >{{ pr.baseRefName }}</span
       >
       <span :class="css.pullRequestMerge_spacer" />
-      <span :class="css.pullRequestMerge_added">+{{ numbers.format(pr.additions) }}</span>
-      <span :class="css.pullRequestMerge_removed">−{{ numbers.format(pr.deletions) }}</span>
+      <PullRequestSize
+        :additions="pr.additions"
+        :deletions="pr.deletions"
+      />
       <span :class="css.pullRequestMerge_files">{{ t(l.files, { count: pr.changedFiles }) }}</span>
     </p>
     <div :class="css.pullRequestMerge_actions">
@@ -389,14 +392,6 @@ function refusedAside(reason: EditFailureReason) {
 
 .pullRequestMerge_spacer {
   flex: 1;
-}
-
-.pullRequestMerge_added {
-  color: $color-green;
-}
-
-.pullRequestMerge_removed {
-  color: $color-red;
 }
 
 .pullRequestMerge_files {

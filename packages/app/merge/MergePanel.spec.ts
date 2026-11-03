@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
+
 import * as stories from './MergePanel.stories.js';
 
 const {
@@ -632,7 +634,7 @@ test("PM14: ready on a queue branch — the method and text are the queue's, E i
     await expect.element(page.getByRole('textbox', { name: 'Commit title' })).not.toBeInTheDocument();
 
     const add = page.getByRole('button', { name: /Add to queue/ });
-    await expect.element(add).toHaveAttribute('aria-keyshortcuts', 'Meta+Enter');
+    await expect.element(add).toHaveAttribute('aria-keyshortcuts', formatAriaKeyShortcuts('Mod+Enter'));
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
 });
