@@ -1,6 +1,7 @@
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
+import { shallowRef } from 'vue';
 
 import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
@@ -8,6 +9,8 @@ import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
+import type { FileSyntax } from './syntax/createFileSyntax.js';
+import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -31,7 +34,7 @@ import { replayQueue } from './queue'`,
     .replace('MAX_BATCH = 20', 'MAX_BATCH = 50')
     .replace(
         'private pending = new PendingStore(db)',
-        `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has' })`,
+        `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has', badge: '<img src=x>' })`,
     );
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 
@@ -58,6 +61,18 @@ export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'l
 
 /** CR5: unified. */
 export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
+
+/** Split with its tokens arrived: the colours over the tints and the window, which axe holds to AA. */
+export const SplitColoured: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split', loaded.syntax) })),
+};
+
+/** Unified with its tokens arrived. */
+export const UnifiedColoured: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) })),
+};
 
 /** A renamed file says where it came from. */
 export const Renamed: Story = {
@@ -183,8 +198,17 @@ export const Paused: Story = {
 /** A new file with nothing in it. */
 export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
 
-function lines(layout: DiffLayout) {
-    return buildFileLineRows({ path: FILE.path, diff: DIFF, layout });
+function lines(layout: DiffLayout, syntax?: FileSyntax) {
+    return buildFileLineRows({ path: FILE.path, diff: DIFF, layout, syntax });
+}
+
+async function loadTokens() {
+    await loadGrammar('typescript');
+    const syntax: FileSyntax = {
+        before: shallowRef(tokenizeLines('typescript', DIFF.before)),
+        after: shallowRef(tokenizeLines('typescript', DIFF.after)),
+    };
+    return { syntax };
 }
 
 /** The rows the diff would draw for the file, without the room left under the last one. */

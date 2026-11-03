@@ -1,11 +1,14 @@
 <!-- A line of a diff side by side: the older version on the left, the newer on the right, a side with nothing blank. Long lines wrap, so the row is as tall as its taller side. -->
 <script lang="ts" setup>
+import DiffCode from './DiffCode.vue';
 import type { DiffCell, DiffSplitRow } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
+import type { FileSyntax } from './syntax/createFileSyntax.js';
 
 defineProps<{
   line: DiffSplitRow;
   diff: FileDiff;
+  syntax: FileSyntax | null;
 }>();
 
 function getText(lines: readonly string[], cell: DiffCell) {
@@ -18,13 +21,21 @@ function getText(lines: readonly string[], cell: DiffCell) {
     <div :class="[css.diffRowSplit_cell, line.left && css[`diffRowSplit_cell_${line.left.kind}`]]">
       <template v-if="line.left">
         <span :class="css.diffRowSplit_number">{{ line.left.line }}</span>
-        <code :class="css.diffRowSplit_code">{{ getText(diff.before, line.left) }}</code>
+        <DiffCode
+          :text="getText(diff.before, line.left)"
+          :tokens="syntax?.before.value ?? null"
+          :line="line.left.line - 1"
+        />
       </template>
     </div>
     <div :class="[css.diffRowSplit_cell, line.right && css[`diffRowSplit_cell_${line.right.kind}`]]">
       <template v-if="line.right">
         <span :class="css.diffRowSplit_number">{{ line.right.line }}</span>
-        <code :class="css.diffRowSplit_code">{{ getText(diff.after, line.right) }}</code>
+        <DiffCode
+          :text="getText(diff.after, line.right)"
+          :tokens="syntax?.after.value ?? null"
+          :line="line.right.line - 1"
+        />
       </template>
     </div>
   </div>
@@ -77,16 +88,5 @@ function getText(lines: readonly string[], cell: DiffCell) {
   color: $color-fg-dim;
   text-align: right;
   user-select: none;
-}
-
-.diffRowSplit_code {
-  min-width: 0;
-  font-family: $font-family-mono;
-  font-variant-ligatures: none;
-  font-size: $font-size-xs;
-  line-height: 20px;
-  tab-size: 4;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
 }
 </style>

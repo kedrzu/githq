@@ -63,6 +63,14 @@ $color-purple: #a57bf5;
 $color-diff-deleted: rgba($color-red, 0.09);
 $color-diff-added: rgba($color-green, 0.09);
 
+// Code. Muted, each AA (4.5:1) over the window and over a deleted or an added line. `githq.pen` has no syntax colours
+// (its code is monochrome): these are the agent's, for the owner to confirm. The rest of the code is the line's own colour.
+$color-syntax-comment: $color-fg-dim;
+$color-syntax-keyword: #b0a8e6;
+$color-syntax-string: #9cc2a5;
+$color-syntax-constant: #d4b078;
+$color-syntax-name: #8fb8d8;
+
 // The light button's fill.
 $color-button-light: #e4e6ea;
 $color-button-light-hover: #ffffff;

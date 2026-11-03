@@ -10,6 +10,8 @@ import type { DiffLayout, DiffLineRange } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
+import { createFileSyntax } from './syntax/createFileSyntax.js';
+import type { FileVersions } from './syntax/createFileSyntax.js';
 
 /** Options of {@link useReviewRows}. */
 export interface UseReviewRowsOptions {
@@ -45,7 +47,7 @@ const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
  * turn at a time, the files nearest the one in view first, so 225 files don't hold the first paint back; a file not yet
  * computed is a placeholder, like one not yet read. Each diff is kept by the file's content and the whitespace setting
  * and each file's rows by its diff, the layout and the lines expanded, so that a setting's second visit and a file's arrival compute only
- * what they must.
+ * what they must. Tokens are computed in a worker, in the same order: they change no row, only what a drawn one looks like.
  */
 export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRef<readonly ReviewRow[]>> {
     const clock = useService(Clock);
@@ -55,6 +57,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     const fullDiffs = new WeakMap<ReadyState, FileDiff>();
     const trimmedDiffs = new WeakMap<ReadyState, FileDiff>();
     const contents = new WeakMap<FileDiff, Partial<Record<DiffLayout, BuiltLines>>>();
+    const syntax = createFileSyntax(findNextToTokenize);
 
     let builtFrom: readonly ReviewFileContent[] = [];
     let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
@@ -67,6 +70,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         () => {
             rebuild();
             scheduleTurn();
+            syntax.tokenizeNext();
         },
         { immediate: true },
     );
@@ -78,7 +82,10 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
             computeTurn();
         },
     );
-    onScopeDispose(() => cancelTurn?.());
+    onScopeDispose(() => {
+        cancelTurn?.();
+        syntax.dispose();
+    });
 
     return rows;
 
@@ -124,7 +131,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
                 return toValue(options.files)?.fetchingFirst === file.path ? PLACEHOLDER_FIRST : PLACEHOLDER;
             case 'ready': {
                 const diff = getDiffs().get(state);
-                return diff ? getLinesContent(file, diff) : PLACEHOLDER;
+                return diff ? getLinesContent(file, state, diff) : PLACEHOLDER;
             }
             default:
                 return state;
@@ -147,7 +154,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         return toValue(options.hideWhitespace) ? trimmedDiffs : fullDiffs;
     }
 
-    function getLinesContent(file: ReviewFile, diff: FileDiff): LinesContent {
+    function getLinesContent(file: ReviewFile, state: ReadyState, diff: FileDiff): LinesContent {
         const layout = toValue(options.layout);
         let byLayout = contents.get(diff);
         if (!byLayout) {
@@ -163,7 +170,13 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
 
         const content: LinesContent = {
             kind: 'lines',
-            rows: buildFileLineRows({ path: file.path, diff, layout, expanded }),
+            rows: buildFileLineRows({
+                path: file.path,
+                diff,
+                syntax: syntax.get({ path: file.path, before: state.before, after: state.after }),
+                layout,
+                expanded,
+            }),
         };
         byLayout[layout] = { expanded, content };
         return content;
@@ -208,8 +221,29 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         performance.measure(`review:diff ${file.path}`, { start, end: performance.now() });
     }
 
-    /** The open ready file without a diff nearest the current one, the one below first as that's where reading goes. */
+    /** The open ready file without a diff nearest the current one. */
     function findNextToCompute(): ReviewFile | null {
+        return findNearest(file => {
+            const state = getState(file);
+            return state?.kind === 'ready' && !getDiffs().has(state) && !isCollapsed(file) ? file : null;
+        });
+    }
+
+    /** The open read file nearest the current one that has a version to tokenize. */
+    function findNextToTokenize(): FileVersions | null {
+        return findNearest(file => {
+            const state = getState(file);
+            if (state?.kind !== 'ready' || isCollapsed(file)) {
+                return null;
+            }
+
+            const versions = { path: file.path, before: state.before, after: state.after };
+            return syntax.isPending(versions) ? versions : null;
+        });
+    }
+
+    /** What `read` first finds, going outward from the current file, the one below first as that's where reading goes. */
+    function findNearest<T>(read: (file: ReviewFile) => T | null): T | null {
         const files = toValue(options.ordered);
         const currentPath = toValue(options.currentPath);
         const current = Math.max(
@@ -219,11 +253,9 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         for (let distance = 0; distance < files.length; distance++) {
             for (const index of distance === 0 ? [current] : [current + distance, current - distance]) {
                 const file = files[index];
-                if (file) {
-                    const state = getState(file);
-                    if (state?.kind === 'ready' && !getDiffs().has(state) && !isCollapsed(file)) {
-                        return file;
-                    }
+                const found = file ? read(file) : null;
+                if (found !== null) {
+                    return found;
                 }
             }
         }

@@ -5,6 +5,7 @@ import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './
 import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
 import { findEnclosing } from './diff/findEnclosing.js';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileSizes } from './ReviewFiles.js';
+import type { FileSyntax } from './syntax/createFileSyntax.js';
 
 /** How many unchanged lines show around a change. */
 const CONTEXT_LINES = 3;
@@ -34,6 +35,8 @@ export interface ReviewLineRow {
     readonly key: string;
     readonly line: DiffSplitRow | DiffUnifiedRow;
     readonly diff: FileDiff;
+    /** What colours its text, `null` for none. */
+    readonly syntax: FileSyntax | null;
 }
 
 /** Unchanged lines left out. */
@@ -219,6 +222,7 @@ export function buildReviewRows({ files, getContent, getCollapseReason }: BuildR
 export interface BuildFileLineRowsParams {
     readonly path: string;
     readonly diff: FileDiff;
+    readonly syntax?: FileSyntax;
     readonly layout: DiffLayout;
     /** The lines shown beyond the context. */
     readonly expanded?: readonly DiffLineRange[];
@@ -230,11 +234,11 @@ export interface BuildFileLineRowsParams {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildFileLineRows({ path, diff, layout, expanded }: BuildFileLineRowsParams): ReviewRow[] {
+export function buildFileLineRows({ path, diff, syntax, layout, expanded }: BuildFileLineRowsParams): ReviewRow[] {
     return buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
-            return { kind: 'line', key, line: row, diff };
+            return { kind: 'line', key, line: row, diff, syntax: syntax ?? null };
         }
 
         const { range } = row;

@@ -1,5 +1,7 @@
 import { lcs } from 'fast-myers-diff';
 
+import { splitLines } from './splitLines.js';
+
 export interface ComputeFileDiffParams {
     /** The file's content before, `null` where it does not exist. */
     readonly before: string | null;
@@ -101,19 +103,6 @@ function keepLinesIn(ids: Int32Array, kept: ReadonlySet<number>) {
     }
 
     return { ids: keptIds, lines };
-}
-
-function splitLines(text: string | null): string[] {
-    if (text === null) {
-        return [];
-    }
-
-    const lines = text.split('\n');
-    if (lines.at(-1) === '') {
-        lines.pop();
-    }
-
-    return lines;
 }
 
 function stripCarriageReturn(line: string): string {

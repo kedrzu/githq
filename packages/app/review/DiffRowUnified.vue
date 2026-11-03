@@ -2,18 +2,20 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
+import DiffCode from './DiffCode.vue';
 import type { DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
+import type { FileSyntax } from './syntax/createFileSyntax.js';
 
 const props = defineProps<{
   line: DiffUnifiedRow;
   diff: FileDiff;
+  syntax: FileSyntax | null;
 }>();
 
-const text = computed(() => {
-  const { oldLine, newLine } = props.line;
-  return (newLine === null ? props.diff.before[(oldLine ?? 1) - 1] : props.diff.after[newLine - 1]) ?? '';
-});
+/** The line's 0-based place in the version it's drawn from, the older only for a deleted line. */
+const lineIndex = computed(() => (props.line.newLine ?? props.line.oldLine ?? 1) - 1);
+const onAfter = computed(() => props.line.newLine !== null);
 </script>
 
 <template>
@@ -27,7 +29,11 @@ const text = computed(() => {
     <span :class="css.diffRowUnified_number">{{ line.oldLine }}</span>
     <span :class="css.diffRowUnified_number">{{ line.newLine }}</span>
     <span :class="css.diffRowUnified_sign">{{ line.sign }}</span>
-    <code :class="css.diffRowUnified_code">{{ text }}</code>
+    <DiffCode
+      :text="(onAfter ? diff.after : diff.before)[lineIndex] ?? ''"
+      :tokens="(onAfter ? syntax?.after : syntax?.before)?.value ?? null"
+      :line="lineIndex"
+    />
   </div>
 </template>
 
@@ -82,16 +88,5 @@ const text = computed(() => {
   text-align: center;
   white-space: pre;
   user-select: none;
-}
-
-.diffRowUnified_code {
-  min-width: 0;
-  font-family: $font-family-mono;
-  font-variant-ligatures: none;
-  font-size: $font-size-xs;
-  line-height: 20px;
-  tab-size: 4;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
 }
 </style>

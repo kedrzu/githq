@@ -353,7 +353,8 @@ virtualized per line, not per file.** (2026-11-02, owner: "we optimise for speed
 agent's)
 
 The diff runs on the main thread (2026-11-03, owner). Lines absent from the other side are dropped before it, which keeps
-it minimal. Measuring a worker comes back with syntax highlighting.
+it minimal. Syntax colours run in a Web Worker, with highlight.js, by the measurement below; their tokens cross as
+transferred arrays and only colour what is already drawn, so no height changes (2026-11-03, measured, the owner's rule).
 
 **Why.** github.com stutters on large pull requests (owner). Copying a file's text to a worker is cheap next to
 diffing and highlighting it; one GitHub client keeps the token, rate-limit handling and caching in one place.
@@ -362,6 +363,12 @@ diffing and highlighting it; one GitHub client keeps the token, rate-limit handl
 > cold and 0.03 s reopened, diffs 43 ms in all and at most 13 ms a file, scrolling p95 18.8 ms. Worst cases under bun: 25,000
 > rewritten lines 3.3 s, 7 ms with the lines dropped; the same lines reordered still 2.5 s, which only a worker would help.
 > Generated files of that shape collapse ([D8](#d8)).
+
+> **Checked 2026-11-03:** tokenizing 977 KB of TypeScript in Chromium, warm: highlight.js 75 ms, Lezer 104 ms, Shiki's
+> JavaScript engine 871 ms (and 13.9 s on one 143 KB Go file). Gzipped core and TypeScript grammar: highlight.js 11 KB,
+> Lezer 48 KB, Shiki 71 KB. kedrzu/githq#102, 95 files, at 4× CPU slowdown: no colours 4–7 frames over 25 ms in 400,
+> main thread 22–37, worker 2–9; the longest frame 34–52 ms, 118–144 ms and 33–40 ms. Time to the first row does not change.
+> Posting a 1 MB file's tokens back as a transferred array takes under 0.2 ms.
 
 **Rejected.**
 

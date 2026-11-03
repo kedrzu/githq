@@ -117,11 +117,13 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           v-if="row.line.layout === 'split'"
           :line="row.line"
           :diff="row.diff"
+          :syntax="row.syntax"
         />
         <DiffRowUnified
           v-else
           :line="row.line"
           :diff="row.diff"
+          :syntax="row.syntax"
         />
       </template>
       <div

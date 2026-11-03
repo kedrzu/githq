@@ -46,6 +46,7 @@ test('D opens the review of the pull request open, at its GitHub address, in the
     await expect(review.title).toHaveText(PULL_REQUEST);
     await expect(review.fileRow('client.ts')).toBeVisible();
     await expect(review.code('export const client = 2;')).toBeVisible();
+    await expect(review.codeToken('export const client = 2;').first()).toBeVisible();
     await expect(review.currentFileRow).toContainText(README);
 
     await page.keyboard.press(']');

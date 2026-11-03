@@ -52,6 +52,11 @@ export class ReviewScreenHarness {
         return this.diff.locator('code', { hasText: text });
     }
 
+    /** A coloured token of a line of code. */
+    codeToken(text: string): Locator {
+        return this.code(text).locator('[class*="diffCode_keyword"]');
+    }
+
     /** How far below the top of the diff the file's header row is: 0 when it landed exactly. */
     async headerOffset(path: string): Promise<number> {
         const [header, diff] = await Promise.all([
