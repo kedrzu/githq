@@ -1547,7 +1547,7 @@ function measureCharacterWidth() {
   height: 100%;
   padding: 0;
   font-family: $font-family-sans;
-  font-size: 11.5px;
+  font-size: $font-size-2xs;
   color: $color-fg-dim;
   text-align: left;
   cursor: pointer;

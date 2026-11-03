@@ -261,7 +261,7 @@ function onKeydown(event: KeyboardEvent) {
   max-width: 45%;
   padding: 0;
   font-family: $font-family-mono;
-  font-size: 12.5px;
+  font-size: $font-size-sm;
   color: $color-fg;
   caret-color: $color-accent;
   background: none;
@@ -298,7 +298,7 @@ function onKeydown(event: KeyboardEvent) {
   align-items: center;
   padding: 0;
   font: inherit;
-  font-size: 11.5px;
+  font-size: $font-size-2xs;
   color: $color-fg-dim;
   cursor: pointer;
   background: none;
@@ -311,7 +311,7 @@ function onKeydown(event: KeyboardEvent) {
 
 .workflowLogSearch_action_on {
   gap: $spacing-6;
-  padding: 2px 7px;
+  padding: $spacing-2 $spacing-7;
   color: $color-fg;
   background: $color-bg-3;
   border: 1px solid $color-border-2;
