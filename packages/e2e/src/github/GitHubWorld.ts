@@ -416,7 +416,7 @@ interface WorldComment {
 
 interface WorldPullRequest {
     isDraft: boolean;
-    readonly reviewDecision: PullRequestReviewDecision | null;
+    reviewDecision: PullRequestReviewDecision | null;
     readonly failingChecks: number;
     readonly conflicts: boolean;
     reviewRequests: string[];
@@ -866,17 +866,17 @@ export class GitHubWorld {
         return pushCommit(item, item.pullRequest, { author, headline });
     }
 
-    /** Renames an item, which moves its `updated_at` to now. */
     /** The approval it had no longer counts, as after a dismissed review: it needs one again. */
     withdrawApproval(id: string): void {
-        const item = this.get(id);
-        if (!item.pullRequest) {
+        const { pullRequest } = this.get(id);
+        if (!pullRequest) {
             throw new Error(`${id} is not a pull request`);
         }
 
-        item.pullRequest = { ...item.pullRequest, reviewDecision: 'REVIEW_REQUIRED' };
+        pullRequest.reviewDecision = 'REVIEW_REQUIRED';
     }
 
+    /** Renames an item, which moves its `updated_at` to now. */
     retitle(id: string, title: string): void {
         const item = this.get(id);
         item.title = title;
