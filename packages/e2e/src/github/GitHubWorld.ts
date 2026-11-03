@@ -250,6 +250,8 @@ export interface GitHubWorldJobParams {
     readonly name: string;
     /** `success`, `failure`, …; `null` while it runs. */
     readonly conclusion: string | null;
+    /** With no conclusion: `queued`, `waiting`, …; `in_progress` by default. */
+    readonly status?: string;
     /** Its steps, numbered in order and a second apart; a job without any by default. */
     readonly steps?: readonly GitHubWorldStepParams[];
 }
@@ -662,6 +664,17 @@ export class GitHubWorld {
         return answered.map(job => job.id);
     }
 
+    /** A job of the run finishes, as GitHub records it between two reads, keeping its id. */
+    finishJob(nameWithOwner: string, runId: number, jobId: number, conclusion: string): void {
+        const { jobs } = this.getRepository(nameWithOwner);
+        jobs.set(
+            runId,
+            (jobs.get(runId) ?? []).map(job =>
+                job.id === jobId ? { ...job, status: 'completed', conclusion, completedAt: job.startedAt } : job,
+            ),
+        );
+    }
+
     /**
      * A log with lines in the job's steps, by step number: each at the second its step started, and a step's first line
      * the `##[group]Run` of its name for a run step, which is what tells a step from the one before it in that second.
@@ -698,7 +711,7 @@ export class GitHubWorld {
         return {
             id: this.nextJobId++,
             name: job.name,
-            status: job.conclusion === null ? 'in_progress' : 'completed',
+            status: job.conclusion === null ? (job.status ?? 'in_progress') : 'completed',
             conclusion: job.conclusion,
             startedAt: toWholeSecond(started),
             completedAt: job.conclusion === null ? null : toWholeSecond(started + steps.length * 1000),

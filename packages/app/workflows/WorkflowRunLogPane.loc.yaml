@@ -19,8 +19,6 @@ logDeleted:
   en: log deleted
 notLoaded:
   en: not loaded
-skipped:
-  en: skipped
 job:
   en: Job
 gitHub:
@@ -63,9 +61,9 @@ failedDetail:
   en: 'GET …/jobs/{id}/logs → {status}'
 failedNoAnswerDetail:
   en: 'GET …/jobs/{id}/logs → no answer'
-skippedTitle:
-  en: '{job} was skipped'
-skippedText:
-  en: "It never ran, so there's no log to read."
-skippedDetail:
-  en: 'conclusion: skipped'
+neverRanTitle:
+  en: '{job} never ran'
+neverRanText:
+  en: "It never started, so there's no log to read."
+neverRanDetail:
+  en: 'conclusion: {conclusion}'

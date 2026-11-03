@@ -79,7 +79,7 @@ function describeJobTime(job: GitHubWorkflowJob) {
   const mark = getJobMark(job);
   switch (mark) {
     case 'waiting':
-      return job.status.replaceAll('_', ' ');
+      return t(l.waitingTime);
     case 'skipped':
       return t(l.skippedTime);
     case 'none':

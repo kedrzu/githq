@@ -1,4 +1,4 @@
-<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran. A failure stays in here: the jobs and every other job's log keep working. -->
+<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -74,8 +74,8 @@ const size = computed(() => {
       return t(l.logDeleted);
     case 'failed':
       return t(l.notLoaded);
-    case 'skipped':
-      return t(l.skipped);
+    case 'neverRan':
+      return getConclusion(pane);
     default:
       return assertNever(pane);
   }
@@ -92,19 +92,23 @@ const message = computed((): LogMessage | null => {
       return getGoneMessage(pane);
     case 'failed':
       return getFailedMessage(pane);
-    case 'skipped':
+    case 'neverRan':
       return {
         icon: CircleSlash,
         tone: 'neutral',
-        title: t(l.skippedTitle, { job: pane.job.name }),
-        text: t(l.skippedText),
-        detail: t(l.skippedDetail),
+        title: t(l.neverRanTitle, { job: pane.job.name }),
+        text: t(l.neverRanText),
+        detail: t(l.neverRanDetail, { conclusion: getConclusion(pane) }),
         gitHubLabel: t(l.openOnGitHub),
       };
     default:
       return assertNever(pane);
   }
 });
+
+function getConclusion({ job }: Extract<WorkflowLogPane, { kind: 'neverRan' }>) {
+  return job.conclusion ?? job.status;
+}
 
 function getRunningMessage(pane: Extract<WorkflowLogPane, { kind: 'running' }>): LogMessage {
   const { job } = pane;
@@ -254,7 +258,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       </span>
       <template v-if="pane.kind === 'ready'">
         <span
-          v-if="pane.log.hasErrorMarker"
+          v-if="pane.log.errors.length > 0"
           :class="css.workflowRunLogPane_hint"
         >
           <Kbd keys="E" />

@@ -81,7 +81,12 @@ export const Waiting: Story = {
 
 /** It never ran, so it has no log. */
 export const Skipped: Story = {
-    args: { pane: { kind: 'skipped', job: job(102, 'deploy', 'skipped') } },
+    args: { pane: { kind: 'neverRan', job: job(102, 'deploy', 'skipped') } },
+};
+
+/** Cancelled before it started: it never ran either. */
+export const CancelledBeforeStarting: Story = {
+    args: { pane: { kind: 'neverRan', job: job(107, 'test (macos)', 'cancelled') } },
 };
 
 /** W4g: past retention, with the failed step named. */

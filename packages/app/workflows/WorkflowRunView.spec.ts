@@ -9,6 +9,7 @@ import * as stories from './WorkflowRunView.stories.js';
 const {
     Failed,
     InvalidFile,
+    JobCancelled,
     JobSkipped,
     JobsFailed,
     JobsLoading,
@@ -198,6 +199,11 @@ test('W4j: a running job says so with the way to GitHub, steps showing their sta
     await expect.element(summary).toHaveTextContent(/started 14m ago · Deploy is still broken/u);
     expect(steps().map(step => step.dataset.mark)).toEqual(['passed', 'running']);
     expect(jobNames()).toEqual(['build', 'deploy', 'lint']);
+    // Waiting, as the head counts it, whatever GitHub's status for that is.
+    const deploy = jobs().find(job => job.textContent?.includes('deploy'));
+    expect(deploy?.textContent).toContain('waiting');
+    expect(deploy?.textContent).not.toContain('queued');
+    await expect.element(page.getByText(matchPart('1 running · 1 waiting · 1 passed'))).toBeVisible();
 });
 
 test('a passed run works too: its first job selected, its log there, no error', async () => {
@@ -211,7 +217,18 @@ test('a passed run works too: its first job selected, its log there, no error', 
 test('a skipped job says it never ran, not that its log is gone', async () => {
     await JobSkipped.run();
 
-    await expect.element(page.getByRole('heading', { name: 'deploy was skipped' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'deploy never ran' })).toBeVisible();
+    await expect.element(page.getByText('conclusion: skipped')).toBeVisible();
+    await expect.element(page.getByTestId('workflow-log-size')).toHaveTextContent('skipped');
+});
+
+test('a job cancelled before starting says it never ran, with its real conclusion, and no way to mistake it for a log gone', async () => {
+    await JobCancelled.run();
+
+    await expect.element(page.getByRole('heading', { name: 'test (macos) never ran' })).toBeVisible();
+    await expect.element(page.getByText('conclusion: cancelled')).toBeVisible();
+    await expect.element(page.getByTestId('workflow-log-size')).toHaveTextContent('cancelled');
+    await expect.element(page.getByRole('heading', { name: 'This log was garbage-collected' })).not.toBeInTheDocument();
 });
 
 test('a run GitHub won’t show says so, with a way to GitHub', async () => {

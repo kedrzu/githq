@@ -138,7 +138,7 @@ export const Running: Story = {
                     jobs: [
                         job(101, 'lint', 'success'),
                         job(105, 'build', null, [step(1, 'Set up job', 'success'), step(2, 'Run bun run build', null)]),
-                        job(106, 'deploy', null, [], 'waiting'),
+                        job(106, 'deploy', null, [], 'queued'),
                     ],
                     status: 'ready',
                     httpStatus: null,
@@ -173,6 +173,22 @@ export const Passed: Story = {
 /** A skipped job never ran: its pane says so. */
 export const JobSkipped: Story = { args: viewOf({ jobId: 102 }, () => ({ status: 'loading' })) };
 
+/** Cancelled before it started, as fail-fast does: no steps, and no log to read. */
+export const JobCancelled: Story = {
+    args: viewOf(
+        {
+            jobs: {
+                jobs: [job(103, 'build', 'failure', BUILD_STEPS), job(107, 'test (macos)', 'cancelled')],
+                status: 'ready',
+                httpStatus: null,
+                checkedAt: null,
+            },
+            jobId: 107,
+        },
+        () => ({ status: 'loading' }),
+    ),
+};
+
 /** GitHub has no such run, or won't show it. */
 export const RunGone: Story = {
     args: viewOf({ run: { run: null, status: 'gone', httpStatus: null } }, () => ({ status: 'loading' })),
@@ -206,6 +222,7 @@ function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => Workflow
         run: { run: RUN, status: 'ready', httpStatus: null },
         jobs: { jobs: JOBS, status: 'ready', httpStatus: null, checkedAt: null },
         jobId: null,
+        shownJobId: null,
         ...params,
     });
     return {
@@ -245,7 +262,7 @@ function job(
         name,
         status,
         conclusion,
-        startedAt: status === 'waiting' ? null : ago(14 * MINUTE),
+        startedAt: conclusion === null && status !== 'in_progress' ? null : ago(14 * MINUTE),
         completedAt: conclusion === null ? null : ago(14 * MINUTE - 151_000),
         steps,
     };

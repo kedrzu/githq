@@ -14,6 +14,8 @@ passed:
   en: '{count} passed'
 other:
   en: '{count} other'
+waitingTime:
+  en: waiting
 skippedTime:
   en: skipped
 stepFailed:

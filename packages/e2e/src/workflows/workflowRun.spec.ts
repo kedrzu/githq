@@ -263,6 +263,68 @@ test('W4j: a running job reads no log; its log opens by itself once it finishes,
     await expect.poll(runCalls).toBe(after);
 });
 
+test('W4j: with no job in the address the job shown stays when it passes, its log opening, not the next one’s wait', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, runId, path } = createFailedRun(null);
+    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [
+        { name: 'build', conclusion: null },
+        { name: 'deploy', conclusion: null, status: 'queued' },
+    ]);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.message('build is still running')).toBeVisible();
+    await expect(screen.job('deploy')).toContainText('waiting');
+
+    world.finishJob(SAMPLE_REPOSITORY, runId, buildId, 'success');
+    world.jobLog(SAMPLE_REPOSITORY, buildId, '2026-11-02T11:46:01.0000000Z all built');
+    await page.clock.fastForward('00:31');
+
+    await expect(screen.logTexts).toHaveText(['all built']);
+    await expect(screen.jobs).toHaveText([/deploy/u, /build/u]);
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+    await expect(page).toHaveURL(path);
+});
+
+test('a job failing later stands first, marked, and takes nothing over: the cursor stays, the keys reach it', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, runId, path } = createFailedRun(null);
+    const [earlierId = 0, buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [
+        { name: 'earlier', conclusion: null },
+        BUILD,
+    ]);
+    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, {
+        2: ['first of the trace', 'second of the trace', '##[error]exit code 1'],
+    });
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.cursorLine).toContainText('exit code 1');
+    await page.keyboard.press('k');
+    await expect(screen.cursorLine).toContainText('second of the trace');
+
+    world.finishJob(SAMPLE_REPOSITORY, runId, earlierId, 'failure');
+    world.jobLog(SAMPLE_REPOSITORY, earlierId, '2026-11-02T11:46:01.0000000Z it broke');
+    await page.clock.fastForward('00:31');
+
+    await expect(screen.jobs).toHaveText([/earlier/u, /build/u]);
+    await expect(screen.job('earlier')).toHaveAttribute('data-mark', 'failed');
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+    await expect(screen.cursorLine).toContainText('second of the trace');
+
+    await page.keyboard.press('Alt+k');
+    await expect(page).toHaveURL(`${path}/job/${earlierId}`);
+    await expect(screen.logTexts).toHaveText(['it broke']);
+});
+
 test('W4a: the log opens at the failed step’s error, passed steps folded; the keys move through it, opening what they move into', async ({
     page,
     github,
@@ -328,6 +390,25 @@ test('Y copies the line’s address, in GitHub’s form; opening that address la
     await page.goto(`${path}/job/${buildId}#step:1:2`);
     await expect(screen.cursorLine).toContainText('Prepared');
     await expect(screen.logStep('Set up job')).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('a line’s address for a job the run no longer has opens the job shown at its own error, not at that line number', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun();
+    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, {
+        1: ['Runner image', 'Prepared'],
+        2: ['##[error]exit code 1'],
+    });
+    await openTrackedWork(page, github, world);
+    await page.goto(`${path}/job/${buildId + 1000}#step:1:2`);
+
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+    await expect(screen.cursorLine).toContainText('exit code 1');
+    await expect(screen.logStep('Set up job')).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('W4h: no error marker: opens at the end, saying so', async ({ page, github }) => {

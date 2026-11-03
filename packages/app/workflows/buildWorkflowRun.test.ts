@@ -53,6 +53,18 @@ test('the job the address names is selected; otherwise, or if the run has no suc
     expect(build({ jobs: ready() }).selectedJob).toBeNull();
 });
 
+test('with no job in the address the job shown stays, whatever a poll does to the order; it gives way only once it is gone', () => {
+    const jobs = ready(job(1, 'build', 'success'), job(2, 'deploy', null, 'queued'), job(3, 'test', 'failure'));
+
+    expect(build({ jobs }).selectedJob?.name).toBe('test');
+    expect(build({ jobs, shownJobId: 1 }).selectedJob?.name).toBe('build');
+    expect(build({ jobs, shownJobId: 1 }).jobs.map(entry => entry.name)).toEqual(['test', 'deploy', 'build']);
+    // The address still decides.
+    expect(build({ jobs, jobId: 2, shownJobId: 1 }).selectedJob?.name).toBe('deploy');
+    // A re-run numbers its jobs anew.
+    expect(build({ jobs, shownJobId: 99 }).selectedJob?.name).toBe('test');
+});
+
 test('a failed run with no jobs is an invalid workflow file; one that did not fail just has none', () => {
     expect(build({ jobs: ready() }).body).toEqual({ kind: 'invalidFile' });
     expect(build({ jobs: ready(), run: known({ conclusion: 'startup_failure' }) }).body).toEqual({
@@ -132,10 +144,33 @@ test('a log is read only for a job that finished and ran', () => {
     expect(getWorkflowLogPane({ job: job(1, 'build', null, 'queued'), readLog: readLog, now: NOW }).kind).toBe(
         'running',
     );
-    expect(getWorkflowLogPane({ job: job(1, 'build', 'skipped'), readLog: readLog, now: NOW }).kind).toBe('skipped');
+    expect(getWorkflowLogPane({ job: job(1, 'build', 'skipped'), readLog: readLog, now: NOW }).kind).toBe('neverRan');
     expect(readLog).not.toHaveBeenCalled();
 
     expect(getWorkflowLogPane({ job: job(1, 'build', 'failure'), readLog: readLog, now: NOW }).kind).toBe('gone');
+    expect(readLog).toHaveBeenCalledTimes(1);
+});
+
+test('a job cancelled before starting never ran: no steps, no log read, GitHub would only answer 404', () => {
+    const readLog = mock(() => ({ status: 'gone' }) as const);
+
+    expect(getWorkflowLogPane({ job: job(1, 'build', 'cancelled'), readLog: readLog, now: NOW }).kind).toBe('neverRan');
+    expect(readLog).not.toHaveBeenCalled();
+
+    const started = {
+        ...job(1, 'build', 'cancelled'),
+        steps: [
+            {
+                name: 'Set up job',
+                number: 1,
+                status: 'completed',
+                conclusion: 'success',
+                startedAt: null,
+                completedAt: null,
+            },
+        ],
+    };
+    expect(getWorkflowLogPane({ job: started, readLog: readLog, now: NOW }).kind).toBe('gone');
     expect(readLog).toHaveBeenCalledTimes(1);
 });
 
@@ -149,7 +184,7 @@ test('a finished job’s pane follows its log’s read', () => {
         job: build1,
         httpStatus: 502,
     });
-    const log = { lines: [], errors: [], steps: [], characters: 0, hasErrorMarker: false };
+    const log = { lines: [], errors: [], steps: [], characters: 0 };
     expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'ready', log }), now: NOW })).toEqual({
         kind: 'ready',
         job: build1,
@@ -180,6 +215,7 @@ function build(params: Partial<BuildWorkflowRunParams>) {
         run: { run: RUN, status: 'ready', httpStatus: null },
         jobs: ready(),
         jobId: null,
+        shownJobId: null,
         ...params,
     });
 }

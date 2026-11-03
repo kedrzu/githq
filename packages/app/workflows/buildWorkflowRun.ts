@@ -35,7 +35,10 @@ export interface WorkflowRunModel {
     /** Failed first, then those not finished, the others in GitHub's order. */
     readonly jobs: readonly GitHubWorkflowJob[];
     readonly counts: WorkflowJobCounts;
-    /** The job asked for by the address when the run has it, else the first of {@link jobs}: its first failed one. */
+    /**
+     * The job asked for by the address when the run has it, else the one shown so far, else the first of {@link jobs}:
+     * its first failed one.
+     */
     readonly selectedJob: GitHubWorkflowJob | null;
     readonly body: WorkflowRunBody;
     /**
@@ -51,14 +54,19 @@ export interface BuildWorkflowRunParams {
     readonly jobs: WorkflowJobsState;
     /** The job the address names; `null` with none. */
     readonly jobId: number | null;
+    /**
+     * The job shown so far; `null` with none. The order of {@link WorkflowRunModel.jobs} changes with each poll: with no
+     * job in the address, this is what keeps a job that passes, or another that fails, from changing what is being read.
+     */
+    readonly shownJobId: number | null;
 }
 
 /** What a job's log pane shows. */
 export type WorkflowLogPane =
     /** Nothing to read yet: GitHub does not stream a running job's log, and may answer 404 for it (W4j). */
     | { readonly kind: 'running'; readonly job: GitHubWorkflowJob }
-    /** It never ran, so it has no log. */
-    | { readonly kind: 'skipped'; readonly job: GitHubWorkflowJob }
+    /** It never ran, so it has no log: skipped, or cancelled before it started. */
+    | { readonly kind: 'neverRan'; readonly job: GitHubWorkflowJob }
     /**
      * On its way; `null` while no job is known yet (W4e). `notThereYet`: GitHub says it has no log, but the job has only
      * just finished, and its log takes a moment to land: the page asks again.
@@ -98,7 +106,7 @@ const MARK_RANK: Readonly<Record<WorkflowJobMark, number>> = {
  * @__NO_SIDE_EFFECTS__
  */
 export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunModel {
-    const { run: runState, jobs: jobsState, jobId } = params;
+    const { run: runState, jobs: jobsState, jobId, shownJobId } = params;
     const { run } = runState;
     const jobs = jobsState.jobs.toSorted((a, b) => MARK_RANK[getJobMark(a)] - MARK_RANK[getJobMark(b)]);
     const counts: Record<WorkflowJobMark, number> = {
@@ -118,7 +126,7 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
         run,
         jobs,
         counts,
-        selectedJob: jobs.find(job => job.id === jobId) ?? jobs[0] ?? null,
+        selectedJob: jobs.find(job => job.id === jobId) ?? jobs.find(job => job.id === shownJobId) ?? jobs[0] ?? null,
         body,
         going:
             body.kind !== 'gone' &&
@@ -128,7 +136,7 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
 
 /**
  * What a job's log pane shows. Reads the log only for a job that finished and ran: a running job's may answer 404, which
- * would read as gone.
+ * would read as gone; and so does one cancelled before it started, which has no steps to show for it, and no log ever.
  */
 export function getWorkflowLogPane(params: GetWorkflowLogPaneParams): WorkflowLogPane {
     const { job, readLog, now } = params;
@@ -142,10 +150,11 @@ export function getWorkflowLogPane(params: GetWorkflowLogPaneParams): WorkflowLo
         case 'waiting':
             return { kind: 'running', job };
         case 'skipped':
-            return { kind: 'skipped', job };
+            return { kind: 'neverRan', job };
+        case 'none':
+            return job.steps.length === 0 ? { kind: 'neverRan', job } : getReadPane(job, readLog(job), now);
         case 'failed':
         case 'passed':
-        case 'none':
             return getReadPane(job, readLog(job), now);
         default:
             return assertNever(mark);
