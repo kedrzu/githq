@@ -68,7 +68,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { REPOSITORY_KIND_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
 import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
@@ -111,11 +111,11 @@ const projects = computed(() => props.tracked?.projects ?? []);
 const repositories = computed(() => props.tracked?.repositories ?? []);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
 
-/** A repository's row is the current page on its view whichever list of it the address names (`/owner/name/issues`). */
+/** A repository's row is the current page on its view whichever section of it the address names (`/owner/name/issues`). */
 function isCurrentRepository(repository: SidebarTrackedEntry) {
   return (
     route.path === repository.to ||
-    Object.values(REPOSITORY_KIND_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
+    Object.values(REPOSITORY_SECTION_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
   );
 }
 

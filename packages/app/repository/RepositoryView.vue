@@ -1,12 +1,12 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"). Tracked: its issues and pull requests from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the kind tabs (all, issues, pull requests) beside the title, the state (open by default, closed, both) on the right — moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label, issue type or kind; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, `UntrackedView`): githq has only what concerns the user here; it lists that — narrowed by the same kind tabs, a stack's pull requests as one entry — and says so, pointing to Settings. -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues and Pull requests, are tabs beside the title on `1` and `2`, each with its count of open items while tracked. Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings. -->
 <script lang="ts" setup>
+import Translate from '@nzyme/vue-i18n/Translate.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowRight,
   ArrowUpRight,
   Ban,
   BookMarked,
-  GitCompareArrows,
   ListFilter,
   Lock,
   Milestone,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
@@ -37,12 +38,13 @@ import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import type { Item } from '@/store/ItemTypes.js';
-import * as untracked from '@/tracking/UntrackedView.loc.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 
-import type { RepositoryKind, RepositoryList, RepositoryState } from './buildRepositoryList.js';
-import { REPOSITORY_KINDS, REPOSITORY_STATES } from './buildRepositoryList.js';
-import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
+import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
+import { REPOSITORY_STATES } from './buildRepositoryList.js';
+import { REPOSITORY_SECTIONS } from './RepositorySection.js';
+import type { RepositorySection } from './RepositorySection.js';
+import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import * as l from './RepositoryView.loc.js';
 
@@ -65,9 +67,12 @@ const props = withDefaults(
     isPrivate: boolean | null;
     /** Tracked: githq keeps its copy. Not: only what concerns the user is in it (J3). */
     tracked: boolean;
+    /** The section's list. */
     list: RepositoryList;
-    /** Its open issues and pull requests, for the title. */
-    openCount: number;
+    /** How many open items each section holds, on its tab while tracked. */
+    openCounts: Readonly<Record<RepositorySection, number>>;
+    /** Not tracked: how many open items each section holds on GitHub; `null` while not known. */
+    gitHubOpenCounts?: Readonly<Record<RepositorySection, number>> | null;
     /** The projects the listed items live in, and how many listed items are in none. */
     projects?: readonly RepositoryProjectLink[];
     withoutProject?: number;
@@ -85,6 +90,7 @@ const props = withDefaults(
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
   }>(),
   {
+    gitHubOpenCounts: null,
     projects: () => [],
     withoutProject: 0,
     openedId: null,
@@ -104,12 +110,12 @@ const emit = defineEmits<{
 }>();
 
 const state = defineModel<RepositoryState>('state', { default: 'open' });
-const kind = defineModel<RepositoryKind>('kind', { default: 'all' });
+const section = defineModel<RepositorySection>('section', { default: 'issues' });
 /** The selected item's id. */
 const selectedId = defineModel<string | null>('selectedId', { default: null });
 /** The items edited together (`x`). */
 const checkedIds = defineModel<readonly string[]>('checkedIds', { default: () => [] });
-/** Layout, grouping, order and the properties rows show; kept on this device by the page. */
+/** The section's layout, grouping, order and the properties rows show; kept on this device by the page. */
 const options = defineModel<ListViewOptions<RepositoryGrouping, ItemSort>>('options', {
   default: () => REPOSITORY_VIEW_DEFAULTS,
 });
@@ -127,21 +133,47 @@ const t = useTranslate();
 const choices = useItemListChoices();
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
-const KIND_LABELS = { all: l.all, issues: l.issues, pullRequests: l.pullRequests } as const;
+/** What each section says of its items. */
+const SECTION_TEXTS = {
+  issues: {
+    key: '1',
+    count: l.issueCount,
+    liveIn: l.issuesLiveIn,
+    nothing: l.nothingIssues,
+    noneConcerns: l.noIssueConcerns,
+    others: l.otherOpenIssues,
+    othersUncounted: l.otherOpenIssuesUncounted,
+  },
+  pullRequests: {
+    key: '2',
+    count: l.pullRequestCount,
+    liveIn: l.pullRequestsLiveIn,
+    nothing: l.nothingPullRequests,
+    noneConcerns: l.noPullRequestConcerns,
+    others: l.otherOpenPullRequests,
+    othersUncounted: l.otherOpenPullRequestsUncounted,
+  },
+} as const;
 
-const kindOptions = computed((): SegmentedTabsOption<RepositoryKind>[] =>
-  REPOSITORY_KINDS.map(value => ({ value, label: t(KIND_LABELS[value]), count: props.list.counts[value] })),
+const sectionOptions = computed((): SegmentedTabsOption<RepositorySection>[] =>
+  REPOSITORY_SECTIONS.map(value => ({
+    value,
+    label: t(l[value]),
+    keyshortcuts: SECTION_TEXTS[value].key,
+    count: props.tracked ? props.openCounts[value] : undefined,
+  })),
 );
+const sectionTexts = computed(() => SECTION_TEXTS[section.value]);
 const groupings = computed((): ListChoice<RepositoryGrouping>[] => {
-  const section = t(l.fromGitHub);
-  return [
-    { value: 'none', label: t(l.groupNone), icon: Ban, section },
-    { value: 'milestone', label: t(l.groupMilestone), icon: Milestone, section },
-    { value: 'assignee', label: t(l.groupAssignee), icon: User, section },
-    { value: 'label', label: t(l.groupLabel), icon: Tag, detail: t(l.groupLabelDetail), section },
-    { value: 'issueType', label: t(l.groupIssueType), icon: Shapes, section },
-    { value: 'kind', label: t(l.groupKind), icon: GitCompareArrows, section },
+  const group = t(l.fromGitHub);
+  const all: ListChoice<RepositoryGrouping>[] = [
+    { value: 'none', label: t(l.groupNone), icon: Ban, section: group },
+    { value: 'milestone', label: t(l.groupMilestone), icon: Milestone, section: group },
+    { value: 'assignee', label: t(l.groupAssignee), icon: User, section: group },
+    { value: 'label', label: t(l.groupLabel), icon: Tag, detail: t(l.groupLabelDetail), section: group },
+    { value: 'issueType', label: t(l.groupIssueType), icon: Shapes, section: group },
   ];
+  return all.filter(choice => REPOSITORY_GROUPINGS[section.value].includes(choice.value));
 });
 const properties = computed(() => {
   const shown = options.value.properties;
@@ -149,51 +181,51 @@ const properties = computed(() => {
 });
 /** The state as a filter of the toolbar: on it while it fits, else in the display options. */
 const stateOption = computed((): ListToolbarOption => {
-  const section = t(l.state);
+  const label = t(l.state);
   return {
     kind: 'menu',
     key: 'state',
-    label: section,
+    label,
     icon: ListFilter,
     title: t(STATE_LABELS[state.value]),
-    choices: REPOSITORY_STATES.map(value => ({ value, label: t(STATE_LABELS[value]), section })),
+    choices: REPOSITORY_STATES.map(value => ({ value, label: t(STATE_LABELS[value]), section: label })),
     value: state.value,
     choose: value => {
       state.value = REPOSITORY_STATES.find(candidate => candidate === value) ?? 'open';
     },
   };
 });
-const meta = computed(() => {
-  const parts = props.isPrivate === null ? [] : [t(props.isPrivate ? l.private : l.public)];
-  if (props.tracked) {
-    parts.push(t(l.openCount, { count: props.openCount }));
-  }
-
-  return parts.join(' · ');
-});
-/** Not tracked: what githq has of it, by the kind tabs' counts, whichever tab is shown (J3). */
+const meta = computed(() => (props.isPrivate === null ? '' : t(props.isPrivate ? l.private : l.public)));
+/** Not tracked: what githq has of the section's items (J3, CH37). */
 const summary = computed(() => {
   const name = props.nameWithOwner;
-  const { issues, pullRequests } = props.list.counts;
-  if (issues > 0 && pullRequests > 0) {
-    const what = t(l.issuesAndPullRequests, {
-      issues: t(l.issueCount, { count: issues }),
-      pullRequests: t(l.pullRequestCount, { count: pullRequests }),
-    });
-    return t(l.onlyWhatConcerns, { name, what });
-  }
-
-  if (issues > 0) {
-    return t(l.onlyWhatConcerns, { name, what: t(l.issueCount, { count: issues }) });
-  }
-
-  if (pullRequests > 0) {
-    return t(l.onlyWhatConcerns, { name, what: t(l.pullRequestCount, { count: pullRequests }) });
-  }
-
-  return t(untracked.nothingConcerns, { name });
+  const count = props.list.count;
+  return count > 0
+    ? t(l.onlyWhatConcerns, { name, what: t(sectionTexts.value.count, { count }) })
+    : t(sectionTexts.value.noneConcerns, { name });
+});
+/** Not tracked: where the section's other open items are — their count on GitHub less the open ones listed here. */
+const others = computed(() => {
+  const texts = sectionTexts.value;
+  const onGitHub = props.gitHubOpenCounts?.[section.value];
+  return onGitHub == null
+    ? t(texts.othersUncounted)
+    : t(texts.others, { count: Math.max(0, onGitHub - props.openCounts[section.value]) });
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
+
+useCommands(() =>
+  REPOSITORY_SECTIONS.map(candidate => ({
+    id: `repository.section.${candidate}`,
+    title: t(l[candidate]),
+    section: 'view',
+    key: SECTION_TEXTS[candidate].key,
+    menu: false,
+    run: () => {
+      section.value = candidate;
+    },
+  })),
+);
 </script>
 
 <template>
@@ -232,19 +264,19 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           :span="getSelectionSpan(list.groups, checkedIds)"
         />
         <SegmentedTabs
-          v-model="kind"
-          :class="css.repositoryView_kinds"
-          :label="t(l.kinds)"
-          :options="kindOptions"
+          v-model="section"
+          :class="css.repositoryView_sections"
+          :label="t(l.sections)"
+          :options="sectionOptions"
         />
       </ListToolbar>
 
       <nav
         v-if="projects.length > 0"
         :class="css.repositoryView_projects"
-        :aria-label="t(l.liveIn)"
+        :aria-label="t(sectionTexts.liveIn)"
       >
-        <span>{{ t(l.liveIn) }}</span>
+        <span>{{ t(sectionTexts.liveIn) }}</span>
         <Button
           v-for="project in projects"
           :key="project.id"
@@ -336,7 +368,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
           <EmptyState
             :icon="BookMarked"
             :title="t(l.nothingTitle)"
-            :detail="t(l.nothingDetail)"
+            :detail="t(sectionTexts.nothing)"
           />
         </template>
         <template
@@ -361,8 +393,6 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
       :github-url="githubUrl"
       :rows="list.groups.flatMap(group => group.rows)"
       :summary="summary"
-      :others="t(list.counts.all > 0 ? l.othersOnGitHub : l.allOnGitHub)"
-      :settings-to="getSettingsPath('repositories', nameWithOwner)"
       :properties="properties"
       :viewer-login="viewerLogin"
       :now="now"
@@ -373,11 +403,27 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
     >
       <template #controls>
         <SegmentedTabs
-          v-model="kind"
-          :class="css.repositoryView_kinds"
-          :label="t(l.kinds)"
-          :options="kindOptions"
+          v-model="section"
+          :class="css.repositoryView_sections"
+          :label="t(l.sections)"
+          :options="sectionOptions"
         />
+      </template>
+      <template #others>
+        <p>
+          <Translate :t="l.onlyConcernsYou">
+            <template #name>{{ nameWithOwner }}</template>
+            <template #others>{{ others }}</template>
+            <template #settings>
+              <Button
+                variant="link"
+                :link="getSettingsPath('repositories', nameWithOwner)"
+              >
+                {{ t(l.settings) }}
+              </Button>
+            </template>
+          </Translate>
+        </p>
       </template>
       <template
         v-if="$slots.contextMenu"
@@ -416,7 +462,7 @@ const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
   height: 12px;
 }
 
-.repositoryView_kinds {
+.repositoryView_sections {
   padding-left: $spacing-8;
 }
 

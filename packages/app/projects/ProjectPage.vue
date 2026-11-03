@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
+import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import type { DraftIssueFieldInput } from '@/edits/ItemEditor.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
@@ -38,7 +39,6 @@ import { TrackedItems } from '@/tracking/TrackedItems.js';
 import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
 import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
-import * as untracked from '@/tracking/UntrackedView.loc.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 
@@ -606,12 +606,8 @@ function setRowField(fieldId: string | null) {
     :github-url="githubUrl"
     :rows="concerningRows"
     :summary="
-      concerning.length > 0
-        ? t(l.onlyWhatConcerns, { name, count: concerning.length })
-        : t(untracked.nothingConcerns, { name })
+      concerning.length > 0 ? t(l.onlyWhatConcerns, { name, count: concerning.length }) : t(l.nothingConcerns, { name })
     "
-    :others="t(concerning.length > 0 ? l.othersOnGitHub : l.allOnGitHub)"
-    :settings-to="getSettingsPath('projects', githubUrl)"
     :properties="UNTRACKED_PROPERTIES"
     :viewer-login="auth.viewer.login"
     :now="list.now"
@@ -620,6 +616,18 @@ function setRowField(fieldId: string | null) {
     @open="list.open"
     @listed="list.setListed"
   >
+    <template #others>
+      <p>{{ t(concerning.length > 0 ? l.othersOnGitHub : l.allOnGitHub) }}</p>
+      <p>
+        {{ t(l.youCanTrackIt) }}
+        <Button
+          variant="link"
+          :link="getSettingsPath('projects', githubUrl)"
+        >
+          {{ t(l.settings) }}
+        </Button>
+      </p>
+    </template>
     <template #contextMenu="menu">
       <ItemContextMenu
         :ids="menu.ids"

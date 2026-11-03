@@ -8,7 +8,7 @@ import { openDB } from 'idb';
 
 import type { PersistedProjects } from '@/projects/ProjectPersistence.js';
 import type { Project, ProjectItem } from '@/projects/ProjectTypes.js';
-import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
+import type { RepositoryMetadata, RepositoryOpenCounts } from '@/repos/RepositoryTypes.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 
@@ -102,6 +102,7 @@ test("details and repository metadata are kept in the user's copy, the details' 
     await tab.deleteDetails(login, ['I_2']);
     await tab.saveRepository(login, REPOSITORY);
     await tab.saveViewerProjects(login, { projects: [], fetchedAt: 3000 });
+    await tab.saveOpenCounts(login, OPEN_COUNTS);
 
     const reloaded = createIndexedDbPersistence();
     await reloaded.load(login);
@@ -114,6 +115,7 @@ test("details and repository metadata are kept in the user's copy, the details' 
     expect(await reloaded.loadRepositories(login)).toEqual({
         repositories: [REPOSITORY],
         viewerProjects: { projects: [], fetchedAt: 3000 },
+        openCounts: [OPEN_COUNTS],
     });
 
     await reloaded.destroy(login);
@@ -124,6 +126,13 @@ test("details and repository metadata are kept in the user's copy, the details' 
     await expect(tab.loadDetail(login, 'I_1')).rejects.toThrow();
     expect(await databaseNames()).not.toContain(getLocalDatabaseName(login));
 });
+
+const OPEN_COUNTS: RepositoryOpenCounts = {
+    nameWithOwner: 'nuxt/nuxt',
+    issues: 900,
+    pullRequests: 40,
+    fetchedAt: 4000,
+};
 
 const REPOSITORY: RepositoryMetadata = {
     nameWithOwner: 'acme/web',

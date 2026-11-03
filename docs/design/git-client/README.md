@@ -96,7 +96,8 @@ have not met a commit it knows.
 Scrolling down asks for more: the next hundred commits from wherever the loaded history stops. The rows
 are ordered by date across all branches, as in `git log --date-order`, and show everything loaded so far; a
 commit of a branch loaded later can appear between rows already on screen, which was judged a fair price
-for the simpler drawing. [How history is paged and kept](DECISIONS.md#d9).
+for the simpler drawing. [How history is paged and kept](DECISIONS.md#d9). How the graph's lines are laid out is
+left to the implementation; it is a known problem with known algorithms and decides nothing about the product.
 
 ## Where the graph lives in the app
 
@@ -122,16 +123,9 @@ Choosing a commit opens its details: the full message, the author, its parents (
 the branches and tags that point at it, its pull request and CI state, and a way to open it on GitHub. No
 files and no diff yet. [What a commit shows](DECISIONS.md#d13).
 
-## What ships first, and what comes after
+## What comes after the graph from GitHub
 
-First, on the web and the desktop alike: the Commits tab of the repository view, with the graph of the
-repository's branches and tags as GitHub has them, each row with its pull request and CI state, paged and
-kept as described above, the branch and tag list beside it, and the details of a commit. How the graph's
-lines are laid out is left to the implementation; it is a known problem with known algorithms and decides
-nothing about the product. The repository view's new shape is designed first, as several directions to pick
-from ([the brief for those screens](ui/browse-commit-history.md)).
-
-After that, on the desktop: adding a local clone, its local branches and how far they are ahead of GitHub,
-its worktrees as markers in the graph and entries in the branch list, and revealing a worktree's folder.
-Writing to the repository — committing, fetching, pushing, managing worktrees — and diffs come later still,
+The desktop's local clone builds on the graph from GitHub: adding a local clone, its local branches and how far they
+are ahead of GitHub, its worktrees as markers in the graph and entries in the branch list, and revealing a worktree's
+folder. Writing to the repository — committing, fetching, pushing, managing worktrees — and diffs come later still,
 and get their own pass through this design when they do.

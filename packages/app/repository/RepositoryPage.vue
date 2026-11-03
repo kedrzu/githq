@@ -1,4 +1,4 @@
-<!-- `/owner/name`: a repository's view (J1–J3) at GitHub's address of it, from the local copy; `/owner/name/issues` and `/owner/name/pulls` list one kind of its items, tracked or not. Its items come with their projects' row fields (D12); the layout, grouping, order and properties shown are kept on this device for this repository. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3). -->
+<!-- `/owner/name/issues` and `/owner/name/pulls`: a repository's view (J1–J3) at GitHub's addresses of its lists, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -16,6 +16,8 @@ import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import type { ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { useItemList } from '@/lists/useItemList.js';
+import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
+import { ITEM_SORTS } from '@/lists/ItemSort.js';
 import { useListViewOptions } from '@/lists/useListViewOptions.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
@@ -23,17 +25,19 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
-import { getProjectPath, getRepositoryKind, getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, getRepositoryPath, getRepositorySection } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 
-import type { RepositoryKind, RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
+import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
 import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
 import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
-import { REPOSITORY_VIEW_CHOICES, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
+import { getSectionItemKind } from './RepositorySection.js';
+import type { RepositorySection } from './RepositorySection.js';
+import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import { useRepositoryCommands } from './useRepositoryCommands.js';
 import { LastRepositoryTab } from './LastRepositoryTab.js';
 
@@ -50,36 +54,49 @@ const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
 
-const state = ref<RepositoryState>('open');
+/** Each section's state, kept while the page is. */
+const states = ref<Record<RepositorySection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
 const nameWithOwner = computed(() => `${owner.value}/${name.value}`);
+const repositoryName = nameWithOwner.value;
+/** The section the address names (`/owner/name/issues`); `null` at the repository's own address. */
+const addressSection = computed(() => getRepositorySection(route.params.section));
 /**
- * The kind of items listed is the address's (`/owner/name/issues`); a tab replaces it, keeping the query (an item
- * opened over the list) — the same page stays, with its selection and view options.
+ * The section shown is the address's; at the repository's own address, typed or pasted, the one it was left on, Issues
+ * the first time — shown at once, never redirected to. A tab replaces the address, keeping the query (an item opened
+ * over the list) — the same page stays, with its selection.
  */
-const kind = computed({
-  get: () => getRepositoryKind(route.params.kind),
-  set: (value: RepositoryKind) => {
+const section = computed({
+  get: () => addressSection.value ?? tabs.get(repositoryName) ?? 'issues',
+  set: (value: RepositorySection) => {
     void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
   },
 });
-
-// The tab shown is remembered, so the links to this repository open it next time; the address always names it.
-const repositoryName = nameWithOwner.value;
-tabs.remember(repositoryName, kind.value);
-// Leaving, the address already names another repository or none, and this page's tab is not theirs.
-watch(kind, value => {
-  if (nameWithOwner.value === repositoryName) {
-    tabs.remember(repositoryName, value);
-  }
+const state = computed({
+  get: () => states.value[section.value],
+  set: (value: RepositoryState) => {
+    states.value = { ...states.value, [section.value]: value };
+  },
 });
 
+// The section shown is remembered, so the links to this repository open it next time (`LastRepositoryTab.getPath`).
+// Leaving, the address already names another repository or none, and this page's section is not theirs.
+watch(
+  addressSection,
+  value => {
+    if (value !== null && nameWithOwner.value === repositoryName) {
+      tabs.remember(repositoryName, value);
+    }
+  },
+  { immediate: true },
+);
+
 const view = useListViewOptions({
-  list: () => `repository:${nameWithOwner.value}`,
+  list: () => `repository:${nameWithOwner.value}:${section.value}`,
   defaults: REPOSITORY_VIEW_DEFAULTS,
-  choices: REPOSITORY_VIEW_CHOICES,
+  choices: () => ({ groupings: REPOSITORY_GROUPINGS[section.value], sorts: ITEM_SORTS, properties: ITEM_PROPERTIES }),
 });
 const tracked = computed(() => tracking.isTracked({ kind: 'repository', nameWithOwner: nameWithOwner.value }));
 // D12: each row's projects as my work shows them — the tracked ones first, with their row field.
@@ -94,8 +111,6 @@ const texts = computed((): RepositoryListTexts => ({
   noLabel: t(l.noLabel),
   unassigned: t(l.unassigned),
   noType: t(l.noType),
-  issues: t(l.issues),
-  pullRequests: t(l.pullRequests),
   milestoneDetail: ({ closed, total, dueOn }) => {
     const progress = t(l.milestoneProgress, { closed, total });
     return dueOn ? t(l.milestoneDue, { progress, date: formatShortDate(Date.parse(dueOn)) }) : progress;
@@ -106,7 +121,7 @@ const repositoryList = computed(() =>
     items: repositoryItems.value,
     // Not tracked, the copy holds what concerns the user — open items of my work; nothing else is offered.
     state: tracked.value ? state.value : 'open',
-    kind: kind.value,
+    kind: getSectionItemKind(section.value),
     grouping: tracked.value ? view.options.grouping : 'none',
     sort: view.options.sort,
     texts: texts.value,
@@ -125,7 +140,21 @@ const shownList = computed(() => {
     }),
   };
 });
-const openCount = computed(() => repositoryItems.value.filter(item => item.state === 'OPEN').length);
+/** How many open items each section holds, for its tab. */
+const openCounts = computed((): Record<RepositorySection, number> => {
+  const open = repositoryItems.value.filter(item => item.state === 'OPEN');
+  return {
+    issues: open.filter(item => item.kind === 'issue').length,
+    pullRequests: open.filter(item => item.kind === 'pullRequest').length,
+  };
+});
+/** Known not to be tracked once the user's choice is read: only then are GitHub's counts of its open items asked. */
+const untracked = computed(() => tracking.loaded && !tracked.value);
+/** Not tracked: how many open items each section holds on GitHub, as last read; `null` while not known. */
+const gitHubOpenCounts = computed((): Record<RepositorySection, number> | null => {
+  const counts = untracked.value ? repositories.getOpenCounts(nameWithOwner.value) : undefined;
+  return counts ? { issues: counts.issues, pullRequests: counts.pullRequests } : null;
+});
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);
 /** The projects the listed items live in, each with how many of them; tracked ones open in githq. */
 const projectLinks = computed(() => {
@@ -160,12 +189,15 @@ const projectLinks = computed(() => {
 // The repository's page on GitHub is in the command menu too, named, as the screen is about it.
 useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
 
-// What the user may set here (labels, milestones, people) is read with the repository's permission.
+// What the user may set here (labels, milestones, people) is read with the repository's permission; not tracked,
+// GitHub's counts of its open items, for the lines saying how many githq does not have.
 watch(
-  [nameWithOwner, tracked],
-  ([repository, isTracked]) => {
+  [nameWithOwner, tracked, untracked],
+  ([repository, isTracked, isUntracked]) => {
     if (isTracked) {
       void repositories.ensure(repository);
+    } else if (isUntracked) {
+      void repositories.ensureOpenCounts(repository);
     }
   },
   { immediate: true },
@@ -195,7 +227,6 @@ function canMove(entry: ListEntry<Item>, from: string, to: string) {
       return permissions.assignees && !item.assignees.some(user => user.login === to && to !== from);
     case 'issueType':
       return item.kind === 'issue' && permissions.issueType;
-    case 'kind':
     case 'none':
       return false;
     default:
@@ -221,7 +252,6 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       return { kind: 'assignees', add: to === NO_VALUE ? [] : [to], remove: from === NO_VALUE ? [] : [from] };
     case 'issueType':
       return { kind: 'issueType', name: to === NO_VALUE ? null : to };
-    case 'kind':
     case 'none':
       return null;
     default:
@@ -234,7 +264,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
   <RepositoryView
     v-if="auth.viewer"
     v-model:state="state"
-    v-model:kind="kind"
+    v-model:section="section"
     v-model:selected-id="list.selectedId"
     v-model:checked-ids="list.checkedIds"
     :options="view.options"
@@ -243,7 +273,8 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-private="isPrivate"
     :tracked="tracked"
     :list="shownList"
-    :open-count="openCount"
+    :open-counts="openCounts"
+    :git-hub-open-counts="gitHubOpenCounts"
     :projects="projectLinks.links"
     :without-project="projectLinks.withoutProject"
     :viewer-login="auth.viewer.login"

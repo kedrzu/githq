@@ -24,8 +24,6 @@ const TEXTS: RepositoryListTexts = {
     noLabel: 'No label',
     unassigned: 'Unassigned',
     noType: 'No type',
-    issues: 'Issues',
-    pullRequests: 'Pull requests',
     milestoneDetail: ({ closed, total }) => `${closed} of ${total} closed`,
 };
 
@@ -35,8 +33,9 @@ const meta = {
         nameWithOwner: SAMPLE_REPOSITORY,
         isPrivate: true,
         tracked: true,
+        section: 'issues',
         list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'milestone'),
-        openCount: 6,
+        openCounts: { issues: 5, pullRequests: 1 },
         projects: [
             { id: 'PVT_q4', title: 'Platform Q4', count: 5, to: '/orgs/skyline-labs/projects/1', external: false },
             {
@@ -54,6 +53,7 @@ const meta = {
         selectedId: null,
         'onUpdate:options': fn(),
         'onUpdate:selectedId': fn(),
+        'onUpdate:section': fn(),
         onMove: fn(),
     },
     // As tall as the window, like in the app.
@@ -68,10 +68,13 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** J1: a tracked repository as a list grouped by milestone — soonest due first, with progress — and its projects. */
+/**
+ * J1, CH1: a tracked repository's issues as a list grouped by milestone — soonest due first, with progress — and the
+ * projects they live in; the tabs count each section's open items.
+ */
 export const ByMilestone: Story = { args: { selectedId: 'I_1187' } };
 
-/** J2: as a board by issue type; the pull request has no type. */
+/** J2: the issues as a board by issue type. */
 export const BoardByIssueType: Story = {
     args: {
         list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'issueType'),
@@ -80,21 +83,22 @@ export const BoardByIssueType: Story = {
     },
 };
 
-/** As a board by label: an item with two labels is on both columns. */
+/** The issues as a board by label: an item with two labels is on both columns. */
 export const BoardByLabel: Story = {
     args: { list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'label'), options: options('board', 'label') },
 };
 
 /**
- * SP24, SP13: by label, a stack spread over two groups and a pull request alone in a third. Each group's entry is a share
+ * SP24, SP13: the pull requests by label, a stack spread over two groups and a pull request alone in a third. Each group's entry is a share
  * — "2 of 4", its pull requests' pips filled and the others hollow, how the share stands ("Both ready", "#1206 blocks")
  * — and the lone one is an ordinary row marked "4 of 4", its pip tall.
  */
 export const StackSpreadOverLabels: Story = {
     args: {
         nameWithOwner: 'fitloop/webapp',
+        section: 'pullRequests',
         list: sampleStackedList(SPREAD_STACK_ITEMS, 'label'),
-        openCount: SPREAD_STACK_ITEMS.length,
+        openCounts: { issues: 1, pullRequests: SPREAD_STACK_ITEMS.length - 1 },
         projects: [],
         options: options('list', 'label'),
     },
@@ -109,15 +113,17 @@ export const StackSpreadOverLabels: Story = {
 };
 
 /**
- * SP26 as a repository's board (by label; a project's by Status draws the same): the stack spread over two columns, a
- * card in each — "2 of 4", the column's share filled — and the pull request alone in a third, an ordinary card marked
- * "4 of 4". The chevron expands a card: its pull requests are listed inside it, the column still counting it once.
+ * SP26 as a repository's board of pull requests (by label; a project's by Status draws the same): the stack spread over
+ * two columns, a card in each — "2 of 4", the column's share filled — and the pull request alone in a third, an
+ * ordinary card marked "4 of 4". The chevron expands a card: its pull requests are listed inside it, the column still
+ * counting it once.
  */
 export const StackOnBoard: Story = {
     args: {
         nameWithOwner: 'fitloop/webapp',
+        section: 'pullRequests',
         list: sampleStackedList(SPREAD_STACK_ITEMS, 'label'),
-        openCount: SPREAD_STACK_ITEMS.length,
+        openCounts: { issues: 1, pullRequests: SPREAD_STACK_ITEMS.length - 1 },
         projects: [],
         options: options('board', 'label'),
     },
@@ -128,43 +134,66 @@ export const StackOnBoard: Story = {
         await expect(canvas.getByText('#1206 blocks')).toBeVisible();
         await expect(canvas.getByText('4 of 4')).toBeVisible();
 
-        // Expanded, the stack's cards list its pull requests inside them: the column's cards stay the share and the issue.
+        // Expanded, the stack's cards list its pull requests inside them: the column's one card stays the share.
         const [expand] = canvas.getAllByRole('button', { name: 'Expand the stack' });
         await userEvent.click(expand ?? canvasElement);
         await expect(canvas.getByText('Timezones in the picker')).toBeVisible();
         const frontend = canvas.getByRole('region', { name: 'frontend' });
-        await expect(frontend.querySelectorAll('[data-entry-key]')).toHaveLength(2);
+        await expect(frontend.querySelectorAll('[data-entry-key]')).toHaveLength(1);
     },
 };
 
-/** Nothing matches the state and kind chosen. */
-export const NothingMatches: Story = { args: { list: sampleList([], 'milestone'), openCount: 0, projects: [] } };
+/** Nothing of the section matches the state chosen. */
+export const NothingMatches: Story = {
+    args: { list: sampleList([], 'milestone'), openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
+};
 
-/** J3: opened without being tracked — only what concerns the user is here; Settings is where tracking starts. */
+const VITE_PULL_REQUESTS = sampleList(
+    D1_ITEMS.filter(item => item.repository.nameWithOwner === 'vitejs/vite'),
+    'none',
+    'pullRequest',
+);
+
+/**
+ * J3: opened without being tracked, on its pull requests — only what concerns the user is here, and how many others
+ * are open on GitHub; Settings is where tracking starts. The tabs have no counts.
+ */
 export const NotTracked: Story = {
     args: {
         nameWithOwner: 'vitejs/vite',
         isPrivate: false,
         tracked: false,
-        list: sampleList(
-            D1_ITEMS.filter(item => item.repository.nameWithOwner === 'vitejs/vite'),
-            'none',
-        ),
+        section: 'pullRequests',
+        list: VITE_PULL_REQUESTS,
+        openCounts: { issues: 0, pullRequests: VITE_PULL_REQUESTS.count },
+        gitHubOpenCounts: { issues: 640, pullRequests: 58 },
     },
 };
 
-/** J3 with nothing of it concerning the user. */
+/** CH37: J3 on its issues, with none of them concerning the user: the group empty, and its 892 other open issues. */
 export const NotTrackedNothingConcerns: Story = {
-    args: { nameWithOwner: 'acme/gone', isPrivate: null, tracked: false, list: sampleList([], 'none') },
+    args: {
+        nameWithOwner: 'nuxt/nuxt',
+        isPrivate: false,
+        tracked: false,
+        list: sampleList([], 'none'),
+        openCounts: { issues: 0, pullRequests: 0 },
+        gitHubOpenCounts: { issues: 892, pullRequests: 104 },
+    },
 };
 
-function sampleList(items: readonly Item[], grouping: RepositoryGrouping) {
-    return buildRepositoryList({ items, state: 'open', kind: 'all', grouping, sort: 'updated', texts: TEXTS });
+/** J3 before GitHub's counts are known (a first visit offline): the lines say it without a number. */
+export const NotTrackedCountUnknown: Story = {
+    args: { ...NotTrackedNothingConcerns.args, gitHubOpenCounts: null },
+};
+
+function sampleList(items: readonly Item[], grouping: RepositoryGrouping, kind: Item['kind'] = 'issue') {
+    return buildRepositoryList({ items, state: 'open', kind, grouping, sort: 'updated', texts: TEXTS });
 }
 
-/** The list as the repository page shows it: a stack's pull requests folded per group (D3). */
+/** The pull requests as the repository page shows them: a stack's folded per group (D3). */
 function sampleStackedList(items: readonly Item[], grouping: RepositoryGrouping) {
-    const list = sampleList(items, grouping);
+    const list = sampleList(items, grouping, 'pullRequest');
     return {
         ...list,
         groups: foldStacks({

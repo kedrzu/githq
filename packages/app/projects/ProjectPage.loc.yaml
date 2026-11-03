@@ -43,6 +43,12 @@ othersOnGitHub:
   en: Its other items are on GitHub. Search and ⌘K only find what's here.
 allOnGitHub:
   en: Its items are on GitHub. Search and ⌘K only find what's here.
+nothingConcerns:
+  en: Nothing in {name} concerns you, so githq has none of it.
+youCanTrackIt:
+  en: You can track it in
+settings:
+  en: Settings
 newIssueInProject:
   en: New issue in {project}
 addItemsToProject:
