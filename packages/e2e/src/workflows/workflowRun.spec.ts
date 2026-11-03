@@ -133,8 +133,8 @@ test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ p
     await expect(page).toHaveURL(path);
     await expect(screen.heading(`Deploy #${runId}`)).toBeVisible();
     await expect(screen.summary).toContainText('Failed');
-    await expect(page.getByTestId('workflow-jobs-placeholder')).toBeVisible();
-    await expect(page.getByTestId('workflow-log-placeholder')).toBeVisible();
+    await expect(screen.jobsPlaceholder).toBeVisible();
+    await expect(screen.logPlaceholder).toBeVisible();
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
@@ -304,7 +304,7 @@ test('W4h: no error marker: opens at the end, saying so', async ({ page, github 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.cursorLine).toContainText('the very last');
     await expect(screen.logErrors).toHaveText('No error marker');
-    await expect(page.getByTestId('workflow-log-end')).toContainText('The job failed without an error marker');
+    await expect(screen.logEnd).toContainText('The job failed without an error marker');
 });
 
 test('W4d: W wraps and T shows times, and both stay on for the next session; a log of 100,000 lines keeps few rows in the DOM', async ({
@@ -322,23 +322,23 @@ test('W4d: W wraps and T shows times, and both stay on for the next session; a l
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.cursorLine).toContainText('exit code 1');
-    await expect(screen.log.getByRole('listitem').nth(0)).toBeVisible();
-    expect(await screen.log.getByRole('listitem').count()).toBeLessThan(120);
+    await expect(screen.logRows.nth(0)).toBeVisible();
+    expect(await screen.logRows.count()).toBeLessThan(120);
 
     await page.keyboard.press('w');
     await page.keyboard.press('t');
-    await expect(page.getByTestId('workflow-log-wrap')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByTestId('workflow-log-times')).toHaveAttribute('aria-pressed', 'true');
+    await expect(screen.wrapToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(screen.timesToggle).toHaveAttribute('aria-pressed', 'true');
 
     await page.keyboard.press('g');
     await expect(screen.logLines.filter({ hasText: 'rollup' }).first()).toBeVisible();
     const box = await screen.logLines.filter({ hasText: 'rollup' }).first().boundingBox();
     expect(box?.height).toBeGreaterThan(18);
-    expect(await screen.log.getByRole('listitem').count()).toBeLessThan(120);
+    expect(await screen.logRows.count()).toBeLessThan(120);
 
     await page.reload();
-    await expect(page.getByTestId('workflow-log-wrap')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByTestId('workflow-log-times')).toHaveAttribute('aria-pressed', 'true');
+    await expect(screen.wrapToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(screen.timesToggle).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('text selected with the mouse stays selected, and copies without the line numbers; a click on a line takes the cursor', async ({
@@ -390,7 +390,7 @@ test('a just-finished job’s log GitHub has no answer for yet is not called gon
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.job('build')).toBeVisible();
-    await expect(page.getByTestId('workflow-log-placeholder')).toBeVisible();
+    await expect(screen.logPlaceholder).toBeVisible();
     await expect(page.getByText('Reading the log of build…')).toBeVisible();
     await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
 
@@ -407,7 +407,7 @@ test('a run GitHub won’t show says so, with a way to GitHub', async ({ page, g
 
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.message('GitHub shows no such run')).toBeVisible();
-    await expect(screen.root.getByRole('button', { name: /Open on GitHub/u })).toBeVisible();
+    await expect(screen.openOnGitHubButton).toBeVisible();
 });
 
 test('a passed run’s page works: its first job selected, no error', async ({ page, github }) => {

@@ -20,12 +20,12 @@ export class WorkflowRunScreenHarness {
 
     /** What the run is: its state, ref, event, commit and when. */
     get summary(): Locator {
-        return this.page.getByTestId('workflow-run-summary');
+        return this.root.getByTestId('workflow-run-summary');
     }
 
     /** The jobs, in the order shown. */
     get jobs(): Locator {
-        return this.page.getByTestId('workflow-job');
+        return this.root.getByTestId('workflow-job');
     }
 
     /** A job's button, by its name. */
@@ -33,14 +33,29 @@ export class WorkflowRunScreenHarness {
         return this.jobs.filter({ hasText: name });
     }
 
+    /** What stands in for the jobs while they are read. */
+    get jobsPlaceholder(): Locator {
+        return this.root.getByTestId('workflow-jobs-placeholder');
+    }
+
     /** The selected job's steps. */
     get steps(): Locator {
-        return this.page.getByTestId('workflow-step');
+        return this.root.getByTestId('workflow-step');
     }
 
     /** The scrolling log; none while something stands in for it. */
     get log(): Locator {
-        return this.page.getByTestId('workflow-job-log');
+        return this.root.getByTestId('workflow-job-log');
+    }
+
+    /** What stands in for the log while it is read. */
+    get logPlaceholder(): Locator {
+        return this.root.getByTestId('workflow-log-placeholder');
+    }
+
+    /** Every row of the log in the DOM, of whatever kind: only the ones around the view are there. */
+    get logRows(): Locator {
+        return this.log.getByRole('listitem');
     }
 
     /** The lines of the log in view: not its steps' heads, nor its folded steps' lines. */
@@ -55,7 +70,7 @@ export class WorkflowRunScreenHarness {
 
     /** The line the cursor is on, while it isn't folded away. */
     get cursorLine(): Locator {
-        return this.logLines.and(this.page.locator('[aria-current="true"]'));
+        return this.logLines.and(this.root.locator('[aria-current="true"]'));
     }
 
     /** A step's head in the log, by its name. */
@@ -65,7 +80,27 @@ export class WorkflowRunScreenHarness {
 
     /** "Error 1 of 2", or that there is no marker. */
     get logErrors(): Locator {
-        return this.page.getByTestId('workflow-log-errors');
+        return this.root.getByTestId('workflow-log-errors');
+    }
+
+    /** What the log says at its end when the job failed with no error marker. */
+    get logEnd(): Locator {
+        return this.log.getByTestId('workflow-log-end');
+    }
+
+    /** The toolbar's toggle for wrapping the log's lines. */
+    get wrapToggle(): Locator {
+        return this.root.getByTestId('workflow-log-wrap');
+    }
+
+    /** The toolbar's toggle for showing the log's times. */
+    get timesToggle(): Locator {
+        return this.root.getByTestId('workflow-log-times');
+    }
+
+    /** The way to GitHub offered by what stands in for the log or for the columns. */
+    get openOnGitHubButton(): Locator {
+        return this.root.getByRole('button', { name: /Open on GitHub/u });
     }
 
     /** The heading of what stands in for the log or for the columns. */
