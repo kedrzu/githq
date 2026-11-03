@@ -135,17 +135,10 @@ bottleneck. [Measured, not assumed](DECISIONS.md#d20). Files are fetched when a 
 browser's database by their content's id, which never changes, so a pull request read once reopens at once;
 fetching ahead of time for pull requests waiting on you may come later ([fetching](DECISIONS.md#d19)).
 
-## What ships first
-
-Reading comes first: everything above except writing, plus the warnings about open drafts, which help even while the
-drafts are still written on github.com. Writing — comments, replies, resolving threads, drafts and submitting — comes
-second. [The order](DECISIONS.md#d23).
-
 ## What this leaves out
 
 Applying suggestions, a combined diff across a stack (GitHub has none either), and fetching files ahead of time.
 
 ## Where this stands
 
-The design is closed, with nothing open. The screens are being designed from [the brief](ui/review-a-pull-request.md); reading, with the open-draft
-warnings, is built first.
+The design is closed, with nothing open. The screens are in [the brief](ui/review-a-pull-request.md).
