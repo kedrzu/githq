@@ -1,4 +1,4 @@
-import { diff } from 'fast-myers-diff';
+import { lcs } from 'fast-myers-diff';
 
 export interface ComputeFileDiffParams {
     /** The file's content before, `null` where it does not exist. */
@@ -36,17 +36,41 @@ export function computeFileDiff({ before, after, ignoreWhitespace }: ComputeFile
     const beforeLines = splitLines(before);
     const afterLines = splitLines(after);
 
-    // Comparing integers instead of strings is what keeps a large file's diff fast. `diff` trims the common prefix and suffix itself.
+    // Comparing integers instead of strings is what keeps a large file's diff fast.
     const ids = new Map<string, number>();
     const beforeIds = internLines(beforeLines);
     const afterIds = internLines(afterLines);
 
+    // A line the other side doesn't have can't be common to both, so leaving it out keeps the diff minimal, and turns
+    // Myers' worst case, a file rewritten, into its best. `lcs` trims the common prefix and suffix itself.
+    const beforeShared = keepLinesIn(beforeIds, new Set(afterIds));
+    const afterShared = keepLinesIn(afterIds, new Set(beforeIds));
+
+    // The changed places are what lies between the lines in common, in the whole files.
     const blocks: DiffRange[] = [];
-    for (const [beforeStart, beforeEnd, afterStart, afterEnd] of diff(beforeIds, afterIds)) {
-        blocks.push({ beforeStart, beforeEnd, afterStart, afterEnd });
+    let beforeStart = 0;
+    let afterStart = 0;
+    for (const [beforeRun, afterRun, length] of lcs(beforeShared.ids, afterShared.ids)) {
+        for (let offset = 0; offset < length; offset++) {
+            closeBlock(beforeShared.lines[beforeRun + offset] ?? 0, afterShared.lines[afterRun + offset] ?? 0);
+            beforeStart++;
+            afterStart++;
+        }
     }
 
+    closeBlock(beforeLines.length, afterLines.length);
+
     return { before: beforeLines.map(stripCarriageReturn), after: afterLines.map(stripCarriageReturn), blocks };
+
+    /** Ends the changed place before these lines, if there is one, and moves up to them. */
+    function closeBlock(beforeEnd: number, afterEnd: number) {
+        if (beforeEnd > beforeStart || afterEnd > afterStart) {
+            blocks.push({ beforeStart, beforeEnd, afterStart, afterEnd });
+        }
+
+        beforeStart = beforeEnd;
+        afterStart = afterEnd;
+    }
 
     function internLines(lines: readonly string[]): Int32Array {
         const lineIds = new Int32Array(lines.length);
@@ -63,6 +87,20 @@ export function computeFileDiff({ before, after, ignoreWhitespace }: ComputeFile
 
         return lineIds;
     }
+}
+
+/** The lines whose id is among those given: their ids, and where each is in the file. */
+function keepLinesIn(ids: Int32Array, kept: ReadonlySet<number>) {
+    const keptIds: number[] = [];
+    const lines: number[] = [];
+    for (const [line, id] of ids.entries()) {
+        if (kept.has(id)) {
+            keptIds.push(id);
+            lines.push(line);
+        }
+    }
+
+    return { ids: keptIds, lines };
 }
 
 function splitLines(text: string | null): string[] {

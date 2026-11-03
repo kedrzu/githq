@@ -28,9 +28,9 @@ closedDuplicate:
   en: Duplicate
 draft:
   en: Draft
-merged:
+done:
   en: Merged
-closedUnmerged:
+closed:
   en: Closed
 openedBy:
   en: '{author} · opened {ago}'

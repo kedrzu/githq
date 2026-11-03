@@ -73,9 +73,9 @@ test('a line held through a layout switch stays on the same line of the newer ve
     const unified = buildAll([A], 'unified');
     const held = lineWithAfter(split, 19);
 
-    const replacement = findReplacementRow({ key: held.key, previous: split, next: unified });
+    const replacement = findReplacementRow({ key: held.key, offset: -12, previous: split, next: unified });
 
-    expect(replacement).toMatchObject({ kind: 'line', line: { layout: 'unified', newLine: 19 } });
+    expect(replacement).toMatchObject({ row: { kind: 'line', line: { layout: 'unified', newLine: 19 } }, offset: -12 });
 });
 
 test('a deleted line held has no newer line: it goes by the older one', () => {
@@ -86,9 +86,9 @@ test('a deleted line held has no newer line: it goes by the older one', () => {
         throw new Error('The sample has a deleted line');
     }
 
-    const replacement = findReplacementRow({ key: deleted.key, previous: unified, next: split });
+    const replacement = findReplacementRow({ key: deleted.key, offset: 0, previous: unified, next: split });
 
-    expect(replacement).toMatchObject({ kind: 'line', line: { left: { line: 20, kind: 'deleted' } } });
+    expect(replacement?.row).toMatchObject({ kind: 'line', line: { left: { line: 20, kind: 'deleted' } } });
 });
 
 test('a line that whitespace hides gives way to the gap that now covers it', () => {
@@ -101,7 +101,7 @@ test('a line that whitespace hides gives way to the gap that now covers it', () 
         throw new Error('The sample shows line 2');
     }
 
-    expect(findReplacementRow({ key: held.key, previous: shown, next: hidden })).toMatchObject({
+    expect(findReplacementRow({ key: held.key, offset: 0, previous: shown, next: hidden })?.row).toMatchObject({
         kind: 'gap',
         firstLine: 1,
         hidden: 11,
@@ -126,9 +126,9 @@ test('a deleted line that whitespace hides, far past the first change, lands on 
         throw new Error('The sample deletes line 281');
     }
 
-    const replacement = findReplacementRow({ key: held.key, previous: shown, next: hidden });
+    const replacement = findReplacementRow({ key: held.key, offset: 0, previous: shown, next: hidden });
 
-    expect(replacement).toMatchObject({ kind: 'gap', firstLine: 165, hidden: 136 });
+    expect(replacement?.row).toMatchObject({ kind: 'gap', firstLine: 165, hidden: 136 });
 });
 
 test('a line past what a file now holds lands on the nearest row above it, not at the top (D7)', () => {
@@ -140,22 +140,32 @@ test('a line past what a file now holds lands on the nearest row above it, not a
     const next = rowsOf(computeFileDiff({ before: lines(25), after: shorter, ...NO_IGNORE }));
     const held = lineWithAfter(shown, 39);
 
-    expect(findReplacementRow({ key: held.key, previous: shown, next })).toMatchObject({
+    expect(findReplacementRow({ key: held.key, offset: 0, previous: shown, next })?.row).toMatchObject({
         kind: 'gap',
         firstLine: 24,
         hidden: 2,
     });
 });
 
-test('a placeholder held gives way to the first row of the file that arrived', () => {
+test('a placeholder held gives way to the top of its file, whatever it arrived as: how far into it the reader was means nothing there', () => {
     const waiting = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'placeholder' }) });
-    const arrived = buildAll([A, B], 'split');
     const held = waiting.find(row => row.kind === 'placeholder');
     if (!held) {
         throw new Error('The sample has a placeholder');
     }
 
-    expect(findReplacementRow({ key: held.key, previous: waiting, next: arrived })?.key).toBe(arrived[1]?.key ?? '');
+    const arrivals: ReviewFileContent[] = [
+        { kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) },
+        { kind: 'binary' },
+        { kind: 'failed', error: new Error('Refused') },
+    ];
+    for (const content of arrivals) {
+        const next = buildReviewRows({ files: [A, B], getContent: () => content });
+        const replacement = findReplacementRow({ key: held.key, offset: -3000, previous: waiting, next });
+
+        expect(replacement?.row.key).toBe(getReviewHeaderKey(A.path));
+        expect(replacement?.offset).toBe(0);
+    }
 });
 
 test('the room under what was the last file gives way to what now follows that file, as more of the list arrives', () => {
@@ -164,7 +174,10 @@ test('the room under what was the last file gives way to what now follows that f
     const tail = previous.at(-1);
     expect(tail?.kind).toBe('tail');
 
-    expect(findReplacementRow({ key: tail?.key ?? '', previous, next })?.key).toBe(getReviewHeaderKey(B.path));
+    expect(findReplacementRow({ key: tail?.key ?? '', offset: -40, previous, next })).toMatchObject({
+        row: { key: getReviewHeaderKey(B.path) },
+        offset: -40,
+    });
 });
 
 test('nothing replaces a row still there, or one of a file that is gone', () => {
@@ -175,8 +188,10 @@ test('nothing replaces a row still there, or one of a file that is gone', () => 
         throw new Error('The sample has a header');
     }
 
-    expect(findReplacementRow({ key: header.key, previous: split, next: split })).toBeNull();
-    expect(findReplacementRow({ key: line.key, previous: split, next: buildAll([B], 'unified') })).toBeNull();
+    expect(findReplacementRow({ key: header.key, offset: 0, previous: split, next: split })).toBeNull();
+    expect(
+        findReplacementRow({ key: line.key, offset: 0, previous: split, next: buildAll([B], 'unified') }),
+    ).toBeNull();
 });
 
 function buildAll(files: readonly ReviewFile[], layout: 'split' | 'unified'): ReviewRow[] {

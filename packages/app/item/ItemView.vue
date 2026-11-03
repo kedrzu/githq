@@ -119,13 +119,6 @@ const emit = defineEmits<{
   needProjects: [];
 }>();
 
-const PULL_REQUEST_STATE_TEXTS = {
-  open: l.open,
-  draft: l.draft,
-  done: l.merged,
-  closed: l.closedUnmerged,
-};
-
 const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
   panel: PanelRight,
   modal: AppWindow,
@@ -216,7 +209,7 @@ const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string
   }
 
   const { icon, tone } = getPullRequestStateLook(item);
-  return { icon, tone, text: t(PULL_REQUEST_STATE_TEXTS[tone]) };
+  return { icon, tone, text: t(l[tone]) };
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);

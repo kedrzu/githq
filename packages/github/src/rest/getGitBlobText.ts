@@ -1,6 +1,7 @@
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 import { GitHubApiError } from '../GitHubApiError.js';
+import { decodeBase64Text } from '../utils/decodeBase64Text.js';
 import { getRepositoryRestPath } from '../utils/getRepositoryRestPath.js';
 import type { GitHubRestRequester } from './createGitHubRestRequester.js';
 
@@ -26,9 +27,6 @@ export async function getGitBlobText(rest: GitHubRestRequester, params: GetGitBl
         throw new GitHubApiError({ status, message: 'GitHub blob answer is malformed' });
     }
 
-    // GitHub wraps the base64 in lines. `atob` gives one character per byte, which must then be read as UTF-8.
-    const binary = atob(payload.content.replaceAll('\n', ''));
-    const bytes = Uint8Array.from(binary, character => character.codePointAt(0) ?? 0);
     // A BOM stays, as in GraphQL's `Blob.text`: the other side of a diff may come from there.
-    return new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes);
+    return decodeBase64Text(payload.content, { keepBom: true });
 }

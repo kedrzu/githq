@@ -237,39 +237,58 @@ export function getPlaceholderHeight(file: ReviewFile): number {
 export interface FindReplacementRowParams {
     /** The row held. */
     readonly key: string;
+    /** The distance of its top from the viewport's top. */
+    readonly offset: number;
     readonly previous: readonly ReviewRow[];
     readonly next: readonly ReviewRow[];
 }
 
+/** The row to hold instead of one that is gone, and the distance of its top from the viewport's top. */
+export interface ReviewRowReplacement {
+    readonly row: ReviewRow;
+    readonly offset: number;
+}
+
 /**
- * The row to hold in place when the one held is gone from the new rows, because the layout or the whitespace setting
+ * What to hold in place when the row held is gone from the new rows, because the layout or the whitespace setting
  * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
- * the last file, what now follows that file, which is at the same place. `null` when the row is still there, or its
- * file is gone: the list's own rule then applies.
+ * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
+ * for a placeholder: how far into it the reader was says nothing about what replaced it, often much shorter, so its
+ * file shows from its header. `null` when the row is still there, or its file is gone: the list's own rule then applies.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function findReplacementRow({ key, previous, next }: FindReplacementRowParams): ReviewRow | null {
+export function findReplacementRow({
+    key,
+    offset,
+    previous,
+    next,
+}: FindReplacementRowParams): ReviewRowReplacement | null {
     if (next.some(row => row.key === key)) {
         return null;
     }
 
     const path = getReviewRowPath(key);
     const start = next.findIndex(row => row.key === getReviewHeaderKey(path));
-    if (start === -1) {
+    const header = next[start];
+    if (!header) {
         return null;
     }
 
     const held = previous.find(row => row.key === key);
+    if (held?.kind === 'placeholder') {
+        return { row: header, offset: 0 };
+    }
+
     const place = held ? getRowPlace(held) : null;
-    const first = next[start + 1] ?? null;
+    const first = next[start + 1] ?? header;
     if (held?.kind === 'tail') {
-        return next[next.findIndex(row => row.key === getReviewEndKey(path)) + 1] ?? first;
+        return { row: next[next.findIndex(row => row.key === getReviewEndKey(path)) + 1] ?? first, offset };
     }
 
     if (!place) {
-        return first;
+        return { row: first, offset };
     }
 
     let nearest = first;
@@ -289,7 +308,7 @@ export function findReplacementRow({ key, previous, next }: FindReplacementRowPa
         }
     }
 
-    return nearest;
+    return { row: nearest, offset };
 }
 
 interface RowPlace {

@@ -22,6 +22,7 @@ import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
+import { formatItemReference } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { Clock } from '@/services/Clock.js';
 import { GitHubRequesterFactory } from '@/services/GitHubRequesterFactory.js';
@@ -215,7 +216,7 @@ export const ReviewFiles = defineService({
                 return null;
             }
 
-            const key = `${reference.owner}/${reference.name}#${reference.number}`;
+            const key = formatItemReference(reference);
             const held = current.models.get(key);
             if (held) {
                 held.reopen();
@@ -244,7 +245,7 @@ export const ReviewFiles = defineService({
         function createModel(current: Session, reference: ItemReference): Model {
             const repository = { owner: reference.owner, name: reference.name };
             const nameWithOwner = `${reference.owner}/${reference.name}`;
-            const listKey = `${nameWithOwner}/${reference.number}`;
+            const listKey = formatItemReference(reference);
             const { login } = current.account;
 
             const listRef = shallowRef<ReviewFileListState>(LOADING);

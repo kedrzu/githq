@@ -32,7 +32,7 @@ const model = defineModel<boolean>({ required: true });
   cursor: pointer;
   background: $color-border-2;
   border: 0;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   transition: background-color 0.12s;
 
   &[data-state='checked'] {

@@ -1,4 +1,4 @@
-<!-- How a file changed, as one letter (M A D R C) with its word as a tooltip: added green, deleted red, the rest quiet. -->
+<!-- How a file changed, as one letter (M A D R C) with its word as a tooltip and for screen readers: added green, deleted red, the rest quiet. -->
 <script lang="ts">
 import type { PatchStatus } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -42,7 +42,8 @@ const t = useTranslate();
       change === 'DELETED' && css.reviewChange_deleted,
     ]"
     :title="t(l[change])"
-    >{{ getLetter(change) }}</span
+    ><span aria-hidden="true">{{ getLetter(change) }}</span
+    ><span :class="css.reviewChange_word">{{ t(l[change]) }}</span></span
   >
 </template>
 
@@ -53,6 +54,10 @@ const t = useTranslate();
   font-family: $font-family-mono;
   font-size: 10.5px;
   color: $color-fg-dim;
+}
+
+.reviewChange_word {
+  @include visually-hidden;
 }
 
 .reviewChange_added {

@@ -168,6 +168,31 @@ test('a jump lands the file exactly at the top and it stays there as files arriv
     await expect(review.fileRow('file35.ts')).toHaveAttribute('aria-current', 'true');
 });
 
+test('a file arriving under a reader deep in its placeholder shows from its start, and stays the file the list is at', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const rewritten = (tag: string) => Array.from({ length: 100 }, (_, line) => `const ${tag}${line} = 1;`).join('\n');
+    const files = [
+        { path: 'src/rewritten.ts', before: rewritten('old'), after: rewritten('new') },
+        { path: 'src/next.ts', before: 'const next = 1;\n', after: 'const next = 2;\n' },
+    ];
+    const release = answerReview(github, { repository: 'acme/web', number: 15, files }).hold(files[0]?.path ?? '');
+    const review = new ReviewScreenHarness(page);
+
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('rewritten.ts')).toBeVisible();
+    await review.diff.hover();
+    await page.mouse.wheel(0, 3000);
+    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(3000);
+
+    release();
+    await expect(review.code('const new0 = 1;')).toHaveCount(1);
+    await expect.poll(() => review.headerOffset('src/rewritten.ts')).toBe(0);
+    await expect(review.fileRow('rewritten.ts')).toHaveAttribute('aria-current', 'true');
+});
+
 test('the list keeps the current file in view as ] walks past what fits', async ({ page, github }) => {
     await openPullRequest(page, github);
     answerReview(github, { repository: 'acme/web', number: 15, files: manyFiles() });

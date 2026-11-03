@@ -1,5 +1,6 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
+import { diff as diffAllLines } from 'fast-myers-diff';
 
 import { createSeededRandom } from '@/testing/createSeededRandom.js';
 
@@ -7,6 +8,8 @@ import { computeFileDiff } from './computeFileDiff.js';
 
 const exact = { ignoreWhitespace: false };
 const ignoring = { ignoreWhitespace: true };
+const ONLY_BEFORE = ['gone', 'gone too', 'gone as well'];
+const ONLY_AFTER = ['new', 'new too', 'new as well'];
 
 test('a final line without a newline is kept; a trailing newline makes no extra line, and blank lines stay', () => {
     expect(computeFileDiff({ before: 'a\nb', after: null, ...exact }).before).toEqual(['a', 'b']);
@@ -96,8 +99,8 @@ test('on random files, the lines between the blocks correspond, and the blocks n
     const random = createSeededRandom(1);
     for (let round = 0; round < 500; round++) {
         const options = { ignoreWhitespace: round % 2 === 0 };
-        const before = randomLines(random);
-        const after = randomLines(random);
+        const before = randomLines(random, ONLY_BEFORE);
+        const after = randomLines(random, ONLY_AFTER);
         const diff = computeFileDiff({ before: before.join('\n'), after: after.join('\n'), ...options });
         const compared = (line: string) => (options.ignoreWhitespace ? line.replace(/\s/g, '') : line);
 
@@ -117,9 +120,44 @@ test('on random files, the lines between the blocks correspond, and the blocks n
     }
 });
 
-/** Lines that often repeat and differ only in whitespace, none blank, so that joining them gives back exactly these lines. */
-function randomLines(random: () => number): string[] {
-    const variants = ['a', ' a', 'a ', 'b', '\tb', 'c d', 'cd'];
+test('on random files, leaving out the lines only one side has changes as few lines as diffing them all', () => {
+    const random = createSeededRandom(2);
+    for (let round = 0; round < 500; round++) {
+        const { before, after, blocks } = computeFileDiff({
+            before: randomLines(random, ONLY_BEFORE).join('\n'),
+            after: randomLines(random, ONLY_AFTER).join('\n'),
+            ...exact,
+        });
+
+        let changedInAll = 0;
+        for (const [beforeStart, beforeEnd, afterStart, afterEnd] of diffAllLines(before, after)) {
+            changedInAll += beforeEnd - beforeStart + afterEnd - afterStart;
+        }
+
+        const changed = blocks.reduce(
+            (sum, block) => sum + block.beforeEnd - block.beforeStart + block.afterEnd - block.afterStart,
+            0,
+        );
+        expect(changed).toBe(changedInAll);
+    }
+});
+
+test('a large file rewritten but for one line is one block on each side of that line', () => {
+    const rewritten = (tag: string) =>
+        Array.from({ length: 25_000 }, (_, line) => (line === 12_500 ? 'kept' : `${tag} ${line}`)).join('\n');
+
+    expect(computeFileDiff({ before: rewritten('old'), after: rewritten('new'), ...exact }).blocks).toEqual([
+        { beforeStart: 0, beforeEnd: 12_500, afterStart: 0, afterEnd: 12_500 },
+        { beforeStart: 12_501, beforeEnd: 25_000, afterStart: 12_501, afterEnd: 25_000 },
+    ]);
+});
+
+/**
+ * Lines that often repeat and differ only in whitespace, plus those given, none blank, so that joining them gives back
+ * exactly these lines.
+ */
+function randomLines(random: () => number, own: readonly string[]): string[] {
+    const variants = ['a', ' a', 'a ', 'b', '\tb', 'c d', 'cd', ...own];
     return Array.from(
         { length: Math.floor(random() * 30) },
         () => variants[Math.floor(random() * variants.length)] ?? 'a',

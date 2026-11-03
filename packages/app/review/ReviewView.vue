@@ -110,12 +110,12 @@ watch(currentPath, path => {
 });
 
 // Runs before the list gets the rows, when `anchor` is still the row being read: if that row goes with them, its
-// counterpart takes its place at the same distance from the top once they are in.
+// counterpart takes its place once they are in.
 watch(rows, (next, previous) => {
   const anchor = list.value?.anchor;
-  const replacement = anchor ? findReplacementRow({ key: anchor.key, previous, next }) : null;
-  if (anchor && replacement) {
-    void nextTick(() => list.value?.jumpTo(replacement.key, anchor.offset));
+  const replacement = anchor ? findReplacementRow({ key: anchor.key, offset: anchor.offset, previous, next }) : null;
+  if (replacement) {
+    void nextTick(() => list.value?.jumpTo(replacement.row.key, replacement.offset));
   }
 });
 
