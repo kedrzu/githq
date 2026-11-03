@@ -166,3 +166,52 @@ test('broken rows show the newest break first; a pass on another ref hides nothi
     expect(namesByGroup(list)).toEqual([['broken', ['Fresh', 'Old']]]);
     expect(list.count).toBe(2);
 });
+
+test('a failure on one ref stands under No alerts, whatever passed later on another', () => {
+    const list = build(
+        {
+            workflows: [
+                {
+                    id: 1,
+                    name: 'Deploy',
+                    runs: [
+                        { conclusion: 'failure', ago: '2h' },
+                        { conclusion: 'success', ago: '1h', branch: 'chore/x' },
+                    ],
+                },
+            ],
+        },
+        OFF,
+    );
+
+    expect(namesByGroup(list)).toEqual([['noAlerts', ['Deploy']]]);
+    expect(list.groups[0]?.rows[0]?.gitRef?.name).toBe('main');
+});
+
+test('a ref that failed and then passed no longer stands under No alerts', () => {
+    const list = build(
+        {
+            workflows: [
+                {
+                    id: 1,
+                    name: 'Deploy',
+                    runs: [
+                        { conclusion: 'failure', ago: '2h', branch: 'chore/x' },
+                        { conclusion: 'success', ago: '1h', branch: 'chore/x' },
+                    ],
+                },
+            ],
+        },
+        OFF,
+    );
+
+    expect(namesByGroup(list)).toEqual([['passing', ['Deploy']]]);
+});
+
+test('a workflow only comments ran, such as CLA, is pull requests only', () => {
+    const list = build({
+        workflows: [{ id: 1, name: 'CLA', runs: [{ conclusion: 'failure', ago: '1h', event: 'issue_comment' }] }],
+    });
+
+    expect(namesByGroup(list)).toEqual([['pullRequestsOnly', ['CLA']]]);
+});

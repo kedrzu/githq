@@ -15,7 +15,7 @@ test('a run on the default branch counts in its group, any other ref does not', 
     expect(isRunInGroup(run('v1.0', 'push'), MAIN)).toBe(false);
 });
 
-test.each(['pull_request', 'pull_request_target', 'pull_request_review'])(
+test.each(['pull_request', 'pull_request_target', 'pull_request_review', 'issue_comment'])(
     'a run started by %p never counts, in no group, even on a counted ref',
     event => {
         expect(isRunInGroup(run('main', event), MAIN)).toBe(false);
@@ -24,7 +24,7 @@ test.each(['pull_request', 'pull_request_target', 'pull_request_review'])(
     },
 );
 
-test.each(['push', 'schedule', 'workflow_dispatch', 'issue_comment'])('a run started by %p counts', event => {
+test.each(['push', 'schedule', 'workflow_dispatch'])('a run started by %p counts', event => {
     expect(isRunInGroup(run('main', event), MAIN)).toBe(true);
 });
 

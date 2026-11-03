@@ -231,20 +231,24 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
     }
 
     const shown = ownRuns.slice(-RUN_STRIP_SLOTS);
-    const latest = ownRuns.findLast(run => getRunVerdict(run) !== null);
-    const latestRef = getRowRef(stored, latest?.headBranch ?? null);
-    // A failure on a ref with alerts would have broken it: the latest one failing is on a ref without.
-    if (latest && getRunVerdict(latest) === 'failed') {
+    // Each ref is judged on its own (D1), so a pass on one does not hide a failure on another. A failure on a ref with
+    // alerts would have broken the workflow: one standing here is on a ref without.
+    const failing = getLatestStandingFailure(ownRuns);
+    if (failing) {
+        const failingRef = getRowRef(stored, failing.headBranch);
         return {
             group: 'noAlerts',
             entry: {
                 ...row,
-                standing: { kind: 'noAlerts', ref: latestRef, alertsOff },
-                gitRef: latestRef,
+                standing: { kind: 'noAlerts', ref: failingRef, alertsOff },
+                gitRef: failingRef,
                 runs: shown,
             },
         };
     }
+
+    const latest = ownRuns.findLast(run => getRunVerdict(run) !== null);
+    const latestRef = getRowRef(stored, latest?.headBranch ?? null);
 
     if (latest) {
         return { group: 'passing', entry: { ...row, standing: { kind: 'passing' }, gitRef: latestRef, runs: shown } };
@@ -264,4 +268,18 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
 /** The newest break first; equal ones keep GitHub's order. */
 function sortByBreak(rows: readonly RepositoryWorkflowEntry[]) {
     return rows.toSorted((a, b) => (b.workflow.breakStartedAt ?? 0) - (a.workflow.breakStartedAt ?? 0));
+}
+
+/** The latest failure that is still its ref's latest verdict; `runs` oldest first. */
+function getLatestStandingFailure(runs: readonly GitHubWorkflowRun[]) {
+    const latestByRef = new Map<string | null, GitHubWorkflowRun>();
+    for (const run of runs) {
+        if (getRunVerdict(run) !== null) {
+            // Deleted first, so the map stays in order of each ref's latest verdict.
+            latestByRef.delete(run.headBranch);
+            latestByRef.set(run.headBranch, run);
+        }
+    }
+
+    return Array.from(latestByRef.values()).findLast(run => getRunVerdict(run) === 'failed') ?? null;
 }

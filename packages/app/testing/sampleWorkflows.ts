@@ -200,6 +200,11 @@ export const SAMPLE_WORKFLOWS = {
         name: 'Nightly',
         runs: [
             { conclusion: 'failure', ago: '4d' },
+            { conclusion: 'failure', ago: '94h' },
+            { conclusion: 'failure', ago: '90h' },
+            { conclusion: 'failure', ago: '86h' },
+            { conclusion: 'failure', ago: '82h' },
+            { conclusion: 'failure', ago: '78h' },
             { conclusion: 'failure', ago: '3d' },
             { conclusion: 'failure', ago: '2d' },
             { conclusion: 'failure', ago: '23h' },
@@ -213,6 +218,11 @@ export const SAMPLE_WORKFLOWS = {
         path: 'dynamic/dependabot/dependabot-updates',
         runs: [
             { conclusion: 'failure', ago: '22d' },
+            { conclusion: 'failure', ago: '21d' },
+            { conclusion: 'failure', ago: '20d' },
+            { conclusion: 'failure', ago: '19d' },
+            { conclusion: 'failure', ago: '18d' },
+            { conclusion: 'failure', ago: '17d' },
             { conclusion: 'failure', ago: '15d' },
             { conclusion: 'failure', ago: '8d' },
             { conclusion: 'failure', ago: '4d' },

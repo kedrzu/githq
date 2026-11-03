@@ -13,6 +13,7 @@ import { isTargetFailure } from '@/sync/utils/isTargetFailure.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { getRefGroups } from './utils/getRefGroups.js';
+import { WORKFLOW_RUNS_PAGE_SIZE } from './utils/getRepositoryWorkflowState.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import { isRunInGroup } from './utils/isRunInGroup.js';
 import { isWorkflowNeverRead } from './utils/isWorkflowNeverRead.js';
@@ -21,7 +22,6 @@ import { WorkflowStore } from './WorkflowStore.js';
 import type { StoredWorkflow, WorkflowRefGroup } from './WorkflowTypes.js';
 
 /** Runs a page of one branch's asks for: a run weighs about 12 KB in the answer (actions D2). */
-const RUNS_PAGE_SIZE = 10;
 /** Runs a page of every ref's asks for: other refs' and pull requests' runs fill it, so it needs more. */
 const ANY_REF_PAGE_SIZE = 30;
 /** How many pages of a workflow's runs are read, at most, looking for runs with a verdict (actions D1). */
@@ -364,7 +364,7 @@ export const WorkflowSync = defineService({
                 nameWithOwner,
                 workflowId: entry.workflow.id,
                 branch,
-                perPage: branch === undefined ? ANY_REF_PAGE_SIZE : RUNS_PAGE_SIZE,
+                perPage: branch === undefined ? ANY_REF_PAGE_SIZE : WORKFLOW_RUNS_PAGE_SIZE,
                 etag: entry.etags[key],
             });
             if (!isWanted(context, nameWithOwner)) {

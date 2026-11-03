@@ -79,7 +79,7 @@ test('the break starts at the oldest failure after the last pass, and is new for
     expect(state).toMatchObject({ hasNewBreak: true });
 });
 
-test('with no pass stored, the break starts at the oldest failure stored, and after a day is no longer new', () => {
+test('with no pass stored, the break starts at the oldest failure stored, and after a day is no longer new, its whole history known', () => {
     const state = getRepositoryWorkflowState(
         repository([
             stored(workflow(1), [
@@ -93,21 +93,31 @@ test('with no pass stored, the break starts at the oldest failure stored, and af
 
     expect(state.workflows[0]).toMatchObject({
         breakStartedAt: Date.parse('2026-10-30T10:00:00Z'),
-        breakStartKnown: false,
+        breakStartKnown: true,
         isNew: false,
     });
     expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
 });
 
-test('with no pass stored the break’s start is not known, so it never shows as new, however recent its oldest failure stored', () => {
+test('with no pass stored and more runs than one read returns, the break’s start is not known, so it never shows as new', () => {
+    const failures = Array.from({ length: 10 }, (_, index) =>
+        run(index + 1, 'failure', `2026-11-02T10:${String(index).padStart(2, '0')}:00Z`),
+    );
+    const state = getRepositoryWorkflowState(repository([stored(workflow(1), failures)]), DEFAULT_REFS, NOW);
+
+    expect(state.workflows[0]).toMatchObject({ state: 'broken', breakStartKnown: false, isNew: false });
+    expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
+});
+
+test('with fewer runs than one read returns the whole history is known: a first failure ever is new', () => {
     const state = getRepositoryWorkflowState(
         repository([stored(workflow(1), [run(1, 'failure', '2026-11-02T10:00:00Z')])]),
         DEFAULT_REFS,
         NOW,
     );
 
-    expect(state.workflows[0]).toMatchObject({ state: 'broken', breakStartKnown: false, isNew: false });
-    expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: false });
+    expect(state.workflows[0]).toMatchObject({ state: 'broken', breakStartKnown: true, isNew: true });
+    expect(state).toMatchObject({ brokenCount: 1, hasNewBreak: true });
 });
 
 test('a pass after a failure heals the workflow; no verdict leaves it unknown', () => {

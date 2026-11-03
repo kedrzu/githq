@@ -20,6 +20,11 @@ import { sortRunsByCreation } from './sortRunsByCreation.js';
 
 /** How long a break shows as new: the sidebar marker is bright, and the list puts it under New. */
 const NEW_BREAK_MS = 24 * 60 * 60 * 1000;
+/**
+ * How many of a workflow's runs one read asks for. Fewer than this in a group means GitHub has no more of them, so
+ * the group's whole history is known.
+ */
+export const WORKFLOW_RUNS_PAGE_SIZE = 10;
 /** How many runs a workflow's strip shows. */
 export const RUN_STRIP_SLOTS = 5;
 
@@ -146,13 +151,14 @@ function getGroupState({ stored, group, now, runs: all }: GetGroupStateParams): 
     const firstFailure = breakRuns.find(run => getRunVerdict(run) === 'failed');
     const latestFailure = breakRuns.findLast(run => getRunVerdict(run) === 'failed');
     const breakStartedAt = firstFailure ? Date.parse(firstFailure.createdAt) : null;
+    // With no pass stored and more runs than one read returns, the break may be far older than the oldest failure kept.
+    const breakStartKnown = lastPass >= 0 || runs.length < WORKFLOW_RUNS_PAGE_SIZE;
     return {
         group,
         state: 'broken',
         breakStartedAt,
-        breakStartKnown: lastPass >= 0,
-        // With no pass stored the break may be far older than the oldest failure kept.
-        isNew: lastPass >= 0 && breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
+        breakStartKnown,
+        isNew: breakStartKnown && breakStartedAt !== null && now - breakStartedAt < NEW_BREAK_MS,
         latestFailedRun: latestFailure ?? null,
         failedRef: getRowRef(stored, latestFailure?.headBranch ?? null),
     };

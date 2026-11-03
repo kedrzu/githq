@@ -18,7 +18,16 @@ failed; `success` as passed; every other conclusion, unknown ones too, gives no 
 time. Reading goes back through runs until one has a verdict, so a row of cancelled runs cannot turn a broken
 workflow green, and a rebuilt cache gives the same answer. Only workflows in GitHub's current list with state
 `active` count, so a deleted one stops counting without ever passing. "Started by a pull request" is decided by the
-run's event, not its ref.
+run's event, not its ref, and `issue_comment` counts as one: GitHub runs it on the default branch whatever the comment
+is on, so a bot such as CLA would otherwise light the counters. (2026-11-03, owner) The cost: a real workflow on comments never lights anything.
+
+**In a repository's Workflows tab, a workflow whose latest verdict on any ref failed stands under No alerts, whatever
+passed later on another ref.** (2026-11-03, owner) A workflow left failing on an abandoned branch stays there until
+those runs fall out of what is kept.
+
+**A break is new while it is under 24 hours old and its start is known: a pass is stored before it, or the ref group's
+whole history is, fewer runs than one read returns.** (2026-11-03, owner) Otherwise a break two weeks old on a busy
+branch would look fresh, while the first failure ever on a tag pattern must not look old.
 
 **Why.** A run is one observation of a workflow, and a workflow can run on many refs: a green run on a feature
 branch says nothing about `main`. Grouping by pattern and not by exact ref is what lets a one-shot tag recover.
