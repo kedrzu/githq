@@ -211,10 +211,40 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 > does to several squashes is not stated. `.claude/skills/git-workflow/SKILL.md` lands stacks with `merge_method` only, one squash per
 > pull request under its title.
 
+> **Checked 2026-11-02 (live, `nzymejs/githq-merge-sandbox`, stack #22 of #19–#21):** one `merge-async` `squash` on the top
+> pull request, with `commit_title` "CUSTOM TITLE probe", landed all three as one squash commit each: #19 and #20 under their own
+> titles (`Probe stack part 1 (#19)`), #21 under the custom title. A title given applies to the top pull request only.
+>
+> **Checked 2026-11-02 (live, stack #26 of #23–#25, #24's required check failing):** a `merge-async` on #25 answered `202`
+> pending, then `failed` with "Required status check "ci" is failing." — and nothing landed, #23 (ready on its own) included. A
+> stack refused for a failing requirement is all or none; a failure while landing midway was not reproduced.
+>
+> **Checked 2026-11-02 (live, the same sandbox):** `enablePullRequestAutoMerge` on a member of a stack answers UNPROCESSABLE "Auto-merge
+> is not supported for stacked pull requests.", while `viewerCanEnableAutoMerge` reads true. So githq doesn't offer it in a stack (SP52).
+>
+> **Checked 2026-11-03 (live, stack #44 of #41, #42 on a queue branch):** `merge-async` with `sha` only on the top answers `enqueued`, and each
+> member gets its own entry and position (1 and 2), not one shared. `dequeuePullRequest` on the top is refused ("No merge queue found for
+> branch"), on the first it takes the whole stack out. Under a ruleset with no bypass list `viewerCanMergeAsAdmin` is false. So the
+> panel (SP54) gives the group's place as the first one's and each row its own, and "Take out of queue" (`⇧Q`) is one dequeue of the
+> first open one, after which githq reads the stack again. GitHub's answer names no pull request and a read just after can still say
+> the old state, so GitHub accepting it is the whole answer: no such read turns it into a failure.
+>
+> **Decided 2026-11-03 (owner):** in a merge queue a stack behaves like a single pull request. Its first open one holds an entry: "In the
+> queue" with "Take out of queue", and an `UNMERGEABLE` entry reads as PM16's "In the queue, won't merge". No entry: an ordinary stack, and
+> `⌘↵` adds it again. GitHub's state doesn't say why an entry left (thrown out, or taken out on github.com or here all look the same), so
+> githq doesn't say either, and nothing about the queue is remembered in the session.
+
 **Rejected.**
 
 - One commit title and message for the stack (what the merge screens assumed, PM17) — GitHub does not say what it does.
 - Merging from an entry only what that entry holds — on a board "2 of 4" could mean pull requests that cannot merge alone.
+- Per pull request wording for how a merge ended (SP59's "Refused" and "Still open", SP60's own screen, SP62's rows) — a refused stack
+  lands nothing (checked above), and the rows of the stack read again already say what is true. One band carries GitHub's words, and
+  "Merge stopped at #N" remains for a stack that did land in part. (owner, 2026-11-02)
+- A session's memory of a stack seen in the queue, to say "#N was thrown out, the later ones left with it" once its entries are gone (SP54 as
+  first drawn) — it misread a removal on github.com, was lost on reload, and an `UNMERGEABLE` entry read "Out of the queue" while GitHub still
+  held it, with no action in the panel. (owner, 2026-11-03)
+- Reading `RemovedFromMergeQueueEvent` to say why an entry left — worth adding only if the sentence is missed. (owner, 2026-11-03)
 
 ## D12
 

@@ -1,4 +1,4 @@
-import type { IssueTypeColor, RepositoryPermission } from '@githq/github/generated.gen.js';
+import type { IssueTypeColor, PullRequestMergeMethod, RepositoryPermission } from '@githq/github/generated.gen.js';
 
 /**
  * What the pickers of a repository offer and what the viewer may do there (D14), as last read from GitHub:
@@ -13,6 +13,19 @@ export interface RepositoryMetadata {
     readonly viewerPermission: RepositoryPermission | null;
     readonly hasIssuesEnabled: boolean;
     readonly isArchived: boolean;
+    /** The merge methods the repository's settings allow; its rulesets may narrow them further per branch. */
+    readonly mergeCommitAllowed: boolean;
+    readonly squashMergeAllowed: boolean;
+    readonly rebaseMergeAllowed: boolean;
+    /** The method the viewer merged with last here, as GitHub proposes it. */
+    readonly viewerDefaultMergeMethod: PullRequestMergeMethod;
+    readonly autoMergeAllowed: boolean;
+    /** GitHub deletes the head branch after a merge by itself. */
+    readonly deleteBranchOnMerge: boolean;
+    /** The email a merge commit of the viewer's is authored with by default; `null` when GitHub does not say. */
+    readonly viewerDefaultCommitEmail: string | null;
+    /** The emails the viewer may author a merge commit with. */
+    readonly viewerPossibleCommitEmails: readonly string[];
     /** By name. */
     readonly labels: readonly RepositoryLabel[];
     /** The open ones, by due date. */

@@ -3,8 +3,10 @@ import type {
     IssueStateReason,
     IssueTypeColor,
     MergeableState,
+    MergeQueueEntryState,
     MergeStateStatus,
     ProjectV2SingleSelectFieldOptionColor,
+    PullRequestMergeMethod,
     PullRequestReviewDecision,
     PullRequestReviewState,
     PullRequestState,
@@ -69,6 +71,24 @@ export interface PullRequestItem extends ItemBase, PullRequestStatus {
     readonly baseRefName: string;
     /** The issues it closes when merged (node ids). */
     readonly closingIssueIds: readonly string[];
+    /**
+     * The user's merge of it is on its way: GitHub accepted it, or has not answered yet (merging D3, D14). The app's
+     * own mark, never from GitHub nor stored: only the merge's optimistic layer draws it, and it goes with the layer
+     * — merged once GitHub confirms, as before when it refuses or does not say in time. The method it was sent with:
+     * the merge panel reopened meanwhile says it (PM24).
+     */
+    readonly merging?: PullRequestMergeMethod;
+    /**
+     * How the user's own merge of it landed, as GitHub confirmed it (PM26). The app's own mark, gone with the first
+     * copy GitHub's sync brings: the row query reads neither the method nor the commit.
+     */
+    readonly mergedAs?: PullRequestMergedAs;
+}
+
+/** How a merge landed: the method it was sent with, and the commit it made on the base branch. */
+export interface PullRequestMergedAs {
+    readonly method: PullRequestMergeMethod;
+    readonly sha: string;
 }
 
 /**
@@ -82,6 +102,14 @@ export interface PullRequestStatus {
     readonly reviewDecision: PullRequestReviewDecision | null;
     readonly mergeable: MergeableState;
     readonly mergeStateStatus: MergeStateStatus;
+    /** The head commit: a merge names it, so GitHub refuses the merge once the branch moved since. */
+    readonly headRefOid: string;
+    /** The branch's node id, which deleting it names; `null` once it is deleted. */
+    readonly headRefId: string | null;
+    /** The branch is a fork's: it can't be restored from here (merging D16). */
+    readonly isCrossRepository: boolean;
+    /** GitHub lets the viewer delete the branch: nothing else tells, as protected branches stay. */
+    readonly viewerCanDeleteHeadRef: boolean;
     /** `null` when nothing runs on the head commit. */
     readonly checks: ItemChecks | null;
     readonly reviewRequests: readonly ItemReviewRequest[];
@@ -96,6 +124,32 @@ export interface PullRequestStatus {
      * (checked live, 2026-11-01). `false` when the base branch is gone.
      */
     readonly behindBase: boolean;
+    /** Merges into its base branch go through GitHub's merge queue. */
+    readonly isMergeQueueEnabled: boolean;
+    /** Its place in the merge queue; `null` outside it. */
+    readonly mergeQueueEntry: PullRequestQueueEntry | null;
+    /** The auto-merge turned on for it, merging once the requirements are met; `null` when off. */
+    readonly autoMerge: PullRequestAutoMerge | null;
+}
+
+/** A pull request's place in the merge queue, as GitHub holds it. */
+export interface PullRequestQueueEntry {
+    readonly position: number;
+    readonly state: MergeQueueEntryState;
+    /** Seconds; `null` while GitHub has no estimate. */
+    readonly estimatedTimeToMerge: number | null;
+    readonly enqueuedAt: string;
+    /** Login of who added it. */
+    readonly enqueuer: string;
+}
+
+/** A pull request's auto-merge, as GitHub holds it. */
+export interface PullRequestAutoMerge {
+    readonly mergeMethod: PullRequestMergeMethod;
+    readonly enabledAt: string | null;
+    /** Login of who turned it on. */
+    readonly enabledBy: string | null;
+    readonly commitHeadline: string | null;
 }
 
 /** Where a pull request sits in a GitHub stack. */

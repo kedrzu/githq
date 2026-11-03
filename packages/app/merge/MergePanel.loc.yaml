@@ -1,0 +1,377 @@
+dialogTitle:
+  en: Merge {reference}
+close:
+  en: Esc to close
+reading:
+  en: Reading
+computing:
+  en: GitHub is computing
+refused:
+  en: GitHub refused the merge
+nothingMerged:
+  en: Nothing was merged
+outcomeUnknown:
+  en: Outcome not known yet
+notAnsweredYet:
+  en: GitHub hasn't answered · not shown as merged
+nextRefreshSettles:
+  en: The next refresh will settle this
+noResult:
+  plural: minutes
+  en:
+    one: The request was accepted, then a minute passed with no result. It may still merge. Check on GitHub if you can't wait.
+    many: The request was accepted, then {minutes} minutes passed with no result. It may still merge. Check on GitHub if you can't wait.
+noAnswer:
+  en: GitHub didn't answer the request. It may still merge. Check on GitHub if you can't wait.
+openOnGitHub:
+  en: Open on GitHub
+newCommitArrived:
+  en: A new commit arrived, so nothing was merged
+newCommitPushedBy:
+  en: '{author} pushed {head}'
+newCommitPushed:
+  en: '{head} was pushed to the branch'
+newCommitCancelled:
+  en: You asked to merge {asked}, so GitHub cancelled the merge, as githq asked it to. Checks will run again on the new commit.
+newCommitHeadline:
+  en: '“{headline}”. {cancelled}'
+seeNewCommit:
+  en: See the new commit
+methodNotAllowed:
+  en: "{method} isn't allowed on {base}"
+requiresLinearHistory:
+  en: '{base} requires a linear history'
+rulesetAllowsOnly:
+  en: A ruleset on {base} allows only {method}
+rulesetDisallows:
+  en: "A ruleset on {base} doesn't allow {method}"
+sentBeforeRules:
+  en: Sent before the rules arrived. The panel now offers only what {base} allows.
+squashedInto:
+  en: Squashed into {base}
+mergedInto:
+  en: Merge commit on {base}
+rebasedOnto:
+  en: Rebased onto {base}
+landedAs:
+  en: '{landed} as {sha}'
+into:
+  en: Into {base}
+alreadyMerged:
+  en: Already merged
+githubSaysMergedAs:
+  en: GitHub says it merged · {sha}
+githubSaysMerged:
+  en: GitHub says it merged
+justNow:
+  en: just now
+method:
+  en: Method
+methodsLabel:
+  en: Merge method
+repositoryDefault:
+  en: the repository's default
+onlyMethod:
+  en: the only method {base} allows
+noMethod:
+  en: none that {base} allows
+branchInto:
+  en: '{head} into {base}'
+commit:
+  en: Commit
+commits:
+  en: Commits
+rebaseNote:
+  en: The branch's commits land on {base} one by one, with their own messages
+proposalOnItsWay:
+  en: GitHub's proposed message is on its way
+githubDefault:
+  en: GitHub's default message
+edited:
+  en: Edited
+edit:
+  en: Edit
+moreLines:
+  plural: count
+  en:
+    one: +{count} line
+    many: +{count} lines
+titleLabel:
+  en: Commit title
+messageLabel:
+  en: Commit message
+editedLines:
+  plural: count
+  en:
+    one: Edited · {count} line
+    many: Edited · {count} lines
+proposedLines:
+  plural: count
+  en:
+    one: GitHub's text · {count} line
+    many: GitHub's text · {count} lines
+backToProposal:
+  en: Back to GitHub's text
+goneRuleset:
+  en: "{method} is gone: a ruleset on {base} doesn't allow it"
+goneLinearHistory:
+  en: '{method} is gone: {base} requires a linear history'
+nowOn:
+  en: You were on {from}. It's {to} now.
+noneLeft:
+  en: You were on {from}. No other method is left.
+reasonMore:
+  en: '“{more}”'
+reasonNotAllowed:
+  en: You can't merge this pull request
+notSent:
+  en: Not sent
+reasonRulesNotConfirmed:
+  en: GitHub doesn't confirm the rules are met
+reasonRulesNotConfirmedDetail:
+  en: Something changed since this opened.
+reasonNotReached:
+  en: GitHub couldn't be reached
+reasonNotReachedDetail:
+  en: Nothing was sent, so this can't still merge. Try again when you're back online.
+organizationRestricted:
+  en: "{organization} hasn't approved githq"
+organizationRestrictedDetail:
+  en: githq can read its public repositories but can't change anything there, merges included.
+requestAccess:
+  en: Request access on GitHub
+reasonOther:
+  en: GitHub didn't take the merge
+primarySquash:
+  en: Squash and merge
+primaryMerge:
+  en: Merge
+primaryRebase:
+  en: Rebase and merge
+tryAgain:
+  en: Try again
+notAllowed:
+  en: You can't merge in this repository
+nothingToOffer:
+  en: No method to merge with
+hintChecks:
+  en: Checks
+hintAllChecks:
+  en: All checks
+hintFold:
+  en: Fold
+hintLeaveField:
+  en: Leave the field
+hintClose:
+  en: Close
+hintCloseGoesOn:
+  en: Close, it goes on
+keepWorking:
+  en: You can keep working
+markReady:
+  en: Mark ready for review
+updateBranch:
+  en: Update branch
+resolveOnGitHub:
+  en: Resolve on GitHub
+updating:
+  en: Updating the branch
+updatingDetail:
+  en: Bringing {base} in · merging comes back when GitHub says so
+reviews:
+  en: Reviews
+conflicts:
+  en: Conflicts
+conflictsWith:
+  en: With {base}. Resolved in GitHub's editor
+notKnownYet:
+  en: Not known yet
+branch:
+  en: Branch
+behind:
+  en: Behind {base}
+stackDialogTitle:
+  en: Merge the stack {name}
+stackReady:
+  en: Ready to merge
+stackAllLand:
+  en: All {count} land, first to last
+stackLandWithLanded:
+  en: '{count} land · {landed} landed before'
+stackLastOne:
+  en: The last one open
+stackOnlyOne:
+  plural: rest
+  en:
+    one: 'Only #{number} · {rest} stays open'
+    many: 'Only #{number} · {rest} stay open'
+stackSomeLand:
+  plural: rest
+  en:
+    one: '{count} land · {rest} stays open'
+    many: '{count} land · {rest} stay open'
+stackCanLand:
+  en: '{count} of {open} can land'
+stackNotReadyYet:
+  en: Not ready yet
+stackCheckingLeft:
+  en: '{landed} landed · GitHub is checking the {left} left'
+stackChecksOf:
+  en: "#{number}'s checks"
+stackHeldByOther:
+  en: '#{number} holds the rest'
+stackClosed:
+  en: '#{number} is closed'
+stackClosedAside:
+  en: Later ones can't land until the stack is rebuilt
+stackDissolve:
+  en: Dissolving the stack and linking it again isn't in githq yet
+stackDissolveDetail:
+  en: 'On GitHub, rebuild the stack without #{number}.'
+stackIncomplete:
+  en: Still reading this stack
+stackIncompleteAside:
+  en: '{held} of {size} in githq'
+stackNeedsRebase:
+  en: Needs rebase
+stackNeedsRebaseAside:
+  en: Nothing can merge until it's done
+stackTargetMoved:
+  en: '{base} moved'
+stackTargetMovedDetail:
+  en: Rebuilding the stack on it only exists on github.com. Checks will run again, and githq picks it up at the next refresh.
+stackEarlierPush:
+  en: '#{number} has a new commit'
+stackEarlierPushDetail:
+  en: The ones after it no longer sit on top of it. Rebasing the stack only exists on github.com.
+stackEarlierPushRefused:
+  en: '“{words}” {detail}'
+rebaseStack:
+  en: Rebase stack on GitHub
+stackBeingMergedAll:
+  en: Being merged, all {count}
+stackBeingMerged:
+  en: Being merged, {count}
+stackTakesLonger:
+  en: Stacks take longer · not merged yet
+stackMerged:
+  en: Merged, all {count}
+stackNothingOpen:
+  en: Nothing in this stack is open
+refusedNotRead:
+  en: GitHub refused it · what landed isn't read yet
+stackStopped:
+  en: 'Merge stopped at #{number}'
+stackStoppedAside:
+  en: '{landed} landed, {open} still open'
+stackRefused:
+  en: GitHub refused it
+seeOnGitHub:
+  en: '#{number} on GitHub'
+markNumberReady:
+  en: 'Mark #{number} ready'
+primaryAll:
+  en: '{primary} all {count}'
+primaryCount:
+  en: '{primary} {count}'
+primaryOf:
+  en: '{primary} {count} of {open}'
+eachOwnTitle:
+  en: each lands under its own title
+eachCommitOnto:
+  en: each commit onto {base}
+stopEarlier:
+  en: Stop earlier
+enableAutoMerge:
+  en: Enable auto-merge
+disableAutoMerge:
+  en: Turn off auto-merge
+mergesByItself:
+  en: Merges by itself when these are met
+addToQueue:
+  en: Add to queue
+jumpQueue:
+  en: Jump the queue
+jumpRebuilds:
+  en: Jumping rebuilds those in progress
+setByQueue:
+  en: set by the queue
+writtenByQueue:
+  en: Written by the queue. Text can't be set here
+takeOutOfQueue:
+  en: Take out of queue
+queuePosition:
+  en: Position
+queueState:
+  en: State
+queuePlace:
+  en: "{place} in {base}'s queue"
+addedBy:
+  en: added by {login} {ago}
+stackReadyForQueue:
+  en: Ready for the queue
+stackAllEnter:
+  en: All {count} enter as one group
+stackEnterWithLanded:
+  en: '{count} enter as one group · {landed} landed before'
+stackSomeEnter:
+  plural: rest
+  en:
+    one: '{count} enter as one group · {rest} stays open'
+    many: '{count} enter as one group · {rest} stay open'
+addAllToQueue:
+  en: Add all {count} to the queue
+addCountToQueue:
+  en: Add {count} to the queue
+addCountOfToQueue:
+  en: Add {count} of {open} to the queue
+setByQueueLine:
+  en: Set by the queue
+eachOwnCommit:
+  en: each its own commit
+bypassTitle:
+  en: You may merge past these requirements
+bypassTitleOf:
+  en: 'You may merge #{number} past these requirements'
+bypassSkips:
+  en: Skips {list}
+bypassSkipsFirst:
+  en: Skips {list}. Only the first open pull request of a stack can go past them, so this lands one.
+bypassSkipsReviewRequired:
+  en: a required review
+bypassSkipsChangesRequested:
+  en: the changes requested
+bypassSkipsBehind:
+  en: being up to date with {base}
+bypassSkipsOther:
+  en: what GitHub says still holds it
+bypassOutsideQueue:
+  en: Merges directly, outside the queue.
+bypassCommitsAs:
+  en: Commits as your default, {email}
+bypassCommitsAsDefault:
+  en: Commits as your default email
+bypassMerge:
+  en: Bypass rules and merge
+bypassMergeNumber:
+  en: 'Bypass rules and merge #{number}'
+email:
+  en: Email
+emailMore:
+  en: '{count} more'
+changeEmail:
+  en: Change
+updateByRebase:
+  en: Update by rebase
+branchStillThere:
+  en: '{branch} is still there'
+branchDeletedByRepository:
+  en: '{branch} deleted by the repository'
+branchDeleted:
+  en: '{branch} deleted'
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch
+revert:
+  en: Revert

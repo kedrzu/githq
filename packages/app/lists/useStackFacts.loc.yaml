@@ -27,9 +27,3 @@ matches:
   en: '{count} of {size} matches'
 shareHeld:
   en: '#{number} blocks'
-shareHeldByDraft:
-  en: '#{number} is a draft'
-shareHeldByChecks:
-  en: '#{number} checks running'
-shareHeldByReview:
-  en: '#{number} waiting for review'

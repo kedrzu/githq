@@ -1,18 +1,25 @@
 import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
+import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { shallowRef, watch } from 'vue';
 
+import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
 
 import { AuthStore } from './AuthStore.js';
 
-/** A signed-in user as the work done for them holds it: who, with which token, and the SDK sending that token. */
+/**
+ * A signed-in user as the work done for them holds it: who, with which token, and the GraphQL SDK and REST
+ * requester sending that token.
+ */
 export interface Account {
     readonly login: string;
     readonly token: string;
     /** Sends this account's token, whatever the auth store holds by the time a request goes. */
     readonly sdk: GitHubSdk;
+    /** The REST twin of {@link sdk}, for what GraphQL cannot do (a merge). */
+    readonly rest: GitHubRestRequester;
 }
 
 /**
@@ -27,8 +34,9 @@ export const AccountSession = defineService({
     deps: {
         auth: AuthStore,
         createSdk: GitHubSdkFactory,
+        createRest: GitHubRestFactory,
     },
-    setup({ auth, createSdk }) {
+    setup({ auth, createSdk, createRest }) {
         const accountRef = shallowRef<Account | null>(null);
 
         watch(
@@ -62,7 +70,10 @@ export const AccountSession = defineService({
                 return;
             }
 
-            accountRef.value = login !== null && token !== null ? { login, token, sdk: createSdk(() => token) } : null;
+            accountRef.value =
+                login !== null && token !== null
+                    ? { login, token, sdk: createSdk(() => token), rest: createRest(() => token) }
+                    : null;
         }
     },
 });

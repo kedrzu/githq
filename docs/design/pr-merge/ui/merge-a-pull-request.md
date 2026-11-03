@@ -87,8 +87,9 @@ What the primary action is depends on the pull request and the repository:
   merged, and the user should know the outcome is not known yet.
 - **Page reloaded during a merge:** the "being merged" state is gone. The pull request shows what GitHub last said
   until the next refresh. Should a merge seem still open, sending it again is what the user might try.
-- **Possibly:** a pull request changing `.github/workflows` refused for lack of a permission of githq's, which would
-  need signing in again. Not confirmed yet; treat it as one more refusal with a reason.
+- **An organisation that hasn't approved githq:** GitHub reads its public repositories, so merging is offered, and the
+  first write is refused. Say which organisation and link to GitHub's page for requesting access (PM42). A change to
+  `.github/workflows` needs no extra permission (checked 2026-11-02, [D1](../DECISIONS.md#d1)).
 
 ## Hand-offs to github.com
 
@@ -125,7 +126,7 @@ the recommended one comes first.
 |-|-|-|
 |The panel's form|Its own surface over any screen: PM1a, PM2a (chosen)||
 |Required checks without noise|One line while green, a row with a tag when off, still running: PM4a (chosen); all open after C, passed, failed or running||
-|"Being merged"|Row PM37, item PM33, panel PM24, stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
+|"Being merged"|Row PM37, item PM33, panel PM24 (method only, no commit text: D14), stack PM24b, status bar PM32a|Panel leaves on accept: PM32a (chosen)|
 |A late refusal|Toast, status bar and row: PM35||
 |Commit text|Title and the first lines: PM3a (chosen); editing: PM3d||
 |Bypass|Its own line, red outline, and its own chord: PM12a (chosen)||
@@ -140,6 +141,8 @@ Open with the owner, and not settled by the screens:
 
 - **Stacks** have moved to [their own design](../../stacked-prs/ui/work-through-a-stack.md), which also settles `⌘Enter` before
   the read and the commit text.
+- **A chosen commit email when the rules stopped being met** (settled 2026-11-03, D12, PM43). For someone who may bypass, nothing is
+  sent, the panel says GitHub doesn't confirm the rules are met, and the bypass line appears once the pull request is read again.
 - **The commit email when bypassing** (settled 2026-11-02, D12). It needs GraphQL and bypass needs REST (D5), so a
   bypass commits with the user's default email, and PM12a says which one in the bypass line.
 - **What bypass really skips** (settled 2026-11-02, D12). `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what

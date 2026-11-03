@@ -1,0 +1,11 @@
+# Read just before a merge with a chosen commit email (merging D12): `mergePullRequest` merges past the rules for anyone
+# GitHub lets bypass them, without being asked to, so githq looks first.
+query PullRequestMergeGuard($id: ID!) {
+    node(id: $id) {
+        ... on PullRequest {
+            mergeable
+            mergeStateStatus
+            viewerCanMergeAsAdmin
+        }
+    }
+}

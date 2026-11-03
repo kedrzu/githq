@@ -84,6 +84,7 @@ export const ItemDetailStore = defineService({
             getItem,
             getFreshness,
             ensure,
+            readAgain,
             loadOlderComments,
             needsFetch,
             fetchDetails,
@@ -179,6 +180,13 @@ export const ItemDetailStore = defineService({
             }
 
             await fetchDetail(current, id);
+        }
+
+        /** Reads the item's detail from GitHub now, however recent the one held; never rejects, as {@link ensure}. */
+        async function readAgain(id: string) {
+            if (session) {
+                await fetchDetail(session, id);
+            }
         }
 
         /**

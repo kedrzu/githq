@@ -86,6 +86,19 @@ test("an item outside my work is loading until its detail comes, and its row com
     expect(details.getFreshness('I_hidden')).toEqual(expected);
 });
 
+test('reading an item again asks GitHub however recent the detail held, and replaces it', async () => {
+    const { details, github } = setup(uniqueLogin());
+    github.nodes.set('I_read', sampleIssueDetailNode('I_read', MONDAY));
+    await details.ensure('I_read');
+
+    github.nodes.set('I_read', sampleIssueDetailNode('I_read', TUESDAY));
+    await details.ensure('I_read');
+    expect(details.getItem('I_read')).toEqual(row('I_read', MONDAY));
+
+    await details.readAgain('I_read');
+    expect(details.getItem('I_read')).toEqual(row('I_read', TUESDAY));
+});
+
 test('another account taking over in another tab: the details leave memory and disk, and an answer still on its way is not kept for the new one', async () => {
     const [alice, bob] = [uniqueLogin(), uniqueLogin()];
     const { details, items, github, session } = setup(alice);

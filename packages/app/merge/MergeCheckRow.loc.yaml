@@ -1,0 +1,10 @@
+notStopping:
+  en: "{detail} · doesn't stop the merge"
+log:
+  en: Log
+logOf:
+  en: Log of {name}
+rerunThere:
+  en: Re-run there
+rerunThereOf:
+  en: 'Re-run there: {name}'

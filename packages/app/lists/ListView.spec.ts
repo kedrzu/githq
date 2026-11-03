@@ -5,9 +5,22 @@ import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { DropdownMenuItem } from 'reka-ui';
-import { createApp, h, ref, shallowRef } from 'vue';
+import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
+import { createApp, defineComponent, h, ref, shallowRef } from 'vue';
 
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { MergeContext } from '@/merge/MergeContext.js';
+import type { MergePanelOpenOptions } from '@/merge/MergePanelStore.js';
+import { Browser } from '@/services/Browser.js';
+import { ItemStore } from '@/store/ItemStore.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { matchText } from '@/testing/matchText.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { samplePullRequest } from '@/testing/sampleItems.js';
+import { sampleStack, sampleStackDescription } from '@/testing/sampleStacks.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import type {
     ListContextMenuProps,
@@ -30,6 +43,8 @@ interface SampleStackEntry {
     readonly stack: string;
     readonly members: readonly string[];
     readonly open: string;
+    /** How it stands; ready with no pips when not given. */
+    readonly description?: StackDescription;
 }
 
 /** In a group between two rows: the stack S_1 of p1–p3, Enter opening p2. */
@@ -420,7 +435,50 @@ interface MountOptions {
     readonly container?: VueContainer;
     /** The item opened is the one the list is told is open, as the app's item view does. */
     readonly followOpened?: boolean;
+    /** The screen offers merging (the app's shell): rows draw a "Merge" button for those it may merge. */
+    readonly merge?: MergeContext;
 }
+
+/** A merge panel opened: for which item, and what it runs once the merge is sent. */
+interface OpenedMerge {
+    readonly id: string;
+    readonly options: MergePanelOpenOptions | undefined;
+}
+
+/** The screen's merging, the viewer allowed to merge `allowed`; records the panels opened. */
+function sampleMerging(allowed: readonly string[]) {
+    const panels: OpenedMerge[] = [];
+    const context: MergeContext = {
+        canOpen: id => allowed.includes(id),
+        open: (id, options) => panels.push({ id, options }),
+        getRecord: () => null,
+        getCommands: () => [],
+        run: () => undefined,
+    };
+    return { context, panels };
+}
+
+/** As `ItemRow`'s follow-up: "Merge" where the viewer may merge it; the click is not the row's. */
+const MergeButton = defineComponent({
+    props: { id: { type: String, required: true } },
+    setup(props) {
+        const merging = injectContext(MergeContext, { optional: true });
+        return () =>
+            merging?.canOpen(props.id)
+                ? h(
+                      'button',
+                      {
+                          type: 'button',
+                          onClick: (event: MouseEvent) => {
+                              event.stopPropagation();
+                              merging.open(props.id);
+                          },
+                      },
+                      `Merge ${props.id}`,
+                  )
+                : null;
+    },
+});
 
 test('a right-click on a row opens the context menu for it alone and selects it; on one of the items edited together, for all of them', async () => {
     const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { contextMenu: true });
@@ -450,6 +508,202 @@ test('without a context menu, or off the rows, a right-click leaves the browser 
     await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });
 
+test('⇧M merges the selected pull request the viewer may merge — never one they may not, never several checked; once sent, the list moves to the next row (PM32a)', async () => {
+    const merging = sampleMerging(['a1', 'a2']);
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
+    const registry = view.container.resolve(CommandRegistry);
+    const offered = () => registry.commands.some(command => command.id === 'list.merge' && registry.isEnabled(command));
+
+    await userEvent.keyboard('j');
+    await expect.poll(() => view.selectedId.value).toBe('a1');
+    // The command menu offers it too.
+    expect(offered()).toBe(true);
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => panel.id)).toEqual(['a1']);
+
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+
+    // Several are never merged together: nothing is offered.
+    view.checkedIds.value = ['a1', 'a2'];
+    await expect.poll(offered).toBe(false);
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    view.checkedIds.value = [];
+
+    await userEvent.keyboard('j');
+    await expect.poll(() => view.selectedId.value).toBe('a3');
+    expect(offered()).toBe(false);
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => panel.id)).toEqual(['a1']);
+});
+
+test("PM38: ⇧M's title is the way forward the panel leads to, as the opened item's standing says it", async () => {
+    const container = createListContainer();
+    const store = container.resolve(ItemStore);
+    await store.ready();
+    store.upsertMany([
+        { ...samplePullRequest('a1'), mergeStateStatus: 'BEHIND' },
+        { ...samplePullRequest('a2'), isDraft: true, mergeStateStatus: 'DRAFT' },
+    ]);
+    const view = mount([['todo', ['a1', 'a2']]], 'list', { merge: sampleMerging(['a1', 'a2']).context, container });
+    const registry = view.container.resolve(CommandRegistry);
+    const title = () => registry.commands.find(command => command.id === 'list.merge')?.title;
+
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Update branch');
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Mark ready…');
+});
+
+test('D9, PM32a: ⇧M merges the one pull request checked, wherever the selected row is; once sent it is unchecked and the list moves past it', async () => {
+    const merging = sampleMerging(['a2']);
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
+    const registry = view.container.resolve(CommandRegistry);
+
+    await userEvent.keyboard('j');
+    await expect.poll(() => view.selectedId.value).toBe('a1');
+    view.checkedIds.value = ['a2'];
+    // Ahead of an opened item's, in the selection's section.
+    await expect
+        .poll(() => registry.commands.some(command => command.id === 'selection.merge' && registry.isEnabled(command)))
+        .toBe(true);
+
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => panel.id)).toEqual(['a2']);
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+    expect(view.checkedIds.value).toEqual(['a2']);
+
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(() => view.selectedId.value).toBe('a3');
+    expect(view.checkedIds.value).toEqual([]);
+});
+
+test('a row\'s "Merge" selects its row and opens the panel; once sent, the list moves on from it', async () => {
+    const merging = sampleMerging(['a1']);
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { merge: merging.context });
+
+    await userEvent.keyboard('jjj');
+    await expect.poll(() => view.selectedId.value).toBe('a3');
+    await userEvent.click(page.getByRole('button', { name: 'Merge a1' }));
+    await expect.poll(() => view.selectedId.value).toBe('a1');
+    expect(merging.panels.map(panel => panel.id)).toEqual(['a1']);
+
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(() => view.selectedId.value).toBe('a2');
+});
+
+test("D11, SP7: ⇧M on a stack's entry opens the panel for its whole stack; once sent the list moves past the entry and its rows", async () => {
+    const merging = sampleMerging(['a1', 'p1', 'p2', 'p3']);
+    mount(STACKED, 'list', { merge: merging.context });
+
+    await userEvent.keyboard('jj');
+    await expect.poll(selectedCard).toBe('stack S_1');
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('a2');
+
+    // Expanded, past its rows too: the entry is what was merged.
+    await userEvent.keyboard('k{ArrowRight}');
+    await expect.poll(rowTexts).toEqual(['a1Merge a1', 'stack S_1', 'p1Merge p1', 'p2Merge p2', 'p3Merge p3', 'a2']);
+    await expect.poll(selectedCard).toBe('stack S_1');
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([
+        ['p1', true],
+        ['p1', true],
+    ]);
+    merging.panels[1]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('a2');
+});
+
+test('D11: ⇧M on a row of an expanded stack takes everything up to it; once sent the list moves to the next row', async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    mount(STACKED, 'list', { merge: merging.context });
+
+    await userEvent.keyboard('jj{ArrowRight}jj');
+    await expect.poll(selectedCard).toBe('p2Merge p2');
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack ?? false])).toEqual([['p2', false]]);
+    merging.panels[0]?.options?.onSent?.();
+    await expect.poll(selectedCard).toBe('p3Merge p3');
+});
+
+test("SP6: with one of an entry's pull requests open over the list, ⇧M is the opened one's (up to it), not the list's; without the screen's merging nothing is offered", async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    const view = mount(STACKED, 'list', { merge: merging.context, followOpened: true });
+    const registry = view.container.resolve(CommandRegistry);
+    const offered = () => registry.commands.some(command => command.id === 'list.merge' && registry.isEnabled(command));
+
+    await userEvent.keyboard('jj');
+    await expect.poll(offered).toBe(true);
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => view.openedId.value).toBe('p2');
+    await expect.poll(offered).toBe(false);
+    view.unmount();
+
+    const bare = mount(STACKED, 'list');
+    const bareRegistry = bare.container.resolve(CommandRegistry);
+    expect(bareRegistry.commands.some(command => command.id === 'list.merge')).toBe(false);
+});
+
+test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole stack, as the panel opening on it", async () => {
+    const members = sampleStack({ id: 'S_1', number: 10, members: [{}, {}, {}] });
+    const ids = members.map(pr => pr.id);
+    const held = members.map((pr, index): PullRequestItem =>
+        index === 2 ? { ...pr, mergeStateStatus: 'BLOCKED' } : pr,
+    );
+    const rebase = members.map((pr, index): PullRequestItem => (index === 1 ? { ...pr, behindBase: true } : pr));
+    const draft = members.map((pr, index): PullRequestItem => (index === 0 ? { ...pr, isDraft: true } : pr));
+    const blocked = members.map((pr): PullRequestItem => ({ ...pr, mergeStateStatus: 'BLOCKED' }));
+    const entry = (stacked: readonly PullRequestItem[]): Columns => [
+        ['todo', [{ stack: 'S_1', members: ids, open: ids[0] ?? '', description: sampleStackDescription(stacked) }]],
+    ];
+    const merging = sampleMerging(ids);
+    const view = mount(entry(members), 'list', { merge: merging.context });
+    const registry = view.container.resolve(CommandRegistry);
+    const title = () => registry.commands.find(command => command.id === 'list.merge')?.title;
+
+    await userEvent.keyboard('j');
+    await expect.poll(title).toBe('Merge all 3');
+    view.columns.value = entry(held);
+    await expect.poll(title).toBe('Merge 2');
+    view.columns.value = entry(rebase);
+    await expect.poll(title).toMatch(matchText('Rebase on GitHub'));
+    view.columns.value = entry(draft);
+    await expect.poll(title).toBe('Mark #10 ready…');
+    view.columns.value = entry(blocked);
+    await expect.poll(title).toBe('Merge…');
+    view.columns.value = entry(members.map(pr => ({ ...pr, isMergeQueueEnabled: true })));
+    await expect.poll(title).toBe('Queue…');
+    view.columns.value = entry(
+        members.map(pr => ({
+            ...pr,
+            mergeQueueEntry: {
+                position: 1,
+                state: 'QUEUED',
+                estimatedTimeToMerge: null,
+                enqueuedAt: '2026-11-03T00:00:00Z',
+                enqueuer: 'mlaine',
+            },
+        })),
+    );
+    await expect.poll(title).toMatch(matchText('In the queue'));
+});
+
+test("D11: a stack's entry's context menu merges its whole stack", async () => {
+    const merging = sampleMerging(['p1', 'p2', 'p3']);
+    mount(STACKED, 'list', { merge: merging.context, contextMenu: true });
+
+    await userEvent.click(page.getByText('stack S_1'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Merge…' }));
+    expect(merging.panels.map(panel => [panel.id, panel.options?.wholeStack])).toEqual([['p1', true]]);
+
+    // A pull request's own row offers no merge of the stack.
+    await userEvent.click(page.getByText('a1'), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Open a1' })).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: 'Merge…' })).not.toBeInTheDocument();
+});
+
 /** Mounts the list over `initial`, holding its selection like a page does; every group takes moves. */
 function mount(initial: Columns, layout: ListLayout, options: MountOptions = {}) {
     const columns = shallowRef<Columns>(initial);
@@ -467,70 +721,83 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     document.body.append(host);
 
     const app = createApp({
-        setup: () => () =>
-            h(
-                ListView<string>,
-                {
-                    groups: columns.value.map(([key, ids]) => toGroup(key, ids)),
-                    layout,
-                    canMove: options.canMove ?? (() => true),
-                    selectedId: selectedId.value,
-                    'onUpdate:selectedId': (value: string | null) => {
-                        selectedId.value = value;
-                    },
-                    checkedIds: checkedIds.value,
-                    'onUpdate:checkedIds': (value: readonly string[]) => {
-                        checkedIds.value = value;
-                    },
-                    openedId: openedId.value,
-                    onOpen: (id: string) => {
-                        opened.push(id);
-                        if (options.followOpened) {
-                            openedId.value = id;
-                        }
-                    },
-                    onMove: (move: ListMove) => moves.push(move),
-                    onListed: (ids: readonly string[]) => listed.push(ids),
-                },
-                {
-                    row: ({ entry, stack, checked, halfChecked }: RowProps) =>
-                        h('span', stack ? `stack ${stack.id}${getMark(checked, halfChecked)}` : entry.value),
-                    card: (props: CardProps) =>
-                        props.stack
-                            ? h('span', [
-                                  `stack ${props.stack.id}`,
-                                  ...(props.expanded
-                                      ? props.nested.map(member =>
-                                            h(
-                                                'button',
-                                                {
-                                                    type: 'button',
-                                                    // As `StackCard`'s: they take no focus, and the click opens nothing else.
-                                                    onMousedown: (event: MouseEvent) => event.preventDefault(),
-                                                    onClick: (event: MouseEvent) => {
-                                                        event.stopPropagation();
-                                                        props.openMember(member.id);
-                                                    },
-                                                },
-                                                props.selectedMember === member.id ? `[${member.value}]` : member.value,
-                                            ),
-                                        )
-                                      : []),
-                              ])
-                            : h('span', props.entry.value),
-                    ...(options.contextMenu && {
-                        contextMenu: ({ ids, open }: ListContextMenuProps) =>
-                            h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),
-                    }),
-                },
-            ),
+        setup: () => {
+            if (options.merge) {
+                provideContext(MergeContext, options.merge);
+            }
+
+            return () => renderList();
+        },
     });
     app.use(IocPlugin, { container });
     app.mount(host);
     let mounted = true;
     onTestFinished(unmount);
 
-    return { columns, selectedId, checkedIds, openedId, opened, moves, listed, unmount };
+    return { columns, selectedId, checkedIds, openedId, opened, moves, listed, unmount, container };
+
+    function renderList() {
+        return h(
+            ListView<string>,
+            {
+                groups: columns.value.map(([key, ids]) => toGroup(key, ids)),
+                layout,
+                canMove: options.canMove ?? (() => true),
+                selectedId: selectedId.value,
+                'onUpdate:selectedId': (value: string | null) => {
+                    selectedId.value = value;
+                },
+                checkedIds: checkedIds.value,
+                'onUpdate:checkedIds': (value: readonly string[]) => {
+                    checkedIds.value = value;
+                },
+                openedId: openedId.value,
+                onOpen: (id: string) => {
+                    opened.push(id);
+                    if (options.followOpened) {
+                        openedId.value = id;
+                    }
+                },
+                onMove: (move: ListMove) => moves.push(move),
+                onListed: (ids: readonly string[]) => listed.push(ids),
+            },
+            {
+                row: ({ entry, stack, checked, halfChecked }: RowProps) =>
+                    stack
+                        ? h('span', `stack ${stack.id}${getMark(checked, halfChecked)}`)
+                        : h('span', [entry.value, h(MergeButton, { id: entry.id })]),
+                card: (props: CardProps) =>
+                    props.stack
+                        ? h('span', [
+                              `stack ${props.stack.id}`,
+                              ...(props.expanded
+                                  ? props.nested.map(member =>
+                                        h(
+                                            'button',
+                                            {
+                                                type: 'button',
+                                                // As `StackCard`'s: they take no focus, and the click opens nothing else.
+                                                onMousedown: (event: MouseEvent) => event.preventDefault(),
+                                                onClick: (event: MouseEvent) => {
+                                                    event.stopPropagation();
+                                                    props.openMember(member.id);
+                                                },
+                                            },
+                                            props.selectedMember === member.id ? `[${member.value}]` : member.value,
+                                        ),
+                                    )
+                                  : []),
+                          ])
+                        : h('span', props.entry.value),
+                ...(options.contextMenu && {
+                    contextMenu: ({ ids, open, merge }: ListContextMenuProps) => [
+                        h(DropdownMenuItem, { onSelect: open }, () => `Open ${ids.join(',')}`),
+                        merge && h(DropdownMenuItem, { onSelect: () => void merge.run?.() }, () => merge.title),
+                    ],
+                }),
+            },
+        );
+    }
 
     function unmount() {
         if (mounted) {
@@ -541,9 +808,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     }
 }
 
+/** The app's services a list reads: the local copy, of a signed-in user, kept in IndexedDB as the app keeps it. */
 function createListContainer() {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    container.set(Browser, createSignedInBrowser());
+    setIndexedDbPersistence(container);
     return container;
 }
 
@@ -558,7 +828,7 @@ function toRow(group: string, row: SampleStackEntry | string): ListRow<string> {
 
     const stack: ListStack = {
         id: row.stack,
-        description: {
+        description: row.description ?? {
             name: { title: row.stack, issueId: null },
             size: row.members.length,
             held: row.members.length,

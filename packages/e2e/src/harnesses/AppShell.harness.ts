@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `SyncStoppedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `MergeToasts.vue`, `SyncStoppedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -123,7 +123,10 @@ export class AppShellHarness {
         return this.toasts.filter({ hasText: 'Syncing settings stopped' });
     }
 
-    /** The toasts showing, oldest first: the failures of edits (K1, K2), and that syncing the settings stopped (T9). */
+    /**
+     * The toasts showing, oldest first: the failures of edits (K1, K2), merges refused or confirmed after the user moved
+     * on (merging PM34, PM35), and that syncing the settings stopped (T9).
+     */
     get toasts(): Locator {
         return this.page.getByRole('region', { name: /^Notifications/ }).getByRole('listitem');
     }

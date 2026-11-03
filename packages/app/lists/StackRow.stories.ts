@@ -1,12 +1,37 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { expect, within } from 'storybook/test';
+import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, fn, userEvent, within } from 'storybook/test';
+import { provideContext } from '@nzyme/vue-utils/context.js';
+import { defineComponent, h } from 'vue';
 
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { ItemProject } from '@/store/ItemTypes.js';
+import { matchText } from '@/testing/matchText.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_STACKS, sampleListStack } from '@/testing/sampleStacks.js';
 
 import { ITEM_PROPERTIES } from './ItemProperty.js';
 import StackRow from './StackRow.vue';
+
+/** The merge panel opened from the entry: for which pull request, and how. */
+const openMerge = fn<MergeContext['open']>();
+
+/** Under a screen that merges, the viewer allowed to (merging D9). */
+const withMerging: Decorator = story =>
+    defineComponent({
+        setup() {
+            provideContext(MergeContext, {
+                canOpen: () => true,
+                open: openMerge,
+                getRecord: () => null,
+                getCommands: () => [],
+                run: () => undefined,
+            });
+            return () => h(story());
+        },
+    });
+
+/** SP7: the merge of every pull request of the ready stack is on its way. */
+const BEING_MERGED = SAMPLE_STACKS.ready.map(pr => ({ ...pr, merging: 'SQUASH' as const }));
 
 const meta = {
     component: StackRow,
@@ -56,6 +81,54 @@ export const HeldByReview: Story = {
     },
 };
 
+/** SP14 "In the queue": the group's place is its first one's, with GitHub's estimate, and no "Merge" follows. */
+export const InQueue: Story = {
+    decorators: [withMerging],
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) => ({
+                ...pr,
+                mergeQueueEntry: {
+                    position: index + 2,
+                    state: 'AWAITING_CHECKS' as const,
+                    estimatedTimeToMerge: 12 * 60,
+                    enqueuedAt: '2026-11-03T00:00:00Z',
+                    enqueuer: 'mlaine',
+                },
+            })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(matchText('In queue as one group · 2nd · about 12 min'))).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /Merge/u })).toBeNull();
+    },
+};
+
+/** SP54: GitHub says it won't merge: as a single pull request's row says it (PM37), in red. */
+export const InQueueWontMerge: Story = {
+    decorators: [withMerging],
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) => ({
+                ...pr,
+                mergeQueueEntry: {
+                    position: index + 2,
+                    state: 'UNMERGEABLE' as const,
+                    estimatedTimeToMerge: null,
+                    enqueuedAt: '2026-11-03T00:00:00Z',
+                    enqueuer: 'mlaine',
+                },
+            })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByText(matchText("In queue as one group, won't merge · 2nd")),
+        ).toBeVisible();
+    },
+};
+
 /** SP14 "Partly merged": the first landed — a purple pip — and the next one's checks run again. */
 export const PartlyMerged: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.partlyMerged) } };
 
@@ -76,8 +149,61 @@ export const DraftInside: Story = {
 /** SP14, D7: the copy holds two of four — its own pips pale, hollow ones for the others, never "ready". */
 export const Incomplete: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.incomplete) } };
 
-/** Every pull request landed. */
-export const Merged: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.merged) } };
+/** SP8: every pull request landed — purple pips, "Merged · all 3 landed". */
+export const Merged: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.merged) },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Merged · all 3 landed')).toBeVisible();
+    },
+};
+
+/**
+ * SP6: ready where the viewer may merge — "Merge" (`⇧M`) follows the state and opens the panel for the whole stack
+ * (D11); the click is not the row's.
+ */
+export const Mergeable: Story = {
+    decorators: [withMerging],
+    play: async ({ canvasElement }) => {
+        openMerge.mockClear();
+        const merge = within(canvasElement).getByRole('button', { name: /Merge/u });
+        await expect(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+        await userEvent.click(merge);
+        await expect(openMerge).toHaveBeenCalledWith(SAMPLE_STACKS.ready[0]?.id, { wholeStack: true });
+    },
+};
+
+/** SP8: needing a rebase, the same key hands off to github.com — "Rebase on GitHub" opens the panel, which says why. */
+export const RebaseHandOff: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase), selected: true },
+    decorators: [withMerging],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('button', { name: matchText('Rebase on GitHub') })).toBeVisible();
+    },
+};
+
+/** SP6, D21: not selected, a stack needing a rebase offers nothing — its state says it, and "Merge" stays for ready ones. */
+export const RebaseNotSelected: Story = {
+    args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase) },
+    decorators: [withMerging],
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).queryByRole('button')).toBeNull();
+    },
+};
+
+/**
+ * SP7, SP14 "Being merged": every pull request going reads being merged — amber pips, "Being merged · 3 going · not
+ * merged yet" — and nothing reads merged until GitHub confirms (merging D3); no merge is offered meanwhile.
+ */
+export const BeingMerged: Story = {
+    args: { stack: sampleListStack(BEING_MERGED) },
+    decorators: [withMerging],
+    play: async ({ canvasElement }) => {
+        const row = within(canvasElement);
+        await expect(row.getByText('Being merged · 3 going · not merged yet')).toBeVisible();
+        await expect(row.queryByText(/Merged/u)).toBeNull();
+        await expect(row.queryByRole('button')).toBeNull();
+    },
+};
 
 /** SP14: someone else's stack asking the user's review on two of its four. */
 export const ReviewRequested: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.reviewRequested) } };

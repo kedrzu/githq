@@ -1,3 +1,4 @@
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
@@ -9,23 +10,35 @@ import {
     CircleX,
     Eye,
     GitMerge,
-    GitPullRequest,
-    GitPullRequestClosed,
     GitPullRequestDraft,
     Hourglass,
+    ListOrdered,
     Loader,
+    Timer,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
+import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
+import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
+import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
-import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import type {
+    Item,
+    ItemUser,
+    PullRequestAutoMerge,
+    PullRequestItem,
+    PullRequestQueueEntry,
+} from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
+import { getPullRequestKind } from './utils/getPullRequestKind.js';
 
 /** Which item and how it is listed. */
 export interface UseItemFactsOptions {
@@ -42,6 +55,8 @@ export interface UseItemFactsOptions {
     readonly reviewRequested: MaybeRefOrGetter<boolean>;
     /** The people shown: who opened it (my work, where it is the user's own work), or who it is assigned to. */
     readonly people: MaybeRefOrGetter<'assignees' | 'author'>;
+    /** What this session knows of the pull request's last merge that did not end merged, while it speaks for it (D15). */
+    readonly mergeRecord?: MaybeRefOrGetter<MergeRecord | null>;
 }
 
 /** The kind and state of an item, as its icon. */
@@ -54,10 +69,12 @@ export interface ItemKindFact {
 /** Where a pull request stands, in one line ("2 checks failing · changes requested"). */
 export interface ItemStatusFact {
     readonly icon: LucideIcon;
-    readonly tone: 'danger' | 'dim' | 'muted' | 'success' | 'warning';
+    readonly tone: 'accent' | 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
     readonly text: string;
-    /** Ready to merge: "Open on GitHub" follows — githq does not merge. */
-    readonly openOnGitHub: boolean;
+    /** Ready to merge: "Merge" follows where the viewer may merge it, else "Open on GitHub". */
+    readonly readyToMerge: boolean;
+    /** Its merge was refused: "Back to the merge" follows where the viewer may merge it (PM37). */
+    readonly backToMerge?: boolean;
 }
 
 /** The row field of the item's first project (D12) and how many more projects it is in. */
@@ -88,6 +105,8 @@ export interface ItemFactsViewModel {
  */
 export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
+    const queueTexts = useMergeQueueTexts();
+    const getMethodName = useMergeMethodName();
     const numbers = new Intl.NumberFormat(APP_LANGUAGE);
     const projectList = new Intl.ListFormat(APP_LANGUAGE);
 
@@ -98,6 +117,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const now = makeRef(options.now);
     const reviewRequested = makeRef(options.reviewRequested);
     const peopleShown = makeRef(options.people);
+    const mergeRecord = makeRef(options.mergeRecord ?? null);
 
     const kind = computed(() => getKind(item.value));
     const reference = computed(() => {
@@ -114,7 +134,15 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const age = computed(() => formatAge(Date.parse(item.value.updatedAt), now.value));
     const status = computed(() => {
         const listed = item.value;
-        return listed.kind === 'pullRequest' && listed.state === 'OPEN' ? getStatus(listed) : null;
+        if (listed.kind !== 'pullRequest') {
+            return null;
+        }
+
+        if (listed.merged) {
+            return getMergedStatus(listed);
+        }
+
+        return listed.state === 'OPEN' ? getStatus(listed) : null;
     });
     const size = computed(() => {
         const listed = item.value;
@@ -154,20 +182,88 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 : { icon: CircleSlash, label: t(l.notPlannedIssue), tone: 'draft' };
         }
 
-        if (listed.merged) {
-            return { icon: GitMerge, label: t(l.mergedPullRequest), tone: 'done' };
+        const pullRequestKind = getPullRequestKind(listed);
+        // Its kind and state read out, by the tone of its icon.
+        const key: `${ItemKindFact['tone']}PullRequest` = `${pullRequestKind.tone}PullRequest`;
+        return { ...pullRequestKind, label: t(l[key]) };
+    }
+
+    /** PM37: "Merged · 2m"; without GitHub's time of the merge, merged alone. */
+    function getMergedStatus(pr: PullRequestItem): ItemStatusFact {
+        const at = pr.closedAt;
+        return {
+            icon: GitMerge,
+            tone: 'done',
+            text: at === null ? t(l.merged) : t(l.mergedAgo, { age: formatAge(Date.parse(at), now.value) }),
+            readyToMerge: false,
+        };
+    }
+
+    /** PM37: how the last merge of it ended when it did not merge — refused, a new commit, or not known yet. */
+    function getEndStatus(end: MergeEnd): ItemStatusFact {
+        const look = getMergeEndLook(end.kind);
+        switch (end.kind) {
+            case 'refused':
+            case 'methodNotAllowed':
+                return { ...look, text: t(l.mergeRefused), readyToMerge: false, backToMerge: true };
+            case 'headMoved': {
+                const author = end.commit?.author;
+                const text = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
+                return { ...look, text, readyToMerge: false, backToMerge: true };
+            }
+            case 'unknown':
+                return { ...look, text: t(l.outcomeUnknown), readyToMerge: false };
+            default:
+                return assertNever(end);
+        }
+    }
+
+    /** PM37: "In queue · 3rd · about 12 min"; GitHub saying it won't merge, in red. */
+    function getQueueStatus(entry: PullRequestQueueEntry): ItemStatusFact {
+        const place = queueTexts.place(entry);
+        if (entry.state === 'UNMERGEABLE') {
+            return { icon: ListOrdered, tone: 'danger', text: t(l.inQueueWontMerge, { place }), readyToMerge: false };
         }
 
-        if (listed.state !== 'OPEN') {
-            return { icon: GitPullRequestClosed, label: t(l.closedPullRequest), tone: 'closed' };
+        const about = queueTexts.estimate(entry);
+        const text = about === null ? t(l.inQueue, { place }) : t(l.inQueueAbout, { place, about });
+        return { icon: ListOrdered, tone: 'accent', text, readyToMerge: false };
+    }
+
+    /** PM37: "Auto-merge on · squash · waiting for checks", or for whichever else it waits. */
+    function getAutoMergeStatus(pr: PullRequestItem, autoMerge: PullRequestAutoMerge): ItemStatusFact {
+        const method = getMethodName(autoMerge.mergeMethod);
+        const standing = getPullRequestStanding(pr);
+        let text = t(l.autoMergeOn, { method });
+        if (standing.checksRunning) {
+            text = t(l.autoMergeWaitingForChecks, { method });
+        } else if (standing.waitingForReview) {
+            text = t(l.autoMergeWaitingForReview, { method });
         }
 
-        return listed.isDraft
-            ? { icon: GitPullRequestDraft, label: t(l.draftPullRequest), tone: 'draft' }
-            : { icon: GitPullRequest, label: t(l.openPullRequest), tone: 'open' };
+        return { icon: Timer, tone: 'accent', text, readyToMerge: false };
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {
+        // Merged once GitHub says so (merging D3): until then it stays open, being merged.
+        if (pr.merging) {
+            return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
+        }
+
+        // GitHub's own state (merging D3).
+        if (pr.mergeQueueEntry) {
+            return getQueueStatus(pr.mergeQueueEntry);
+        }
+
+        if (pr.autoMerge) {
+            return getAutoMergeStatus(pr, pr.autoMerge);
+        }
+
+        const end = getMergeEnd(mergeRecord.value, pr, null);
+        if (end) {
+            return getEndStatus(end);
+        }
+
         const standing = getPullRequestStanding(pr);
         if (standing.needsAuthor) {
             const parts: string[] = [];
@@ -187,31 +283,31 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 parts.push(t(l.conflicts));
             }
 
-            return { icon: CircleX, tone: 'danger', text: parts.join(' · '), openOnGitHub: false };
+            return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false };
         }
 
         if (standing.checksRunning) {
-            return { icon: Loader, tone: 'warning', text: t(l.checksRunning), openOnGitHub: false };
+            return { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false };
         }
 
         if (standing.readyToMerge) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), openOnGitHub: true };
+            return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
         }
 
         if (standing.approved) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approved), openOnGitHub: false };
+            return { icon: CircleCheck, tone: 'success', text: t(l.approved), readyToMerge: false };
         }
 
         if (reviewRequested.value) {
-            return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), openOnGitHub: false };
+            return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), readyToMerge: false };
         }
 
         if (pr.isDraft) {
-            return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), openOnGitHub: false };
+            return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false };
         }
 
         if (standing.waitingForReview) {
-            return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), openOnGitHub: false };
+            return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false };
         }
 
         return null;
