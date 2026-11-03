@@ -628,6 +628,7 @@ const conflictsUrl = computed(() => getConflictEditorUrl(props.pr));
 const canUpdate = computed(
   () =>
     props.pr.mergeStateStatus === 'BEHIND' &&
+    !outcomeUnknown.value &&
     props.allowed &&
     props.advancing === null &&
     !props.sending &&

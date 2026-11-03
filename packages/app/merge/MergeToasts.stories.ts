@@ -125,6 +125,7 @@ function withMerges(
                     merge: () => Promise.resolve({ kind: 'accepted' }),
                     getRecord: () => null,
                     findRecordHolder: () => null,
+                    isOutcomeUnknown: () => false,
                     getSent: () => null,
                     noteHeadCommit: () => undefined,
                     forget: () => undefined,

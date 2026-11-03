@@ -15,10 +15,6 @@ import { PullRequestMerger } from './PullRequestMerger.js';
 export interface RunPullRequestCommandOptions {
     /** Reads the pull request again: the screen's own read, to keep it current; its merge options without it. */
     readonly read?: () => Promise<unknown>;
-    /** Whoever waits for an update's new head still cares; without it, until the head moved or the time is up. */
-    readonly goingOn?: () => boolean;
-    /** The pull request whose record the screen shows, which going on from it ends too. */
-    readonly recordOf?: string;
 }
 
 /**
@@ -36,21 +32,22 @@ export const PullRequestCommands = defineService({
         items: ItemStore,
     },
     setup({ editor, merger, store, items }) {
-        /** Each pull request's commands on their way, by kind: pressed again meanwhile, one is not sent twice. */
+        /** Each pull request's commands on their way, by what they act on: pressed again meanwhile, one is not sent twice. */
         const running = new Set<string>();
 
         return { run };
 
         /**
          * Resolves once done with it, whether GitHub took it: `false` when it did not, or the same kind of command is still
-         * on its way for the pull request (an update counting until its head moved, by merge or by rebase alike).
+         * on its way for the pull request (an update counting until its head moved, by merge or by rebase alike, and
+         * deleting and restoring as one: ⇧D is restore the moment delete draws the branch gone).
          */
         async function run(
             pr: PullRequestItem,
             command: PullRequestCommand,
             options: RunPullRequestCommandOptions = {},
         ): Promise<boolean> {
-            const key = `${pr.id}:${command.kind}`;
+            const key = `${pr.id}:${toGuardKind(command)}`;
             if (running.has(key)) {
                 return false;
             }
@@ -93,8 +90,13 @@ export const PullRequestCommands = defineService({
             command: Extract<PullRequestCommand, { kind: 'updateBranch' }>,
             options: RunPullRequestCommandOptions,
         ) {
-            const { read = () => merger.readOptions(pr.id), goingOn } = options;
-            forgetRecord(pr, options);
+            // No merge's end known yet: it may still land, and what the session knows of it must keep speaking (PM29).
+            if (store.isOutcomeUnknown(pr.id)) {
+                return false;
+            }
+
+            const { read = () => merger.readOptions(pr.id) } = options;
+            forgetRecord(pr);
             const head = pr.headRefOid;
             const outcome = await editor.edit([pr.id], command);
             await read();
@@ -102,7 +104,7 @@ export const PullRequestCommands = defineService({
                 return false;
             }
 
-            await merger.readUntilNewHead({ itemId: pr.id, head, read, goingOn });
+            await merger.readUntilNewHead({ itemId: pr.id, head, read });
             return true;
         }
 
@@ -112,7 +114,7 @@ export const PullRequestCommands = defineService({
          */
         async function dequeue(pr: PullRequestItem, options: RunPullRequestCommandOptions) {
             const { stack } = pr;
-            forgetRecord(pr, options);
+            forgetRecord(pr);
             if (stack && countMembers(stack.id) < stack.size) {
                 await merger.readStack(stack.id, stack.size);
             }
@@ -138,9 +140,13 @@ export const PullRequestCommands = defineService({
         }
 
         /** A stack's merge is recorded under its top, whichever member goes on from it. */
-        function forgetRecord(pr: PullRequestItem, { recordOf }: RunPullRequestCommandOptions) {
+        function forgetRecord(pr: PullRequestItem) {
             const holder = store.findRecordHolder(pr.id);
-            store.forget(pr.id, ...(holder === null ? [] : [holder]), ...(recordOf === undefined ? [] : [recordOf]));
+            store.forget(pr.id, ...(holder === null ? [] : [holder]));
+        }
+
+        function toGuardKind(command: PullRequestCommand) {
+            return command.kind === 'deleteBranch' || command.kind === 'restoreBranch' ? 'branch' : command.kind;
         }
 
         function countMembers(stackId: string) {

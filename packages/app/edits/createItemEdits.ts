@@ -29,6 +29,8 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import type { CloseReason, Edit, EditRequest, EditSubject, EditVerdict, ItemEditRequest } from './EditTypes.js';
 import { toEditFailureReason } from './toEditFailureReason.js';
+import { getEditIdentity } from './getEditIdentity.js';
+import { toDroppedVerdict } from './toDroppedVerdict.js';
 import { getProjectItemValueLayer, sendProjectFieldValue, toFieldValue, withValue } from './projectFieldValues.js';
 
 /** What {@link createItemEdits} turns a request into edits of. */
@@ -164,7 +166,7 @@ function createLabelEdit(params: CreateItemEditsParams, name: string, add: boole
     }
 
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: {
             item: current =>
                 add
@@ -184,13 +186,13 @@ function createLabelEdit(params: CreateItemEditsParams, name: string, add: boole
                 : (await sdk.RemoveLabels(variables)).removeLabelsFromLabelable;
             const labelable = answer?.labelable;
             if (!labelable || !('updatedAt' in labelable)) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const labels = toItemLabels(labelable.labels);
 
             if (labels.some(other => other.name === name) !== add) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             return confirmed(labelable.updatedAt, current => withLabels(current, labels));
@@ -208,7 +210,7 @@ function createAssigneeEdit(params: CreateItemEditsParams, login: string, add: b
     }
 
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: {
             item: current => ({
                 ...current,
@@ -227,13 +229,13 @@ function createAssigneeEdit(params: CreateItemEditsParams, login: string, add: b
                 : (await sdk.RemoveAssignees(variables)).removeAssigneesFromAssignable;
             const assignable = answer?.assignable;
             if (!assignable) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const assignees = toItemUsers(assignable.assignees);
 
             if (assignees.some(other => other.login === login) !== add) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             return confirmed(assignable.updatedAt, current => ({ ...current, assignees }));
@@ -251,7 +253,7 @@ function createMilestoneEdit(params: CreateItemEditsParams, title: string | null
 
     const value = milestone && { title: milestone.title, dueOn: milestone.dueOn };
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: { item: current => ({ ...current, milestone: value }) },
         send: async ({ sdk }) => {
             const milestoneId = milestone?.id ?? null;
@@ -261,7 +263,7 @@ function createMilestoneEdit(params: CreateItemEditsParams, title: string | null
                     : (await sdk.UpdatePullRequestMilestone({ pullRequestId: item.id, milestoneId })).updatePullRequest
                           ?.pullRequest;
             if (!answer || (answer.milestone?.title ?? null) !== title) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const kept = answer.milestone && { title: answer.milestone.title, dueOn: answer.milestone.dueOn };
@@ -280,13 +282,13 @@ function createIssueTypeEdit(params: CreateItemEditsParams, name: string | null)
 
     const value = issueType && { name: issueType.name, color: issueType.color };
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: { item: current => (current.kind === 'issue' ? { ...current, issueType: value } : current) },
         send: async ({ sdk }) => {
             const answer = (await sdk.UpdateIssueType({ issueId: item.id, issueTypeId: issueType?.id ?? null }))
                 .updateIssueIssueType?.issue;
             if (!answer || (answer.issueType?.name ?? null) !== name) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const kept = answer.issueType && { name: answer.issueType.name, color: answer.issueType.color };
@@ -306,7 +308,7 @@ function createStateEdit(params: CreateItemEditsParams, reason: CloseReason | nu
         : { kind: 'reopened' };
 
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: {
             item: current =>
                 current.kind === 'issue'
@@ -324,7 +326,7 @@ function createStateEdit(params: CreateItemEditsParams, reason: CloseReason | nu
                     ? (await sdk.CloseIssue({ issueId: item.id, stateReason: reason })).closeIssue?.issue
                     : (await sdk.ReopenIssue({ issueId: item.id })).reopenIssue?.issue;
                 if (!answer || answer.state !== (closing ? 'CLOSED' : 'OPEN')) {
-                    return dropped();
+                    return toDroppedVerdict();
                 }
 
                 const { state, stateReason, closedAt } = answer;
@@ -337,7 +339,7 @@ function createStateEdit(params: CreateItemEditsParams, reason: CloseReason | nu
                 ? (await sdk.ClosePullRequest({ pullRequestId: item.id })).closePullRequest?.pullRequest
                 : (await sdk.ReopenPullRequest({ pullRequestId: item.id })).reopenPullRequest?.pullRequest;
             if (!answer || answer.state !== (closing ? 'CLOSED' : 'OPEN')) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const { state, isDraft, closedAt } = answer;
@@ -361,7 +363,7 @@ function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
     };
 
     return {
-        ...base(item, { kind: 'comment', body }),
+        ...getEditIdentity(item, { kind: 'comment', body }),
         optimistic: {
             item: current => ({ ...current, commentCount: current.commentCount + 1 }),
             detail: detail => withComment(detail, pending),
@@ -369,7 +371,7 @@ function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
         send: async ({ sdk }) => {
             const node = (await sdk.AddComment({ subjectId: item.id, body })).addComment?.commentEdge?.node;
             if (!node) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const comment = toItemComment(node);
@@ -407,7 +409,7 @@ function createProjectFieldEdit(
 
     const status = field.name === 'Status';
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: {
             item: current =>
                 status
@@ -428,7 +430,7 @@ function createProjectFieldEdit(
                 value: request.value,
             });
             if (!answer) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const { kept } = answer;
@@ -491,7 +493,7 @@ function createAddToProjectEdit(params: CreateItemEditsParams, project: ViewerPr
     };
 
     return {
-        ...base(item, { kind: 'addedToProject', project: project.title }),
+        ...getEditIdentity(item, { kind: 'addedToProject', project: project.title }),
         optimistic: {
             item: current => withProject(current, placeholder),
             detail: current => withDetailProjectAdded(current, placeholderDetail),
@@ -501,7 +503,7 @@ function createAddToProjectEdit(params: CreateItemEditsParams, project: ViewerPr
             const answer = (await sdk.AddToProject({ projectId: project.id, contentId: item.id })).addProjectV2ItemById
                 ?.item;
             if (!answer || answer.project.id !== project.id) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const place = toItemProject(answer);
@@ -537,7 +539,7 @@ function createReviewerEdit(params: CreateItemEditsParams, login: string): Edit 
 
     const asked: ItemDetailReviewRequest = { kind: 'user', user: { login, avatarUrl: user.avatarUrl } };
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: {
             item: current =>
                 current.kind === 'pullRequest'
@@ -552,13 +554,13 @@ function createReviewerEdit(params: CreateItemEditsParams, login: string): Edit 
             const answer = (await sdk.RequestReviews({ pullRequestId: item.id, userIds: [user.id] })).requestReviews
                 ?.pullRequest;
             if (!answer) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const rows = toItemReviewRequests(answer.reviewRequests);
             const details = toDetailReviewRequests(answer.reviewRequests);
             if (!rows.some(other => other.kind === 'user' && other.login === login)) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             return confirmed(
@@ -573,14 +575,14 @@ function createReviewerEdit(params: CreateItemEditsParams, login: string): Edit 
 function createDraftEdit(params: CreateItemEditsParams, draft: boolean): Edit {
     const { item } = params;
     return {
-        ...base(item, { kind: 'draft', draft }),
+        ...getEditIdentity(item, { kind: 'draft', draft }),
         optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, isDraft: draft } : current) },
         send: async ({ sdk }) => {
             const answer = draft
                 ? (await sdk.ConvertToDraft({ pullRequestId: item.id })).convertPullRequestToDraft?.pullRequest
                 : (await sdk.MarkReadyForReview({ pullRequestId: item.id })).markPullRequestReadyForReview?.pullRequest;
             if (!answer || answer.isDraft !== draft) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             return confirmed(answer.updatedAt, current =>
@@ -597,7 +599,7 @@ function createDraftEdit(params: CreateItemEditsParams, draft: boolean): Edit {
  */
 function createUpdateBranchEdit(item: PullRequestItem, method: PullRequestBranchUpdateMethod): Edit {
     return {
-        ...base(item, { kind: 'branchUpdated' }),
+        ...getEditIdentity(item, { kind: 'branchUpdated' }),
         optimistic: UNCHANGED,
         send: async ({ sdk }) => {
             const { updatePullRequestBranch } = await sdk.UpdatePullRequestBranch({
@@ -605,7 +607,7 @@ function createUpdateBranchEdit(item: PullRequestItem, method: PullRequestBranch
                 expectedHeadOid: item.headRefOid,
                 updateMethod: method,
             });
-            return updatePullRequestBranch?.pullRequest ? { kind: 'confirmed', layer: UNCHANGED } : dropped();
+            return updatePullRequestBranch?.pullRequest ? { kind: 'confirmed', layer: UNCHANGED } : toDroppedVerdict();
         },
     };
 }
@@ -635,7 +637,7 @@ function createEnableAutoMergeEdit(params: CreateEnableAutoMergeEditParams): Edi
         commitHeadline: title ?? null,
     };
     return {
-        ...base(item, { kind: 'autoMerge', enabled: true }),
+        ...getEditIdentity(item, { kind: 'autoMerge', enabled: true }),
         optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, autoMerge } : current) },
         send: async ({ sdk }) => {
             const { enablePullRequestAutoMerge } = await sdk.EnablePullRequestAutoMerge({
@@ -646,19 +648,19 @@ function createEnableAutoMergeEdit(params: CreateEnableAutoMergeEditParams): Edi
                 ...(body === undefined ? {} : { commitBody: body }),
             });
             const answer = enablePullRequestAutoMerge?.pullRequest;
-            return answer?.autoMergeRequest ? confirmedAutoMerge(answer) : dropped();
+            return answer?.autoMergeRequest ? confirmedAutoMerge(answer) : toDroppedVerdict();
         },
     };
 }
 
 function createDisableAutoMergeEdit(item: PullRequestItem): Edit {
     return {
-        ...base(item, { kind: 'autoMerge', enabled: false }),
+        ...getEditIdentity(item, { kind: 'autoMerge', enabled: false }),
         optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, autoMerge: null } : current) },
         send: async ({ sdk }) => {
             const { disablePullRequestAutoMerge } = await sdk.DisablePullRequestAutoMerge({ pullRequestId: item.id });
             const answer = disablePullRequestAutoMerge?.pullRequest;
-            return answer && !answer.autoMergeRequest ? confirmedAutoMerge(answer) : dropped();
+            return answer && !answer.autoMergeRequest ? confirmedAutoMerge(answer) : toDroppedVerdict();
         },
     };
 }
@@ -669,7 +671,7 @@ function createDisableAutoMergeEdit(item: PullRequestItem): Edit {
  */
 function createJumpQueueEdit(item: PullRequestItem): Edit {
     return {
-        ...base(item, { kind: 'queueJumped' }),
+        ...getEditIdentity(item, { kind: 'queueJumped' }),
         optimistic: UNCHANGED,
         send: async ({ sdk }) => {
             const { enqueuePullRequest } = await sdk.EnqueuePullRequest({
@@ -690,7 +692,7 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
  */
 function createDequeueEdit(item: PullRequestItem): Edit {
     return {
-        ...base(item, { kind: 'dequeued' }),
+        ...getEditIdentity(item, { kind: 'dequeued' }),
         optimistic: { item: withoutQueueEntry },
         send: async ({ sdk }) => {
             await sdk.DequeuePullRequest({ id: item.id });
@@ -716,7 +718,7 @@ function createDequeueEdit(item: PullRequestItem): Edit {
  */
 function createDeleteBranchEdit(item: PullRequestItem, refId: string): Edit {
     return {
-        ...base(item, { kind: 'branchDeleted' }),
+        ...getEditIdentity(item, { kind: 'branchDeleted' }),
         optimistic: { item: withoutHeadRef },
         send: async ({ sdk }) => {
             await sdk.DeleteRef({ refId });
@@ -742,7 +744,7 @@ function withoutHeadRef(item: Item): Item {
  */
 function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): Edit {
     return {
-        ...base(item, { kind: 'branchRestored' }),
+        ...getEditIdentity(item, { kind: 'branchRestored' }),
         optimistic: UNCHANGED,
         send: async ({ sdk }) => {
             const ref = (
@@ -753,7 +755,7 @@ function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): E
                 })
             ).createRef?.ref;
             if (!ref) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             return {
@@ -777,16 +779,16 @@ function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): E
  */
 function createRerunChecksEdit(item: PullRequestItem): Edit {
     const subject: EditSubject = { kind: 'checksRerun' };
-    const { itemId, reference } = base(item, subject);
+    const { itemId, reference } = getEditIdentity(item, subject);
     return {
-        ...base(item, subject),
+        ...getEditIdentity(item, subject),
         optimistic: UNCHANGED,
         send: async ({ sdk, rest }) => {
             // The protection of the base branch is not readable without admin rights: the checks are.
             const { node } = await sdk.PullRequestMergeOptions({ id: item.id }, { onPartialErrors: () => undefined });
             const options = toMergeOptions(node);
             if (!options) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             const failing = options.checks.filter(check => check.state === 'failing');
@@ -844,19 +846,9 @@ function confirmedAutoMerge(answer: PullRequestStatusFieldsFragment) {
     );
 }
 
-/** What every edit of an item says of it: which it is, as named to the user, and what changes. */
-export function base(item: Item, subject: EditSubject) {
-    return { itemId: item.id, reference: `${item.repository.nameWithOwner}#${item.number}`, subject };
-}
-
 /** An edit naming what the repository does not offer: it fails at once, nothing is sent. */
 function failed(item: Item, subject: EditSubject): Edit {
-    return { ...base(item, subject), optimistic: UNCHANGED, failure: { kind: 'missing' } };
-}
-
-/** GitHub answered without the change: it silently drops what the user may not do (D14). */
-export function dropped(): EditVerdict {
-    return { kind: 'rejected', reason: { kind: 'dropped' } };
+    return { ...getEditIdentity(item, subject), optimistic: UNCHANGED, failure: { kind: 'missing' } };
 }
 
 /**

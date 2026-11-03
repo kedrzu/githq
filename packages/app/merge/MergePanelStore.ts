@@ -177,6 +177,7 @@ export const MergePanelStore = defineService({
             merge,
             getRecord,
             findRecordHolder,
+            isOutcomeUnknown,
             getSent,
             noteHeadCommit,
             forget,
@@ -269,6 +270,12 @@ export const MergePanelStore = defineService({
 
         function dismissRevert(id: number) {
             revertsRef.value = revertsRef.value.filter(revert => revert.id !== id);
+        }
+
+        /** A merge that took the pull request has no known end yet, a stack's held under its top too (PM29). Reactive. */
+        function isOutcomeUnknown(itemId: string) {
+            const holder = findRecordHolder(itemId);
+            return holder !== null && isUnanswered(holder);
         }
 
         function isUnanswered(itemId: string) {

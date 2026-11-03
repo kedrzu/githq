@@ -350,6 +350,9 @@ function getMergedLayer(at: number, mergedAs?: PullRequestMergedAs): ItemOverlay
                       state: 'MERGED',
                       merged: true,
                       closedAt: current.closedAt ?? now,
+                      // GitHub says it only once merged (live, #16, #62): offered until the next read says otherwise,
+                      // so ⌥D works from the toast's first moment (PM34).
+                      viewerCanDeleteHeadRef: !current.isCrossRepository,
                       ...(mergedAs ? { mergedAs } : {}),
                   }
                 : current,

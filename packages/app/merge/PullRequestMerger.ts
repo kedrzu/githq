@@ -31,8 +31,6 @@ export interface ReadUntilNewHeadParams {
     readonly head: string;
     /** Reads the pull request: its merge options unless whoever waits has its own read to keep current. */
     readonly read?: () => Promise<unknown>;
-    /** Whoever waits still cares; it stops when not. */
-    readonly goingOn?: () => boolean;
 }
 
 /** A merge {@link PullRequestMerger} sends. */
@@ -74,19 +72,15 @@ export const PullRequestMerger = defineService({
         /**
          * GitHub answers an update of the branch before it is made: the old head, its mergeability unknown (live,
          * 2026-11-02). Merging that head would be refused as a new commit, so the pull request is read again, waiting longer
-         * each time, until the head moved — or whoever waits stops caring, or the time is up: then what GitHub says goes.
+         * each time, until the head moved or the time is up: then what GitHub says goes.
          */
         async function readUntilNewHead(params: ReadUntilNewHeadParams) {
-            const { itemId, head, read = () => readOptions(itemId), goingOn = () => true } = params;
+            const { itemId, head, read = () => readOptions(itemId) } = params;
             const deadline = clock.now() + UPDATE_TIME_LIMIT_MS;
             let delay = FIRST_UPDATE_READ_MS;
-            while (goingOn() && getHead(itemId) === head && clock.now() < deadline) {
+            while (getHead(itemId) === head && clock.now() < deadline) {
                 await pause(clock, Math.min(delay, deadline - clock.now()));
                 delay *= 2;
-                if (!goingOn()) {
-                    return;
-                }
-
                 await read();
             }
         }

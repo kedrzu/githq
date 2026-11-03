@@ -8,7 +8,7 @@ import { getPullRequestCommands } from './getPullRequestCommands.js';
 
 function kinds(pr: PullRequestItem, permission: 'READ' | 'WRITE' = 'WRITE', items: readonly Item[] = []) {
     const permissions = getEditPermissions({ item: pr, viewerLogin: 'someone-else', permission });
-    return getPullRequestCommands({ pr, permissions, items }).map(command =>
+    return getPullRequestCommands({ pr, permissions, items, outcomeUnknown: false }).map(command =>
         command.kind === 'updateBranch' ? `updateBranch:${command.method}` : command.kind,
     );
 }
@@ -103,4 +103,17 @@ test('queued, it takes out of the queue for someone who may merge', () => {
 
     expect(kinds(queued)).toEqual(['dequeue']);
     expect(kinds(queued, 'READ')).toEqual([]);
+});
+
+test('PM29: a merge with no known end yet offers no update: it may still land', () => {
+    const pr: PullRequestItem = { ...samplePullRequest('PR_1'), mergeStateStatus: 'BEHIND' };
+
+    expect(
+        getPullRequestCommands({
+            pr,
+            permissions: getEditPermissions({ item: pr, viewerLogin: 'someone-else', permission: 'WRITE' }),
+            items: [pr],
+            outcomeUnknown: true,
+        }).filter(command => command.kind === 'updateBranch'),
+    ).toEqual([]);
 });

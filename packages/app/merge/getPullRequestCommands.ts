@@ -10,6 +10,8 @@ export interface GetPullRequestCommandsParams {
     readonly permissions: EditPermissions;
     /** The local copy: which of a stack's pull requests is its first open one. */
     readonly items: readonly Item[];
+    /** A merge that took it has no known end yet: it may still land, so nothing goes on from it (PM29). */
+    readonly outcomeUnknown: boolean;
 }
 
 /**
@@ -22,9 +24,9 @@ export interface GetPullRequestCommandsParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function getPullRequestCommands(params: GetPullRequestCommandsParams): PullRequestCommand[] {
-    const { pr, permissions, items } = params;
+    const { pr, permissions, items, outcomeUnknown } = params;
     const commands: PullRequestCommand[] = [];
-    if (permissions.updateBranch && canUpdateBranch(pr, items)) {
+    if (permissions.updateBranch && !outcomeUnknown && canUpdateBranch(pr, items)) {
         commands.push({ kind: 'updateBranch', method: 'MERGE' }, { kind: 'updateBranch', method: 'REBASE' });
     }
 

@@ -258,8 +258,6 @@ async function runCommand(command: PullRequestCommand) {
   advancing.value = command.kind;
   const done = await pullRequestCommands.run(item, command, {
     read: () => (item.id === pr.value?.id ? read.refresh() : merger.readOptions(item.id)),
-    goingOn: () => store.opening === opening && pr.value?.id === item.id,
-    recordOf: recordOf.value?.id,
   });
   // Opened anew meanwhile: that panel is not this one's to answer.
   if (store.opening === opening) {
@@ -346,7 +344,14 @@ function moveLine(direction: 'earlier' | 'later') {
     :now="now"
     :stack="stackView"
     :viewer-login="auth.viewer?.login ?? null"
-    :commands="getPullRequestCommands({ pr, permissions: editor.getPermissions(pr), items: items.all })"
+    :commands="
+      getPullRequestCommands({
+        pr,
+        permissions: editor.getPermissions(pr),
+        items: items.all,
+        outcomeUnknown: store.isOutcomeUnknown(pr.id),
+      })
+    "
     @merge="merge"
     @bypass="merge"
     @move="moveLine"

@@ -209,3 +209,34 @@ test('a revert GitHub refuses is a failed edit: no toast of a new pull request',
     expect(await commands.run(MERGED, { kind: 'revert' })).toBe(false);
     expect(store.reverts).toEqual([]);
 });
+
+test('PM29: U on a merge with no known end sends nothing, and it goes on saying so', async () => {
+    const { commands, store, session } = await setup([BEHIND], { UpdatePullRequestBranch: UPDATED }, () => {
+        throw new TypeError('Failed to fetch');
+    });
+    store.open('PR_1');
+    const merging = store.merge({ item: BEHIND, submission: { request: { method: 'SQUASH' }, edited: null } });
+    await session.clock.advance(0);
+    await merging;
+    expect(store.isOutcomeUnknown('PR_1')).toBe(true);
+
+    expect(await commands.run(BEHIND, { kind: 'updateBranch', method: 'MERGE' })).toBe(false);
+
+    expect(sent(session, 'UpdatePullRequestBranch')).toEqual([]);
+    expect(store.isOutcomeUnknown('PR_1')).toBe(true);
+});
+
+test('⇧D twice is one: restore, which delete makes of the key, is held back while delete is on its way', async () => {
+    const merged: PullRequestItem = { ...MERGED, headRefId: 'REF_1', viewerCanDeleteHeadRef: true };
+    const { commands, session } = await setup([merged], {
+        DeleteRef: { data: { deleteRef: { clientMutationId: null } } },
+    });
+
+    const results = await Promise.all([
+        commands.run(merged, { kind: 'deleteBranch' }),
+        commands.run(merged, { kind: 'restoreBranch' }),
+    ]);
+
+    expect(results).toEqual([true, false]);
+    expect(sent(session, 'CreateRef')).toEqual([]);
+});

@@ -549,7 +549,11 @@ test('D5: a chosen email goes through GraphQL with the head, never REST: accepte
 
     await session.clock.advance(0);
     expect(lateEnds).toEqual([{ kind: 'merged' }]);
-    expect(items.get('PR_1')).toMatchObject({ merged: true, mergedAs: { method: 'MERGE', sha: 'email-sha' } });
+    expect(items.get('PR_1')).toMatchObject({
+        merged: true,
+        mergedAs: { method: 'MERGE', sha: 'email-sha' },
+        viewerCanDeleteHeadRef: true,
+    });
     expect(queue.failures).toEqual([]);
 });
 

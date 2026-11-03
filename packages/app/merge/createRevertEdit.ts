@@ -1,5 +1,7 @@
 import type { Edit } from '@/edits/EditTypes.js';
-import { base, dropped, UNCHANGED } from '@/edits/createItemEdits.js';
+import { UNCHANGED } from '@/edits/createItemEdits.js';
+import { getEditIdentity } from '@/edits/getEditIdentity.js';
+import { toDroppedVerdict } from '@/edits/toDroppedVerdict.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import type { RevertedPullRequest } from './MergeTypes.js';
@@ -12,13 +14,13 @@ import type { RevertedPullRequest } from './MergeTypes.js';
  */
 export function createRevertEdit(item: PullRequestItem, onOpened: (opened: RevertedPullRequest) => void): Edit {
     return {
-        ...base(item, { kind: 'reverted' }),
+        ...getEditIdentity(item, { kind: 'reverted' }),
         optimistic: UNCHANGED,
         send: async ({ sdk }) => {
             const opened = (await sdk.RevertPullRequest({ pullRequestId: item.id })).revertPullRequest
                 ?.revertPullRequest;
             if (!opened) {
-                return dropped();
+                return toDroppedVerdict();
             }
 
             onOpened({ number: opened.number, url: opened.url });

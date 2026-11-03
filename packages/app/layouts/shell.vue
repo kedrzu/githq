@@ -92,7 +92,12 @@ provideContext(MergeContext, {
   getCommands: id => {
     const item = details.getItem(id);
     return item?.kind === 'pullRequest'
-      ? getPullRequestCommands({ pr: item, permissions: editor.getPermissions(item), items: items.all })
+      ? getPullRequestCommands({
+          pr: item,
+          permissions: editor.getPermissions(item),
+          items: items.all,
+          outcomeUnknown: mergePanel.isOutcomeUnknown(item.id),
+        })
       : [];
   },
   run: (id, command) => {
