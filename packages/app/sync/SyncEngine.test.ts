@@ -17,6 +17,7 @@ import { Browser } from '@/services/Browser.js';
 import type { ClockShape } from '@/services/Clock.js';
 import { Clock } from '@/services/Clock.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
+import { fakeOnline } from '@/testing/fakeOnline.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import type { PersistedItems } from '@/store/ItemPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
@@ -728,9 +729,8 @@ async function setup(github: FakeGitHub, login: string) {
     ]);
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
-    const onlineListeners: (() => void)[] = [];
+    const online = fakeOnline();
     let visible = true;
-    let online = true;
 
     const browser: BrowserShape = {
         fetch: (input, init) => github.fetch(input, init),
@@ -763,10 +763,8 @@ async function setup(github: FakeGitHub, login: string) {
             visibilityListeners.push(listener);
         },
         onFocus: () => {},
-        isOnline: () => online,
-        onOnlineChange: listener => {
-            onlineListeners.push(listener);
-        },
+        isOnline: online.isOnline,
+        onOnlineChange: online.onOnlineChange,
         writeCookie: () => {},
         estimateStorage: () => Promise.resolve(null),
         ...createTestTabs().open(),
@@ -815,8 +813,8 @@ async function setup(github: FakeGitHub, login: string) {
         browser: {
             hide: () => setVisible(false),
             show: () => setVisible(true),
-            goOffline: () => setOnline(false),
-            goOnline: () => setOnline(true),
+            goOffline: () => online.setOnline(false),
+            goOnline: () => online.setOnline(true),
         },
         fromAnotherTab,
     };
@@ -824,13 +822,6 @@ async function setup(github: FakeGitHub, login: string) {
     function setVisible(value: boolean) {
         visible = value;
         for (const listener of visibilityListeners) {
-            listener();
-        }
-    }
-
-    function setOnline(value: boolean) {
-        online = value;
-        for (const listener of onlineListeners) {
             listener();
         }
     }

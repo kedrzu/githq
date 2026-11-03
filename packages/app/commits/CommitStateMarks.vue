@@ -3,22 +3,15 @@
 import type { StatusState } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  CircleCheck,
-  CircleX,
-  GitMerge,
-  GitPullRequest,
-  GitPullRequestClosed,
-  GitPullRequestDraft,
-  LoaderCircle,
-} from 'lucide-vue-next';
+import { CircleCheck, CircleX, LoaderCircle } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { classifyStatus } from '@/store/classifyChecks.js';
-
+import CommitPullRequestIcon from './CommitPullRequestIcon.vue';
 import * as l from './CommitStateMarks.loc.js';
-import type { CommitPullRequest, CommitState } from './CommitTypes.js';
+import type { CommitState } from './CommitTypes.js';
+import { getCiTone } from './getCiTone.js';
+import type { CiTone } from './getCiTone.js';
 
 const props = withDefaults(
   defineProps<{
@@ -30,48 +23,28 @@ const props = withDefaults(
   { withPullRequest: true },
 );
 
-interface MarkLook {
+interface CiLook {
   readonly icon: LucideIcon;
-  readonly tone: 'danger' | 'done' | 'muted' | 'success' | 'warning';
+  readonly tone: CiTone;
   readonly label: string;
 }
 
 const t = useTranslate();
 
 const ci = computed(() => (props.state?.ci ? getCiLook(props.state.ci) : null));
-const pullRequest = computed(() => {
-  const value = props.withPullRequest ? props.state?.pullRequest : null;
-  return value ? { number: value.number, look: getPullRequestLook(value) } : null;
-});
+const pullRequest = computed(() => (props.withPullRequest ? (props.state?.pullRequest ?? null) : null));
 
-function getPullRequestLook(value: CommitPullRequest): MarkLook {
-  switch (value.state) {
-    case 'OPEN':
-      return value.isDraft
-        ? { icon: GitPullRequestDraft, tone: 'muted', label: t(l.pullRequestDraft) }
-        : { icon: GitPullRequest, tone: 'success', label: t(l.pullRequestOpen) };
-    case 'MERGED':
-      return { icon: GitMerge, tone: 'done', label: t(l.pullRequestMerged) };
-    case 'CLOSED':
-      return { icon: GitPullRequestClosed, tone: 'danger', label: t(l.pullRequestClosed) };
+function getCiLook(state: StatusState): CiLook {
+  const tone = getCiTone(state);
+  switch (tone) {
+    case 'success':
+      return { icon: CircleCheck, tone, label: t(l.checksPassing) };
+    case 'danger':
+      return { icon: CircleX, tone, label: t(l.checksFailing) };
+    case 'warning':
+      return { icon: LoaderCircle, tone, label: t(l.checksRunning) };
     default:
-      return assertNever(value.state);
-  }
-}
-
-function getCiLook(state: StatusState): MarkLook {
-  const classified = classifyStatus(state);
-  switch (classified) {
-    // A commit status is never skipped; a skipped check holds nothing back, as passing.
-    case 'passing':
-    case 'skipped':
-      return { icon: CircleCheck, tone: 'success', label: t(l.checksPassing) };
-    case 'failing':
-      return { icon: CircleX, tone: 'danger', label: t(l.checksFailing) };
-    case 'pending':
-      return { icon: LoaderCircle, tone: 'warning', label: t(l.checksRunning) };
-    default:
-      return assertNever(classified);
+      return assertNever(tone);
   }
 }
 </script>
@@ -94,12 +67,7 @@ function getCiLook(state: StatusState): MarkLook {
       v-if="pullRequest"
       :class="css.commitStateMarks_pullRequest"
     >
-      <component
-        :is="pullRequest.look.icon"
-        :class="[css.commitStateMarks_mark, css[`commitStateMarks_mark_${pullRequest.look.tone}`]]"
-        role="img"
-        :aria-label="pullRequest.look.label"
-      />
+      <CommitPullRequestIcon :pull-request="pullRequest" />
       #{{ pullRequest.number }}
     </span>
     <component
@@ -146,20 +114,12 @@ function getCiLook(state: StatusState): MarkLook {
   opacity: 0.7;
 }
 
-.commitStateMarks_mark_done {
-  color: $color-purple;
-}
-
 .commitStateMarks_mark_danger {
   color: $color-red;
 }
 
 .commitStateMarks_mark_warning {
   color: $color-amber;
-}
-
-.commitStateMarks_mark_muted {
-  color: $color-fg-dim;
 }
 
 // Not known yet (CH34): an empty bar where the pull request and CI go, so it never reads as "has none".

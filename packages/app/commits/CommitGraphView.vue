@@ -1,27 +1,36 @@
-<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it stays at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from one lane to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Beside the graph, the branches and tags (`CommitRefList`, D15), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, over the graph when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and `openCommitDetails` tells the parent (CH16). -->
+<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Beside the graph, the branches and tags (`CommitRefList`, D15), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, over the graph when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. `Enter` opens the cursor's commit's details in the list's place, over the graph where the list is folded (`CommitDetails`, D16), held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them, focus on the graph and the list back as new. The list isn't mounted meanwhile. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { onWindowResize } from '@nzyme/vue-utils/onWindowResize.js';
-import { Flag, GitCommitHorizontal, LoaderCircle, MoveHorizontal } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { CloudOff, Flag, GitCommitHorizontal, LoaderCircle, MoveHorizontal } from 'lucide-vue-next';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { useCommands } from '@/commands/useCommands.js';
 import EmptyState from '@/components/EmptyState.vue';
+import { getOpenedItemRoute, parseItemUrl } from '@/item/itemRoutes.js';
+import { useOpenItemReference } from '@/item/useOpenItemReference.js';
+import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
+import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
+import { useRowSelection } from '@/utils/useRowSelection.js';
 
+import CommitDetails, { COMMIT_DETAILS_KEYS } from './CommitDetails.vue';
 import { CommitGraphStore } from './CommitGraphStore.js';
 import * as l from './CommitGraphView.loc.js';
 import CommitRefList from './CommitRefList.vue';
 import CommitRow, { COMMIT_ROW_HEIGHT } from './CommitRow.vue';
 import type { CommitRowRef } from './CommitRow.vue';
-import type { CommitRef, KeptCommit } from './CommitTypes.js';
+import type { CommitParent, CommitRef, KeptCommit } from './CommitTypes.js';
 import { COMMIT_GRAPH_DEFAULT_SHARE, fitCommitGraph, getCommitGraphWidth, getMinLanes } from './fitCommitGraph.js';
 
 const props = defineProps<{
@@ -29,13 +38,11 @@ const props = defineProps<{
   nameWithOwner: string;
 }>();
 
-const emit = defineEmits<{
-  /**
-   * A branch or tag whose commit is not loaded was chosen: its details open instead of loading history down to it (D12,
-   * CH16). The graph stays where it is.
-   */
-  openCommitDetails: [ref: CommitRef];
-}>();
+/** The commit whose details are open. */
+interface OpenedCommit extends CommitParent {
+  /** The ref it was opened from, its commit not loaded (D12). */
+  readonly chosenRef: CommitRef | null;
+}
 
 /** How many rows are drawn above and below the viewport, so a quick scroll shows no gap. */
 const OVERSCAN = 8;
@@ -45,9 +52,15 @@ const GRAPH_PANEL = 'commitGraph';
 const AGE_TICK_MS = 30_000;
 /** The window's width below which the list of branches and tags folds away (D15). */
 const REF_LIST_MIN_WINDOW_WIDTH = 1200;
+/** How long the details rest on a commit they moved to before it is read: holding `J` reads only where it stops. */
+const DETAIL_PAUSE_MS = 150;
 
 const store = useService(CommitGraphStore);
 const accounts = useService(AccountSession);
+const browser = useService(Browser);
+const clock = useService(Clock);
+const route = useRoute();
+const openItemReference = useOpenItemReference();
 const t = useTranslate();
 const now = useNow(AGE_TICK_MS);
 const keptShare = useService(LocalPreferences).getPanelShare(GRAPH_PANEL);
@@ -57,8 +70,6 @@ const refList = useTemplateRef<InstanceType<typeof CommitRefList>>('refList');
 const scrollTop = ref(0);
 const viewportHeight = ref(0);
 const paneWidth = ref(0);
-/** The commit under the cursor; the newest when the first rows arrive. */
-const cursorOid = ref<string | null>(null);
 /** The share while the divider is dragged; kept when it is let go. */
 const draggedShare = ref<number | null>(null);
 /** The arrow keys changed the width and the divider still has focus: its label stays up as while dragging. */
@@ -68,13 +79,34 @@ const windowWidth = ref(window.innerWidth);
 const refListOpened = ref(false);
 /** Back from the list by a key: the cursor row shows where the keys go, and a ring around the pane would only add noise. */
 const focusReturned = ref(false);
+/** The commit whose details are open, shown unless an item is opened over them. */
+const opened = shallowRef<OpenedCommit | null>(null);
 
 const graph = computed(() => store.get(props.nameWithOwner));
 const refs = computed(() => graph.value?.refs ?? null);
 const refListFolded = computed(() => windowWidth.value < REF_LIST_MIN_WINDOW_WIDTH);
 const commits = computed((): readonly KeptCommit[] => graph.value?.commits ?? []);
+const offline = computed(() => {
+  const freshness = store.getFreshness(props.nameWithOwner);
+  return freshness.kind === 'stale' && freshness.reason === 'offline';
+});
 const hasRefs = computed(() => (refs.value?.branches.length ?? 0) + (refs.value?.tags.length ?? 0) > 0);
 const count = computed(() => commits.value.length);
+/** An item is opened over the section (D16, CH29): the keys are its own, and it shows in the details' place. */
+const itemOpened = computed(() => getOpenedItemRoute(route) !== null);
+const openedUrl = computed(() =>
+  opened.value ? `https://github.com/${props.nameWithOwner}/commit/${opened.value.oid}` : '',
+);
+/** The commit under the cursor: not `selectFirst`, which would follow the newest row and break D19. */
+const cursor = useRowSelection({
+  rows: commits,
+  getKey: commit => commit.oid,
+  reveal: oid => reveal(commits.value.findIndex(commit => commit.oid === oid)),
+  open: commit => showDetails(commit),
+  enabled: () => !itemOpened.value,
+});
+/** The cursor is drawn on its row, unless the details show a commit it isn't on (CH16, CH41). */
+const cursorDrawn = computed(() => !opened.value || opened.value.oid === cursor.selectedKey);
 /** What the section shows: the graph, or before it, a quiet line, the empty repository, or why nothing arrives. */
 const shown = computed(() => {
   const current = graph.value;
@@ -118,9 +150,7 @@ const drawn = computed(() => {
   return rows;
 });
 /** The commits on screen: they ask for their pull request and CI state. */
-const onScreenOids = computed(() =>
-  commits.value.slice(firstOnScreen.value, endOnScreen.value).map(commit => commit.oid),
-);
+const onScreen = computed(() => commits.value.slice(firstOnScreen.value, endOnScreen.value));
 /** The branches and tags pointing at each commit: the default branch first, then branches, then tags. */
 const refsByOid = computed(() => {
   const byOid = new Map<string, CommitRowRef[]>();
@@ -155,48 +185,51 @@ const refsByOid = computed(() => {
 watch(
   [() => props.nameWithOwner, () => accounts.current],
   ([nameWithOwner]) => {
+    opened.value = null;
     void store.open(nameWithOwner);
   },
   { immediate: true },
 );
 
 watch(
-  () => onScreenOids.value.join(' '),
+  () => onScreen.value.map(commit => commit.oid).join(' '),
   () => {
-    if (onScreenOids.value.length > 0) {
-      store.ensureStates(props.nameWithOwner, onScreenOids.value);
+    if (onScreen.value.length > 0) {
+      store.ensureStates(props.nameWithOwner, onScreen.value);
     }
   },
   { immediate: true },
 );
 
-watch([endOnScreen, count, () => graph.value?.endReached], () => void loadNearEnd());
+watch([endOnScreen, count, () => graph.value?.endReached, offline], () => void loadNearEnd());
 
 watch(refListFolded, () => {
   refListOpened.value = false;
 });
 
-// The cursor starts on the newest commit and stays there until the user moves it (CH23); once moved, when commits
-// arrive above its row, the row keeps its place on screen (D19); when its commit is gone (a branch force-pushed), it
-// stays at the same height.
+// The cursor starts on the newest commit (CH23). When commits arrive above its row, moved or not, the row keeps its
+// place on screen (D19). When its commit is gone (a branch force-pushed), `useRowSelection` has already moved it to a
+// neighbour, which takes the gone commit's height: hence the keys before and after, not just the one now.
 watch(
-  commits,
-  (next, previous) => {
-    const oid = cursorOid.value;
+  [commits, () => cursor.selectedKey],
+  ([next, oid], [previous, previousOid]) => {
+    if (next === previous) {
+      return;
+    }
+
     if (oid === null) {
-      cursorOid.value = next[0]?.oid ?? null;
+      const newest = next[0];
+      if (newest) {
+        cursor.select(newest.oid);
+      }
+
       return;
     }
 
     const after = next.findIndex(commit => commit.oid === oid);
-    const before = previous ? previous.findIndex(commit => commit.oid === oid) : -1;
-    if (after === -1) {
-      cursorOid.value = next[Math.min(Math.max(before, 0), next.length - 1)]?.oid ?? null;
-      return;
-    }
-
+    const before = previous ? previous.findIndex(commit => commit.oid === previousOid) : -1;
     const element = scroller.value;
-    if (element && before !== -1 && after !== before) {
+    if (element && before !== -1 && after !== -1 && after !== before) {
       element.scrollTop += (after - before) * COMMIT_ROW_HEIGHT;
       scrollTop.value = element.scrollTop;
     }
@@ -204,10 +237,89 @@ watch(
   { immediate: true, flush: 'post' },
 );
 
+// The details follow the cursor when the user moves it. A row gone moves it too, and that the details don't follow: the
+// commit they show may be the one gone (CH41).
+watch(
+  () => cursor.selectedKey,
+  (oid, previous) => {
+    if (!opened.value || oid === opened.value.oid || !commits.value.some(commit => commit.oid === previous)) {
+      return;
+    }
+
+    const commit = commits.value.find(candidate => candidate.oid === oid);
+    if (commit) {
+      showDetails(commit);
+    }
+  },
+);
+
+// What the panel shows is read once it rests on a commit. A panel that had no commit has nothing to rest from: it reads
+// at once.
+watch(
+  () => opened.value?.oid,
+  (_oid, previous, onCleanup) => {
+    const commit = opened.value;
+    if (!commit) {
+      return;
+    }
+
+    if (previous === undefined) {
+      readOpened(commit);
+    } else {
+      onCleanup(clock.schedule(() => readOpened(commit), DETAIL_PAUSE_MS));
+    }
+  },
+);
+
 useCommands(() => [
   { id: 'commits.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
   { id: 'commits.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
   { id: 'commits.refList', title: t(l.findRef), section: 'view', key: 'B', menu: false },
+  { id: 'commits.details', title: t(l.openDetails), section: 'view', key: 'Enter', menu: false },
+  {
+    id: 'commits.firstParent',
+    title: t(l.firstParent),
+    section: 'view',
+    key: COMMIT_DETAILS_KEYS.firstParent,
+    menu: false,
+    when: detailsHaveKeys,
+    run: () => goToParent(0),
+  },
+  {
+    id: 'commits.secondParent',
+    title: t(l.secondParent),
+    section: 'view',
+    key: COMMIT_DETAILS_KEYS.secondParent,
+    menu: false,
+    when: detailsHaveKeys,
+    run: () => goToParent(1),
+  },
+  {
+    id: 'commits.pullRequest',
+    title: t(l.openPullRequest),
+    section: 'view',
+    key: COMMIT_DETAILS_KEYS.pullRequest,
+    menu: false,
+    when: detailsHaveKeys,
+    run: openPullRequest,
+  },
+  {
+    id: 'commits.openOnGitHub',
+    title: t(l.openOnGitHub),
+    section: 'view',
+    key: COMMIT_DETAILS_KEYS.openOnGitHub,
+    menu: false,
+    when: detailsHaveKeys,
+    run: () => browser.openInNewTab(openedUrl.value),
+  },
+  {
+    id: 'commits.closeDetails',
+    title: t(l.closeDetails),
+    section: 'view',
+    key: 'Escape',
+    menu: false,
+    when: () => opened.value !== null,
+  },
 ]);
 
 onWindowResize(() => {
@@ -215,30 +327,30 @@ onWindowResize(() => {
 });
 
 onWindowEvent('keydown', event => {
-  if (!isScreenKey(event) || event.shiftKey) {
+  // An item opened over the section has the keys, Esc first of all.
+  if (!isScreenKey(event) || itemOpened.value) {
     return;
   }
 
-  switch (event.key) {
-    case 'j':
-    case 'ArrowDown':
-      event.preventDefault();
-      step(1);
+  if (event.key === 'Escape') {
+    if (isLayerOpen()) {
       return;
-    case 'k':
-    case 'ArrowUp':
+    }
+
+    if (opened.value) {
       event.preventDefault();
-      step(-1);
-      return;
-    case 'b':
+      closeDetails();
+    } else if (refListOpened.value) {
       event.preventDefault();
-      void openRefList();
-      return;
-    case 'Escape':
-      if (refListOpened.value && !isLayerOpen()) {
-        event.preventDefault();
-        refList.value?.leave();
-      }
+      refList.value?.leave();
+    }
+
+    return;
+  }
+
+  if (matchesCommandKey(event, 'B')) {
+    event.preventDefault();
+    void openRefList();
   }
 });
 
@@ -266,7 +378,7 @@ defineExpose({
 /**
  * Within a screen of the last loaded row, the next page — and the one after it while a page leaves the end that near,
  * for a short one changes nothing the watch above follows once it is done. Not again on its own when one fails or
- * brings nothing: the next scroll asks.
+ * brings nothing: the next scroll asks, or the connection coming back; offline there is nothing to ask.
  */
 async function loadNearEnd() {
   const current = graph.value;
@@ -274,6 +386,7 @@ async function loadNearEnd() {
     !current?.refs ||
     current.endReached ||
     current.loadingMore ||
+    offline.value ||
     count.value === 0 ||
     endOnScreen.value + screenRows.value < count.value
   ) {
@@ -295,22 +408,6 @@ function measure(element: HTMLElement) {
 
 function onScroll() {
   scrollTop.value = scroller.value?.scrollTop ?? 0;
-}
-
-function moveCursor(oid: string | null) {
-  cursorOid.value = oid;
-}
-
-/** Moves the cursor `by` rows, keeping its row in view. */
-function step(by: number) {
-  if (count.value === 0) {
-    return;
-  }
-
-  const index = commits.value.findIndex(commit => commit.oid === cursorOid.value);
-  const next = Math.min(count.value - 1, Math.max(0, index + by));
-  moveCursor(commits.value[next]?.oid ?? null);
-  reveal(next);
 }
 
 function reveal(index: number) {
@@ -335,27 +432,28 @@ async function openRefList() {
     return;
   }
 
+  opened.value = null;
   refListOpened.value = refListFolded.value;
   await nextTick();
   refList.value?.focusFilter();
 }
 
 /**
- * D12: to the commit, when it is loaded — its row a third of the way down the pane, drawn once scrolled to — and back to
- * the graph, whose next `Enter` is on that commit (CH26). Otherwise the graph stays where it is, and so does the list.
+ * D12: to the commit, when it is loaded — its row a third of the way down the pane, drawn once scrolled to — whose next
+ * `Enter` is on it (CH26). Otherwise the graph stays where it is and the commit's details open in the list's place (CH16).
+ * Either way back to the graph, the list's filter cleared.
  */
 function onRefChosen(chosen: CommitRef) {
   const index = commits.value.findIndex(commit => commit.oid === chosen.oid);
   if (index === -1) {
-    emit('openCommitDetails', chosen);
-    return;
-  }
-
-  moveCursor(chosen.oid);
-  const element = scroller.value;
-  if (element) {
-    element.scrollTop = index * COMMIT_ROW_HEIGHT - Math.round(element.clientHeight / 3);
-    scrollTop.value = element.scrollTop;
+    showDetails({ oid: chosen.oid, id: chosen.commitId }, chosen);
+  } else {
+    cursor.select(chosen.oid);
+    const element = scroller.value;
+    if (element) {
+      element.scrollTop = index * COMMIT_ROW_HEIGHT - Math.round(element.clientHeight / 3);
+      scrollTop.value = element.scrollTop;
+    }
   }
 
   refList.value?.leave();
@@ -370,8 +468,72 @@ function leaveFoldedRefList() {
 /** Back to the graph, its cursor and scroll as they were. */
 function onRefListLeft() {
   refListOpened.value = false;
+  returnToGraph();
+}
+
+function returnToGraph() {
   focusReturned.value = true;
   scroller.value?.focus({ preventScroll: true });
+}
+
+/** The list folded away stays so when they close: it isn't mounted under them, and `Esc` lands on the graph. */
+function showDetails({ oid, id }: CommitParent, chosenRef: CommitRef | null = null) {
+  opened.value = { oid, id, chosenRef };
+  refListOpened.value = false;
+}
+
+function closeDetails() {
+  opened.value = null;
+  returnToGraph();
+}
+
+/** A row clicked: the cursor moves there, and the details with it even when it was there already. */
+function onRowClick(commit: KeptCommit) {
+  cursor.select(commit.oid);
+  if (opened.value) {
+    showDetails(commit);
+  }
+}
+
+/** A commit from the details: selected in the graph when it is a row, and opened beside it when it is not (D12). */
+function goToCommit(commit: CommitParent) {
+  const index = commits.value.findIndex(candidate => candidate.oid === commit.oid);
+  if (index !== -1) {
+    cursor.select(commit.oid);
+    reveal(index);
+  }
+
+  showDetails(commit);
+}
+
+function readOpened(commit: OpenedCommit) {
+  store.ensureDetail(props.nameWithOwner, commit);
+  store.ensureStates(props.nameWithOwner, [commit]);
+}
+
+/** The details' keys are theirs: shown, and with nothing over them. A tooltip takes no keys. */
+function detailsHaveKeys() {
+  return opened.value !== null && !itemOpened.value && !isScreenCovered();
+}
+
+/** A parent there is none of does nothing. */
+function goToParent(index: number) {
+  const parent = opened.value && store.getCommit(props.nameWithOwner, opened.value.oid)?.parents[index];
+  if (parent) {
+    goToCommit(parent);
+  }
+}
+
+/**
+ * As any item opens; over a list the details stay open under it (CH29). Found by its address, not its number: a fork's
+ * commit answers with its upstream's pull request. A commit with none does nothing.
+ */
+function openPullRequest() {
+  const pullRequest = opened.value && store.getState(props.nameWithOwner, opened.value.oid)?.pullRequest;
+  const reference = pullRequest && parseItemUrl(pullRequest.url);
+  if (reference) {
+    openItemReference(reference, 'pullRequest');
+  }
 }
 
 /** The share giving `width`, within what the graph can be drawn at. */
@@ -488,13 +650,13 @@ function resetShare() {
               :class="[
                 css.commitGraphView_row,
                 row.index % 2 === 1 && css.commitGraphView_row_odd,
-                row.commit.oid === cursorOid && css.commitGraphView_row_cursor,
+                cursorDrawn && row.commit.oid === cursor.selectedKey && css.commitGraphView_row_cursor,
               ]"
               :style="{ top: `${row.index * COMMIT_ROW_HEIGHT}px`, height: `${COMMIT_ROW_HEIGHT}px` }"
-              :aria-current="row.commit.oid === cursorOid ? 'true' : undefined"
+              :aria-current="row.commit.oid === cursor.selectedKey ? 'true' : undefined"
               :aria-posinset="row.index + 1"
               :aria-setsize="graph?.endReached ? count : -1"
-              @click="moveCursor(row.commit.oid)"
+              @click="onRowClick(row.commit)"
             >
               <CommitRow
                 :commit="row.commit"
@@ -562,10 +724,20 @@ function resetShare() {
           />
           {{ t(l.beginning, { name: nameWithOwner }) }}
         </p>
+        <p
+          v-else-if="offline"
+          :class="css.commitGraphView_note"
+        >
+          <CloudOff
+            :class="css.commitGraphView_noteIcon"
+            aria-hidden="true"
+          />
+          {{ t(l.olderWhenOnline) }}
+        </p>
       </template>
     </div>
     <CommitRefList
-      v-if="refs && hasRefs && (!refListFolded || refListOpened)"
+      v-if="refs && hasRefs && opened === null && (!refListFolded || refListOpened)"
       ref="refList"
       :key="nameWithOwner"
       :class="refListFolded && css.commitGraphView_refListOver"
@@ -574,6 +746,20 @@ function resetShare() {
       :now="now"
       @choose="onRefChosen"
       @leave="onRefListLeft"
+    />
+    <CommitDetails
+      v-if="opened && !itemOpened"
+      :class="refListFolded && css.commitGraphView_refListOver"
+      :name-with-owner="nameWithOwner"
+      :oid="opened.oid"
+      :refs="refsByOid.get(opened.oid) ?? []"
+      :chosen-ref="opened.chosenRef"
+      :url="openedUrl"
+      :now="now"
+      @close="closeDetails"
+      @step="cursor.step"
+      @open-parent="goToCommit"
+      @open-pull-request="openPullRequest"
     />
   </div>
 </template>
@@ -602,7 +788,7 @@ function resetShare() {
   outline: none;
 }
 
-// D15: below about 1,200 px the list opens over the graph, leaving the graph's width alone.
+// D15: below about 1,200 px the list, and a commit's details with it, open over the graph, leaving its width alone.
 .commitGraphView_refListOver {
   position: absolute;
   top: 0;

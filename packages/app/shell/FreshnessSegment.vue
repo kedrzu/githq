@@ -62,6 +62,12 @@ const look = computed((): SegmentLook => {
       return { icon: RefreshCw, tone: 'dim', text: t(l.checking) };
     case 'partial':
       return { icon: LoaderCircle, tone: 'muted', text: t(l.downloading) };
+    case 'filling':
+      return {
+        icon: LoaderCircle,
+        tone: 'muted',
+        text: t(l.filling, { done: freshness.done, total: freshness.total }),
+      };
     case 'answered':
       return {
         icon: Cloud,

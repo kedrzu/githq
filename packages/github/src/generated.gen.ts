@@ -337,6 +337,25 @@ export type StatusState =
     /** Status is successful. */
     | 'SUCCESS';
 
+export type CommitDetailQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type CommitDetailQuery = {
+    node:
+        | {
+              message: string;
+              id: string;
+              oid: string;
+              messageHeadline: string;
+              committedDate: string;
+              author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+              parents: { nodes: Array<{ id: string; oid: string } | null> | null };
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type CommitHistoriesQueryVariables = Exact<{
     ids: Array<string> | string;
     first: number;
@@ -7728,6 +7747,34 @@ export const ViewerProjectFieldsFragmentDoc = new TypedDocumentString(
     `,
     { fragmentName: 'ViewerProjectFields' },
 );
+export const CommitDetailDocument = new TypedDocumentString(`
+    query CommitDetail($id: ID!) {
+  node(id: $id) {
+    ... on Commit {
+      ...CommitFields
+      message
+    }
+  }
+}
+    fragment CommitFields on Commit {
+  id
+  oid
+  messageHeadline
+  committedDate
+  author {
+    name
+    user {
+      login
+      avatarUrl
+    }
+  }
+  parents(first: 30) {
+    nodes {
+      id
+      oid
+    }
+  }
+}`);
 export const CommitHistoriesDocument = new TypedDocumentString(`
     query CommitHistories($ids: [ID!]!, $first: Int!) {
   nodes(ids: $ids) {
@@ -11720,6 +11767,13 @@ export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
 export type Requester<C = {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>;
 export function getSdk<C>(requester: Requester<C>) {
     return {
+        CommitDetail(variables: CommitDetailQueryVariables, options?: C): Promise<CommitDetailQuery> {
+            return requester<CommitDetailQuery, CommitDetailQueryVariables>(
+                CommitDetailDocument,
+                variables,
+                options,
+            ) as Promise<CommitDetailQuery>;
+        },
         CommitHistories(variables: CommitHistoriesQueryVariables, options?: C): Promise<CommitHistoriesQuery> {
             return requester<CommitHistoriesQuery, CommitHistoriesQueryVariables>(
                 CommitHistoriesDocument,

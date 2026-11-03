@@ -13,6 +13,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 
 import { createSignedInBrowser } from './createSignedInBrowser.js';
 import { fakeCommitGitHub } from './fakeCommitGitHub.js';
+import { fakeOnline } from './fakeOnline.js';
 import { SAMPLE_COMMITS_NOW } from './sampleCommits.js';
 import { setIndexedDbPersistence } from './setIndexedDbPersistence.js';
 
@@ -28,6 +29,10 @@ export interface CommitGraphTestOptions {
     readonly defaultBranch?: string | null;
     /** The pull request and CI state GitHub answers; a commit not in it has neither. */
     readonly states?: ReadonlyMap<string, CommitState>;
+    /** The full message below the first line GitHub answers, by oid; a commit not in it has none. */
+    readonly bodies?: ReadonlyMap<string, string>;
+    /** The first line of the commits whose headline cuts it, by oid. */
+    readonly subjects?: ReadonlyMap<string, string>;
     /** The commits kept from an earlier open, which draw at once; all of them when not given. */
     readonly kept?: readonly KeptCommit[];
     /** Nothing is kept: the first open of the repository. */
@@ -36,6 +41,8 @@ export interface CommitGraphTestOptions {
     holdIf?(operation: string): Promise<void> | null;
     /** GitHub answers an operation it returns `true` for with a 502. */
     failIf?(operation: string): boolean;
+    /** `false`: the browser starts offline. */
+    readonly online?: boolean;
 }
 
 /**
@@ -69,6 +76,14 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
         repository.states.set(oid, state);
     }
 
+    for (const [oid, body] of options.bodies ?? []) {
+        repository.bodies.set(oid, body);
+    }
+
+    for (const [oid, subject] of options.subjects ?? []) {
+        repository.subjects.set(oid, subject);
+    }
+
     const github = {
         repository,
         /** The operations asked, in order. */
@@ -86,7 +101,12 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
 
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(Browser, browser);
+    const online = fakeOnline(options.online !== false);
+    container.set(Browser, {
+        ...browser,
+        isOnline: online.isOnline,
+        onOnlineChange: online.onOnlineChange,
+    });
     container.set(Clock, {
         now: () => SAMPLE_COMMITS_NOW,
         schedule: (callback, delayMs) => {
@@ -97,7 +117,7 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
     setIndexedDbPersistence(container);
     const store = container.resolve(CommitGraphStore);
 
-    return { container, store, github, ready: keep() };
+    return { container, store, github, setOnline: online.setOnline, ready: keep() };
 
     /** Resolves once the kept copy is written, before the view opens the graph. */
     async function keep() {

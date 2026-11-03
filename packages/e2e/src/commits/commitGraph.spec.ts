@@ -1,6 +1,7 @@
 import { expect, test } from '../fixtures.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
+import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
@@ -199,6 +200,59 @@ test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed le
     await expect(graph.refFilter).toBeFocused();
 });
 
+test("git-client D13, D16, CH18, CH27-CH29: Enter opens a commit's details in the list's place; J and P move through the graph with them, Shift+Enter opens its pull request over them, O opens GitHub and Esc closes in order", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.rows).toHaveCount(6);
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+
+    await page.keyboard.press('Enter');
+    await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
+    await expect(graph.refList).toBeHidden();
+    await expect(graph.details.getByRole('heading', { name: 'Parents' })).toBeVisible();
+    await expect(graph.details).toContainText('Brings the release back.');
+
+    // The second parent, selected in the graph.
+    await page.keyboard.press('Shift+P');
+    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+    await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
+    await expect(graph.details.getByText('Passing')).toBeVisible();
+
+    // O: GitHub in a new tab, on this commit.
+    github.web(`/${SAMPLE_REPOSITORY}/commit/r1`, () => ({ status: 200, body: '<title>Commit</title>' }));
+    const popup = page.waitForEvent('popup');
+    await page.keyboard.press('o');
+    const gitHubTab = await popup;
+    expect(gitHubTab.url()).toBe(`https://github.com/${SAMPLE_REPOSITORY}/commit/r1`);
+    await gitHubTab.close();
+
+    // The pull request in the details' place; Esc is the item's first and comes back to the commit.
+    const item = new ItemViewHarness(page);
+    await page.keyboard.press('Shift+Enter');
+    await expect(item.title).toHaveText('Fix the crash on start');
+    await expect(graph.details).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(item.root).toHaveCount(0);
+    await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
+
+    await page.keyboard.press('j');
+    await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
+    await page.keyboard.press('p');
+    await expect(graph.detailsHeadline).toHaveText('chore: set up the build');
+    await expect(graph.cursorRow).toContainText('chore: set up the build');
+
+    await page.keyboard.press('Escape');
+    await expect(graph.details).toHaveCount(0);
+    await expect(graph.refList).toBeVisible();
+    await expect(graph.root).toBeFocused();
+});
+
 test('CH38: an empty repository says it has no commits yet', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     await openTrackedWork(page, github, sample.world);
@@ -230,6 +284,7 @@ function giveHistory(world: GitHubWorld, repository: string) {
             {
                 oid: 'm4',
                 headline: "Merge branch 'release/1.0'",
+                body: 'Brings the release back.',
                 author: 'monalisa',
                 minutesAgo: 120,
                 parents: ['m3', 'r1'],
@@ -240,7 +295,7 @@ function giveHistory(world: GitHubWorld, repository: string) {
                 author: 'monalisa',
                 minutesAgo: 180,
                 parents: ['m2'],
-                pullRequest: { number: 4, state: 'MERGED', title: 'Export the CSV header' },
+                pullRequest: { number: 4, state: 'MERGED', title: 'Fix the crash on start' },
                 ci: 'SUCCESS',
             },
             { oid: 'm3', headline: 'docs: describe the setup', author: 'monalisa', minutesAgo: 240, parents: ['m2'] },

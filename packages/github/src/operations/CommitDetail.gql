@@ -1,0 +1,10 @@
+# A commit's details as they open (git-client D13): its full message, which the graph doesn't keep, and for a commit not
+# loaded the rest of what the panel shows. Never adds it to the graph (D12).
+query CommitDetail($id: ID!) {
+    node(id: $id) {
+        ... on Commit {
+            ...CommitFields
+            message
+        }
+    }
+}

@@ -2,17 +2,19 @@ import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, h } from 'vue';
+import { createApp, defineComponent, h, nextTick } from 'vue';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { VIEWER_KEY } from '@/auth/AuthStore.js';
 import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import { Browser } from '@/services/Browser.js';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
 import { sampleCommit, sampleCommitRef, sampleHistory, sampleWebappHistory } from '@/testing/sampleCommits.js';
 
 import CommitGraphView from './CommitGraphView.vue';
-import type { CommitRef, CommitState } from './CommitTypes.js';
+import type { CommitState } from './CommitTypes.js';
 
 const REPOSITORY = 'acme/web';
 const SHARE_KEY = 'githq.panelShare.commitGraph';
@@ -27,11 +29,11 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     expect(rows.elements().length).toBeLessThan(60);
     // 600 px of 32 px rows: about 20 on screen, from the newest.
     await expect.poll(() => view.ensureStates.mock.lastCall?.[1].length).toBeGreaterThan(15);
-    for (const [, oids] of view.ensureStates.mock.calls) {
-        expect(oids.length).toBeLessThanOrEqual(21);
+    for (const [, asked] of view.ensureStates.mock.calls) {
+        expect(asked.length).toBeLessThanOrEqual(21);
     }
     const newest = view.store.get(REPOSITORY)?.commits;
-    expect(view.ensureStates.mock.lastCall?.[1][0]).toBe(newest?.[0]?.oid);
+    expect(view.ensureStates.mock.lastCall?.[1][0]?.oid).toBe(newest?.[0]?.oid);
     expect(view.loadMore).not.toHaveBeenCalled();
 
     // Far down: the rows there, still a few dozen, and only they ask for their state.
@@ -40,7 +42,7 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     await expect.poll(() => rows.first().element().getAttribute('aria-posinset')).toBe(String(2500 - 8 + 1));
     expect(rows.elements().length).toBeLessThan(60);
     const last = view.ensureStates.mock.lastCall?.[1];
-    expect(last?.[0]).toBe(newest?.[2500]?.oid);
+    expect(last?.[0]?.oid).toBe(newest?.[2500]?.oid);
     expect(last?.length).toBeLessThanOrEqual(21);
     expect(view.loadMore).not.toHaveBeenCalled();
 
@@ -150,6 +152,37 @@ test('D19: commits arriving above stay out of the way — the cursor stays on it
     expect(cursor()?.getBoundingClientRect().top).toBe(before);
 });
 
+test("the cursor's commit gone, with commits arriving above in the same read: on to the next in the old order, at the same height", async () => {
+    const line = Array.from({ length: 100 }, (_, index) =>
+        sampleCommit(`c${index}`, index * 10, index > 0 ? [`c${index - 1}`] : []),
+    );
+    // Third row, between c98 and c97.
+    const gone = sampleCommit('gone', 975, ['c97']);
+    // Kept and on no branch yet, so that one read of the refs both drops the gone commit and shows the new one.
+    const arriving = sampleCommit('arriving', 5000, ['c99']);
+    const commits = [...line, gone, arriving];
+    const view = await mount({
+        commits,
+        kept: commits,
+        branches: [sampleCommitRef('main', 'c99'), sampleCommitRef('feat/a', 'gone')],
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c99');
+
+    await userEvent.keyboard('jj');
+    await expect.poll(() => cursor()?.textContent).toContain('Commit gone');
+    const before = cursor()?.getBoundingClientRect().top;
+
+    const { repository } = view.github;
+    repository.deleteBranch('feat/a');
+    repository.branch('newest', 'arriving');
+    await view.store.open(REPOSITORY);
+
+    // The third row is now c98: the cursor follows the old order, not its place in the list.
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c97');
+    await expect.poll(() => cursor()?.getBoundingClientRect().top).toBe(before);
+    expect(view.scroller().scrollTop).toBe(32);
+});
+
 test("a commit's refs: the default branch first, then branches, then tags, three named and the rest counted", async () => {
     await mount({
         commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
@@ -180,6 +213,51 @@ test('CH35, CH36: under the rows, the next page on its way, then the beginning o
     await expect.element(page.getByText("The beginning of acme/web's history")).toBeVisible();
     await expect.element(page.getByText('Loading older commits…')).not.toBeInTheDocument();
     await expect.element(page.getByText('Commit c0')).toBeVisible();
+});
+
+test('CH40: offline, what is kept stays and the last row says older commits wait', async () => {
+    const commits = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['c0'])];
+    const view = await mount({
+        commits,
+        branches: [sampleCommitRef('main', 'c2')],
+        failIf: () => true,
+        online: false,
+    });
+
+    await expect.element(page.getByText("Older commits load when you're back online")).toBeVisible();
+    await expect.element(page.getByText('Commit c2')).toBeVisible();
+    expect(view.store.getFreshness(REPOSITORY)).toMatchObject({ kind: 'stale', reason: 'offline' });
+});
+
+test('CH40: offline a scroll to the end asks nothing; coming back online reads the older commits and takes the note away', async () => {
+    const line = Array.from({ length: 60 }, (_, index) =>
+        sampleCommit(`c${index}`, index + 10, [index > 0 ? `c${index - 1}` : 'older']),
+    );
+    let failing = true;
+    const view = await mount({
+        commits: [...line, sampleCommit('older', 1)],
+        branches: [sampleCommitRef('main', 'c59')],
+        kept: line,
+        failIf: () => failing,
+        online: false,
+    });
+    const note = page.getByText("Older commits load when you're back online");
+    await expect.element(note).toBeVisible();
+
+    const scroller = view.scroller();
+    scroller.scrollTop = scroller.scrollHeight;
+    await expect.element(page.getByText('Commit c0')).toBeInTheDocument();
+    await new Promise<void>(resolve => {
+        setTimeout(resolve, 100);
+    });
+    expect(view.loadMore).not.toHaveBeenCalled();
+
+    failing = false;
+    view.setOnline(true);
+
+    await expect.element(page.getByText('Commit older')).toBeInTheDocument();
+    await expect.element(note).not.toBeInTheDocument();
+    expect(view.store.getFreshness(REPOSITORY).kind).toBe('fresh');
 });
 
 test('CH38, CH32: before anything arrives, a quiet line; an empty repository says so', async () => {
@@ -437,7 +515,7 @@ test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet,
     // CH26: back to the graph, whose next Enter is on that commit; the list keeps no choice.
     await expect.poll(() => document.activeElement).toBe(scroller);
     await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
-    expect(view.onOpenCommitDetails).not.toHaveBeenCalled();
+    await expect.element(details()).not.toBeInTheDocument();
 
     const scrolled = scroller.scrollTop;
     await userEvent.keyboard('b');
@@ -448,13 +526,230 @@ test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet,
     expect(cursor()?.textContent).toContain('Commit c200');
 });
 
-test('D12, CH16: a ref whose commit is not loaded asks for its details and leaves the graph where it was', async () => {
+test("D12, CH16: a ref whose commit is not loaded opens its details in the list's place, the graph staying and never taking the commit, with its pull request and CI; Esc lands on the graph, the list back cleared", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const old = sampleCommit('old', 1);
     const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
     const view = await mount({
         commits: [...history, old],
+        branches: [sampleCommitRef('main', 'c2')],
+        tags: [sampleCommitRef('v0.1', 'old')],
+        bodies: new Map([['old', 'Why it was released.']]),
+        states: new Map([['old', { pullRequest: null, ci: 'SUCCESS' }]]),
+        kept: history,
+        holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('v0.1{Enter}');
+
+    await expect.element(details()).toHaveTextContent('Not in the loaded history. v0.1 is from');
+    await expect.element(details()).toHaveTextContent('so it stayed where it was');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('Why it was released.');
+    await expect.element(details().getByText('Passing')).toBeVisible();
+    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).not.toBeInTheDocument();
+    expect(cursor()?.textContent).toContain('Commit c2');
+    expect(view.scroller().scrollTop).toBe(0);
+    expect(document.activeElement).toBe(view.scroller());
+    expect(view.store.get(REPOSITORY)?.commits.map(commit => commit.oid)).not.toContain('old');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(view.scroller());
+    expect(cursor()?.textContent).toContain('Commit c2');
+    await expect.element(filter()).toHaveValue('');
+});
+
+test("the commit that's open isn't read again by opening it again; a read that failed is, after a close or a move", async () => {
+    const reads = () => view.github.requests.filter(request => request === 'CommitDetail').length;
+    const view = await mount({
+        commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        failIf: operation => operation === 'CommitDetail',
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toHaveTextContent("GitHub can't be asked for the rest of this message right now.");
+    expect(reads()).toBe(1);
+
+    await userEvent.click(page.getByRole('listitem').filter({ hasText: 'Commit c2' }));
+    await userEvent.keyboard('{Enter}');
+    await nextTick();
+    expect(reads()).toBe(1);
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(reads).toBe(2);
+
+    await userEvent.keyboard('j');
+    await expect.poll(reads).toBe(3);
+    await userEvent.keyboard('k');
+    await expect.poll(reads).toBe(4);
+});
+
+test("D16, CH18: Enter opens the details in the list's place at 440 px, the body arriving after; J and K follow, a click too; Esc brings the list back and focus to the graph", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const answered = createPromise();
+    const view = await mount({
+        commits: [sampleCommit('c3', 30, ['c2']), sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        bodies: new Map([
+            ['c3', 'The third, in detail.'],
+            ['c2', 'The second, in detail.'],
+        ]),
+        holdIf: operation => (operation === 'CommitDetail' ? answered.promise : null),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
+    const list = page.getByRole('listbox', { name: 'Branches and tags' });
+    await expect.element(list).toBeVisible();
+    expect(view.scroller().clientWidth).toBe(1200 - 280);
+
+    await userEvent.keyboard('{Enter}');
+
+    // At once, from what the graph knows.
+    await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
+    await expect.element(details()).not.toHaveTextContent('The third, in detail.');
+    await expect.element(list).not.toBeInTheDocument();
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 440);
+    answered.resolve();
+    await expect.element(details()).toHaveTextContent('The third, in detail.');
+
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('The second, in detail.');
+    expect(cursor()?.textContent).toContain('Commit c2');
+    await userEvent.keyboard('k');
+    await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
+    await userEvent.click(page.getByRole('listitem').filter({ hasText: 'Commit c1' }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await expect.element(list).toBeVisible();
+    expect(document.activeElement).toBe(view.scroller());
+    expect(cursor()?.textContent).toContain('Commit c1');
+});
+
+test('a burst of J reads only the commit it stops on', async () => {
+    const view = await mount({ commits: sampleHistory({ count: 40, seed: 3 }) });
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
+    await userEvent.keyboard('{Enter}');
+    for (let i = 0; i < 10; i++) {
+        pressJ();
+    }
+
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('11');
+    const stoppedOn = view.store.get(REPOSITORY)?.commits[10]?.oid ?? '';
+    await expect.poll(() => view.store.getDetail(REPOSITORY, stoppedOn)?.kind).toBe('read');
+    // The first Enter's, and the one it stopped on.
+    expect(view.github.requests.filter(request => request === 'CommitDetail')).toHaveLength(2);
+    expect(view.store.getDetail(REPOSITORY, view.store.get(REPOSITORY)?.commits[5]?.oid ?? '')).toBeUndefined();
+
+    function pressJ() {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', cancelable: true }));
+    }
+});
+
+test('a first Enter reads the commit at once, with no pause to rest on it', async () => {
+    const view = await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)] });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+    await nextTick();
+
+    expect(view.store.getDetail(REPOSITORY, 'c2')).toBeDefined();
+});
+
+test('D16, CH20, CH27, CH28: P and Shift+P go to the parents, selected in the graph and in view, with the details; a key with nothing to go to does nothing', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('feat: preview a class');
+    await userEvent.click(page.getByRole('listitem').filter({ hasText: 'Merge pull request #1226' }));
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Parents' })).toBeVisible();
+
+    await userEvent.keyboard('{Shift>}p{/Shift}');
+    await expect.poll(() => cursor()?.textContent).toContain('feat: search members by email');
+    await expect.element(details().getByRole('heading', { name: 'feat: search members by email' })).toBeVisible();
+    await expect.element(details().getByRole('heading', { name: 'Parent', exact: true })).toBeVisible();
+
+    // No second parent here.
+    await userEvent.keyboard('{Shift>}p{/Shift}');
+    expect(cursor()?.textContent).toContain('feat: search members by email');
+
+    await userEvent.keyboard('p');
+    await expect.poll(() => cursor()?.textContent).toContain("Merge branch 'release/4.2'");
+    await expect.element(details().getByRole('heading', { name: "Merge branch 'release/4.2'" })).toBeVisible();
+
+    // A row clicked does the same.
+    await userEvent.click(details().getByRole('button', { name: /chore: prepare the 4\.2\.1 release/ }));
+    await expect.poll(() => cursor()?.textContent).toContain('chore: prepare the 4.2.1 release');
+});
+
+test('CH16: P to a parent not loaded opens its details the same way, the graph not moving and not taking it; J goes on from the graph', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
+    const view = await mount({
+        commits: [...history, sampleCommit('old', 1)],
+        branches: [sampleCommitRef('main', 'c2')],
+        kept: history,
+        holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    await userEvent.keyboard('j{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
+
+    await userEvent.keyboard('p');
+
+    await expect.element(details()).toHaveTextContent('Not in the loaded history.');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    expect(cursor()?.textContent).toContain('Commit c1');
+    // The cursor stays where the keys go from, drawn on no row: it is not what the details show.
+    await expect.poll(cursorDrawn).toBe(false);
+    expect(view.store.get(REPOSITORY)?.commits.map(commit => commit.oid)).toEqual(['c2', 'c1']);
+
+    await userEvent.keyboard('k');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    await expect.element(details()).not.toHaveTextContent('Not in the loaded history.');
+    await expect.poll(cursorDrawn).toBe(true);
+});
+
+test("the details' K and J buttons do what the keys do: on the first row with a commit not loaded open, K stays", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const kept = [sampleCommit('c2', 20, ['old']), sampleCommit('c1', 10)];
+    await mount({
+        commits: [...kept, sampleCommit('old', 1)],
+        branches: [sampleCommitRef('main', 'c2'), sampleCommitRef('feat/a', 'c1')],
+        kept,
+        holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('p');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+
+    await userEvent.click(details().getByRole('button', { name: 'Previous commit' }));
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    expect(cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.click(details().getByRole('button', { name: 'Next commit' }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
+    expect(cursor()?.textContent).toContain('Commit c1');
+});
+
+test("Enter from a ref's details moves on to the cursor's commit; another account signing in closes the details", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
+    const view = await mount({
+        commits: [...history, sampleCommit('old', 1)],
         branches: [sampleCommitRef('main', 'c2')],
         tags: [sampleCommitRef('v0.1', 'old')],
         kept: history,
@@ -464,11 +759,213 @@ test('D12, CH16: a ref whose commit is not loaded asks for its details and leave
 
     await userEvent.keyboard('b');
     await userEvent.keyboard('v0.1{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(view.scroller());
 
-    await expect.poll(() => view.onOpenCommitDetails.mock.calls.length).toBe(1);
-    expect(view.onOpenCommitDetails.mock.lastCall?.[0]).toMatchObject({ name: 'v0.1', oid: 'old' });
-    expect(cursor()?.textContent).toContain('Commit c2');
-    expect(view.scroller().scrollTop).toBe(0);
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('v0.1{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+
+    const { localStorage } = view.container.resolve(Browser);
+    const login = `user-${crypto.randomUUID()}`;
+    localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
+    localStorage.setItem(TOKEN_KEY, `gho_${login}`);
+    window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));
+    await expect.element(details()).not.toBeInTheDocument();
+    await expect.element(page.getByText('Commit c2')).toBeVisible();
+});
+
+test("D16, CH29: Shift+Enter opens the pull request in place of the details, the keys are the item's meanwhile, and closing it comes back to the commit", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('feat: preview a class');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('button', { name: /Pull request 1231/ })).toBeVisible();
+
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect
+        .poll(() => view.router.currentRoute.value.query)
+        .toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
+    await expect.element(details()).not.toBeInTheDocument();
+
+    // Esc is the item's, J too: under it the commit stays as it was.
+    await userEvent.keyboard('j');
+    expect(cursor()?.textContent).toContain('feat: preview a class');
+    await userEvent.keyboard('{Escape}');
+    await view.router.push({ query: {} });
+
+    await expect.element(details().getByRole('heading', { name: /feat: preview a class/ })).toBeVisible();
+    expect(cursor()?.textContent).toContain('feat: preview a class');
+});
+
+test("a fork's commit opens its upstream's pull request, by its address, in the arrangement items open in", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const pullRequest = {
+        number: 1203,
+        state: 'OPEN',
+        title: 'From the fork',
+        url: 'https://github.com/upstream/web/pull/1203',
+        isDraft: false,
+    } as const;
+    const view = await mount({
+        commits: [sampleCommit('c1', 10)],
+        states: new Map([['c1', { pullRequest, ci: null }]]),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c1');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('button', { name: /From the fork/ })).toBeVisible();
+
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect
+        .poll(() => view.router.currentRoute.value.query)
+        .toMatchObject({ pane: 'issue', issue: 'upstream|web|1203' });
+
+    await view.router.push({ query: {} });
+    await expect.element(details()).toBeVisible();
+    view.container.resolve(LocalPreferences).itemArrangement.value = 'page';
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect.poll(() => view.router.currentRoute.value.path).toBe('/upstream/web/pull/1203');
+});
+
+test("D16: O opens the commit on GitHub; Esc with a layer open is the layer's", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)] });
+    const openInNewTab = vi.spyOn(view.container.resolve(Browser), 'openInNewTab').mockImplementation(() => {});
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    // Not before the details are open.
+    await userEvent.keyboard('o');
+    expect(openInNewTab).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('o');
+    expect(openInNewTab).toHaveBeenCalledWith('https://github.com/acme/web/commit/c2');
+
+    const layer = document.createElement('div');
+    layer.dataset.layer = '';
+    document.body.append(layer);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    // The details' keys are the layer's too.
+    await userEvent.keyboard('op');
+    expect(openInNewTab).toHaveBeenCalledTimes(1);
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    layer.remove();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+});
+
+test("D16: a tooltip up takes none of the details' keys", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const states = new Map<string, CommitState>([
+        [
+            'c1',
+            {
+                pullRequest: {
+                    number: 7,
+                    state: 'OPEN',
+                    title: 'The change',
+                    url: 'https://github.com/acme/web/pull/7',
+                    isDraft: false,
+                },
+                ci: null,
+            },
+        ],
+    ]);
+    const merge = sampleCommit('c3', 30, ['c2', 'c1']);
+    const view = await mount({ commits: [merge, sampleCommit('c2', 20), sampleCommit('c1', 10)], states });
+    const openInNewTab = vi.spyOn(view.container.resolve(Browser), 'openInNewTab').mockImplementation(() => {});
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
+
+    const tooltip = document.createElement('div');
+    tooltip.setAttribute('data-reka-popper-content-wrapper', '');
+    document.body.append(tooltip);
+    onTestFinished(() => tooltip.remove());
+
+    await userEvent.keyboard('o');
+    expect(openInNewTab).toHaveBeenCalledWith('https://github.com/acme/web/commit/c3');
+    await userEvent.keyboard('p');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    await userEvent.keyboard('k');
+    await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
+    await userEvent.keyboard('{Shift>}p{/Shift}');
+    await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
+    await expect.poll(() => view.store.getState(REPOSITORY, 'c1')?.pullRequest?.number).toBe(7);
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect.poll(() => view.router.currentRoute.value.query).toMatchObject({ pane: 'issue', issue: 'acme|web|7' });
+});
+
+test('CH41: the commit gone from the graph under open details stays readable and says so, until J moves on', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({
+        commits: [
+            sampleCommit('old', 30, ['base']),
+            sampleCommit('other', 25, ['base']),
+            sampleCommit('base', 10),
+            sampleCommit('new', 40, ['base']),
+        ],
+        kept: [sampleCommit('old', 30, ['base']), sampleCommit('other', 25, ['base']), sampleCommit('base', 10)],
+        branches: [sampleCommitRef('main', 'other'), sampleCommitRef('fix/a', 'old')],
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit old');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+
+    const { repository } = view.github;
+    repository.branch('fix/a', 'new');
+    await view.store.open(REPOSITORY);
+
+    await expect.element(details()).toHaveTextContent('It is no longer in the graph.');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('None any more.');
+    await expect.element(page.getByRole('listitem').filter({ hasText: 'Commit old' })).not.toBeInTheDocument();
+    const under = cursor()?.textContent;
+    expect(under).not.toContain('Commit old');
+    await expect.poll(cursorDrawn).toBe(false);
+
+    await userEvent.keyboard('j');
+    await expect.poll(() => cursor()?.textContent).not.toBe(under);
+    await expect.poll(cursorDrawn).toBe(true);
+    await expect.element(details()).not.toHaveTextContent('It is no longer in the graph.');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).not.toBeInTheDocument();
+});
+
+test('D15, D16: below about 1,200 px the details open over the graph, leaving its width alone, and Esc goes back to the graph', async () => {
+    await page.viewport(1100, 700);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({ commits: parallelBranches(4) });
+    const paneWidth = view.scroller().clientWidth;
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    expect(view.scroller().clientWidth).toBe(paneWidth);
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(view.scroller());
+
+    // Opened from over the list, with the keys off its filter: Esc lands on the graph, not on the list again.
+    await userEvent.keyboard('b');
+    filter().element().blur();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await expect.element(filter()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(view.scroller());
 });
 
 test('a deleted ref disappears when the refs are read again: the selection falls back without an error', async () => {
@@ -499,6 +996,11 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     await expect.element(page.getByRole('option', { selected: true })).toHaveTextContent('main');
 });
 
+/** The panel of a commit's details. */
+function details() {
+    return page.getByRole('region', { name: 'Commit details' });
+}
+
 /** The field of the list of branches and tags. */
 function filter() {
     return page.getByRole('combobox', { name: 'Filter branches and tags' });
@@ -507,6 +1009,12 @@ function filter() {
 /** The row under the cursor. */
 function cursor() {
     return document.querySelector('li[aria-current="true"]');
+}
+
+/** Whether the row under the cursor looks it: its accent edge, as a list's selected row. */
+function cursorDrawn() {
+    const row = cursor();
+    return row !== null && getComputedStyle(row).boxShadow !== 'none';
 }
 
 /** The rows' slices of the graph, each the first drawing of its row. */
@@ -545,7 +1053,7 @@ function parallelBranches(lanes: number) {
  * `keptShare` kept on this device as the graph's share of the pane.
  */
 async function mount(options: CommitGraphTestOptions, keptShare?: string) {
-    const { container, store, github, ready } = createCommitGraphTest(options);
+    const { container, store, github, setOnline, ready } = createCommitGraphTest(options);
     await ready;
     if (keptShare !== undefined) {
         container.resolve(Browser).localStorage.setItem(SHARE_KEY, keptShare);
@@ -553,7 +1061,10 @@ async function mount(options: CommitGraphTestOptions, keptShare?: string) {
 
     const ensureStates = vi.spyOn(store, 'ensureStates');
     const loadMore = vi.spyOn(store, 'loadMore');
-    const onOpenCommitDetails = vi.fn<(ref: CommitRef) => void>();
+    const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+    });
     const host = document.createElement('div');
     host.style.display = 'flex';
     host.style.width = '1200px';
@@ -561,9 +1072,11 @@ async function mount(options: CommitGraphTestOptions, keptShare?: string) {
     document.body.append(host);
 
     const app = createApp({
-        setup: () => () => h(CommitGraphView, { nameWithOwner: REPOSITORY, onOpenCommitDetails }),
+        setup: () => () => h(CommitGraphView, { nameWithOwner: REPOSITORY }),
     });
     app.use(IocPlugin, { container });
+    app.use(router);
+    await router.isReady();
     app.mount(host);
     const unmount = () => {
         app.unmount();
@@ -580,9 +1093,10 @@ async function mount(options: CommitGraphTestOptions, keptShare?: string) {
         container,
         store,
         github,
+        setOnline,
         ensureStates,
         loadMore,
-        onOpenCommitDetails,
+        router,
         unmount: () => {
             unmounted = true;
             unmount();

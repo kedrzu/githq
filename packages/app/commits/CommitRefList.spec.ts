@@ -144,7 +144,7 @@ test('D18: the branch rows drawn ask for their state, tags never; not known yet 
     await expect.element(row('plain')).not.toHaveTextContent('#');
     await expect.element(row('plain').getByRole('img')).not.toBeInTheDocument();
 
-    const asked = () => view.ensureStates.mock.calls.flatMap(([, oids]) => [...oids]);
+    const asked = () => view.ensureStates.mock.calls.flatMap(([, commits]) => commits.map(commit => commit.oid));
     expect(asked()).toContain('with-pr');
     expect(asked()).toContain('branch-0');
     await expect.element(row('v1')).toBeVisible();

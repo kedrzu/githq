@@ -10,6 +10,7 @@ import { Clock } from '@/services/Clock.js';
 
 import { createTestTabs } from './createTestTabs.js';
 import type { TestTabs } from './createTestTabs.js';
+import { fakeOnline } from './fakeOnline.js';
 
 /** A GraphQL operation as the fake GitHub received it. */
 export interface TestGraphQLRequest {
@@ -77,6 +78,7 @@ export function createTestSession(params: CreateTestSessionParams) {
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
     const focusListeners: (() => void)[] = [];
+    const online = fakeOnline();
     let visible = true;
     /** The pages opened in a new tab, in order. */
     const openedTabs: string[] = [];
@@ -126,8 +128,8 @@ export function createTestSession(params: CreateTestSessionParams) {
         onFocus: listener => {
             focusListeners.push(listener);
         },
-        isOnline: () => true,
-        onOnlineChange: () => {},
+        isOnline: online.isOnline,
+        onOnlineChange: online.onOnlineChange,
         requestLock: tab.requestLock,
         openChannel: tab.openChannel,
         onPageLifecycle: tab.onPageLifecycle,
@@ -153,6 +155,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         /** The operations GitHub received, in order. */
         operations: () => github.requests.map(request => request.operation),
         setVisible,
+        setOnline: online.setOnline,
         focus,
         fromAnotherTab,
         clearFromAnotherTab,
