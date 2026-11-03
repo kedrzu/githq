@@ -8,6 +8,7 @@ import { defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { ACCESSIBILITY_TAGS } from '@/testing/accessibilityTags.js';
 
 import '@/styles/main.scss';
 
@@ -31,7 +32,7 @@ const preview: Preview = {
             // An accessibility violation fails the story's test.
             test: 'error',
             options: {
-                runOnly: ['wcag2a', 'wcag21a', 'wcag2aa', 'wcag21aa'],
+                runOnly: ACCESSIBILITY_TAGS,
             },
         },
         // The app is dark only; stories sit on its background.
