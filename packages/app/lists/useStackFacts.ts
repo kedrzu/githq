@@ -8,12 +8,14 @@ import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import type {
     StackBlocker,
     StackDescription,
     StackHeldState,
     StackPullRequestPipKind,
+    StackQueuedState,
 } from '@/store/stacks/describeStack.js';
 import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
@@ -23,6 +25,7 @@ import * as l from './useStackFacts.loc.js';
 import { getHeldReason } from './utils/getHeldReason.js';
 import type { HeldReason } from './utils/getHeldReason.js';
 import { getBlockerLook } from './utils/getBlockerLook.js';
+import { getHeldByText } from './utils/getHeldByText.js';
 import { getItemPeople } from './utils/getItemPeople.js';
 import { getPullRequestLook } from './utils/getPullRequestLook.js';
 import { getStackStateFact } from './utils/getStackStateFact.js';
@@ -44,7 +47,7 @@ export interface UseStackFactsOptions {
 /** An icon in a colour: the state in words (SP14), a pull request's own state inside an expanded card. */
 export interface StackLook {
     readonly icon: LucideIcon;
-    readonly tone: 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
+    readonly tone: 'accent' | 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
 }
 
 /** The state in words, its icon and colour (SP14). */
@@ -96,25 +99,12 @@ interface HeldTextParams {
     readonly number: number;
 }
 
-/** What a share's held sentence names. */
-interface ShareHeldTextParams {
-    readonly number: number;
-}
-
 /** The stack's held sentence for each reason: "2 of 4 ready, #1206 is a draft" (SP14). */
 const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
     draft: l.heldByDraft,
     checks: l.heldByChecks,
     review: l.heldByReview,
     other: l.held,
-};
-
-/** A share's held sentence for each reason, without the stack's count: "#1206 is a draft" (SP24). */
-const SHARE_HELD_TEXTS: Readonly<Record<HeldReason, Translation<ShareHeldTextParams>>> = {
-    draft: l.shareHeldByDraft,
-    checks: l.shareHeldByChecks,
-    review: l.shareHeldByReview,
-    other: l.shareHeld,
 };
 
 /**
@@ -124,6 +114,7 @@ const SHARE_HELD_TEXTS: Readonly<Record<HeldReason, Translation<ShareHeldTextPar
  */
 export function useStackFacts(options: UseStackFactsOptions): StackFactsViewModel {
     const t = useTranslate();
+    const queueTexts = useMergeQueueTexts();
     const fieldList = new Intl.ListFormat(APP_LANGUAGE);
 
     const entry = makeRef(options.stack);
@@ -253,7 +244,9 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
         const { state } = stack;
-        const fact = share ? getShareStateFact(share) : getStackStateFact({ state, lang: APP_LANGUAGE, getHeldText });
+        const fact = share
+            ? getShareStateFact(share)
+            : getStackStateFact({ state, lang: APP_LANGUAGE, getHeldText, getQueuedText });
         const open = state.kind !== 'merged' && state.kind !== 'closed' && state.kind !== 'incomplete';
         return open && stack.landed > 0
             ? { ...fact, text: t(l.landed, { count: stack.landed, state: fact.text }) }
@@ -268,6 +261,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
                     state: { kind: 'ready', openCount: share.count },
                     lang: APP_LANGUAGE,
                     getHeldText,
+                    getQueuedText,
                 });
             case 'held':
                 return { ...getBlockerLook(share.blocker.kind), text: getShareHeldText(share.blocker) };
@@ -278,11 +272,15 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     /** What holds a share, as {@link getHeldText} names it: "#1206 blocks", "#1216 checks running". */
     function getShareHeldText(blocker: StackBlocker): string {
-        return t(SHARE_HELD_TEXTS[getHeldReason(blocker)], { number: blocker.number });
+        return getHeldByText({ blocker, lang: APP_LANGUAGE, otherwise: l.shareHeld });
     }
 
     /** The held sentence names what holds the stack (SP14): "2 of 4 ready, #1216 checks running". */
     function getHeldText({ blocker, readyCount, openCount }: StackHeldState): string {
         return t(HELD_TEXTS[getHeldReason(blocker)], { ready: readyCount, open: openCount, number: blocker.number });
+    }
+
+    function getQueuedText(state: StackQueuedState): string {
+        return queueTexts.group(state.entry);
     }
 }

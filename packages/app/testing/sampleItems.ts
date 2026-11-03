@@ -55,10 +55,17 @@ export function samplePullRequest(id: string): PullRequestItem {
         reviewDecision: null,
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'CLEAN',
+        headRefOid: 'head-oid',
         checks: null,
         reviewRequests: [],
         latestReviews: [],
         stack: null,
         behindBase: false,
+        headRefId: `REF_${id}`,
+        isCrossRepository: false,
+        viewerCanDeleteHeadRef: false,
+        isMergeQueueEnabled: false,
+        mergeQueueEntry: null,
+        autoMerge: null,
     };
 }

@@ -3,12 +3,12 @@ import type { Locator, Page } from '@playwright/test';
 /**
  * Playwright harness for a repository's Commits section (`CommitGraphView.vue`, `/owner/name/commits`): its rows —
  * only those near the viewport are drawn — the row under the cursor, a row's pull request and CI marks, the lines
- * under the rows and in place of them, the list of branches and tags beside them, and a commit's details in its place.
+ * under the rows and in place of them, the list of branches and tags left of them, and a commit's details right of them.
  */
 export class CommitGraphHarness {
     readonly page: Page;
     readonly root: Locator;
-    /** The list of branches and tags beside the graph. */
+    /** The list of branches and tags left of the graph, wherever it renders. */
     readonly refList: Locator;
     /** A commit's details (`CommitDetails.vue`). */
     readonly details: Locator;
@@ -68,6 +68,30 @@ export class CommitGraphHarness {
         await this.page.mouse.down();
         await this.page.mouse.move(x + by, y, { steps: 5 });
         await whileHeld?.();
+        await this.page.mouse.up();
+    }
+
+    /** The edge of the repository's left column, in either layout. */
+    get leftColumnEdge(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize the left column' });
+    }
+
+    /** How far the left column's edge is from the window's, the sidebar's width included. */
+    async leftColumnEdgeX(): Promise<number> {
+        const box = await this.leftColumnEdge.boundingBox();
+        if (!box) {
+            throw new Error("The left column's edge is not on screen");
+        }
+
+        return Math.round(box.x);
+    }
+
+    /** Drags the left column's edge by `by` pixels with the mouse. */
+    async dragLeftColumnEdge(by: number): Promise<void> {
+        const x = await this.leftColumnEdgeX();
+        await this.page.mouse.move(x, 300);
+        await this.page.mouse.down();
+        await this.page.mouse.move(x + by, 300, { steps: 5 });
         await this.page.mouse.up();
     }
 

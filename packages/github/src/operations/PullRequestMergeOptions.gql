@@ -1,0 +1,75 @@
+# What the merge panel of a pull request needs, read fresh when it opens: the status, the texts GitHub proposes
+# for the commit, what the base branch's rulesets and protection allow, the checks with which of them are required,
+# and the head commit's author and headline — named when GitHub refused a merge of an older commit (PM27).
+# `branchProtectionRule` is unreadable without admin rights: read with partial errors allowed.
+query PullRequestMergeOptions($id: ID!) {
+    node(id: $id) {
+        ... on PullRequest {
+            ...PullRequestStatusFields
+            mergeHeadline: viewerMergeHeadlineText(mergeType: MERGE)
+            mergeBody: viewerMergeBodyText(mergeType: MERGE)
+            squashHeadline: viewerMergeHeadlineText(mergeType: SQUASH)
+            squashBody: viewerMergeBodyText(mergeType: SQUASH)
+            viewerCanMergeAsAdmin
+            viewerCanEnableAutoMerge
+            # Aliased: the status reads the rest of it, and only here is the message wanted.
+            autoMergeBody: autoMergeRequest {
+                commitBody
+            }
+            headCommit: commits(last: 1) {
+                nodes {
+                    commit {
+                        oid
+                        messageHeadline
+                        author {
+                            name
+                            user {
+                                login
+                            }
+                        }
+                    }
+                }
+            }
+            baseRef {
+                rules(first: 50) {
+                    nodes {
+                        type
+                        parameters {
+                            ... on PullRequestParameters {
+                                allowedMergeMethods
+                            }
+                            ... on MergeQueueParameters {
+                                mergeMethod
+                            }
+                        }
+                    }
+                }
+                branchProtectionRule {
+                    requiresLinearHistory
+                }
+            }
+            statusCheckRollup {
+                # Aliased: the status's `contexts` reads only the counts.
+                contextPage: contexts(first: 100) {
+                    nodes {
+                        ...PullRequestCheckFields
+                        ... on CheckRun {
+                            isRequired(pullRequestId: $id)
+                            checkSuite {
+                                app {
+                                    slug
+                                }
+                                workflowRun {
+                                    databaseId
+                                }
+                            }
+                        }
+                        ... on StatusContext {
+                            isRequired(pullRequestId: $id)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

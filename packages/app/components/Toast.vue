@@ -1,8 +1,8 @@
-<!-- A message about something that went wrong in the background, or a neutral one about what the user just did (T20) (reka-ui's `Toast`, inside a `Toaster`): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc). It closes by itself after a while (not while hovered or focused), or when dismissed; Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
+<!-- A message about something that happened in the background (reka-ui's `Toast`, inside a `Toaster`) — went wrong, went through in part, or a merge GitHub confirmed (`done`) — or a neutral one about what the user just did (T20): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc). It closes by itself after a while (not while hovered or focused), or when dismissed; Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
 <script lang="ts" setup>
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleX, TriangleAlert, X } from 'lucide-vue-next';
+import { CircleX, GitMerge, TriangleAlert, X } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { ToastDescription, ToastRoot, ToastTitle } from 'reka-ui';
 
@@ -16,8 +16,8 @@ import * as l from './Toast.loc.js';
 withDefaults(
   defineProps<{
     title: string;
-    /** `danger`: a change failed; `warning`: some of it went through; `neutral`: nothing is wrong (give it an `icon`). */
-    tone?: 'danger' | 'warning' | 'neutral';
+    /** `danger`: a change failed; `warning`: some of it went through; `done`: a merge GitHub confirmed; `neutral`: nothing is wrong (give it an `icon`). */
+    tone?: 'danger' | 'done' | 'warning' | 'neutral';
     /** Instead of the tone's own. */
     icon?: LucideIcon;
     /** How long it stays, in ms. */
@@ -40,6 +40,7 @@ defineSlots<{
 
 const open = defineModel<boolean>('open', { default: true });
 const t = useTranslate();
+const icons = { danger: CircleX, done: GitMerge, warning: TriangleAlert, neutral: TriangleAlert };
 
 // Escape dismisses it before the screen sees the key (an opened item would close) — unless the key is someone
 // else's: typed into a field, or closing a picker, a menu or a tooltip that is open.
@@ -91,7 +92,7 @@ function onOpenChange(value: boolean) {
     @escape-key-down="onEscapeKeyDown"
   >
     <component
-      :is="icon ?? (tone === 'danger' ? CircleX : TriangleAlert)"
+      :is="icon ?? icons[tone]"
       :class="css.toast_icon"
       aria-hidden="true"
     />
@@ -151,6 +152,10 @@ function onOpenChange(value: boolean) {
 
   .toast_warning & {
     color: $color-amber;
+  }
+
+  .toast_done & {
+    color: $color-purple;
   }
 
   .toast_neutral & {

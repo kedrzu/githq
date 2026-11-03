@@ -23,6 +23,7 @@ export function getPullRequestLook(kind: StackPullRequestPipKind): StackLook {
             return { icon: GitPullRequestClosed, tone: 'danger' };
         case 'broken':
         case 'moving':
+        case 'merging':
         case 'draft':
         case 'waiting':
             return getBlockerLook(kind);

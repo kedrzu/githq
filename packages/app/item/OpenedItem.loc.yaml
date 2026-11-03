@@ -4,6 +4,10 @@ missing:
   en: No such issue or pull request
 missingDetail:
   en: '{reference} does not exist on GitHub, or your account may not see it.'
+unreachable:
+  en: Couldn't reach GitHub
+tryAgain:
+  en: Try again
 backToList:
   en: Back to the list
 resizeModal:

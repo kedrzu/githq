@@ -2,7 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { D1_ISSUE_DETAIL, F1_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
+import { D1_ISSUE_DETAIL, F1_PULL_REQUEST, F3_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './ItemView.stories.js';
@@ -12,7 +12,23 @@ const {
     IssueInPanel,
     IssueSplit,
     LoadingComments,
+    PullRequestBeingMerged,
+    PullRequestBehind,
+    PullRequestConflicts,
+    PullRequestMergeRefused,
+    PullRequestOutcomeUnknown,
+    PullRequestContributorView,
+    PullRequestDraft,
     PullRequestFailing,
+    PullRequestMergeabilityUnknown,
+    PullRequestAutoMergeOffered,
+    PullRequestAutoMergeOn,
+    PullRequestInQueue,
+    PullRequestOptionalFailing,
+    PullRequestRerunNamesActions,
+    PullRequestRerunOutsideActions,
+    PullRequestQueueReady,
+    PullRequestReady,
     StackOfTenInModal,
     StackOfTenInPanel,
     StackOfTwoOnPage,
@@ -308,4 +324,253 @@ test('the stack map shows only for a pull request in a stack: on a page in its o
 
     await PullRequestFailing.run();
     expect(page.getByRole('region', { name: 'The stack' }).query()).toBeNull();
+});
+
+test('F3: a ready pull request leads with "Merge…" — ⇧M, its button and the first entry of the item menu ask for the merge panel; M still sets the milestone, Open on GitHub stays beside it', async () => {
+    await PullRequestReady.run();
+    const { onMerge } = PullRequestReady.args;
+
+    const merge = page.getByRole('button', { name: 'Merge…' });
+    await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+    // Beside it, by their text: the header has its own GitHub button, an icon alone.
+    const gitHub = page.getByRole('link', { name: 'Open on GitHub' }).filter({ hasText: 'Open on GitHub' });
+    await expect.element(gitHub).toHaveAttribute('aria-keyshortcuts', 'O');
+    await expect
+        .element(page.getByRole('link', { name: 'Review files' }))
+        .toHaveAttribute('aria-keyshortcuts', 'Shift+O');
+    await expect.element(page.getByText("githq doesn't merge")).not.toBeInTheDocument();
+
+    await userEvent.click(merge);
+    expect(onMerge).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).toHaveBeenCalledTimes(2);
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    const menu = page.getByRole('menu');
+    const entries = [...menu.element().querySelectorAll('[role="menuitem"]')].map(entry => entry.textContent ?? '');
+    const mergeAt = entries.findIndex(text => text.startsWith('Merge…'));
+    expect(mergeAt).toBeGreaterThanOrEqual(0);
+    expect(mergeAt).toBeLessThan(entries.findIndex(text => text.startsWith('Request review')));
+    await userEvent.click(page.getByRole('menuitem', { name: /^Merge…/ }));
+    expect(onMerge).toHaveBeenCalledTimes(3);
+
+    // `M` is the milestone's, as before.
+    await userEvent.keyboard('m');
+    await expect.element(page.getByRole('dialog')).toBeVisible();
+    expect(onMerge).toHaveBeenCalledTimes(3);
+});
+
+test.each([
+    ['behind its base', () => PullRequestBehind, 'Update branch'],
+    ['conflicts', () => PullRequestConflicts, 'Resolve on GitHub'],
+    ['a draft', () => PullRequestDraft, 'Mark ready…'],
+])(
+    'PM38: %s — ⇧M in the item menu says the way forward its button says, and still opens the panel',
+    async (_, story, title) => {
+        const shown = story();
+        await shown.run();
+
+        await expect.element(page.getByRole('button', { name: title })).toBeVisible();
+        await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+        const entry = page.getByRole('menuitem', { name: new RegExp(`^${title}`) });
+        await expect.element(entry).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+        await expect.element(page.getByRole('menuitem', { name: /^Merge…/ })).not.toBeInTheDocument();
+        await userEvent.click(entry);
+        expect(shown.args.onMerge).toHaveBeenCalledOnce();
+    },
+);
+
+test("PM38: with the merge options read, ⇧M's entry weighs only the required checks, as the button does", async () => {
+    // Its row counts a failing check that isn't required: alone, that would hold it with no way forward.
+    const checks = { state: 'FAILURE', passing: 7, failing: 1, pending: 1 } as const;
+    const item = { ...F3_PULL_REQUEST, mergeStateStatus: 'BEHIND', checks } as const;
+    await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, item } });
+
+    await expect.element(page.getByRole('button', { name: 'Update branch' })).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menuitem', { name: /^Update branch/ })).toBeVisible();
+});
+
+test('PM39: ⇧E is not offered where no failed check runs on GitHub Actions', async () => {
+    await PullRequestRerunOutsideActions.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: /^Re-run failed checks/ })).not.toBeInTheDocument();
+});
+
+test('PM39: ⇧E names a failed check it re-runs, not one from outside GitHub Actions', async () => {
+    await PullRequestRerunNamesActions.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menuitem', { name: /^Re-run failed checks/ })).toHaveTextContent('docs');
+});
+
+test('K1b: without write access there is no "Merge…" — no button, no key, no menu entry — and one line says so', async () => {
+    await PullRequestContributorView.run();
+    const { onMerge } = PullRequestContributorView.args;
+
+    await expect.element(page.getByText("You can't merge in this repository")).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Merge…' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: /^Merge…/ })).not.toBeInTheDocument();
+    expect(onMerge).not.toHaveBeenCalled();
+});
+
+test('PM33: being merged never reads merged — the pill stays Open, the verdict says "Being merged" and "Merge…" waits for GitHub', async () => {
+    await PullRequestBeingMerged.run();
+    const { onMerge } = PullRequestBeingMerged.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Being merged/ }))
+        .toHaveTextContent('Being mergedSent to GitHub · not merged yet');
+    await expect.element(page.getByText('Open', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Waiting for GitHub')).toBeVisible();
+    await expect.element(page.getByText("You can't merge in this repository")).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Merge…' })).not.toBeInTheDocument();
+    // PM24: ⇧M still opens the panel, which says it is being merged.
+    await userEvent.keyboard('{Shift>}M{/Shift}');
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('JKPLA: a failing check the base branch requires is tagged "Required"; a running one is not', async () => {
+    await PullRequestFailing.run();
+
+    const tagged = (name: string) => page.getByRole('listitem').filter({ hasText: name }).getByText('Required');
+    await expect.element(tagged('ci / test (node 20)')).toBeVisible();
+    await expect.element(tagged('ci / e2e (chromium)')).toBeVisible();
+    await expect.element(tagged('ci / e2e (webkit)')).not.toBeInTheDocument();
+});
+
+test("PM38: with the merge options read, a check that isn't required failing or running leaves the standing ready, as the panel says", async () => {
+    await PullRequestOptionalFailing.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Ready to merge/ }))
+        .toHaveTextContent('Ready to mergeApproved · required checks passed');
+});
+
+test('PM38: checks still running — the standing draws its Checks line with the icon the merge panel draws them with', async () => {
+    const checks = { state: 'PENDING', passing: 6, failing: 0, pending: 3 } as const;
+    await PullRequestReady.run({ args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, checks } } });
+
+    await expect.element(page.getByText('3 running', { exact: false })).toBeVisible();
+    const label = [...document.querySelectorAll('dt')].find(term => term.textContent.trim() === 'Checks');
+    expect(label?.querySelector('svg')?.classList.contains('lucide-loader')).toBe(true);
+});
+
+test('PM38: in the queue the standing says what the panel says, and "Queue…" opens it', async () => {
+    await PullRequestInQueue.run();
+    const { onMerge } = PullRequestInQueue.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^In the queue/ }))
+        .toHaveTextContent('In the queue3rd · waiting for checks · about 12 min');
+    await userEvent.click(page.getByRole('button', { name: 'Queue…' }));
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM38: ready on a queue branch, "Queue…" and the same verdict as the panel', async () => {
+    await PullRequestQueueReady.run();
+
+    await expect.element(page.getByRole('heading', { name: /^Ready for the queue/ })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Queue…' })).toBeVisible();
+});
+
+test('PM38: auto-merge on, "Auto-merge…" and the same verdict as the panel', async () => {
+    await PullRequestAutoMergeOn.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Auto-merge is on/ }))
+        .toHaveTextContent('Auto-merge is onSquash · enabled by mlaine 12 minutes ago');
+    await expect.element(page.getByRole('button', { name: 'Auto-merge…' })).toBeVisible();
+});
+
+test('PM38: not met where auto-merge may wait for it, "Auto-merge…" leads to the panel offering it', async () => {
+    await PullRequestAutoMergeOffered.run();
+
+    await expect.element(page.getByRole('button', { name: 'Auto-merge…' })).toBeVisible();
+});
+
+test('PM38: before the merge options are read, GitHub saying only checks not required fail reads ready', async () => {
+    await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, mergeChecks: null } });
+
+    await expect.element(page.getByRole('heading', { name: /^Ready to merge/ })).toBeVisible();
+});
+
+test('PM38: before the merge options are read, a failing check GitHub holds it for holds the standing', async () => {
+    const { args } = PullRequestOptionalFailing;
+    await PullRequestOptionalFailing.run({
+        args: { ...args, mergeChecks: null, item: { ...args.item, mergeStateStatus: 'BLOCKED' } as typeof args.item },
+    });
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Can't merge yet/ }))
+        .toHaveTextContent("Can't merge yet1 check failing");
+});
+
+test('PM38: conflicts — the verdict the panel says, and "Merge…" names the way forward it leads to and opens the panel', async () => {
+    await PullRequestConflicts.run();
+    const { onMerge } = PullRequestConflicts.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Can't merge/ }))
+        .toHaveTextContent("Can't mergeConflicts with main");
+    await expect.element(page.getByText('With main', { exact: true })).toBeVisible();
+    const forward = page.getByRole('button', { name: 'Resolve on GitHub' });
+    await expect.element(forward).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+    await userEvent.click(forward);
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM22, PM38: a merge state GitHub has not worked out yet reads as not known in the conflicts line, whatever `mergeable` still says — as the panel reads it', async () => {
+    await PullRequestMergeabilityUnknown.run();
+
+    await expect.element(page.getByText('GitHub is still checking', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('None with main')).not.toBeInTheDocument();
+});
+
+test('PM38: behind its base — "Update branch" in place of "Merge…", the conditions still shown', async () => {
+    await PullRequestBehind.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Behind main/ }))
+        .toHaveTextContent('Behind mainmain requires being up to date');
+    await expect.element(page.getByRole('button', { name: 'Update branch' })).toBeVisible();
+    await expect.element(page.getByText('Approved by olam and pnowak')).toBeVisible();
+});
+
+test('PM38: a draft — the conditions fold, and "Mark ready…" in place of "Merge…"', async () => {
+    await PullRequestDraft.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Draft/ }))
+        .toHaveTextContent('DraftMark it ready for review first');
+    await expect.element(page.getByRole('button', { name: 'Mark ready…' })).toBeVisible();
+    await expect.element(page.getByText('Approved by olam and pnowak')).not.toBeInTheDocument();
+});
+
+test('PM38: a merge refused after the user moved on says so in the standing, and "Back to the merge" opens the panel', async () => {
+    await PullRequestMergeRefused.run();
+    const { onMerge } = PullRequestMergeRefused.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Merge refused/ }))
+        .toHaveTextContent('Merge refusedAt least 2 approving reviews are required');
+    await expect.element(page.getByText('Open', { exact: true })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Back to the merge' }));
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM38: no answer in time is grey, neither merged nor refused, until the next refresh settles it', async () => {
+    await PullRequestOutcomeUnknown.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Outcome not known yet/ }))
+        .toHaveTextContent("Outcome not known yetGitHub hasn't answered · not shown as merged");
+    await expect.element(page.getByText('The next refresh settles it')).toBeVisible();
+    await expect.element(page.getByText('Merged', { exact: true })).not.toBeInTheDocument();
 });

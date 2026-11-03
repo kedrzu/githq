@@ -1,11 +1,13 @@
-<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands, its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
+<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands — how its last merge ended when it did not merge too (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 
@@ -50,6 +52,7 @@ const slots = defineSlots<{
 }>();
 
 const t = useTranslate();
+const merging = injectContext(MergeContext, { optional: true });
 const facts = useItemFacts({
   item: () => props.item,
   parent: () => props.parent,
@@ -58,6 +61,7 @@ const facts = useItemFacts({
   now: () => props.now,
   reviewRequested: () => props.reviewRequested,
   people: () => props.people,
+  mergeRecord: () => merging?.getRecord(props.item.id) ?? null,
 });
 const shown = computed(() => new Set(props.properties));
 const status = computed(() => (shown.value.has('status') ? facts.status : null));

@@ -224,6 +224,7 @@ async function mount(refs: MountRefs, { height = 600 } = {}) {
 
     const host = document.createElement('div');
     host.style.display = 'flex';
+    host.style.width = '280px';
     host.style.height = `${height}px`;
     document.body.append(host);
     const known = store.get(REPOSITORY)?.refs;

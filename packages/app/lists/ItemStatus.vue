@@ -33,12 +33,20 @@ defineProps<{
   }
 }
 
+.itemStatus_accent {
+  color: $color-accent;
+}
+
 .itemStatus_danger {
   color: $color-red;
 }
 
 .itemStatus_warning {
   color: $color-amber;
+}
+
+.itemStatus_done {
+  color: $color-purple;
 }
 
 .itemStatus_success {

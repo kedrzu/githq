@@ -1,6 +1,7 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { provideContext } from '@nzyme/vue-utils/context.js';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -11,11 +12,17 @@ import { CommitGraphStore } from '@/commits/CommitGraphStore.js';
 import Toaster from '@/components/Toaster.vue';
 import { EditQueue } from '@/edits/EditQueue.js';
 import EditToasts from '@/edits/EditToasts.vue';
+import { ItemEditor } from '@/edits/ItemEditor.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
+import { getPullRequestCommands } from '@/merge/getPullRequestCommands.js';
+import { MergeContext } from '@/merge/MergeContext.js';
+import { MergePanelStore } from '@/merge/MergePanelStore.js';
+import MergeToasts from '@/merge/MergeToasts.vue';
+import { PullRequestCommands } from '@/merge/PullRequestCommands.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
@@ -26,7 +33,9 @@ import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import AppShell from '@/shell/AppShell.vue';
-import type { SegmentEdits } from '@/shell/FreshnessSegment.vue';
+import { getNewestEdits } from '@/shell/getNewestEdits.js';
+import type { DatedSegmentEdits } from '@/shell/getNewestEdits.js';
+import type { SegmentEdits } from '@/shell/SegmentEdits.js';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -68,6 +77,36 @@ const workflows = useService(WorkflowStore);
 const repositoryTabs = useService(LastRepositoryTab);
 const commitGraphs = useService(CommitGraphStore);
 const route = useRoute();
+const editor = useService(ItemEditor);
+const mergePanel = useService(MergePanelStore);
+const pullRequestCommands = useService(PullRequestCommands);
+
+// Merging from the screens' lists (merging D9): the rows and keys of a pull request the viewer may merge offer it.
+provideContext(MergeContext, {
+  canOpen: id => {
+    const item = items.get(id);
+    return item?.kind === 'pullRequest' && editor.getPermissions(item).mergePanel;
+  },
+  open: (id, options) => mergePanel.open(id, options),
+  getRecord: id => mergePanel.getRecord(id),
+  getCommands: id => {
+    const item = details.getItem(id);
+    return item?.kind === 'pullRequest'
+      ? getPullRequestCommands({
+          pr: item,
+          permissions: editor.getPermissions(item),
+          items: items.all,
+          outcomeUnknown: mergePanel.isOutcomeUnknown(item.id),
+        })
+      : [];
+  },
+  run: (id, command) => {
+    const item = details.getItem(id);
+    if (item?.kind === 'pullRequest') {
+      void pullRequestCommands.run(item, command);
+    }
+  },
+});
 
 const collapsed = preferences.sidebarCollapsed;
 
@@ -152,13 +191,28 @@ const overList = computed(() => (opened.value && !opened.value.onPage ? navigati
 const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
-// The user's edits (D15): the list's segment names the item being sent, the item's the fields.
+// The user's edits (D15): the list's segment names the item being sent, the item's the fields. A merge GitHub has not
+// said the end of is grey until the next refresh settles it (merging PM36); it and a failure, the newer one says it.
 const listEdits = computed((): SegmentEdits | null => {
   if (queue.pending.length > 0) {
     return { kind: 'sending', text: editTexts.sending(queue.pending) };
   }
 
-  return lastFailure.value ? { kind: 'failed', text: editTexts.failed(lastFailure.value) } : null;
+  const unansweredId = mergePanel.unanswered.at(-1);
+  const pr = unansweredId === undefined ? undefined : details.getItem(unansweredId);
+  const record = unansweredId === undefined ? null : mergePanel.getRecord(unansweredId);
+  const unanswered: DatedSegmentEdits | null =
+    pr && record
+      ? {
+          edits: { kind: 'unanswered', text: editTexts.unanswered(`${pr.repository.nameWithOwner}#${pr.number}`) },
+          at: record.at,
+        }
+      : null;
+  const failure = lastFailure.value;
+  const failed: DatedSegmentEdits | null = failure
+    ? { edits: { kind: 'failed', text: editTexts.failed(failure) }, at: failure.at }
+    : null;
+  return getNewestEdits([unanswered, failed]);
 });
 const itemEdits = computed((): SegmentEdits | null => {
   const id = openedId.value;
@@ -171,8 +225,15 @@ const itemEdits = computed((): SegmentEdits | null => {
     return { kind: 'sending', text: editTexts.sendingFields(pending) };
   }
 
+  const record = mergePanel.unanswered.includes(id) ? mergePanel.getRecord(id) : null;
+  const unanswered: DatedSegmentEdits | null = record
+    ? { edits: { kind: 'unanswered', text: editTexts.unanswered(null) }, at: record.at }
+    : null;
   const failure = queue.failures.findLast(candidate => candidate.failed.some(failed => failed.edit.itemId === id));
-  return failure ? { kind: 'failed', text: editTexts.failed(failure) } : null;
+  const failed: DatedSegmentEdits | null = failure
+    ? { edits: { kind: 'failed', text: editTexts.failed(failure) }, at: failure.at }
+    : null;
+  return getNewestEdits([unanswered, failed]);
 });
 // How fresh the opened item's detail is (D15); nothing for an item GitHub says does not exist.
 const itemFreshness = computed((): Freshness | null => {
@@ -261,6 +322,7 @@ function showLastFailure() {
   />
   <Toaster v-if="auth.viewer">
     <EditToasts />
+    <MergeToasts />
     <SyncStoppedToast :login="auth.viewer.login" />
     <UntrackToast />
   </Toaster>

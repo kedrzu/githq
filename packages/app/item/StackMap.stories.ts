@@ -112,3 +112,8 @@ export const PanelReviewRequested: Story = {
 
 /** {@link PanelReviewRequested} folded: the strip says what blocks too. */
 export const PanelReviewRequestedFolded: Story = { args: { ...PanelReviewRequested.args, folded: true } };
+
+/** SP7: the merge of both is on its way — each row reads being merged, none merged, and the line that stacks take longer. */
+export const PanelBeingMerged: Story = {
+    args: { stack: sampleStackDescription(GLYPHS_STACK.map(pr => ({ ...pr, merging: 'SQUASH' as const }))) },
+};

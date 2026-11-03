@@ -95,6 +95,7 @@ const waitingCount = computed(() => {
     <template #contextMenu="menu">
       <ItemContextMenu
         :ids="menu.ids"
+        :merge="menu.merge"
         @open="menu.open"
       />
     </template>

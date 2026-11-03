@@ -13,13 +13,14 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** My work's filter and the list's layout, the board not built yet. */
+/** My work's filter, the merge panel's methods with their keys, and the list's layout, the board not built yet. */
 export const Gallery: Story = {
     render: () =>
         defineComponent({
             setup() {
                 const filter = ref<'all' | 'needsMe' | 'waitingOnOthers'>('all');
                 const layout = ref<'board' | 'list'>('list');
+                const method = ref<'merge' | 'rebase' | 'squash'>('squash');
                 const section = ref<'commits' | 'issues' | 'pullRequests'>('issues');
 
                 return () => (
@@ -36,6 +37,19 @@ export const Gallery: Story = {
                                 ]}
                             />
                             <span tid="filter">Filter: {filter.value}</span>
+                        </StorySection>
+                        <StorySection title="Plain — keys shown">
+                            <SegmentedTabs
+                                modelValue={method.value}
+                                onUpdate:modelValue={value => (method.value = value)}
+                                label="Merge method"
+                                showKeys
+                                options={[
+                                    { value: 'squash', label: 'Squash', keyshortcuts: '1' },
+                                    { value: 'merge', label: 'Merge commit', keyshortcuts: '2' },
+                                    { value: 'rebase', label: 'Rebase', keyshortcuts: '3' },
+                                ]}
+                            />
                         </StorySection>
                         <StorySection title="Boxed — icons">
                             <SegmentedTabs

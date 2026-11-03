@@ -20,6 +20,7 @@ export function getHeldReason(blocker: StackBlocker): HeldReason {
         case 'waiting':
             return blocker.waitingForReview ? 'review' : 'other';
         case 'broken':
+        case 'merging':
         case 'ready':
         case 'merged':
         case 'closed':
