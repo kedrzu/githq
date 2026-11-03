@@ -86,3 +86,16 @@ export interface ViewerProject {
     readonly owner: string;
     readonly closed: boolean;
 }
+
+/**
+ * How many issues and pull requests of a repository are open on GitHub, as last read: what an untracked
+ * repository's view counts the ones githq does not have from (J3, CH37).
+ */
+export interface RepositoryOpenCounts {
+    /** `owner/name`, as asked. */
+    readonly nameWithOwner: string;
+    readonly issues: number;
+    readonly pullRequests: number;
+    /** When they were read (epoch ms). */
+    readonly fetchedAt: number;
+}

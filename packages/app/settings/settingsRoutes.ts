@@ -4,7 +4,7 @@ import type { LocationQuery } from 'vue-router';
 export const SETTINGS_PATH = '/settings';
 
 /** The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. */
-export const SETTINGS_SECTIONS = ['repositories', 'projects', 'sync', 'account'] as const;
+export const SETTINGS_SECTIONS = ['repositories', 'projects', 'display', 'sync', 'account'] as const;
 
 /** A section of Settings. */
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];

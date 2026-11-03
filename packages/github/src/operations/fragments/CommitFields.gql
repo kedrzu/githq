@@ -1,0 +1,23 @@
+# The immutable fields of a commit, kept for good once read (git-client D8). Its pull request and CI state change,
+# so `CommitStates` reads them apart; its full message comes with its details.
+fragment CommitFields on Commit {
+    id
+    oid
+    messageHeadline
+    committedDate
+    author {
+        name
+        user {
+            login
+            avatarUrl
+        }
+    }
+    # Thirty: GitHub refuses a query with no limit, and a merge with more parents than this is all but unheard of. A
+    # parent not read here is one the history below it can never be reached through.
+    parents(first: 30) {
+        nodes {
+            id
+            oid
+        }
+    }
+}

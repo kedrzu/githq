@@ -60,6 +60,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   lands in the repo or on GitHub is in **English**: code, names in code, comments, docs and design documents,
   commit messages, branch names, PR titles and descriptions, issues and their comments, review comments.
   When a document quotes the owner, translate the quote.
+- Greenfield: no backwards compatibility yet. Don't migrate or clean up old local data, storage keys or
+  addresses, and don't propose it.
 
 ## Design
 

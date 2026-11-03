@@ -86,7 +86,7 @@ defineProps<{
   justify-content: center;
   width: 18px;
   height: 18px;
-  font-size: $font-size-3xs;
+  font-size: $font-size-4xs;
   font-weight: $font-weight-semibold;
   color: $color-fg-dim;
   background: $color-bg-3;

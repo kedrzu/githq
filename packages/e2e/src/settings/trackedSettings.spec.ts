@@ -28,7 +28,8 @@ test("a tracked repository's settings open at GitHub's address of them, inside S
 
     // From the repository's menu: Esc goes back to where it was opened, and so does the head's way back.
     await shell.tracked(SAMPLE_REPOSITORY).click();
-    await expect(page).toHaveURL(new RegExp(`/${SAMPLE_REPOSITORY}`, 'u'));
+    // The repository's address opens its section (Issues the first time).
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
     const repositoryUrl = page.url();
     const menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
     await menu.getByRole('menuitem', { name: 'Settings' }).click();

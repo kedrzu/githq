@@ -26,7 +26,7 @@ test('`,` opens Settings; the command menu offers it once, under "Go to" with it
     await expect.element(settings).toBeInTheDocument();
     expect(settings.elements()).toHaveLength(1);
     await expect.element(settings).toHaveTextContent(',');
-    for (const section of ['Repositories', 'Projects', 'Sync settings', 'Account']) {
+    for (const section of ['Repositories', 'Projects', 'Display', 'Sync settings', 'Account']) {
         await expect.element(menu.getByRole('option', { name: `Settings: ${section}` })).toBeInTheDocument();
     }
 

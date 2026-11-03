@@ -873,14 +873,10 @@ function getProjectOptions(): CommandOption[] {
 }
 
 .itemView_toolbar {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
+  @include list-header;
+
   padding: 0 14px 0 $spacing-16;
   font-size: $font-size-sm;
-  border-bottom: 1px solid $color-border;
 }
 
 .itemView_reference {

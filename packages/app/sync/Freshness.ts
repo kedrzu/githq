@@ -9,6 +9,7 @@
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
  * - `partial`: nothing was ever downloaded for it and the first download is under way;
+ * - `filling`: a first open's branches are being read down to the loaded history, `done` of `total` (git-client D19);
  * - `answered`: a saved view whose filter githq can't evaluate, answered by GitHub instead (K6) and refreshed more
  *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered.
  *
@@ -21,6 +22,7 @@ export type Freshness =
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
     | { readonly kind: 'partial' }
+    | { readonly kind: 'filling'; readonly done: number; readonly total: number }
     | { readonly kind: 'answered'; readonly term: string; readonly checkedAt: number | null };
 
 /** What a surface's freshness is told from: its poll and the browser now. */

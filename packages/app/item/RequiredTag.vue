@@ -15,7 +15,7 @@ const t = useTranslate();
 .requiredTag {
   flex: none;
   padding: 0 5px;
-  font-size: $font-size-3xs;
+  font-size: $font-size-4xs;
   color: $color-fg-2;
   border: 1px solid $color-border-2;
   border-radius: $radius-sm;

@@ -217,7 +217,7 @@ const pullRequestCommands = usePullRequestCommands();
 // Where the screen merges, the app's local copy is there: ⇧M's title reads the pull request's way forward from it.
 const items = merging ? useService(ItemStore) : null;
 const getVerdict = usePullRequestVerdicts();
-const repositories = useService(RepositoryStore);
+const repositories = merging ? useService(RepositoryStore) : null;
 
 /** Each top-level entry and those shown nested under it, in order, by the entry's key. */
 const shownByRow = computed(() => {
@@ -508,7 +508,7 @@ function getMergeTitle(target: MergeTarget): string {
     return t(l.merge);
   }
 
-  const autoMergeAllowed = isAutoMergeAllowed(repositories.get(pr.repository.nameWithOwner), null);
+  const autoMergeAllowed = isAutoMergeAllowed(repositories?.get(pr.repository.nameWithOwner) ?? null, null);
   return getVerdict({ pr, checks: null, autoMergeAllowed }).forwardTitle;
 }
 
@@ -1272,13 +1272,13 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
               </span>
             </h2>
             <p
-              v-if="group.rows.length === 0"
+              v-if="group.rows.length === 0 && !group.quietWhenEmpty"
               :class="css.listView_note"
             >
               {{ t(l.groupEmpty) }}
             </p>
             <ul
-              v-else-if="!collapsed.has(group.key)"
+              v-else-if="group.rows.length > 0 && !collapsed.has(group.key)"
               :class="css.listView_rows"
             >
               <template

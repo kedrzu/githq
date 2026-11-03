@@ -1,0 +1,13 @@
+# The history below each of several commits, in one request: the branch tips not yet joined to the known commits,
+# or the newest commit of the frontier when the graph is scrolled down (git-client D9).
+query CommitHistories($ids: [ID!]!, $first: Int!) {
+    nodes(ids: $ids) {
+        ... on Commit {
+            history(first: $first) {
+                nodes {
+                    ...CommitFields
+                }
+            }
+        }
+    }
+}
