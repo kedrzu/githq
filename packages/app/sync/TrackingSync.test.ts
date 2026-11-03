@@ -53,16 +53,17 @@ test('the first download: my work first, then the open items of every repository
         'search is:open is:pr author:@me archived:false',
         'search is:open is:issue assignee:@me archived:false',
         'search is:open mentions:@me archived:false',
+        // The repositories side by side.
         'RepositoryIssues acme/web OPEN',
-        'RepositoryIssues acme/web OPEN after 2',
-        'RepositoryPullRequests acme/web OPEN',
         'RepositoryIssues acme/api OPEN',
+        'RepositoryIssues acme/web OPEN after 2',
         'RepositoryPullRequests acme/api OPEN',
+        'RepositoryPullRequests acme/web OPEN',
         'ProjectFull PVT_1',
         'ProjectItems PVT_1 after 2',
         'RepositoryIssues acme/web CLOSED',
-        'RepositoryPullRequests acme/web CLOSED,MERGED',
         'RepositoryIssues acme/api CLOSED',
+        'RepositoryPullRequests acme/web CLOSED,MERGED',
         'RepositoryPullRequests acme/api CLOSED,MERGED',
     ]);
     // Pull requests come 30 to a page: 100 with their status time out on big repositories.
@@ -110,12 +111,58 @@ test('a download stopped halfway — a tab closed — goes on in the next sessio
     );
     expect(issuePages.map(request => `${String(request.variables.name)} ${String(request.variables.after)}`)).toEqual([
         'web 2',
-        'api null',
         'web null',
         'api null',
     ]);
     expect(second.items.get('I_web_1')?.title).toBe('Issue I_web_1');
     expect(second.tracking.getProgress({ kind: 'repository', nameWithOwner: 'acme/web' }).state).toBe('done');
+});
+
+test('the first download reads four repositories at once for their open items, two for their closed ones', async () => {
+    const { session, tracking } = await setup(createTrackingWorld());
+    const open = createPromise();
+    session.github.holdIf = request => (request.operation === 'RepositoryIssues' ? open.promise : null);
+    tracking.choose({
+        repositories: ['a', 'b', 'c', 'd', 'e', 'f'].map(name => ({ nameWithOwner: `acme/${name}`, id: `R_${name}` })),
+        projects: [],
+    });
+    await session.clock.advance(0);
+    expect(downloads(session.github.requests).filter(read => read.includes(' OPEN'))).toHaveLength(4);
+
+    const closed = createPromise();
+    session.github.holdIf = request =>
+        Array.isArray(request.variables.states) && request.variables.states.includes('CLOSED') ? closed.promise : null;
+    open.resolve();
+    await session.clock.advance(0);
+    const reads = downloads(session.github.requests);
+    expect(reads.filter(read => read.includes(' OPEN'))).toHaveLength(12);
+    expect(reads.filter(read => read.includes(' CLOSED'))).toHaveLength(2);
+});
+
+test('a repository failing stops the others at their next page: the one on its way is read again, from its cursor', async () => {
+    const world = sampleWorld();
+    const { session, tracking, items } = await setup(world);
+    const held = createPromise();
+    session.github.holdIf = request => (request.variables.name === 'api' ? held.promise : null);
+    world.failing.add('RepositoryIssues 2');
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+
+    // acme/web's second page failed; acme/api's first is still on its way.
+    held.resolve();
+    await session.clock.advance(0);
+    expect(items.get('I_api_1')).toBeUndefined();
+    expect(downloads(session.github.requests).filter(read => read.includes('acme/api'))).toEqual([
+        'RepositoryIssues acme/api OPEN',
+    ]);
+    expect(tracking.getProgress({ kind: 'repository', nameWithOwner: 'acme/api' }).done).toBe(0);
+
+    world.failing.clear();
+    session.github.holdIf = null;
+    await session.clock.advance(60_000);
+    expect(items.get('I_api_1')).toBeDefined();
+    expect(tracking.getProgress({ kind: 'repository', nameWithOwner: 'acme/web' }).state).toBe('done');
+    expect(tracking.getProgress({ kind: 'repository', nameWithOwner: 'acme/api' }).state).toBe('done');
 });
 
 test('while nothing changes the polls cost nothing; a change is read again alone', async () => {

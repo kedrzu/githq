@@ -38,7 +38,7 @@ test('on the first download the groups that answered are usable while the others
     github,
 }) => {
     const sample = createSampleMyWork();
-    // The searches go one after another: "Assigned to me" holds back "Mentioned" too.
+    // The searches go side by side: "Assigned to me" holds back no other group.
     const releaseAssigned = sample.world.holdSearch('assigned');
     sample.world.install(github);
     const shell = await signIn(page, github);
@@ -52,7 +52,7 @@ test('on the first download the groups that answered are usable while the others
         /Retry polls on network errors/,
     ]);
     await expect(myWork.group('Assigned to me')).toContainText('Still arriving');
-    await expect(myWork.group('Mentioned')).toContainText('Still arriving');
+    await expect(myWork.rows('Mentioned')).toHaveText([/Dark mode for the status bar/]);
     await page.keyboard.press('j');
     await expect(myWork.selectedRow).toContainText('Add rate limit headers to the API');
 
@@ -63,7 +63,6 @@ test('on the first download the groups that answered are usable while the others
         /Redirect once after sign-in/,
         /Document the keyboard shortcuts/,
     ]);
-    await expect(myWork.rows('Mentioned')).toHaveText([/Dark mode for the status bar/]);
     await expect(shell.statusBar).toContainText('Up to date');
 });
 
