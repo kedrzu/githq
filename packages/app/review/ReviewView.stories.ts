@@ -10,7 +10,13 @@ import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { ReviewFiles } from './ReviewFiles.js';
-import type { PullRequestFiles, ReviewFile, ReviewFileListState, ReviewFileState } from './ReviewFiles.js';
+import type {
+    PullRequestFiles,
+    ReviewFile,
+    ReviewFileCollapse,
+    ReviewFileListState,
+    ReviewFileState,
+} from './ReviewFiles.js';
 import ReviewView from './ReviewView.vue';
 
 const REFERENCE = { owner: 'fitloop', name: 'webapp', number: 1202 };
@@ -50,15 +56,49 @@ export const Files: Story = {
         ),
 };
 
+/** CR63: every file viewed and those hidden: the diff says so. */
+export const AllViewed: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'waiting' } },
+            { viewed: 'VIEWED', hideViewed: true },
+        ),
+};
+
+/** CR12: a lock file as a header saying why, its row tagged, and the file after it open. */
+export const Collapsed: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            {
+                'bun.lock': { kind: 'waiting' },
+                'src/sync/queue.ts': { kind: 'ready', before: 'one\n', after: 'two\n' },
+            },
+            { collapsed: { 'bun.lock': 'lockFile' } },
+        ),
+};
+
+/** What {@link renderView} can have the files be. */
+interface RenderOptions {
+    readonly viewed?: ReviewFile['viewed'];
+    readonly hideViewed?: boolean;
+    readonly collapsed?: Readonly<Record<string, ReviewFileCollapse>>;
+}
+
 /** The view over a real session, whose GitHub answers nothing, reading what is given. */
-function renderView(list: ReviewFileListState, states: Readonly<Record<string, ReviewFileState>> = {}) {
+function renderView(
+    list: ReviewFileListState,
+    states: Readonly<Record<string, ReviewFileState>> = {},
+    options: RenderOptions = {},
+) {
     return defineComponent({
         setup() {
             const container = createContainer();
             container.set(LanguageContext, () => APP_LANGUAGE);
             container.set(Browser, createSignedInBrowser());
             setIndexedDbPersistence(container);
-            const files = createFiles(list, states);
+            const files = createFiles(list, states, options);
             container.set(ReviewFiles, { open: () => files });
             provideContainer(container);
             return () => h(ReviewView, { reference: REFERENCE });
@@ -66,14 +106,18 @@ function renderView(list: ReviewFileListState, states: Readonly<Record<string, R
     });
 }
 
-function createFiles(list: ReviewFileListState, states: Readonly<Record<string, ReviewFileState>>): PullRequestFiles {
+function createFiles(
+    list: ReviewFileListState,
+    states: Readonly<Record<string, ReviewFileState>>,
+    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {} }: RenderOptions,
+): PullRequestFiles {
     const files = Object.keys(states).map((path): ReviewFile => ({
         path,
         previousPath: null,
         changeType: 'MODIFIED',
         additions: 1,
         deletions: 1,
-        viewed: 'UNVIEWED',
+        viewed,
     }));
 
     return {
@@ -87,5 +131,14 @@ function createFiles(list: ReviewFileListState, states: Readonly<Record<string, 
         getState: path => states[path] ?? { kind: 'waiting' },
         prioritize: () => {},
         retry: () => {},
+        getCollapse: path => collapsed[path] ?? null,
+        getCollapseReason: path => {
+            const collapse = collapsed[path];
+            return collapse === 'byHand' || collapse === 'undecided' || collapse === undefined ? null : collapse;
+        },
+        setCollapsed: () => {},
+        setViewed: () => {},
+        hideViewed,
+        setHideViewed: () => {},
     };
 }

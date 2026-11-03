@@ -22,3 +22,17 @@ noChangesDetail:
   en: '{head} has the same content as {base}. The branch may be waiting for a push, or the changes landed elsewhere.'
 noChangesPlain:
   en: The branch has the same content as its base. It may be waiting for a push, or the changes landed elsewhere.
+markViewed:
+  en: Mark file viewed
+markNotViewed:
+  en: Mark file not viewed
+collapseFile:
+  en: Collapse file
+expandFile:
+  en: Expand file
+allViewed:
+  en: All {total} files viewed
+allViewedDetail:
+  en: Hidden files stay viewed on GitHub. Show them to read them again.
+showViewed:
+  en: Show viewed files

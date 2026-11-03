@@ -3,7 +3,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { buildDiffRows } from './diff/buildDiffRows.js';
 import type { DiffLayout, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
-import type { ReviewFile } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 
 /** How many unchanged lines show around a change. */
 const CONTEXT_LINES = 3;
@@ -19,6 +19,10 @@ export interface ReviewHeaderRow {
     readonly kind: 'header';
     readonly key: string;
     readonly file: ReviewFile;
+    /** Only this shows of the file. */
+    readonly collapsed: boolean;
+    /** Why it starts collapsed, also once opened. */
+    readonly collapseReason: ReviewFileCollapseReason | null;
 }
 
 /** A line of a file's diff, with the diff its text is read from. */
@@ -67,6 +71,8 @@ export interface ReviewFailedRow {
 export interface ReviewEndRow {
     readonly kind: 'end';
     readonly key: string;
+    /** Under a header alone, which has its own bottom edge: only the space. */
+    readonly collapsed: boolean;
 }
 
 /** Room under the last file, so that a jump can land even a short last file at the very top (D7). */
@@ -89,6 +95,7 @@ export type ReviewRow =
 /** What shows under a file's header. */
 export type ReviewFileContent =
     | { readonly kind: 'placeholder' }
+    | { readonly kind: 'collapsed' }
     | { readonly kind: 'binary' }
     | { readonly kind: 'tooLarge' }
     | { readonly kind: 'failed'; readonly error: Error }
@@ -98,6 +105,8 @@ export interface BuildReviewRowsParams {
     /** In the order they show. */
     readonly files: readonly ReviewFile[];
     readonly getContent: (file: ReviewFile) => ReviewFileContent;
+    /** `null` for each if not given. */
+    readonly getCollapseReason?: (file: ReviewFile) => ReviewFileCollapseReason | null;
 }
 
 /**
@@ -105,13 +114,17 @@ export interface BuildReviewRowsParams {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildReviewRows({ files, getContent }: BuildReviewRowsParams): ReviewRow[] {
+export function buildReviewRows({ files, getContent, getCollapseReason }: BuildReviewRowsParams): ReviewRow[] {
     const rows: ReviewRow[] = [];
     for (const file of files) {
         const content = getContent(file);
         const { path } = file;
-        rows.push({ kind: 'header', key: getReviewHeaderKey(path), file });
+        const collapsed = content.kind === 'collapsed';
+        const collapseReason = getCollapseReason?.(file) ?? null;
+        rows.push({ kind: 'header', key: getReviewHeaderKey(path), file, collapsed, collapseReason });
         switch (content.kind) {
+            case 'collapsed':
+                break;
             case 'placeholder':
                 rows.push({ kind: 'placeholder', key: path + KEY_SEPARATOR + 'placeholder', file });
                 break;
@@ -136,7 +149,8 @@ export function buildReviewRows({ files, getContent }: BuildReviewRowsParams): R
                 assertNever(content);
         }
 
-        rows.push({ kind: 'end', key: getReviewEndKey(path) });
+        // Its own key: the height and the place held of an open file's end are not this one's.
+        rows.push({ kind: 'end', key: path + KEY_SEPARATOR + (collapsed ? 'collapsedEnd' : 'end'), collapsed });
     }
 
     const last = files.at(-1);
@@ -184,10 +198,6 @@ export function getReviewHeaderKey(path: string) {
     return path + KEY_SEPARATOR + 'header';
 }
 
-function getReviewEndKey(path: string) {
-    return path + KEY_SEPARATOR + 'end';
-}
-
 /**
  * The file a row belongs to, by its key.
  *
@@ -216,7 +226,7 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'failed':
             return 58;
         case 'end':
-            return 16;
+            return row.collapsed ? 12 : 16;
         case 'tail':
             return 600;
         default:
@@ -255,7 +265,11 @@ export interface ReviewRowReplacement {
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
  * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
  * for a placeholder: how far into it the reader was says nothing about what replaced it, often much shorter, so its
- * file shows from its header. `null` when the row is still there, or its file is gone: the list's own rule then applies.
+ * file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
+ *
+ * A file gone from the rows, marked viewed with those hidden, gives way to the next file still there, or the last before it
+ * when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the row is still there,
+ * or no file is left.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -272,19 +286,20 @@ export function findReplacementRow({
     const path = getReviewRowPath(key);
     const start = next.findIndex(row => row.key === getReviewHeaderKey(path));
     const header = next[start];
+    const held = previous.find(row => row.key === key);
     if (!header) {
-        return null;
+        return held ? findNextFileHeader({ key, offset, previous, next }) : null;
     }
 
-    const held = previous.find(row => row.key === key);
-    if (held?.kind === 'placeholder') {
+    if (held?.kind === 'placeholder' || held?.kind === 'end' || next[start + 1]?.kind === 'end') {
         return { row: header, offset: 0 };
     }
 
     const place = held ? getRowPlace(held) : null;
     const first = next[start + 1] ?? header;
     if (held?.kind === 'tail') {
-        return { row: next[next.findIndex(row => row.key === getReviewEndKey(path)) + 1] ?? first, offset };
+        const end = next.findIndex(row => row.kind === 'end' && getReviewRowPath(row.key) === path);
+        return { row: next[end + 1] ?? first, offset };
     }
 
     if (!place) {
@@ -309,6 +324,23 @@ export function findReplacementRow({
     }
 
     return { row: nearest, offset };
+}
+
+function findNextFileHeader({ key, offset, previous, next }: FindReplacementRowParams): ReviewRowReplacement | null {
+    const shown = new Set(next.filter(row => row.kind === 'header').map(row => row.key));
+    const at = previous.findIndex(row => row.key === key);
+    const headers = previous.filter(row => row.kind === 'header');
+    const before = previous.slice(0, at).filter(row => row.kind === 'header').length;
+    const heading =
+        headers.slice(before).find(row => shown.has(row.key)) ??
+        headers.slice(0, before).findLast(row => shown.has(row.key));
+    const row = heading && next.find(other => other.key === heading.key);
+    if (!row) {
+        return null;
+    }
+
+    // Only a header can be below the top: the first row with its bottom below the top is any other's anchor, above it.
+    return { row, offset: previous[at]?.kind === 'header' ? Math.max(offset, 0) : 0 };
 }
 
 interface RowPlace {

@@ -180,7 +180,7 @@ test('the room under what was the last file gives way to what now follows that f
     });
 });
 
-test('nothing replaces a row still there, or one of a file that is gone', () => {
+test('nothing replaces a row still there, or one of a file when no file is left', () => {
     const split = buildAll([A, B], 'split');
     const header = split[0];
     const line = lineWithAfter(split, 19);
@@ -189,9 +189,71 @@ test('nothing replaces a row still there, or one of a file that is gone', () => 
     }
 
     expect(findReplacementRow({ key: header.key, offset: 0, previous: split, next: split })).toBeNull();
+    expect(findReplacementRow({ key: line.key, offset: 0, previous: split, next: [] })).toBeNull();
+});
+
+test('a file gone from under a reader deep in it (D9): the next file starts at the top of the screen, whatever the reader was at', () => {
+    const shown = buildAll([A, B], 'split');
+    const line = lineWithAfter(shown, 19);
+
+    expect(findReplacementRow({ key: line.key, offset: -300, previous: shown, next: buildAll([B], 'split') })).toEqual({
+        row: expect.objectContaining({ key: getReviewHeaderKey(B.path) }),
+        offset: 0,
+    });
+});
+
+test('a file gone whose start was lower down (D9): the next one arrives where it started, not above', () => {
+    const shown = buildAll([A, B], 'split');
+    const next = buildAll([B], 'split');
+    const key = getReviewHeaderKey(A.path);
+
+    expect(findReplacementRow({ key, offset: 120, previous: shown, next })).toMatchObject({
+        row: { key: getReviewHeaderKey(B.path) },
+        offset: 120,
+    });
+    expect(findReplacementRow({ key, offset: -40, previous: shown, next })).toMatchObject({
+        row: { key: getReviewHeaderKey(B.path) },
+        offset: 0,
+    });
+});
+
+test('the last file gone gives way to the one before it, and several gone at once to the next still there', () => {
+    const C = sampleFile('src/c.ts');
+    const three = buildAll([A, B, C], 'split');
+
     expect(
-        findReplacementRow({ key: line.key, offset: 0, previous: split, next: buildAll([B], 'unified') }),
-    ).toBeNull();
+        findReplacementRow({
+            key: getReviewHeaderKey(C.path),
+            offset: 0,
+            previous: three,
+            next: buildAll([A, B], 'split'),
+        }),
+    ).toMatchObject({ row: { key: getReviewHeaderKey(B.path) }, offset: 0 });
+    expect(
+        findReplacementRow({
+            key: getReviewHeaderKey(A.path),
+            offset: 0,
+            previous: three,
+            next: buildAll([C], 'split'),
+        }),
+    ).toMatchObject({ row: { key: getReviewHeaderKey(C.path) }, offset: 0 });
+});
+
+test('a file collapsed under a reader deep in it shows its header at the top; one opened from its end does too', () => {
+    const open = buildAll([A], 'split');
+    const line = lineWithAfter(open, 19);
+    const collapsed = buildReviewRows({
+        files: [A],
+        getContent: (): ReviewFileContent => ({ kind: 'collapsed' }),
+    });
+    const header = { row: { key: getReviewHeaderKey(A.path) }, offset: 0 };
+
+    expect(findReplacementRow({ key: line.key, offset: -200, previous: open, next: collapsed })).toMatchObject(header);
+
+    const end = collapsed.find(row => row.kind === 'end');
+    expect(findReplacementRow({ key: end?.key ?? '', offset: -10, previous: collapsed, next: open })).toMatchObject(
+        header,
+    );
 });
 
 function buildAll(files: readonly ReviewFile[], layout: 'split' | 'unified'): ReviewRow[] {

@@ -1,4 +1,4 @@
-<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, and its size, if it has lines to count. The chevron is drawn for what collapsing will do; it does nothing yet. -->
+<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, its size, if it has lines to count, and its viewed mark (`V`). A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -7,29 +7,55 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, Square, SquareCheckBig } from 'lucide-vue-next';
 import { computed } from 'vue';
+
+import Button from '@/components/Button.vue';
+import IconButton from '@/components/IconButton.vue';
 
 import * as l from './DiffFileHeader.loc.js';
 import { getFileFolder } from './utils/getFileFolder.js';
 import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
-import type { ReviewFile } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 
 const props = defineProps<{
   file: ReviewFile;
+  /** Only the header shows. */
+  collapsed: boolean;
+  /** Why it starts collapsed, also once opened. */
+  collapseReason: ReviewFileCollapseReason | null;
+}>();
+
+const emit = defineEmits<{
+  toggleCollapsed: [];
+  toggleViewed: [];
 }>();
 
 const t = useTranslate();
 
 const folder = computed(() => getFileFolder(props.file.path));
+const viewed = computed(() => props.file.viewed === 'VIEWED');
+
+function onClick(event: MouseEvent) {
+  // The buttons say for themselves.
+  if (!(event.target instanceof Element && event.target.closest('button'))) {
+    emit('toggleCollapsed');
+  }
+}
 </script>
 
 <template>
-  <div :class="css.diffFileHeader">
-    <ChevronDown
-      :class="css.diffFileHeader_chevron"
-      aria-hidden="true"
+  <div
+    :class="[css.diffFileHeader, collapsed && css.diffFileHeader_collapsed]"
+    @click="onClick"
+  >
+    <IconButton
+      :icon="collapsed ? ChevronRight : ChevronDown"
+      :label="collapsed ? t(l.expand) : t(l.collapse)"
+      kbd="Space"
+      aria-keyshortcuts="Space"
+      @click="emit('toggleCollapsed')"
     />
     <ReviewChange :change="file.changeType" />
     <h3 :class="css.diffFileHeader_path">
@@ -37,18 +63,37 @@ const folder = computed(() => getFileFolder(props.file.path));
         v-if="folder !== null"
         :class="css.diffFileHeader_folder"
         >{{ folder }}/</span
-      ><span :class="css.diffFileHeader_name">{{ getFileName(file.path) }}</span>
+      ><span :class="[css.diffFileHeader_name, viewed && css.diffFileHeader_name_viewed]">{{
+        getFileName(file.path)
+      }}</span>
     </h3>
     <span
       v-if="file.previousPath !== null"
       :class="css.diffFileHeader_from"
       >{{ t(l.renamedFrom, { path: file.previousPath }) }}</span
     >
+    <span
+      v-if="collapseReason"
+      :class="css.diffFileHeader_why"
+      >{{ t(l[collapseReason]) }}</span
+    >
     <span :class="css.diffFileHeader_spacer" />
     <template v-if="file.additions + file.deletions > 0">
       <span :class="css.diffFileHeader_added">+{{ numbers.format(file.additions) }}</span>
       <span :class="css.diffFileHeader_deleted">−{{ numbers.format(file.deletions) }}</span>
     </template>
+    <Button
+      :class="[css.diffFileHeader_viewed, viewed && css.diffFileHeader_viewed_on]"
+      variant="outline"
+      size="sm"
+      :icon="viewed ? SquareCheckBig : Square"
+      kbd="V"
+      aria-keyshortcuts="V"
+      :aria-pressed="viewed"
+      @click="emit('toggleViewed')"
+    >
+      {{ t(l.viewed) }}
+    </Button>
   </div>
 </template>
 
@@ -62,13 +107,11 @@ const folder = computed(() => getFileFolder(props.file.path));
   background: $color-bg-2;
   border: 1px solid $color-border;
   border-radius: $radius-lg $radius-lg 0 0;
+  cursor: pointer;
 }
 
-.diffFileHeader_chevron {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  color: $color-fg-3;
+.diffFileHeader_collapsed {
+  border-radius: $radius-lg;
 }
 
 .diffFileHeader_path {
@@ -88,6 +131,20 @@ const folder = computed(() => getFileFolder(props.file.path));
 .diffFileHeader_name {
   font-weight: $font-weight-medium;
   color: $color-fg;
+}
+
+.diffFileHeader_name_viewed {
+  color: $color-fg-2;
+}
+
+.diffFileHeader_why {
+  flex: none;
+  padding: 1px $spacing-6;
+  font-size: 11px;
+  color: $color-fg-2;
+  white-space: nowrap;
+  border: 1px solid $color-border-2;
+  border-radius: 4px;
 }
 
 .diffFileHeader_from {
@@ -117,5 +174,19 @@ const folder = computed(() => getFileFolder(props.file.path));
 
 .diffFileHeader_deleted {
   color: $color-red;
+}
+
+.diffFileHeader_viewed {
+  flex: none;
+}
+
+.diffFileHeader_viewed_on {
+  color: $color-fg;
+  background: color-mix(in srgb, #{$color-accent} 12%, transparent);
+  border-color: color-mix(in srgb, #{$color-accent} 40%, transparent);
+
+  svg:first-of-type {
+    color: $color-accent;
+  }
 }
 </style>

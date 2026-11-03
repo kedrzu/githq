@@ -3,7 +3,7 @@ import { fn } from 'storybook/test';
 
 import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewFileList from './ReviewFileList.vue';
-import type { ReviewFile, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 
 const FILES: readonly ReviewFile[] = [
     file('README.md', 6, 0, { viewed: 'VIEWED' }),
@@ -26,11 +26,20 @@ const STATES: Readonly<Record<string, ReviewFileState>> = {
     'docs/sync.md': { kind: 'loading' },
 };
 
+const COLLAPSES: Readonly<Record<string, ReviewFileCollapseReason>> = {
+    'bun.lock': 'lockFile',
+    'src/api/generated/schema.json': 'generated',
+};
+
 const meta = {
     component: ReviewFileList,
     args: {
         groups: groupReviewFiles(FILES),
+        files: FILES,
         getState: (path: string) => STATES[path] ?? READY,
+        getCollapse: (path: string) => COLLAPSES[path] ?? null,
+        getCollapseReason: (path: string) => COLLAPSES[path] ?? null,
+        hideViewed: false,
         currentPath: 'docs/sync.md',
         changedFiles: FILES.length,
         listComplete: true,
@@ -51,7 +60,12 @@ type Story = StoryObj<typeof meta>;
 export const Files: Story = {};
 
 /** Nothing arrived yet. */
-export const Empty: Story = { args: { groups: [], currentPath: null, changedFiles: null } };
+export const Empty: Story = { args: { groups: [], files: [], currentPath: null, changedFiles: null } };
+
+/** CR21: viewed files hidden: the eye lit, the count still of all of them. */
+export const HidingViewed: Story = {
+    args: { groups: groupReviewFiles(FILES.filter(({ viewed }) => viewed !== 'VIEWED')), hideViewed: true },
+};
 
 /** D35: GitHub lists 3000 at most: "3,000+" and a note at the foot. */
 export const MoreThanListed: Story = { args: { changedFiles: 4210 } };

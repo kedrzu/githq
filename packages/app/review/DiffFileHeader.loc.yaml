@@ -1,2 +1,14 @@
 renamedFrom:
   en: from {path}
+collapse:
+  en: Collapse file
+expand:
+  en: Expand file
+viewed:
+  en: Viewed
+lockFile:
+  en: lock file
+generated:
+  en: generated · .gitattributes
+large:
+  en: large

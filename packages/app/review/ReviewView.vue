@@ -1,8 +1,24 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9); with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. -->
+<script lang="ts">
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+
+const numbers = new Intl.NumberFormat(APP_LANGUAGE);
+</script>
+
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowDownToLine, ArrowUpToLine, CircleAlert, FileCheck, FileSearch } from 'lucide-vue-next';
+import {
+  ArrowDownToLine,
+  ArrowUpToLine,
+  CircleAlert,
+  CircleCheck,
+  Eye,
+  FileCheck,
+  FileSearch,
+  FoldVertical,
+  UnfoldVertical,
+} from 'lucide-vue-next';
 import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -52,7 +68,14 @@ const list = useTemplateRef<AnchoredListExposed>('list');
 const layout = preferences.reviewLayout;
 const hideWhitespace = preferences.reviewHideWhitespace;
 
-const groups = computed(() => groupReviewFiles(files.value?.files ?? []));
+const hideViewed = computed({
+  get: () => files.value?.hideViewed ?? false,
+  set: hide => files.value?.setHideViewed(hide),
+});
+const allFiles = computed(() => files.value?.files ?? []);
+const groups = computed(() =>
+  groupReviewFiles(hideViewed.value ? allFiles.value.filter(file => file.viewed !== 'VIEWED') : allFiles.value),
+);
 const ordered = computed(() => groups.value.flatMap(group => group.files));
 const currentPath = computed(() => {
   const anchor = list.value?.anchor;
@@ -63,6 +86,7 @@ const githubUrl = computed(() => {
   const { owner, name, number } = props.reference;
   return `https://github.com/${owner}/${name}/pull/${number}/files`;
 });
+const currentFile = computed(() => ordered.value.find(file => file.path === currentPath.value) ?? null);
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
 
 const openedAt = performance.now();
@@ -157,6 +181,33 @@ useCommands(() => [
     when: () => ordered.value.length > 0,
     run: () => stepFile(1),
   },
+  {
+    id: 'review.toggleViewed',
+    title: currentFile.value?.viewed === 'VIEWED' ? t(l.markNotViewed) : t(l.markViewed),
+    section: 'view',
+    key: 'V',
+    icon: Eye,
+    when: () => currentFile.value !== null,
+    run: () => {
+      if (currentFile.value) {
+        toggleViewed(currentFile.value.path);
+      }
+    },
+  },
+  {
+    id: 'review.toggleCollapsed',
+    title: isCurrentCollapsed() ? t(l.expandFile) : t(l.collapseFile),
+    section: 'view',
+    key: 'Space',
+    icon: isCurrentCollapsed() ? UnfoldVertical : FoldVertical,
+    // Space on a focused button is that button's, wherever else the key goes.
+    when: () => currentFile.value !== null && document.activeElement?.closest('button, a') == null,
+    run: () => {
+      if (currentFile.value) {
+        toggleCollapsed(currentFile.value.path);
+      }
+    },
+  },
 ]);
 
 function stepFile(delta: 1 | -1) {
@@ -172,8 +223,37 @@ function jumpToFile(path: string) {
   list.value?.jumpTo(getReviewHeaderKey(path), 0);
 }
 
+function selectFile(path: string) {
+  jumpToFile(path);
+  list.value?.focus();
+}
+
 function getState(path: string) {
   return files.value?.getState(path) ?? WAITING;
+}
+
+function getCollapse(path: string) {
+  return files.value?.getCollapse(path) ?? null;
+}
+
+function isCurrentCollapsed() {
+  return currentFile.value !== null && getCollapse(currentFile.value.path) !== null;
+}
+
+function toggleCollapsed(path: string) {
+  files.value?.setCollapsed(path, getCollapse(path) === null);
+  returnKeysToDiff();
+}
+
+function toggleViewed(path: string) {
+  const file = allFiles.value.find(other => other.path === path);
+  files.value?.setViewed([path], file?.viewed !== 'VIEWED');
+  returnKeysToDiff();
+}
+
+/** After the header's button, which may be gone by now: the keys go on acting on the diff. */
+function returnKeysToDiff() {
+  void nextTick(() => list.value?.focus());
 }
 
 function isPinned(row: ReviewRow) {
@@ -202,12 +282,16 @@ function readAgain() {
     <div :class="css.reviewView_body">
       <div :class="css.reviewView_files">
         <ReviewFileList
+          v-model:hide-viewed="hideViewed"
           :groups="groups"
+          :files="allFiles"
           :get-state="getState"
+          :get-collapse="getCollapse"
+          :get-collapse-reason="path => files?.getCollapseReason(path) ?? null"
           :current-path="currentPath"
           :changed-files="files?.changedFiles ?? null"
           :list-complete="files?.listComplete ?? false"
-          @select="jumpToFile"
+          @select="selectFile"
         />
       </div>
       <div :class="css.reviewView_diff">
@@ -224,6 +308,8 @@ function readAgain() {
               :row="row"
               :github-url="githubUrl"
               @retry="path => files?.retry(path)"
+              @toggle-collapsed="toggleCollapsed"
+              @toggle-viewed="toggleViewed"
             />
           </template>
         </AnchoredList>
@@ -254,6 +340,21 @@ function readAgain() {
                   {{ t(l.openOnGitHub) }}
                 </Button>
               </div>
+            </template>
+          </EmptyState>
+          <EmptyState
+            v-else-if="files?.list.kind === 'ready' && allFiles.length > 0"
+            :icon="CircleCheck"
+            :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
+            :detail="t(l.allViewedDetail)"
+          >
+            <template #action>
+              <Button
+                size="sm"
+                @click="hideViewed = false"
+              >
+                {{ t(l.showViewed) }}
+              </Button>
             </template>
           </EmptyState>
           <EmptyState

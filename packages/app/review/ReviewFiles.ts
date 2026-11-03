@@ -12,6 +12,8 @@ import { getGitBlobText } from '@githq/github/rest/getGitBlobText.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { getMergeBase } from '@githq/github/rest/getMergeBase.js';
 import { listPullRequestRenames } from '@githq/github/rest/listPullRequestRenames.js';
+import { markFilesViewed } from '@githq/github/markFilesViewed.js';
+import type { FileViewedMark } from '@githq/github/markFilesViewed.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -31,6 +33,9 @@ import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
 
 import { ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
+import { ReviewViewedFailures } from './ReviewViewedFailures.js';
+import { getFileName } from './utils/getFileName.js';
+import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
 
 /** A file of a pull request, as its list shows it. */
 export interface ReviewFile {
@@ -54,6 +59,15 @@ export type ReviewFileState =
     /** Above {@link MAX_FILE_BYTES} on either side: not fetched. */
     | { readonly kind: 'tooLarge' }
     | { readonly kind: 'failed'; readonly error: Error };
+
+/** Why a file starts collapsed (D8). */
+export type ReviewFileCollapseReason = 'lockFile' | 'generated' | 'large';
+
+/**
+ * Why a file shows only its header: its {@link ReviewFileCollapseReason}, or `byHand` when it has none. `undecided`: it may
+ * be generated, which isn't known until `.gitattributes` is read, and it must not flip from open to collapsed (D35).
+ */
+export type ReviewFileCollapse = ReviewFileCollapseReason | 'byHand' | 'undecided';
 
 /** How far the list of files is. */
 export type ReviewFileListState =
@@ -91,10 +105,45 @@ export interface PullRequestFiles {
     prioritize(path: string): void;
     /** Fetches a `failed` file again, next. */
     retry(path: string): void;
+    /** Why the file shows only its header (D8); `null` for an open one. Nothing of a collapsed file is fetched. */
+    getCollapse(path: string): ReviewFileCollapse | null;
+    /** Why the file starts collapsed, which it still says once opened (CR13). */
+    getCollapseReason(path: string): ReviewFileCollapseReason | null;
+    /** Collapses the file, or opens it, which fetches it next. Kept for as long as the model, whatever the head. */
+    setCollapsed(path: string, collapsed: boolean): void;
+    /**
+     * Sets GitHub's viewed marks, shown at once in {@link files} and sent together with whatever else is waiting. GitHub
+     * refusing puts them back and tells {@link ReviewViewedFailures}.
+     */
+    setViewed(paths: readonly string[], viewed: boolean): void;
+    /** Whether viewed files leave the list and the diff (D9). */
+    readonly hideViewed: boolean;
+    setHideViewed(hide: boolean): void;
 }
 
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
 const MAX_FILE_BYTES = 1_000_000;
+/** From here on a file starts collapsed (D8), near where GitHub's own patches give up. */
+const LARGE_FILE_CHANGES = 3000;
+/** Nobody reads these (D8). */
+const LOCK_FILE_NAMES: ReadonlySet<string> = new Set([
+    'Cargo.lock',
+    'Gemfile.lock',
+    'Pipfile.lock',
+    'bun.lock',
+    'bun.lockb',
+    'composer.lock',
+    'flake.lock',
+    'go.sum',
+    'mix.lock',
+    'package-lock.json',
+    'packages.lock.json',
+    'pnpm-lock.yaml',
+    'poetry.lock',
+    'pubspec.lock',
+    'uv.lock',
+    'yarn.lock',
+]);
 /**
  * About 20 files. A query with many aliased objects costs one point, but GitHub takes about 3 s to answer 100 of these,
  * and the first files are what the user is waiting for.
@@ -132,6 +181,8 @@ interface FileEntry {
     sides: FileSides | null;
     /** Its oids are being read. */
     resolving: boolean;
+    /** Decided once and kept: the rows ask of every file every frame while files arrive. */
+    collapseReason: ReviewFileCollapseReason | null;
 }
 
 /** What one list of files at one head is being read into. Replaced whole when the pull request moves. */
@@ -159,6 +210,20 @@ interface FileRun {
     mergeBaseAsked: boolean;
     /** GitHub refused for the rate: files listed from now on fail with it, until a retry. */
     refusal: Error | null;
+    /** What the head's `.gitattributes` says; `null` until it is read, when no file can be fetched yet. */
+    isGenerated: ((path: string) => boolean) | null;
+}
+
+/** A file's viewed mark as the user set it, which a list read before they did must not undo. */
+interface ViewedMark {
+    /** What is shown. */
+    viewed: FileViewedState;
+    /** What GitHub last said, for going back to. */
+    confirmed: FileViewedState;
+    /** On its way to GitHub. */
+    pending: boolean;
+    /** When it last changed, on {@link createModel}'s own count: a list asked for before that may not know of it. */
+    changedAt: number;
 }
 
 /** What the files are read with for one signed-in user. Dropped whole when they sign out. */
@@ -196,12 +261,13 @@ export const ReviewFiles = defineService({
     deps: {
         accounts: AccountSession,
         blobs: ReviewBlobStore,
+        viewedFailures: ReviewViewedFailures,
         createRequester: GitHubRequesterFactory,
         createRest: GitHubRestFactory,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, blobs, createRequester, createRest, clock, logger }) {
+    setup({ accounts, blobs, viewedFailures, createRequester, createRest, clock, logger }) {
         let session: Session | null = null;
 
         accounts.onChange(follow);
@@ -255,12 +321,19 @@ export const ReviewFiles = defineService({
             const filesRef = shallowRef<readonly ReviewFile[]>([]);
             const listCompleteRef = shallowRef(false);
             const versionRef = shallowRef(0);
+            const hideViewedRef = shallowRef(false);
+            /** The files the user opened (`true`) or collapsed (`false`) themselves. */
+            const collapseChoices = new Map<string, boolean>();
+            const viewedMarks = new Map<string, ViewedMark>();
 
+            let unsentMarks = new Map<string, boolean>();
+            let markCount = 0;
             let dropped = false;
             let cancelUpdate: (() => void) | null = null;
             let jumpedTo: string | null = null;
 
             const listReader = createSingleRunner({ handler: readList });
+            const marksSender = createSingleRunner({ handler: sendViewedMarks });
 
             void load();
 
@@ -290,6 +363,19 @@ export const ReviewFiles = defineService({
                     getState,
                     prioritize,
                     retry,
+                    getCollapse,
+                    getCollapseReason(path) {
+                        void versionRef.value;
+                        return runRef.value?.entries.get(path)?.collapseReason ?? null;
+                    },
+                    setCollapsed,
+                    setViewed,
+                    get hideViewed() {
+                        return hideViewedRef.value;
+                    },
+                    setHideViewed(hide) {
+                        hideViewedRef.value = hide;
+                    },
                 },
                 reopen,
                 drop,
@@ -339,6 +425,171 @@ export const ReviewFiles = defineService({
                 }
             }
 
+            function getCollapse(path: string) {
+                void versionRef.value;
+                const run = runRef.value;
+                const entry = run?.entries.get(path);
+                return run && entry ? readCollapse(run, entry) : null;
+            }
+
+            function readCollapse(run: FileRun, { file, collapseReason }: FileEntry): ReviewFileCollapse | null {
+                const choice = collapseChoices.get(file.path);
+                if (choice === true) {
+                    return null;
+                }
+
+                return collapseReason ?? (choice === false ? 'byHand' : run.isGenerated === null ? 'undecided' : null);
+            }
+
+            function setCollapsed(path: string, collapsed: boolean) {
+                collapseChoices.set(path, !collapsed);
+                // Not through `setState`'s frame: this is a key pressed.
+                versionRef.value++;
+
+                const run = runRef.value;
+                const entry = run?.entries.get(path);
+                if (run && entry) {
+                    if (!collapsed) {
+                        letGo(run, entry);
+                        return;
+                    }
+
+                    // Out of the queue: whatever is on its way for it is kept, for when it is opened.
+                    run.queue = run.queue.filter(other => other !== entry);
+                    if (run.states.get(path)?.kind === 'loading') {
+                        setState(run, path, WAITING);
+                    }
+                }
+            }
+
+            /** Into the queue, at its front, unless it has already got as far as it can. */
+            function letGo(run: FileRun, entry: FileEntry) {
+                const { path } = entry.file;
+                const kind = run.states.get(path)?.kind ?? 'waiting';
+                if (kind !== 'waiting' && kind !== 'loading') {
+                    return;
+                }
+
+                if (run.refusal) {
+                    endEntry(run, entry, { kind: 'failed', error: run.refusal });
+                    return;
+                }
+
+                if (!run.queue.includes(entry)) {
+                    run.queue.unshift(entry);
+                }
+
+                if (isHeldForRenames(run, entry)) {
+                    void run.renamesReader.execute();
+                }
+
+                takeReady(run);
+                prioritize(path);
+            }
+
+            function setViewed(paths: readonly string[], viewed: boolean) {
+                const run = runRef.value;
+                if (!run) {
+                    return;
+                }
+
+                const wanted = viewed ? 'VIEWED' : 'UNVIEWED';
+                for (const path of paths) {
+                    const entry = run.entries.get(path);
+                    if (!entry || entry.file.viewed === wanted) {
+                        continue;
+                    }
+
+                    const held = viewedMarks.get(path);
+                    viewedMarks.set(path, {
+                        viewed: wanted,
+                        confirmed: held?.pending ? held.confirmed : entry.file.viewed,
+                        pending: true,
+                        changedAt: ++markCount,
+                    });
+                    entry.file = { ...entry.file, viewed: wanted };
+                    unsentMarks.set(path, viewed);
+                }
+
+                publishFiles(run);
+                void marksSender.execute();
+            }
+
+            /** One request at a time, so that marks reach GitHub in the order they were set; what waited meanwhile goes in the next. */
+            async function sendViewedMarks() {
+                while (unsentMarks.size > 0) {
+                    const sending = unsentMarks;
+                    unsentMarks = new Map();
+                    const pullRequestId = runRef.value?.id;
+                    if (pullRequestId === undefined) {
+                        return;
+                    }
+
+                    const marks = [...sending].map(([path, viewed]) => ({ path, viewed }));
+                    let failure: Error | null = null;
+                    try {
+                        await markFilesViewed({ requester: current.requester, pullRequestId, marks });
+                    } catch (error) {
+                        failure = toError(error);
+                    }
+
+                    if (dropped) {
+                        return;
+                    }
+
+                    settleViewedMarks(marks, failure);
+                }
+            }
+
+            function settleViewedMarks(sent: readonly FileViewedMark[], failure: Error | null) {
+                const run = runRef.value;
+                for (const { path, viewed } of sent) {
+                    const mark = viewedMarks.get(path);
+                    if (!mark) {
+                        continue;
+                    }
+
+                    if (!failure) {
+                        mark.confirmed = viewed ? 'VIEWED' : 'UNVIEWED';
+                    }
+
+                    // A newer one for this file is waiting: that one decides.
+                    if (unsentMarks.has(path)) {
+                        continue;
+                    }
+
+                    mark.pending = false;
+                    mark.changedAt = ++markCount;
+                    if (failure) {
+                        mark.viewed = mark.confirmed;
+                        const entry = run?.entries.get(path);
+                        if (entry) {
+                            entry.file = { ...entry.file, viewed: mark.confirmed };
+                        }
+                    }
+                }
+
+                if (run) {
+                    publishFiles(run);
+                    keepList(run);
+                }
+
+                if (failure) {
+                    viewedFailures.report(
+                        sent.map(mark => mark.path),
+                        failure.message,
+                    );
+                    // Others of the request may have gone through: GitHub says which.
+                    void listReader.execute();
+                }
+            }
+
+            /** What a page of the list says of a file, unless the user set its mark since it was asked for or is still setting it. */
+            function withFresherMark(file: ReviewFile, askedAt: number): ReviewFile {
+                const mark = viewedMarks.get(file.path);
+                return mark && (mark.pending || mark.changedAt > askedAt) ? { ...file, viewed: mark.viewed } : file;
+            }
+
             function reopen() {
                 const list = listRef.value;
                 switch (list.kind) {
@@ -359,6 +610,9 @@ export const ReviewFiles = defineService({
             /** They signed out: nothing of the private files stays reachable from a model a screen may still hold. */
             function drop() {
                 dropped = true;
+                unsentMarks.clear();
+                viewedMarks.clear();
+                collapseChoices.clear();
                 cancelUpdate?.();
                 cancelUpdate = null;
                 runRef.value = null;
@@ -426,6 +680,7 @@ export const ReviewFiles = defineService({
                 const listed = new Set<string>();
                 let after: string | null = null;
                 do {
+                    const askedAt = markCount;
                     const page: FileListPage = await readListPage(after);
                     if (dropped) {
                         return;
@@ -446,7 +701,9 @@ export const ReviewFiles = defineService({
                         run = startRun(page);
                     }
 
-                    const files = (page.files?.nodes ?? []).filter(node => node !== null).map(toReviewFile);
+                    const files = (page.files?.nodes ?? [])
+                        .filter(node => node !== null)
+                        .map(node => withFresherMark(toReviewFile(node), askedAt));
                     for (const file of files) {
                         listed.add(file.path);
                     }
@@ -514,18 +771,21 @@ export const ReviewFiles = defineService({
                     renamesReader: createSingleRunner({ handler: () => readRenames(run) }),
                     mergeBaseAsked: false,
                     refusal: null,
+                    isGenerated: null,
                 };
 
                 runRef.value = run;
                 filesRef.value = [];
                 listCompleteRef.value = false;
                 listRef.value = { kind: 'ready' };
+                void readGitAttributes(run);
                 return run;
             }
 
             /**
              * Takes a page of the list, or the list kept on disk: a file not known yet joins the queue, the only place
-             * deciding which files get fetched, and one known just takes what GitHub says of it now, its state left alone.
+             * deciding which files get fetched, unless it starts collapsed, and one known just takes what GitHub says of it
+             * now, its state left alone.
              */
             function addFiles(run: FileRun, files: readonly ReviewFile[]) {
                 let changed = false;
@@ -542,11 +802,14 @@ export const ReviewFiles = defineService({
                         file: { ...file, previousPath },
                         sides: null,
                         resolving: false,
+                        collapseReason: getCollapseReason(file, run.isGenerated),
                     };
                     run.entries.set(file.path, added);
-                    run.queue.push(added);
-                    if (run.refusal) {
-                        endEntry(run, added, { kind: 'failed', error: run.refusal });
+                    if (isFetchable(run, added)) {
+                        run.queue.push(added);
+                        if (run.refusal) {
+                            endEntry(run, added, { kind: 'failed', error: run.refusal });
+                        }
                     }
                 }
 
@@ -558,7 +821,8 @@ export const ReviewFiles = defineService({
                     moveToFront(run, jumpedTo);
                 }
 
-                if (run.queue.some(entry => isHeldForRenames(run, entry))) {
+                // Of every file, collapsed ones too: their headers say where they came from.
+                if ([...run.entries.values()].some(entry => isHeldForRenames(run, entry))) {
                     void run.renamesReader.execute();
                 }
 
@@ -581,6 +845,94 @@ export const ReviewFiles = defineService({
 
                 entry.file = { ...file, previousPath };
                 return true;
+            }
+
+            /** Undecided files are in the queue, as most turn out open; nothing leaves it until `.gitattributes` is read. */
+            function isFetchable(run: FileRun, entry: FileEntry) {
+                const collapse = readCollapse(run, entry);
+                return collapse === null || collapse === 'undecided';
+            }
+
+            /**
+             * Reads what collapses generated files once per head, as it would any blob: its answer and text are kept. A
+             * failure leaves nothing marked generated: the files must not wait on it, and GitHub's own rate says why.
+             */
+            async function readGitAttributes(run: FileRun) {
+                let isGenerated = (_: string) => false;
+                try {
+                    const text = await readGitAttributesText(run);
+                    if (text !== null) {
+                        isGenerated = parseLinguistGenerated(text);
+                    }
+                } catch (error) {
+                    logger.warn('Could not read .gitattributes', { error });
+                    if (isLive(run)) {
+                        stopOnRateLimit(run, toError(error));
+                    }
+                }
+
+                if (!isLive(run)) {
+                    return;
+                }
+
+                run.isGenerated = isGenerated;
+                for (const entry of run.entries.values()) {
+                    entry.collapseReason = getCollapseReason(entry.file, isGenerated);
+                }
+
+                run.queue = run.queue.filter(entry => isFetchable(run, entry));
+                versionRef.value++;
+                pump(run);
+            }
+
+            async function readGitAttributesText(run: FileRun) {
+                const expression = `${run.headRefOid}:.gitattributes`;
+                const answers = await readKeptAnswers([expression]);
+                if (!answers.has(expression)) {
+                    const answered = await readReviewBlobOids({
+                        requester: current.requester,
+                        repository,
+                        expressions: [expression],
+                    });
+                    keepAnswers(answered);
+                    for (const [asked, answer] of answered) {
+                        answers.set(asked, answer);
+                    }
+                }
+
+                const answer = answers.get(expression);
+                if (answer?.kind === 'failed') {
+                    throw answer.error;
+                }
+
+                if (answer?.kind !== 'blob' || answer.isBinary || answer.byteSize > MAX_FILE_BYTES) {
+                    return null;
+                }
+
+                await readKept(run, [answer.oid]);
+                const kept = run.texts.get(answer.oid);
+                return kept ?? (await fetchGitAttributesText(run, answer.oid));
+            }
+
+            async function fetchGitAttributesText(run: FileRun, oid: string) {
+                const answers = await readReviewBlobTexts({ requester: current.requester, repository, oids: [oid] });
+                const answer = answers.get(oid);
+                if (answer?.kind === 'failed') {
+                    throw answer.error;
+                }
+
+                const text =
+                    answer?.kind === 'truncated'
+                        ? await getGitBlobText(current.rest, { nameWithOwner, oid })
+                        : answer?.kind === 'text'
+                          ? answer.text
+                          : null;
+                if (text !== null && isLive(run)) {
+                    keep(new Map([[oid, text]]));
+                    run.texts.set(oid, text);
+                }
+
+                return text;
             }
 
             function publishFiles(run: FileRun) {
@@ -680,6 +1032,10 @@ export const ReviewFiles = defineService({
 
             /** The next query: whichever the first file with something to fetch needs. */
             function takeWork(run: FileRun) {
+                if (run.isGenerated === null) {
+                    return null;
+                }
+
                 for (const entry of run.queue) {
                     if (entry.resolving || isHeldForRenames(run, entry)) {
                         continue;
@@ -1084,6 +1440,22 @@ function toReviewFile(node: FileListNode): ReviewFile {
         deletions: node.deletions,
         viewed: node.viewerViewedState,
     };
+}
+
+/** Why the file starts collapsed, whoever asks: the lock files by name and the large by size are known at once. */
+function getCollapseReason(
+    file: ReviewFile,
+    isGenerated: ((path: string) => boolean) | null,
+): ReviewFileCollapseReason | null {
+    if (LOCK_FILE_NAMES.has(getFileName(file.path))) {
+        return 'lockFile';
+    }
+
+    if (isGenerated?.(file.path)) {
+        return 'generated';
+    }
+
+    return file.additions + file.deletions >= LARGE_FILE_CHANGES ? 'large' : null;
 }
 
 /** A renamed or copied file whose source isn't known yet: `waiting`, without holding up the others. */

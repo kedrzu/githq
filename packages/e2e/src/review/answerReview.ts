@@ -11,6 +11,8 @@ export interface SampleReviewFile {
     readonly changeType?: PatchStatus;
     readonly previousPath?: string;
     readonly viewed?: FileViewedState;
+    /** How many lines it adds, when it is to look larger than it is. */
+    readonly additions?: number;
     readonly binary?: boolean;
     /** Its size in bytes, when it is to look larger than it is. */
     readonly byteSize?: number;
@@ -30,6 +32,13 @@ export interface AnsweredReview {
     heal(path: string): void;
     /** This file's content waits until the returned function is called. */
     hold(path: string): () => void;
+    /** GitHub refuses marks until {@link allowMarks}. */
+    refuseMarks(message: string): void;
+    allowMarks(): void;
+    /** The expressions (`<commit>:<path>`) asked of GitHub: what collapsing keeps from being fetched isn't among them. */
+    readonly asked: readonly string[];
+    /** The paths whose viewed mark changed, in the order they did. */
+    readonly marked: readonly string[];
 }
 
 const HEAD_OID = 'head0000';
@@ -44,6 +53,9 @@ const MERGE_BASE_OID = 'fork0000';
 export function answerReview(github: GitHubMock, params: AnswerReviewParams): AnsweredReview {
     const failures = new Map<string, string>();
     const held = new Map<string, Promise<void>>();
+    const marked: string[] = [];
+    const asked: string[] = [];
+    let marksRefused: string | null = null;
     const repositoryPath = `/repos/${params.repository}`;
     const blobs = new Map<string, { file: SampleReviewFile; text: string }>();
     for (const file of params.files) {
@@ -68,7 +80,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
                     nodes: params.files.map(file => ({
                         path: file.path,
                         changeType: file.changeType ?? 'MODIFIED',
-                        additions: countLines(file.after),
+                        additions: file.additions ?? countLines(file.after),
                         deletions: countLines(file.before),
                         viewerViewedState: file.viewed ?? 'UNVIEWED',
                     })),
@@ -90,6 +102,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         const repository: Record<string, unknown> = {};
         for (const [name, expression] of Object.entries(variables)) {
             if (/^e\d+$/u.test(name) && typeof expression === 'string') {
+                asked.push(expression);
                 const separator = expression.indexOf(':');
                 const oid = oidOf(expression.slice(0, separator), expression.slice(separator + 1));
                 const blob = blobs.get(oid);
@@ -131,7 +144,29 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         return errors.length > 0 ? { data: { repository }, errors } : { data: { repository } };
     });
 
+    github.graphqlDocument('MarkFilesViewed', ({ variables }) => {
+        if (marksRefused !== null) {
+            return { data: null, errors: [{ message: marksRefused }] };
+        }
+
+        for (const [name, path] of Object.entries(variables)) {
+            if (/^p\d+$/u.test(name) && typeof path === 'string') {
+                marked.push(path);
+            }
+        }
+
+        return { data: {} };
+    });
+
     return {
+        asked,
+        marked,
+        refuseMarks: message => {
+            marksRefused = message;
+        },
+        allowMarks: () => {
+            marksRefused = null;
+        },
         fail: (path, message) => failures.set(path, message),
         heal: path => failures.delete(path),
         hold(path) {

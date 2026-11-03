@@ -1,0 +1,5 @@
+failed:
+  plural: count
+  en:
+    one: "Couldn't change the viewed mark of {name}"
+    many: "Couldn't change the viewed marks of {formatted} files"

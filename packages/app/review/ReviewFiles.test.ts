@@ -14,6 +14,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
 import { ReviewFiles } from './ReviewFiles.js';
+import { ReviewViewedFailures } from './ReviewViewedFailures.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
@@ -259,8 +260,8 @@ test('texts are asked in the order of the list, 3 queries at a time, and a jump 
 
     model.prioritize('file-199.ts');
     held[0]?.();
-    await waitUntil(() => session.operations().filter(isOidQuery).length === 4, { timeoutMs: 2000 });
-    const oidQueries = session.github.requests.filter(request => isOidQuery(request.operation));
+    await waitUntil(() => session.github.requests.filter(isOidQuery).length === 4, { timeoutMs: 2000 });
+    const oidQueries = session.github.requests.filter(isOidQuery);
     expect(oidQueries[3]?.variables.e0).toBe(`${HEAD}:file-199.ts`);
 
     session.github.holdIf = null;
@@ -281,7 +282,7 @@ test('a query asks at most 50 texts, however many files have got that far', asyn
 
     const held: (() => void)[] = [];
     const { model, session } = open(uniqueLogin(), github, request =>
-        isOidQuery(request.operation)
+        isOidQuery(request)
             ? new Promise<void>(resolve => {
                   held.push(resolve);
               })
@@ -326,7 +327,7 @@ test('oid expressions are asked 40 at a time, 3 queries at once, and a jump aske
 
     const held: (() => void)[] = [];
     const { model, session } = open(uniqueLogin(), github, request =>
-        isOidQuery(request.operation)
+        isOidQuery(request)
             ? new Promise<void>(resolve => {
                   held.push(resolve);
               })
@@ -344,7 +345,7 @@ test('oid expressions are asked 40 at a time, 3 queries at once, and a jump aske
 
     await settled(model);
 
-    const oidQueries = session.github.requests.filter(request => isOidQuery(request.operation));
+    const oidQueries = session.github.requests.filter(isOidQuery);
     expect(oidQueries.map(request => Object.keys(request.variables).length - 2).toSorted()).toEqual([
         20, 40, 40, 40, 40,
     ]);
@@ -362,7 +363,7 @@ test('the merge base is asked once for a pull request, and opening it again reus
 
     expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: 'before', after: 'after' });
     expect(session.operations().filter(operation => operation.includes('/compare/'))).toHaveLength(1);
-    expect(session.operations().filter(operation => operation === 'ReviewBlobOids')).toHaveLength(1);
+    expect(session.github.requests.filter(isOidQuery)).toHaveLength(1);
 
     github.moveHead('head-2');
     github.blobAt('head-2:a.ts', { text: 'pushed' });
@@ -383,23 +384,22 @@ test('many files arriving tell of it once a frame, not once a file', async () =>
     const held = new Promise<void>(resolve => {
         release = resolve;
     });
-    const { model, session } = open(uniqueLogin(), github, request =>
-        request.operation === 'ReviewBlobOids' ? held : null,
-    );
+    const { model, session } = open(uniqueLogin(), github, request => (isOidQuery(request) ? held : null));
     await waitUntil(() => model.list.kind === 'ready', { timeoutMs: 2000 });
-    await waitUntil(() => session.operations().includes('ReviewBlobOids'), { timeoutMs: 2000 });
+    await waitUntil(() => session.github.requests.some(isOidQuery), { timeoutMs: 2000 });
+    const version = model.version;
     const firstState = computed(() => model.getState('file-0.ts').kind);
     expect(firstState.value).toBe('loading');
 
     // The clock stands still, so no frame comes while they all arrive.
     release();
     await waitUntil(() => model.files.every(file => model.getState(file.path).kind === 'ready'), { timeoutMs: 5000 });
-    expect(model.version).toBe(0);
+    expect(model.version).toBe(version);
     expect(firstState.value).toBe('loading');
 
     await session.clock.advance(16);
 
-    expect(model.version).toBe(1);
+    expect(model.version).toBe(version + 1);
     expect(firstState.value).toBe('ready');
 });
 
@@ -600,7 +600,7 @@ test('a pull request that moved shows what is new once GitHub answers, asking on
 
     expect(moved.model.getState('a.ts')).toEqual({ kind: 'ready', before: 'before', after: 'pushed' });
     const asked = moved.session.github.requests
-        .filter(request => isOidQuery(request.operation))
+        .filter(isOidQuery)
         .flatMap(request => variablesOf(request, 'e').map(([, expression]) => expression));
     expect(asked.toSorted()).toEqual(['head-2:a.ts', 'head-2:new.ts']);
 });
@@ -643,7 +643,7 @@ test('a base whose tip moved on starts nothing over while the merge base stays; 
     await session.clock.advance(50);
 
     expect(model.getState('a.ts')).toBe(state);
-    expect(session.operations().filter(isOidQuery)).toHaveLength(1);
+    expect(session.github.requests.filter(isOidQuery)).toHaveLength(1);
 
     github.moveBase('base-tip-3', 'merge-base-2');
     github.blobAt('merge-base-2:a.ts', { text: 'rebased onto' });
@@ -745,6 +745,244 @@ test('signing out with every kind of answer on its way: the kept list, oids and 
     expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
 });
 
+test('a lock file, a generated and a very large file are neither read nor asked about until opened; opening one fetches it next', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.blobAt(`${HEAD}:.gitattributes`, { text: '*.gen.ts linguist-generated\n' });
+    github.file({ path: 'bun.lock', changeType: 'MODIFIED', before: 'lock a', after: 'lock b' });
+    github.file({ path: 'src/api.gen.ts', changeType: 'MODIFIED', before: 'gen a', after: 'gen b' });
+    github.file({ path: 'data.json', changeType: 'ADDED', after: 'big', additions: 3000 });
+    github.file({ path: 'almost.json', changeType: 'ADDED', after: 'almost', additions: 2997 });
+    const { model, session } = open(uniqueLogin(), github);
+
+    await settled(model);
+
+    expect(model.getCollapse('bun.lock')).toBe('lockFile');
+    expect(model.getCollapse('src/api.gen.ts')).toBe('generated');
+    expect(model.getCollapse('data.json')).toBe('large');
+    expect(model.getCollapse('almost.json')).toBeNull();
+    expect(oidExpressions(session).toSorted()).toEqual([`${HEAD}:.gitattributes`, `${HEAD}:almost.json`]);
+    expect(textsAsked(session).toSorted()).toEqual(
+        [oidOf('*.gen.ts linguist-generated\n'), oidOf('almost')].toSorted(),
+    );
+
+    model.setCollapsed('bun.lock', false);
+    await settled(model);
+
+    expect(model.getState('bun.lock')).toEqual({ kind: 'ready', before: 'lock a', after: 'lock b' });
+    expect(textsAsked(session)).toContain(oidOf('lock b'));
+    expect(textsAsked(session)).not.toContain(oidOf('gen b'));
+    expect(textsAsked(session)).not.toContain(oidOf('big'));
+});
+
+test('a jump to a collapsed file fetches nothing of it: only opening does', async () => {
+    const github = createGitHub();
+    github.file({ path: 'yarn.lock', changeType: 'ADDED', after: 'lock' });
+    const { model, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    model.prioritize('yarn.lock');
+    await session.clock.advance(50);
+
+    expect(textsAsked(session)).toEqual([]);
+    expect(model.getState('yarn.lock')).toEqual({ kind: 'waiting' });
+});
+
+test('until .gitattributes is read no file can be fetched, and one that may be generated never shows open', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.blobAt(`${HEAD}:.gitattributes`, { text: 'dist/** linguist-generated\n' });
+    github.file({ path: 'dist/app.js', changeType: 'ADDED', after: 'built' });
+    github.file({ path: 'src/app.ts', changeType: 'ADDED', after: 'written' });
+    github.file({ path: 'go.sum', changeType: 'ADDED', after: 'sums' });
+    const hold = createSilentHold(
+        request => request.operation === 'ReviewBlobOids' && request.variables.e0 === `${HEAD}:.gitattributes`,
+    );
+    const { model, session } = open(uniqueLogin(), github, hold.hold);
+    await waitUntil(() => model.listComplete && session.operations().includes('ReviewBlobOids'), { timeoutMs: 2000 });
+    await session.clock.advance(50);
+
+    expect(model.getCollapse('dist/app.js')).toBe('undecided');
+    expect(model.getCollapse('src/app.ts')).toBe('undecided');
+    // Its name says already.
+    expect(model.getCollapse('go.sum')).toBe('lockFile');
+    expect(oidExpressions(session)).toEqual([`${HEAD}:.gitattributes`]);
+
+    hold.release();
+    await settled(model);
+
+    expect(model.getCollapse('dist/app.js')).toBe('generated');
+    expect(model.getState('dist/app.js')).toEqual({ kind: 'waiting' });
+    expect(model.getCollapse('src/app.ts')).toBeNull();
+    expect(model.getState('src/app.ts')).toEqual({ kind: 'ready', before: null, after: 'written' });
+});
+
+test('.gitattributes is read once per head, then from the disk; failing to read it collapses nothing and holds nothing up', async () => {
+    const github = createGitHub();
+    github.blobAt(`${HEAD}:.gitattributes`, { text: '*.gen.ts linguist-generated\n' });
+    github.file({ path: 'a.gen.ts', changeType: 'ADDED', after: 'generated' });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'plain' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilKept(login, oidOf('*.gen.ts linguist-generated\n'));
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('plain'));
+
+    const reloaded = open(login, github);
+    await settled(reloaded.model);
+
+    expect(reloaded.model.getCollapse('a.gen.ts')).toBe('generated');
+    expect(reloaded.session.operations()).not.toContain('ReviewBlobOids');
+
+    github.failNext('ReviewBlobOids');
+    const failing = open(uniqueLogin(), github);
+    await settled(failing.model);
+
+    expect(failing.model.getCollapse('a.gen.ts')).toBeNull();
+    expect(failing.model.getState('a.gen.ts')).toEqual({ kind: 'ready', before: null, after: 'generated' });
+});
+
+test('a file collapsed by hand before its turn is not fetched, one collapsed once read opens again at once, and either keeps the reason it has', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'read.ts', changeType: 'ADDED', after: 'read' });
+    github.file({ path: 'later.ts', changeType: 'ADDED', after: 'later' });
+    github.file({ path: 'bun.lock', changeType: 'ADDED', after: 'lock' });
+    const hold = createSilentHold(request => request.operation === 'ReviewBlobOids');
+    const { model, session } = open(uniqueLogin(), github, hold.hold);
+
+    await waitUntil(() => model.listComplete, { timeoutMs: 2000 });
+    model.setCollapsed('later.ts', true);
+    expect(model.getCollapse('later.ts')).toBe('byHand');
+    hold.release();
+    await settled(model);
+
+    expect(textsAsked(session)).toEqual([oidOf('read')]);
+
+    model.setCollapsed('read.ts', true);
+    const asked = session.github.requests.length;
+    model.setCollapsed('read.ts', false);
+
+    expect(model.getState('read.ts')).toEqual({ kind: 'ready', before: null, after: 'read' });
+    expect(session.github.requests).toHaveLength(asked);
+
+    model.setCollapsed('bun.lock', false);
+    expect(model.getCollapse('bun.lock')).toBeNull();
+    expect(model.getCollapseReason('bun.lock')).toBe('lockFile');
+    model.setCollapsed('bun.lock', true);
+    expect(model.getCollapse('bun.lock')).toBe('lockFile');
+});
+
+test('viewed marks show at once and go to GitHub together, however many; a failed request puts them back and says so', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    const { model, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    model.setViewed(['a.ts', 'b.ts'], true);
+
+    expect(viewedOf(model, 'a.ts')).toBe('VIEWED');
+    expect(viewedOf(model, 'b.ts')).toBe('VIEWED');
+    await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
+    expect(github.markedViewed[0]).toEqual({ pullRequestId: 'PR_7', p0: 'a.ts', p1: 'b.ts' });
+
+    github.setViewed('a.ts', 'VIEWED');
+    github.setViewed('b.ts', 'VIEWED');
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['a.ts', 'b.ts'], false);
+    expect(viewedOf(model, 'a.ts')).toBe('UNVIEWED');
+    const failures = session.container.resolve(ReviewViewedFailures);
+    await waitUntil(() => failures.latest !== null, { timeoutMs: 2000 });
+
+    // Back to what GitHub said last, and the list read again in case any of the request did go through.
+    expect(viewedOf(model, 'a.ts')).toBe('VIEWED');
+    expect(viewedOf(model, 'b.ts')).toBe('VIEWED');
+    expect(failures.latest?.message).toContain('502');
+});
+
+test('a failed mark goes back to what GitHub last said, a dismissed one too', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setViewed('a.ts', 'DISMISSED');
+    const { model, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['a.ts'], true);
+    expect(viewedOf(model, 'a.ts')).toBe('VIEWED');
+    const failures = session.container.resolve(ReviewViewedFailures);
+    await waitUntil(() => failures.latest !== null, { timeoutMs: 2000 });
+
+    expect(viewedOf(model, 'a.ts')).toBe('DISMISSED');
+    expect(failures.latest?.paths).toEqual(['a.ts']);
+});
+
+test('marks set while a request is on its way go next, in order, and the last one set is what stays', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const hold = createSilentHold(request => request.operation === 'MarkFilesViewed');
+    const { model, session } = open(uniqueLogin(), github, hold.hold);
+    await settled(model);
+
+    model.setViewed(['a.ts'], true);
+    await waitUntil(() => session.operations().includes('MarkFilesViewed'), { timeoutMs: 2000 });
+    model.setViewed(['a.ts'], false);
+    expect(viewedOf(model, 'a.ts')).toBe('UNVIEWED');
+    await session.clock.advance(50);
+    expect(session.operations().filter(operation => operation === 'MarkFilesViewed')).toHaveLength(1);
+
+    hold.release();
+    await waitUntil(() => github.markedViewed.length === 2, { timeoutMs: 2000 });
+
+    const mutations = session.github.requests.filter(request => request.operation === 'MarkFilesViewed');
+    expect(mutations.map(request => request.variables.p0)).toEqual(['a.ts', 'a.ts']);
+    expect(viewedOf(model, 'a.ts')).toBe('UNVIEWED');
+});
+
+test('a re-read list has the last word when nothing is on its way, but not over a mark on its way or one set after it was asked for', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    // Marked on github.com.
+    github.setViewed('b.ts', 'VIEWED');
+    files.open(REFERENCE);
+    await waitUntil(() => viewedOf(model, 'b.ts') === 'VIEWED', { timeoutMs: 2000 });
+
+    // On its way: the list doesn't know yet.
+    const mutation = createSilentHold(request => request.operation === 'MarkFilesViewed');
+    session.github.holdIf = mutation.hold;
+    model.setViewed(['a.ts'], true);
+    await waitUntil(() => session.operations().includes('MarkFilesViewed'), { timeoutMs: 2000 });
+    const reads = () => session.operations().filter(operation => operation === 'PullRequestReviewFiles').length;
+    const before = reads();
+    files.open(REFERENCE);
+    await waitUntil(() => reads() === before + 1, { timeoutMs: 2000 });
+    await session.clock.advance(20);
+    expect(viewedOf(model, 'a.ts')).toBe('VIEWED');
+    mutation.release();
+    await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
+
+    // Asked for before the mark was set, answered after it was done.
+    const list = createSilentHold(request => request.operation === 'PullRequestReviewFiles');
+    session.github.holdIf = list.hold;
+    files.open(REFERENCE);
+    await waitUntil(() => reads() === before + 2, { timeoutMs: 2000 });
+    session.github.holdIf = null;
+    model.setViewed(['b.ts'], false);
+    await waitUntil(() => github.markedViewed.length === 2, { timeoutMs: 2000 });
+    await session.clock.advance(20);
+    list.release();
+    await session.clock.advance(20);
+    await Bun.sleep(20);
+    expect(viewedOf(model, 'b.ts')).toBe('UNVIEWED');
+
+    // Nothing on its way any more: what GitHub says stands.
+    github.setViewed('b.ts', 'VIEWED');
+    files.open(REFERENCE);
+    await waitUntil(() => viewedOf(model, 'b.ts') === 'VIEWED', { timeoutMs: 2000 });
+});
+
 interface TestFile {
     readonly path: string;
     readonly changeType: ReviewFile['changeType'];
@@ -757,6 +995,8 @@ interface TestFile {
     readonly byteSize?: number;
     /** A commit at both sides, as a submodule has: GitHub answers it like nothing at that path. */
     readonly submodule?: boolean;
+    /** How many lines it adds, when more than the list's usual 1. */
+    readonly additions?: number;
 }
 
 /** The key the list of {@link REFERENCE} is kept under. */
@@ -779,6 +1019,7 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     let failedExpression: string | null = null;
     let rateLimited: string | null = null;
     const viewed = new Map<string, ReviewFile['viewed']>();
+    const markedViewed: Readonly<Record<string, unknown>>[] = [];
     let head = HEAD;
     let base = BASE_TIP;
     let mergeBase = MERGE_BASE;
@@ -803,6 +1044,7 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
             mergeBase = newMergeBase;
         },
         setViewed: (path: string, state: ReviewFile['viewed']) => viewed.set(path, state),
+        markedViewed,
         answer,
         answerRest,
     };
@@ -854,6 +1096,9 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                 return answerOids(request);
             case 'ReviewBlobTexts':
                 return { data: answerTexts(request) };
+            case 'MarkFilesViewed':
+                markedViewed.push(request.variables);
+                return { data: {} };
             default:
                 return undefined;
         }
@@ -871,10 +1116,10 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                     changedFiles: files.length,
                     files: {
                         pageInfo: { hasNextPage: end < files.length, endCursor: String(end) },
-                        nodes: files.slice(start, end).map(({ path, changeType }) => ({
+                        nodes: files.slice(start, end).map(({ path, changeType, additions = 1 }) => ({
                             path,
                             changeType,
-                            additions: 1,
+                            additions,
                             deletions: 2,
                             viewerViewedState: viewed.get(path) ?? 'UNVIEWED',
                         })),
@@ -989,14 +1234,17 @@ function expectStates(model: PullRequestFiles, expected: Record<string, ReviewFi
     expect(Object.fromEntries(model.files.map(file => [file.path, model.getState(file.path)]))).toEqual(expected);
 }
 
-/** Waits until no file has anything left to come. */
+/** Waits until no open file has anything left to come. */
 async function settled(model: PullRequestFiles) {
     await waitUntil(
         () => {
-            const kinds = model.files.map(file => model.getState(file.path).kind);
+            // A collapsed file has nothing to come; one that may yet be has it all.
+            const shown = model.files.filter(file => model.getCollapse(file.path) === null);
+            const kinds = shown.map(file => model.getState(file.path).kind);
             return (
                 model.list.kind === 'ready' &&
                 model.listComplete &&
+                model.files.every(file => model.getCollapse(file.path) !== 'undecided') &&
                 kinds.every(kind => kind !== 'waiting' && kind !== 'loading')
             );
         },
@@ -1016,7 +1264,7 @@ async function waitUntilKept(login: string, oid: string) {
  */
 async function waitUntilAllKept(login: string, expressions: readonly string[], oid: string) {
     const store = ReviewBlobStore.create();
-    const keys = expressions.map(expression => `acme/web:${expression}`);
+    const keys = [...expressions, `${HEAD}:.gitattributes`].map(expression => `acme/web:${expression}`);
     await waitUntil(
         async () => {
             const resolutions = await store.readResolutions(login, keys);
@@ -1048,8 +1296,9 @@ function reviewOperations(session: TestSession) {
     return session.operations().filter(operation => operation !== 'Viewer');
 }
 
-function isOidQuery(operation: string) {
-    return operation === 'ReviewBlobOids';
+/** A query for the oids of a pull request's files, not of what collapses them. */
+function isOidQuery(request: TestGraphQLRequest) {
+    return request.operation === 'ReviewBlobOids' && !String(request.variables.e0).endsWith(':.gitattributes');
 }
 
 function oidOf(text: string) {
@@ -1081,6 +1330,16 @@ function textQueries(session: TestSession) {
 
 function textsAsked(session: TestSession) {
     return textQueries(session).flat();
+}
+
+function oidExpressions(session: TestSession) {
+    return session.github.requests
+        .filter(request => request.operation === 'ReviewBlobOids')
+        .flatMap(request => variablesOf(request, 'e').map(([, expression]) => expression));
+}
+
+function viewedOf(model: PullRequestFiles, path: string) {
+    return model.files.find(file => file.path === path)?.viewed;
 }
 
 function uniqueLogin() {

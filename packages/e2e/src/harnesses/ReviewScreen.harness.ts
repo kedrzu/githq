@@ -65,6 +65,21 @@ export class ReviewScreenHarness {
         return header.y - diff.y;
     }
 
+    /** The file's header as the mouse reaches it: the pinned copy covers the row while there is one. */
+    topHeader(path: string): Locator {
+        return this.diff.getByRole('heading', { name: path, exact: true }).first();
+    }
+
+    /** The header's "Viewed" of the file. */
+    viewedButton(path: string): Locator {
+        return this.topHeader(path).locator('..').getByRole('button', { name: 'Viewed' });
+    }
+
+    /** The eye in the list's head. */
+    get hideViewedButton(): Locator {
+        return this.fileList.getByRole('button', { name: 'Hide viewed files' });
+    }
+
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */
     async topLine(prefix: string): Promise<{ text: string; y: number }> {
         return await this.diff.evaluate((diff, wanted) => {

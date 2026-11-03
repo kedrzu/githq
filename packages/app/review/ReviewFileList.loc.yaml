@@ -6,3 +6,5 @@ moreThanListed:
   en: '{listed}+'
 listedOnly:
   en: GitHub lists the first {listed} of {total} files; the rest are on github.com.
+hideViewed:
+  en: Hide viewed files

@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, then the files in GitHub's tree order, those at the root first and each folder's under a quiet label, a click on one jumping to it. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label, a click on one jumping to it. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -7,17 +7,24 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Folder } from 'lucide-vue-next';
+import { EyeOff, Folder } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
+
+import IconButton from '@/components/IconButton.vue';
 
 import type { ReviewFileGroup } from './groupReviewFiles.js';
 import * as l from './ReviewFileList.loc.js';
 import ReviewFileRow from './ReviewFileRow.vue';
-import type { ReviewFileState } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapse, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 
 const props = defineProps<{
+  /** What shows: without the viewed files when those are hidden. */
   groups: readonly ReviewFileGroup[];
+  /** All of them, for the counts. */
+  files: readonly ReviewFile[];
   getState: (path: string) => ReviewFileState;
+  getCollapse: (path: string) => ReviewFileCollapse | null;
+  getCollapseReason: (path: string) => ReviewFileCollapseReason | null;
   /** The file the diff is at. */
   currentPath: string | null;
   /** How many files the pull request really has, once known: GitHub lists at most 3000. */
@@ -30,12 +37,13 @@ const emit = defineEmits<{
   select: [path: string];
 }>();
 
+const hideViewed = defineModel<boolean>('hideViewed', { required: true });
+
 const t = useTranslate();
 const scroller = useTemplateRef<HTMLElement>('scroller');
 
-const files = computed(() => props.groups.flatMap(group => group.files));
-const listed = computed(() => files.value.length);
-const viewed = computed(() => files.value.filter(file => file.viewed === 'VIEWED').length);
+const listed = computed(() => props.files.length);
+const viewed = computed(() => props.files.filter(file => file.viewed === 'VIEWED').length);
 const hasMore = computed(() => props.changedFiles !== null && props.changedFiles > listed.value);
 
 watch(
@@ -62,6 +70,15 @@ watch(
       <span :class="css.reviewFileList_count">{{
         t(l.viewed, { viewed: numbers.format(viewed), total: numbers.format(listed) })
       }}</span>
+      <div :class="css.reviewFileList_tools">
+        <IconButton
+          :class="css.reviewFileList_hide"
+          :icon="EyeOff"
+          :label="t(l.hideViewed)"
+          :aria-pressed="hideViewed"
+          @click="hideViewed = !hideViewed"
+        />
+      </div>
     </header>
     <div
       ref="scroller"
@@ -91,6 +108,8 @@ watch(
               <ReviewFileRow
                 :file="file"
                 :state="getState(file.path)"
+                :collapsed="getCollapse(file.path) !== null"
+                :collapse-reason="getCollapseReason(file.path)"
                 :current="file.path === currentPath"
                 :indented="group.folder !== null"
                 @select="emit('select', file.path)"
@@ -120,6 +139,7 @@ watch(
 .reviewFileList_head {
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   gap: $spacing-6;
   align-items: baseline;
   padding: $spacing-10 $spacing-12 $spacing-8;
@@ -141,6 +161,23 @@ watch(
 
 .reviewFileList_spacer {
   flex: 1;
+}
+
+// A row of its own, for what else filters the list.
+.reviewFileList_tools {
+  display: flex;
+  flex-basis: 100%;
+  justify-content: flex-end;
+}
+
+.reviewFileList_hide {
+  border: 1px solid $color-border;
+
+  &[aria-pressed='true'] {
+    color: $color-accent;
+    background: color-mix(in srgb, #{$color-accent} 15%, transparent);
+    border-color: $color-accent;
+  }
 }
 
 .reviewFileList_scroll {

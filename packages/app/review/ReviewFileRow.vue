@@ -1,4 +1,4 @@
-<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), its size, and how its content is getting on: a spinner while it loads, a red mark when it failed, a tag for what has no diff. A click jumps to it; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
+<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner while it loads, a red mark when it failed, a tag for what has no diff. A click jumps to it; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -11,12 +11,16 @@ import { CircleAlert, Eye, LoaderCircle } from 'lucide-vue-next';
 
 import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
-import type { ReviewFile, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import * as l from './ReviewFileRow.loc.js';
 
 defineProps<{
   file: ReviewFile;
   state: ReviewFileState;
+  /** The diff shows only its header. */
+  collapsed: boolean;
+  /** Why it starts collapsed. */
+  collapseReason: ReviewFileCollapseReason | null;
   /** The file the diff is at. */
   current?: boolean;
   /** Under a folder's label. */
@@ -40,7 +44,7 @@ const t = useTranslate();
     @click="emit('select')"
   >
     <ReviewChange :change="file.changeType" />
-    <span :class="[css.reviewFileRow_name, file.viewed === 'VIEWED' && css.reviewFileRow_name_viewed]">{{
+    <span :class="[css.reviewFileRow_name, (file.viewed === 'VIEWED' || collapsed) && css.reviewFileRow_name_dim]">{{
       getFileName(file.path)
     }}</span>
     <Eye
@@ -49,6 +53,11 @@ const t = useTranslate();
       role="img"
       :aria-label="t(l.viewed)"
     />
+    <span
+      v-if="collapsed && collapseReason"
+      :class="css.reviewFileRow_tag"
+      >{{ t(l[collapseReason]) }}</span
+    >
     <span
       v-if="state.kind === 'binary'"
       :class="css.reviewFileRow_tag"
@@ -125,7 +134,7 @@ const t = useTranslate();
   white-space: nowrap;
 }
 
-.reviewFileRow_name_viewed {
+.reviewFileRow_name_dim {
   color: $color-fg-2;
 }
 

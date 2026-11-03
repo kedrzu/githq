@@ -6,7 +6,7 @@ import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
-import type { ReviewFile } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -39,7 +39,7 @@ const FILE = file('src/sync/engine.ts', 6, 3);
 const meta = {
     component: ReviewDiffRow,
     args: {
-        row: { kind: 'end', key: 'end' },
+        row: { kind: 'end', key: 'end', collapsed: false },
         githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files',
         onRetry: fn(),
     },
@@ -66,6 +66,26 @@ export const Renamed: Story = {
         ),
 };
 
+/** CR12: collapsed, each saying why: a lock file, a generated one, a large one; and one collapsed by hand. CR13: opened, it still says why. */
+export const Collapsed: Story = {
+    render: () =>
+        renderRows([
+            ...fileRows(file('bun.lock', 214, 37), { kind: 'collapsed' }, 'lockFile'),
+            ...fileRows(file('src/api/schema.gen.ts', 880, 120), { kind: 'collapsed' }, 'generated'),
+            ...fileRows(file('data/fixtures.json', 5000, 0), { kind: 'collapsed' }, 'large'),
+            ...fileRows(FILE, { kind: 'collapsed' }),
+            ...fileRows(file('yarn.lock', 6, 3), { kind: 'lines', rows: lines('split') }, 'lockFile'),
+        ]),
+};
+
+/** CR21: a viewed file: the name dimmed and the mark ticked. */
+export const Viewed: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'lines', rows: lines('split') }),
+        ),
+};
+
 /** CR60: on its way, quiet bars. */
 export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder' })) };
 
@@ -88,8 +108,16 @@ function lines(layout: DiffLayout) {
 }
 
 /** The rows the diff would draw for the file, without the room left under the last one. */
-function fileRows(shown: ReviewFile, content: ReviewFileContent): ReviewRow[] {
-    return buildReviewRows({ files: [shown], getContent: () => content }).filter(row => row.kind !== 'tail');
+function fileRows(
+    shown: ReviewFile,
+    content: ReviewFileContent,
+    collapseReason: ReviewFileCollapseReason | null = null,
+): ReviewRow[] {
+    return buildReviewRows({
+        files: [shown],
+        getContent: () => content,
+        getCollapseReason: () => collapseReason,
+    }).filter(row => row.kind !== 'tail');
 }
 
 function renderRows(rows: readonly ReviewRow[]) {

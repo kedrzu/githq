@@ -8,3 +8,9 @@ loading:
   en: Loading
 failed:
   en: Couldn't fetch this file
+lockFile:
+  en: lock file
+generated:
+  en: generated
+large:
+  en: large

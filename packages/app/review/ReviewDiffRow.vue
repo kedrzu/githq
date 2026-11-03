@@ -26,6 +26,8 @@ defineProps<{
 
 const emit = defineEmits<{
   retry: [path: string];
+  toggleCollapsed: [path: string];
+  toggleViewed: [path: string];
 }>();
 
 const t = useTranslate();
@@ -43,10 +45,14 @@ const t = useTranslate();
     <DiffFileHeader
       v-if="row.kind === 'header'"
       :file="row.file"
+      :collapsed="row.collapsed"
+      :collapse-reason="row.collapseReason"
+      @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
+      @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
     <div
       v-else-if="row.kind === 'end'"
-      :class="css.reviewDiffRow_end"
+      :class="row.collapsed ? css.reviewDiffRow_endCollapsed : css.reviewDiffRow_end"
     />
     <div
       v-else
@@ -157,6 +163,10 @@ const t = useTranslate();
   border: 1px solid $color-border;
   border-top: 0;
   border-radius: 0 0 $radius-lg $radius-lg;
+}
+
+.reviewDiffRow_endCollapsed {
+  height: $spacing-12;
 }
 
 // Under the last file, enough for its header alone to reach the top: the viewport (the screen without the toolbar and

@@ -365,6 +365,124 @@ test('a pull request read before draws its list and its code on a reload with Gi
     github.releaseAnswers();
 });
 
+test('a lock file shows only its header, saying why, and is not fetched until Space opens it; Space collapses it back', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const answered = answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            { path: 'bun.lock', before: 'lock before\n', after: 'lock after\n' },
+            { path: 'src/app.ts', before: 'const app = 1;\n', after: 'const app = 2;\n' },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    const askedForLock = () => answered.asked.filter(expression => expression.endsWith(':bun.lock'));
+
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const app = 2;')).toBeVisible();
+    await expect(review.diff.getByText('lock file').first()).toBeVisible();
+    await expect(review.fileRow('bun.lock')).toContainText('lock file');
+    await expect(review.code('lock after')).toHaveCount(0);
+    expect(askedForLock()).toEqual([]);
+
+    await review.diff.focus();
+    await expect(review.currentFileRow).toContainText('bun.lock');
+    const scrolled = await review.diff.evaluate(diff => diff.scrollTop);
+    await page.keyboard.press('Space');
+    await expect(review.code('lock after')).toBeVisible();
+    expect(askedForLock()).toHaveLength(2);
+    expect(await review.diff.evaluate(diff => diff.scrollTop)).toBe(scrolled);
+    // Opened, it still says why it started collapsed; only the list's tag goes.
+    await expect(review.diff.getByText('lock file').first()).toBeVisible();
+    await expect(review.fileRow('bun.lock')).not.toContainText('lock file');
+
+    await page.keyboard.press('Space');
+    await expect(review.code('lock after')).toHaveCount(0);
+    await expect(review.diff.getByText('lock file').first()).toBeVisible();
+
+    await review.topHeader('bun.lock').click();
+    await expect(review.code('lock after')).toBeVisible();
+    expect(askedForLock()).toHaveLength(2);
+});
+
+test('V with viewed files hidden brings the next file to the top of the screen, and the count follows; everything viewed says so', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const files = answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            { path: 'src/a.ts', before: 'const a = 1;\n', after: 'const a = 2;\n' },
+            { path: 'src/b.ts', before: 'const b = 1;\n', after: 'const b = 2;\n' },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const a = 2;')).toBeVisible();
+    await expect(review.fileList).toContainText('0 of 2 viewed');
+
+    await review.hideViewedButton.click();
+    await expect(review.hideViewedButton).toHaveAttribute('aria-pressed', 'true');
+    await review.diff.focus();
+
+    await page.keyboard.press('v');
+    await expect(review.fileRow('a.ts')).toHaveCount(0);
+    await expect(review.code('const a = 2;')).toHaveCount(0);
+    await expect(review.fileList).toContainText('1 of 2 viewed');
+    await expect(review.currentFileRow).toContainText('b.ts');
+    await expect.poll(() => review.headerOffset('src/b.ts')).toBe(0);
+    await expect.poll(() => files.marked).toEqual(['src/a.ts']);
+
+    await page.keyboard.press('v');
+    await expect(page.getByRole('heading', { name: 'All 2 files viewed' })).toBeVisible();
+    await page.getByRole('button', { name: 'Show viewed files' }).click();
+    await expect(review.code('const a = 2;')).toBeVisible();
+    await expect(review.fileList).toContainText('2 of 2 viewed');
+});
+
+test('a mark GitHub refuses goes back and a toast says so; V typed in a field does nothing', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const files = answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [{ path: 'src/a.ts', before: 'const a = 1;\n', after: 'const a = 2;\n' }],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const a = 2;')).toBeVisible();
+
+    // The review has no field of its own yet: any will do, for the key is refused by where it is typed.
+    await page.evaluate(() => {
+        const field = document.createElement('input');
+        field.id = 'a-field';
+        document.body.append(field);
+        field.focus();
+    });
+    await page.keyboard.type('v');
+    await expect(page.locator('#a-field')).toHaveValue('v');
+    await expect(review.fileList).toContainText('0 of 1 viewed');
+    await page.locator('#a-field').evaluate(field => field.remove());
+
+    files.refuseMarks('You may not do that');
+    await review.viewedButton('src/a.ts').click();
+    await expect(page.getByRole('region', { name: 'Notifications' })).toContainText('You may not do that');
+    await expect(review.fileList).toContainText('0 of 1 viewed');
+    await expect(review.viewedButton('src/a.ts')).toHaveAttribute('aria-pressed', 'false');
+
+    files.allowMarks();
+    await review.viewedButton('src/a.ts').click();
+    await expect(review.fileList).toContainText('1 of 1 viewed');
+    await expect.poll(() => files.marked).toEqual(['src/a.ts']);
+});
+
 /** Signs in and opens the sample's pull request on its own page, its review answered. */
 async function openPullRequest(
     page: Parameters<typeof openMyWork>[0],

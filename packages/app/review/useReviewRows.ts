@@ -9,7 +9,7 @@ import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
-import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
+import type { PullRequestFiles, ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 
 /** Options of {@link useReviewRows}. */
 export interface UseReviewRowsOptions {
@@ -31,6 +31,7 @@ const COMPUTE_TURN_MS = 6;
 const REBUILD_EVERY_MS = 32;
 
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
+const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
 
 /**
  * The review's flat rows, as a new plain array whenever what they show changes. Diffs are computed on the main thread a
@@ -49,6 +50,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     const contents = new WeakMap<FileDiff, Partial<Record<DiffLayout, LinesContent>>>();
 
     let builtFrom: readonly ReviewFileContent[] = [];
+    let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
     let builtFiles: readonly ReviewFile[] = [];
     let builtAt = Number.NEGATIVE_INFINITY;
     let cancelTurn: (() => void) | null = null;
@@ -76,18 +78,29 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     function rebuild() {
         const files = toValue(options.ordered);
         const next = files.map(getContent);
+        const reasons = files.map(getCollapseReason);
         // Most new versions only say a file went from waiting to loading.
-        if (files === builtFiles && next.length === builtFrom.length && next.every((c, i) => c === builtFrom[i])) {
+        if (
+            files === builtFiles &&
+            next.length === builtFrom.length &&
+            next.every((c, i) => c === builtFrom[i]) &&
+            reasons.every((reason, i) => reason === builtReasons[i])
+        ) {
             return;
         }
 
         builtFiles = files;
         builtFrom = next;
+        builtReasons = reasons;
         builtAt = clock.now();
-        rows.value = buildReviewRows({ files, getContent });
+        rows.value = buildReviewRows({ files, getContent, getCollapseReason });
     }
 
     function getContent(file: ReviewFile): ReviewFileContent {
+        if (isCollapsed(file)) {
+            return COLLAPSED;
+        }
+
         const state = getState(file);
         if (!state) {
             return PLACEHOLDER;
@@ -108,6 +121,14 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
 
     function getState(file: ReviewFile) {
         return toValue(options.files)?.getState(file.path) ?? null;
+    }
+
+    function isCollapsed(file: ReviewFile) {
+        return (toValue(options.files)?.getCollapse(file.path) ?? null) !== null;
+    }
+
+    function getCollapseReason(file: ReviewFile) {
+        return toValue(options.files)?.getCollapseReason(file.path) ?? null;
     }
 
     function getDiffs() {
@@ -165,7 +186,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         performance.measure(`review:diff ${file.path}`, { start, end: performance.now() });
     }
 
-    /** The ready file without a diff nearest the current one, the one below first as that's where reading goes. */
+    /** The open ready file without a diff nearest the current one, the one below first as that's where reading goes. */
     function findNextToCompute(): ReviewFile | null {
         const files = toValue(options.ordered);
         const currentPath = toValue(options.currentPath);
@@ -178,7 +199,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
                 const file = files[index];
                 if (file) {
                     const state = getState(file);
-                    if (state?.kind === 'ready' && !getDiffs().has(state)) {
+                    if (state?.kind === 'ready' && !getDiffs().has(state) && !isCollapsed(file)) {
                         return file;
                     }
                 }
