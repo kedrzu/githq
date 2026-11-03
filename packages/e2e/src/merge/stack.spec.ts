@@ -80,7 +80,7 @@ test("D11: ⇧M on a stack's entry merges the whole stack with one merge of its 
     await expect(panel.root).toHaveAccessibleName(`Merge the stack ${STACK}`);
     await expect(panel.stackMembers).toHaveText([/^#101.*Ready/, /^#102.*Ready/, /^#103.*Ready/]);
     await expect(panel.root).toContainText('All 3 land, first to last');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     await expect(panel.line('Commit')).toHaveCount(0);
 
     const release = world.holdMerges();
@@ -134,12 +134,12 @@ test('D18: ↑ moves the line to the second of three — one merge of the second
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     await page.keyboard.press('ArrowUp');
     await expect(panel.root.getByTestId('stack-line')).toContainText('Stops here');
     await expect(panel.stackMember(103)).toContainText('Stays open');
     await expect(panel.root).toContainText('2 land · 1 stays open');
-    await expect(panel.primary).toHaveText('Squash and merge 2 of 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge 2 of 3');
     await expect(panel.line('Commit')).toHaveCount(0);
 
     await page.keyboard.press('ControlOrMeta+Enter');
@@ -167,11 +167,11 @@ test('D18, SP43: with the line at the first, one going is an ordinary merge — 
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ArrowUp');
     await expect(panel.root).toContainText('Only #101 · 2 stay open');
-    await expect(panel.primary).toHaveText('Squash and merge');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge');
     // GitHub's proposal for the first, read for the panel.
     await expect(panel.line('Commit')).toContainText(`${STACK} (#101)`);
 
@@ -209,7 +209,7 @@ test('D8, D21: a stack needing a rebase — #101 pushed to under #102 — sends 
     await expect(panel.root).toContainText('Needs rebase');
     await expect(panel.root).toContainText("Nothing can merge until it's done");
     await expect(panel.root).toContainText('#101 has a new commit');
-    await expect(panel.primary).toHaveText('Rebase stack on GitHub');
+    await expect(panel.primary).toHaveAccessibleName('Rebase stack on GitHub');
 
     const popup = page.waitForEvent('popup');
     await page.keyboard.press('ControlOrMeta+Enter');
@@ -229,7 +229,7 @@ test("SP61, D11: a stack's merge GitHub refuses says so in GitHub's words; the s
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     const readsBefore = countStackReads(github);
     await page.keyboard.press('ControlOrMeta+Enter');
 
@@ -259,7 +259,7 @@ test('SP62: a push to #101 after the panel opened — GitHub refuses the merge o
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     world.push(first, 'monalisa', 'Name the stack after its issue');
     await page.keyboard.press('ControlOrMeta+Enter');
 
@@ -267,7 +267,7 @@ test('SP62: a push to #101 after the panel opened — GitHub refuses the merge o
     await expect(panel.root).toContainText('#101 has a new commit');
     await expect(panel.root).toContainText('This stack must be rebased before it can be merged.');
     await expect(panel.stackMember(102)).toContainText('Needs rebase');
-    await expect(panel.primary).toHaveText('Rebase stack on GitHub');
+    await expect(panel.primary).toHaveAccessibleName('Rebase stack on GitHub');
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'squash', sha: world.headOf(third) }]);
     for (const id of [first, second, third]) {
         expect(world.stateOf(id).merged).toBe(false);
@@ -284,7 +284,7 @@ test('PM27: a push to #103, the top of the range, after the panel opened — the
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     const sent = world.headOf(third);
     world.push(third, 'monalisa', 'Open the stack from any of its pull requests');
     await page.keyboard.press('ControlOrMeta+Enter');
@@ -307,7 +307,7 @@ test("D15, PM35: a stack refused after the panel left is one merge refused: GitH
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     world.holdMerges();
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
@@ -334,7 +334,7 @@ test('D15: a stack refused with Rebase — opened again, the panel starts on Reb
 
     await page.keyboard.press('Shift+M');
     await panel.method('Rebase').click();
-    await expect(panel.primary).toHaveText('Rebase and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Rebase and merge all 3');
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toContainText('GitHub refused it');
     await page.keyboard.press('Escape');
@@ -379,7 +379,7 @@ test('SP49: ⌘K marks #102, the draft holding the rest, ready — #102 is read 
 
     await page.keyboard.press('ControlOrMeta+k');
     await expect.poll(readsOfSecond).toBe(1);
-    await expect(panel.primary).toHaveText('Squash and merge all 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
     expect(world.stateOf(second).isDraft).toBe(false);
 });
 
@@ -397,14 +397,14 @@ test('D18, PM32a: opened on #102, ↑ to the first alone — GitHub refuses it: 
     await expect(item.mergeButton).toBeVisible();
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge 2 of 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge 2 of 3');
     await page.keyboard.press('ArrowUp');
-    await expect(panel.primary).toHaveText('Squash and merge');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge');
     await page.keyboard.press('ControlOrMeta+Enter');
 
     await expect(panel.refusal).toContainText(reason);
     await expect(panel.root).toContainText('GitHub refused the merge');
-    await expect(panel.primary).toHaveText('Try again');
+    await expect(panel.primary).toHaveAccessibleName('Try again');
     await expect(shell.toasts).toHaveCount(0);
     expect(getMergedNumbers(github)).toEqual([101]);
 });
@@ -421,7 +421,7 @@ test('D18, PM32a: opened on #102, ↑ to the first alone — accepted, the panel
     await expect(item.mergeButton).toBeVisible();
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge 2 of 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge 2 of 3');
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ControlOrMeta+Enter');
 
@@ -453,7 +453,7 @@ test("SP45: two going, held by #103: C shows #103's checks, read only then; the 
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Squash and merge 2 of 3');
+    await expect(panel.primary).toHaveAccessibleName('Squash and merge 2 of 3');
     await expect(panel.line('Method')).toContainText('Squash');
     expect(readsOfThird()).toBe(0);
 
