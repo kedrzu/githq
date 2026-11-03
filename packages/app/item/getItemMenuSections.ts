@@ -3,8 +3,8 @@ import type { Item } from '@/store/ItemTypes.js';
 
 /**
  * The item menus' groups, top to bottom, by the action's name after its section (`item.labels` → `labels`): going
- * to the item; its project fields — for a pull request its reviews first; its own properties; writing about it and
- * copying it; closing it. An action not named here is not in the menus.
+ * to the item; its project fields — for a pull request merging it and its ordinary commands, then its reviews, first; its own properties;
+ * writing about it and copying it; closing it. An action not named here is not in the menus.
  */
 const LAYOUT: Readonly<Record<Item['kind'], readonly (readonly string[])[]>> = {
     issue: [
@@ -16,6 +16,7 @@ const LAYOUT: Readonly<Record<Item['kind'], readonly (readonly string[])[]>> = {
     ],
     pullRequest: [
         ['open', 'openPage', 'review', 'openOnGitHub', 'openFiles'],
+        ['merge', 'updateBranch', 'updateBranchByRebase', 'rerunChecks', 'branch', 'revert', 'dequeue'],
         ['reviewers', 'draft'],
         ['assignees', 'labels', 'milestone', 'status', 'priority', 'iteration', 'addToProject'],
         ['comment', 'copyLink', 'copyBranch'],

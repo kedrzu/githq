@@ -1,8 +1,9 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
@@ -50,6 +51,11 @@ import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
+import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { countMergeChecks } from '@/merge/countMergeChecks.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
+import { MergeContext } from '@/merge/MergeContext.js';
+import type { MergeCheck } from '@/merge/MergeTypes.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -57,7 +63,6 @@ import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
-import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
@@ -80,27 +85,38 @@ import PullRequestReviews from './PullRequestReviews.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 
-const props = defineProps<{
-  /** The item's row: what shows at once. */
-  item: Item;
-  /** Body, comments, checks, reviews and every project field; `null` while being read. */
-  detail: ItemDetail | null;
-  arrangement: ItemArrangement;
-  /** Where the item is in the list it was opened from (1-based); `null` when it is not in one. */
-  position?: { index: number; count: number } | null;
-  /** The issues a pull request closes, those known. */
-  closes?: readonly Item[];
-  /** Epoch ms the ages are counted to. */
-  now: number;
-  /** Reads the comments not read yet. */
-  loadAllComments: () => Promise<void>;
-  /** What the user may change and the pickers offer; without it the view only shows. */
-  editing?: ItemEditing | null;
-  /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
-  stack?: StackDescription | null;
-  /** What `K` and `J` open from it: the stack's map marks those rows. */
-  neighbours?: StackNeighbours | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    /** The item's row: what shows at once. */
+    item: Item;
+    /** Body, comments, checks, reviews and every project field; `null` while being read. */
+    detail: ItemDetail | null;
+    arrangement: ItemArrangement;
+    /** Where the item is in the list it was opened from (1-based); `null` when it is not in one. */
+    position?: { index: number; count: number } | null;
+    /** The issues a pull request closes, those known. */
+    closes?: readonly Item[];
+    /** Epoch ms the ages are counted to. */
+    now: number;
+    /** Reads the comments not read yet. */
+    loadAllComments: () => Promise<void>;
+    /** What the user may change and the pickers offer; without it the view only shows. */
+    editing?: ItemEditing | null;
+    /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
+    stack?: StackDescription | null;
+    /** What `K` and `J` open from it: the stack's map marks those rows. */
+    neighbours?: StackNeighbours | null;
+    /**
+     * A pull request's checks with which of them the base branch requires, once its merge options are read (merging
+     * D13): a failing required one is tagged, and the standing weighs only the required ones, as the merge panel does.
+     */
+    mergeChecks?: readonly MergeCheck[] | null;
+    /** The viewer may turn auto-merge on, as its merge options said; `null` until they are read. */
+    viewerCanEnableAutoMerge?: boolean | null;
+  }>(),
+  // Vue reads a boolean prop not given as `false`: not given is not known.
+  { viewerCanEnableAutoMerge: null },
+);
 
 const emit = defineEmits<{
   close: [];
@@ -117,6 +133,8 @@ const emit = defineEmits<{
   edit: [request: EditRequest];
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
+  /** "Merge…" (`⇧M`): the merge panel is wanted for the pull request. */
+  merge: [];
 }>();
 
 const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
@@ -129,6 +147,8 @@ const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
 const browser = useService(Browser);
+/** Merging, where the screen offers it: how the session's last merge of a pull request ended (PM38). */
+const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer');
@@ -189,6 +209,11 @@ const arrangementModel = computed({
 const pr = computed(() => (props.item.kind === 'pullRequest' ? props.item : null));
 const issueDetail = computed(() => (props.detail?.kind === 'issue' ? props.detail : null));
 const prDetail = computed(() => (props.detail?.kind === 'pullRequest' ? props.detail : null));
+const requiredCheckIds = computed(() =>
+  props.mergeChecks ? props.mergeChecks.filter(check => check.isRequired).map(check => check.id) : null,
+);
+const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
+const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.editing?.metadata, props.viewerCanEnableAutoMerge));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
@@ -208,8 +233,10 @@ const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string
     }
   }
 
-  const { icon, tone } = getPullRequestStateLook(item);
-  return { icon, tone, text: t(l[tone]) };
+  const kind = getPullRequestKind(item);
+  // Its state in words, by the tone of its icon.
+  const key: `${StatePillTone}PullRequest` = `${kind.tone}PullRequest`;
+  return { ...kind, text: t(l[key]) };
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);
@@ -366,6 +393,11 @@ function getEditCommands(): Command[] {
     stateOptions: stateActions.value,
     stateTitle: getStateTitle(),
     edit: request => emit('edit', request),
+    merge: () => emit('merge'),
+    mergeChecks: checkCounts.value,
+    viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
+    pullRequestCommands: merging,
+    checks: props.mergeChecks,
     setField: (place, field, value) =>
       emit('edit', { kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value }),
     inline: {
@@ -684,6 +716,13 @@ function getProjectOptions(): CommandOption[] {
               v-if="pr"
               :pr="pr"
               :detail="prDetail"
+              :can-merge="permissions ? permissions.mergePanel : null"
+              :checks="checkCounts"
+              :auto-merge-allowed="autoMergeAllowed"
+              :record="merging?.getRecord(pr.id) ?? null"
+              :commands="merging?.getCommands(pr.id)"
+              @merge="emit('merge')"
+              @command="merging?.run(pr.id, $event)"
             />
 
             <!-- One column: everything in reading order. -->
@@ -701,6 +740,7 @@ function getProjectOptions(): CommandOption[] {
                   v-if="prDetail"
                   :detail="prDetail"
                   :now="now"
+                  :required-ids="requiredCheckIds"
                 />
                 <LinkedItems
                   :title="t(l.closes)"
@@ -734,6 +774,7 @@ function getProjectOptions(): CommandOption[] {
                 v-if="prDetail"
                 :detail="prDetail"
                 :now="now"
+                :required-ids="requiredCheckIds"
               />
               <LinkedItems
                 :title="t(l.closes)"

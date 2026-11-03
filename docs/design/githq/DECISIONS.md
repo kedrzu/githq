@@ -523,6 +523,31 @@ out. A refusal costs a pause and goes on from the last cursor.
 **Rejected.** Four repositories at once for closed items: the longest load against that limit. A lighter query for
 closed pull requests (2.5 s to 1.4 s a page, measured on `healedcare/healed`): rows would lose checks and diff size.
 
+### D28
+
+**A pull request on a list always looks the same, and so does an issue** (owner, 2026-11-03). One row and one card in
+every list, in code and in `githq.pen`. A project's list is the same two-line `List row` as the others, with its field
+values on the second line; `Table row` is gone, and the design now draws what the code already did.
+
+A pull request's **size shows everywhere, on by default**: my work, a repository, a project, tracked or not, nested under
+an issue or in a stack, on a row or a board's card. It stays a property in Display (D4), so a choice kept on a device
+still holds.
+
+The numbers are **green and red, in colours of their own**: `diff-added` `#7CCB92`, `diff-removed` `#E98B8F`, paler than
+the states `green` and `red`. They are data, not an alarm, and shouldn't read as a failing check or a passing one. Every
++/− counter uses them; the tints behind a diff's rows stay.
+
+People stay different on purpose: my work shows who opened it, a repository and a project who it is assigned to (D11).
+
+**Why.** The owner saw grey numbers that were hard to tell apart, and rows that differed by place. Those differences were
+accidents, not decisions: a nested row dropped the size, a repository's defaults left it out, a project couldn't show it,
+a card had no place for it.
+
+**Rejected.** Size always on, with no option in Display: consistent, but it can't be hidden. Size on list rows only: a
+pull request would look different on a board. Keeping `Table row` for projects: aligned field columns, at the price of the
+one list that differs, and of a design the code doesn't follow. Showing assignees everywhere: my work would lose who asked
+for a review.
+
 ## Open questions
 
 ### D26
@@ -720,8 +745,10 @@ live queries). Open, raised with user 2026-10-30.
 Several tabs open at once would each run the sync loop and multiply API use. Agent's proposal: one tab holds a
 Web Lock and syncs, others receive changes over BroadcastChannel. Proposed to user 2026-10-30, not objected to; treated as the
 default for the first version unless they say otherwise.
-Built that way (2026-10-31): lock `githq-sync-<login>`, the syncing tab sends its store changes over the
-channel, the others apply them to memory only; without Web Locks every tab syncs.
+Built that way (2026-10-31): lock `githq-sync-<login>-v<N>`, the syncing tab sends its store changes over the
+channel, the others apply them to memory only; without Web Locks every tab syncs. `N` is the local copy's layout, as in
+the channel's name: a tab left open across a deploy that raised it must not hold the new one back. Told of a newer
+layout, such a tab gives the lock up and reloads once that loses nothing (`OutdatedTabReload`).
 
 ### Q11
 

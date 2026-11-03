@@ -1,7 +1,7 @@
-import { vue } from '@nzyme/eslint';
+import { markdown, packageJson, vue } from '@nzyme/eslint';
 import { globalIgnores } from 'eslint/config';
 
-// ESLint covers Vue rules only; everything else is oxlint's (see `.oxlintrc.json`).
+// ESLint covers Vue rules, package.json checks and Markdown formatting only; everything else is oxlint's (see `.oxlintrc.json`).
 export default [
     globalIgnores([
         '**/dist/**',
@@ -19,7 +19,11 @@ export default [
         // The nzyme submodule is linted by its own config (`lint:nzyme`); without this a directory
         // run would descend into it and pick up `nzyme/eslint.config.mjs`.
         'nzyme/**',
+        // Agent scratch space and handoffs, not formatted.
+        '.context/**',
     ]),
+    ...markdown(),
+    ...packageJson(),
     ...vue(),
     {
         // The one place HTML is rendered: GitHub sanitizes `bodyHTML`, and this component renders only that.

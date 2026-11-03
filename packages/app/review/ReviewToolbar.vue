@@ -13,7 +13,7 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import Switch from '@/components/Switch.vue';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
+import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import ReviewToggle from './ReviewToggle.vue';
@@ -43,8 +43,8 @@ const state = computed(() => {
     return { icon: GitPullRequest, tone: 'open', label: t(l.pullRequest) };
   }
 
-  const { icon, tone, label } = getPullRequestStateLook(item);
-  return { icon, tone, label: t(label) };
+  const { icon, tone } = getPullRequestKind(item);
+  return { icon, tone, label: t(l[`${tone}PullRequest`]) };
 });
 const fileListShown = computed({
   get: () => !fileListHidden.value,

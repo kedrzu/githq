@@ -1,39 +1,37 @@
-<!-- The checks of an opened pull request's head commit (F1–F4): failing ones first, each with how long it ran and its log on GitHub, then those still running; the ones that passed fold into one row that opens. -->
+<!-- The checks of an opened pull request's head commit (F1–F4): failing ones first, each with how long it ran and its log on GitHub — a required one tagged "Required" — then those still running; the ones that passed fold into one row that opens. -->
 <script lang="ts" setup>
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  ArrowUpRight,
-  ChevronDown,
-  ChevronRight,
-  CircleCheck,
-  CircleSlash,
-  CircleX,
-  LoaderCircle,
-} from 'lucide-vue-next';
+import { ArrowUpRight, ChevronDown, ChevronRight, CircleCheck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { ItemCheck, ItemCheckState, PullRequestDetail } from '@/store/ItemDetailTypes.js';
-import { formatDuration } from '@/utils/formatDuration.js';
+import type { ItemCheckState, PullRequestDetail } from '@/store/ItemDetailTypes.js';
 
+import { compareChecks } from './compareChecks.js';
+import { getCheckIcon } from './getCheckIcon.js';
 import * as l from './PullRequestChecks.loc.js';
+import RequiredTag from './RequiredTag.vue';
+import { useCheckTexts } from './useCheckTexts.js';
 
 const props = defineProps<{
   detail: PullRequestDetail;
   /** Epoch ms a running check's time is counted to. */
   now: number;
+  /**
+   * The checks the base branch requires to pass, by id: a failing one is tagged. Only the merge options say it
+   * (`PullRequestMergeOptions`); none until they are read.
+   */
+  requiredIds?: readonly string[] | null;
 }>();
 
-const ORDER: readonly ItemCheckState[] = ['failing', 'pending', 'passing', 'skipped'];
-
 const t = useTranslate();
+const checkTexts = useCheckTexts();
 const nameList = new Intl.ListFormat(APP_LANGUAGE, { style: 'narrow', type: 'unit' });
 const expanded = ref(false);
 
-const sorted = computed(() => props.detail.checks.toSorted((a, b) => ORDER.indexOf(a.state) - ORDER.indexOf(b.state)));
+const sorted = computed(() => props.detail.checks.toSorted(compareChecks));
 const attention = computed(() => sorted.value.filter(check => check.state === 'failing' || check.state === 'pending'));
 const settled = computed(() => sorted.value.filter(check => check.state === 'passing' || check.state === 'skipped'));
 const counts = computed(() => {
@@ -82,43 +80,6 @@ const settledTitle = computed(() => {
 });
 
 const more = computed(() => props.detail.checkCount - props.detail.checks.length);
-
-function nameOf(check: ItemCheck) {
-  return check.workflow ? `${check.workflow} / ${check.name}` : check.name;
-}
-
-function describe(check: ItemCheck) {
-  const ran = check.startedAt && check.completedAt ? Date.parse(check.completedAt) - Date.parse(check.startedAt) : null;
-  switch (check.state) {
-    case 'failing':
-      return ran === null ? t(l.failed) : t(l.failedAfter, { duration: formatDuration(ran) });
-    case 'pending':
-      return check.startedAt
-        ? t(l.runningFor, { duration: formatDuration(props.now - Date.parse(check.startedAt)) })
-        : t(l.queued);
-    case 'passing':
-      return ran === null ? t(l.passed) : t(l.passedIn, { duration: formatDuration(ran) });
-    case 'skipped':
-      return t(l.skipped);
-    default:
-      return assertNever(check.state);
-  }
-}
-
-function iconOf(state: ItemCheckState) {
-  switch (state) {
-    case 'failing':
-      return CircleX;
-    case 'pending':
-      return LoaderCircle;
-    case 'passing':
-      return CircleCheck;
-    case 'skipped':
-      return CircleSlash;
-    default:
-      return assertNever(state);
-  }
-}
 </script>
 
 <template>
@@ -137,12 +98,13 @@ function iconOf(state: ItemCheckState) {
         :class="[css.pullRequestChecks_check, check.state === 'failing' && css.pullRequestChecks_check_failing]"
       >
         <component
-          :is="iconOf(check.state)"
+          :is="getCheckIcon(check.state)"
           :class="[css.pullRequestChecks_icon, css[`pullRequestChecks_icon_${check.state}`]]"
           aria-hidden="true"
         />
-        <span :class="css.pullRequestChecks_name">{{ nameOf(check) }}</span>
-        <span :class="css.pullRequestChecks_detail">{{ describe(check) }}</span>
+        <span :class="css.pullRequestChecks_name">{{ checkTexts.name(check) }}</span>
+        <RequiredTag v-if="check.state === 'failing' && requiredIds?.includes(check.id)" />
+        <span :class="css.pullRequestChecks_detail">{{ checkTexts.describe(check, now) }}</span>
         <Button
           v-if="check.url"
           variant="link"
@@ -151,7 +113,7 @@ function iconOf(state: ItemCheckState) {
           :link="check.url"
           target="_blank"
           rel="noopener noreferrer"
-          :aria-label="`${t(l.log)} · ${nameOf(check)}`"
+          :aria-label="`${t(l.log)} · ${checkTexts.name(check)}`"
         >
           {{ t(l.log) }}
         </Button>
@@ -180,12 +142,12 @@ function iconOf(state: ItemCheckState) {
           :class="[css.pullRequestChecks_check, css.pullRequestChecks_check_nested]"
         >
           <component
-            :is="iconOf(check.state)"
+            :is="getCheckIcon(check.state)"
             :class="[css.pullRequestChecks_icon, css[`pullRequestChecks_icon_${check.state}`]]"
             aria-hidden="true"
           />
-          <span :class="css.pullRequestChecks_name">{{ nameOf(check) }}</span>
-          <span :class="css.pullRequestChecks_detail">{{ describe(check) }}</span>
+          <span :class="css.pullRequestChecks_name">{{ checkTexts.name(check) }}</span>
+          <span :class="css.pullRequestChecks_detail">{{ checkTexts.describe(check, now) }}</span>
           <Button
             v-if="check.url"
             variant="link"
@@ -194,7 +156,7 @@ function iconOf(state: ItemCheckState) {
             :link="check.url"
             target="_blank"
             rel="noopener noreferrer"
-            :aria-label="`${t(l.log)} · ${nameOf(check)}`"
+            :aria-label="`${t(l.log)} · ${checkTexts.name(check)}`"
           >
             {{ t(l.log) }}
           </Button>

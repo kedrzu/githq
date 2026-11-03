@@ -26,11 +26,13 @@ closedNotPlanned:
   en: Not planned
 closedDuplicate:
   en: Duplicate
-draft:
+openPullRequest:
+  en: Open
+draftPullRequest:
   en: Draft
-done:
+donePullRequest:
   en: Merged
-closed:
+closedPullRequest:
   en: Closed
 openedBy:
   en: '{author} · opened {ago}'

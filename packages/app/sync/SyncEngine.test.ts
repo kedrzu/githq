@@ -752,6 +752,7 @@ async function setup(github: FakeGitHub, login: string) {
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: () => {},
         replaceLocation: () => {},
         openInNewTab: () => {},
@@ -941,6 +942,13 @@ function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragme
         reviewDecision: 'REVIEW_REQUIRED',
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'BLOCKED',
+        headRefOid: 'head-oid',
+        headRef: { id: 'REF_1' },
+        isCrossRepository: false,
+        viewerCanDeleteHeadRef: false,
+        isMergeQueueEnabled: false,
+        mergeQueueEntry: null,
+        autoMergeRequest: null,
         createdAt: MONDAY,
         updatedAt,
         closedAt: null,

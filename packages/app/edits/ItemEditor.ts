@@ -429,6 +429,7 @@ function needsMetadata(request: EditRequest) {
         case 'milestone':
         case 'issueType':
         case 'requestReviewers':
+        case 'restoreBranch': // It names the repository by its node id.
             return true;
         case 'close':
         case 'reopen':
@@ -437,6 +438,13 @@ function needsMetadata(request: EditRequest) {
         case 'projectFieldInProject':
         case 'addToProject':
         case 'draft':
+        case 'updateBranch':
+        case 'enableAutoMerge':
+        case 'disableAutoMerge':
+        case 'jumpQueue':
+        case 'dequeue':
+        case 'deleteBranch':
+        case 'rerunFailedChecks':
             return false;
         default:
             return assertNever(request);
@@ -497,6 +505,19 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
             return permissions.reviewers;
         case 'draft':
             return permissions.draft;
+        case 'updateBranch':
+            return permissions.updateBranch;
+        case 'enableAutoMerge':
+        case 'disableAutoMerge':
+        case 'jumpQueue':
+        case 'dequeue':
+            return permissions.merge;
+        case 'deleteBranch':
+            return permissions.deleteBranch;
+        case 'restoreBranch':
+            return permissions.restoreBranch;
+        case 'rerunFailedChecks':
+            return permissions.rerunChecks;
         default:
             return assertNever(request);
     }

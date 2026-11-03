@@ -4,6 +4,14 @@ closedIssue:
   en: Closed issue
 notPlannedIssue:
   en: Closed issue, not planned
+openPullRequest:
+  en: Open pull request
+draftPullRequest:
+  en: Draft pull request
+donePullRequest:
+  en: Merged pull request
+closedPullRequest:
+  en: Closed pull request
 checksFailing:
   plural: count
   en:
@@ -27,9 +35,33 @@ draft:
   en: draft
 waitingForReview:
   en: waiting for review
-size:
-  en: '+{additions} −{deletions}'
 projectField:
   en: '{project}: {value}'
 moreProjects:
   en: '+{count}'
+beingMerged:
+  en: Being merged · not merged yet
+merged:
+  en: Merged
+mergedAgo:
+  en: Merged · {age}
+mergeRefused:
+  en: Merge refused
+newCommitFrom:
+  en: Not merged · new commit from {author}
+newCommit:
+  en: Not merged · new commit
+outcomeUnknown:
+  en: Merge sent · outcome not known yet
+inQueue:
+  en: in queue · {place}
+inQueueAbout:
+  en: in queue · {place} · {about}
+inQueueWontMerge:
+  en: in queue, won't merge · {place}
+autoMergeOn:
+  en: auto-merge on · {method}
+autoMergeWaitingForChecks:
+  en: auto-merge on · {method} · waiting for checks
+autoMergeWaitingForReview:
+  en: auto-merge on · {method} · waiting for review

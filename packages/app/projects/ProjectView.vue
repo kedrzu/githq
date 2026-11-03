@@ -176,7 +176,7 @@ const groupings = computed((): ListChoice[] => {
   return choices;
 });
 const properties = computed((): ListChoice[] => [
-  ...(['status', 'labels', 'milestone', 'people', 'updated'] as const).map(property => ({
+  ...(['status', 'size', 'labels', 'milestone', 'people', 'updated'] as const).map(property => ({
     value: property,
     label: t(propertyLabels[property]),
   })),
@@ -515,12 +515,13 @@ function addDraft(title: string, group: string | null) {
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker, nested }">
+        <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, nested }">
           <StackRow
             v-if="stack"
             :stack="stack"
             :properties="itemProperties"
             :now="now"
+            :selected="selected"
             :checked="checked"
             :half-checked="halfChecked"
             :opened-id="openedId"

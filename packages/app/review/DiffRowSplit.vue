@@ -63,7 +63,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
 
 .diffRowSplit_cell_deleted {
   color: $color-fg;
-  background: $color-diff-deleted;
+  background: $color-diff-bg-deleted;
 
   .diffRowSplit_number {
     color: $color-red;
@@ -72,7 +72,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
 
 .diffRowSplit_cell_added {
   color: $color-fg;
-  background: $color-diff-added;
+  background: $color-diff-bg-added;
 
   .diffRowSplit_number {
     color: $color-green;

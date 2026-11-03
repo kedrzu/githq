@@ -1,16 +1,22 @@
-<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
+<!-- The content of a stack's entry in a list (D14, SP10; the list draws the row, its chevron, its selection and its handlers): two lines like an item's row. The stack icon (the selection's mark when all its pull requests are selected, a half mark when some are: D20, SP28), its name and how many pull requests it holds (no number of its own; "1 of 4 matches" under a filter matching some: D3, SP25), the people assigned to any of them (in my work, who opened them, the user left out) — up to three faces and "+N" — and how long ago the latest changed; under them the repository when the list spans several, the pips — one per pull request in order, each in its own state (D5, D6), all pale while the copy is incomplete and all amber when it needs a rebase, the one opened over the list tall (D14) — and the state in words, naming what holds it (SP14); an entry holding a share of the stack's open pull requests, the others in other groups (D16, SP24), reads "2 of 4", draws the others' pips hollow and says how the share stands — "Both ready", "#1206 blocks" — where the stack's sentence is about its readiness. Ready, "Merge" (`⇧M`) follows the state where the viewer may merge it, and "Rebase on GitHub" needing a rebase while the entry is selected (D21), opening the merge panel for the whole stack (D11, SP6, SP8). Then as far as the list's display options show them what its pull requests share (D15): their size summed, the labels all of them carry with "+N" for the rest, the row field of their first project when shared, else "+N", the milestone when shared, else how many, a project's field values as its owner gives them (`fields`). What it says is worked out as for a board's card (`useStackFacts`, `StackCard`). Nested under an issue (my work, one of two stacks closing it: D23, SP22) it is indented and quieter, without the repository the issue shares. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Check, Layers, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
+import { injectContext } from '@nzyme/vue-utils/context.js';
+import { Check, GitBranch, GitMerge, Layers, ListPlus, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
+import Button from '@/components/Button.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { Item } from '@/store/ItemTypes.js';
 
+import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
+import PullRequestSize from './PullRequestSize.vue';
 import StackState from './StackState.vue';
 import { useStackFacts } from './useStackFacts.js';
 
@@ -29,6 +35,8 @@ const props = withDefaults(
     people?: 'assignees' | 'author';
     /** The signed-in user: with `people: 'author'`, their own pull requests show no face. */
     viewerLogin?: string | null;
+    /** The list's selection is on it: only then a stack needing a rebase offers it (D21, SP6, SP8). */
+    selected?: boolean;
     /** All its pull requests are in the selection several items are edited together in (`x`). */
     checked?: boolean;
     /** Some of its pull requests are in that selection, not all (D20, SP28): a half mark. */
@@ -45,6 +53,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const merging = injectContext(MergeContext, { optional: true });
 const stackFacts = useStackFacts({
   stack: () => props.stack,
   now: () => props.now,
@@ -54,6 +63,33 @@ const stackFacts = useStackFacts({
 
 const shown = computed(() => new Set(props.properties));
 const description = computed(() => props.stack.description);
+/**
+ * Where the viewer may merge it, ready — or selected and needing a rebase (D21, SP6, SP8): the merge panel for the whole
+ * stack (D11) — the pull request it opens on.
+ */
+const mergeId = computed(() => {
+  const { kind } = description.value.state;
+  if (kind !== 'ready' && !(kind === 'needsRebase' && props.selected)) {
+    return null;
+  }
+
+  return props.stack.pullRequests.find(pr => merging?.canOpen(pr.id))?.id ?? null;
+});
+const entersQueue = computed(() => props.stack.pullRequests.find(pr => pr.id === mergeId.value)?.isMergeQueueEnabled);
+const mergeIcon = computed(() => {
+  if (description.value.state.kind === 'needsRebase') {
+    return GitBranch;
+  }
+
+  return entersQueue.value ? ListPlus : GitMerge;
+});
+const mergeLabel = computed(() => {
+  if (description.value.state.kind === 'needsRebase') {
+    return t(l.rebaseOnGitHub);
+  }
+
+  return entersQueue.value ? t(l.addToQueue) : t(l.merge);
+});
 const nameWithOwner = computed(() => {
   const name = props.stack.pullRequests[0]?.repository.nameWithOwner ?? null;
   return name === props.repository || name === props.parent?.repository.nameWithOwner ? null : name;
@@ -119,37 +155,37 @@ const nameWithOwner = computed(() => {
           :current="openedId"
           :state="stackFacts.state"
         />
-        <span
-          v-if="shown.has('size')"
-          :class="css.stackRow_size"
-          >{{ stackFacts.size }}</span
+        <!-- Merging it is not opening the row. -->
+        <Button
+          v-if="mergeId"
+          variant="link"
+          size="sm"
+          :icon="mergeIcon"
+          :kbd="EDIT_KEYS.merge"
+          :aria-keyshortcuts="EDIT_KEYS.merge"
+          @click.stop="merging?.open(mergeId, { wholeStack: true })"
         >
-        <span
+          {{ mergeLabel }}
+        </Button>
+        <PullRequestSize
+          v-if="shown.has('size')"
+          :additions="stackFacts.size.additions"
+          :deletions="stackFacts.size.deletions"
+        />
+        <ItemField
           v-if="stackFacts.projectField && shown.has('projectField')"
           :class="css.stackRow_field"
+          :icon="SquareKanban"
+          :value="stackFacts.projectField.value"
+          :more="stackFacts.projectField.more"
           :title="stackFacts.projectField.title"
-        >
-          <SquareKanban
-            :class="css.stackRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ stackFacts.projectField.value }}
-          <span
-            v-if="stackFacts.projectField.more"
-            :class="css.stackRow_more"
-            >{{ stackFacts.projectField.more }}</span
-          >
-        </span>
-        <span
+        />
+        <ItemField
           v-if="stackFacts.milestone && shown.has('milestone')"
           :class="css.stackRow_field"
-        >
-          <Milestone
-            :class="css.stackRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ stackFacts.milestone }}
-        </span>
+          :icon="Milestone"
+          :value="stackFacts.milestone"
+        />
         <slot name="fields" />
         <template v-if="shown.has('labels')">
           <LabelPill
@@ -247,7 +283,6 @@ const nameWithOwner = computed(() => {
 
 .stackRow_count,
 .stackRow_repository,
-.stackRow_size,
 .stackRow_more {
   flex: none;
   font-family: $font-family-mono;
@@ -260,16 +295,6 @@ const nameWithOwner = computed(() => {
 }
 
 .stackRow_field {
-  display: inline-flex;
   flex: none;
-  gap: $spacing-5;
-  align-items: center;
-  color: $color-fg-2;
-}
-
-.stackRow_fieldIcon {
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
 }
 </style>

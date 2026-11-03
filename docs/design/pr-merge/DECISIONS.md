@@ -37,6 +37,12 @@ of scope here.
 > say whether merging a pull request that changes `.github/workflows` needs the `workflow` scope. githq asks for
 > `repo`, `project` and `read:org`. Needs a live test with a token of exactly those scopes.
 
+> **Checked 2026-11-02 (live, `nzymejs/githq-merge-sandbox` #6, changing only `.github/workflows/hello.yml`):** the
+> owner reports updating the branch and merging it from githq, signed in through the OAuth App "githq (dev)" with
+> `repo`, `project` and `read:org`. Verified through the API: #6 merged at 19:03:08 by `kedrzu`; which token did it is
+> not recorded by GitHub (OAuth Apps leave no mark on the merge event). The `workflow` scope is not needed to merge, so nobody has to sign in again. The only refusal
+> on the way was the organisation's OAuth App access restriction (G5), lifted once `nzymejs` approved the app.
+
 **Rejected.**
 
 - Showing mergeability and opening github.com to merge — the earlier decision in
@@ -241,8 +247,26 @@ may bypass (`viewerCanMergeAsAdmin`), not which rules; a rule they may not bypas
 (PM25). Bypass goes through REST, which takes no commit email, so it commits with the user's default email and the line
 names it. (owner, 2026-11-02)
 
+> **Checked 2026-11-03 (live, `nzymejs/githq-merge-sandbox`):** GraphQL's `mergePullRequest`, the only way to send a chosen commit
+> email (D5), has no bypass input and merges past the rules for anyone GitHub lets bypass them: a required check that failed, under
+> classic protection with `enforce_admins: false` and `viewerCanMergeAsAdmin` true (#46). With `enforce_admins: true` (#48, and #55
+> with a real address) or a ruleset with no bypass list (#49), `viewerCanMergeAsAdmin` is false and GitHub refuses. For an admin who
+> may bypass, a required check still running and a missing required review both read `MERGEABLE` and `BLOCKED` (#54).
+>
+> **Decided 2026-11-03 (owner):** so `⌘Enter` keeps its promise, a chosen email's merge reads `mergeable`, `mergeStateStatus` and
+> `viewerCanMergeAsAdmin` just before it is sent. With the flag false it goes, and GitHub enforces the rules. With it true it goes only
+> at `MERGEABLE` and `CLEAN`, `HAS_HOOKS` or `UNSTABLE`; otherwise nothing is sent, the panel says so (PM43) and reads the pull request
+> again, which brings the bypass line. A moment remains between the read and the send, which GitHub offers no way to close. Bypass
+> never carries the chosen email: it goes through REST and needs no second confirmation, as `⌥⌘Enter` and the line above it are that.
+
 **Rejected.**
 
+- A second press of `⌥⌘Enter`, or a dialog, to confirm a bypass — an extra step on an action that already has its own chord and says
+  what it skips. (owner, 2026-11-03)
+- Hiding the commit email choice from admins, or dropping the choice altogether — the first loses it for everyone who administers
+  their own repositories, the second reverses "all the options are there" (D4). (owner, 2026-11-03)
+- The queue's size in the panel, "4 ahead in main's queue", "3rd of 5" and "rebuilds the 4 in progress" (PM14, PM15 as first drawn) —
+  another read for what the position and the estimate already say, on repositories that rarely have a queue. (owner, 2026-11-03)
 - Bypass armed with a key, B, after which `⌘Enter` bypasses (PM12b) — the one state where the habit key does the costly
   thing.
 - A red zone below the footer (PM12a's first draft) — it outshone the usual action.
@@ -260,6 +284,10 @@ required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 **Rejected.**
 
 - Two lines always, Required and Others (PM4b) — more to read when everything is green.
+- `⌘Enter` waiting for the read, or enabling auto-merge, when `UNSTABLE` says only optional checks are in the way — GitHub would merge it
+  now, and `⌘Enter` already works during the read. (owner, 2026-11-03)
+- How long a check usually takes, beside one that runs — GitHub doesn't give it, and reading a check's history costs a query per panel
+  opened. (owner, 2026-11-02)
 
 ## D14
 
@@ -267,6 +295,14 @@ required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 Purple appears only when GitHub confirms.** (2026-11-01, design agent)
 
 **Why.** [D3](#d3): it must not read as merged, and purple is what merged looks like.
+
+A panel opened again while the merge runs (PM24) shows the method and the branches, without the commit text: the text
+sent is not kept, and GitHub's proposal could differ from it. (owner, 2026-11-02)
+
+**Rejected.**
+
+- Keeping the text sent with the pull request while it is being merged, to show it in PM24 — something more to hold for
+  a few seconds of a state the user rarely reopens.
 
 ## D15
 
@@ -285,6 +321,13 @@ the text, as it loses the state.
 (2026-11-01, design agent)
 
 **Why.** [D10](#d10) keeps them out of the panel's job, and the brief asks for a place at the right moment.
+
+**Revert sends at once, with no confirmation** (owner, 2026-11-03): it only opens a new pull request, and a second one
+while the first is open is refused (live, 2026-11-03). So it reads "Revert", not "Revert…".
+
+**A branch restored on github.com may draw as gone for a while** (owner, 2026-11-03): a restored branch keeps its node id
+(live, 2026-11-03), so a read can't tell it from one older than this session's delete, whose confirmed layer draws it gone
+until it ends (about 5 minutes). Accepted: a restore from githq draws over that layer at once.
 
 > **Checked 2026-11-01:** none of these keys is bound in `packages/app` (`EDIT_KEYS` and the commands' `key` and `kbd`
 > values). `Shift+E`, `Shift+D`, `Shift+Z`, `Shift+Q`, `Shift+U` and `U` are free.

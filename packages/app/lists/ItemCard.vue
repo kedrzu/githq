@@ -1,16 +1,21 @@
-<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
+<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands — how its last merge ended when it did not merge too (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { Check, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
+import { MergeContext } from '@/merge/MergeContext.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import * as l from './ItemCard.loc.js';
+import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
+import ItemStatus from './ItemStatus.vue';
+import PullRequestSize from './PullRequestSize.vue';
 import StackMarker from './StackMarker.vue';
 import { useItemFacts } from './useItemFacts.js';
 
@@ -47,6 +52,7 @@ const slots = defineSlots<{
 }>();
 
 const t = useTranslate();
+const merging = injectContext(MergeContext, { optional: true });
 const facts = useItemFacts({
   item: () => props.item,
   parent: () => props.parent,
@@ -55,15 +61,18 @@ const facts = useItemFacts({
   now: () => props.now,
   reviewRequested: () => props.reviewRequested,
   people: () => props.people,
+  mergeRecord: () => merging?.getRecord(props.item.id) ?? null,
 });
 const shown = computed(() => new Set(props.properties));
 const status = computed(() => (shown.value.has('status') ? facts.status : null));
+const size = computed(() => (shown.value.has('size') ? facts.size : null));
 const projectField = computed(() => (shown.value.has('projectField') ? facts.projectField : null));
 const milestone = computed(() => (shown.value.has('milestone') ? props.item.milestone : null));
 const labels = computed(() => (shown.value.has('labels') ? props.item.labels : []));
 const hasFooter = computed(
   () =>
     status.value !== null ||
+    size.value !== null ||
     projectField.value !== null ||
     milestone.value !== null ||
     labels.value.length > 0 ||
@@ -112,43 +121,30 @@ const hasFooter = computed(
       v-if="hasFooter"
       :class="css.itemCard_footer"
     >
-      <span
+      <ItemStatus
         v-if="status"
-        :class="[css.itemCard_status, css[`itemCard_status_${status.tone}`]]"
-      >
-        <component
-          :is="status.icon"
-          :class="css.itemCard_icon"
-          aria-hidden="true"
-        />
-        <span :class="css.itemCard_statusText">{{ status.text }}</span>
-      </span>
-      <span
+        :class="css.itemCard_shared"
+        :status="status"
+      />
+      <PullRequestSize
+        v-if="size"
+        :additions="size.additions"
+        :deletions="size.deletions"
+      />
+      <ItemField
         v-if="projectField"
-        :class="css.itemCard_field"
+        :class="css.itemCard_shared"
+        :icon="SquareKanban"
+        :value="projectField.value"
+        :more="projectField.more"
         :title="projectField.title"
-      >
-        <SquareKanban
-          :class="css.itemCard_icon"
-          aria-hidden="true"
-        />
-        {{ projectField.value }}
-        <span
-          v-if="projectField.more"
-          :class="css.itemCard_more"
-          >{{ projectField.more }}</span
-        >
-      </span>
-      <span
+      />
+      <ItemField
         v-if="milestone"
-        :class="css.itemCard_field"
-      >
-        <Milestone
-          :class="css.itemCard_icon"
-          aria-hidden="true"
-        />
-        {{ milestone.title }}
-      </span>
+        :class="css.itemCard_shared"
+        :icon="Milestone"
+        :value="milestone.title"
+      />
       <slot name="fields" />
       <LabelPill
         v-for="label in labels"
@@ -271,59 +267,22 @@ const hasFooter = computed(
   }
 }
 
-.itemCard_status,
-.itemCard_field,
-.itemCard_undone {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
+.itemCard_shared {
   min-width: 0;
 }
 
-.itemCard_statusText {
-  display: inline-block;
-
-  &::first-letter {
-    text-transform: uppercase;
-  }
-}
-
-.itemCard_status_danger,
 .itemCard_undone {
+  min-width: 0;
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
   color: $color-red;
-}
-
-.itemCard_status_warning {
-  color: $color-amber;
-}
-
-.itemCard_status_success {
-  color: $color-green;
-}
-
-.itemCard_status_muted,
-.itemCard_field {
-  color: $color-fg-2;
-}
-
-.itemCard_status_dim {
-  color: $color-fg-dim;
 }
 
 .itemCard_icon {
   flex: none;
   width: 12px;
   height: 12px;
-}
-
-.itemCard_field .itemCard_icon {
-  color: $color-fg-3;
-}
-
-.itemCard_more {
-  font-family: $font-family-mono;
-  font-size: 11px;
-  color: $color-fg-dim;
 }
 
 .itemCard_age {

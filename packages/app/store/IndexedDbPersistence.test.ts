@@ -10,6 +10,7 @@ import type { PersistedCommits } from '@/commits/CommitPersistence.js';
 import type { KeptCommit, KeptCommitRefs } from '@/commits/CommitTypes.js';
 import type { PersistedProjects } from '@/projects/ProjectPersistence.js';
 import type { Project, ProjectItem } from '@/projects/ProjectTypes.js';
+import type { PersistedRepositories } from '@/repos/RepositoryPersistence.js';
 import type { RepositoryMetadata, RepositoryOpenCounts } from '@/repos/RepositoryTypes.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
@@ -95,6 +96,26 @@ test('a database of a newer githq is dropped and started again, not left failing
     expect((await createIndexedDbPersistence().load(login)).items).toEqual([sampleIssue('I_1')]);
 });
 
+test('a database of an older githq is dropped and started again: its copies, of an older shape, are not read', async () => {
+    const login = uniqueLogin();
+    // Repository metadata as an older githq kept it, before the merge settings were read.
+    const older = await openDB(getLocalDatabaseName(login), LOCAL_DATABASE_VERSION - 1, {
+        upgrade(db) {
+            db.createObjectStore('items', { keyPath: 'id' });
+            db.createObjectStore('meta', { keyPath: 'key' });
+            db.createObjectStore('repositories', { keyPath: 'nameWithOwner' });
+        },
+    });
+    await older.put('repositories', { nameWithOwner: 'acme/web', id: 'R_web', labels: [], fetchedAt: 1000 });
+    older.close();
+
+    const persistence = createIndexedDbPersistence();
+    await persistence.load(login);
+
+    const expected: PersistedRepositories = { repositories: [], viewerProjects: null, openCounts: [] };
+    expect(await persistence.loadRepositories(login)).toEqual(expected);
+});
+
 test("details and repository metadata are kept in the user's copy, the details' versions read without them; once the copy is deleted they fail instead of bringing it back", async () => {
     const login = uniqueLogin();
     const tab = createIndexedDbPersistence();
@@ -141,6 +162,14 @@ const REPOSITORY: RepositoryMetadata = {
     id: 'R_web',
     viewerPermission: 'WRITE',
     hasIssuesEnabled: true,
+    mergeCommitAllowed: true,
+    squashMergeAllowed: true,
+    rebaseMergeAllowed: true,
+    viewerDefaultMergeMethod: 'MERGE',
+    autoMergeAllowed: false,
+    deleteBranchOnMerge: false,
+    viewerDefaultCommitEmail: null,
+    viewerPossibleCommitEmails: [],
     isArchived: false,
     labels: [],
     milestones: [],

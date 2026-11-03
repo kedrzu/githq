@@ -19,6 +19,8 @@ export interface DatabaseConnections<TSchema extends DBSchema> {
  */
 export function createDatabaseConnections<TSchema extends DBSchema>(
     open: (login: string) => Promise<IDBPDatabase<TSchema>>,
+    /** A newer version wants the database: its connection gave way, not to a deletion. */
+    onNewerVersion?: () => void,
 ): DatabaseConnections<TSchema> {
     const connections = new Map<string, Promise<IDBPDatabase<TSchema>>>();
 
@@ -43,9 +45,13 @@ export function createDatabaseConnections<TSchema extends DBSchema>(
         let connection = connections.get(login);
         if (!connection) {
             connection = open(login).then(db => {
-                db.addEventListener('versionchange', () => {
+                db.addEventListener('versionchange', event => {
                     db.close();
                     forgetConnection(login, connection);
+                    // `null`: the database is being deleted — another tab signing out — not replaced by a newer one.
+                    if (event.newVersion !== null) {
+                        onNewerVersion?.();
+                    }
                 });
                 return db;
             });

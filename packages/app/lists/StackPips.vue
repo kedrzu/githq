@@ -88,7 +88,8 @@ const narrow = computed(() => props.pips.length > MAX_WIDE_PIPS);
   background: $color-red;
 }
 
-.stackPips_pip_moving {
+.stackPips_pip_moving,
+.stackPips_pip_merging {
   background: $color-amber;
 }
 

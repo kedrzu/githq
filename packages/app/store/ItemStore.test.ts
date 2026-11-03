@@ -225,6 +225,7 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: () => {},
         replaceLocation: () => {},
         openInNewTab: () => {},

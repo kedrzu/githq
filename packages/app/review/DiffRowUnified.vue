@@ -48,7 +48,7 @@ const onAfter = computed(() => props.line.newLine !== null);
 
 .diffRowUnified_added {
   color: $color-fg;
-  background: linear-gradient($color-diff-added, $color-diff-added), $color-bg;
+  background: linear-gradient($color-diff-bg-added, $color-diff-bg-added), $color-bg;
 
   .diffRowUnified_number,
   .diffRowUnified_sign {
@@ -58,7 +58,7 @@ const onAfter = computed(() => props.line.newLine !== null);
 
 .diffRowUnified_deleted {
   color: $color-fg;
-  background: linear-gradient($color-diff-deleted, $color-diff-deleted), $color-bg;
+  background: linear-gradient($color-diff-bg-deleted, $color-diff-bg-deleted), $color-bg;
 
   .diffRowUnified_number,
   .diffRowUnified_sign {

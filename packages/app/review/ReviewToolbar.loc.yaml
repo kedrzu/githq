@@ -22,3 +22,11 @@ openOnGitHub:
   en: Open on GitHub
 fileList:
   en: File list
+openPullRequest:
+  en: Open pull request
+draftPullRequest:
+  en: Draft pull request
+donePullRequest:
+  en: Merged pull request
+closedPullRequest:
+  en: Closed pull request

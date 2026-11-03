@@ -130,6 +130,28 @@ export type IssueTypeColor =
     /** yellow */
     | 'YELLOW';
 
+/** The possible states for a merge queue entry. */
+export type MergeQueueEntryState =
+    /** The entry is currently waiting for checks to pass. */
+    | 'AWAITING_CHECKS'
+    /** The entry is currently locked. */
+    | 'LOCKED'
+    /** The entry is currently mergeable. */
+    | 'MERGEABLE'
+    /** The entry is currently queued. */
+    | 'QUEUED'
+    /** The entry is currently unmergeable. */
+    | 'UNMERGEABLE';
+
+/** Method to use when merging changes from queued pull requests. */
+export type MergeQueueMergeMethod =
+    /** Merge commit */
+    | 'MERGE'
+    /** Rebase and merge */
+    | 'REBASE'
+    /** Squash and merge */
+    | 'SQUASH';
+
 /** Detailed status information about a pull request merge. */
 export type MergeStateStatus =
     /** The head ref is out of date. */
@@ -280,6 +302,31 @@ export type ProjectV2ViewLayout =
     /** Table layout */
     | 'TABLE_LAYOUT';
 
+/** Array of allowed merge methods. Allowed values include `merge`, `squash`, and `rebase`. At least one option must be enabled. */
+export type PullRequestAllowedMergeMethods =
+    /** Add all commits from the head branch to the base branch with a merge commit. */
+    | 'MERGE'
+    /** Add all commits from the head branch onto the base branch individually. */
+    | 'REBASE'
+    /** Combine all commits from the head branch into a single commit in the base branch. */
+    | 'SQUASH';
+
+/** The possible methods for updating a pull request's head branch with the base branch. */
+export type PullRequestBranchUpdateMethod =
+    /** Update branch via merge */
+    | 'MERGE'
+    /** Update branch via rebase */
+    | 'REBASE';
+
+/** Represents available types of methods to use when merging a pull request. */
+export type PullRequestMergeMethod =
+    /** Add all commits from the head branch to the base branch with a merge commit. */
+    | 'MERGE'
+    /** Add all commits from the head branch onto the base branch individually. */
+    | 'REBASE'
+    /** Combine all commits from the head branch into a single commit in the base branch. */
+    | 'SQUASH';
+
 /** The review status of a pull request. */
 export type PullRequestReviewDecision =
     /** The pull request has received an approving review. */
@@ -347,6 +394,105 @@ export type RepositoryPermission =
     | 'TRIAGE_PLUS'
     /** Can read, clone, and push to this repository. Can also manage issues and pull requests */
     | 'WRITE';
+
+/** The rule types supported in rulesets */
+export type RepositoryRuleType =
+    /** Authorization */
+    | 'AUTHORIZATION'
+    /** Branch name pattern */
+    | 'BRANCH_NAME_PATTERN'
+    /**
+     * Enforce minimum line coverage thresholds on pull requests. This rule evaluates
+     * uploaded coverage data but does not wait for coverage uploads. To ensure
+     * coverage is evaluated before merging, make each status check associated with a
+     * coverage upload a required status check.
+     */
+    | 'CODE_COVERAGE'
+    /**
+     * Choose which severity levels of code quality results should block pull request
+     * merges. When configured, a code quality analysis must be done on the pull
+     * request before the changes can be merged.
+     */
+    | 'CODE_QUALITY'
+    /**
+     * Choose which tools must provide code scanning results before the reference is
+     * updated. When configured, code scanning must be enabled and have results for
+     * both the commit and the reference being updated.
+     */
+    | 'CODE_SCANNING'
+    /** Committer email pattern */
+    | 'COMMITTER_EMAIL_PATTERN'
+    /** Commit author email pattern */
+    | 'COMMIT_AUTHOR_EMAIL_PATTERN'
+    /** Commit message pattern */
+    | 'COMMIT_MESSAGE_PATTERN'
+    /**
+     * Request Copilot code review for new pull requests automatically if the author
+     * has access to Copilot code review and AI credits.
+     */
+    | 'COPILOT_CODE_REVIEW'
+    /** Only allow users with bypass permission to create matching refs. */
+    | 'CREATION'
+    /** Only allow users with bypass permissions to delete matching refs. */
+    | 'DELETION'
+    /** Prevent commits that include files with specified file extensions from being pushed to the commit graph. */
+    | 'FILE_EXTENSION_RESTRICTION'
+    /**
+     * Prevent commits that include changes in specified file and folder paths from
+     * being pushed to the commit graph. This includes absolute paths that contain file names.
+     */
+    | 'FILE_PATH_RESTRICTION'
+    /** Enforce any added or changed dependencies to comply with the organization's license policy. */
+    | 'LICENSE_COMPLIANCE_SCANNING'
+    /** Branch is read-only. Users cannot push to the branch. */
+    | 'LOCK_BRANCH'
+    /** Prevent commits that include file paths that exceed the specified character limit from being pushed to the commit graph. */
+    | 'MAX_FILE_PATH_LENGTH'
+    /** Prevent commits with individual files that exceed the specified limit from being pushed to the commit graph. */
+    | 'MAX_FILE_SIZE'
+    /** Max ref updates */
+    | 'MAX_REF_UPDATES'
+    /** Merges must be performed via a merge queue. */
+    | 'MERGE_QUEUE'
+    /** Merge queue locked ref */
+    | 'MERGE_QUEUE_LOCKED_REF'
+    /** Prevent users with push access from force pushing to refs. */
+    | 'NON_FAST_FORWARD'
+    /** Require all commits be made to a non-target branch and submitted via a pull request before they can be merged. */
+    | 'PULL_REQUEST'
+    /** Choose which environments must be successfully deployed to before refs can be pushed into a ref that matches this rule. */
+    | 'REQUIRED_DEPLOYMENTS'
+    /** Prevent merge commits from being pushed to matching refs. */
+    | 'REQUIRED_LINEAR_HISTORY'
+    /**
+     * When enabled, all conversations on code must be resolved before a pull request
+     * can be merged into a branch that matches this rule.
+     */
+    | 'REQUIRED_REVIEW_THREAD_RESOLUTION'
+    /** Commits pushed to matching refs must have verified signatures. */
+    | 'REQUIRED_SIGNATURES'
+    /**
+     * Choose which status checks must pass before the ref is updated. When enabled,
+     * commits must first be pushed to another ref where the checks pass.
+     */
+    | 'REQUIRED_STATUS_CHECKS'
+    /**
+     * Require all commits be made to a non-target branch and submitted via a pull
+     * request and required workflow checks to pass before they can be merged.
+     */
+    | 'REQUIRED_WORKFLOW_STATUS_CHECKS'
+    /** Secret scanning */
+    | 'SECRET_SCANNING'
+    /** Tag */
+    | 'TAG'
+    /** Tag name pattern */
+    | 'TAG_NAME_PATTERN'
+    /** Only allow users with bypass permission to update matching refs. */
+    | 'UPDATE'
+    /** Require all changes made to a targeted branch to pass the specified workflows before they can be merged. */
+    | 'WORKFLOWS'
+    /** Workflow files cannot be modified. */
+    | 'WORKFLOW_UPDATES';
 
 /** The possible commit status states. */
 export type StatusState =
@@ -683,7 +829,11 @@ export type ItemDetailQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
               reactionGroups: Array<{
                   content: ReactionContent;
                   viewerHasReacted: boolean;
@@ -901,6 +1051,31 @@ export type ItemDetailQuery = {
               };
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
               baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               latestOpinionatedReviews: {
                   nodes: Array<{
@@ -1166,7 +1341,11 @@ export type ItemDetailsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
               reactionGroups: Array<{
                   content: ReactionContent;
                   viewerHasReacted: boolean;
@@ -1384,6 +1563,31 @@ export type ItemDetailsQuery = {
               };
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
               baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               latestOpinionatedReviews: {
                   nodes: Array<{
@@ -1476,7 +1680,11 @@ export type ItemsByIdsQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
               author:
                   | { login: string; avatarUrl: string }
                   | { login: string; avatarUrl: string }
@@ -1513,6 +1721,31 @@ export type ItemsByIdsQuery = {
               } | null;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
               baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
@@ -1861,7 +2094,11 @@ export type ProjectFullQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                headRefOid: string;
                                 baseRefOid: string;
+                                isCrossRepository: boolean;
+                                viewerCanDeleteHeadRef: boolean;
+                                isMergeQueueEnabled: boolean;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -1898,6 +2135,31 @@ export type ProjectFullQuery = {
                                 } | null;
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
+                                headRef: { id: string } | null;
+                                mergeQueueEntry: {
+                                    position: number;
+                                    state: MergeQueueEntryState;
+                                    estimatedTimeToMerge: number | null;
+                                    enqueuedAt: string;
+                                    enqueuer:
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string };
+                                } | null;
+                                autoMergeRequest: {
+                                    mergeMethod: PullRequestMergeMethod;
+                                    enabledAt: string | null;
+                                    commitHeadline: string | null;
+                                    enabledBy:
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | null;
+                                } | null;
                                 baseRef: {
                                     target:
                                         | { oid: string }
@@ -2096,7 +2358,11 @@ export type ProjectItemsQuery = {
                                 reviewDecision: PullRequestReviewDecision | null;
                                 mergeable: MergeableState;
                                 mergeStateStatus: MergeStateStatus;
+                                headRefOid: string;
                                 baseRefOid: string;
+                                isCrossRepository: boolean;
+                                viewerCanDeleteHeadRef: boolean;
+                                isMergeQueueEnabled: boolean;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -2133,6 +2399,31 @@ export type ProjectItemsQuery = {
                                 } | null;
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
+                                headRef: { id: string } | null;
+                                mergeQueueEntry: {
+                                    position: number;
+                                    state: MergeQueueEntryState;
+                                    estimatedTimeToMerge: number | null;
+                                    enqueuedAt: string;
+                                    enqueuer:
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string };
+                                } | null;
+                                autoMergeRequest: {
+                                    mergeMethod: PullRequestMergeMethod;
+                                    enabledAt: string | null;
+                                    commitHeadline: string | null;
+                                    enabledBy:
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | { login: string }
+                                        | null;
+                                } | null;
                                 baseRef: {
                                     target:
                                         | { oid: string }
@@ -2333,6 +2624,157 @@ export type ProjectUpdatedAtQueryVariables = Exact<{
 
 export type ProjectUpdatedAtQuery = { node: { updatedAt: string } | Record<PropertyKey, never> | null };
 
+export type PullRequestMergeGuardQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type PullRequestMergeGuardQuery = {
+    node:
+        | { mergeable: MergeableState; mergeStateStatus: MergeStateStatus; viewerCanMergeAsAdmin: boolean }
+        | Record<PropertyKey, never>
+        | null;
+};
+
+export type PullRequestMergeOptionsQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type PullRequestMergeOptionsQuery = {
+    node:
+        | {
+              __typename: 'PullRequest';
+              viewerCanMergeAsAdmin: boolean;
+              viewerCanEnableAutoMerge: boolean;
+              id: string;
+              updatedAt: string;
+              state: PullRequestState;
+              isDraft: boolean;
+              merged: boolean;
+              reviewDecision: PullRequestReviewDecision | null;
+              mergeable: MergeableState;
+              mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
+              baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
+              mergeHeadline: string;
+              mergeBody: string;
+              squashHeadline: string;
+              squashBody: string;
+              autoMergeBody: { commitBody: string | null } | null;
+              headCommit: {
+                  nodes: Array<{
+                      commit: {
+                          oid: string;
+                          messageHeadline: string;
+                          author: { name: string | null; user: { login: string } | null } | null;
+                      };
+                  } | null> | null;
+              };
+              baseRef: {
+                  rules: {
+                      nodes: Array<{
+                          type: RepositoryRuleType;
+                          parameters:
+                              | { mergeMethod: MergeQueueMergeMethod }
+                              | { allowedMergeMethods: Array<PullRequestAllowedMergeMethods> | null }
+                              | Record<PropertyKey, never>
+                              | null;
+                      } | null> | null;
+                  } | null;
+                  branchProtectionRule: { requiresLinearHistory: boolean } | null;
+                  target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
+              } | null;
+              statusCheckRollup: {
+                  state: StatusState;
+                  contextPage: {
+                      nodes: Array<
+                          | {
+                                __typename: 'CheckRun';
+                                isRequired: boolean;
+                                id: string;
+                                name: string;
+                                status: CheckStatusState;
+                                conclusion: CheckConclusionState | null;
+                                detailsUrl: string | null;
+                                startedAt: string | null;
+                                completedAt: string | null;
+                                checkSuite: {
+                                    app: { slug: string } | null;
+                                    workflowRun: { databaseId: number | null; workflow: { name: string } } | null;
+                                };
+                            }
+                          | {
+                                __typename: 'StatusContext';
+                                isRequired: boolean;
+                                id: string;
+                                context: string;
+                                state: StatusState;
+                                targetUrl: string | null;
+                                createdAt: string;
+                            }
+                          | null
+                      > | null;
+                  };
+                  contexts: {
+                      checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
+                      statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
+                  };
+              } | null;
+              stack: { id: string; number: number; size: number } | null;
+              stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
+              reviewRequests: {
+                  nodes: Array<{
+                      requestedReviewer:
+                          | { slug: string; name: string }
+                          | { login: string }
+                          | Record<PropertyKey, never>
+                          | null;
+                  } | null> | null;
+              } | null;
+              latestOpinionatedReviews: {
+                  nodes: Array<{
+                      state: PullRequestReviewState;
+                      author:
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | null;
+                  } | null> | null;
+              } | null;
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type PullRequestReviewFilesQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -2393,7 +2835,11 @@ export type PullRequestStacksQuery = {
                           reviewDecision: PullRequestReviewDecision | null;
                           mergeable: MergeableState;
                           mergeStateStatus: MergeStateStatus;
+                          headRefOid: string;
                           baseRefOid: string;
+                          isCrossRepository: boolean;
+                          viewerCanDeleteHeadRef: boolean;
+                          isMergeQueueEnabled: boolean;
                           author:
                               | { login: string; avatarUrl: string }
                               | { login: string; avatarUrl: string }
@@ -2430,6 +2876,31 @@ export type PullRequestStacksQuery = {
                           } | null;
                           stack: { id: string; number: number; size: number } | null;
                           stackEntry: { position: number } | null;
+                          headRef: { id: string } | null;
+                          mergeQueueEntry: {
+                              position: number;
+                              state: MergeQueueEntryState;
+                              estimatedTimeToMerge: number | null;
+                              enqueuedAt: string;
+                              enqueuer:
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string };
+                          } | null;
+                          autoMergeRequest: {
+                              mergeMethod: PullRequestMergeMethod;
+                              enabledAt: string | null;
+                              commitHeadline: string | null;
+                              enabledBy:
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string }
+                                  | { login: string }
+                                  | null;
+                          } | null;
                           baseRef: {
                               target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                           } | null;
@@ -2486,9 +2957,38 @@ export type PullRequestStatusesQuery = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
               baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
@@ -2747,6 +3247,14 @@ export type RepositoryMetadataQuery = {
         viewerPermission: RepositoryPermission | null;
         isArchived: boolean;
         hasIssuesEnabled: boolean;
+        mergeCommitAllowed: boolean;
+        squashMergeAllowed: boolean;
+        rebaseMergeAllowed: boolean;
+        viewerDefaultMergeMethod: PullRequestMergeMethod;
+        autoMergeAllowed: boolean;
+        deleteBranchOnMerge: boolean;
+        viewerDefaultCommitEmail: string | null;
+        viewerPossibleCommitEmails: Array<string> | null;
         labels: {
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
             nodes: Array<{ id: string; name: string; color: string; description: string | null } | null> | null;
@@ -2813,7 +3321,11 @@ export type RepositoryPullRequestsQuery = {
                 reviewDecision: PullRequestReviewDecision | null;
                 mergeable: MergeableState;
                 mergeStateStatus: MergeStateStatus;
+                headRefOid: string;
                 baseRefOid: string;
+                isCrossRepository: boolean;
+                viewerCanDeleteHeadRef: boolean;
+                isMergeQueueEnabled: boolean;
                 author:
                     | { login: string; avatarUrl: string }
                     | { login: string; avatarUrl: string }
@@ -2850,6 +3362,31 @@ export type RepositoryPullRequestsQuery = {
                 } | null;
                 stack: { id: string; number: number; size: number } | null;
                 stackEntry: { position: number } | null;
+                headRef: { id: string } | null;
+                mergeQueueEntry: {
+                    position: number;
+                    state: MergeQueueEntryState;
+                    estimatedTimeToMerge: number | null;
+                    enqueuedAt: string;
+                    enqueuer:
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string };
+                } | null;
+                autoMergeRequest: {
+                    mergeMethod: PullRequestMergeMethod;
+                    enabledAt: string | null;
+                    commitHeadline: string | null;
+                    enabledBy:
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | null;
+                } | null;
                 baseRef: {
                     target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                 } | null;
@@ -3839,7 +4376,11 @@ export type ProjectItemPageFieldsFragment = {
                   reviewDecision: PullRequestReviewDecision | null;
                   mergeable: MergeableState;
                   mergeStateStatus: MergeStateStatus;
+                  headRefOid: string;
                   baseRefOid: string;
+                  isCrossRepository: boolean;
+                  viewerCanDeleteHeadRef: boolean;
+                  isMergeQueueEnabled: boolean;
                   author:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -3876,6 +4417,31 @@ export type ProjectItemPageFieldsFragment = {
                   } | null;
                   stack: { id: string; number: number; size: number } | null;
                   stackEntry: { position: number } | null;
+                  headRef: { id: string } | null;
+                  mergeQueueEntry: {
+                      position: number;
+                      state: MergeQueueEntryState;
+                      estimatedTimeToMerge: number | null;
+                      enqueuedAt: string;
+                      enqueuer:
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string };
+                  } | null;
+                  autoMergeRequest: {
+                      mergeMethod: PullRequestMergeMethod;
+                      enabledAt: string | null;
+                      commitHeadline: string | null;
+                      enabledBy:
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | { login: string }
+                          | null;
+                  } | null;
                   baseRef: {
                       target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                   } | null;
@@ -4048,7 +4614,11 @@ export type ProjectItemRowFieldsFragment = {
               reviewDecision: PullRequestReviewDecision | null;
               mergeable: MergeableState;
               mergeStateStatus: MergeStateStatus;
+              headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
+              isMergeQueueEnabled: boolean;
               author:
                   | { login: string; avatarUrl: string }
                   | { login: string; avatarUrl: string }
@@ -4085,6 +4655,31 @@ export type ProjectItemRowFieldsFragment = {
               } | null;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              mergeQueueEntry: {
+                  position: number;
+                  state: MergeQueueEntryState;
+                  estimatedTimeToMerge: number | null;
+                  enqueuedAt: string;
+                  enqueuer:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string };
+              } | null;
+              autoMergeRequest: {
+                  mergeMethod: PullRequestMergeMethod;
+                  enabledAt: string | null;
+                  commitHeadline: string | null;
+                  enabledBy:
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | { login: string }
+                      | null;
+              } | null;
               baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
               statusCheckRollup: {
                   state: StatusState;
@@ -4264,6 +4859,31 @@ export type ProjectViewFieldsFragment = {
     } | null;
 };
 
+type PullRequestCheckFields_CheckRun_Fragment = {
+    __typename: 'CheckRun';
+    id: string;
+    name: string;
+    status: CheckStatusState;
+    conclusion: CheckConclusionState | null;
+    detailsUrl: string | null;
+    startedAt: string | null;
+    completedAt: string | null;
+    checkSuite: { workflowRun: { workflow: { name: string } } | null };
+};
+
+type PullRequestCheckFields_StatusContext_Fragment = {
+    __typename: 'StatusContext';
+    id: string;
+    context: string;
+    state: StatusState;
+    targetUrl: string | null;
+    createdAt: string;
+};
+
+export type PullRequestCheckFieldsFragment =
+    | PullRequestCheckFields_CheckRun_Fragment
+    | PullRequestCheckFields_StatusContext_Fragment;
+
 export type PullRequestDetailFieldsFragment = {
     __typename: 'PullRequest';
     body: string;
@@ -4286,7 +4906,11 @@ export type PullRequestDetailFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
+    isMergeQueueEnabled: boolean;
     reactionGroups: Array<{
         content: ReactionContent;
         viewerHasReacted: boolean;
@@ -4495,6 +5119,26 @@ export type PullRequestDetailFieldsFragment = {
     };
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
+    mergeQueueEntry: {
+        position: number;
+        state: MergeQueueEntryState;
+        estimatedTimeToMerge: number | null;
+        enqueuedAt: string;
+        enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
+    } | null;
+    autoMergeRequest: {
+        mergeMethod: PullRequestMergeMethod;
+        enabledAt: string | null;
+        commitHeadline: string | null;
+        enabledBy:
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | null;
+    } | null;
     baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     latestOpinionatedReviews: {
         nodes: Array<{
@@ -4530,7 +5174,11 @@ export type PullRequestFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
+    isMergeQueueEnabled: boolean;
     author:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -4563,6 +5211,26 @@ export type PullRequestFieldsFragment = {
     } | null;
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
+    mergeQueueEntry: {
+        position: number;
+        state: MergeQueueEntryState;
+        estimatedTimeToMerge: number | null;
+        enqueuedAt: string;
+        enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
+    } | null;
+    autoMergeRequest: {
+        mergeMethod: PullRequestMergeMethod;
+        enabledAt: string | null;
+        commitHeadline: string | null;
+        enabledBy:
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | null;
+    } | null;
     baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     statusCheckRollup: {
         state: StatusState;
@@ -4608,9 +5276,33 @@ export type PullRequestStatusFieldsFragment = {
     reviewDecision: PullRequestReviewDecision | null;
     mergeable: MergeableState;
     mergeStateStatus: MergeStateStatus;
+    headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
+    isMergeQueueEnabled: boolean;
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
+    mergeQueueEntry: {
+        position: number;
+        state: MergeQueueEntryState;
+        estimatedTimeToMerge: number | null;
+        enqueuedAt: string;
+        enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
+    } | null;
+    autoMergeRequest: {
+        mergeMethod: PullRequestMergeMethod;
+        enabledAt: string | null;
+        commitHeadline: string | null;
+        enabledBy:
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | { login: string }
+            | null;
+    } | null;
     baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
     statusCheckRollup: {
         state: StatusState;
@@ -4841,7 +5533,11 @@ export type AddDraftIssueMutation = {
                       reviewDecision: PullRequestReviewDecision | null;
                       mergeable: MergeableState;
                       mergeStateStatus: MergeStateStatus;
+                      headRefOid: string;
                       baseRefOid: string;
+                      isCrossRepository: boolean;
+                      viewerCanDeleteHeadRef: boolean;
+                      isMergeQueueEnabled: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -4878,6 +5574,31 @@ export type AddDraftIssueMutation = {
                       } | null;
                       stack: { id: string; number: number; size: number } | null;
                       stackEntry: { position: number } | null;
+                      headRef: { id: string } | null;
+                      mergeQueueEntry: {
+                          position: number;
+                          state: MergeQueueEntryState;
+                          estimatedTimeToMerge: number | null;
+                          enqueuedAt: string;
+                          enqueuer:
+                              | { login: string }
+                              | { login: string }
+                              | { login: string }
+                              | { login: string }
+                              | { login: string };
+                      } | null;
+                      autoMergeRequest: {
+                          mergeMethod: PullRequestMergeMethod;
+                          enabledAt: string | null;
+                          commitHeadline: string | null;
+                          enabledBy:
+                              | { login: string }
+                              | { login: string }
+                              | { login: string }
+                              | { login: string }
+                              | { login: string }
+                              | null;
+                      } | null;
                       baseRef: {
                           target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
                       } | null;
@@ -5278,6 +5999,201 @@ export type CreateIssueMutation = {
     } | null;
 };
 
+export type CreateRefMutationVariables = Exact<{
+    repositoryId: string;
+    name: string;
+    oid: string;
+}>;
+
+export type CreateRefMutation = { createRef: { ref: { id: string } | null } | null };
+
+export type DeleteRefMutationVariables = Exact<{
+    refId: string;
+}>;
+
+export type DeleteRefMutation = { deleteRef: { clientMutationId: string | null } | null };
+
+export type DequeuePullRequestMutationVariables = Exact<{
+    id: string;
+}>;
+
+export type DequeuePullRequestMutation = { dequeuePullRequest: { clientMutationId: string | null } | null };
+
+export type DisablePullRequestAutoMergeMutationVariables = Exact<{
+    pullRequestId: string;
+}>;
+
+export type DisablePullRequestAutoMergeMutation = {
+    disablePullRequestAutoMerge: {
+        pullRequest: {
+            __typename: 'PullRequest';
+            id: string;
+            updatedAt: string;
+            state: PullRequestState;
+            isDraft: boolean;
+            merged: boolean;
+            reviewDecision: PullRequestReviewDecision | null;
+            mergeable: MergeableState;
+            mergeStateStatus: MergeStateStatus;
+            headRefOid: string;
+            baseRefOid: string;
+            isCrossRepository: boolean;
+            viewerCanDeleteHeadRef: boolean;
+            isMergeQueueEnabled: boolean;
+            stack: { id: string; number: number; size: number } | null;
+            stackEntry: { position: number } | null;
+            headRef: { id: string } | null;
+            mergeQueueEntry: {
+                position: number;
+                state: MergeQueueEntryState;
+                estimatedTimeToMerge: number | null;
+                enqueuedAt: string;
+                enqueuer:
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string };
+            } | null;
+            autoMergeRequest: {
+                mergeMethod: PullRequestMergeMethod;
+                enabledAt: string | null;
+                commitHeadline: string | null;
+                enabledBy:
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | null;
+            } | null;
+            baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
+            statusCheckRollup: {
+                state: StatusState;
+                contexts: {
+                    checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
+                    statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
+                };
+            } | null;
+            reviewRequests: {
+                nodes: Array<{
+                    requestedReviewer:
+                        | { slug: string; name: string }
+                        | { login: string }
+                        | Record<PropertyKey, never>
+                        | null;
+                } | null> | null;
+            } | null;
+            latestOpinionatedReviews: {
+                nodes: Array<{
+                    state: PullRequestReviewState;
+                    author:
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | null;
+                } | null> | null;
+            } | null;
+        } | null;
+    } | null;
+};
+
+export type EnablePullRequestAutoMergeMutationVariables = Exact<{
+    pullRequestId: string;
+    mergeMethod: PullRequestMergeMethod;
+    commitHeadline?: string | null | undefined;
+    commitBody?: string | null | undefined;
+    expectedHeadOid: string;
+}>;
+
+export type EnablePullRequestAutoMergeMutation = {
+    enablePullRequestAutoMerge: {
+        pullRequest: {
+            __typename: 'PullRequest';
+            id: string;
+            updatedAt: string;
+            state: PullRequestState;
+            isDraft: boolean;
+            merged: boolean;
+            reviewDecision: PullRequestReviewDecision | null;
+            mergeable: MergeableState;
+            mergeStateStatus: MergeStateStatus;
+            headRefOid: string;
+            baseRefOid: string;
+            isCrossRepository: boolean;
+            viewerCanDeleteHeadRef: boolean;
+            isMergeQueueEnabled: boolean;
+            stack: { id: string; number: number; size: number } | null;
+            stackEntry: { position: number } | null;
+            headRef: { id: string } | null;
+            mergeQueueEntry: {
+                position: number;
+                state: MergeQueueEntryState;
+                estimatedTimeToMerge: number | null;
+                enqueuedAt: string;
+                enqueuer:
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string };
+            } | null;
+            autoMergeRequest: {
+                mergeMethod: PullRequestMergeMethod;
+                enabledAt: string | null;
+                commitHeadline: string | null;
+                enabledBy:
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | { login: string }
+                    | null;
+            } | null;
+            baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
+            statusCheckRollup: {
+                state: StatusState;
+                contexts: {
+                    checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
+                    statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
+                };
+            } | null;
+            reviewRequests: {
+                nodes: Array<{
+                    requestedReviewer:
+                        | { slug: string; name: string }
+                        | { login: string }
+                        | Record<PropertyKey, never>
+                        | null;
+                } | null> | null;
+            } | null;
+            latestOpinionatedReviews: {
+                nodes: Array<{
+                    state: PullRequestReviewState;
+                    author:
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | { login: string }
+                        | null;
+                } | null> | null;
+            } | null;
+        } | null;
+    } | null;
+};
+
+export type EnqueuePullRequestMutationVariables = Exact<{
+    pullRequestId: string;
+    expectedHeadOid: string;
+}>;
+
+export type EnqueuePullRequestMutation = {
+    enqueuePullRequest: { mergeQueueEntry: { position: number } | null } | null;
+};
+
 export type MarkReadyForReviewMutationVariables = Exact<{
     pullRequestId: string;
 }>;
@@ -5292,6 +6208,19 @@ export type MarkReadyForReviewMutation = {
             closedAt: string | null;
         } | null;
     } | null;
+};
+
+export type MergePullRequestMutationVariables = Exact<{
+    pullRequestId: string;
+    expectedHeadOid: string;
+    mergeMethod: PullRequestMergeMethod;
+    commitHeadline?: string | null | undefined;
+    commitBody?: string | null | undefined;
+    authorEmail?: string | null | undefined;
+}>;
+
+export type MergePullRequestMutation = {
+    mergePullRequest: { pullRequest: { mergeCommit: { oid: string } | null } | null } | null;
 };
 
 export type RemoveAssigneesMutationVariables = Exact<{
@@ -5399,6 +6328,14 @@ export type RequestReviewsMutation = {
     } | null;
 };
 
+export type RevertPullRequestMutationVariables = Exact<{
+    pullRequestId: string;
+}>;
+
+export type RevertPullRequestMutation = {
+    revertPullRequest: { revertPullRequest: { number: number; url: string } | null } | null;
+};
+
 export type SetProjectFieldValueMutationVariables = Exact<{
     projectId: string;
     itemId: string;
@@ -5488,6 +6425,16 @@ export type UpdateIssueTypeMutation = {
             issueType: { id: string; name: string; color: IssueTypeColor } | null;
         } | null;
     } | null;
+};
+
+export type UpdatePullRequestBranchMutationVariables = Exact<{
+    pullRequestId: string;
+    expectedHeadOid: string;
+    updateMethod: PullRequestBranchUpdateMethod;
+}>;
+
+export type UpdatePullRequestBranchMutation = {
+    updatePullRequestBranch: { pullRequest: { id: string } | null } | null;
 };
 
 export type UpdatePullRequestMilestoneMutationVariables = Exact<{
@@ -6489,7 +7436,31 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -6628,7 +7599,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -6936,7 +7931,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -7231,7 +8250,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -7325,6 +8368,38 @@ export const ProjectViewFieldsFragmentDoc = new TypedDocumentString(
 }`,
     { fragmentName: 'ProjectViewFields' },
 );
+export const PullRequestCheckFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
+    `,
+    { fragmentName: 'PullRequestCheckFields' },
+);
 export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment PullRequestDetailFields on PullRequest {
@@ -7347,31 +8422,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -7558,6 +8609,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestFields on PullRequest {
   ...PullRequestStatusFields
   url
@@ -7625,7 +8703,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -8161,6 +9263,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
@@ -8181,31 +9310,7 @@ fragment PullRequestDetailFields on PullRequest {
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -8301,7 +9406,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -8617,6 +9746,33 @@ fragment ProjectIterationFields on ProjectV2IterationFieldIteration {
   startDate
   duration
 }
+fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
 fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
@@ -8637,31 +9793,7 @@ fragment PullRequestDetailFields on PullRequest {
     contextPage: contexts(first: 100) {
       totalCount
       nodes {
-        ... on CheckRun {
-          __typename
-          id
-          name
-          status
-          conclusion
-          detailsUrl
-          startedAt
-          completedAt
-          checkSuite {
-            workflowRun {
-              workflow {
-                name
-              }
-            }
-          }
-        }
-        ... on StatusContext {
-          __typename
-          id
-          context
-          state
-          targetUrl
-          createdAt
-        }
+        ...PullRequestCheckFields
       }
     }
   }
@@ -8757,7 +9889,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -8960,7 +10116,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -9467,7 +10647,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -9768,7 +10972,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -9914,6 +11142,197 @@ export const ProjectUpdatedAtDocument = new TypedDocumentString(`
   }
 }
     `);
+export const PullRequestMergeGuardDocument = new TypedDocumentString(`
+    query PullRequestMergeGuard($id: ID!) {
+  node(id: $id) {
+    ... on PullRequest {
+      mergeable
+      mergeStateStatus
+      viewerCanMergeAsAdmin
+    }
+  }
+}
+    `);
+export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
+    query PullRequestMergeOptions($id: ID!) {
+  node(id: $id) {
+    ... on PullRequest {
+      ...PullRequestStatusFields
+      mergeHeadline: viewerMergeHeadlineText(mergeType: MERGE)
+      mergeBody: viewerMergeBodyText(mergeType: MERGE)
+      squashHeadline: viewerMergeHeadlineText(mergeType: SQUASH)
+      squashBody: viewerMergeBodyText(mergeType: SQUASH)
+      viewerCanMergeAsAdmin
+      viewerCanEnableAutoMerge
+      autoMergeBody: autoMergeRequest {
+        commitBody
+      }
+      headCommit: commits(last: 1) {
+        nodes {
+          commit {
+            oid
+            messageHeadline
+            author {
+              name
+              user {
+                login
+              }
+            }
+          }
+        }
+      }
+      baseRef {
+        rules(first: 50) {
+          nodes {
+            type
+            parameters {
+              ... on PullRequestParameters {
+                allowedMergeMethods
+              }
+              ... on MergeQueueParameters {
+                mergeMethod
+              }
+            }
+          }
+        }
+        branchProtectionRule {
+          requiresLinearHistory
+        }
+      }
+      statusCheckRollup {
+        contextPage: contexts(first: 100) {
+          nodes {
+            ...PullRequestCheckFields
+            ... on CheckRun {
+              isRequired(pullRequestId: $id)
+              checkSuite {
+                app {
+                  slug
+                }
+                workflowRun {
+                  databaseId
+                }
+              }
+            }
+            ... on StatusContext {
+              isRequired(pullRequestId: $id)
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
+  __typename
+  id
+  updatedAt
+  state
+  isDraft
+  merged
+  reviewDecision
+  mergeable
+  mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  headRefOid
+  baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
+  baseRef {
+    target {
+      oid
+    }
+  }
+  statusCheckRollup {
+    state
+    contexts {
+      checkRunCountsByState {
+        state
+        count
+      }
+      statusContextCountsByState {
+        state
+        count
+      }
+    }
+  }
+  reviewRequests(first: 10) {
+    nodes {
+      requestedReviewer {
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+          name
+        }
+      }
+    }
+  }
+  latestOpinionatedReviews(first: 10) {
+    nodes {
+      author {
+        login
+      }
+      state
+    }
+  }
+}`);
 export const PullRequestReviewFilesDocument = new TypedDocumentString(`
     query PullRequestReviewFiles($owner: String!, $name: String!, $number: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -10048,7 +11467,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -10115,7 +11558,31 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -10459,6 +11926,14 @@ export const RepositoryMetadataDocument = new TypedDocumentString(`
     viewerPermission
     isArchived
     hasIssuesEnabled
+    mergeCommitAllowed
+    squashMergeAllowed
+    rebaseMergeAllowed
+    viewerDefaultMergeMethod
+    autoMergeAllowed
+    deleteBranchOnMerge
+    viewerDefaultCommitEmail
+    viewerPossibleCommitEmails
     labels(first: 100, orderBy: {field: NAME, direction: ASC}) {
       pageInfo {
         hasNextPage
@@ -10633,7 +12108,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -11177,7 +12676,31 @@ fragment PullRequestStatusFields on PullRequest {
   stackEntry {
     position
   }
+  headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
   baseRef {
     target {
       oid
@@ -11587,6 +13110,224 @@ fragment ItemRepositoryFields on Repository {
     login
   }
 }`);
+export const CreateRefDocument = new TypedDocumentString(`
+    mutation CreateRef($repositoryId: ID!, $name: String!, $oid: GitObjectID!) {
+  createRef(input: {repositoryId: $repositoryId, name: $name, oid: $oid}) {
+    ref {
+      id
+    }
+  }
+}
+    `);
+export const DeleteRefDocument = new TypedDocumentString(`
+    mutation DeleteRef($refId: ID!) {
+  deleteRef(input: {refId: $refId}) {
+    clientMutationId
+  }
+}
+    `);
+export const DequeuePullRequestDocument = new TypedDocumentString(`
+    mutation DequeuePullRequest($id: ID!) {
+  dequeuePullRequest(input: {id: $id}) {
+    clientMutationId
+  }
+}
+    `);
+export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
+    mutation DisablePullRequestAutoMerge($pullRequestId: ID!) {
+  disablePullRequestAutoMerge(input: {pullRequestId: $pullRequestId}) {
+    pullRequest {
+      ...PullRequestStatusFields
+    }
+  }
+}
+    fragment PullRequestStatusFields on PullRequest {
+  __typename
+  id
+  updatedAt
+  state
+  isDraft
+  merged
+  reviewDecision
+  mergeable
+  mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  headRefOid
+  baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
+  baseRef {
+    target {
+      oid
+    }
+  }
+  statusCheckRollup {
+    state
+    contexts {
+      checkRunCountsByState {
+        state
+        count
+      }
+      statusContextCountsByState {
+        state
+        count
+      }
+    }
+  }
+  reviewRequests(first: 10) {
+    nodes {
+      requestedReviewer {
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+          name
+        }
+      }
+    }
+  }
+  latestOpinionatedReviews(first: 10) {
+    nodes {
+      author {
+        login
+      }
+      state
+    }
+  }
+}`);
+export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
+    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
+  enablePullRequestAutoMerge(
+    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, expectedHeadOid: $expectedHeadOid}
+  ) {
+    pullRequest {
+      ...PullRequestStatusFields
+    }
+  }
+}
+    fragment PullRequestStatusFields on PullRequest {
+  __typename
+  id
+  updatedAt
+  state
+  isDraft
+  merged
+  reviewDecision
+  mergeable
+  mergeStateStatus
+  stack {
+    id
+    number
+    size
+  }
+  stackEntry {
+    position
+  }
+  headRefOid
+  baseRefOid
+  headRef {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
+  isMergeQueueEnabled
+  mergeQueueEntry {
+    position
+    state
+    estimatedTimeToMerge
+    enqueuedAt
+    enqueuer {
+      login
+    }
+  }
+  autoMergeRequest {
+    mergeMethod
+    enabledAt
+    enabledBy {
+      login
+    }
+    commitHeadline
+  }
+  baseRef {
+    target {
+      oid
+    }
+  }
+  statusCheckRollup {
+    state
+    contexts {
+      checkRunCountsByState {
+        state
+        count
+      }
+      statusContextCountsByState {
+        state
+        count
+      }
+    }
+  }
+  reviewRequests(first: 10) {
+    nodes {
+      requestedReviewer {
+        ... on User {
+          login
+        }
+        ... on Team {
+          slug
+          name
+        }
+      }
+    }
+  }
+  latestOpinionatedReviews(first: 10) {
+    nodes {
+      author {
+        login
+      }
+      state
+    }
+  }
+}`);
+export const EnqueuePullRequestDocument = new TypedDocumentString(`
+    mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!) {
+  enqueuePullRequest(
+    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: true}
+  ) {
+    mergeQueueEntry {
+      position
+    }
+  }
+}
+    `);
 export const MarkReadyForReviewDocument = new TypedDocumentString(`
     mutation MarkReadyForReview($pullRequestId: ID!) {
   markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
@@ -11602,6 +13343,19 @@ export const MarkReadyForReviewDocument = new TypedDocumentString(`
   isDraft
   closedAt
 }`);
+export const MergePullRequestDocument = new TypedDocumentString(`
+    mutation MergePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $authorEmail: String) {
+  mergePullRequest(
+    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, authorEmail: $authorEmail}
+  ) {
+    pullRequest {
+      mergeCommit {
+        oid
+      }
+    }
+  }
+}
+    `);
 export const RemoveAssigneesDocument = new TypedDocumentString(`
     mutation RemoveAssignees($assignableId: ID!, $assigneeIds: [ID!]!) {
   removeAssigneesFromAssignable(
@@ -11720,6 +13474,16 @@ export const RequestReviewsDocument = new TypedDocumentString(`
   }
 }
     `);
+export const RevertPullRequestDocument = new TypedDocumentString(`
+    mutation RevertPullRequest($pullRequestId: ID!) {
+  revertPullRequest(input: {pullRequestId: $pullRequestId}) {
+    revertPullRequest {
+      number
+      url
+    }
+  }
+}
+    `);
 export const SetProjectFieldValueDocument = new TypedDocumentString(`
     mutation SetProjectFieldValue($projectId: ID!, $itemId: ID!, $fieldId: ID!, $fieldName: String!, $value: ProjectV2FieldValue!) {
   updateProjectV2ItemFieldValue(
@@ -11818,6 +13582,17 @@ export const UpdateIssueTypeDocument = new TypedDocumentString(`
         name
         color
       }
+    }
+  }
+}
+    `);
+export const UpdatePullRequestBranchDocument = new TypedDocumentString(`
+    mutation UpdatePullRequestBranch($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $updateMethod: PullRequestBranchUpdateMethod!) {
+  updatePullRequestBranch(
+    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, updateMethod: $updateMethod}
+  ) {
+    pullRequest {
+      id
     }
   }
 }
@@ -11944,6 +13719,26 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ProjectUpdatedAtQuery>;
+        },
+        PullRequestMergeGuard(
+            variables: PullRequestMergeGuardQueryVariables,
+            options?: C,
+        ): Promise<PullRequestMergeGuardQuery> {
+            return requester<PullRequestMergeGuardQuery, PullRequestMergeGuardQueryVariables>(
+                PullRequestMergeGuardDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestMergeGuardQuery>;
+        },
+        PullRequestMergeOptions(
+            variables: PullRequestMergeOptionsQueryVariables,
+            options?: C,
+        ): Promise<PullRequestMergeOptionsQuery> {
+            return requester<PullRequestMergeOptionsQuery, PullRequestMergeOptionsQueryVariables>(
+                PullRequestMergeOptionsDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestMergeOptionsQuery>;
         },
         PullRequestReviewFiles(
             variables: PullRequestReviewFilesQueryVariables,
@@ -12185,6 +13980,60 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CreateIssueMutation>;
         },
+        CreateRef(variables: CreateRefMutationVariables, options?: C): Promise<CreateRefMutation> {
+            return requester<CreateRefMutation, CreateRefMutationVariables>(
+                CreateRefDocument,
+                variables,
+                options,
+            ) as Promise<CreateRefMutation>;
+        },
+        DeleteRef(variables: DeleteRefMutationVariables, options?: C): Promise<DeleteRefMutation> {
+            return requester<DeleteRefMutation, DeleteRefMutationVariables>(
+                DeleteRefDocument,
+                variables,
+                options,
+            ) as Promise<DeleteRefMutation>;
+        },
+        DequeuePullRequest(
+            variables: DequeuePullRequestMutationVariables,
+            options?: C,
+        ): Promise<DequeuePullRequestMutation> {
+            return requester<DequeuePullRequestMutation, DequeuePullRequestMutationVariables>(
+                DequeuePullRequestDocument,
+                variables,
+                options,
+            ) as Promise<DequeuePullRequestMutation>;
+        },
+        DisablePullRequestAutoMerge(
+            variables: DisablePullRequestAutoMergeMutationVariables,
+            options?: C,
+        ): Promise<DisablePullRequestAutoMergeMutation> {
+            return requester<DisablePullRequestAutoMergeMutation, DisablePullRequestAutoMergeMutationVariables>(
+                DisablePullRequestAutoMergeDocument,
+                variables,
+                options,
+            ) as Promise<DisablePullRequestAutoMergeMutation>;
+        },
+        EnablePullRequestAutoMerge(
+            variables: EnablePullRequestAutoMergeMutationVariables,
+            options?: C,
+        ): Promise<EnablePullRequestAutoMergeMutation> {
+            return requester<EnablePullRequestAutoMergeMutation, EnablePullRequestAutoMergeMutationVariables>(
+                EnablePullRequestAutoMergeDocument,
+                variables,
+                options,
+            ) as Promise<EnablePullRequestAutoMergeMutation>;
+        },
+        EnqueuePullRequest(
+            variables: EnqueuePullRequestMutationVariables,
+            options?: C,
+        ): Promise<EnqueuePullRequestMutation> {
+            return requester<EnqueuePullRequestMutation, EnqueuePullRequestMutationVariables>(
+                EnqueuePullRequestDocument,
+                variables,
+                options,
+            ) as Promise<EnqueuePullRequestMutation>;
+        },
         MarkReadyForReview(
             variables: MarkReadyForReviewMutationVariables,
             options?: C,
@@ -12194,6 +14043,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<MarkReadyForReviewMutation>;
+        },
+        MergePullRequest(variables: MergePullRequestMutationVariables, options?: C): Promise<MergePullRequestMutation> {
+            return requester<MergePullRequestMutation, MergePullRequestMutationVariables>(
+                MergePullRequestDocument,
+                variables,
+                options,
+            ) as Promise<MergePullRequestMutation>;
         },
         RemoveAssignees(variables: RemoveAssigneesMutationVariables, options?: C): Promise<RemoveAssigneesMutation> {
             return requester<RemoveAssigneesMutation, RemoveAssigneesMutationVariables>(
@@ -12233,6 +14089,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RequestReviewsMutation>;
         },
+        RevertPullRequest(
+            variables: RevertPullRequestMutationVariables,
+            options?: C,
+        ): Promise<RevertPullRequestMutation> {
+            return requester<RevertPullRequestMutation, RevertPullRequestMutationVariables>(
+                RevertPullRequestDocument,
+                variables,
+                options,
+            ) as Promise<RevertPullRequestMutation>;
+        },
         SetProjectFieldValue(
             variables: SetProjectFieldValueMutationVariables,
             options?: C,
@@ -12259,6 +14125,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<UpdateIssueTypeMutation>;
+        },
+        UpdatePullRequestBranch(
+            variables: UpdatePullRequestBranchMutationVariables,
+            options?: C,
+        ): Promise<UpdatePullRequestBranchMutation> {
+            return requester<UpdatePullRequestBranchMutation, UpdatePullRequestBranchMutationVariables>(
+                UpdatePullRequestBranchDocument,
+                variables,
+                options,
+            ) as Promise<UpdatePullRequestBranchMutation>;
         },
         UpdatePullRequestMilestone(
             variables: UpdatePullRequestMilestoneMutationVariables,

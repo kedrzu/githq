@@ -89,7 +89,7 @@ export const ManyBranches: Story = {
 export const DraggedWide: Story = {
     render: () => renderOver({ commits: sampleHistory({ count: 400, seed: 7 }) }, 0.5),
     play: async ({ canvasElement }) => {
-        const divider = await within(canvasElement).findByRole('separator');
+        const divider = await within(canvasElement).findByRole('separator', { name: 'Resize the commit graph' });
         await expect(divider.getAttribute('aria-valuenow')).toBe(divider.getAttribute('aria-valuemax'));
     },
 };
@@ -98,7 +98,7 @@ export const DraggedWide: Story = {
 export const DraggedNarrow: Story = {
     render: () => renderOver({ commits: sampleHistory({ count: 400, seed: 7 }) }, 52 / 1280),
     play: async ({ canvasElement }) => {
-        const divider = await within(canvasElement).findByRole('separator');
+        const divider = await within(canvasElement).findByRole('separator', { name: 'Resize the commit graph' });
         await expect(Number(divider.getAttribute('aria-valuenow'))).toBeLessThanOrEqual(3);
     },
 };
@@ -107,7 +107,7 @@ export const DraggedNarrow: Story = {
 export const Resizing: Story = {
     render: () => renderOver({ commits: sampleHistory({ count: 400, seed: 7 }) }),
     play: async ({ canvasElement }) => {
-        const divider = await within(canvasElement).findByRole('separator');
+        const divider = await within(canvasElement).findByRole('separator', { name: 'Resize the commit graph' });
         divider.focus();
         await userEvent.keyboard('{ArrowLeft}');
         await expect(divider).toHaveTextContent(/\d+ of \d+ lanes/);
@@ -150,8 +150,8 @@ export const Unavailable: Story = {
 };
 
 /**
- * D15: on a window below about 1,200 px, the list of branches and tags is folded away; `B` opens it over the graph, and
- * `Esc` closes it. On a wider window (Storybook's own canvas, say) it is simply there.
+ * D15: on a window below about 1,200 px, the list of branches and tags is folded away; `B` opens it over the graph from
+ * its left, and `Esc` closes it. On a wider window (Storybook's own canvas, say) it is simply there, left of the graph.
  */
 export const ListOverTheGraph: Story = {
     render: () => renderOver(sampleWebappHistory()),
@@ -164,7 +164,7 @@ export const ListOverTheGraph: Story = {
     },
 };
 
-/** A plain commit's details in the list's place: no pull request and no checks to tell of. */
+/** A plain commit's details right of the graph: no pull request and no checks to tell of. */
 export const DetailsPlain: Story = {
     render: () =>
         renderOver({

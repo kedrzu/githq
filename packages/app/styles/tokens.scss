@@ -52,6 +52,10 @@ $color-on-light: #0e1013;
 
 $color-accent: #7b87f7;
 $color-green: #3fb950;
+// The lines a pull request adds and removes (`PullRequestSize`): paler than the status green and red, because a size
+// is data, not an alarm.
+$color-diff-added: #7ccb92;
+$color-diff-removed: #e98b8f;
 $color-red: #f0545c;
 // A failure that isn't news (actions): a workflow broken for over a day, a run on a ref that doesn't count. Marks
 // only, never text.
@@ -60,8 +64,8 @@ $color-amber: #d6a23a;
 $color-purple: #a57bf5;
 
 // A deleted and an added line of a diff: its background (9%, `#3FB95017` in the design).
-$color-diff-deleted: rgba($color-red, 0.09);
-$color-diff-added: rgba($color-green, 0.09);
+$color-diff-bg-deleted: rgba($color-red, 0.09);
+$color-diff-bg-added: rgba($color-green, 0.09);
 
 // Code. Muted, each AA (4.5:1) over the window and over a deleted or an added line. `githq.pen` has no syntax colours
 // (its code is monochrome): these are the agent's, for the owner to confirm. The rest of the code is the line's own colour.
@@ -87,6 +91,8 @@ $font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 $font-family-brand: 'Geist', $font-family-sans;
 
 $font-size-3xs: 11px;
+// A keyboard hint's key, a tag beside a name.
+$font-size-4xs: 10.5px;
 $font-size-2xs: 11.5px;
 $font-size-xs: 12px;
 $font-size-sm: 12.5px;

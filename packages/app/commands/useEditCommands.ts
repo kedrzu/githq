@@ -5,6 +5,7 @@ import {
     CalendarRange,
     CircleCheckBig,
     CircleDashed,
+    GitMerge,
     GitPullRequest,
     GitPullRequestDraft,
     Milestone,
@@ -21,6 +22,10 @@ import type { EditPermissions } from '@/edits/getEditPermissions.js';
 import type { ProjectFieldRole } from '@/edits/getProjectFieldRole.js';
 import { getProjectFieldRole } from '@/edits/getProjectFieldRole.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
+import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
+import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
+import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -28,10 +33,13 @@ import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { Command, CommandOption } from './CommandTypes.js';
 import * as l from './useEditCommands.loc.js';
 import { useProjectFieldOptions } from './useProjectFieldOptions.js';
+import type { PullRequestCommandSource } from './usePullRequestCommands.js';
+import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from './usePullRequestCommands.js';
 
 /**
- * The keys of the edits of an opened item and of the selection (M3, E1, E4) — the only place they are written:
- * the actions run by them, and the item view, the selection's toolbar and the item menus draw them from here.
+ * The keys of the edits of an opened item and of the selection (M3, E1, E4) — the only place they are written, but for
+ * a pull request's ordinary commands, which come with their actions: the actions run by them, and the item view, the
+ * selection's toolbar and the item menus draw them from here.
  */
 export const EDIT_KEYS = {
     assignees: 'A',
@@ -44,6 +52,8 @@ export const EDIT_KEYS = {
     state: 'Shift+X',
     reviewers: 'Shift+R',
     comment: 'R',
+    merge: 'Shift+M',
+    ...PULL_REQUEST_COMMAND_KEYS,
 } as const;
 
 /** An edit with an action of its own here. */
@@ -91,6 +101,22 @@ export interface EditCommandsParams {
      * shown — the key then opens the menu's submenu.
      */
     readonly inline?: Partial<Record<EditCommandKind, () => boolean>>;
+    /**
+     * Opens the merge panel for the one pull request (merging D7); without it merging is not offered here. A screen
+     * that moves on once the merge is sent (a list, PM32a) says so in it.
+     */
+    readonly merge?: (pr: PullRequestItem) => void;
+    /**
+     * The one pull request's checks counted by whether they are required, once its merge options are read: `⇧M` then
+     * says the same way forward as its standing (PM38). Without them, as its row holds it.
+     */
+    readonly mergeChecks?: MergeCheckCounts | null;
+    /** The viewer may turn auto-merge on, as its merge options said; not known until they are read. */
+    readonly viewerCanEnableAutoMerge?: boolean | null;
+    /** Its ordinary commands (merging D16); without them they are not offered here. */
+    readonly pullRequestCommands?: PullRequestCommandSource | null;
+    /** The one pull request's checks, once its merge options are read: which `⇧E` re-runs (PM39). */
+    readonly checks?: readonly MergeCheck[] | null;
 }
 
 /** An edit made of items one by one, by the user's permission for each. */
@@ -108,9 +134,13 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
     const t = useTranslate();
     const pickerOptions = usePickerOptions();
     const fieldOptions = useProjectFieldOptions();
+    const getVerdict = usePullRequestVerdicts();
+    const pullRequestCommands = usePullRequestCommands();
 
     return params =>
         [
+            mergeCommand(params),
+            ...ordinaryCommands(params),
             toggleCommand(params, 'assignees', {
                 title: t(l.assign),
                 icon: UserPlus,
@@ -300,6 +330,37 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
                     }),
             }),
         };
+    }
+
+    /**
+     * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
+     * merged, for the panel to say so (PM24) — the first of the actions; never for several items, which merge one at
+     * a time. Its title is the way forward the panel leads to, as the standing's button says (PM38): "Update branch",
+     * "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…".
+     */
+    function mergeCommand(params: EditCommandsParams): Command | null {
+        const pr = getOnePullRequest(params);
+        const { merge } = params;
+        if (!pr || !merge || !params.getPermissions(pr).mergePanel) {
+            return null;
+        }
+
+        const settings = params.metadata.find(entry => entry.nameWithOwner === pr.repository.nameWithOwner);
+        const autoMergeAllowed = isAutoMergeAllowed(settings, params.viewerCanEnableAutoMerge);
+        return {
+            id: `${params.section}.merge`,
+            title: getVerdict({ pr, checks: params.mergeChecks ?? null, autoMergeAllowed }).forwardTitle,
+            section: params.section,
+            key: EDIT_KEYS.merge,
+            icon: GitMerge,
+            run: () => merge(pr),
+        };
+    }
+
+    function ordinaryCommands(params: EditCommandsParams): Command[] {
+        const pr = getOnePullRequest(params);
+        const source = params.pullRequestCommands;
+        return pr && source ? pullRequestCommands({ section: params.section, pr, source, checks: params.checks }) : [];
     }
 
     /** One open pull request: back to a draft, or a draft ready for review. */
