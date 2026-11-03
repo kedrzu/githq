@@ -3,8 +3,9 @@
 //! would open every Azure Storage account to the webview, which holds the token (actions D3 in `docs/design/actions`).
 //!
 //! This is not a general fetch: the command can ask for that one address only, and follows one redirect, to a blob
-//! only. The token goes to GitHub and never to the blob. The log stays in memory, on its way to the window: it is
-//! neither logged nor written anywhere, and the blob's signed address is not logged either.
+//! only. A renamed or moved repository's address takes one hop more, within the API, to the same job's log under the
+//! repository's id. The token goes to GitHub and never to the blob. The log stays in memory, on its way to the window:
+//! it is neither logged nor written anywhere, and the blob's signed address is not logged either.
 
 use std::collections::BTreeMap;
 use std::time::Duration;
@@ -52,7 +53,8 @@ const MAX_NAME_LENGTH: usize = 100;
 pub enum JobLogError {
     /// The owner or name is not one GitHub could have: nothing was asked.
     Invalid,
-    /// GitHub redirected somewhere other than to a blob over https, or the blob redirected in turn.
+    /// GitHub redirected somewhere other than to a blob over https or a moved repository's same log, or redirected
+    /// again after that hop, or the blob redirected in turn.
     Refused,
     /// The answer is longer than [`MAX_ANSWER_BYTES`].
     TooLarge,
@@ -131,14 +133,11 @@ impl JobLogs {
             "{}/repos/{owner}/{name}/actions/jobs/{job_id}/logs",
             self.api_url
         );
-        let answer = self
-            .http
-            .get(url)
-            .bearer_auth(token)
-            .header(ACCEPT, GITHUB_JSON)
-            .send()
-            .await
-            .map_err(offline)?;
+        let answer = self.ask_github(url, token).await?;
+        let answer = match self.moved_log_url(&answer, job_id) {
+            Some(moved) => self.ask_github(moved, token).await?,
+            None => answer,
+        };
 
         if answer.status().is_redirection() {
             return self.read_blob(&answer).await;
@@ -152,6 +151,36 @@ impl JobLogs {
             headers: read_allowance(answer.headers()),
             text: self.read_text(answer).await?,
         })
+    }
+
+    /// Asks GitHub's API for a job's log, with the token.
+    async fn ask_github(
+        &self,
+        url: impl reqwest::IntoUrl,
+        token: &str,
+    ) -> Result<Response, JobLogError> {
+        self.http
+            .get(url)
+            .bearer_auth(token)
+            .header(ACCEPT, GITHUB_JSON)
+            .send()
+            .await
+            .map_err(offline)
+    }
+
+    /// Where a redirect leads, if it is GitHub's for a renamed or moved repository: to the same job's log under the
+    /// repository's id, on the API itself. Anything else is no such thing, and is left to [`Self::read_blob`].
+    fn moved_log_url(&self, redirect: &Response, job_id: u64) -> Option<Url> {
+        if !matches!(
+            redirect.status(),
+            StatusCode::MOVED_PERMANENTLY | StatusCode::FOUND | StatusCode::TEMPORARY_REDIRECT
+        ) {
+            return None;
+        }
+
+        let api = Url::parse(&self.api_url).ok()?;
+        let target = read_location(redirect)?;
+        is_moved_log_url(&target, &api, job_id).then_some(target)
     }
 
     /// Follows GitHub's redirect to the blob, without the token.
@@ -181,15 +210,10 @@ impl JobLogs {
 
     /// Where a redirect leads, if it may be followed.
     fn redirect_target(&self, redirect: &Response) -> Result<Url, JobLogError> {
-        let target = redirect
-            .headers()
-            .get(LOCATION)
-            .and_then(|location| location.to_str().ok())
-            .and_then(|location| redirect.url().join(location).ok())
-            .ok_or_else(|| {
-                eprintln!("GitHub redirected a job's log without a usable address: refused");
-                JobLogError::Refused
-            })?;
+        let target = read_location(redirect).ok_or_else(|| {
+            eprintln!("GitHub redirected a job's log without a usable address: refused");
+            JobLogError::Refused
+        })?;
 
         if !(self.is_blob)(&target) {
             eprintln!(
@@ -254,6 +278,27 @@ fn read_allowance(headers: &HeaderMap) -> BTreeMap<&'static str, String> {
             Some((name, value.to_owned()))
         })
         .collect()
+}
+
+fn read_location(redirect: &Response) -> Option<Url> {
+    let location = redirect.headers().get(LOCATION)?.to_str().ok()?;
+    redirect.url().join(location).ok()
+}
+
+/// Whether the address is the same job's log under a repository's numeric id, on the API and nothing past the path:
+/// the token goes there too.
+fn is_moved_log_url(url: &Url, api: &Url, job_id: u64) -> bool {
+    let log = format!("/actions/jobs/{job_id}/logs");
+    url.origin() == api.origin()
+        && url.username().is_empty()
+        && url.password().is_none()
+        && url.query().is_none()
+        && url.fragment().is_none()
+        && url
+            .path()
+            .strip_prefix("/repositories/")
+            .and_then(|path| path.strip_suffix(log.as_str()))
+            .is_some_and(|id| !id.is_empty() && id.bytes().all(|byte| byte.is_ascii_digit()))
 }
 
 /// Whether the address is a blob's, the one place a job's log may lead to: over https, on the standard port, naming
@@ -486,6 +531,183 @@ mod tests {
 
         assert_eq!(read(&logs).await, Err(JobLogError::Refused));
         assert_eq!(requests(&api).await.len(), 1);
+    }
+
+    const MOVED_PATH: &str = "/repositories/70107786/actions/jobs/125492293728/logs";
+
+    /// The real rule for the blob: to it a local server over http is none, so the only way on is the hop.
+    fn logs_with_real_blob_rule(api: &MockServer) -> JobLogs {
+        JobLogs::new(&api.uri(), is_blob_url, 1024)
+    }
+
+    fn moved_to(location: &str) -> ResponseTemplate {
+        ResponseTemplate::new(301).insert_header("location", location)
+    }
+
+    #[tokio::test]
+    async fn a_moved_repository_s_log_takes_one_hop_within_the_api_with_the_token_and_the_blob_without(
+    ) {
+        for status in [301, 302, 307] {
+            let api = MockServer::start().await;
+            let blob = MockServer::start().await;
+            answer(
+                &api,
+                LOG_PATH,
+                ResponseTemplate::new(status)
+                    .insert_header("location", format!("{}{MOVED_PATH}", api.uri())),
+            )
+            .await;
+            answer(&api, MOVED_PATH, redirect_to(&blob_url(&blob))).await;
+            answer(
+                &blob,
+                BLOB_PATH,
+                ResponseTemplate::new(200).set_body_string("the log"),
+            )
+            .await;
+
+            let answer = read(&logs(&api)).await.map(|answer| answer.text);
+
+            assert_eq!(answer, Ok("the log".to_owned()), "{status}");
+            let asked_github = requests(&api).await;
+            assert_eq!(asked_github.len(), 2);
+            assert_eq!(asked_github[1].url.path(), MOVED_PATH);
+            assert_eq!(authorization(&asked_github[0]), Some("Bearer gho_secret"));
+            assert_eq!(authorization(&asked_github[1]), Some("Bearer gho_secret"));
+            let asked_blob = requests(&blob).await;
+            assert_eq!(asked_blob.len(), 1);
+            assert_eq!(authorization(&asked_blob[0]), None);
+        }
+    }
+
+    #[tokio::test]
+    async fn a_moved_repository_s_refusal_is_github_s_answer_as_ever() {
+        let api = MockServer::start().await;
+        answer(&api, LOG_PATH, moved_to(MOVED_PATH)).await;
+        answer(
+            &api,
+            MOVED_PATH,
+            ResponseTemplate::new(410)
+                .insert_header("x-ratelimit-remaining", "7")
+                .set_body_string("gone"),
+        )
+        .await;
+
+        assert_eq!(
+            read(&logs_with_real_blob_rule(&api)).await,
+            Ok(JobLogAnswer {
+                status: 410,
+                headers: BTreeMap::from([("x-ratelimit-remaining", "7".to_owned())]),
+                text: "gone".to_owned(),
+            })
+        );
+    }
+
+    #[tokio::test]
+    async fn refuses_a_hop_to_another_job() {
+        let api = MockServer::start().await;
+        answer(
+            &api,
+            LOG_PATH,
+            moved_to("/repositories/70107786/actions/jobs/999/logs"),
+        )
+        .await;
+
+        assert_eq!(
+            read(&logs_with_real_blob_rule(&api)).await,
+            Err(JobLogError::Refused)
+        );
+        assert_eq!(requests(&api).await.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn refuses_a_hop_to_another_host_and_sends_it_no_token() {
+        let api = MockServer::start().await;
+        let elsewhere = MockServer::start().await;
+        answer(
+            &api,
+            LOG_PATH,
+            moved_to(&format!("{}{MOVED_PATH}", elsewhere.uri())),
+        )
+        .await;
+
+        assert_eq!(
+            read(&logs_with_real_blob_rule(&api)).await,
+            Err(JobLogError::Refused)
+        );
+        assert!(requests(&elsewhere).await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn refuses_a_hop_by_any_other_status() {
+        for status in [300, 303, 308] {
+            let api = MockServer::start().await;
+            answer(
+                &api,
+                LOG_PATH,
+                ResponseTemplate::new(status).insert_header("location", MOVED_PATH),
+            )
+            .await;
+
+            assert_eq!(
+                read(&logs_with_real_blob_rule(&api)).await,
+                Err(JobLogError::Refused),
+                "{status}"
+            );
+            assert_eq!(requests(&api).await.len(), 1, "{status}");
+        }
+    }
+
+    #[tokio::test]
+    async fn refuses_a_hop_to_any_other_path() {
+        let api = MockServer::start().await;
+        let logs = logs_with_real_blob_rule(&api);
+        for location in [
+            "/user",
+            "/repos/acme/renamed/actions/jobs/125492293728/logs",
+            "/repositories/actions/jobs/125492293728/logs",
+            "/repositories/abc/actions/jobs/125492293728/logs",
+            "/repositories/1/2/actions/jobs/125492293728/logs",
+            "/repositories/70107786/actions/jobs/125492293728/logs/",
+            "/repositories/70107786/actions/jobs/125492293728/logs/more",
+            "/repositories/70107786/actions/jobs/0125492293728/logs",
+            "/repositories/70107786/actions/runs/125492293728/logs",
+            "/repositories/%37/actions/jobs/125492293728/logs",
+            "/repositories/70107786/actions/jobs/125492293728/logs?x=1",
+            "/repositories/70107786/actions/jobs/125492293728/logs#x",
+        ] {
+            api.reset().await;
+            answer(&api, LOG_PATH, moved_to(location)).await;
+
+            assert_eq!(read(&logs).await, Err(JobLogError::Refused), "{location}");
+            assert_eq!(requests(&api).await.len(), 1, "{location}");
+        }
+    }
+
+    #[tokio::test]
+    async fn refuses_a_hop_that_names_a_user() {
+        let api = MockServer::start().await;
+        let address = api.uri().replace("http://", "http://user:secret@");
+        answer(&api, LOG_PATH, moved_to(&format!("{address}{MOVED_PATH}"))).await;
+
+        assert_eq!(
+            read(&logs_with_real_blob_rule(&api)).await,
+            Err(JobLogError::Refused)
+        );
+        assert_eq!(requests(&api).await.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn refuses_a_second_hop_within_the_api() {
+        let api = MockServer::start().await;
+        answer(&api, LOG_PATH, moved_to(MOVED_PATH)).await;
+        let further = "/repositories/70107787/actions/jobs/125492293728/logs";
+        answer(&api, MOVED_PATH, moved_to(further)).await;
+
+        assert_eq!(
+            read(&logs_with_real_blob_rule(&api)).await,
+            Err(JobLogError::Refused)
+        );
+        assert_eq!(requests(&api).await.len(), 2);
     }
 
     #[tokio::test]

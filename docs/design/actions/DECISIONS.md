@@ -134,7 +134,10 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 
 **The desktop app reads a log through its Rust side.** (2026-11-04, owner, on the agent's recommendation) Its content
 security policy allows only `api.github.com`, and a log redirects to Azure Blob Storage. A native command that asks
-only for job logs adds no way out of the webview, which holds the token.
+only for job logs adds no way out of the webview, which holds the token. It follows the redirect to the blob, and for
+a renamed or moved repository one hop before it, which GitHub answers with a 301 to
+`https://api.github.com/repositories/{id}/actions/jobs/{job}/logs`; the token goes on that hop and never to the blob,
+and anything else is refused.
 
 **Rejected.**
 
