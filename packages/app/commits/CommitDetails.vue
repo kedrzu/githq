@@ -1,4 +1,4 @@
-<!-- A commit's details, right of the graph (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known. It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
+<!-- A commit's details, right of the graph at the width the user chose (kept under its own name, resized by a handle on its left edge), or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known. It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
 <script lang="ts">
 /** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
 export const COMMIT_DETAILS_KEYS = {
@@ -20,6 +20,8 @@ import Avatar from '@/components/Avatar.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import PropertyRow from '@/components/PropertyRow.vue';
+import { usePanelWidth } from '@/components/usePanelWidth.js';
+import WidthHandle from '@/components/WidthHandle.vue';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -45,6 +47,10 @@ const props = defineProps<{
   url: string;
   /** Epoch ms its age is counted to. */
   now: number;
+  /** Right of the graph, at the width the user chose, or under it at a fixed share of the height when the window is narrow (D16). */
+  docked: 'side' | 'bottom';
+  /** The widest it may be while the graph keeps its share of the pane; narrower than its least, it can't be resized. */
+  maxWidth?: number;
 }>();
 
 const emit = defineEmits<{
@@ -59,6 +65,8 @@ const emit = defineEmits<{
 
 const store = useService(CommitGraphStore);
 const t = useTranslate();
+/** Kept under its own name, whatever the other panels are: squeezed by a narrow window, the kept width stays. */
+const panelWidth = usePanelWidth({ key: 'commitDetails', default: 440, min: 320 });
 
 const commit = computed(() => store.getCommit(props.nameWithOwner, props.oid));
 const detail = computed(() => store.getDetail(props.nameWithOwner, props.oid));
@@ -132,9 +140,20 @@ function getParentKey(index: number) {
 
 <template>
   <section
-    :class="css.commitDetails"
+    :class="[css.commitDetails, css[`commitDetails_${docked}`]]"
     :aria-label="t(l.title)"
+    :style="docked === 'side' ? { width: `${panelWidth.current}px` } : undefined"
   >
+    <WidthHandle
+      v-if="docked === 'side'"
+      v-model="panelWidth.current"
+      side="left"
+      anchored
+      :label="t(l.resize)"
+      :min="panelWidth.min"
+      :max="maxWidth"
+      @resized="panelWidth.save()"
+    />
     <header :class="css.commitDetails_toolbar">
       <GitCommitHorizontal
         :class="css.commitDetails_commitIcon"
@@ -353,12 +372,22 @@ function getParentKey(index: number) {
 // D16: right of the graph, giving up width when the graph would have too little.
 .commitDetails {
   display: flex;
-  flex: 0 1 auto;
   flex-direction: column;
-  width: 440px;
   min-width: 0;
   min-height: 0;
+}
+
+.commitDetails_side {
+  position: relative;
+  flex: 0 1 auto;
   border-left: 1px solid $color-border;
+}
+
+// Under the graph: the full width, a fixed 45% of the height.
+.commitDetails_bottom {
+  flex: none;
+  height: 45%;
+  border-top: 1px solid $color-border;
 }
 
 .commitDetails_toolbar {
