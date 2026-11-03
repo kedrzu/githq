@@ -122,7 +122,7 @@ githq cannot delete the repository with the scopes it has.
 
 **Synced: only which repositories and projects are tracked. Local: everything about views, meaning a list's layout, grouping,
 sort, visible properties and filter, a project's row field, the last view, how items open, sidebar and panel sizes, plus new issue
-drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the design agent's reading)
+drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the design agent's reading) Added since, as chosen preferences rather than view details: the repository layout ([git-client](../git-client/DECISIONS.md)) and what a comment does by default ([code-review D34](../code-review/DECISIONS.md#d34)).
 
 **Why.** View details are very volatile, so they stay in the browser. Predefined views saved in the settings repository may come
 later; they are not part of this design.
