@@ -278,6 +278,40 @@ export const SearchLiterally: Story = {
     ),
 };
 
+/** Among only the matches, steps left out above, between and below them, an error in each. */
+export const OnlyMatchesAroundLeftOut: Story = {
+    args: {
+        ...viewOf(
+            STEPS,
+            sections({
+                1: ['Prepare', '##[error]early failure'],
+                2: ['fetch hit one', 'Done'],
+                3: ['##[error]middle failure', 'more'],
+                5: ['clean hit two', 'Cleaned'],
+                6: ['##[error]late failure', 'Bye'],
+            }),
+        ),
+        query: 'hit',
+        onlyMatches: true,
+    },
+};
+
+/** Among only the matches, two steps long enough to scroll, with a step left out between them. */
+export const OnlyMatchesLeftOutBetween: Story = {
+    args: {
+        ...viewOf(
+            STEPS,
+            sections({
+                2: Array.from({ length: 60 }, (_, index) => `hit in checkout ${index}`),
+                3: ['##[error]middle failure'],
+                5: Array.from({ length: 60 }, (_, index) => `hit in post checkout ${index}`),
+            }),
+        ),
+        query: 'hit',
+        onlyMatches: true,
+    },
+};
+
 /** 100,000 lines, every 10,000th an error. Built as it renders and held out of the arguments, which Storybook copies. */
 export const Huge: Story = {
     render: () => ({

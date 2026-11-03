@@ -105,6 +105,15 @@ export interface GetAdjacentErrorParams {
     readonly by: 1 | -1;
 }
 
+/** Which line to find the nearest shown of. */
+export interface GetNearestShownLineParams {
+    readonly document: LogDocument;
+    /** The line's index in the log's `lines`. */
+    readonly index: number;
+    /** Which way the cursor is going, that way first; the closest line when not given. */
+    readonly by?: 1 | -1;
+}
+
 /** Which row's lines to tell. */
 export interface GetRowLinesParams {
     readonly log: ParsedJobLog;
@@ -380,6 +389,37 @@ export function getAdjacentStepLine(params: GetAdjacentStepLineParams) {
 }
 
 /**
+ * The line a cursor can stand on for a line: itself, unless its step is left out for having no match (W4c), when no row
+ * stands for it and the nearest step that shows does, the first line of one below or the last of one above. Going the
+ * cursor's way, E past an error in such a step lands beyond it and the next E goes on from there, rather than back.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getNearestShownLine(params: GetNearestShownLineParams) {
+    const { document, index, by } = params;
+    const section = getLineSection(document, index);
+    if (!section || !isLeftOut(section)) {
+        return index;
+    }
+
+    const shown = document.sections.filter(candidate => candidate.lines !== null && !isLeftOut(candidate));
+    const after = shown.find(({ lines }) => lines !== null && lines.first > index)?.lines?.first ?? null;
+    const before = shown.findLast(({ lines }) => lines !== null && lines.last < index)?.lines?.last ?? null;
+    if (after === null || before === null) {
+        return after ?? before;
+    }
+
+    switch (by) {
+        case 1:
+            return after;
+        case -1:
+            return before;
+        default:
+            return after - index < index - before ? after : before;
+    }
+}
+
+/**
  * The next or previous error from a line (E/⇧E), as an index; `null` when there is none that way.
  *
  * @__NO_SIDE_EFFECTS__
@@ -408,6 +448,11 @@ export function getErrorPosition(log: ParsedJobLog, index: number) {
     }
 
     return Math.max(position, 1);
+}
+
+/** A step with no row of its own among only the matches; the lines before any step never have a head, and always show. */
+function isLeftOut(section: LogSection) {
+    return section.step !== null && section.headRow === null;
 }
 
 function getLineNextTo(document: LogDocument, index: number, by: 1 | -1) {

@@ -1,4 +1,4 @@
-<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. Search (W4b, W4c): / or ⌘F opens the bar in the toolbar's place, ⌘F because the browser's own find can't see lines not drawn. It searches the whole job in memory, folded steps included (`findLogMatches`), a moment after the typing stops; landing on a match opens its step, shows its line past the cut if that is where it is, and brings it into view. Enter or N next, ⇧N previous, wrapping around. Tab shows only the matching lines (`buildLogDocument`'s `only`): Space opens a gap in place, Enter returns to the full log at the line. Esc closes and returns to where the view was, unless Enter from only the matches chose a line. The parent keeps the query as the job changes. -->
+<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. Search (W4b, W4c): / or ⌘F opens the bar in the toolbar's place, ⌘F because the browser's own find can't see lines not drawn. It searches the whole job in memory, folded steps included, and what a marked line is drawn with (`findLogMatches`), a moment after the typing stops; landing on a match opens its step, shows its line past the cut if that is where it is, and brings it into view. Enter or N next, ⇧N previous, wrapping around. Tab shows only the matching lines (`buildLogDocument`'s `only`): Space opens a gap in place, Enter returns to the full log at the line, in the search's field too, and a key that would land in a step left out lands on the nearest row that shows. Esc closes and returns to where the view was, unless Enter from only the matches chose a line. The parent keeps the query as the job changes. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -20,6 +20,7 @@ import {
 
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { useCommands } from '@/commands/useCommands.js';
+import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
@@ -38,6 +39,7 @@ import {
   getErrorPosition,
   getLineSection,
   getLogOpening,
+  getNearestShownLine,
   getRowLines,
   getRowSection,
 } from './buildLogDocument.js';
@@ -91,7 +93,6 @@ type ShownRow =
       readonly row: number;
       readonly index: number;
       readonly line: JobLogLine;
-      readonly prefix: string;
       readonly time: string | null;
       readonly text: LogLineParts;
       /** It shows whole, past the cut: wrapped, whatever the others do. */
@@ -165,7 +166,9 @@ const currentMatch = ref<number | null>(null);
 const onlyFolded = shallowRef<ReadonlySet<number>>(new Set());
 const openedGaps = shallowRef<ReadonlySet<number>>(new Set());
 
-const matches = computed(() => (searched.value === null ? null : findLogMatches(props.log, searched.value)));
+const matches = computed(() =>
+  searched.value === null ? null : findLogMatches(props.log, searched.value, { getPrefix: getLinePrefix }),
+);
 const matchTotal = computed(() => matches.value?.lines.length ?? 0);
 const showsOnlyMatches = computed(() => onlyMatches.value && matchTotal.value > 0);
 const shownFolded = computed(() => (showsOnlyMatches.value ? onlyFolded.value : folded.value));
@@ -201,7 +204,7 @@ let placeBeforeSearch: LogPlace | null = null;
 const contentWidth = computed(() => {
   let longest = 0;
   for (const line of props.log.lines) {
-    longest = Math.max(longest, Math.min(line.text.length, MAX_SHOWN_CHARACTERS));
+    longest = Math.max(longest, Math.min(getShownLength(line), MAX_SHOWN_CHARACTERS));
   }
 
   return gutterWidth.value + Math.ceil(longest * characterWidth.value) + TEXT_END_PADDING;
@@ -221,9 +224,8 @@ const shownRows = computed(() => {
 const cursorRow = computed(() => (cursor.value === null ? null : (logDocument.value.lineRows[cursor.value] ?? null)));
 const cursorLineCut = computed(() => {
   const index = cursor.value;
-  return (
-    index !== null && (props.log.lines[index]?.text.length ?? 0) > MAX_SHOWN_CHARACTERS && !wholeLines.value.has(index)
-  );
+  const line = index === null ? null : props.log.lines[index];
+  return index !== null && line != null && getShownLength(line) > MAX_SHOWN_CHARACTERS && !wholeLines.value.has(index);
 });
 const cursorStepNumber = computed(() => (cursor.value === null ? null : props.log.lines[cursor.value]?.stepNumber));
 const errorPosition = computed(() => (cursor.value === null ? 1 : getErrorPosition(props.log, cursor.value)));
@@ -240,7 +242,9 @@ const stickyOffset = computed(() => {
     return 0;
   }
 
-  const next = logDocument.value.sections[logDocument.value.sections.indexOf(section) + 1];
+  // Among only the matches a step left out between them has no head to give way to.
+  const { sections } = logDocument.value;
+  const next = sections.slice(sections.indexOf(section) + 1).find(({ headRow }) => headRow !== null);
   return next?.headRow == null ? 0 : Math.min(0, view.getRowTop(next.headRow) - view.scrollTop - STEP_HEIGHT);
 });
 // The map shows the whole log, in lines by their numbers: what is folded keeps its place on it. A log shorter than the
@@ -406,7 +410,7 @@ useCommands(() => [
     key: 'G',
     menu: false,
     run: () => {
-      moveCursor(0, 'nearest');
+      moveCursor(getNearestShownLine({ document: logDocument.value, index: 0, by: 1 }), 'nearest');
       view.scrollTo(0);
     },
   },
@@ -417,7 +421,10 @@ useCommands(() => [
     key: 'Shift+G',
     menu: false,
     run: () => {
-      moveCursor(props.log.lines.length - 1, 'nearest');
+      moveCursor(
+        getNearestShownLine({ document: logDocument.value, index: props.log.lines.length - 1, by: -1 }),
+        'nearest',
+      );
       view.scrollTo(view.totalHeight);
       revealCursor();
     },
@@ -545,7 +552,8 @@ function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap
         return height;
       }
 
-      const characters = whole ? entry.line.text.length : Math.min(entry.line.text.length, MAX_SHOWN_CHARACTERS);
+      const length = getShownLength(entry.line);
+      const characters = whole ? length : Math.min(length, MAX_SHOWN_CHARACTERS);
       return Math.max(1, Math.ceil(characters / perLine)) * LINE_HEIGHT;
     }
     default:
@@ -569,9 +577,8 @@ function toShownRow(entry: LogDocumentRow, row: number): ShownRow {
         row,
         index,
         line,
-        prefix: getLinePrefix(line),
         time: showTimes.value && line.time !== null ? TIME_FORMAT.format(line.time) : null,
-        text: getLogLineParts(line.text, {
+        text: getLogLineParts(`${getLinePrefix(line)}${line.text}`, {
           ranges: matches.value ? getMatchRanges(matches.value, index, currentMatch.value) : undefined,
           whole,
         }),
@@ -597,6 +604,10 @@ function getLinePrefix(line: JobLogLine) {
   }
 }
 
+function getShownLength(line: JobLogLine) {
+  return getLinePrefix(line).length + line.text.length;
+}
+
 function getRange(section: LogSection) {
   const { lines } = section;
   const first = lines && props.log.lines[lines.first];
@@ -608,7 +619,9 @@ function getStepMatchCount(section: LogSection) {
   return section.step ? matches.value?.steps.get(section.step.number) : undefined;
 }
 
-function moveCursor(index: number | null, mode: LogRevealMode) {
+/** A line in a step left out among only the matches gives way to the nearest that shows: the rows have no place for it. */
+function moveCursor(target: number | null, mode: LogRevealMode) {
+  const index = target === null ? null : getNearestShownLine({ document: logDocument.value, index: target });
   const line = index === null ? null : props.log.lines[index];
   if (index === null || !line) {
     return;
@@ -663,9 +676,12 @@ function moveByStep(by: 1 | -1) {
 }
 
 function moveByError(by: 1 | -1) {
-  if (cursor.value !== null) {
-    moveCursor(getAdjacentError({ log: props.log, index: cursor.value, by }), 'context');
+  if (cursor.value === null) {
+    return;
   }
+
+  const error = getAdjacentError({ log: props.log, index: cursor.value, by });
+  moveCursor(error === null ? null : getNearestShownLine({ document: logDocument.value, index: error, by }), 'context');
 }
 
 function moveByHalfPage(by: 1 | -1) {
@@ -812,9 +828,8 @@ function moveToMapped(place: number) {
 /** The line takes the cursor, its step opening, with its neighbours around it. */
 function moveToMiddle(index: number | null) {
   moveCursor(index, 'nearest');
-  const row = index === null ? undefined : logDocument.value.lineRows[index];
-  if (row !== undefined) {
-    view.scrollTo(view.getRowTop(row) - view.viewportHeight / 2);
+  if (index !== null && cursorRow.value !== null) {
+    view.scrollTo(view.getRowTop(cursorRow.value) - view.viewportHeight / 2);
   }
 }
 
@@ -944,6 +959,15 @@ async function toggleOnlyMatches() {
 
 /** Enter among only the matches: the line in the full log, where closing the search leaves it too. */
 async function showInFullLog() {
+  // A key pressed right after typing means what is typed; with no match that leaves nothing to show the line of.
+  if (!isQueryApplied()) {
+    applyQuery();
+  }
+
+  if (!showsOnlyMatches.value) {
+    return;
+  }
+
   const index = cursor.value;
   onlyMatches.value = false;
   placeBeforeSearch = null;
@@ -1090,6 +1114,7 @@ function measureCharacterWidth() {
       @update:query="typeQuery"
       @next="moveByMatch(1)"
       @previous="moveByMatch(-1)"
+      @show-in-full-log="showInFullLog"
       @toggle-only="toggleOnlyMatches"
       @close="closeSearch"
       @field-focus="emit('searchFieldFocus', $event)"
@@ -1115,21 +1140,20 @@ function measureCharacterWidth() {
         {{ t(l.errorPosition, { position: errorPosition, total: log.errors.length }) }}
         <Kbd keys="E" />
       </span>
-      <button
-        type="button"
-        :class="css.workflowJobLog_search"
-        aria-keyshortcuts="/"
-        tid="workflow-log-open-search"
-        @click="openSearch"
-      >
-        <Search
-          :class="css.workflowJobLog_searchIcon"
-          aria-hidden="true"
-        />
-        {{ t(l.searchPlaceholder) }}
-        <span :class="css.workflowJobLog_searchSpacer" />
-        <Kbd keys="/" />
-      </button>
+      <span :class="css.workflowJobLog_search">
+        <Button
+          variant="field"
+          size="sm"
+          block
+          :icon="Search"
+          kbd="/"
+          aria-keyshortcuts="/"
+          tid="workflow-log-open-search"
+          @click="void openSearch()"
+        >
+          {{ t(l.searchPlaceholder) }}
+        </Button>
+      </span>
     </WorkflowLogToolbar>
     <div :class="css.workflowJobLog_body">
       <div :class="css.workflowJobLog_main">
@@ -1195,8 +1219,7 @@ function measureCharacterWidth() {
                     shown.whole ? { width: `${textWidth + TEXT_END_PADDING}px`, left: `${gutterWidth}px` } : undefined
                   "
                   tid="workflow-log-text"
-                  >{{ shown.prefix
-                  }}<span
+                  ><span
                     v-for="(chunk, chunkIndex) in shown.text.chunks"
                     :key="chunkIndex"
                     :class="shown.text.chunks.length > 1 && css.workflowJobLog_chunk"
@@ -1503,31 +1526,8 @@ function measureCharacterWidth() {
 }
 
 .workflowJobLog_search {
-  @include focus-ring;
-
-  display: flex;
   flex: none;
-  gap: $spacing-7;
-  align-items: center;
-  box-sizing: border-box;
   width: 220px;
-  padding: 3px $spacing-6 3px $spacing-8;
-  font: inherit;
-  color: $color-fg-dim;
-  cursor: text;
-  background: $color-bg;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-md;
-}
-
-.workflowJobLog_searchIcon {
-  flex: none;
-  width: 13px;
-  height: 13px;
-}
-
-.workflowJobLog_searchSpacer {
-  flex: 1;
 }
 
 // Held at the left of the view as the lines scroll sideways.

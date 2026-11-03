@@ -79,6 +79,36 @@ describe('findLogMatches', () => {
         expect(calls).toBeLessThanOrEqual(MAX_MATCHES_PER_LINE + 1);
     });
 
+    describe('with what is drawn before a marked line', () => {
+        const marked: ParsedJobLog = {
+            ...logOf([]),
+            lines: [
+                { ...logOf(['Process completed']).lines[0]!, kind: 'error' },
+                { ...logOf(['A chunk is large']).lines[0]!, number: 2, kind: 'warning' },
+                { ...logOf(['no marker here']).lines[0]!, number: 3 },
+            ],
+        };
+        const options = {
+            getPrefix: (line: JobLogLine) =>
+                line.kind === 'error' ? 'Error: ' : line.kind === 'warning' ? 'Warning: ' : '',
+        };
+
+        test('finds the prefix, by smart case too, and only on a line that has one', () => {
+            expect(findLogMatches(marked, 'Error:', options).lines).toEqual([0]);
+            expect(findLogMatches(marked, 'error', options).lines).toEqual([0]);
+            expect(findLogMatches(marked, 'Warning:', options).lines).toEqual([1]);
+            expect(findLogMatches(marked, 'ERROR', options).lines).toEqual([]);
+            expect(findLogMatches(marked, 'Error:').lines).toEqual([]);
+        });
+
+        test('counts positions in what shows, the prefix included, across where it meets the text', () => {
+            expect(findLogMatches(marked, 'Error:', options).starts).toEqual([0]);
+            expect(findLogMatches(marked, 'Process', options).starts).toEqual([7]);
+            expect(findLogMatches(marked, 'Error: Process', options).starts).toEqual([0]);
+            expect(findLogMatches(marked, 'marker', options).starts).toEqual([3]);
+        });
+    });
+
     test('100,000 lines: each line is read once, and looked through once per match and once to end it', () => {
         const count = 100_000;
         let reads = 0;

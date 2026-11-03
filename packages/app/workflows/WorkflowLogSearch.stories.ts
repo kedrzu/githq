@@ -30,6 +30,7 @@ const meta = {
         'onUpdate:query': fn(),
         onNext: fn(),
         onPrevious: fn(),
+        onShowInFullLog: fn(),
         onToggleOnly: fn(),
         onClose: fn(),
     },

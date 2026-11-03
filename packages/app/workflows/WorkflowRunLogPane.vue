@@ -1,4 +1,4 @@
-<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c). In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a log the desktop app refused, which says so and can be tried again, or one too big for it, which GitHub is the way to and nothing tries again; a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
+<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c), and with its field focused only the field's. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a log the desktop app refused, which says so and can be tried again, or one too big for it, which GitHub is the way to and nothing tries again; a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -71,7 +71,7 @@ const t = useTranslate();
 
 /** Another job's log shows in full, its matches yet to be looked at. */
 const onlyMatches = ref(false);
-/** The search's field has the focus: its letters are typed, so Enter stands for N. */
+/** The search's field has the focus: its letters are typed, so Enter stands for N and the other keys wait. */
 const searchFieldFocused = ref(false);
 
 const size = computed(() => {
@@ -166,7 +166,16 @@ const hints = computed((): readonly KeyHint[] => {
     ];
   }
 
-  if (onlyMatches.value && (matches.value?.lines.length ?? 0) > 0) {
+  const inOnlyMatches = onlyMatches.value && (matches.value?.lines.length ?? 0) > 0;
+  // Its letters are typed and no other key of the page runs from it: only what the field's own keys do.
+  if (searchFieldFocused.value) {
+    return [
+      { keys: ['Enter'], label: inOnlyMatches ? t(l.showInFullLog) : t(l.nextMatch) },
+      { keys: ['Shift+Enter'], label: t(l.previousMatch) },
+    ];
+  }
+
+  if (inOnlyMatches) {
     return [
       { keys: ['J', 'K'], label: t(l.match) },
       { keys: ['Enter'], label: t(l.showInFullLog) },
@@ -177,8 +186,8 @@ const hints = computed((): readonly KeyHint[] => {
   }
 
   return [
-    { keys: [searchFieldFocused.value ? 'Enter' : 'N'], label: t(l.nextMatch) },
-    { keys: [searchFieldFocused.value ? 'Shift+Enter' : 'Shift+N'], label: t(l.previousMatch) },
+    { keys: ['N'], label: t(l.nextMatch) },
+    { keys: ['Shift+N'], label: t(l.previousMatch) },
     ...errors,
     step,
     job,
@@ -338,7 +347,10 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
         {{ hint.label }}
       </span>
       <span :class="css.workflowRunLogPane_spacer" />
-      <span :class="css.workflowRunLogPane_hint">
+      <span
+        v-if="!searchFieldFocused"
+        :class="css.workflowRunLogPane_hint"
+      >
         <Kbd keys="?" />
         {{ t(l.allKeys) }}
       </span>

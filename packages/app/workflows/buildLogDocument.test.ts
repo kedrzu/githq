@@ -11,6 +11,7 @@ import {
     getErrorPosition,
     getLineSection,
     getLogOpening,
+    getNearestShownLine,
     getRowLines,
     getRowSection,
 } from './buildLogDocument.js';
@@ -291,6 +292,65 @@ test('W4c: moving by step passes over the steps left out', () => {
     });
 
     expect(getAdjacentStepLine({ document: built, index: 0, by: 1 })).toBe(2);
+});
+
+test('W4c: a line in a step left out gives way to the nearest that shows: the way the cursor is going, else the closest', () => {
+    const steps = [...STEPS, step(6, 'After', 'success')];
+    const log = parseJobLog(
+        [
+            line(1, 'top'),
+            line(2, 'hit'),
+            line(2, 'after the first hit'),
+            line(4, 'left out'),
+            line(4, 'left out too'),
+            line(4, 'left out still'),
+            line(5, 'hit'),
+            line(5, 'after the last hit'),
+            line(6, 'bottom'),
+        ].join('\n'),
+        steps,
+    );
+    const built = buildLogDocument({
+        log,
+        steps,
+        folded: new Set(),
+        endNote: false,
+        only: { matches: findLogMatches(log, 'hit'), openedGaps: new Set() },
+    });
+    const nearest = (index: number, by?: 1 | -1) => getNearestShownLine({ document: built, index, by });
+
+    expect(nearest(3, 1)).toBe(6);
+    expect(nearest(3, -1)).toBe(2);
+    // Nothing further that way: back to what there is.
+    expect(nearest(0, -1)).toBe(1);
+    expect(nearest(8, 1)).toBe(7);
+    // No way given: whichever is fewer lines off.
+    expect(nearest(3)).toBe(2);
+    expect(nearest(5)).toBe(6);
+    expect(nearest(0)).toBe(1);
+    expect(nearest(8)).toBe(7);
+    // A line that shows, or stands in a gap, stays.
+    expect(nearest(1, 1)).toBe(1);
+    expect(nearest(2, -1)).toBe(2);
+});
+
+test('nothing is left out of the full log: every line stays itself', () => {
+    expect(getNearestShownLine({ document: document(new Set([1])), index: 0, by: -1 })).toBe(0);
+    expect(getNearestShownLine({ document: document(new Set()), index: 10 })).toBe(10);
+});
+
+test('W4c: the lines before any step show, whatever they hold', () => {
+    const log = parseJobLog(['2026-11-02T09:59:00Z before', line(1, 'none'), line(2, 'hit')].join('\n'), STEPS);
+    const built = buildLogDocument({
+        log,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: false,
+        only: { matches: findLogMatches(log, 'hit'), openedGaps: new Set() },
+    });
+
+    expect(getNearestShownLine({ document: built, index: 0 })).toBe(0);
+    expect(getNearestShownLine({ document: built, index: 1, by: -1 })).toBe(0);
 });
 
 test('W4c: 100,000 matching lines build one row each, well within the timeout a quadratic path would run past', () => {

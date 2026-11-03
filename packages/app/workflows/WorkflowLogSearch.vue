@@ -1,4 +1,4 @@
-<!-- The search bar, in the log toolbar's place (actions W4b, W4c): the query as typed, plain text, never a pattern; where the search stands ("3 of 12 in 2 steps", or among only the matches "12 lines of 2,086 · in 2 steps"); and what it can do. The field keeps its own keys: Enter next, ⇧Enter previous, as N would type a letter there; Tab only the matches, Esc close, ⌘F selects what is typed. The buttons don't take the focus from it. -->
+<!-- The search bar, in the log toolbar's place (actions W4b, W4c): the query as typed, plain text, never a pattern; where the search stands ("3 of 12 in 2 steps", or among only the matches "12 lines of 2,086 · in 2 steps"); and what it can do. The field keeps its own keys: Enter next, or among only the matches shows the line in the full log; ⇧Enter previous, as N would type a letter there; Tab only the matches, Esc close, ⌘F selects what is typed. It shows when it has the focus, as whether N moves or types depends on that. The buttons don't take the focus from it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Search } from 'lucide-vue-next';
@@ -28,6 +28,8 @@ const emit = defineEmits<{
   'update:query': [query: string];
   next: [];
   previous: [];
+  /** Enter in the field among only the matches. */
+  showInFullLog: [];
   toggleOnly: [];
   close: [];
   /** The field took or lost the focus; it lost it too as the bar goes. */
@@ -103,6 +105,8 @@ function onKeydown(event: KeyboardEvent) {
       event.preventDefault();
       if (event.shiftKey) {
         emit('previous');
+      } else if (props.onlyMatches) {
+        emit('showInFullLog');
       } else {
         emit('next');
       }
@@ -129,26 +133,28 @@ function onKeydown(event: KeyboardEvent) {
     role="search"
     tid="workflow-log-search"
   >
-    <Search
-      :class="css.workflowLogSearch_icon"
-      aria-hidden="true"
-    />
-    <input
-      ref="field"
-      :class="css.workflowLogSearch_field"
-      :style="{ width: fieldWidth }"
-      :value="query"
-      :aria-label="t(l.label)"
-      :placeholder="t(l.placeholder)"
-      type="text"
-      autocomplete="off"
-      spellcheck="false"
-      tid="workflow-log-search-field"
-      @input="onInput"
-      @keydown="onKeydown"
-      @focus="emit('fieldFocus', true)"
-      @blur="emit('fieldFocus', false)"
-    />
+    <span :class="css.workflowLogSearch_query">
+      <Search
+        :class="css.workflowLogSearch_icon"
+        aria-hidden="true"
+      />
+      <input
+        ref="field"
+        :class="css.workflowLogSearch_field"
+        :style="{ width: fieldWidth }"
+        :value="query"
+        :aria-label="t(l.label)"
+        :placeholder="t(l.placeholder)"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        tid="workflow-log-search-field"
+        @input="onInput"
+        @keydown="onKeydown"
+        @focus="emit('fieldFocus', true)"
+        @blur="emit('fieldFocus', false)"
+      />
+    </span>
     <span
       v-if="onlyMatches"
       :class="css.workflowLogSearch_position"
@@ -248,6 +254,24 @@ function onKeydown(event: KeyboardEvent) {
   border-bottom: 1px solid $color-border;
 }
 
+// Its frame is seen only with the focus, reaching out over the bar's padding so that the icon stays where it was.
+.workflowLogSearch_query {
+  display: flex;
+  flex: 0 1 auto;
+  gap: $spacing-10;
+  align-items: center;
+  min-width: 0;
+  max-width: 45%;
+  padding: $spacing-2 $spacing-6;
+  margin-left: -7px;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+
+  &:focus-within {
+    border-color: $color-focus;
+  }
+}
+
 .workflowLogSearch_icon {
   flex: none;
   width: 14px;
@@ -256,9 +280,8 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .workflowLogSearch_field {
-  flex: none;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 45%;
   padding: 0;
   font-family: $font-family-mono;
   font-size: $font-size-sm;

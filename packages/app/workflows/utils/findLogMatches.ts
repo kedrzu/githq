@@ -1,5 +1,5 @@
 import type { LogTextRange } from './getLogLineParts.js';
-import type { ParsedJobLog } from './parseJobLog.js';
+import type { JobLogLine, ParsedJobLog } from './parseJobLog.js';
 
 /** A search's matches in a job's log, in the log's order, as parallel lists: a log can hold millions of them. */
 export interface LogMatches {
@@ -7,7 +7,7 @@ export interface LogMatches {
     readonly length: number;
     /** The index in the log's `lines` of each match's line. */
     readonly lines: readonly number[];
-    /** Where each match starts in its line's `text`. */
+    /** Where each match starts in what its line shows: its prefix, if any, then its `text`. */
     readonly starts: readonly number[];
     /** How many lines have a match. */
     readonly lineCount: number;
@@ -17,6 +17,12 @@ export interface LogMatches {
     readonly steps: ReadonlyMap<number, number>;
 }
 
+/** How a log is searched. */
+export interface FindLogMatchesOptions {
+    /** What the viewer draws before a line's text ("Error: "): what can be seen can be searched for. Nothing unless given. */
+    readonly getPrefix?: (line: JobLogLine) => string;
+}
+
 /**
  * How many matches of one line count. A line of a million `a`s searched for "a" would otherwise put a million marks in
  * the DOM once it shows whole, and as many entries here.
@@ -24,13 +30,14 @@ export interface LogMatches {
 export const MAX_MATCHES_PER_LINE = 1000;
 
 /**
- * Finds a query in every line's `text`, folded steps included. The query is plain text, never a pattern, so nothing in
+ * Finds a query in what every line shows, folded steps included. The query is plain text, never a pattern, so nothing in
  * it can make the search slower than one pass over the log. Smart case: case-insensitive unless the query has a capital.
  *
  * @util
  * @__NO_SIDE_EFFECTS__
  */
-export function findLogMatches(log: ParsedJobLog, query: string): LogMatches {
+export function findLogMatches(log: ParsedJobLog, query: string, options: FindLogMatchesOptions = {}): LogMatches {
+    const { getPrefix } = options;
     const sensitive = query !== query.toLowerCase();
     const lines: number[] = [];
     const starts: number[] = [];
@@ -39,7 +46,7 @@ export function findLogMatches(log: ParsedJobLog, query: string): LogMatches {
     let capped = false;
     if (query.length > 0) {
         for (const [index, line] of log.lines.entries()) {
-            const { text } = line;
+            const text = `${getPrefix?.(line) ?? ''}${line.text}`;
             const haystack = sensitive ? text : toLowerKeepingOffsets(text);
             let count = 0;
             let start = haystack.indexOf(query);

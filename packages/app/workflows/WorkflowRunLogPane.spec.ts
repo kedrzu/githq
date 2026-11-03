@@ -158,3 +158,25 @@ test('W4b: the keys for the next match follow the focus: N types in the field, s
     await expect.element(field).toHaveFocus();
     expect(hintOf('Next match')).toBe(1);
 });
+
+test('W4b, W4c: with the field focused the row keeps only what the field’s keys do, the letters typing there', async () => {
+    await Searching.run();
+    const field = page.getByTestId('workflow-log-search-field');
+    const hints = () =>
+        [...keys.element().children].map(hint => hint.textContent?.replaceAll(/\s+/gu, ' ').trim()).filter(Boolean);
+
+    await userEvent.keyboard('/');
+    await expect.element(field).toHaveFocus();
+    await expect.poll(hints).toEqual(['Next match', 'Previous']);
+
+    // Out of it, the row's all.
+    page.getByTestId('workflow-job-log').element().focus();
+    await expect.poll(() => hints().join()).toMatch(/Error.*Step.*Job.*Copy.*GitHub.*All keys/u);
+
+    // Among only the matches: the same keys, Enter's being W4c's.
+    await userEvent.keyboard('{Tab}');
+    await expect.poll(() => hints().join()).toMatch(/Match.*Show in the full log.*Open gap.*Job.*GitHub.*All keys/u);
+    await userEvent.keyboard('/');
+    await expect.element(field).toHaveFocus();
+    await expect.poll(hints).toEqual(['Show in the full log', 'Previous']);
+});
