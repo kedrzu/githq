@@ -30,14 +30,15 @@ export interface JobLogStep {
 /** A job's log, ready to show; plain data. */
 export interface ParsedJobLog {
     readonly lines: readonly JobLogLine[];
-    /** The `number`s of the `##[error]` lines, in order. */
+    /**
+     * The `number`s of the `##[error]` lines, in order. None: GitHub marked no error, so nothing tells where in the log
+     * the failure is (actions D3).
+     */
     readonly errors: readonly number[];
     /** In the order given. */
     readonly steps: readonly JobLogStep[];
     /** How long the log's text is, which the viewer tells as its size. */
     readonly characters: number;
-    /** `false`: GitHub marked no error, so nothing tells where in the log the failure is (actions D3). */
-    readonly hasErrorMarker: boolean;
 }
 
 /** A step lines can land in: it ran, at a known time. */
@@ -174,7 +175,6 @@ export function parseJobLog(text: string, steps: readonly GitHubWorkflowStep[]):
             lastLine: lastLines.get(step.number) ?? null,
         })),
         characters: text.length,
-        hasErrorMarker: errors.length > 0,
     };
 }
 

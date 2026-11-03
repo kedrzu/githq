@@ -18,12 +18,14 @@ import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import {
   buildLogDocument,
+  findLineAt,
   getAdjacentError,
   getAdjacentLine,
   getAdjacentStepLine,
   getErrorPosition,
   getLineSection,
   getLogOpening,
+  getRowLines,
   getRowSection,
 } from './buildLogDocument.js';
 import type { LogDocumentRow, LogSection } from './buildLogDocument.js';
@@ -97,7 +99,7 @@ const list = useTemplateRef<HTMLElement>('list');
 const wrap = preferences.logWrap;
 const showTimes = preferences.logTimes;
 const jobFailed = computed(() => getJobMark(props.job) === 'failed');
-const noMarker = computed(() => jobFailed.value && !props.log.hasErrorMarker);
+const noMarker = computed(() => jobFailed.value && props.log.errors.length === 0);
 
 const opening = getLogOpening({
   log: props.log,
@@ -179,11 +181,23 @@ const stickyOffset = computed(() => {
   const next = logDocument.value.sections[logDocument.value.sections.indexOf(section) + 1];
   return next?.headRow == null ? 0 : Math.min(0, view.getRowTop(next.headRow) - view.scrollTop - STEP_HEIGHT);
 });
+// The map shows the whole log, in lines by their numbers: what is folded keeps its place on it. A log shorter than the
+// view takes the height of its lines, not the map's whole.
+const mapTotal = computed(() => Math.max(props.log.lines.at(-1)?.number ?? 0, view.viewportHeight / LINE_HEIGHT));
+const mapViewTop = computed(() => getMapPlace(view.scrollTop));
+const mapViewBottom = computed(() => getMapPlace(view.scrollTop + view.viewportHeight));
+// Where one step gives way to the next: nothing above the log's first line.
 const mapSteps = computed(() =>
-  logDocument.value.sections.flatMap(({ headRow }) => (headRow === null ? [] : [view.getRowTop(headRow)])),
+  logDocument.value.sections.flatMap(({ lines }) => {
+    const line = lines && lines.first > 0 ? props.log.lines[lines.first] : null;
+    return line ? [line.number - 1] : [];
+  }),
 );
-const mapErrors = computed(() => logDocument.value.errorRows.map(row => view.getRowTop(row)));
-const mapCursor = computed(() => (cursorRow.value === null ? null : view.getRowTop(cursorRow.value)));
+const mapErrors = computed(() => props.log.errors.map(number => number - 1));
+const mapCursor = computed(() => {
+  const line = cursor.value === null ? null : props.log.lines[cursor.value];
+  return line ? line.number - 1 : null;
+});
 
 useCommands(() => [
   {
@@ -534,6 +548,8 @@ function pressHead(section: LogSection) {
   const wasAbove = section.headRow !== null && view.getRowTop(section.headRow) < view.scrollTop;
   toggleSection(section);
   focusLog();
+  // The rows below it are others now: what was brought into view last would be taken for another line.
+  view.scrollTo(view.scrollTop);
   if (wasAbove && section.headRow !== null) {
     view.reveal(section.headRow, 'top');
   }
@@ -582,13 +598,23 @@ function copyLineLink() {
   );
 }
 
-function moveToMapped(y: number) {
-  const entry = logDocument.value.rows[view.getRowAt(y)];
-  if (entry?.kind === 'line') {
-    cursor.value = entry.index;
-  }
+/** The place in the whole log of a place in the document. */
+function getMapPlace(y: number) {
+  const row = view.getRowAt(y);
+  const { from, to } = getRowLines({ log: props.log, document: logDocument.value, row });
+  const top = view.getRowTop(row);
+  const height = view.getRowTop(row + 1) - top;
+  return height > 0 ? from + (to - from) * Math.min(1, (y - top) / height) : from;
+}
 
-  view.scrollTo(y - view.viewportHeight / 2);
+/** A click on the map: the line there takes the cursor, its step opening, in the middle of the view. */
+function moveToMapped(place: number) {
+  const index = findLineAt(props.log, place);
+  moveCursor(index, 'nearest');
+  const row = index === null ? undefined : logDocument.value.lineRows[index];
+  if (row !== undefined) {
+    view.scrollTo(view.getRowTop(row) - view.viewportHeight / 2);
+  }
 }
 
 /** A line clicked takes the cursor, unless the click ended a selection. */
@@ -682,7 +708,7 @@ function measureCharacterWidth() {
         >{{ t(l.noErrorMarker) }}</span
       >
       <span
-        v-else-if="log.hasErrorMarker"
+        v-else-if="log.errors.length > 0"
         :class="css.workflowJobLog_errors"
         tid="workflow-log-errors"
       >
@@ -823,9 +849,10 @@ function measureCharacterWidth() {
         </div>
       </div>
       <WorkflowLogMap
-        :total="view.totalHeight"
-        :view-top="view.scrollTop"
-        :view-height="view.viewportHeight"
+        :total="mapTotal"
+        :view-top="mapViewTop"
+        :view-height="mapViewBottom - mapViewTop"
+        :height="view.viewportHeight"
         :steps="mapSteps"
         :errors="mapErrors"
         :cursor="mapCursor"

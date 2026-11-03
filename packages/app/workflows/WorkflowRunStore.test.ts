@@ -172,7 +172,7 @@ test('a log loads, is read once however often asked, and comes parsed', async ()
         throw new Error(`Expected a read log, got ${state.status}`);
     }
 
-    expect(state.log.hasErrorMarker).toBe(true);
+    expect(state.log.errors.length).toBeGreaterThan(0);
     expect(state.log.lines.map(({ text, stepNumber }) => ({ text, stepNumber }))).toEqual([
         { text: 'Run bun test', stepNumber: 1 },
         { text: 'exit code 1', stepNumber: 1 },

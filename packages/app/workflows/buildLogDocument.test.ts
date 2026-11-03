@@ -4,12 +4,14 @@ import { expect, test } from 'bun:test';
 
 import {
     buildLogDocument,
+    findLineAt,
     getAdjacentError,
     getAdjacentLine,
     getAdjacentStepLine,
     getErrorPosition,
     getLineSection,
     getLogOpening,
+    getRowLines,
     getRowSection,
 } from './buildLogDocument.js';
 import type { LogDocument } from './buildLogDocument.js';
@@ -55,14 +57,47 @@ test('every step has its head where it ran, its lines under it unless folded; a 
     expect(document(new Set()).sections[2]?.lines).toBeNull();
 });
 
-test('a line folded away shows at its step’s head; an error too, on the map', () => {
-    const open = document(new Set());
+test('a line folded away shows at its step’s head', () => {
     const folded = document(new Set([4]));
-    const head = folded.sections[3]?.headRow ?? -1;
 
-    expect(folded.lineRows[7]).toBe(head);
-    expect(open.errorRows).toEqual([open.lineRows[6], open.lineRows[8]].map(row => row ?? -1));
-    expect(folded.errorRows).toEqual([head]);
+    expect(folded.lineRows[7]).toBe(folded.sections[3]?.headRow ?? -1);
+});
+
+test('a row stands for its line, by the whole log’s numbers; a folded head for all its step’s; any other head for nothing, at what comes next', () => {
+    const built = document(new Set([1, 5]));
+    const linesOf = (row: number) => getRowLines({ log: LOG, document: built, row });
+
+    // Step 1 is lines 1 to 4, the third being the `##[endgroup]`, not shown but counted.
+    expect(linesOf(0)).toEqual({ from: 0, to: 4 });
+    // The head of step 2 stands where its first line starts.
+    expect(linesOf(1)).toEqual({ from: 4, to: 4 });
+    expect(linesOf(2)).toEqual({ from: 4, to: 5 });
+    // The skipped step has no lines: it stands where step 4's start.
+    expect(linesOf(4)).toEqual({ from: 6, to: 6 });
+    expect(linesOf(10)).toEqual({ from: 10, to: 11 });
+    expect(linesOf(11)).toEqual({ from: 11, to: 11 });
+});
+
+test('the end note and a head with nothing after it stand at the end of the log', () => {
+    const steps = [step(1, 'Set up job', 'success'), step(2, 'Upload', 'skipped')];
+    const log = parseJobLog(line(1, 'a'), steps);
+    const built = buildLogDocument({ log, steps, folded: new Set(), endNote: true });
+
+    expect(getRowLines({ log, document: built, row: 2 })).toEqual({ from: 1, to: 1 });
+    expect(getRowLines({ log, document: built, row: 3 })).toEqual({ from: 1, to: 1 });
+});
+
+test('a place on the map is the line there, the next one in a gap of the numbers, the last past the end; none in a log with no lines', () => {
+    const textAt = (position: number) => LOG.lines[findLineAt(LOG, position) ?? -1]?.text;
+
+    expect(textAt(0)).toBe('a');
+    expect(textAt(0.5)).toBe('a');
+    expect(textAt(1)).toBe('b');
+    // Line 3 is the `##[endgroup]`.
+    expect(textAt(2.5)).toBe('c');
+    expect(textAt(10.5)).toBe('j');
+    expect(textAt(99)).toBe('j');
+    expect(findLineAt(parseJobLog('', STEPS), 0)).toBeNull();
 });
 
 test('lines before any step have no head and do not fold; a log with no steps is all such lines', () => {

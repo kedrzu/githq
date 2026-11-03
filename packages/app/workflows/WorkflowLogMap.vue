@@ -1,35 +1,37 @@
-<!-- The log map (actions W4a, `Log map`): what the log viewer shows, at scale. Red marks for errors, dividers for steps, a lighter band for what is in view, a line for the cursor. It maps the visible document, so a folded step takes the height of its head. Clicking moves there. For the mouse only: the keys go to the same places. -->
+<!-- The log map (actions W4a, `Log map`): the whole log, at scale, in lines. Red marks for errors, dividers for steps, a lighter band for what is in view, a line for the cursor. Folded or not, a step takes the height of its lines, and nothing moves as steps fold, only the band. Clicking moves there. For the mouse only: the keys go to the same places. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
 const props = defineProps<{
-  /** The height of the whole document, in pixels. */
+  /** How many lines the map's height stands for. */
   total: number;
-  /** Where the view starts in it. */
+  /** Where the view starts, in lines from the top of the log, as the rest of these. */
   viewTop: number;
+  /** How many lines are in view; a folded step in view counts all of its. */
   viewHeight: number;
-  /** Where the steps start in the document. */
+  /** The map's height, in pixels. */
+  height: number;
+  /** Where one step gives way to the next. */
   steps: readonly number[];
-  /** Where the errors are in it. */
+  /** Where the errors are. */
   errors: readonly number[];
-  /** Where the cursor is in it; `null` with none. */
+  /** Where the cursor is; `null` with none. */
   cursor: number | null;
 }>();
 
 const emit = defineEmits<{
-  /** A click: the place in the document it means. */
-  move: [y: number];
+  /** A click: the place in the log it means. */
+  move: [place: number];
 }>();
 
 /** A log's errors may be thousands: those falling on the same marks of the map's height draw one. */
 const ERROR_MARK_HEIGHT = 3;
 const VIEW_MIN_HEIGHT = 3;
 
-/** A log shorter than the view takes its own height, not the map's whole. */
-const scale = computed(() => Math.max(props.total, props.viewHeight, 1));
+const scale = computed(() => Math.max(props.total, 1));
 const errorMarks = computed(() => {
   const marks = new Set<number>();
-  const perMark = (scale.value / Math.max(props.viewHeight, 1)) * ERROR_MARK_HEIGHT;
+  const perMark = (scale.value / Math.max(props.height, 1)) * ERROR_MARK_HEIGHT;
   for (const error of props.errors) {
     marks.add(Math.floor(error / perMark) * perMark);
   }

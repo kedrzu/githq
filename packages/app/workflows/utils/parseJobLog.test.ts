@@ -71,7 +71,7 @@ describe('a real log of a failed job', () => {
     });
 
     test('keeps the error in the failed step, though the next steps start in its second', () => {
-        expect(log.hasErrorMarker).toBe(true);
+        expect(log.errors.length).toBeGreaterThan(0);
         expect(log.errors).toHaveLength(1);
         const error = log.lines.find(line => line.number === log.errors[0]);
         expect(error).toMatchObject({ text: 'Process completed with exit code 1.', kind: 'error', stepNumber: 11 });
@@ -116,7 +116,7 @@ test('a real log with steps sharing a second: a composite action’s inner steps
 test('with no `##[error]` the result says so', () => {
     const log = parseJobLog(readFixture('desktop'), DESKTOP_STEPS);
 
-    expect(log.hasErrorMarker).toBe(false);
+    expect(log.errors).toEqual([]);
     expect(log.errors).toEqual([]);
 });
 

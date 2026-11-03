@@ -1,4 +1,5 @@
 import type { GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
@@ -35,8 +36,6 @@ export interface LogDocument {
     readonly sections: readonly LogSection[];
     /** The row each line shows in, by its index: the head of its step while that is folded. */
     readonly lineRows: Int32Array;
-    /** The rows with an error in them, in order: an error's own, or the head it is folded under. */
-    readonly errorRows: readonly number[];
 }
 
 /** What a document is built from. */
@@ -90,6 +89,19 @@ export interface GetAdjacentErrorParams {
     readonly by: 1 | -1;
 }
 
+/** Which row's lines to tell. */
+export interface GetRowLinesParams {
+    readonly log: ParsedJobLog;
+    readonly document: LogDocument;
+    readonly row: number;
+}
+
+/** A stretch of the whole log, in lines from its top by their `number`s: the first line is 0 to 1. */
+export interface LogLineStretch {
+    readonly from: number;
+    readonly to: number;
+}
+
 /**
  * The rows of a job's log: every step's head where it ran, then its lines unless it is folded. Steps stay part of the
  * document folded; only their lines leave it.
@@ -102,7 +114,6 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
     const lineRows = new Int32Array(log.lines.length);
     const rows: LogDocumentRow[] = [];
     const sections: LogSection[] = [];
-    const errorRows: number[] = [];
 
     const firstInStep = log.lines.findIndex(line => line.stepNumber !== null);
     const leading = firstInStep === -1 ? log.lines.length : firstInStep;
@@ -130,9 +141,6 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
 
         if (lines && isFolded) {
             lineRows.fill(headRow, lines.first, lines.last + 1);
-            if (hasError(log, lines)) {
-                errorRows.push(headRow);
-            }
         } else if (lines) {
             addLines(lines.first, lines.last);
         }
@@ -142,17 +150,13 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
         rows.push({ kind: 'end' });
     }
 
-    return { rows, sections, lineRows, errorRows };
+    return { rows, sections, lineRows };
 
     function addLines(first: number, last: number) {
         for (let index = first; index <= last; index++) {
             const line = log.lines[index];
             if (line) {
                 lineRows[index] = rows.length;
-                if (line.kind === 'error') {
-                    errorRows.push(rows.length);
-                }
-
                 rows.push({ kind: 'line', index, line });
             }
         }
@@ -199,6 +203,67 @@ export function getLineSection(document: LogDocument, index: number) {
  */
 export function getRowSection(document: LogDocument, row: number) {
     return document.sections.findLast(section => section.firstRow <= row) ?? null;
+}
+
+/**
+ * What of the whole log a row stands for, as the log map counts it: a line itself, a folded head all its step's lines,
+ * anything else nothing, at the place of what comes after it.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getRowLines(params: GetRowLinesParams): LogLineStretch {
+    const { log, document, row } = params;
+    const entry = document.rows[row];
+    if (!entry) {
+        const end = log.lines.at(-1)?.number ?? 0;
+        return { from: end, to: end };
+    }
+
+    switch (entry.kind) {
+        case 'line':
+            return { from: entry.line.number - 1, to: entry.line.number };
+        case 'step': {
+            const { lines, folded } = entry.section;
+            const first = lines && log.lines[lines.first];
+            const last = lines && log.lines[lines.last];
+            if (folded && first && last) {
+                return { from: first.number - 1, to: last.number };
+            }
+
+            const { from } = getRowLines({ log, document, row: row + 1 });
+            return { from, to: from };
+        }
+        case 'end':
+            return getRowLines({ log, document, row: row + 1 });
+        default:
+            return assertNever(entry);
+    }
+}
+
+/**
+ * The line at a place of the whole log, as an index, counted as {@link getRowLines} does: the next one where a line isn't
+ * shown, the last past the end, `null` in a log with no lines.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function findLineAt(log: ParsedJobLog, position: number) {
+    const { lines } = log;
+    if (lines.length === 0) {
+        return null;
+    }
+
+    let low = 0;
+    let high = lines.length - 1;
+    while (low < high) {
+        const middle = (low + high) >> 1;
+        if ((lines[middle]?.number ?? 0) > position) {
+            high = middle;
+        } else {
+            low = middle + 1;
+        }
+    }
+
+    return low;
 }
 
 /**
@@ -280,7 +345,7 @@ function findAddressedLine(log: ParsedJobLog, address: LogLineAddress) {
 }
 
 function getFailureLine(log: ParsedJobLog, steps: readonly GitHubWorkflowStep[], jobFailed: boolean) {
-    if (log.hasErrorMarker) {
+    if (log.errors.length > 0) {
         const failedStep = log.steps.find(({ number }) =>
             steps.some(step => step.number === number && getJobMark(step) === 'failed'),
         );
@@ -293,12 +358,6 @@ function getFailureLine(log: ParsedJobLog, steps: readonly GitHubWorkflowStep[],
     }
 
     return jobFailed && log.lines.length > 0 ? log.lines.length - 1 : null;
-}
-
-function hasError(log: ParsedJobLog, lines: NonNullable<LogSection['lines']>) {
-    const first = log.lines[lines.first]?.number ?? 0;
-    const last = log.lines[lines.last]?.number ?? 0;
-    return log.errors.some(error => first <= error && error <= last);
 }
 
 /** The index of the line of this `number`, which have gaps; -1 with none. */

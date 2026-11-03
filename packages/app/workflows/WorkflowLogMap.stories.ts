@@ -6,12 +6,13 @@ import WorkflowLogMap from './WorkflowLogMap.vue';
 const meta = {
     component: WorkflowLogMap,
     args: {
-        total: 4000,
-        viewTop: 1200,
-        viewHeight: 400,
-        steps: [0, 26, 52, 1100, 2600, 2626],
-        errors: [1180, 1500, 2580],
-        cursor: 1500,
+        total: 2086,
+        viewTop: 600,
+        viewHeight: 28,
+        height: 400,
+        steps: [36, 70, 92, 590, 2060, 2075],
+        errors: [596, 620, 2050],
+        cursor: 620,
         onMove: fn(),
     },
     decorators: [() => ({ template: '<div style="display: flex; height: 400px"><story /></div>' })],
@@ -32,10 +33,10 @@ export const NoErrors: Story = { args: { errors: [] } };
 
 /** Thousands of errors: those falling on the same marks draw one. */
 export const ManyErrors: Story = {
-    args: { errors: Array.from({ length: 5000 }, (_, index) => index * 0.8) },
+    args: { errors: Array.from({ length: 2000 }, (_, index) => index) },
 };
 
-/** A log shorter than the view takes its own height, not the map's whole. */
+/** A log shorter than the view takes the lines' own height, not the map's whole: `total` counts the view's lines. */
 export const ShorterThanView: Story = {
-    args: { total: 200, viewTop: 0, steps: [0, 26, 52], errors: [150], cursor: 150 },
+    args: { total: 28, viewTop: 0, viewHeight: 8, steps: [2, 5], errors: [6], cursor: 6 },
 };

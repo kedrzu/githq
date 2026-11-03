@@ -127,6 +127,17 @@ export const TallAtTheEnd: Story = {
     ),
 };
 
+/** A long folded step, of lines that wrap, right above the failed step: everything fits the view until it opens. */
+export const FoldedAbove: Story = {
+    args: viewOf(
+        [step(1, 'Set up job', 'success'), step(3, 'Run bun run build', 'failure')],
+        sections({
+            1: Array.from({ length: 300 }, (_, index) => `${index} ${`${'word'.repeat(15)} `.repeat(10)}`),
+            3: [...Array.from({ length: 10 }, (_, index) => `building ${index}`), '##[error]exit code 1'],
+        }),
+    ),
+};
+
 /** Characters that change how a line looks, or don't show at all. */
 export const InvisibleCharacters: Story = {
     args: viewOf(

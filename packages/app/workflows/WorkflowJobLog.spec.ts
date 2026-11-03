@@ -7,6 +7,7 @@ import * as stories from './WorkflowJobLog.stories.js';
 
 const {
     Failed,
+    FoldedAbove,
     Highlighted,
     Hostile,
     Huge,
@@ -275,15 +276,25 @@ test('a wrapped line’s height is measured as it shows, and the row’s place f
     expect(inView(cursorLine())).toBe(true);
 });
 
-test('the map: red for errors, dividers for steps, a band for the view, clicking moves there; folds shrink what it maps', async () => {
+test('the map shows the whole log: red for errors, dividers between steps by their lines, a band for the view, clicking moves there; folds move no mark', async () => {
     await SeveralErrors.run();
     await settled();
     const map = page.getByTestId('workflow-log-map');
+    const tops = (id: string) =>
+        map
+            .getByTestId(id)
+            .elements()
+            .map(mark => Number.parseFloat(mark.style.top));
     const errors = () => map.getByTestId('workflow-log-map-error').elements();
     const band = () => map.getByTestId('workflow-log-map-view').element();
 
-    expect(map.getByTestId('workflow-log-map-step').elements()).toHaveLength(6);
+    // Between the steps with lines: 2 lines of Checkout, then the build's. A folded step takes its lines' height.
+    const dividers = tops('workflow-log-map-step');
+    expect(dividers).toHaveLength(2);
+    const total = 2 + 87 + 2 + 1;
+    expect(dividers[0]).toBeCloseTo((2 / total) * 100, 0);
     expect(errors().length).toBeGreaterThan(1);
+    const errorTops = tops('workflow-log-map-error');
     const before = Number.parseFloat(band().style.top);
     expect(before).toBeGreaterThan(0);
 
@@ -292,11 +303,52 @@ test('the map: red for errors, dividers for steps, a band for the view, clicking
     expect(log().scrollTop).toBe(0);
     expect(Number.parseFloat(band().style.top)).toBe(0);
 
-    // Folding the long step: the band takes more of what is left.
+    // Folding the long step: every mark stays, and more of the log is in view.
     const height = Number.parseFloat(band().style.height);
     await userEvent.keyboard('{Shift>}g{/Shift}{Shift>}k{/Shift} ');
     await settled();
     expect(Number.parseFloat(band().style.height)).toBeGreaterThan(height);
+    expect(tops('workflow-log-map-step')).toEqual(dividers);
+    expect(tops('workflow-log-map-error')).toEqual(errorTops);
+});
+
+test('the map: a click into a folded step opens it and lands there, the band following the lines', async () => {
+    await FoldedAbove.run();
+    await settled();
+    expect(isExpanded('Set up job')).toBe('false');
+    // Line 151 of 311 in the middle of the map: all that is folded away.
+    const map = page.getByTestId('workflow-log-map');
+    const { height } = map.element().getBoundingClientRect();
+
+    await userEvent.click(map, { position: { x: 5, y: height / 2 } });
+    await settled();
+    await settled();
+
+    expect(cursorText()).toMatch(/^1[45]\d word/u);
+    expect(inView(cursorLine())).toBe(true);
+    const band = map.getByTestId('workflow-log-map-view').element();
+    const top = Number.parseFloat(band.style.top);
+    const bandHeight = Number.parseFloat(band.style.height);
+    expect(top).toBeLessThan(50);
+    expect(top + bandHeight).toBeGreaterThan(50);
+    expect(bandHeight).toBeLessThan(20);
+});
+
+test('a head clicked with wrap on leaves the view where it is, whatever was brought into view before', async () => {
+    await FoldedAbove.run();
+    await settled();
+    await userEvent.keyboard('w');
+    await settled();
+    await settled();
+    expect(log().scrollTop).toBe(0);
+
+    await userEvent.click(page.getByRole('button', { name: /Set up job/u }), { position: IN_THE_TEST_FRAME });
+    await settled();
+    await settled();
+    await settled();
+
+    expect(isExpanded('Set up job')).toBe('true');
+    expect(log().scrollTop).toBe(0);
 });
 
 test('a log of 100,000 lines only has what is in view in the DOM, whatever is done to it', async () => {
