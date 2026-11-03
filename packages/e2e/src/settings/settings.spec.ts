@@ -9,7 +9,7 @@ import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_PROJECT, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test('`1` to `4` and the tabs switch the sections, kept in the address', async ({ page, github }) => {
+test('`1` to `5` and the tabs switch the sections, kept in the address', async ({ page, github }) => {
     const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
     await expect(new MyWorkScreenHarness(page).groups.first()).toBeVisible();
     await page.keyboard.press(',');
@@ -36,13 +36,18 @@ test('`1` to `4` and the tabs switch the sections, kept in the address', async (
     await expect(projects.dialog).toHaveCount(0);
 
     await page.keyboard.press('3');
+    await expect(page).toHaveURL('/settings?tab=display');
+    await expect(settings.section('Display')).toHaveAttribute('aria-pressed', 'true');
+    await expect(settings.repositoryLayout('Tabs')).toBeChecked();
+
+    await page.keyboard.press('4');
     await expect(page).toHaveURL('/settings?tab=sync');
     await expect(settings.section('Sync settings')).toHaveAttribute('aria-pressed', 'true');
     await expect(saving.choice).toBeVisible();
     await expect(tracking.openButton).toHaveCount(0);
     await expect(account.signOutButton).toHaveCount(0);
 
-    await page.keyboard.press('4');
+    await page.keyboard.press('5');
     await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.signOutButton).toBeVisible();
     await expect(tracking.openButton).toHaveCount(0);

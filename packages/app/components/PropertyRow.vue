@@ -1,4 +1,4 @@
-<!-- One property of an item — "Assignees", "Labels", a project's "Status" — as a row of a definition list (`<dl>`): its name, its value, and the key that edits it drawn at the end. Put it inside a `<dl>`. -->
+<!-- One property of an item or a commit — "Assignees", "Labels", a project's "Status", a commit's "Author" — as a row of a definition list (`<dl>`): its name, its value, and the key that edits it drawn at the end. Put it inside a `<dl>`. -->
 <script lang="ts" setup>
 import Kbd from './Kbd.vue';
 

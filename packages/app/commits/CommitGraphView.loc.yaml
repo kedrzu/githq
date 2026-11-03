@@ -1,0 +1,41 @@
+commitsOf:
+  en: Commits of {name}
+loading:
+  en: Loading commits…
+loadingMore:
+  en: Loading older commits…
+beginning:
+  en: The beginning of {name}'s history
+unavailable:
+  en: GitHub can't be asked for the commits right now. They appear here once it can.
+emptyTitle:
+  en: No commits yet
+emptyDetail:
+  en: '{name} is empty on GitHub. Commits appear here after the first push.'
+next:
+  en: Next commit
+previous:
+  en: Previous commit
+findRef:
+  en: Find a branch or tag
+openDetails:
+  en: Open the commit's details
+firstParent:
+  en: First parent
+secondParent:
+  en: Second parent
+openPullRequest:
+  en: Open its pull request
+openOnGitHub:
+  en: Open on GitHub
+closeDetails:
+  en: Close the details
+resizeGraph:
+  en: Resize the commit graph
+lanesFit:
+  plural: total
+  en:
+    one: '{fit} of {total} lane'
+    many: '{fit} of {total} lanes'
+olderWhenOnline:
+  en: Older commits load when you're back online

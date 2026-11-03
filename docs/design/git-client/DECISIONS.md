@@ -222,13 +222,16 @@ fetched only when the tab is opened ([D9](#d9)), so tracking would add nothing t
 ## D12
 
 **Choosing a branch or tag in the list beside the graph scrolls the graph to the commit it points at when
-that commit is loaded, and otherwise opens the commit's details without loading history down to it.**
-(2026-11-02, design agent's proposal, owner agreed; the unloaded case chosen by the owner)
+that commit is loaded, and goes back to the graph with the filter cleared, so the next `↵` opens that commit's details
+(CH26); otherwise it opens the commit's details without loading history down to it.** (2026-11-02, design agent's
+proposal, owner agreed; the unloaded case chosen by the owner; going back to the graph settled by the owner 2026-11-03)
 
 **Why.** It is the simplest behaviour that answers "where is this branch", and keeps one graph on screen.
 
 **Rejected.**
 
+- Staying in the list after choosing, the filter and the choice kept (the first CH15) — the next `↵` chooses the same
+  ref again, so a commit's details are out of reach without `Esc` (owner, 2026-11-03).
 - Narrowing the graph to the chosen branch's history — more to build and a second mode of the view; may come
   later.
 - Loading history down to an old tag to scroll to it — dozens of requests for a tag years back in a large
@@ -240,8 +243,9 @@ that commit is loaded, and otherwise opens the commit's details without loading 
 at it, its pull request and CI state, and a link to it on GitHub — no files and no diff in the first
 version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now" is the owner's)
 
-**Why.** Everything here is already fetched for the graph ([D8](#d8), [D9](#d9)); files and diffs are the
-owner's explicit "not yet".
+**Why.** Everything but the message's body is already fetched for the graph ([D8](#d8), [D9](#d9)); the body is one
+request when the details open, kept for the session. Files and diffs are the owner's explicit "not yet". CI is the rollup
+alone: no count of failing checks, nothing else fetches them.
 
 ## D14
 
@@ -259,7 +263,7 @@ details are the design agent's)
 repository a place of its own and keeps the branch list beside the graph without taking its width. Trying both in use
 decides it. The layout is a preference of the user, not of a view, so it travels with the settings
 ([settings-sync D4](../settings-sync/DECISIONS.md#d4)). This adds the first synced setting beyond what is tracked, which
-[settings-sync D7](../settings-sync/DECISIONS.md#d7) does not list yet.
+[settings-sync D7](../settings-sync/DECISIONS.md#d7) lists.
 
 **Rejected.**
 
@@ -272,8 +276,9 @@ decides it. The layout is a preference of the user, not of a view, so it travels
 
 **The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it
 folds away and `B` opens it over the graph. The default branch is first, then branches, then tags, each newest
-first, with the pull request and CI of each branch's tip. `B` puts the cursor in its filter, and typing narrows
-both groups.** (2026-11-02, design agent's proposal; CH3, CH15–CH17, CH6)
+first, with the pull request and CI of each branch's tip, the newest twenty of each drawn and the rest counted. `B` puts
+the cursor in its filter, typing narrows both groups, every letter typed, and `↑`/`↓` move through the matches.**
+(2026-11-02, design agent's proposal; CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03)
 
 **Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key; on the
 right it leaves the app's sidebar and the graph's left edge alone.
@@ -283,10 +288,17 @@ right it leaves the app's sidebar and the graph's left edge alone.
 > `committedDate` in the refs request of [D9](#d9) and a local sort.
 
 In the column layout the list is the column's lower part on Commits (CH6), and a commit's details open on the right
-of the pane instead of in the list's place (CH42).
+of the pane instead of in the list's place (CH42); below the same 1,200 px of window they open over the graph, one
+threshold in both layouts (owner, 2026-11-03).
 
 **Rejected.**
 
+- `J`/`K` through the matches (the first CH30) — in a filter they are letters, and names like `jan/x` or `k8s` must stay
+  typable (owner, 2026-11-03).
+- Building the list on `FilterList` — it always highlights its first row, has one message per list and a plain heading;
+  extending it for this one list costs more than the keys it would share (owner, 2026-11-03).
+- In the column, judging the threshold on the window less the column — a threshold nobody can tell from the window's
+  width, for little more graph (owner, 2026-11-03).
 - The list only on demand, as a picker over the graph (CH21, deleted with the Work and Code layout) — nothing on
   screen says where branches stand.
 
@@ -308,8 +320,9 @@ it, which a modal or a page would hide.
 ## D17
 
 **A divider between the graph and the rows can be dragged. By default the graph takes a tenth of the pane's width;
-dragged, it can go from one lane (the default branch alone) to every lane. Lanes that don't fit fold into one thicker
-line at the graph's right edge, and their commits sit on it. The width is a share of the pane, so it scales with the
+dragged, it can go from two lanes (the default branch, always the first lane, and the fold) to every lane, while the rows
+keep at least 240 px. Lanes that don't fit fold into one thicker line at the graph's right edge, and their commits sit on
+it. The width is a share of the pane, so it scales with the
 window, and is remembered on the device like a panel's width; a double-click on the divider resets it. While dragging,
 a label says how many lanes fit of how many.** (2026-11-02, owner: "I really like the folding, I'd just like more
 control… a split panel that lets us resize the graph… sensible by default, even a percentage of the container… the
@@ -321,6 +334,8 @@ graph is worth the width. Panel widths are local ([settings-sync D7](../settings
 
 **Rejected.**
 
+- One lane at the narrowest — every commit on one line, so the default branch can't be told from the rest (owner,
+  2026-11-03; [history](history/DECISIONS.md#d17)).
 - A fixed cap of six lanes — no control over it (owner).
 - Every lane at full width, always — the message moves with every open branch.
 
@@ -348,10 +363,16 @@ right commit. The stripe carries the eye from a dot far to the left to its row i
 ## D19
 
 **Commits loaded later on a first open appear between rows already on screen with no tint or motion, and the row
-under the cursor keeps its place; the status bar says branches are filling in.** (2026-11-02, design agent's
-proposal; CH32, CH33)
+under the cursor keeps its place, whether the user has moved the cursor yet or not: newer commits land above the
+screen. The status bar says branches are filling in.** (2026-11-02, design agent's proposal; CH32, CH33; a cursor not
+yet moved settled by the owner 2026-11-03)
 
 **Why.** They are not news, only late; marking them would make them read as something that just happened.
+
+**Rejected.**
+
+- A cursor not yet moved following the newest commit as branches arrive — the row being read jumps down in the first
+  seconds (owner, 2026-11-03).
 
 ## D20
 
@@ -387,5 +408,20 @@ actions can grow without crowding the row.
 once; where it is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a
 tab like General or Display"; the section's name and place are the design agent's; CH43)
 
+Until the Settings column and that status bar are built, a line under the cards says where the choice is saved, so a
+synced setting never looks unsaved (owner, 2026-11-03).
+
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
 would collect anything.
+
+## D23
+
+**The repository's sections tell how current they are in the status bar only. The Commits header holds the title, the
+tabs, the branch list's tool and the GitHub mark, an icon alone.** (2026-11-03, owner; CH3 and every Commits screen
+redrawn without the header's freshness mark)
+
+**Why.** The status bar already says it on every screen, and the header has no room to spare in a calm view.
+
+**Rejected.**
+
+- A freshness mark in the Commits header as well (the first drawing of CH3) — the same fact in two places (owner).

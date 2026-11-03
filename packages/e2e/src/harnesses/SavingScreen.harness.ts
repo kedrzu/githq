@@ -10,14 +10,14 @@ export class SavingScreenHarness {
         this.root = page.getByRole('main');
     }
 
-    /** "Save what I track to my GitHub account" (T3). */
+    /** "Save my settings to my GitHub account" (T3). */
     get choice(): Locator {
-        return this.root.getByRole('checkbox', { name: 'Save what I track to my GitHub account' });
+        return this.root.getByRole('checkbox', { name: 'Save my settings to my GitHub account' });
     }
 
     /** That saving is on (T4). */
     get on(): Locator {
-        return this.root.getByText('Saving what you track to your GitHub account');
+        return this.root.getByText('Saving your settings to your GitHub account');
     }
 
     /** What combining with the repository found changes (T6). */

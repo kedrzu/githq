@@ -1,5 +1,6 @@
 import type { Container } from '@nzyme/ioc/Container.js';
 
+import { CommitPersistence } from '@/commits/CommitPersistence.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
@@ -24,5 +25,6 @@ export function setIndexedDbPersistence(
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);
     container.set(WorkflowPersistence, persistence);
+    container.set(CommitPersistence, persistence);
     return persistence;
 }

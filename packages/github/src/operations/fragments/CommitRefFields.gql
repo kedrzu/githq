@@ -1,0 +1,17 @@
+# A branch or tag and the commit it points at (git-client D9). An annotated tag points at a `Tag`, whose own
+# target is the commit; a lightweight tag and a branch point at the commit itself.
+fragment CommitRefFields on Ref {
+    name
+    target {
+        ... on Commit {
+            ...CommitRefTargetFields
+        }
+        ... on Tag {
+            target {
+                ... on Commit {
+                    ...CommitRefTargetFields
+                }
+            }
+        }
+    }
+}

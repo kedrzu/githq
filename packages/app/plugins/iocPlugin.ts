@@ -3,6 +3,7 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { defineNuxtPlugin } from 'nuxt/app';
 
+import { CommitPersistence } from '@/commits/CommitPersistence.js';
 import { installDesktop } from '@/desktop/installDesktop.js';
 import { AppLanguageContext } from '@/i18n/AppLanguageContext.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
@@ -53,6 +54,7 @@ function startServices(container: Container) {
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);
     container.set(WorkflowPersistence, persistence);
+    container.set(CommitPersistence, persistence);
     // Started now rather than by the first list: the signed-in user's copy starts loading at once, and it is
     // there to delete when they sign out from a screen that never showed it.
     container.resolve(ItemStore);

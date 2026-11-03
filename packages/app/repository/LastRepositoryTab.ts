@@ -8,17 +8,17 @@ import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
 
-import { REPOSITORY_KINDS } from './buildRepositoryList.js';
-import type { RepositoryKind } from './buildRepositoryList.js';
+import { REPOSITORY_SECTIONS } from './RepositorySection.js';
+import type { RepositorySection } from './RepositorySection.js';
 
 /** Where the tabs are kept, per user: `githq.repositoryTabs.<login>`. */
 const KEY_PREFIX = 'githq.repositoryTabs.';
 
 /**
- * The tab each repository was last on, so coming back opens the same one (D5). It describes what the user is looking
- * at, so it stays on this device and never goes into the saved settings; forgotten when they sign out. The links to a
- * repository carry it ({@link LastRepositoryTab.getPath}), so its page opens on that tab at once; a tab another tab
- * of the browser chose shows here too.
+ * The section each repository was last on, so coming back opens the same one (D5). It describes what the user is
+ * looking at, so it stays on this device and never goes into the saved settings; forgotten when they sign out. The
+ * links to a repository carry it ({@link LastRepositoryTab.getPath}), so its page opens on that section at once, with
+ * no redirect; a section another tab of the browser chose shows here too.
  */
 export type LastRepositoryTab = Resolved<typeof LastRepositoryTab>;
 export const LastRepositoryTab = defineService({
@@ -28,7 +28,7 @@ export const LastRepositoryTab = defineService({
         browser: Browser,
     },
     setup({ accounts, browser }) {
-        const tabsRef = shallowRef<Readonly<Record<string, RepositoryKind>>>({});
+        const tabsRef = shallowRef<Readonly<Record<string, RepositorySection>>>({});
         const slot = createAccountSlot({
             accounts,
             browser,
@@ -44,29 +44,37 @@ export const LastRepositoryTab = defineService({
             }
         });
 
-        return { get, getPath, remember };
+        return { get, getPath, getShown, remember };
 
-        /** The repository's last tab, `null` when it has none; reactive. */
-        function get(nameWithOwner: string): RepositoryKind | null {
+        /** The repository's last section, `null` when it has none; reactive. */
+        function get(nameWithOwner: string): RepositorySection | null {
             return tabsRef.value[nameWithOwner] ?? null;
         }
 
-        /** The address of the repository's view on the tab it was last on (`/owner/name/issues`); reactive. */
-        function getPath(nameWithOwner: string) {
-            return getRepositoryPath(nameWithOwner, get(nameWithOwner) ?? 'all');
+        /**
+         * The section the repository's view shows at an address naming `addressSection`: that one, else — at the
+         * repository's own address — the one it was last on, Issues the first time; reactive.
+         */
+        function getShown(nameWithOwner: string, addressSection: RepositorySection | null): RepositorySection {
+            return addressSection ?? get(nameWithOwner) ?? 'issues';
         }
 
-        function remember(nameWithOwner: string, kind: RepositoryKind) {
-            const next = { ...(slot.read() ?? tabsRef.value), [nameWithOwner]: kind };
+        /** The address of the repository's view on the section it was last on, Issues before it has one; reactive. */
+        function getPath(nameWithOwner: string) {
+            return getRepositoryPath(nameWithOwner, getShown(nameWithOwner, null));
+        }
+
+        function remember(nameWithOwner: string, section: RepositorySection) {
+            const next = { ...(slot.read() ?? tabsRef.value), [nameWithOwner]: section };
             tabsRef.value = next;
             slot.save(next);
         }
 
         function read(stored: unknown) {
-            const tabs: Record<string, RepositoryKind> = {};
+            const tabs: Record<string, RepositorySection> = {};
             if (isPlainObject(stored)) {
-                for (const [nameWithOwner, kind] of Object.entries(stored)) {
-                    const known = REPOSITORY_KINDS.find(candidate => candidate === kind);
+                for (const [nameWithOwner, section] of Object.entries(stored)) {
+                    const known = REPOSITORY_SECTIONS.find(candidate => candidate === section);
                     if (known) {
                         tabs[nameWithOwner] = known;
                     }

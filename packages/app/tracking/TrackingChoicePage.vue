@@ -1,5 +1,6 @@
 <!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). While the candidates are read, it looks for settings saved to GitHub (settings-sync D3): found, it offers to load them instead (G11); otherwise the choice offers saving them, unticked (G2), and ticked, "Track these" creates the repository (G12). Declined (G13), or in a repository githq can't use (G14), one line says so instead. Nothing is created on GitHub unless the box is ticked, and a file found is loaded only on the user's word; a look that fails never holds the sign-in up, unless the box is ticked: then "Track these" stays and says GitHub couldn't be reached, until it is pressed again or the box unticked. -->
 <script lang="ts" setup>
+import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -73,7 +74,7 @@ const now = clock.now();
 
 const next = computed(() => safeNextPath(route.query.next));
 const settingsRepository = computed(() =>
-  auth.viewer ? `${auth.viewer.login}/${SETTINGS_REPOSITORY_NAME}` : SETTINGS_REPOSITORY_NAME,
+  auth.viewer ? getSettingsNameWithOwner(auth.viewer.login) : SETTINGS_REPOSITORY_NAME,
 );
 const privateRepositories = computed(
   () =>

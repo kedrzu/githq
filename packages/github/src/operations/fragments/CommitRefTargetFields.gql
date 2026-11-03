@@ -1,0 +1,6 @@
+# What a ref keeps of the commit it points at.
+fragment CommitRefTargetFields on Commit {
+    id
+    oid
+    committedDate
+}

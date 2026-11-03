@@ -1028,13 +1028,13 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
               </span>
             </h2>
             <p
-              v-if="group.rows.length === 0"
+              v-if="group.rows.length === 0 && !group.quietWhenEmpty"
               :class="css.listView_note"
             >
               {{ t(l.groupEmpty) }}
             </p>
             <ul
-              v-else-if="!collapsed.has(group.key)"
+              v-else-if="group.rows.length > 0 && !collapsed.has(group.key)"
               :class="css.listView_rows"
             >
               <template
