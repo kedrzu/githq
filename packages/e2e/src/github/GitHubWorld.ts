@@ -3013,7 +3013,6 @@ export class GitHubWorld {
     }
 }
 
-/** A ref's target as `CommitRefTargetFields` gives it. */
 /**
  * Re-runs a run's failed jobs as GitHub does (`POST …/actions/runs/{id}/rerun-failed-jobs`): the run goes again as its next
  * attempt and those jobs start, unless {@link GitHubWorld.refuseRerun} said otherwise.
@@ -3043,6 +3042,7 @@ function answerRerun(repository: WorldRepository, runId: number): GitHubRestAnsw
     return { status: 201, json: {} };
 }
 
+/** A ref's target as `CommitRefTargetFields` gives it. */
 function toCommitTarget(commit: WorldCommit) {
     return { id: `C_${commit.oid}`, oid: commit.oid, committedDate: commit.committedDate };
 }

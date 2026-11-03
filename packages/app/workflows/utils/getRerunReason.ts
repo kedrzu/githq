@@ -38,6 +38,7 @@ export interface GetRerunReasonParams {
  * "This workflow is already running", "Unable to retry this workflow run because it was created over a month ago".
  * Words it does not use for these are quoted.
  *
+ * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function getRerunReason({ error, limit, now }: GetRerunReasonParams): WorkflowRerunReason {

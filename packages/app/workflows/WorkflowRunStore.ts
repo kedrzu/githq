@@ -169,6 +169,21 @@ interface SendRerunParams {
     readonly layer: RunRerun;
 }
 
+/** A re-run's refusal to keep, for whom and of which run. */
+interface PutRerunFailureParams {
+    readonly current: RunSession;
+    readonly run: GitHubWorkflowRunDetail;
+    readonly nameWithOwner: string;
+    readonly reason: WorkflowRerunReason;
+}
+
+/** The layer of a re-run to drop, for whom and under which key. */
+interface DropRerunParams {
+    readonly current: RunSession;
+    readonly key: string;
+    readonly layer: RunRerun;
+}
+
 const LOADING: WorkflowLogState = { status: 'loading' };
 
 /**
@@ -277,7 +292,7 @@ export const WorkflowRunStore = defineService({
             current.rerunFailure.value = null;
             const pause = getAllowancePause(rateLimits.get('core'), clock.now());
             if (pause) {
-                putRerunFailure(current, run, nameWithOwner, { kind: 'allowance', until: pause.until });
+                putRerunFailure({ current, run, nameWithOwner, reason: { kind: 'allowance', until: pause.until } });
                 return;
             }
 
@@ -305,7 +320,7 @@ export const WorkflowRunStore = defineService({
                 }
 
                 clock.schedule(() => {
-                    dropRerun(current, key, layer);
+                    dropRerun({ current, key, layer });
                 }, RERUN_LANDING_MS);
             } catch (error) {
                 if (!isCurrent(current)) {
@@ -313,21 +328,16 @@ export const WorkflowRunStore = defineService({
                 }
 
                 logger.warn('GitHub did not re-run a run’s failed jobs', { error });
-                dropRerun(current, key, layer);
+                dropRerun({ current, key, layer });
                 const reason = getRerunReason({ error, limit: rateLimits.get('core'), now: clock.now() });
-                putRerunFailure(current, run, nameWithOwner, reason);
+                putRerunFailure({ current, run, nameWithOwner, reason });
             }
 
             current.rerunsOnTheirWay.value -= 1;
             refresh(nameWithOwner, run.id);
         }
 
-        function putRerunFailure(
-            current: RunSession,
-            run: GitHubWorkflowRunDetail,
-            nameWithOwner: string,
-            reason: WorkflowRerunReason,
-        ) {
+        function putRerunFailure({ current, run, nameWithOwner, reason }: PutRerunFailureParams) {
             current.rerunFailure.value = {
                 nameWithOwner,
                 runId: run.id,
@@ -536,7 +546,7 @@ export const WorkflowRunStore = defineService({
         }
 
         /** Unless a newer re-run of the run took its place. */
-        function dropRerun(current: RunSession, key: string, layer: RunRerun) {
+        function dropRerun({ current, key, layer }: DropRerunParams) {
             if (current.reruns.value.get(key) === layer) {
                 const next = new Map(current.reruns.value);
                 next.delete(key);

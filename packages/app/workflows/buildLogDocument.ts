@@ -180,7 +180,7 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
     const lastRow = Math.max(0, rows.length - 1);
     return { rows, sections, lineRows: only ? lineRows.map(row => Math.min(row, lastRow)) : lineRows };
 
-    function hasMatch(lines: { readonly first: number; readonly last: number } | null) {
+    function hasMatch(lines: LogSection['lines']) {
         const first = lines && only ? findMatchFrom(only.matches, lines.first) : null;
         return lines !== null && first !== null && (only?.matches.lines[first] ?? Infinity) <= lines.last;
     }
@@ -191,7 +191,7 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
             return;
         }
 
-        const { matches, openedGaps } = only;
+        const { matches } = only;
         let at = first;
         let position = findMatchFrom(matches, first);
         while (position !== null && position < matches.lines.length) {
@@ -202,7 +202,7 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
 
             // A line's further matches.
             if (index >= at) {
-                addGap(at, index - 1, openedGaps);
+                addGap(at, index - 1);
                 addLines(index, index);
                 at = index + 1;
             }
@@ -210,15 +210,15 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
             position++;
         }
 
-        addGap(at, last, openedGaps);
+        addGap(at, last);
     }
 
-    function addGap(first: number, last: number, openedGaps: ReadonlySet<number>) {
+    function addGap(first: number, last: number) {
         if (first > last) {
             return;
         }
 
-        if (openedGaps.has(first)) {
+        if (only?.openedGaps.has(first)) {
             addLines(first, last);
         } else {
             lineRows.fill(rows.length, first, last + 1);
