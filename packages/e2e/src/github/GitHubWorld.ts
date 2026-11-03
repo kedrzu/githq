@@ -472,7 +472,7 @@ const PROJECT_FIRST_PAGE = 100;
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
  * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail` and `MoreComments` by node id (the check list and the reviews left out); `ItemByNumber`;
- * `RepositoryMetadata`; `ViewerProjects` (every project of the world is the viewer's).
+ * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
  * their organisations' — one hiding its private data left out with an error), a lookup by name, a tracked
@@ -810,6 +810,17 @@ export class GitHubWorld {
                     },
                     issueTypes: null,
                 },
+            };
+        });
+        github.graphql('RepositoryOpenCounts', ({ variables }) => {
+            const open = this.readRepositoryItems(variables)?.filter(item => item.state === 'OPEN');
+            return {
+                repository: open
+                    ? {
+                          issues: { totalCount: open.filter(item => !item.pullRequest).length },
+                          pullRequests: { totalCount: open.filter(item => item.pullRequest).length },
+                      }
+                    : null,
             };
         });
         github.graphql('RepositoryIssueTemplates', ({ variables }) => {

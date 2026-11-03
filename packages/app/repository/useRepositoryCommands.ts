@@ -25,7 +25,7 @@ export interface RepositoryCommands {
 }
 
 /**
- * The actions of a repository (`owner/name`): going to its view or one kind of its items, a new issue in it, its
+ * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests), a new issue in it, its
  * page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is tracked). The sidebar's menu of a
  * repository offers them all; the repository's view offers its page on GitHub in the command menu.
  */

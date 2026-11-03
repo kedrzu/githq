@@ -1,12 +1,14 @@
 import { defineInterface } from '@nzyme/ioc/Interface.js';
 
-import type { RepositoryMetadata, ViewerProjects } from './RepositoryTypes.js';
+import type { RepositoryMetadata, RepositoryOpenCounts, ViewerProjects } from './RepositoryTypes.js';
 
 /** The repository metadata of one user, as kept on disk. */
 export interface PersistedRepositories {
     readonly repositories: readonly RepositoryMetadata[];
     /** `null` until they were first read. */
     readonly viewerProjects: ViewerProjects | null;
+    /** The open counts of the untracked repositories whose view was opened. */
+    readonly openCounts: readonly RepositoryOpenCounts[];
 }
 
 /**
@@ -19,6 +21,8 @@ export interface RepositoryPersistenceShape {
     /** Adds the metadata or replaces it (by `nameWithOwner`). */
     saveRepository(login: string, metadata: RepositoryMetadata): Promise<void>;
     saveViewerProjects(login: string, projects: ViewerProjects): Promise<void>;
+    /** Adds the counts or replaces them (by `nameWithOwner`). */
+    saveOpenCounts(login: string, counts: RepositoryOpenCounts): Promise<void>;
 }
 
 /** Where repository metadata is kept; the app sets IndexedDB (`createIndexedDbPersistence`). */

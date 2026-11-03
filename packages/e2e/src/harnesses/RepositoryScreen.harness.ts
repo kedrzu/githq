@@ -1,9 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a repository's view (`RepositoryView.vue`, on `/owner/name` and its lists
- * `/owner/name/issues` and `/owner/name/pulls`): the title opening its menu, the kind tabs, the toolbar's grouping and layout, its groups —
- * named sections, or a board's columns — and their rows; untracked, the lines saying what githq has of it (J3).
+ * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues` and
+ * `/owner/name/pulls`, and `/owner/name` opening one): the title opening its menu, the section tabs, the toolbar's
+ * grouping and layout, its groups — named regions, or a board's columns — and their rows; untracked, the lines saying
+ * what githq has of it (J3).
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -30,9 +31,11 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('region');
     }
 
-    /** The kind tab `name`, a toggle button pressed while it is the kind listed; its count follows the name. */
-    kind(name: 'All' | 'Issues' | 'Pull requests'): Locator {
-        return this.root.getByRole('group', { name: 'Kinds' }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+    /** The section tab `name`, a toggle button pressed while it is shown; tracked, its count of open items follows. */
+    section(name: 'Issues' | 'Pull requests'): Locator {
+        return this.root
+            .getByRole('group', { name: 'Sections' })
+            .getByRole('button', { name: new RegExp(`^${name}\\b`) });
     }
 
     /** The grouping menu's button ("Group: Milestone"). */

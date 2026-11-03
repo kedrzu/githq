@@ -99,6 +99,11 @@ export interface ListGroup<T> {
     /** `false` while its rows are still on their way (my work's first download, G7): it has none yet. */
     readonly arrived: boolean;
     readonly rows: readonly ListRow<T>[];
+    /**
+     * In the list, without the "Nothing here." note while it has no rows: what follows the list says why (an
+     * untracked repository or project, CH37).
+     */
+    readonly quietWhenEmpty?: boolean;
     /** Entries can be moved into it — dragged on the board, or `⇧←`/`⇧→` — when the entry allows it too. */
     readonly droppable: boolean;
 }

@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import { getItemPagePath } from '@/item/itemRoutes.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { REPOSITORY_SECTIONS } from '@/repository/RepositorySection.js';
 import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
@@ -13,8 +14,8 @@ import {
     getGitHubUrl,
     getProjectPath,
     getProjectSettingsPath,
-    getRepositoryKind,
     getRepositoryPath,
+    getRepositorySection,
     getRepositorySettingsPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
@@ -171,14 +172,15 @@ test('the repository page is one instance for the repository and its lists', () 
     expect(keyOf('/acme/api')).toBe('acme/api');
 });
 
-test("a repository's lists are GitHub's addresses of them, and the address names the kind it lists", () => {
+test("a repository's sections are GitHub's addresses of its lists, and the address names the section", () => {
     expect(getRepositoryPath('acme/web')).toBe('/acme/web');
-    expect(getRepositoryPath('acme/web', 'all')).toBe('/acme/web');
     expect(getRepositoryPath('acme/web', 'issues')).toBe('/acme/web/issues');
     expect(getRepositoryPath('acme/web', 'pullRequests')).toBe('/acme/web/pulls');
-    for (const kind of ['all', 'issues', 'pullRequests'] as const) {
-        expect(getRepositoryKind(router.resolve(getRepositoryPath('acme/web', kind)).params.kind), kind).toBe(kind);
+    for (const section of REPOSITORY_SECTIONS) {
+        const resolved = router.resolve(getRepositoryPath('acme/web', section));
+        expect(getRepositorySection(resolved.params.section), section).toBe(section);
     }
+    expect(getRepositorySection(router.resolve(getRepositoryPath('acme/web')).params.section)).toBeNull();
 });
 
 test("every address githq makes is GitHub's: under a parameter or a GitHub-reserved first segment", () => {

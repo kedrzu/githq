@@ -1,14 +1,15 @@
 import type { ProjectOwnerKind } from '@/projects/ProjectTypes.js';
-import type { RepositoryKind } from '@/repository/buildRepositoryList.js';
+import type { RepositorySection } from '@/repository/RepositorySection.js';
 
 /** The first download (G6), after choosing what to track, under GitHub's reserved `/settings`. */
 export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 
 /**
- * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`) and its
- * lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`), all in one route.
+ * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`, which opens
+ * the section it was left on) and its lists of issues and of pull requests (`/owner/name/issues`,
+ * `/owner/name/pulls`), all in one route.
  */
-export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls)?';
+export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls)?';
 
 /**
  * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
@@ -16,11 +17,11 @@ export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls)?';
  */
 export const REPOSITORY_SETTINGS_PATH = '/:owner/:name/settings';
 
-/** The last segment of a repository's address listing one kind of its items, as on GitHub (`/owner/name/pulls`). */
-export const REPOSITORY_KIND_SEGMENTS = {
+/** The last segment of a repository's address naming one of its sections, as on GitHub (`/owner/name/pulls`). */
+export const REPOSITORY_SECTION_SEGMENTS = {
     issues: 'issues',
     pullRequests: 'pulls',
-} as const satisfies Record<Exclude<RepositoryKind, 'all'>, string>;
+} as const satisfies Record<RepositorySection, string>;
 
 /** The origin every address githq does not show is handed off to; fixed here, never taken from an address. */
 export const GITHUB_ORIGIN = 'https://github.com';
@@ -92,13 +93,13 @@ export interface ProjectAddress {
 }
 
 /**
- * The address of a repository's view, as on GitHub (`/owner/name`), or of its list of one kind of its items
- * (`/owner/name/issues`, `/owner/name/pulls`).
+ * The address of a repository's view, as on GitHub (`/owner/name`, opening the section it was left on), or of one of
+ * its sections (`/owner/name/issues`, `/owner/name/pulls`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryPath(nameWithOwner: string, kind: RepositoryKind = 'all') {
-    return kind === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_KIND_SEGMENTS[kind]}`;
+export function getRepositoryPath(nameWithOwner: string, section?: RepositorySection) {
+    return section === undefined ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_SECTION_SEGMENTS[section]}`;
 }
 
 /**
@@ -111,19 +112,19 @@ export function getRepositorySettingsPath(nameWithOwner: string) {
 }
 
 /**
- * The kind of items a repository's address lists, from its last segment (the route's `kind`): both when it names
- * none.
+ * The section a repository's address names, from its last segment (the route's `section`): `null` when it names
+ * none (`/owner/name`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryKind(segment: unknown): RepositoryKind {
+export function getRepositorySection(segment: unknown): RepositorySection | null {
     switch (segment) {
-        case REPOSITORY_KIND_SEGMENTS.issues:
+        case REPOSITORY_SECTION_SEGMENTS.issues:
             return 'issues';
-        case REPOSITORY_KIND_SEGMENTS.pullRequests:
+        case REPOSITORY_SECTION_SEGMENTS.pullRequests:
             return 'pullRequests';
         default:
-            return 'all';
+            return null;
     }
 }
 

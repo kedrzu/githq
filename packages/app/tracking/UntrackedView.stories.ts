@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { SquareKanban } from 'lucide-vue-next';
 
+import Button from '@/components/Button.vue';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -16,17 +17,30 @@ const meta = {
         githubUrl: 'https://github.com/orgs/fitloop/projects/4',
         rows: D1_ITEMS.slice(0, 1).map(item => ({ key: item.id, id: item.id, value: item, nested: [] })),
         summary: 'githq only has what concerns you in Mobile launch: 1 item.',
-        others: "Its other items are on GitHub. Search and ⌘K only find what's here.",
-        settingsTo: getSettingsPath('projects', 'https://github.com/orgs/skyline-labs/projects/5'),
         properties: ['status', 'updated'],
         viewerLogin: SAMPLE_VIEWER.login,
         now: SAMPLE_NOW,
     },
-    // As tall as the window, like in the app.
+    // As tall as the window, like in the app, with the project's lines after the summary.
     render: args => ({
-        components: { UntrackedView },
-        setup: () => ({ args }),
-        template: '<div style="display: flex; height: 100vh"><UntrackedView v-bind="args" /></div>',
+        components: { UntrackedView, Button },
+        setup: () => ({
+            args,
+            others:
+                args.rows.length > 0
+                    ? "Its other items are on GitHub. Search and ⌘K only find what's here."
+                    : "Its items are on GitHub. Search and ⌘K only find what's here.",
+            settingsTo: getSettingsPath('projects', 'https://github.com/orgs/skyline-labs/projects/5'),
+        }),
+        template: `
+            <div style="display: flex; height: 100vh">
+                <UntrackedView v-bind="args">
+                    <template #others>
+                        <p>{{ others }}</p>
+                        <p>You can track it in <Button variant="link" :link="settingsTo">Settings</Button></p>
+                    </template>
+                </UntrackedView>
+            </div>`,
     }),
 } satisfies Meta<typeof UntrackedView>;
 
@@ -37,11 +51,10 @@ type Story = StoryObj<typeof meta>;
 /** J4: a project not tracked, with what concerns the user. J3 is the repository's own story. */
 export const Project: Story = {};
 
-/** Nothing of it concerns the user: only the lines. */
+/** Nothing of it concerns the user: its group, empty, and the lines. */
 export const NothingConcerns: Story = {
     args: {
         rows: [],
         summary: 'Nothing in Mobile launch concerns you, so githq has none of it.',
-        others: "Its items are on GitHub. Search and ⌘K only find what's here.",
     },
 };
