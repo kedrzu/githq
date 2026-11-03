@@ -18,29 +18,41 @@ export interface SignInOnDesktopParams {
     readonly native: FakeNativeBridge;
     /** What GitHub answers besides who the user is: "my work" and its items; nothing by default. */
     readonly world?: GitHubWorld;
+    /** Track what `world` offers on the first sign-in, instead of choosing nothing. */
+    readonly track?: boolean;
 }
 
 /**
  * Signs in to the desktop app as {@link SAMPLE_VIEWER} with a device code, the native side approving it at once, goes
- * through the first sign-in's choice with nothing to track, and waits for the shell — and, given a `world`, for
- * "my work" to arrive.
+ * through the first sign-in's choice — with nothing to track, unless told to — and waits for the shell — and, given a
+ * `world`, for "my work" to arrive.
  */
 export async function signInOnDesktop({
     page,
     github,
     native,
     world,
+    track = false,
 }: SignInOnDesktopParams): Promise<AppShellHarness> {
     world?.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
-    answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });
+    if (!track) {
+        answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });
+    }
 
     await page.goto('/login');
     const signIn = new DesktopSignInScreenHarness(page);
     await signIn.signInButton.click();
     await expect(signIn.deviceCode).toHaveText(native.deviceCode.userCode);
     native.approveDeviceSignIn(SAMPLE_TOKEN);
-    await new FirstSignInHarness(page).continueButton.click();
+    const firstSignIn = new FirstSignInHarness(page);
+    if (track) {
+        await firstSignIn.trackButton.click();
+        await expect(firstSignIn.root).toContainText('Everything is here.');
+        await firstSignIn.openMyWorkButton.click();
+    } else {
+        await firstSignIn.continueButton.click();
+    }
 
     const shell = new AppShellHarness(page);
     await expect(shell.account(SAMPLE_VIEWER.viewer.login)).toBeVisible();

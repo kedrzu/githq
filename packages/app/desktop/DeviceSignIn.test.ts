@@ -195,6 +195,7 @@ function createFakeNative(): FakeNative {
             onUpdateReady: () => Promise.reject(new Error('Not expected')),
             updateStatus: () => Promise.reject(new Error('Not expected')),
             restartToUpdate: () => Promise.reject(new Error('Not expected')),
+            readJobLog: () => Promise.reject(new Error('Not expected')),
         },
         finishes: [],
         startAnswer: null,
