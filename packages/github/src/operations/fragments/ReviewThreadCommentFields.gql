@@ -10,6 +10,8 @@ fragment ReviewThreadCommentFields on PullRequestReviewComment {
     url
     diffHunk
     outdated
+    # `PENDING` while in the viewer's draft review, which only they can read.
+    state
     originalCommit {
         oid
         abbreviatedOid

@@ -3,6 +3,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { buildDiffRows, createDiffChangedRows, createDiffContextRow, getSideStart } from './diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
+import { isLineChanged } from './diff/computeFileDiff.js';
 import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
 import { findEnclosing } from './diff/findEnclosing.js';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileSizes } from './ReviewFiles.js';
@@ -372,8 +373,10 @@ export function buildFileLineRows({
 }
 
 /** Nothing changed, as far as the diff goes, and yet the lines differ: only hidden whitespace can do that. */
-function isOnlyWhitespaceChanged({ blocks, before, after }: FileDiff) {
-    return blocks.length === 0 && before.some((line, index) => line !== after[index]);
+function isOnlyWhitespaceChanged(diff: FileDiff) {
+    return (
+        diff.blocks.length === 0 && diff.before.some((_, index) => isLineChanged(diff, { before: index, after: index }))
+    );
 }
 
 function isWholeFile({ atFileEnd, range }: ReviewGapRow) {

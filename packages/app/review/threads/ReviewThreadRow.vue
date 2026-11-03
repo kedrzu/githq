@@ -35,7 +35,17 @@ const commentedLine = computed(() => {
   return last?.newLine ?? last?.oldLine ?? thread.value.originalLine ?? 0;
 });
 const codeShown = computed(() => hunk.value.length > 0 && (!thread.value.isResolved || props.open));
-const lineGone = computed(() => props.row.placement.kind === 'fileTop' && thread.value.isOutdated && codeShown.value);
+const lineGone = computed(() => {
+  const { placement } = props.row;
+  return placement.kind === 'fileTop' && (thread.value.isOutdated || placement.fileDeleted) && codeShown.value;
+});
+const lineGoneDetail = computed(() => {
+  const { placement } = props.row;
+  const params = { line: commentedLine.value, commit: commit.value };
+  return placement.kind === 'fileTop' && placement.fileDeleted
+    ? t(l.lineGoneFromDeleted, params)
+    : t(l.lineGoneDetail, params);
+});
 const outdatedNote = computed(() => {
   const { placement } = props.row;
   switch (placement.kind) {
@@ -87,7 +97,7 @@ const codeLabel = computed(() => {
           aria-hidden="true"
         />
         <span :class="css.reviewThreadRow_lineGoneTitle">{{ t(l.lineGone) }}</span>
-        {{ t(l.lineGoneDetail, { line: commentedLine, commit }) }}
+        {{ lineGoneDetail }}
       </p>
       <ReviewThreadCode
         v-if="codeShown"

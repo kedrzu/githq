@@ -8,6 +8,7 @@ import type {
     ProjectItemFieldValueFieldsFragment,
     PullRequestDetailFieldsFragment,
     ReactionGroupFieldsFragment,
+    ReviewPageFieldsFragment,
 } from '@githq/github/generated.gen.js';
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -135,7 +136,21 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], context => context && toItemCheck(context)),
         checkCount: node.statusCheckRollup?.contextPage.totalCount ?? 0,
         reviews,
-        reviewSummaries: mapNotNull(node.reviews?.nodes ?? [], (review): ItemReviewSummary | null =>
+        ...toItemReviewPage(node.reviews),
+        reviewRequests: toDetailReviewRequests(node.reviewRequests),
+    };
+}
+
+/**
+ * A page of a pull request's submitted reviews (`ReviewPageFields`) as its detail keeps them.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function toItemReviewPage(
+    page: ReviewPageFieldsFragment | null | undefined,
+): Pick<PullRequestDetail, 'reviewSummaries' | 'olderReviewCursor'> {
+    return {
+        reviewSummaries: mapNotNull(page?.nodes ?? [], (review): ItemReviewSummary | null =>
             review?.submittedAt && review.state !== 'PENDING'
                 ? {
                       id: review.id,
@@ -147,8 +162,7 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
                   }
                 : null,
         ),
-        olderReviewCount: (node.reviews?.totalCount ?? 0) - (node.reviews?.nodes?.length ?? 0),
-        reviewRequests: toDetailReviewRequests(node.reviewRequests),
+        olderReviewCursor: page?.pageInfo.hasPreviousPage ? page.pageInfo.startCursor : null,
     };
 }
 

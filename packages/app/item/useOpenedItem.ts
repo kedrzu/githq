@@ -36,6 +36,8 @@ export interface OpenedItemViewModel {
     tryAgain(): void;
     /** Reads the comments not read yet; resolves once all are in, or GitHub stopped giving them, which is logged. */
     loadAllComments(): Promise<void>;
+    /** Reads the reviews not read yet, the same way. */
+    loadAllReviews(): Promise<void>;
 }
 
 /**
@@ -96,10 +98,16 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         missing: computed(() => found.value === null),
         failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),
         tryAgain: () => void resolver.resolve(reference.value),
-        loadAllComments,
+        loadAllComments: () =>
+            loadAllPages(current => details.get(current)?.comments.olderCursor ?? null, details.loadOlderComments),
+        loadAllReviews: () =>
+            loadAllPages(current => {
+                const read = details.get(current);
+                return read?.kind === 'pullRequest' ? read.olderReviewCursor : null;
+            }, details.loadOlderReviews),
     });
 
-    async function loadAllComments() {
+    async function loadAllPages(readCursor: (id: string) => string | null, loadPage: (id: string) => Promise<void>) {
         const current = id.value;
         if (current === null) {
             return;
@@ -107,14 +115,14 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
 
         try {
             // 100 at a time, until none are left — or the detail was read again meanwhile and the cursor did not move.
-            let cursor = details.get(current)?.comments.olderCursor ?? null;
+            let cursor = readCursor(current);
             while (cursor !== null) {
-                await details.loadOlderComments(current);
-                const next = details.get(current)?.comments.olderCursor ?? null;
+                await loadPage(current);
+                const next = readCursor(current);
                 cursor = next === cursor ? null : next;
             }
         } catch (error) {
-            logger.warn('Older comments could not be read', { id: current, error });
+            logger.warn('Older comments or reviews could not be read', { id: current, error });
         }
     }
 }

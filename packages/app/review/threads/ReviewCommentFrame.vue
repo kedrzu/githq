@@ -1,4 +1,4 @@
-<!-- What a comment and a review summary share: the avatar, who, how long ago with a link to it on GitHub, room for a verdict between them, and whatever it says under that. -->
+<!-- What a comment and a review summary share: the avatar, who, how long ago with a link to it on GitHub, room for a verdict between them and for a note after, and whatever it says under that. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -47,6 +47,7 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
           :title="t(l.openOnGitHub, { age })"
           ><time :datetime="createdAt">{{ age }}</time></a
         >
+        <slot name="note" />
       </p>
       <slot />
     </div>

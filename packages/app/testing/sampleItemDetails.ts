@@ -144,7 +144,7 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
             submittedAt: ago(3 * HOUR),
         },
     ],
-    olderReviewCount: 0,
+    olderReviewCursor: null,
     reviewRequests: [{ kind: 'user', user: TSW }],
 };
 
@@ -192,7 +192,7 @@ export const F3_PULL_REQUEST_DETAIL: PullRequestDetail = {
         { author: TSW, state: 'COMMENTED', submittedAt: ago(DAY) },
     ],
     reviewSummaries: [],
-    olderReviewCount: 0,
+    olderReviewCursor: null,
     reviewRequests: [],
 };
 

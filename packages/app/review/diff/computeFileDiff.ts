@@ -25,6 +25,17 @@ export interface FileDiff {
     readonly after: readonly string[];
     /** The changed places in file order, never touching each other. A range empty on one side is a pure addition or deletion. */
     readonly blocks: readonly DiffRange[];
+    /** Which lines of each side ended in a carriage return, which {@link before} and {@link after} no longer say: see {@link isLineChanged}. */
+    readonly carriageReturns: {
+        readonly before: ReadonlySet<number>;
+        readonly after: ReadonlySet<number>;
+    };
+}
+
+/** A line of each side of a {@link FileDiff}, 0-based. */
+export interface DiffLinePair {
+    readonly before: number;
+    readonly after: number;
 }
 
 /**
@@ -62,7 +73,14 @@ export function computeFileDiff({ before, after, ignoreWhitespace }: ComputeFile
 
     closeBlock(beforeLines.length, afterLines.length);
 
-    return { before: beforeLines.map(stripCarriageReturn), after: afterLines.map(stripCarriageReturn), blocks };
+    const beforeStripped = stripCarriageReturns(beforeLines);
+    const afterStripped = stripCarriageReturns(afterLines);
+    return {
+        before: beforeStripped.lines,
+        after: afterStripped.lines,
+        blocks,
+        carriageReturns: { before: beforeStripped.carriageReturns, after: afterStripped.carriageReturns },
+    };
 
     /** Ends the changed place before these lines, if there is one, and moves up to them. */
     function closeBlock(beforeEnd: number, afterEnd: number) {
@@ -91,6 +109,18 @@ export function computeFileDiff({ before, after, ignoreWhitespace }: ComputeFile
     }
 }
 
+/**
+ * Whether two lines differ, in whitespace too: their line endings count, which their text no longer shows.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isLineChanged({ before, after, carriageReturns }: FileDiff, lines: DiffLinePair) {
+    return (
+        before[lines.before] !== after[lines.after] ||
+        carriageReturns.before.has(lines.before) !== carriageReturns.after.has(lines.after)
+    );
+}
+
 /** The lines whose id is among those given: their ids, and where each is in the file. */
 function keepLinesIn(ids: Int32Array, kept: ReadonlySet<number>) {
     const keptIds: number[] = [];
@@ -105,6 +135,16 @@ function keepLinesIn(ids: Int32Array, kept: ReadonlySet<number>) {
     return { ids: keptIds, lines };
 }
 
-function stripCarriageReturn(line: string): string {
-    return line.endsWith('\r') ? line.slice(0, -1) : line;
+function stripCarriageReturns(lines: readonly string[]) {
+    const carriageReturns = new Set<number>();
+    const stripped = lines.map((line, index) => {
+        if (!line.endsWith('\r')) {
+            return line;
+        }
+
+        carriageReturns.add(index);
+        return line.slice(0, -1);
+    });
+
+    return { lines: stripped, carriageReturns };
 }

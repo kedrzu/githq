@@ -260,13 +260,13 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         }
 
         threadsByFile = regroupThreads(threads, files?.files ?? []);
-        const listed = new Set(files?.files.map(file => file.path));
+        const listed = new Map(files?.files.map(file => [file.path, file]));
         const listEnded = files != null && files.listEnd !== 'growing';
         const byFile = new Map<string, readonly ThreadPlacement[]>();
         for (const [path, fileThreads] of threadsByFile) {
             // Not gone yet, while a later page may yet list it or a rename account for it.
             if (listed.has(path) || listEnded) {
-                byFile.set(path, placeFileThreads(path, fileThreads, listed.has(path)));
+                byFile.set(path, placeFileThreads(path, fileThreads, listed.get(path)));
             }
         }
 
@@ -288,8 +288,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         return regrouped;
     }
 
-    function placeFileThreads(path: string, threads: readonly ReviewThread[], listed: boolean) {
-        if (!listed) {
+    function placeFileThreads(path: string, threads: readonly ReviewThread[], file: ReviewFile | undefined) {
+        if (!file) {
             return placeElsewhere(GONE_VIEW, threads);
         }
 
@@ -311,7 +311,10 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         }
 
         const start = performance.now();
-        const placements = placeThreads({ kind: 'open', diff, expanded }, threads);
+        const placements = placeThreads(
+            { kind: 'open', diff, expanded, deleted: file.changeType === 'DELETED' },
+            threads,
+        );
         performance.measure(`review:threads ${path}`, { start, end: performance.now() });
         placedInDiffs.set(diff, { threads, expanded, placements });
         return placements;

@@ -92,6 +92,45 @@ test('the conversation is remembered over a reload, comes in one time order and 
     await expect(review.conversation).toBeHidden();
 });
 
+test('reviews older than the newest 100 come on asking, in their place, and the count is of what is read', async ({
+    page,
+    github,
+}) => {
+    const { world, closingPullRequest } = createSampleMyWork();
+    world.review(closingPullRequest, {
+        id: 'PRR_first',
+        author: 'sofiab',
+        state: 'CHANGES_REQUESTED',
+        bodyHtml: '<p>The very first review.</p>',
+        minutesAgo: 500,
+    });
+    for (let reply = 1; reply <= 100; reply++) {
+        world.review(closingPullRequest, {
+            id: `PRR_${reply}`,
+            author: 'sofiab',
+            state: 'APPROVED',
+            bodyHtml: `<p>Review ${reply}</p>`,
+            minutesAgo: 400 - reply,
+        });
+    }
+
+    await openMyWork(page, github, world);
+    answerReview(github, { repository: 'acme/web', number: 15, files: FILES });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('long.ts')).toBeVisible();
+    await review.conversationToggle.click();
+    await expect(review.conversation).toContainText('Review 100');
+    await expect(review.conversation).not.toContainText('The very first review.');
+    await expect(review.conversation.getByText('100', { exact: true })).toBeVisible();
+
+    await review.conversation.getByRole('button', { name: 'Show older reviews' }).click();
+
+    await expect(review.conversation.getByRole('listitem').first()).toContainText('The very first review.');
+    await expect(review.conversation.getByRole('button', { name: 'Show older reviews' })).toHaveCount(0);
+    await expect(review.conversation.getByText('101', { exact: true })).toBeVisible();
+});
+
 test("a summary's threads land exactly on the first of them, as N does; a resolved one is opened; a filter gives way", async ({
     page,
     github,

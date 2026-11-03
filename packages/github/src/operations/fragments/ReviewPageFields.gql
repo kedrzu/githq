@@ -1,0 +1,18 @@
+# A page of a pull request's submitted reviews, newest last; `startCursor` asks for the older ones (`MoreReviews`).
+fragment ReviewPageFields on PullRequestReviewConnection {
+    pageInfo {
+        hasPreviousPage
+        startCursor
+    }
+    nodes {
+        id
+        url
+        author {
+            login
+            avatarUrl
+        }
+        state
+        bodyHTML
+        submittedAt
+    }
+}

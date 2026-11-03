@@ -57,10 +57,10 @@ export interface PullRequestDetail extends ItemDetailBase {
     readonly checkCount: number;
     /** Each reviewer's latest review. */
     readonly reviews: readonly ItemDetailReview[];
-    /** The newest submitted reviews (GitHub's last 100), every one of each reviewer, oldest first. */
+    /** The submitted reviews read so far, every one of each reviewer, oldest first: the newest, and older ones as asked for. */
     readonly reviewSummaries: readonly ItemReviewSummary[];
-    /** How many submitted reviews are older than those: GitHub gives no more than 100 at once. */
-    readonly olderReviewCount: number;
+    /** Where the older ones not read yet start (`MoreReviews`); `null` when all are read. */
+    readonly olderReviewCursor: string | null;
     readonly reviewRequests: readonly ItemDetailReviewRequest[];
 }
 

@@ -6,6 +6,7 @@ import type {
     Requester,
 } from '@githq/github/generated.gen.js';
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
+import { isGitHubNotFound } from '@githq/github/isGitHubNotFound.js';
 import { readGoneFileHistory } from '@githq/github/readGoneFileHistory.js';
 import type { GoneFileHistory } from '@githq/github/readGoneFileHistory.js';
 import { readReviewBlobOids, readReviewBlobTexts } from '@githq/github/readReviewBlobs.js';
@@ -614,11 +615,16 @@ export const ReviewFiles = defineService({
                 }
 
                 const listed = filesRef.value.length;
-                if (listFailingRef.value || pausedRef.value !== null) {
+                if (listFailingRef.value) {
                     return 'uncertain';
                 }
 
                 const held = [...run.entries.values()].some(entry => isHeldForRenames(run, entry));
+                // A pause holds up only what's still to come.
+                if (pausedRef.value !== null && (!listCompleteRef.value || held)) {
+                    return 'uncertain';
+                }
+
                 if (!listCompleteRef.value || (held && !renamesFailedRef.value)) {
                     return 'growing';
                 }
@@ -637,7 +643,14 @@ export const ReviewFiles = defineService({
                 }
 
                 const paths = listGonePaths().filter(path => !run.goneHistoryAsked.has(path));
-                if (paths.length === 0 || findPause()) {
+                if (paths.length === 0) {
+                    return;
+                }
+
+                // Shown, for the end of a pause is what asks again.
+                const pause = findPause();
+                if (pause) {
+                    showPause(pause);
                     return;
                 }
 
@@ -1094,7 +1107,7 @@ export const ReviewFiles = defineService({
                     if (pause) {
                         threadsHeld = true;
                         threadsStateRef.value = { kind: 'paused', until: pause.until };
-                    } else if (isPullRequestGone(error)) {
+                    } else if (isGitHubNotFound(error)) {
                         forgetThreads();
                     } else {
                         logger.warn("Could not read a pull request's review threads", { error });
@@ -1140,7 +1153,7 @@ export const ReviewFiles = defineService({
                         if (!runRef.value) {
                             listRef.value = { kind: 'paused', until: pause.until };
                         }
-                    } else if (isPullRequestGone(error)) {
+                    } else if (isGitHubNotFound(error)) {
                         forget();
                     } else if (runRef.value) {
                         listFailingRef.value = true;
@@ -2254,8 +2267,4 @@ function readBlobSide(expression: string | null, answers: ReadonlyMap<string, Re
 
 function toError(error: unknown) {
     return error instanceof Error ? error : new Error(String(error));
-}
-
-function isPullRequestGone(error: unknown) {
-    return error instanceof GitHubApiError && error.errors.some(entry => entry.type === 'NOT_FOUND');
 }

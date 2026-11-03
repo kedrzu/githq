@@ -4,15 +4,24 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { CONTEXT_LINES } from '../buildReviewRows.js';
 import { buildDiffRows, getDiffLineRowKey, getSideEnd, getSideStart } from '../diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffLineSide } from '../diff/buildDiffRows.js';
+import { isLineChanged } from '../diff/computeFileDiff.js';
 import type { DiffRange, FileDiff } from '../diff/computeFileDiff.js';
 import type { ReviewFile } from '../ReviewFiles.js';
 import { parseDiffHunk } from './parseDiffHunk.js';
 import type { ReviewThread } from './ReviewThread.js';
 
+/** Its diff is here: `expanded` as `BuildDiffRowsOptions.expanded`, so that what is hidden is what the rows hide. */
+interface ThreadFileViewOpen {
+    readonly kind: 'open';
+    readonly diff: FileDiff;
+    readonly expanded: readonly DiffLineRange[];
+    /** The pull request deletes the file, which leaves it no right side for a thread to be on. */
+    readonly deleted?: boolean;
+}
+
 /** What a file shows, which decides where its threads go. */
 export type ThreadFileView =
-    /** Its diff is here: `expanded` as `BuildDiffRowsOptions.expanded`, so that what is hidden is what the rows hide. */
-    | { readonly kind: 'open'; readonly diff: FileDiff; readonly expanded: readonly DiffLineRange[] }
+    | ThreadFileViewOpen
     /** Its text isn't here: collapsed and not fetched (D13), which `notLoaded` says, or with no diff to show, for now or for good. */
     | { readonly kind: 'collapsed'; readonly notLoaded: boolean }
     /** Not in the list of files (D12). */
@@ -57,6 +66,8 @@ export interface ThreadAtFileTop {
     /** Empty on a `FILE` thread, which GitHub gives no code. */
     readonly diffHunk: string;
     readonly commit: ReviewThread['comments'][number]['originalCommit'];
+    /** The pull request deletes the file: what the line was looked for in is what it deletes, not the file now. */
+    readonly fileDeleted: boolean;
 }
 
 /** Under the header of a file whose text isn't here: "as it was when commented" (D13, D29). */
@@ -98,7 +109,7 @@ const REPEATED = -1;
 export function placeThreads(view: ThreadFileView, threads: readonly ReviewThread[]): ThreadPlacement[] {
     switch (view.kind) {
         case 'open':
-            return placeInDiff(view.diff, view.expanded, threads);
+            return placeInDiff(view, threads);
         case 'collapsed':
             return threads.map(thread => ({
                 kind: 'inCollapsed',
@@ -148,8 +159,7 @@ export function groupThreadsByFile(
 }
 
 function placeInDiff(
-    diff: FileDiff,
-    expanded: readonly DiffLineRange[],
+    { diff, expanded, deleted = false }: ThreadFileViewOpen,
     threads: readonly ReviewThread[],
 ): ThreadPlacement[] {
     // Only when asked for: a file may have nothing but threads that find no line.
@@ -157,7 +167,7 @@ function placeInDiff(
     let gaps: DiffRange[] | null = null;
 
     return threads.map((thread): ThreadPlacement => {
-        const side: DiffLineSide = thread.diffSide === 'LEFT' ? 'before' : 'after';
+        const side: DiffLineSide = thread.diffSide === 'LEFT' || isOnDeletedSide(thread) ? 'before' : 'after';
         const line = findThreadLine(thread, side);
         if (line === null) {
             return {
@@ -165,10 +175,11 @@ function placeInDiff(
                 thread,
                 diffHunk: getDiffHunk(thread),
                 commit: thread.comments[0]?.originalCommit ?? null,
+                fileDeleted: deleted,
             };
         }
 
-        const placed = { thread, side, line, approximate: thread.isOutdated };
+        const placed = { thread, side, line, approximate: thread.isOutdated || isOnDeletedSide(thread) };
         gaps ??= buildDiffRows(diff, { layout: 'unified', context: CONTEXT_LINES, expanded }).flatMap(row =>
             row.kind === 'gap' ? [row.range] : [],
         );
@@ -191,7 +202,7 @@ function placeInDiff(
             return null;
         }
 
-        if (thread.isOutdated) {
+        if (thread.isOutdated || isOnDeletedSide(thread)) {
             const text = getCommentedText(getDiffHunk(thread));
             const place = text === null ? undefined : getPlacesOfLines(side).get(text);
             return place === undefined || place === REPEATED ? null : place + 1;
@@ -199,6 +210,11 @@ function placeInDiff(
 
         // GitHub says it isn't outdated, but this is a file read at another moment than the thread.
         return thread.line !== null && thread.line >= 1 && thread.line <= diff[side].length ? thread.line : null;
+    }
+
+    /** On a side the file no longer has, whose line numbers say nothing of the side it does: only its text can place it. */
+    function isOnDeletedSide(thread: ReviewThread) {
+        return deleted && thread.diffSide === 'RIGHT';
     }
 
     function getPlacesOfLines(side: DiffLineSide) {
@@ -221,7 +237,7 @@ function getHiddenPlace(diff: FileDiff, gap: DiffRange, side: DiffLineSide, line
     const end = getSideEnd(gap, side);
     const offset = line - 1 - start;
     const firstLine = Math.max(line - HIDDEN_LINE_CODE + 1, start + 1);
-    const whitespaceChange = diff.before[gap.beforeStart + offset] !== diff.after[gap.afterStart + offset];
+    const whitespaceChange = isLineChanged(diff, { before: gap.beforeStart + offset, after: gap.afterStart + offset });
     const fromAbove = line - start;
     const fromBelow = end + 1 - line;
     const hasRowAbove = start > 0;

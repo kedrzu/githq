@@ -26,6 +26,7 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
                 url: 'https://github.com/fitloop/webapp/pull/1202#discussion_r1',
                 diffHunk: '@@ -46,2 +46,2 @@\n one\n+two',
                 outdated: false,
+                state: 'SUBMITTED',
                 originalCommit: { oid: 'a91d03b0', abbreviatedOid: 'a91d03b' },
                 pullRequestReview: { id: 'PRR_1' },
             },
@@ -37,6 +38,7 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
                 url: 'https://github.com/fitloop/webapp/pull/1202#discussion_r2',
                 diffHunk: '@@ -46,2 +46,2 @@\n one\n+two',
                 outdated: false,
+                state: 'SUBMITTED',
                 originalCommit: { oid: 'a91d03b0', abbreviatedOid: 'a91d03b' },
                 pullRequestReview: { id: 'PRR_1' },
             },
@@ -57,6 +59,7 @@ export type ThreadRowSample =
           readonly kind: 'fileTop';
           readonly diffHunk: string;
           readonly commit?: ThreadCommit;
+          readonly fileDeleted?: boolean;
           readonly thread?: ReviewThread;
       }
     | {
@@ -92,7 +95,13 @@ function createPlacement(sample: ThreadRowSample, thread: ReviewThread): ThreadP
                 rowKeys: { split: '47:47', unified: '47:47' },
             };
         case 'fileTop':
-            return { kind: 'fileTop', thread, diffHunk: sample.diffHunk, commit: sample.commit ?? null };
+            return {
+                kind: 'fileTop',
+                thread,
+                diffHunk: sample.diffHunk,
+                commit: sample.commit ?? null,
+                fileDeleted: sample.fileDeleted ?? false,
+            };
         case 'inCollapsed':
             return { kind: 'inCollapsed', thread, diffHunk: sample.diffHunk, notLoaded: sample.notLoaded ?? false };
         default:

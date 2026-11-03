@@ -634,6 +634,7 @@ const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
 const COMMENT_PAGE = 50;
 const OLDER_COMMENT_PAGE = 100;
+const REVIEW_PAGE = 100;
 
 const DEFAULT_LABELS: readonly GitHubWorldLabel[] = [
     { name: 'bug', color: 'd73a4a' },
@@ -1500,6 +1501,18 @@ export class GitHubWorld {
 
             const before = parseCursor(variables.before) ?? item.comments.length;
             return { node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE) } };
+        });
+        github.graphql('MoreReviews', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item?.pullRequest) {
+                return new GitHubPartialAnswer<'MoreReviews'>({ node: null }, [notFoundError(id, ['node'])]);
+            }
+
+            const { reviews } = item.pullRequest;
+            return {
+                node: { id, reviews: toReviewPage(item, reviews, parseCursor(variables.before) ?? reviews.length) },
+            };
         });
     }
 
@@ -2641,17 +2654,7 @@ export class GitHubWorld {
                 contextPage: { totalCount: 0, nodes: [] },
             },
             latestReviews: { nodes: [] },
-            reviews: {
-                totalCount: item.pullRequest.reviews.length,
-                nodes: item.pullRequest.reviews.map(review => ({
-                    id: review.id,
-                    url: `${toUrl(item)}#pullrequestreview-${review.id}`,
-                    author: createUser(review.author),
-                    state: review.state,
-                    bodyHTML: review.bodyHtml ?? '',
-                    submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
-                })),
-            },
+            reviews: toReviewPage(item, item.pullRequest.reviews, item.pullRequest.reviews.length),
             reviewRequests: {
                 nodes: item.pullRequest.reviewRequests.map(login => ({ requestedReviewer: createUser(login) })),
             },
@@ -3113,6 +3116,21 @@ function toCommentPage(item: WorldItem, before: number, count: number) {
         totalCount: item.comments.length,
         pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
         nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment)),
+    };
+}
+
+function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams[], before: number) {
+    const start = Math.max(0, before - REVIEW_PAGE);
+    return {
+        pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
+        nodes: reviews.slice(start, before).map(review => ({
+            id: review.id,
+            url: `${toUrl(item)}#pullrequestreview-${review.id}`,
+            author: createUser(review.author),
+            state: review.state,
+            bodyHTML: review.bodyHtml ?? '',
+            submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
+        })),
     };
 }
 

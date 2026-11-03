@@ -8,6 +8,8 @@ lineGone:
   en: Outdated, its line is gone
 lineGoneDetail:
   en: written on line {line} at {commit}; that line can't be found once in the file now
+lineGoneFromDeleted:
+  en: written on line {line} at {commit}; the pull request deletes this file, and that line can't be found once in what it deletes
 codeAtCommit:
   en: The code it was written on, at {commit}
 asCommented:

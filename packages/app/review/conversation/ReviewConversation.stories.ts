@@ -17,6 +17,7 @@ const meta = {
         detail: { ...F1_PULL_REQUEST_DETAIL, bodyHtml: '<p>Second of four in the offline sync stack.</p>' },
         reviewThreads: new Map(),
         loadOlder: fn(() => Promise.resolve()),
+        loadOlderReviews: fn(() => Promise.resolve()),
         onClose: fn(),
         onJumpToThreads: fn(),
     },
@@ -116,21 +117,19 @@ export const ShortDescription: Story = {
     },
 };
 
-/** GitHub gives the newest 100 reviews at once: the others are counted, with the way to them. */
+/** GitHub gives the newest 100 reviews at once: the others come on asking, not counted, for some of them say nothing. */
 export const OlderReviews: Story = {
     args: {
         detail: {
             ...quietDetail(),
             reviewSummaries: [summary('PRR_1', 'APPROVED', '<p>Fine by me.</p>')],
-            olderReviewCount: 26,
+            olderReviewCursor: 'older',
         },
     },
     play: async ({ canvas, args }) => {
-        await expect(canvas.getByRole('link', { name: /26 older reviews on.GitHub/u })).toHaveAttribute(
-            'href',
-            args.item?.url,
-        );
-        await expect(canvas.getByText('27')).toBeInTheDocument();
+        await userEvent.click(canvas.getByRole('button', { name: 'Show older reviews' }));
+        await expect(args.loadOlderReviews).toHaveBeenCalledTimes(1);
+        await expect(canvas.getByText('1')).toBeInTheDocument();
     },
 };
 
@@ -190,7 +189,7 @@ function quietDetail(): PullRequestDetail {
         ...F1_PULL_REQUEST_DETAIL,
         bodyHtml: '',
         reviewSummaries: [],
-        olderReviewCount: 0,
+        olderReviewCursor: null,
         comments: { totalCount: 0, nodes: [], olderCursor: null },
     };
 }

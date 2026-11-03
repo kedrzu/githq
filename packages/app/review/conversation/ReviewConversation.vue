@@ -1,4 +1,4 @@
-<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for. It scrolls on its own, opening at the newest as GitHub's does and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments not read yet come on asking, what is being read staying where it is. -->
+<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for. It scrolls on its own, opening at the newest and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments and reviews not read yet come on asking, what is being read staying where it is. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
@@ -30,6 +30,8 @@ const props = defineProps<{
   reviewThreads: ReadonlyMap<string, ReviewOwnThreads>;
   /** Reads the comments not read yet; resolves once all are in. */
   loadOlder: () => Promise<void>;
+  /** Reads the reviews not read yet; resolves once all are in. */
+  loadOlderReviews: () => Promise<void>;
 }>();
 
 const emit = defineEmits<{
@@ -63,8 +65,9 @@ const olderCount = computed(() => {
   const comments = props.detail?.comments;
   return comments?.olderCursor ? comments.totalCount - comments.nodes.length : 0;
 });
-const olderReviewCount = computed(() => props.detail?.olderReviewCount ?? 0);
-const count = computed(() => entries.value.length + olderCount.value + olderReviewCount.value);
+// Not counted: some of them say nothing, and those aren't entries.
+const hasOlderReviews = computed(() => (props.detail?.olderReviewCursor ?? null) !== null);
+const count = computed(() => entries.value.length + olderCount.value);
 const description = computed(() => props.detail?.bodyHtml ?? '');
 const openedAge = computed(() => (props.item ? formatAge(Date.parse(props.item.createdAt), now.value) : ''));
 
@@ -120,10 +123,10 @@ function showDescription() {
   unfolded.value = true;
 }
 
-async function showOlder() {
+async function showOlder(load: () => Promise<void>) {
   atNewest = false;
   const before = scroller.value?.scrollHeight ?? 0;
-  await props.loadOlder();
+  await load();
   await nextTick();
   const element = scroller.value;
   if (element) {
@@ -193,26 +196,24 @@ async function showOlder() {
           </Button>
         </div>
         <hr
-          v-if="item && count > 0"
+          v-if="item && (count > 0 || hasOlderReviews)"
           :class="css.reviewConversation_rule"
         />
         <Button
           v-if="olderCount > 0"
           variant="link"
           size="sm"
-          @click="showOlder"
+          @click="showOlder(loadOlder)"
         >
           {{ t(l.showOlder, { count: olderCount }) }}
         </Button>
         <Button
-          v-if="olderReviewCount > 0"
+          v-if="hasOlderReviews"
           variant="link"
           size="sm"
-          :link="item?.url"
-          target="_blank"
-          rel="noopener noreferrer"
+          @click="showOlder(loadOlderReviews)"
         >
-          {{ t(l.olderReviews, { count: olderReviewCount }) }}
+          {{ t(l.showOlderReviews) }}
         </Button>
         <p
           v-if="!detail"
@@ -221,7 +222,7 @@ async function showOlder() {
           {{ t(l.reading) }}
         </p>
         <p
-          v-else-if="count === 0"
+          v-else-if="count === 0 && !hasOlderReviews"
           :class="css.reviewConversation_note"
         >
           {{ t(l.empty) }}

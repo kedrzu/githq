@@ -18,6 +18,7 @@ import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import { toHex } from '@/utils/toHex.js';
 import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { SyncLoopStatus } from './SyncEngine.js';
@@ -341,7 +342,7 @@ export const TabChannel = defineService({
         function createTabId() {
             const bytes = new Uint8Array(8);
             browser.getRandomValues(bytes);
-            return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            return toHex(bytes);
         }
     },
 });

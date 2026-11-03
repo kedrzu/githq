@@ -1,3 +1,5 @@
+import { toHex } from '@/utils/toHex.js';
+
 /**
  * Where a file is on github.com's changed files page, whose anchors are `#diff-<sha256 of the path>`; the page itself
  * where the browser has no `crypto.subtle`, which is only in secure contexts.
@@ -11,6 +13,5 @@ export async function getGitHubFileUrl(filesUrl: string, path: string) {
     }
 
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(path));
-    const hex = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-    return `${filesUrl}#diff-${hex}`;
+    return `${filesUrl}#diff-${toHex(new Uint8Array(digest))}`;
 }

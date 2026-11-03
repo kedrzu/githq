@@ -51,6 +51,7 @@ function threadWith(overrides: Partial<ReviewThread> & { readonly diffHunk?: str
                 url: 'https://github.com/acme/web/pull/7#c',
                 diffHunk,
                 outdated: thread.isOutdated ?? false,
+                state: 'SUBMITTED',
                 originalCommit: { oid: 'a91d03b00', abbreviatedOid: 'a91d03b' },
                 pullRequestReview: null,
             },
@@ -119,6 +120,17 @@ describe('a thread that is not outdated', () => {
             kind: 'hiddenLine',
             distance: 4,
             direction: 'down',
+            whitespaceChange: true,
+        });
+    });
+
+    test('on a line whose ending alone changed, with whitespace hidden, is on a whitespace change', () => {
+        const crlf = numbered(10)
+            .map(line => `${line}\r\n`)
+            .join('');
+        const converted = computeFileDiff({ before: crlf, after: text(numbered(10)), ignoreWhitespace: true });
+        expect(placeOne(converted, threadWith({ line: 4 }))).toMatchObject({
+            kind: 'hiddenLine',
             whitespaceChange: true,
         });
     });
@@ -363,4 +375,22 @@ test('countThreads tells resolved first, then unresolved by whether they are out
         threadWith({ id: '4', isOutdated: true, diffHunk: '@@ -1,1 +1,1 @@\n+a line nobody has now' }),
     ]);
     expect(countThreads(atTop)).toEqual({ open: 0, outdated: 0, lineGone: 1, resolved: 0 });
+
+    const onGone = placeThreads({ kind: 'gone' }, [threadWith({ id: '5', isOutdated: true })]);
+    expect(countThreads(onGone)).toEqual({ open: 1, outdated: 0, lineGone: 0, resolved: 0 });
+});
+
+test("a thread on the right side of a deleted file finds its line by its text in what's deleted; one that doesn't says the file is deleted", () => {
+    const diff = computeFileDiff({ before: 'one\ntwo\nthree\n', after: null, ignoreWhitespace: false });
+    const view = { kind: 'open', diff, expanded: [], deleted: true } as const;
+
+    const [found, lost, numberOnly] = placeThreads(view, [
+        threadWith({ id: 'found', line: 1, diffHunk: '@@ -1,2 +1,2 @@\n one\n+three' }),
+        threadWith({ id: 'lost', isOutdated: true, diffHunk: '@@ -1,1 +1,2 @@\n one\n+a line nobody has' }),
+        threadWith({ id: 'left', diffSide: 'LEFT', line: 2, diffHunk: '@@ -1,2 +0,0 @@\n-one\n-another' }),
+    ]);
+
+    expect(found).toMatchObject({ kind: 'onLine', side: 'before', line: 3, approximate: true });
+    expect(lost).toMatchObject({ kind: 'fileTop', fileDeleted: true });
+    expect(numberOnly).toMatchObject({ kind: 'onLine', side: 'before', line: 2, approximate: false });
 });

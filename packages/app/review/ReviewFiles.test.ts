@@ -760,6 +760,18 @@ test('a list has not ended until where its renamed files came from is known; tha
     expect(model.listEnd).toBe('certain');
 });
 
+test('a pause says nothing of a list that came whole; one still short of its renames is uncertain through it, not growing', async () => {
+    const whole = createGitHub({ pageSize: 10 });
+    whole.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    const complete = await openWithAllowanceGoneByList(whole);
+    expect(complete.model.listEnd).toBe('certain');
+
+    const renaming = createGitHub({ pageSize: 10 });
+    renaming.file({ path: 'moved.ts', changeType: 'RENAMED', previousPath: 'old.ts', before: 'was', after: 'is' });
+    const held = await openWithAllowanceGoneByList(renaming);
+    expect(held.model.listEnd).toBe('uncertain');
+});
+
 test('how a file gone from the diff came and went is read once, once the list is certain, and only for a file with an unresolved thread on it', async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
@@ -783,6 +795,40 @@ test('how a file gone from the diff came and went is read once, once the list is
     await settled(model);
     await Bun.sleep(10);
     expect(queries()).toHaveLength(1);
+});
+
+test('how a file gone from the diff came and went waits out a pause, whether it was refused or never asked, and is read at the reset', async () => {
+    const refused = createGitHub({ pageSize: 10 });
+    refused.setThreads([threadOn('gone.ts', 'T1')]);
+    refused.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
+    refused.rateLimit('ReviewGoneFileHistory');
+    const first = open(uniqueLogin(), refused);
+    await waitUntil(() => first.model.pausedUntil !== null, { timeoutMs: 2000 });
+    refused.rateLimit(null);
+    await first.session.clock.advance((first.model.pausedUntil ?? 0) - first.session.clock.now());
+    await waitUntil(() => first.model.goneHistory.size > 0, { timeoutMs: 2000 });
+
+    // The answer to the threads, the last read, leaves only what's kept for edits: nothing else would show a pause.
+    const unasked = createGitHub({ pageSize: 10 });
+    unasked.setThreads([threadOn('gone.ts', 'T1')]);
+    unasked.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
+    let release = () => {};
+    const heldThreads = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const second = open(uniqueLogin(), unasked, request =>
+        request.operation === 'PullRequestReviewThreads' ? heldThreads : null,
+    );
+    await waitUntil(() => second.model.listComplete, { timeoutMs: 2000 });
+    second.session.github.graphqlRemaining = EDIT_RESERVE;
+    second.session.github.holdIf = null;
+    release();
+    await waitUntil(() => second.model.pausedUntil !== null, { timeoutMs: 2000 });
+    expect(second.session.operations()).not.toContain('ReviewGoneFileHistory');
+
+    second.session.github.graphqlRemaining = 5000;
+    await second.session.clock.advance((second.model.pausedUntil ?? 0) - second.session.clock.now());
+    await waitUntil(() => second.model.goneHistory.size > 0, { timeoutMs: 2000 });
 });
 
 test('nothing is asked of a pull request with no file gone, nor of one whose list is capped, and a failure only leaves the reason out', async () => {
@@ -2034,6 +2080,23 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     }
 }
 
+/** Opened with the answer to the list leaving only what's kept for edits, which pauses reading once it came. */
+async function openWithAllowanceGoneByList(github: ReturnType<typeof createGitHub>) {
+    let release = () => {};
+    const heldList = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const opened = open(uniqueLogin(), github, request =>
+        request.operation === 'PullRequestReviewFiles' ? heldList : null,
+    );
+    await waitUntil(() => opened.session.operations().includes('PullRequestReviewFiles'), { timeoutMs: 2000 });
+    opened.session.github.graphqlRemaining = EDIT_RESERVE;
+    opened.session.github.holdIf = null;
+    release();
+    await waitUntil(() => opened.model.pausedUntil !== null && opened.model.listComplete, { timeoutMs: 2000 });
+    return opened;
+}
+
 function open(login: string, github: ReturnType<typeof createGitHub>, holdIf?: TestHold) {
     const session = createTestSession({ login, answer: github.answer, answerRest: github.answerRest });
     setIndexedDbPersistence(session.container);
@@ -2076,6 +2139,7 @@ function threadOn(path: string, id: string, bodies: readonly string[] = ['<p>Why
             url: `https://github.com/acme/web/pull/7#${id}-${index}`,
             diffHunk: '@@ -1 +1 @@\n+const a = 1;',
             outdated: false,
+            state: 'SUBMITTED',
             originalCommit: { oid: 'c0ffee00', abbreviatedOid: 'c0ffee0' },
             pullRequestReview: null,
         })),

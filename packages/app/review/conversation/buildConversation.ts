@@ -9,7 +9,7 @@ export type ConversationEntry =
     | {
           readonly kind: 'comment';
           readonly id: string;
-          readonly comment: Pick<ReviewThreadComment, 'author' | 'bodyHTML' | 'createdAt' | 'url'>;
+          readonly comment: Pick<ReviewThreadComment, 'author' | 'bodyHTML' | 'createdAt' | 'state' | 'url'>;
       }
     | {
           readonly kind: 'summary';
@@ -39,7 +39,12 @@ export function buildConversation({ comments, summaries, threads }: BuildConvers
         if (pendingBody === undefined) {
             timed.push({
                 at: Date.parse(createdAt),
-                entry: { kind: 'comment', id, comment: { author, url, createdAt, bodyHTML: bodyHtml } },
+                // A comment on the pull request itself is in no draft.
+                entry: {
+                    kind: 'comment',
+                    id,
+                    comment: { author, url, createdAt, bodyHTML: bodyHtml, state: 'SUBMITTED' },
+                },
             });
         }
     }

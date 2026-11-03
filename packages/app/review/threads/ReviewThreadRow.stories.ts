@@ -43,6 +43,41 @@ export const OnLeftHalf: Story = { args: { row: createThreadRowSample({ kind: 'o
 /** CR3: unified, indented to the code. */
 export const Unified: Story = { args: { row: createThreadRowSample({ kind: 'onLine', inline: 'unified' }) } };
 
+/** `Review / Comment · pending`: still in the reader's draft. */
+export const PendingComment: Story = {
+    args: {
+        row: createThreadRowSample({
+            kind: 'onLine',
+            inline: 'right',
+            thread: {
+                ...sampleThread(),
+                comments: sampleThread().comments.map((comment, index) =>
+                    index === 1 ? { ...comment, state: 'PENDING' as const } : comment,
+                ),
+            },
+        }),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getAllByText('Pending · in your draft')).toHaveLength(1);
+    },
+};
+
+/** A line not found in a file the pull request deletes: there's no "file now" for it to be missing from. */
+export const LineGoneFromDeletedFile: Story = {
+    args: {
+        row: createThreadRowSample({
+            kind: 'fileTop',
+            diffHunk: HUNK,
+            commit: COMMIT,
+            fileDeleted: true,
+            thread: sampleThread({ isOutdated: true }),
+        }),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/the pull request deletes this file/u)).toBeInTheDocument();
+    },
+};
+
 /** `· focused`: where N and ⇧N are (CR15). */
 export const Focused: Story = { args: { focused: true } };
 

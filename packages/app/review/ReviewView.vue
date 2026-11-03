@@ -678,8 +678,13 @@ async function focusFilter() {
 /** Shows lines of a gap, the row under it staying where it is on screen: it's what is being read. */
 function expandGap(gap: ReviewGapRow, count: number) {
   const below = gap.atFileEnd ? null : rows.value[rows.value.indexOf(gap) + 1];
-  const offset = below ? (list.value?.getRowOffset(below.key) ?? null) : null;
-  heldInExpanding = below && offset !== null ? { key: below.key, offset } : null;
+  // A thread's distance mark goes with the gap: it's the thread that stays.
+  const key =
+    below?.kind === 'distance'
+      ? getReviewThreadKey(getReviewRowPath(below.key), below.placement.thread.id)
+      : below?.key;
+  const offset = key === undefined ? null : (list.value?.getRowOffset(key) ?? null);
+  heldInExpanding = key !== undefined && offset !== null ? { key, offset } : null;
   files.value?.expandLines(getReviewRowPath(gap.key), getGapLinesToShow(gap, count));
   returnKeysToDiff();
 }
@@ -957,6 +962,7 @@ function readAgain() {
           :detail="detail"
           :review-threads="reviewThreads"
           :load-older="opened.loadAllComments"
+          :load-older-reviews="opened.loadAllReviews"
           @close="conversationShown = false"
           @jump-to-threads="jumpToReviewThreads"
         />

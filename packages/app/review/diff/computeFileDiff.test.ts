@@ -48,12 +48,12 @@ test('with whitespace hidden, a real change next to a whitespace change is still
 });
 
 test('an added file is all added, a deleted file all deleted', () => {
-    expect(computeFileDiff({ before: null, after: 'a\nb', ...exact })).toEqual({
+    expect(computeFileDiff({ before: null, after: 'a\nb', ...exact })).toMatchObject({
         before: [],
         after: ['a', 'b'],
         blocks: [{ beforeStart: 0, beforeEnd: 0, afterStart: 0, afterEnd: 2 }],
     });
-    expect(computeFileDiff({ before: 'a\nb\n', after: null, ...exact })).toEqual({
+    expect(computeFileDiff({ before: 'a\nb\n', after: null, ...exact })).toMatchObject({
         before: ['a', 'b'],
         after: [],
         blocks: [{ beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 0 }],
@@ -67,7 +67,7 @@ test('empty files have no lines and no change', () => {
         ['', null],
         [null, ''],
     ] as const) {
-        expect(computeFileDiff({ before, after, ...exact })).toEqual({ before: [], after: [], blocks: [] });
+        expect(computeFileDiff({ before, after, ...exact })).toMatchObject({ before: [], after: [], blocks: [] });
     }
 });
 
@@ -78,7 +78,7 @@ test('an added final newline is no change', () => {
 test('CRLF on both sides is no change and shows in no line', () => {
     const diff = computeFileDiff({ before: 'a\r\nb\r\n', after: 'a\r\nb\r\n', ...exact });
 
-    expect(diff).toEqual({ before: ['a', 'b'], after: ['a', 'b'], blocks: [] });
+    expect(diff).toMatchObject({ before: ['a', 'b'], after: ['a', 'b'], blocks: [] });
 });
 
 test('CRLF on both sides diffs the lines that changed', () => {

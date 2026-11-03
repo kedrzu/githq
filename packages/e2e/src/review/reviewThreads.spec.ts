@@ -49,6 +49,7 @@ const THREADS: readonly SampleReviewThread[] = [
         isOutdated: true,
         diffHunk: '@@ -98,2 +98,2 @@\n const unchanged98 = 98;\n-const unchanged102 = 102;\n const unchanged102 = 102;',
         comments: ['<p>Outdated and found</p>'],
+        pending: true,
     },
     {
         id: 'lost',
@@ -133,6 +134,8 @@ test('every thread shows where it belongs, hidden lines and collapsed files with
     // Outdated and found says how it was placed.
     await goToThread(review, 'Outdated and found');
     await expect(review.thread('Outdated and found')).toContainText('so the place is approximate');
+    await expect(review.thread('Outdated and found')).toContainText('Pending · in your draft');
+    await expect(review.thread('On its line')).not.toContainText('Pending · in your draft');
 
     // A renamed file's thread follows it.
     await goToThread(review, 'On a file renamed');
@@ -328,6 +331,22 @@ test('"Comments in collapsed files" hides them and is remembered; Expand to here
     const offset = await review.threadOffset('On a hidden line');
     await review.diff.getByRole('button', { name: 'Expand to here' }).first().click();
     await expect(review.diff.getByText(/further/u)).toHaveCount(0);
+    await expect.poll(() => review.threadOffset('On a hidden line')).toBeCloseTo(offset, 0);
+});
+
+test('Show all over a thread on a hidden line holds the thread where it is, as it lands on its line', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openThreads(page, github);
+    await goToThread(review, 'On a hidden line');
+    // Read from above the gap, which is what would stay put with nothing held.
+    await review.diff.evaluate(diff => diff.scrollBy(0, -200));
+    const offset = await review.threadOffset('On a hidden line');
+
+    await review.gapButton('Show all').first().click();
+
+    await expect(review.diff.getByText('67 lines further up')).toHaveCount(0);
     await expect.poll(() => review.threadOffset('On a hidden line')).toBeCloseTo(offset, 0);
 });
 

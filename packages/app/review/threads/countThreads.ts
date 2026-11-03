@@ -1,6 +1,6 @@
 import type { ThreadPlacement } from './placeThreads.js';
 
-/** What a file's header says of its threads (CR2, CR10): unresolved ones either `open`, `outdated` or `lineGone`. */
+/** What a file's header says of its threads (CR2, CR10, CR14): unresolved ones either `open`, `outdated` or `lineGone`; on a gone file all are `open`. */
 export interface ThreadCounts {
     readonly open: number;
     /** Those placed by finding their line again. */
@@ -19,12 +19,12 @@ export function countThreads(placements: readonly ThreadPlacement[]): ThreadCoun
     for (const { kind, thread } of placements) {
         if (thread.isResolved) {
             resolved++;
-        } else if (thread.isOutdated && kind === 'fileTop') {
-            lineGone++;
-        } else if (thread.isOutdated) {
-            outdated++;
-        } else {
+        } else if (!thread.isOutdated || kind === 'gone') {
             open++;
+        } else if (kind === 'fileTop') {
+            lineGone++;
+        } else {
+            outdated++;
         }
     }
 

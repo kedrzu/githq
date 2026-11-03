@@ -108,6 +108,16 @@ test('a gap all of whose lines show for threads is no row at all', () => {
     expect(rows.filter(row => row.kind === 'gap')).toEqual([]);
 });
 
+test('line endings converted from CRLF to LF are only whitespace with that hidden; the same endings on both sides are nothing', () => {
+    const converted = computeFileDiff({ before: 'one\r\ntwo\r\n', after: 'one\ntwo\n', ignoreWhitespace: true });
+    expect(buildFileLineRows({ path: A.path, diff: converted, layout: 'split' }).map(row => row.kind)).toEqual([
+        'onlyWhitespace',
+    ]);
+
+    const same = computeFileDiff({ before: 'one\r\ntwo\r\n', after: 'one\r\ntwo\r\n', ignoreWhitespace: true });
+    expect(buildFileLineRows({ path: A.path, diff: same, layout: 'split' }).map(row => row.kind)).toEqual(['gap']);
+});
+
 test('a file with nothing but hidden whitespace changes says so in place of a gap as long as the file, its thread with its line', () => {
     const before = 'one\ntwo\nthree\nfour\nfive\n';
     const after = 'one\n  two\nthree\nfour\nfive\n';

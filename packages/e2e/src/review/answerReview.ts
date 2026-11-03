@@ -33,6 +33,8 @@ export interface SampleReviewThread {
     readonly comments: readonly string[];
     /** The review its first comment came in; none by default. */
     readonly reviewId?: string;
+    /** Its comments are in the viewer's draft review. */
+    readonly pending?: boolean;
 }
 
 export interface AnswerReviewParams {
@@ -281,6 +283,7 @@ function toThreadNode(thread: SampleReviewThread) {
                 url: `https://github.com/acme/web/pull/15#discussion_${thread.id}_${index}`,
                 diffHunk: thread.diffHunk ?? '',
                 outdated: thread.isOutdated ?? false,
+                state: thread.pending ? ('PENDING' as const) : ('SUBMITTED' as const),
                 originalCommit: { oid: 'a91d03b00000', abbreviatedOid: 'a91d03b' },
                 pullRequestReview: index === 0 && thread.reviewId !== undefined ? { id: thread.reviewId } : null,
             })),
