@@ -1,0 +1,98 @@
+﻿2026-11-02T19:14:19.6484923Z Current runner version: '2.338.2'
+2026-11-02T19:14:19.6509708Z ##[group]Runner Image Provisioner
+2026-11-02T19:14:19.6510632Z Hosted Compute Agent
+2026-11-02T19:14:20.3725844Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-02T19:14:20.6668454Z Complete job name: deploy
+2026-11-02T19:14:20.7576626Z ##[group]Run actions/checkout@v5
+2026-11-02T19:14:20.7577973Z with:
+2026-11-02T19:14:20.7578606Z   submodules: recursive
+2026-11-02T19:14:20.7579336Z   repository: kedrzu/githq
+2026-11-02T19:14:20.7583904Z   token: ***
+2026-11-02T19:14:20.7584544Z   ssh-strict: true
+2026-11-02T19:14:23.9039730Z [command]/usr/bin/git log -1 --format=%H
+2026-11-02T19:14:23.9064616Z af427d1b0fb8f9fc00e6ee5d05578fbc19f1e2c0
+2026-11-02T19:14:23.9326011Z ##[group]Run oven-sh/setup-bun@v2
+2026-11-02T19:14:23.9326422Z with:
+2026-11-02T19:14:23.9326745Z   bun-version-file: package.json
+2026-11-02T19:14:23.9327372Z   no-cache: false
+2026-11-02T19:14:25.0779906Z 1.4.2+744846f84
+2026-11-02T19:14:25.0786263Z Using a cached version of Bun: 1.4.2+744846f84
+2026-11-02T19:14:25.0930010Z ##[group]Run bash setup.build.sh
+2026-11-02T19:14:25.0930610Z [36;1mbash setup.build.sh[0m
+2026-11-02T19:14:25.0952741Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:14:25.0953199Z ##[endgroup]
+2026-11-02T19:14:25.1028443Z 
+2026-11-02T19:15:00.4836857Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+2026-11-02T19:15:02.5719515Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+2026-11-02T19:15:02.5927328Z ##[group]Run bunx playwright install-deps chromium
+2026-11-02T19:15:02.5928265Z [36;1mbunx playwright install-deps chromium[0m
+2026-11-02T19:15:02.5942616Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:15:15.6287114Z 
+2026-11-02T19:15:15.6287441Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-02T19:15:16.7579663Z ##[group]Run bun run codegen
+2026-11-02T19:15:16.7580117Z [36;1mbun run codegen[0m
+2026-11-02T19:15:16.7580570Z [36;1mgit diff --exit-code[0m
+2026-11-02T19:15:20.2156909Z   Recoverable time:  <1ms
+2026-11-02T19:15:20.2215822Z ##[group]Run bun nx run-many -t typecheck --exclude='@nzyme/*' --skip-nx-cache
+2026-11-02T19:15:20.2216978Z [36;1mbun nx run-many -t typecheck --exclude='@nzyme/*' --skip-nx-cache[0m
+2026-11-02T19:15:20.2237731Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:15:42.6568714Z   Recoverable time:  <1ms
+2026-11-02T19:15:42.6783036Z ##[group]Run bun run lint:check
+2026-11-02T19:15:42.6783469Z [36;1mbun run lint:check[0m
+2026-11-02T19:15:42.6797823Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:15:46.2640556Z Finished in 3.5s on 785 files with 280 rules using 4 threads.
+2026-11-02T19:15:50.8219474Z ##[group]Run bun run format:check
+2026-11-02T19:15:50.8219913Z [36;1mbun run format:check[0m
+2026-11-02T19:15:50.8234771Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:15:57.0937802Z [FormatMarkdownCommand] Checked 57 markdown file(s), 0 changed
+2026-11-02T19:15:57.1120589Z ##[group]Run bun run tests
+2026-11-02T19:15:57.1120999Z [36;1mbun run tests[0m
+2026-11-02T19:15:57.1135479Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:15:57.1135857Z ##[endgroup]
+2026-11-02T19:17:09.1642795Z  5027 expect() calls
+2026-11-02T19:17:09.1643199Z Ran 907 tests across 102 files. [72.04s]
+2026-11-02T19:17:09.1761948Z ##[group]Run bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
+2026-11-02T19:17:09.1762513Z [36;1mbun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache[0m
+2026-11-02T19:17:09.1776751Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:18:33.2520956Z 
+2026-11-02T19:18:33.2521054Z   Recommendations:
+2026-11-02T19:18:33.2521386Z     - Cache: drop --skip-nx-cache to restore unchanged tasks instantly.
+2026-11-02T19:18:33.2521815Z     - Speed up or split the longest tasks on the critical path:
+2026-11-02T19:18:33.2521931Z         @githq/app:test:stories    1m 23s
+2026-11-02T19:18:33.2533681Z ##[error]Process completed with exit code 1.
+2026-11-02T19:18:33.2626389Z ##[group]Run actions/upload-artifact@v4
+2026-11-02T19:18:33.2626502Z with:
+2026-11-02T19:18:33.2626608Z   name: e2e-results
+2026-11-02T19:18:33.2626730Z   path: packages/e2e/test-results/
+2026-11-02T19:18:33.2626839Z   if-no-files-found: ignore
+2026-11-02T19:18:33.2626935Z   compression-level: 6
+2026-11-02T19:18:33.2627216Z   overwrite: false
+2026-11-02T19:18:33.2627339Z   include-hidden-files: false
+2026-11-02T19:18:33.2627428Z ##[endgroup]
+2026-11-02T19:18:33.4296772Z (node:4915) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T19:18:33.4297168Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T19:18:33.4311885Z No files were found with the provided path: packages/e2e/test-results/. No artifacts will be uploaded.
+2026-11-02T19:18:33.4574966Z Post job cleanup.
+2026-11-02T19:18:33.5487181Z [command]/usr/bin/git version
+2026-11-02T19:18:33.5527439Z git version 2.56.0
+2026-11-02T19:18:33.5576873Z Temporarily overriding HOME='/home/runner/work/_temp/874a0ba7-c27c-4199-b70c-59213f713f5d' before making global git config changes
+2026-11-02T19:18:33.5578394Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T19:18:33.5583132Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/githq/githq
+2026-11-02T19:18:33.5628555Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T19:18:33.5665833Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T19:18:33.5981980Z Entering 'nzyme'
+2026-11-02T19:18:33.6057273Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T19:18:33.6083554Z http.https://github.com/.extraheader
+2026-11-02T19:18:33.6095655Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-02T19:18:33.6132321Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T19:18:33.6347199Z Entering 'nzyme'
+2026-11-02T19:18:33.6371211Z http.https://github.com/.extraheader
+2026-11-02T19:18:33.6429874Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T19:18:33.6500676Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T19:18:33.6692793Z Entering 'nzyme'
+2026-11-02T19:18:33.6709209Z file:/home/runner/work/githq/githq/.git/modules/nzyme/config	remote.origin.url
+2026-11-02T19:18:33.6742466Z [command]/usr/bin/git config --file /home/runner/work/githq/githq/.git/modules/nzyme/config --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T19:18:33.6907538Z Evaluate and set environment url
+2026-11-02T19:18:33.6910669Z Evaluated environment url: https://githq.dev
+2026-11-02T19:18:33.6911462Z Cleaning up orphan processes
+2026-11-02T19:18:33.7233910Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
