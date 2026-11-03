@@ -2594,6 +2594,15 @@ export type RepositoryMetadataQuery = {
     } | null;
 };
 
+export type RepositoryOpenCountsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+}>;
+
+export type RepositoryOpenCountsQuery = {
+    repository: { issues: { totalCount: number }; pullRequests: { totalCount: number } } | null;
+};
+
 export type RepositoryPullRequestsQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -10059,6 +10068,18 @@ fragment RepositoryUserFields on User {
   name
   avatarUrl
 }`);
+export const RepositoryOpenCountsDocument = new TypedDocumentString(`
+    query RepositoryOpenCounts($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    issues(states: OPEN) {
+      totalCount
+    }
+    pullRequests(states: OPEN) {
+      totalCount
+    }
+  }
+}
+    `);
 export const RepositoryPullRequestsDocument = new TypedDocumentString(`
     query RepositoryPullRequests($owner: String!, $name: String!, $states: [PullRequestState!]!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -11537,6 +11558,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositoryMetadataQuery>;
+        },
+        RepositoryOpenCounts(
+            variables: RepositoryOpenCountsQueryVariables,
+            options?: C,
+        ): Promise<RepositoryOpenCountsQuery> {
+            return requester<RepositoryOpenCountsQuery, RepositoryOpenCountsQueryVariables>(
+                RepositoryOpenCountsDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryOpenCountsQuery>;
         },
         RepositoryPullRequests(
             variables: RepositoryPullRequestsQueryVariables,
