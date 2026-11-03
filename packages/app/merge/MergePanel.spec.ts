@@ -6,6 +6,18 @@ import * as stories from './MergePanel.stories.js';
 
 const {
     AlreadyMerged,
+    AutoMergeInStack,
+    AutoMergeNotForViewer,
+    AutoMergeOffered,
+    AutoMergeOn,
+    InQueue,
+    QueueLocked,
+    QueueMergeable,
+    QueueNoEstimate,
+    QueueQueued,
+    QueueReadChangesMethod,
+    QueueReady,
+    QueueUnmergeable,
     Behind,
     BeingMerged,
     BeingRead,
@@ -497,6 +509,144 @@ test('PM22, D12: mergeability not known yet — no red, GitHub is computing, and
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+});
+
+test('PM10, D12: not met and auto-merge allowed — ⌘↵ turns it on with the method chosen, and no text unless edited', async () => {
+    await AutoMergeOffered.run();
+
+    await expect.element(panel()).toHaveTextContent("Can't merge yet");
+    await expect.element(panel()).toHaveTextContent('Merges by itself when these are met');
+    await expect.element(page.getByRole('button', { name: /Enable auto-merge/ })).toBeVisible();
+    await userEvent.keyboard('2');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Enable: {"method":"MERGE"}');
+});
+
+test('PM10: an edited title goes with it, and only what was edited', async () => {
+    await AutoMergeOffered.run();
+
+    await userEvent.keyboard('e');
+    const title = page.getByRole('textbox', { name: 'Commit title' });
+    await expect.element(title).toHaveFocus();
+    await userEvent.fill(title, 'A better title');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect
+        .element(page.getByTestId('sent'))
+        .toHaveTextContent('Enable: {"method":"SQUASH","title":"A better title"}');
+});
+
+test('auto-merge is not offered to a viewer GitHub says may not enable it', async () => {
+    await AutoMergeNotForViewer.run();
+
+    await expect.element(page.getByRole('button', { name: /Enable auto-merge/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('never auto-merge on a stacked pull request, though viewerCanEnableAutoMerge reads true', async () => {
+    await AutoMergeInStack.run();
+
+    await expect.element(page.getByRole('button', { name: /Enable auto-merge/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('PM11: auto-merge on — who and how, the text GitHub holds and not editable; no merge offered, ⌘↵ turns it off', async () => {
+    await AutoMergeOn.run();
+
+    await expect.element(panel()).toHaveTextContent('Auto-merge is onSquash · enabled by mlaine 12 minutes ago');
+    await expect.element(panel()).toHaveTextContent('Retry Stripe webhook delivery, chosen when it went on (#477)');
+    await expect.element(panel()).toHaveTextContent('The message chosen when it went on.');
+    await expect.element(page.getByRole('button', { name: /^Edit/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Squash and merge/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Turn off auto-merge/ })).toBeVisible();
+    expect(panel().element().querySelectorAll('footer button')).toHaveLength(1);
+    await userEvent.keyboard('e');
+    await expect.element(page.getByRole('textbox', { name: 'Commit title' })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: disableAutoMerge');
+});
+
+test("PM14: ready on a queue branch — the method and text are the queue's, E is off, and ⌘↵ adds it as a merge, not a jump", async () => {
+    await QueueReady.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready for the queue');
+    await expect.element(panel()).toHaveTextContent('Squashset by the queue');
+    await expect.element(panel()).toHaveTextContent("Written by the queue. Text can't be set here");
+    await expect.element(panel()).toHaveTextContent('Jumping rebuilds those in progress');
+    await expect.element(page.getByRole('button', { name: /^Edit/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('e');
+    await expect.element(page.getByRole('textbox', { name: 'Commit title' })).not.toBeInTheDocument();
+
+    const add = page.getByRole('button', { name: /Add to queue/ });
+    await expect.element(add).toHaveAttribute('aria-keyshortcuts', 'Meta+Enter');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+});
+
+test('PM14, D12: ⇧⌘↵ jumps the queue, and nothing else does', async () => {
+    await QueueReady.run();
+
+    await expect.element(page.getByRole('button', { name: /Jump the queue/ })).toBeVisible();
+    await userEvent.keyboard('{Shift>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: jumpQueue');
+});
+
+test("PM9: the read changing a queue branch's method says nothing — it was never chosen", async () => {
+    await QueueReadChangesMethod.run();
+
+    await expect.element(panel()).toHaveTextContent('Squash');
+    document.querySelector<HTMLElement>('[tid="arrive"]')?.click();
+    await expect.element(panel()).toHaveTextContent('Rebaseset by the queue');
+    await expect.element(panel()).not.toHaveTextContent("isn't allowed");
+    await expect.element(panel()).not.toHaveTextContent('Now on');
+    expect(document.querySelector('[role="status"]')).toBeNull();
+});
+
+test('PM15: in the queue — where, its state and who added it; no merge offered and ⌘↵ does nothing; ⇧Q takes it out', async () => {
+    await InQueue.run();
+
+    await expect.element(panel()).toHaveTextContent('In the queue3rd · waiting for checks · about 12 min');
+    await expect.element(panel()).toHaveTextContent("Position3rd in main's queue");
+    await expect.element(panel()).toHaveTextContent('StateWaiting for checksadded by mlaine 9 minutes ago');
+    await expect.element(page.getByRole('button', { name: /Squash and merge/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Add to queue/ })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+
+    const out = page.getByRole('button', { name: /Take out of queue/ });
+    await expect.element(out).toHaveAttribute('aria-keyshortcuts', 'Shift+Q');
+    await userEvent.keyboard('{Shift>}Q{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+});
+
+test("PM16: each of GitHub's queue states on one line of the verdict, with no estimate when GitHub gives none", async () => {
+    await QueueQueued.run();
+    await expect.element(panel()).toHaveTextContent('In the queue5th · queued · about 40 min');
+});
+
+test('PM16: no estimate when GitHub gives none', async () => {
+    await QueueNoEstimate.run();
+    await expect.element(panel()).toHaveTextContent('In the queue3rd · waiting for checksPosition');
+});
+
+test('PM16: mergeable, first — merging next', async () => {
+    await QueueMergeable.run();
+    await expect.element(panel()).toHaveTextContent('In the queue1st · mergeable · merging next');
+});
+
+test('PM16: locked for merging', async () => {
+    await QueueLocked.run();
+    await expect.element(panel()).toHaveTextContent('In the queue1st · locked for merging');
+});
+
+test("PM16: unmergeable — in the queue, won't merge", async () => {
+    await QueueUnmergeable.run();
+    await expect.element(panel()).toHaveTextContent("In the queue, won't merge2nd · unmergeable");
 });
 
 function panel() {

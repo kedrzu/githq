@@ -68,6 +68,10 @@ defineProps<{
   height: 13px;
 }
 
+.mergeCondition_icon_accent {
+  color: $color-accent;
+}
+
 .mergeCondition_icon_danger {
   color: $color-red;
 }

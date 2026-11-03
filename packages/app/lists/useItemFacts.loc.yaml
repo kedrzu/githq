@@ -55,3 +55,21 @@ newCommit:
   en: Not merged · new commit
 outcomeUnknown:
   en: Merge sent · outcome not known yet
+inQueue:
+  en: in queue · {place}
+inQueueAbout:
+  en: in queue · {place} · {about}
+inQueueWontMerge:
+  en: in queue, won't merge · {place}
+autoMergeOn:
+  en: auto-merge on · {method}
+autoMergeWaitingForChecks:
+  en: auto-merge on · {method} · waiting for checks
+autoMergeWaitingForReview:
+  en: auto-merge on · {method} · waiting for review
+methodSquash:
+  en: squash
+methodMerge:
+  en: merge commit
+methodRebase:
+  en: rebase

@@ -107,3 +107,30 @@ export const MergeOutcomeUnknown: Story = {
         await expect(within(canvasElement).getByText('Merge sent · outcome not known yet')).toBeVisible();
     },
 };
+
+/** PM37 on a board: in a merge queue, the same line as the row's. */
+export const InMergeQueue: Story = {
+    args: {
+        item: {
+            ...READY,
+            mergeQueueEntry: {
+                position: 3,
+                state: 'AWAITING_CHECKS',
+                estimatedTimeToMerge: 12 * 60,
+                enqueuedAt: '2026-11-03T00:00:00Z',
+                enqueuer: 'mlaine',
+                jump: false,
+            },
+        },
+    },
+};
+
+/** PM37 on a board: under auto-merge, the same line as the row's. */
+export const AutoMergeOn: Story = {
+    args: {
+        item: {
+            ...READY,
+            autoMerge: { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: 'mlaine', commitHeadline: null },
+        },
+    },
+};

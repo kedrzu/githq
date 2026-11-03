@@ -26,7 +26,10 @@ export interface EditPermissions {
      * merges with it (stacked PRs D11) — also while it is being merged, to see that (PM24).
      */
     readonly mergePanel: boolean;
-    /** Send a merge: what {@link mergePanel} allows, while it is not being merged already. */
+    /**
+     * Send a merge, what {@link mergePanel} allows, while it is not being merged already — and so turn auto-merge on
+     * or off, jump the merge queue or leave it.
+     */
     readonly merge: boolean;
 }
 

@@ -9,7 +9,7 @@ import type { MergeOptions } from './MergeTypes.js';
 /** The repository's settings {@link getMergeMethods} starts from. */
 export type MergeSettings = Pick<
     RepositoryMetadata,
-    'mergeCommitAllowed' | 'squashMergeAllowed' | 'rebaseMergeAllowed' | 'viewerDefaultMergeMethod'
+    'mergeCommitAllowed' | 'squashMergeAllowed' | 'rebaseMergeAllowed' | 'viewerDefaultMergeMethod' | 'autoMergeAllowed'
 >;
 
 /** The base branch's rules {@link getMergeMethods} narrows the settings by, as the merge panel's read brings them. */

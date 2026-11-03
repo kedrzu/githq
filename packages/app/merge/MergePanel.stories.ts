@@ -4,7 +4,7 @@ import { expect, screen, userEvent, waitFor } from 'storybook/test';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
@@ -32,6 +32,7 @@ const ALL_METHODS: MergeSettings = {
     squashMergeAllowed: true,
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
+    autoMergeAllowed: false,
 };
 
 const SQUASH_ONLY: MergeSettings = { ...ALL_METHODS, mergeCommitAllowed: false, rebaseMergeAllowed: false };
@@ -59,6 +60,7 @@ const OPTIONS: MergeOptions = {
     requiresLinearHistory: false,
     viewerCanMergeAsAdmin: false,
     viewerCanEnableAutoMerge: false,
+    autoMergeBody: null,
     mergeQueueMethod: null,
     checks: SAMPLE_PASSED_CHECKS,
     headCommit: { oid: PR.headRefOid, headline: 'Retry Stripe webhook delivery on 5xx', author: 'kedrzu' },
@@ -178,6 +180,10 @@ const Harness = defineComponent({
                         if (step !== 'resolveConflicts') {
                             advancing.value = step;
                         }
+                    },
+                    onEnableAutoMerge: (submission: MergeSubmission) => {
+                        sent.value = `Enable: ${JSON.stringify(submission.request)}`;
+                        advancing.value = 'enableAutoMerge';
                     },
                     onVisit: (url: string) => (sent.value = `Visit: ${url}`),
                     onMerge: (submission: MergeSubmission) => {
@@ -554,3 +560,103 @@ async function openPanelKey(key: string) {
     await waitFor(() => expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true));
     await userEvent.keyboard(key);
 }
+
+/** Waiting for the required checks and a review, on a repository that allows auto-merge. */
+const NOT_MET: PullRequestItem = {
+    ...PR,
+    reviewDecision: 'REVIEW_REQUIRED',
+    reviewRequests: [{ kind: 'user', login: 'dkim' }],
+    mergeStateStatus: 'BLOCKED',
+    checks: { state: 'PENDING', passing: 7, failing: 0, pending: 2 },
+};
+const AUTO_MERGE_SETTINGS: MergeSettings = { ...ALL_METHODS, autoMergeAllowed: true };
+const AUTO_MERGE_OPTIONS: MergeOptions = { ...OPTIONS, viewerCanEnableAutoMerge: true };
+
+/** PM10: not met, and auto-merge may wait for it — the method and the text chosen now, ⌘↵ turns it on. */
+export const AutoMergeOffered: Story = {
+    args: { pr: NOT_MET, settings: AUTO_MERGE_SETTINGS, options: AUTO_MERGE_OPTIONS },
+};
+
+/** Auto-merge allowed by the repository, but not for this viewer: as with nothing to offer. */
+export const AutoMergeNotForViewer: Story = {
+    args: { pr: NOT_MET, settings: AUTO_MERGE_SETTINGS },
+};
+
+/** Never for a stacked pull request: GitHub refuses it, though `viewerCanEnableAutoMerge` reads true. */
+export const AutoMergeInStack: Story = {
+    args: {
+        pr: { ...NOT_MET, stack: { id: 'S_1', number: 1, size: 2, position: 1 } },
+        settings: AUTO_MERGE_SETTINGS,
+        options: AUTO_MERGE_OPTIONS,
+    },
+};
+
+/** PM11: auto-merge on — who enabled it and how, the text fixed; ⌘↵ turns it off. */
+export const AutoMergeOn: Story = {
+    args: {
+        pr: {
+            ...NOT_MET,
+            autoMerge: {
+                mergeMethod: 'SQUASH',
+                enabledAt: new Date(Date.now() - 12 * 60_000).toISOString(),
+                enabledBy: 'mlaine',
+                commitHeadline: 'Retry Stripe webhook delivery, chosen when it went on (#477)',
+            },
+        },
+        settings: AUTO_MERGE_SETTINGS,
+        options: { ...AUTO_MERGE_OPTIONS, autoMergeBody: 'The message chosen when it went on.' },
+    },
+};
+
+/** PM14: ready on a queue's branch — method and text the queue's; ⌘↵ adds it, ⇧⌘↵ jumps. */
+export const QueueReady: Story = {
+    args: { pr: { ...PR, isMergeQueueEnabled: true }, options: { ...OPTIONS, mergeQueueMethod: 'SQUASH' } },
+};
+
+/** PM9 doesn't speak on a queue's branch: the read says it rebases, the panel having started on squash; it was never chosen. */
+export const QueueReadChangesMethod: Story = {
+    args: {
+        pr: { ...PR, isMergeQueueEnabled: true },
+        options: { ...OPTIONS, mergeQueueMethod: 'REBASE' },
+        readLater: true,
+    },
+};
+
+const ENTRY: PullRequestQueueEntry = {
+    position: 3,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: 12 * 60,
+    enqueuedAt: new Date(NOW - 9 * 60_000).toISOString(),
+    enqueuer: 'mlaine',
+    jump: false,
+};
+
+function inQueue(entry: Partial<PullRequestQueueEntry>): PullRequestItem {
+    return { ...PR, isMergeQueueEnabled: true, mergeQueueEntry: { ...ENTRY, ...entry } };
+}
+
+/** PM15: in the queue — position, state, who added it; no primary, and leaving is here (⇧Q). */
+export const InQueue: Story = { args: { pr: inQueue({}) } };
+
+/** PM16: queued, far back. */
+export const QueueQueued: Story = {
+    args: { pr: inQueue({ position: 5, state: 'QUEUED', estimatedTimeToMerge: 40 * 60 }) },
+};
+
+/** PM16: no estimate when GitHub gives none. */
+export const QueueNoEstimate: Story = { args: { pr: inQueue({ estimatedTimeToMerge: null }) } };
+
+/** PM16: mergeable, first in line. */
+export const QueueMergeable: Story = {
+    args: { pr: inQueue({ position: 1, state: 'MERGEABLE', estimatedTimeToMerge: null }) },
+};
+
+/** PM16: locked for merging. */
+export const QueueLocked: Story = {
+    args: { pr: inQueue({ position: 1, state: 'LOCKED', estimatedTimeToMerge: null }) },
+};
+
+/** PM16: GitHub says it won't merge. */
+export const QueueUnmergeable: Story = {
+    args: { pr: inQueue({ position: 2, state: 'UNMERGEABLE', estimatedTimeToMerge: null }) },
+};

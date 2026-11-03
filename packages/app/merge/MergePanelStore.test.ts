@@ -737,6 +737,7 @@ function mergeOptionsAnswer(head: string): TestGraphQLAnswer {
             squashBody: 'Fix it',
             viewerCanMergeAsAdmin: false,
             viewerCanEnableAutoMerge: false,
+            autoMergeBody: null,
             headCommit: { nodes: [{ commit: { oid: head, messageHeadline: 'New', author: null } }] },
             baseRef: { target: { oid: 'base-oid' }, rules: null, branchProtectionRule: null },
             statusCheckRollup: null,

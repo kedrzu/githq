@@ -14,6 +14,8 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { getStackMerge } from '@/merge/stack/getStackMerge.js';
 import { getStackMergeEnd } from '@/merge/stack/getStackMergeEnd.js';
@@ -214,6 +216,7 @@ const merging = injectContext(MergeContext, { optional: true });
 // Where the screen merges, the app's local copy is there: ⇧M's title reads the pull request's way forward from it.
 const items = merging ? useService(ItemStore) : null;
 const getVerdict = usePullRequestVerdicts();
+const repositories = useService(RepositoryStore);
 
 /** Each top-level entry and those shown nested under it, in order, by the entry's key. */
 const shownByRow = computed(() => {
@@ -470,7 +473,12 @@ function getMergeTitle(target: MergeTarget): string {
   }
 
   const pr = items?.get(target.id);
-  return pr?.kind === 'pullRequest' ? getVerdict(pr, null).forwardTitle : t(l.merge);
+  if (pr?.kind !== 'pullRequest') {
+    return t(l.merge);
+  }
+
+  const autoMergeAllowed = isAutoMergeAllowed(repositories.get(pr.repository.nameWithOwner), null);
+  return getVerdict(pr, null, autoMergeAllowed).forwardTitle;
 }
 
 function getStackMergeTitle(description: StackDescription): string {

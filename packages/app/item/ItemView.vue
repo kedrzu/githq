@@ -53,6 +53,7 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import { countMergeChecks } from '@/merge/countMergeChecks.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
 import { Browser } from '@/services/Browser.js';
@@ -84,32 +85,38 @@ import PullRequestReviews from './PullRequestReviews.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 
-const props = defineProps<{
-  /** The item's row: what shows at once. */
-  item: Item;
-  /** Body, comments, checks, reviews and every project field; `null` while being read. */
-  detail: ItemDetail | null;
-  arrangement: ItemArrangement;
-  /** Where the item is in the list it was opened from (1-based); `null` when it is not in one. */
-  position?: { index: number; count: number } | null;
-  /** The issues a pull request closes, those known. */
-  closes?: readonly Item[];
-  /** Epoch ms the ages are counted to. */
-  now: number;
-  /** Reads the comments not read yet. */
-  loadAllComments: () => Promise<void>;
-  /** What the user may change and the pickers offer; without it the view only shows. */
-  editing?: ItemEditing | null;
-  /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
-  stack?: StackDescription | null;
-  /** What `K` and `J` open from it: the stack's map marks those rows. */
-  neighbours?: StackNeighbours | null;
-  /**
-   * A pull request's checks with which of them the base branch requires, once its merge options are read (merging
-   * D13): a failing required one is tagged, and the standing weighs only the required ones, as the merge panel does.
-   */
-  mergeChecks?: readonly MergeCheck[] | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    /** The item's row: what shows at once. */
+    item: Item;
+    /** Body, comments, checks, reviews and every project field; `null` while being read. */
+    detail: ItemDetail | null;
+    arrangement: ItemArrangement;
+    /** Where the item is in the list it was opened from (1-based); `null` when it is not in one. */
+    position?: { index: number; count: number } | null;
+    /** The issues a pull request closes, those known. */
+    closes?: readonly Item[];
+    /** Epoch ms the ages are counted to. */
+    now: number;
+    /** Reads the comments not read yet. */
+    loadAllComments: () => Promise<void>;
+    /** What the user may change and the pickers offer; without it the view only shows. */
+    editing?: ItemEditing | null;
+    /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
+    stack?: StackDescription | null;
+    /** What `K` and `J` open from it: the stack's map marks those rows. */
+    neighbours?: StackNeighbours | null;
+    /**
+     * A pull request's checks with which of them the base branch requires, once its merge options are read (merging
+     * D13): a failing required one is tagged, and the standing weighs only the required ones, as the merge panel does.
+     */
+    mergeChecks?: readonly MergeCheck[] | null;
+    /** The viewer may turn auto-merge on, as its merge options said; `null` until they are read. */
+    viewerCanEnableAutoMerge?: boolean | null;
+  }>(),
+  // Vue reads a boolean prop not given as `false`: not given is not known.
+  { viewerCanEnableAutoMerge: null },
+);
 
 const emit = defineEmits<{
   close: [];
@@ -204,6 +211,7 @@ const requiredCheckIds = computed(() =>
   props.mergeChecks ? props.mergeChecks.filter(check => check.isRequired).map(check => check.id) : null,
 );
 const checkCounts = computed(() => (props.mergeChecks ? countMergeChecks(props.mergeChecks) : null));
+const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.editing?.metadata, props.viewerCanEnableAutoMerge));
 const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issueType : null));
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
@@ -385,6 +393,7 @@ function getEditCommands(): Command[] {
     edit: request => emit('edit', request),
     merge: () => emit('merge'),
     mergeChecks: checkCounts.value,
+    viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
     setField: (place, field, value) =>
       emit('edit', { kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value }),
     inline: {
@@ -696,6 +705,7 @@ function getProjectOptions(): CommandOption[] {
               :detail="prDetail"
               :can-merge="permissions ? permissions.mergePanel : null"
               :checks="checkCounts"
+              :auto-merge-allowed="autoMergeAllowed"
               :record="merging?.getRecord(pr.id) ?? null"
               @merge="emit('merge')"
             />

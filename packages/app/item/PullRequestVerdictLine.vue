@@ -58,6 +58,12 @@ withDefaults(
   padding-inline: 14px;
 }
 
+.pullRequestVerdictLine_accent {
+  --pullRequestVerdictLine-color: #{$color-accent};
+
+  background: rgba($color-accent, 0.08);
+}
+
 .pullRequestVerdictLine_success {
   --pullRequestVerdictLine-color: #{$color-green};
 

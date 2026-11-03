@@ -101,6 +101,66 @@ export const PullRequestBeingMerged: Story = {
     },
 };
 
+/** PM38: in the merge queue — the verdict the panel says, "Queue…" opening the panel. */
+export const PullRequestInQueue: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: {
+            ...F3_PULL_REQUEST,
+            isMergeQueueEnabled: true,
+            mergeQueueEntry: {
+                position: 3,
+                state: 'AWAITING_CHECKS',
+                estimatedTimeToMerge: 12 * 60,
+                enqueuedAt: '2026-11-03T00:00:00Z',
+                enqueuer: 'mlaine',
+                jump: false,
+            },
+        },
+    },
+};
+
+/** PM38: ready on a queue's branch — "Queue…" leads to adding it. */
+export const PullRequestQueueReady: Story = {
+    args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isMergeQueueEnabled: true } },
+};
+
+/** PM38: auto-merge on — the verdict the panel says, "Auto-merge…" opening the panel. */
+export const PullRequestAutoMergeOn: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: {
+            ...F3_PULL_REQUEST,
+            autoMerge: {
+                mergeMethod: 'SQUASH',
+                enabledAt: new Date(Date.now() - 12 * 60_000).toISOString(),
+                enabledBy: 'mlaine',
+                commitHeadline: null,
+            },
+        },
+    },
+};
+
+/** PM38: not met on a repository that allows auto-merge: "Auto-merge…", as the panel offers it. */
+export const PullRequestAutoMergeOffered: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: {
+            ...F3_PULL_REQUEST,
+            mergeStateStatus: 'BLOCKED',
+            reviewDecision: 'REVIEW_REQUIRED',
+            checks: { state: 'PENDING', passing: 7, failing: 0, pending: 2 },
+        },
+        editing: {
+            ...SAMPLE_MAINTAINER_EDITING,
+            metadata: SAMPLE_MAINTAINER_EDITING.metadata && {
+                ...SAMPLE_MAINTAINER_EDITING.metadata,
+                autoMergeAllowed: true,
+            },
+        },
+    },
+};
+
 /**
  * PM38: approved, one check failing and one running that the base branch doesn't require — GitHub's status says the
  * requirements are met. Once the merge options are read, the standing says what the merge panel says: ready.

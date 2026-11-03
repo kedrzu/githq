@@ -21,7 +21,11 @@ const {
     PullRequestDraft,
     PullRequestFailing,
     PullRequestMergeabilityUnknown,
+    PullRequestAutoMergeOffered,
+    PullRequestAutoMergeOn,
+    PullRequestInQueue,
     PullRequestOptionalFailing,
+    PullRequestQueueReady,
     PullRequestReady,
     StackOfTenInModal,
     StackOfTenInPanel,
@@ -439,6 +443,39 @@ test('PM38: checks still running — the standing draws its Checks line with the
     await expect.element(page.getByText('3 running', { exact: false })).toBeVisible();
     const label = [...document.querySelectorAll('dt')].find(term => term.textContent.trim() === 'Checks');
     expect(label?.querySelector('svg')?.classList.contains('lucide-loader')).toBe(true);
+});
+
+test('PM38: in the queue the standing says what the panel says, and "Queue…" opens it', async () => {
+    await PullRequestInQueue.run();
+    const { onMerge } = PullRequestInQueue.args;
+
+    await expect
+        .element(page.getByRole('heading', { name: /^In the queue/ }))
+        .toHaveTextContent('In the queue3rd · waiting for checks · about 12 min');
+    await userEvent.click(page.getByRole('button', { name: 'Queue…' }));
+    expect(onMerge).toHaveBeenCalledOnce();
+});
+
+test('PM38: ready on a queue branch, "Queue…" and the same verdict as the panel', async () => {
+    await PullRequestQueueReady.run();
+
+    await expect.element(page.getByRole('heading', { name: /^Ready for the queue/ })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Queue…' })).toBeVisible();
+});
+
+test('PM38: auto-merge on, "Auto-merge…" and the same verdict as the panel', async () => {
+    await PullRequestAutoMergeOn.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Auto-merge is on/ }))
+        .toHaveTextContent('Auto-merge is onSquash · enabled by mlaine 12 minutes ago');
+    await expect.element(page.getByRole('button', { name: 'Auto-merge…' })).toBeVisible();
+});
+
+test('PM38: not met where auto-merge may wait for it, "Auto-merge…" leads to the panel offering it', async () => {
+    await PullRequestAutoMergeOffered.run();
+
+    await expect.element(page.getByRole('button', { name: 'Auto-merge…' })).toBeVisible();
 });
 
 test("PM38: before the merge options are read, the row's failing check holds the standing", async () => {

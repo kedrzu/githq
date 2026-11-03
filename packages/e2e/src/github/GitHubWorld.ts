@@ -1159,6 +1159,7 @@ export class GitHubWorld {
                     squashBody: texts.SQUASH.body,
                     viewerCanMergeAsAdmin: false,
                     viewerCanEnableAutoMerge: false,
+                    autoMergeBody: null,
                     // The commit pushed last, else the head as the author's, under the pull request's title.
                     headCommit: {
                         nodes: [

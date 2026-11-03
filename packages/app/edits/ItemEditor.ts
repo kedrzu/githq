@@ -438,6 +438,10 @@ function needsMetadata(request: EditRequest) {
         case 'addToProject':
         case 'draft':
         case 'updateBranch':
+        case 'enableAutoMerge':
+        case 'disableAutoMerge':
+        case 'jumpQueue':
+        case 'dequeue':
             return false;
         default:
             return assertNever(request);
@@ -500,6 +504,11 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
             return permissions.draft;
         case 'updateBranch':
             return permissions.updateBranch;
+        case 'enableAutoMerge':
+        case 'disableAutoMerge':
+        case 'jumpQueue':
+        case 'dequeue':
+            return permissions.merge;
         default:
             return assertNever(request);
     }

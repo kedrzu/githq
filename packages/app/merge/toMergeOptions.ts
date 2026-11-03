@@ -38,6 +38,7 @@ export function toMergeOptions(node: MergeOptionsNode): MergeOptions | null {
         requiresLinearHistory: toRequiresLinearHistory(node.baseRef),
         viewerCanMergeAsAdmin: node.viewerCanMergeAsAdmin,
         viewerCanEnableAutoMerge: node.viewerCanEnableAutoMerge,
+        autoMergeBody: node.autoMergeBody?.commitBody ?? null,
         mergeQueueMethod: toMergeQueueMethod(node.baseRef),
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], check => check && toMergeCheck(check)),
         headCommit: toHeadCommit(node.headCommit),

@@ -1,4 +1,4 @@
-<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). -->
+<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). -->
 <script lang="ts" setup>
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   CircleCheck,
   CircleDashed,
+  CircleOff,
   CircleX,
   Eye,
   GitBranch,
@@ -20,11 +21,14 @@ import {
   Hourglass,
   Info,
   Layers,
+  ListOrdered,
+  ListPlus,
   Loader,
   LoaderCircle,
   Lock,
   MessageSquareWarning,
   RefreshCw,
+  Timer,
 } from 'lucide-vue-next';
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
@@ -51,6 +55,7 @@ import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
 import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { capitalize } from '@/utils/capitalize.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { Browser } from '@/services/Browser.js';
 import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
@@ -65,6 +70,7 @@ import { getMergeEndLook } from './getMergeEndLook.js';
 import { getMergeMethods } from './getMergeMethods.js';
 import type { MergeSettings } from './getMergeMethods.js';
 import { getReasonTitle } from './getReasonTitle.js';
+import { isAutoMergeAllowed } from './isAutoMergeAllowed.js';
 import MergeChecks from './MergeChecks.vue';
 import MergeCondition from './MergeCondition.vue';
 import * as l from './MergePanel.loc.js';
@@ -80,6 +86,7 @@ import { getStackMergeRows } from './stack/getStackMergeRows.js';
 import { isWholeRangeBlocked } from './stack/isWholeRangeBlocked.js';
 import StackMergeMembers from './stack/StackMergeMembers.vue';
 import type { StackMerge, StackMergeView } from './stack/StackMergeTypes.js';
+import { useMergeQueueTexts } from './useMergeQueueTexts.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
@@ -133,8 +140,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** `⌘↵` or the primary: merge as shown. */
   merge: [submission: MergeSubmission];
-  /** `⌘↵` or the primary where it can't merge yet: the step towards the merge (merging D12). */
-  step: [step: MergeStep];
+  /** `⌘↵` or the primary where it can't merge yet: the step towards the merge (merging D12); or a step with a key of its own. */
+  step: [step: Exclude<MergeStep, 'enableAutoMerge'>];
+  /** `⌘↵` or the primary where auto-merge may wait for what isn't met: on, with the method and text as shown (PM10). */
+  enableAutoMerge: [submission: MergeSubmission];
   /** A link's key (`D`, `O`): opens the page on github.com in a new tab. */
   visit: [url: string];
   /** `↑` or `↓` in a stack: the line moves one open pull request earlier or later (stacked PRs D18). */
@@ -218,7 +227,9 @@ const titleField = useTemplateRef<InstanceType<typeof TextField>>('titleField');
 // While the merge is sent, the panel stays as it was (PM32a): being merged is drawn elsewhere from the first moment.
 const shownPr = computed(() => (props.sending ? { ...props.pr, merging: undefined } : props.pr));
 const counts = computed(() => (props.options ? countMergeChecks(props.options.checks) : null));
-const standing = usePullRequestVerdict(shownPr, counts);
+const autoMergeAllowed = computed(() => isAutoMergeAllowed(props.settings, props.options?.viewerCanEnableAutoMerge));
+const standing = usePullRequestVerdict(shownPr, counts, autoMergeAllowed);
+const queueTexts = useMergeQueueTexts();
 const prConditions = usePullRequestConditions(shownPr);
 
 const offered = computed(() =>
@@ -243,6 +254,12 @@ const editing = ref(false);
 const editWhenRead = ref(false);
 
 const merging = computed(() => shownPr.value.merging !== undefined);
+/** Its place in the merge queue, with one pull request going (stacks in a queue are told by the stack). */
+const queueEntry = computed(() => (several.value ? null : shownPr.value.mergeQueueEntry));
+/** The auto-merge turned on for it, with one pull request going. */
+const autoMerge = computed(() => (several.value ? null : shownPr.value.autoMerge));
+/** The text is fixed: GitHub holds the one chosen when auto-merge went on (PM11), or the queue writes it (PM14). */
+const textFixed = computed(() => autoMerge.value !== null || props.pr.isMergeQueueEnabled);
 /** How the last merge that did not end merged reads now: refused, a new commit, a method gone, or not known. */
 const end = computed(() => getMergeEnd(props.record, endPr.value, props.options));
 const endPr = computed(() => props.recordOf ?? props.pr);
@@ -335,13 +352,15 @@ const stackChecks = computed(() => {
   return isWholeRangeBlocked(view.merge) ? null : view.checks;
 });
 
+/** Adding to a merge queue is a merge, as far as the panel goes: GitHub puts it there (PM14). */
+const forwardMerges = computed(() => standing.forward === 'merge' || standing.forward === 'enqueue');
 /** Merging is the way forward: ⌘↵ merges (D6, D12). */
 const mergesNow = computed(() => {
   if (stackSays.value) {
     return stackSays.value.forward.kind === 'merge';
   }
 
-  return !merging.value && !outcomeUnknown.value && standing.forward === 'merge';
+  return !merging.value && !outcomeUnknown.value && forwardMerges.value;
 });
 /**
  * The step ⌘↵ takes instead of merging: the one asked for until it is done, else the way forward where it can't
@@ -357,10 +376,23 @@ const step = computed((): MergeStep | null => {
   }
 
   const forward = merging.value || outcomeUnknown.value ? null : standing.forward;
-  return forward === 'merge' ? null : forward;
+  return forward === 'merge' || forward === 'enqueue' ? null : forward;
 });
-/** Where the way forward ends in a merge — not for a draft or conflicts (PM19, PM21): the method and the text show. */
-const leadsToMerge = computed(() => mergesNow.value || step.value === 'updateBranch');
+/**
+ * Where the way forward ends in a merge — not for a draft or conflicts (PM19, PM21) — or auto-merge is on, the merge on
+ * its way (PM11): the method and the text show.
+ */
+const leadsToMerge = computed(
+  () =>
+    mergesNow.value ||
+    step.value === 'updateBranch' ||
+    step.value === 'enableAutoMerge' ||
+    step.value === 'disableAutoMerge',
+);
+/** Jumping the queue: only where adding to it is the way forward, by its own chord (D12, PM14). */
+const canJump = computed(
+  () => !props.stack && props.allowed && standing.forward === 'enqueue' && mergesNow.value && !props.sending,
+);
 
 const verdict = computed((): PanelVerdict => {
   if (stackSays.value) {
@@ -427,16 +459,23 @@ const conditions = computed((): ConditionLine[] => {
 /** GitHub is still working out whether it merges (PM22): said where the read says it is on its way. */
 const computing = computed(() => isOpenPullRequest(props.pr) && !props.pr.isDraft && isMergeabilityUnknown(props.pr));
 
-const commitMethod = computed(() => toCommitMethod(method.value));
+const commitMethod = computed(() => toCommitMethod(autoMerge.value?.mergeMethod ?? method.value));
 const proposal = computed(() =>
   commitMethod.value && props.options ? props.options.proposedTexts[commitMethod.value] : null,
 );
-const draft = computed(() => (commitMethod.value ? (edited.value[commitMethod.value] ?? null) : null));
+const draft = computed(() =>
+  commitMethod.value && !textFixed.value ? (edited.value[commitMethod.value] ?? null) : null,
+);
 const titleEdited = computed(() => draft.value !== null && draft.value.title !== proposal.value?.title);
 const bodyEdited = computed(() => draft.value !== null && draft.value.body !== proposal.value?.body);
 const isEdited = computed(() => titleEdited.value || bodyEdited.value);
 /** The commit's title as it will land: edited, proposed, or — before the proposal — what GitHub writes by default. */
 const commitTitle = computed(() => {
+  const chosen = autoMerge.value?.commitHeadline;
+  if (chosen) {
+    return chosen;
+  }
+
   const text = draft.value ?? proposal.value;
   if (text) {
     return text.title;
@@ -447,7 +486,11 @@ const commitTitle = computed(() => {
     ? `${pr.title} (#${pr.number})`
     : `Merge pull request #${pr.number} from ${pr.repository.owner}/${pr.headRefName}`;
 });
-const commitBody = computed(() => (draft.value ?? proposal.value)?.body ?? null);
+const commitBody = computed(() => {
+  // What auto-merge was given, once read; what GitHub proposes otherwise.
+  const chosen = autoMerge.value ? props.options?.autoMergeBody : null;
+  return chosen ?? (draft.value ?? proposal.value)?.body ?? null;
+});
 /** The commit editor's fields: what is typed is the edit of the method chosen. */
 const draftTitle = computed({
   get: () => draft.value?.title ?? '',
@@ -473,8 +516,13 @@ const stepButton = computed((): StepButton | null => {
     }
     case 'updateBranch':
       return { label: t(l.updateBranch), icon: GitPullRequestArrow };
-    // A link of its own, out of the panel.
+    case 'enableAutoMerge':
+      return method.value === null ? null : { label: t(l.enableAutoMerge), icon: Timer };
+    // A link of its own, out of the panel, and buttons of their own, not the filled one (PM11, PM14, PM15).
     case 'resolveConflicts':
+    case 'disableAutoMerge':
+    case 'jumpQueue':
+    case 'dequeue':
     case null:
       return null;
     default:
@@ -482,10 +530,35 @@ const stepButton = computed((): StepButton | null => {
   }
 });
 const conflictsUrl = computed(() => getConflictEditorUrl(props.pr));
+/** PM15: where it is in the queue, and GitHub's state with who put it there. */
+const queueLines = computed((): ConditionLine[] => {
+  const entry = queueEntry.value;
+  if (!entry) {
+    return [];
+  }
+
+  const ago = formatTimeAgo(Date.parse(entry.enqueuedAt), props.now);
+  return [
+    {
+      label: t(l.queuePosition),
+      tone: 'muted',
+      icon: ListOrdered,
+      text: t(l.queuePlace, { place: queueTexts.place(entry), base: props.pr.baseRefName }),
+      aside: null,
+    },
+    {
+      label: t(l.queueState),
+      tone: standing.verdict.tone,
+      icon: standing.verdict.icon,
+      text: capitalize(queueTexts.state(entry)),
+      aside: t(l.addedBy, { login: entry.enqueuer, ago }),
+    },
+  ];
+});
 /** The methods from the repository's settings until the read narrows them (PM9): chosen before it arrives too. */
 const choosable = computed(() => methods.value.length > 1 && !editing.value && !merging.value);
 /** While being merged, the method it was sent with (PM24). */
-const shownMethod = computed(() => shownPr.value.merging ?? method.value);
+const shownMethod = computed(() => shownPr.value.merging ?? autoMerge.value?.mergeMethod ?? method.value);
 /** The state lets the checks show: those of the pull request, or of a stack's member, by the panel's way of showing each. */
 const checksShowable = computed(() => {
   switch (verdict.value.kind) {
@@ -502,7 +575,7 @@ const checksShowable = computed(() => {
       return assertNever(verdict.value.kind);
   }
 });
-const showChecks = computed(() => checksShowable.value && !several.value);
+const showChecks = computed(() => checksShowable.value && !several.value && queueEntry.value === null);
 const showStackChecks = computed(() => checksShowable.value && stackChecks.value !== null && checksOpen.value);
 const showLanding = computed(() => {
   const says = stackSays.value;
@@ -561,8 +634,13 @@ const primaryLabel = computed(() => {
     return t(l.nothingToOffer);
   }
 
-  return triesAgain.value ? t(l.tryAgain) : primaryName(method.value);
+  if (triesAgain.value) {
+    return t(l.tryAgain);
+  }
+
+  return standing.forward === 'enqueue' ? t(l.addToQueue) : primaryName(method.value);
 });
+const primaryIcon = computed(() => (standing.forward === 'enqueue' ? ListPlus : GitMerge));
 const checksHint = computed(() => {
   if (several.value) {
     return getStackChecksHint();
@@ -626,7 +704,8 @@ watch(offered, (next, previous) => {
 
   method.value = next.defaultMethod;
   carryEdit(current, next.defaultMethod);
-  if (current !== null && previous?.methods.includes(current)) {
+  // A queue's method is the queue's to say: nothing was chosen, so nothing gave way.
+  if (current !== null && previous?.methods.includes(current) && !props.pr.isMergeQueueEnabled) {
     notice.value = { from: current, to: next.defaultMethod };
   }
 });
@@ -863,7 +942,7 @@ function getRangeSays(view: StackMergeView): StackSays | null {
 
   // One alone going is a merge like any: why it can't merge as it is, in its own verdict, and its own way forward (D18)
   // — the same where only the pips hold it, as while GitHub works out whether it merges (PM22).
-  if (!several.value && (standing.forward !== 'merge' || block?.kind === 'held')) {
+  if (!several.value && (!forwardMerges.value || block?.kind === 'held')) {
     return null;
   }
 
@@ -1124,7 +1203,25 @@ function goForward() {
   if (next === null) {
     send();
   } else if (props.allowed && props.advancing === null) {
-    emit('step', next);
+    if (next !== 'enableAutoMerge') {
+      emit('step', next);
+    } else if (method.value !== null) {
+      // PM10: on with the method chosen now, and only the text edited: GitHub writes its own otherwise (D6).
+      emit('enableAutoMerge', toSubmission(method.value));
+    }
+  }
+}
+
+/** `⇧⌘↵`: never `⌘↵`, as it rebuilds everything in progress in the queue (D12, PM14). */
+function jump() {
+  if (canJump.value && props.advancing === null) {
+    emit('step', 'jumpQueue');
+  }
+}
+
+function takeOutOfQueue() {
+  if (props.allowed && props.advancing === null) {
+    emit('step', 'dequeue');
   }
 }
 
@@ -1133,17 +1230,23 @@ function send() {
     return;
   }
 
-  // Only what the user edited goes; GitHub writes its own default otherwise (D6). With two or more of a stack going,
-  // nothing: each lands under its own title (stacked PRs D11).
+  emit('merge', toSubmission(method.value));
+}
+
+/**
+ * The method and the text as shown. Only what the user edited goes; GitHub writes its own default otherwise (D6). With
+ * two or more of a stack going, nothing: each lands under its own title (stacked PRs D11).
+ */
+function toSubmission(chosen: PullRequestMergeMethod): MergeSubmission {
   const text = several.value ? null : draft.value;
-  emit('merge', {
+  return {
     request: {
-      method: method.value,
+      method: chosen,
       ...(text && titleEdited.value ? { title: text.title } : {}),
       ...(text && bodyEdited.value ? { body: text.body } : {}),
     },
     edited: text && isEdited.value ? text : null,
-  });
+  };
 }
 
 function choose(next: PullRequestMergeMethod) {
@@ -1153,8 +1256,9 @@ function choose(next: PullRequestMergeMethod) {
 
 async function edit() {
   const key = commitMethod.value;
-  // Two or more of a stack land each under its own title: there is no text to edit (stacked PRs D11).
-  if (key === null || merging.value || several.value) {
+  // Two or more of a stack land each under its own title, and a queue or auto-merge already on holds the text: there
+  // is none to edit (stacked PRs D11, PM11, PM14).
+  if (key === null || merging.value || several.value || textFixed.value) {
     return;
   }
 
@@ -1193,6 +1297,12 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
+  if (matchesCommandKey(event, 'Shift+Mod+Enter')) {
+    event.preventDefault();
+    jump();
+    return;
+  }
+
   if (isEditableTarget(event.target) || merging.value) {
     return;
   }
@@ -1208,6 +1318,9 @@ function onKeydown(event: KeyboardEvent) {
   } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
     event.preventDefault();
     emit('step', 'markReady');
+  } else if (queueEntry.value && matchesCommandKey(event, 'Shift+Q')) {
+    event.preventDefault();
+    takeOutOfQueue();
   } else if (matchesCommandKey(event, 'E') && !editing.value) {
     event.preventDefault();
     void edit();
@@ -1377,6 +1490,21 @@ function onOpenFocus(event: Event) {
         </div>
 
         <div
+          v-if="queueEntry"
+          :class="css.mergePanel_checks"
+        >
+          <MergeCondition
+            v-for="line in queueLines"
+            :key="line.label"
+            :icon="line.icon"
+            :tone="line.tone"
+            :label="line.label"
+            :text="line.text"
+            :aside="line.aside"
+          />
+        </div>
+
+        <div
           v-if="showStackChecks && stackChecks"
           :class="css.mergePanel_checks"
         >
@@ -1395,7 +1523,10 @@ function onOpenFocus(event: Event) {
           v-if="showLanding"
           :class="css.mergePanel_landing"
         >
-          <div :class="css.mergePanel_line">
+          <div
+            v-if="!autoMerge"
+            :class="css.mergePanel_line"
+          >
             <dt :class="css.mergePanel_lineKey">{{ t(l.method) }}</dt>
             <dd :class="css.mergePanel_lineValue">
               <div :class="css.mergePanel_methodRow">
@@ -1415,6 +1546,11 @@ function onOpenFocus(event: Event) {
                     v-if="shownMethod && !merging && reading"
                     :class="css.mergePanel_note"
                     >{{ t(l.repositoryDefault) }}</span
+                  >
+                  <span
+                    v-else-if="shownMethod && !merging && pr.isMergeQueueEnabled"
+                    :class="css.mergePanel_note"
+                    >{{ t(l.setByQueue) }}</span
                   >
                   <span
                     v-else-if="shownMethod && !merging && methods.length === 1"
@@ -1458,7 +1594,17 @@ function onOpenFocus(event: Event) {
           </div>
 
           <div
-            v-if="!editing && !merging && !several && shownMethod === 'REBASE'"
+            v-if="!merging && !several && pr.isMergeQueueEnabled && !autoMerge"
+            :class="css.mergePanel_line"
+          >
+            <dt :class="css.mergePanel_lineKey">{{ t(l.commit) }}</dt>
+            <dd :class="[css.mergePanel_lineValue, css.mergePanel_rebaseNote]">
+              {{ t(l.writtenByQueue) }}
+            </dd>
+          </div>
+
+          <div
+            v-else-if="!editing && !merging && !several && shownMethod === 'REBASE'"
             :class="css.mergePanel_line"
           >
             <dt :class="css.mergePanel_lineKey">{{ t(l.commits) }}</dt>
@@ -1494,7 +1640,7 @@ function onOpenFocus(event: Event) {
                 </span>
                 <span :class="css.mergePanel_spacer" />
                 <Button
-                  v-if="proposal || reading"
+                  v-if="(proposal || reading) && !textFixed"
                   variant="ghost"
                   size="sm"
                   kbd="E"
@@ -1604,7 +1750,7 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="!stackSaysNotKnown && (end || verdict.kind === 'merged')"
+          v-else-if="!stackSaysNotKnown && (end || queueEntry || verdict.kind === 'merged')"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span
@@ -1622,6 +1768,16 @@ function onOpenFocus(event: Event) {
             aria-hidden="true"
             ><Kbd keys="C" /> {{ checksHint }}</span
           >
+          <span
+            v-if="step === 'enableAutoMerge' && allowed"
+            :class="css.mergePanel_footerNote"
+            >{{ t(l.mergesByItself) }}</span
+          >
+          <span
+            v-if="canJump"
+            :class="css.mergePanel_footerNote"
+            >{{ t(l.jumpRebuilds) }}</span
+          >
         </template>
         <span :class="css.mergePanel_spacer" />
         <template v-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
@@ -1632,7 +1788,27 @@ function onOpenFocus(event: Event) {
             >{{ t(l.hintClose) }}</Button
           >
         </template>
+        <!-- In the queue it is on its way, with no primary: leaving shows here, when it matters (PM15). -->
+        <template v-else-if="queueEntry">
+          <Button
+            v-if="allowed"
+            kbd="Shift+Q"
+            aria-keyshortcuts="Shift+Q"
+            :busy="advancing === 'dequeue'"
+            @click="takeOutOfQueue()"
+            >{{ t(l.takeOutOfQueue) }}</Button
+          >
+        </template>
         <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'merged' && verdict.kind !== 'unknown'">
+          <Button
+            v-if="canJump"
+            variant="ghost"
+            kbd="Shift+Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Shift+Mod+Enter')"
+            :busy="advancing === 'jumpQueue'"
+            @click="jump()"
+            >{{ t(l.jumpQueue) }}</Button
+          >
           <Button
             v-if="stackDraft !== null && allowed"
             variant="ghost"
@@ -1653,6 +1829,16 @@ function onOpenFocus(event: Event) {
             kbd="Mod+Enter"
             :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             >{{ stackSays.forward.label }}</Button
+          >
+          <!-- Turning it off isn't the filled action: nothing gets merged by it (PM11). -->
+          <Button
+            v-else-if="step === 'disableAutoMerge' && allowed"
+            :icon="CircleOff"
+            kbd="Mod+Enter"
+            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :busy="advancing === 'disableAutoMerge'"
+            @click="goForward()"
+            >{{ t(l.disableAutoMerge) }}</Button
           >
           <!-- It leaves for github.com's editor, and the icon says so (PM19). -->
           <Button
@@ -1678,7 +1864,7 @@ function onOpenFocus(event: Event) {
           <Button
             v-else-if="canSend || sending"
             variant="primary"
-            :icon="GitMerge"
+            :icon="primaryIcon"
             kbd="Mod+Enter"
             :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="sending"
@@ -1687,7 +1873,7 @@ function onOpenFocus(event: Event) {
           >
           <Button
             v-else
-            :icon="stack?.merge.freshChecks ? GitMerge : CircleX"
+            :icon="stack?.merge.freshChecks || advancing === 'jumpQueue' ? primaryIcon : CircleX"
             disabled
             >{{ primaryLabel }}</Button
           >

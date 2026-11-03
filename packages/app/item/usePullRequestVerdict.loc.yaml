@@ -71,3 +71,29 @@ updateBranch:
   en: Update branch
 markReady:
   en: Mark ready…
+queue:
+  en: Queue…
+autoMerge:
+  en: Auto-merge…
+readyForQueue:
+  en: Ready for the queue
+reviewRequired:
+  en: review required
+inQueue:
+  en: In the queue
+inQueueWontMerge:
+  en: In the queue, won't merge
+autoMergeOn:
+  en: Auto-merge is on
+enabledByAgo:
+  en: enabled by {login} {ago}
+enabledBy:
+  en: enabled by {login}
+enabledAgo:
+  en: enabled {ago}
+methodSquash:
+  en: Squash
+methodMerge:
+  en: Merge commit
+methodRebase:
+  en: Rebase

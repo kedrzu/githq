@@ -20,6 +20,7 @@ const OPTIONS: MergeOptions = {
     requiresLinearHistory: false,
     viewerCanMergeAsAdmin: false,
     viewerCanEnableAutoMerge: false,
+    autoMergeBody: null,
     mergeQueueMethod: null,
     checks: [],
     headCommit: { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' },
@@ -95,4 +96,19 @@ test("D11: a stack's refusal before the stack is read again is not known, with G
         accepted: false,
         refusal: REASON,
     });
+});
+
+test("a pull request in a merge queue or under auto-merge reads as that: GitHub's own state speaks, not the last merge", () => {
+    const entry = {
+        position: 1,
+        state: 'QUEUED',
+        estimatedTimeToMerge: null,
+        enqueuedAt: '2026-11-03T00:00:00Z',
+        enqueuer: 'mlaine',
+        jump: false,
+    } as const;
+    const autoMerge = { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: null, commitHeadline: null } as const;
+
+    expect(getMergeEnd(REFUSED, { ...PR, mergeQueueEntry: entry }, null)).toBeNull();
+    expect(getMergeEnd(REFUSED, { ...PR, autoMerge }, null)).toBeNull();
 });

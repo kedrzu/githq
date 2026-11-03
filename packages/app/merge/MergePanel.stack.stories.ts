@@ -22,6 +22,7 @@ const SQUASH_FIRST: MergeSettings = {
     squashMergeAllowed: true,
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
+    autoMergeAllowed: false,
 };
 
 /** What {@link CALENDAR}'s first one was last sent with, alone. */
@@ -116,6 +117,7 @@ const Harness = defineComponent({
                       requiresLinearHistory: false,
                       viewerCanMergeAsAdmin: false,
                       viewerCanEnableAutoMerge: false,
+                      autoMergeBody: null,
                       mergeQueueMethod: null,
                       checks: [],
                       headCommit: null,

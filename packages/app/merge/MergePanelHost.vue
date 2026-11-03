@@ -1,9 +1,11 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store, which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, shallowRef, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -12,6 +14,7 @@ import { useNow } from '@/services/useNow.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 import { pause } from '@/utils/pause.js';
 
@@ -218,7 +221,7 @@ async function merge(submission: MergeSubmission) {
  * request again, and merging comes back when GitHub says so (PM20, PM21). The step is no news of the last merge: what
  * the session knew of it stops speaking (`forget`).
  */
-async function takeStep(step: MergeStep) {
+async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
   const item = getStepTarget(step);
   if (!item) {
     return;
@@ -229,14 +232,39 @@ async function takeStep(step: MergeStep) {
     return;
   }
 
+  await advance(item, step, toStepRequest(step));
+}
+
+/** PM10: auto-merge on, with the method and the text the panel shows. An edit like the steps. */
+async function enableAutoMerge(submission: MergeSubmission) {
+  if (pr.value) {
+    await advance(pr.value, 'enableAutoMerge', { kind: 'enableAutoMerge', ...submission.request });
+  }
+}
+
+function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConflicts'>): EditRequest {
+  switch (step) {
+    case 'markReady':
+      return { kind: 'draft', draft: false };
+    case 'updateBranch':
+      return { kind: 'updateBranch', method: 'MERGE' };
+    case 'disableAutoMerge':
+      return { kind: 'disableAutoMerge' };
+    case 'jumpQueue':
+      return { kind: 'jumpQueue' };
+    case 'dequeue':
+      return { kind: 'dequeue' };
+    default:
+      return assertNever(step);
+  }
+}
+
+async function advance(item: PullRequestItem, step: MergeStep, request: EditRequest) {
   const opening = store.opening;
   const head = item.headRefOid;
   advancing.value = step;
   store.forget(item.id, ...(recordOf.value ? [recordOf.value.id] : []));
-  const outcome = await editor.edit(
-    [item.id],
-    step === 'markReady' ? { kind: 'draft', draft: false } : { kind: 'updateBranch', method: 'MERGE' },
-  );
+  const outcome = await editor.edit([item.id], request);
   // A stack's draft further up is not the one the panel's read follows, and its row is what lets the rest go.
   await (item.id === pr.value?.id ? read.refresh() : merger.readOptions(item.id));
   if (step === 'updateBranch' && outcome.failed.length === 0) {
@@ -314,6 +342,7 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     @merge="merge"
     @move="moveLine"
     @step="takeStep"
+    @enable-auto-merge="enableAutoMerge"
     @visit="browser.openInNewTab"
   />
 </template>

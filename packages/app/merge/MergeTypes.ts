@@ -27,6 +27,8 @@ export interface MergeOptions {
     /** The viewer may merge past unmet requirements. */
     readonly viewerCanMergeAsAdmin: boolean;
     readonly viewerCanEnableAutoMerge: boolean;
+    /** The commit message auto-merge will use; `null` when it is off, or GitHub writes its own (PM11). */
+    readonly autoMergeBody: string | null;
     /** The method the base branch's merge queue merges with, by its ruleset; `null` when no ruleset says. */
     readonly mergeQueueMethod: PullRequestMergeMethod | null;
     /** The checks of the head commit; empty when nothing runs. */
@@ -160,7 +162,8 @@ export type MergeAnswer =
     | { readonly kind: 'refused'; readonly reason: EditFailureReason };
 
 /**
- * A step the merge panel takes towards the merge when it can't merge yet — its way forward (merging D12): mark the
- * draft ready for review, bring the base branch in, or resolve the conflicts in GitHub's editor.
+ * A step the merge panel takes when it doesn't merge itself — its way forward (merging D12), adding to a queue being a
+ * merge: mark the draft ready for review, bring the base branch in, resolve the conflicts in GitHub's editor, turn
+ * auto-merge on or off. Off to the side, each with a key of its own: jump the queue, take it out of the queue (PM14, PM15).
  */
-export type MergeStep = Exclude<PullRequestWayForward, 'merge'>;
+export type MergeStep = Exclude<PullRequestWayForward, 'enqueue' | 'merge'> | 'dequeue' | 'jumpQueue';

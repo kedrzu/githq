@@ -92,6 +92,47 @@ test('PM36, PM37: no answer in time, the row is grey — neither merged nor refu
 });
 
 /** The row of `item`, every property shown, under the screen's merging (none for `null`). */
+test('PM37: in a merge queue, the row says where and how long, and offers no merge', async () => {
+    const mergeQueueEntry = {
+        position: 3,
+        state: 'AWAITING_CHECKS',
+        estimatedTimeToMerge: 12 * 60,
+        enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
+        enqueuer: 'mlaine',
+        jump: false,
+    } as const;
+    mount({ ...READY, mergeQueueEntry }, { canOpen: () => true, open: () => undefined, getRecord: () => null });
+
+    await expect.element(page.getByText('in queue · 3rd · about 12 min')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
+});
+
+test("PM37: in a merge queue GitHub says won't merge, the row says so", async () => {
+    const mergeQueueEntry = {
+        position: 2,
+        state: 'UNMERGEABLE',
+        estimatedTimeToMerge: null,
+        enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
+        enqueuer: 'mlaine',
+        jump: false,
+    } as const;
+    mount({ ...READY, mergeQueueEntry }, null);
+
+    await expect.element(page.getByText("in queue, won't merge · 2nd")).toBeVisible();
+});
+
+test('PM37: under auto-merge, the row says how and what it waits for, and offers no merge', async () => {
+    const autoMerge = { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: 'mlaine', commitHeadline: null } as const;
+    const running = { state: 'PENDING', passing: 1, failing: 0, pending: 1 } as const;
+    mount(
+        { ...READY, autoMerge, checks: running },
+        { canOpen: () => true, open: () => undefined, getRecord: () => null },
+    );
+
+    await expect.element(page.getByText('auto-merge on · squash · waiting for checks')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
+});
+
 function mount(item: Item, merging: MergeContext | null) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);

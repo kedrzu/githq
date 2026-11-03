@@ -2548,6 +2548,7 @@ export type PullRequestMergeOptionsQuery = {
               mergeBody: string;
               squashHeadline: string;
               squashBody: string;
+              autoMergeBody: { commitBody: string | null } | null;
               headCommit: {
                   nodes: Array<{
                       commit: {
@@ -10927,6 +10928,9 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
       squashBody: viewerMergeBodyText(mergeType: SQUASH)
       viewerCanMergeAsAdmin
       viewerCanEnableAutoMerge
+      autoMergeBody: autoMergeRequest {
+        commitBody
+      }
       headCommit: commits(last: 1) {
         nodes {
           commit {

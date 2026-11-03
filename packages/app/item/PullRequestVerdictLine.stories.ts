@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { CircleCheck, CircleX, GitMerge, GitPullRequestDraft, Hourglass } from 'lucide-vue-next';
+import { CircleCheck, CircleX, GitMerge, GitPullRequestDraft, Hourglass, Timer } from 'lucide-vue-next';
 
 import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
 
@@ -46,4 +46,9 @@ export const Merged: Story = { args: { verdict: { tone: 'done', icon: GitMerge, 
 /** A draft, grey and untinted. */
 export const Draft: Story = {
     args: { verdict: { tone: 'muted', icon: GitPullRequestDraft, text: 'Draft', aside: 'not ready for review' } },
+};
+
+/** On its way by GitHub's own state, in the accent: auto-merge on, or queued (PM11, PM16). */
+export const AutoMergeOn: Story = {
+    args: { verdict: { tone: 'accent', icon: Timer, text: 'Auto-merge is on', aside: 'Squash · enabled by mlaine' } },
 };

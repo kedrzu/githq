@@ -12,6 +12,10 @@ query PullRequestMergeOptions($id: ID!) {
             squashBody: viewerMergeBodyText(mergeType: SQUASH)
             viewerCanMergeAsAdmin
             viewerCanEnableAutoMerge
+            # Aliased: the status reads the rest of it, and only here is the message wanted.
+            autoMergeBody: autoMergeRequest {
+                commitBody
+            }
             headCommit: commits(last: 1) {
                 nodes {
                     commit {

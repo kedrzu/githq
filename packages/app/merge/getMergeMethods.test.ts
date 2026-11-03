@@ -9,6 +9,7 @@ const ALL: MergeSettings = {
     squashMergeAllowed: true,
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'MERGE',
+    autoMergeAllowed: false,
 };
 
 test('before the rules arrive, the settings alone, listed squash, merge commit, rebase', () => {

@@ -24,6 +24,7 @@ import { getProjectFieldRole } from '@/edits/getProjectFieldRole.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -105,6 +106,8 @@ export interface EditCommandsParams {
      * says the same way forward as its standing (PM38). Without them, as its row holds it.
      */
     readonly mergeChecks?: MergeCheckCounts | null;
+    /** The viewer may turn auto-merge on, as its merge options said; not known until they are read. */
+    readonly viewerCanEnableAutoMerge?: boolean | null;
 }
 
 /** An edit made of items one by one, by the user's permission for each. */
@@ -322,7 +325,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
      * "Merge…" (merging D9, PM39): the merge panel for one pull request the user may merge — also while it is being
      * merged, for the panel to say so (PM24) — the first of the actions; never for several items, which merge one at
      * a time. Its title is the way forward the panel leads to, as the standing's button says (PM38): "Update branch",
-     * "Resolve on GitHub", "Mark ready…".
+     * "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…".
      */
     function mergeCommand(params: EditCommandsParams): Command | null {
         const pr = getOnePullRequest(params);
@@ -331,9 +334,11 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
             return null;
         }
 
+        const settings = params.metadata.find(entry => entry.nameWithOwner === pr.repository.nameWithOwner);
+        const autoMergeAllowed = isAutoMergeAllowed(settings, params.viewerCanEnableAutoMerge);
         return {
             id: `${params.section}.merge`,
-            title: getVerdict(pr, params.mergeChecks ?? null).forwardTitle,
+            title: getVerdict(pr, params.mergeChecks ?? null, autoMergeAllowed).forwardTitle,
             section: params.section,
             key: EDIT_KEYS.merge,
             icon: GitMerge,

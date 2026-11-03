@@ -538,6 +538,7 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
             squashBody: 'Fix it',
             viewerCanMergeAsAdmin: false,
             viewerCanEnableAutoMerge: false,
+            autoMergeBody: null,
             headCommit: {
                 nodes: [
                     {

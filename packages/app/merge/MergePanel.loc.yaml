@@ -272,3 +272,29 @@ eachCommitOnto:
   en: each commit onto {base}
 stopEarlier:
   en: Stop earlier
+enableAutoMerge:
+  en: Enable auto-merge
+disableAutoMerge:
+  en: Turn off auto-merge
+mergesByItself:
+  en: Merges by itself when these are met
+addToQueue:
+  en: Add to queue
+jumpQueue:
+  en: Jump the queue
+jumpRebuilds:
+  en: Jumping rebuilds those in progress
+setByQueue:
+  en: set by the queue
+writtenByQueue:
+  en: Written by the queue. Text can't be set here
+takeOutOfQueue:
+  en: Take out of queue
+queuePosition:
+  en: Position
+queueState:
+  en: State
+queuePlace:
+  en: "{place} in {base}'s queue"
+addedBy:
+  en: added by {login} {ago}

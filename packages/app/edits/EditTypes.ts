@@ -1,4 +1,4 @@
-import type { PullRequestBranchUpdateMethod } from '@githq/github/generated.gen.js';
+import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
 import type { Account } from '@/auth/AccountSession.js';
 import type { ViewerProject } from '@/repos/RepositoryTypes.js';
@@ -44,7 +44,18 @@ export type EditRequest =
     | { readonly kind: 'requestReviewers'; readonly logins: readonly string[] }
     | { readonly kind: 'draft'; readonly draft: boolean }
     /** Brings the base branch into a pull request's head, by a merge commit or a rebase (merging D12, PM20). */
-    | { readonly kind: 'updateBranch'; readonly method: PullRequestBranchUpdateMethod };
+    | { readonly kind: 'updateBranch'; readonly method: PullRequestBranchUpdateMethod }
+    /** Merges by itself once the requirements are met; the commit's title and message only when the user edited them (PM10). */
+    | {
+          readonly kind: 'enableAutoMerge';
+          readonly method: PullRequestMergeMethod;
+          readonly title?: string;
+          readonly body?: string;
+      }
+    | { readonly kind: 'disableAutoMerge' }
+    /** To the front of the merge queue (PM14); adding it the usual way is a merge (`createMergeEdits`). */
+    | { readonly kind: 'jumpQueue' }
+    | { readonly kind: 'dequeue' };
 
 /** A request as one item's edits are made of it: a project's field already resolved to the item's place there. */
 export type ItemEditRequest = Exclude<EditRequest, { readonly kind: 'projectFieldInProject' }>;
@@ -78,6 +89,9 @@ export type EditSubject =
     | { readonly kind: 'reviewRequested'; readonly login: string }
     | { readonly kind: 'draft'; readonly draft: boolean }
     | { readonly kind: 'branchUpdated' }
+    | { readonly kind: 'autoMerge'; readonly enabled: boolean }
+    | { readonly kind: 'queueJumped' }
+    | { readonly kind: 'dequeued' }
     /** A pull request merged (`PullRequestMerger`). */
     | { readonly kind: 'merged' };
 

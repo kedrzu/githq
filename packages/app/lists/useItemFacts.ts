@@ -12,7 +12,9 @@ import {
     GitMerge,
     GitPullRequestDraft,
     Hourglass,
+    ListOrdered,
     Loader,
+    Timer,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
@@ -20,10 +22,17 @@ import type { MaybeRefOrGetter } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
+import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
-import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import type {
+    Item,
+    ItemUser,
+    PullRequestAutoMerge,
+    PullRequestItem,
+    PullRequestQueueEntry,
+} from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import * as l from './useItemFacts.loc.js';
@@ -59,7 +68,7 @@ export interface ItemKindFact {
 /** Where a pull request stands, in one line ("2 checks failing · changes requested"). */
 export interface ItemStatusFact {
     readonly icon: LucideIcon;
-    readonly tone: 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
+    readonly tone: 'accent' | 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
     readonly text: string;
     /** Ready to merge: "Merge" follows where the viewer may merge it, else "Open on GitHub". */
     readonly readyToMerge: boolean;
@@ -95,6 +104,7 @@ export interface ItemFactsViewModel {
  */
 export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
+    const queueTexts = useMergeQueueTexts();
     const numbers = new Intl.NumberFormat(APP_LANGUAGE);
     const projectList = new Intl.ListFormat(APP_LANGUAGE);
 
@@ -206,10 +216,58 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         }
     }
 
+    /** PM37: "In queue · 3rd · about 12 min"; GitHub saying it won't merge, in red. */
+    function getQueueStatus(entry: PullRequestQueueEntry): ItemStatusFact {
+        const place = queueTexts.place(entry);
+        if (entry.state === 'UNMERGEABLE') {
+            return { icon: ListOrdered, tone: 'danger', text: t(l.inQueueWontMerge, { place }), readyToMerge: false };
+        }
+
+        const about = queueTexts.estimate(entry);
+        const text = about === null ? t(l.inQueue, { place }) : t(l.inQueueAbout, { place, about });
+        return { icon: ListOrdered, tone: 'accent', text, readyToMerge: false };
+    }
+
+    /** PM37: "Auto-merge on · squash · waiting for checks", or for whichever else it waits. */
+    function getAutoMergeStatus(pr: PullRequestItem, autoMerge: PullRequestAutoMerge): ItemStatusFact {
+        const method = getMethodName(autoMerge);
+        const standing = getPullRequestStanding(pr);
+        let text = t(l.autoMergeOn, { method });
+        if (standing.checksRunning) {
+            text = t(l.autoMergeWaitingForChecks, { method });
+        } else if (standing.waitingForReview) {
+            text = t(l.autoMergeWaitingForReview, { method });
+        }
+
+        return { icon: Timer, tone: 'accent', text, readyToMerge: false };
+    }
+
+    function getMethodName({ mergeMethod }: PullRequestAutoMerge) {
+        switch (mergeMethod) {
+            case 'SQUASH':
+                return t(l.methodSquash);
+            case 'MERGE':
+                return t(l.methodMerge);
+            case 'REBASE':
+                return t(l.methodRebase);
+            default:
+                return assertNever(mergeMethod);
+        }
+    }
+
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {
         // Merged once GitHub says so (merging D3): until then it stays open, being merged.
         if (pr.merging) {
             return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
+        }
+
+        // GitHub's own state (merging D3).
+        if (pr.mergeQueueEntry) {
+            return getQueueStatus(pr.mergeQueueEntry);
+        }
+
+        if (pr.autoMerge) {
+            return getAutoMergeStatus(pr, pr.autoMerge);
         }
 
         const end = getMergeEnd(mergeRecord.value, pr, null);

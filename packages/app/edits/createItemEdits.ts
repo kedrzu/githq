@@ -1,4 +1,5 @@
-import type { PullRequestBranchUpdateMethod } from '@githq/github/generated.gen.js';
+import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
+import type { PullRequestBranchUpdateMethod, PullRequestStatusFieldsFragment } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { describeProjectFieldValue } from '@/projects/describeProjectFieldValue.js';
@@ -12,9 +13,17 @@ import type {
     ProjectFieldValue,
 } from '@/store/ItemDetailTypes.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
-import type { Item, ItemLabel, ItemProject, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
-import { toItemLabels, toItemProject, toItemReviewRequests, toItemUsers } from '@/store/toItem.js';
+import type {
+    Item,
+    ItemLabel,
+    ItemProject,
+    ItemUser,
+    PullRequestAutoMerge,
+    PullRequestItem,
+} from '@/store/ItemTypes.js';
+import { toItemLabels, toItemProject, toItemReviewRequests, toItemUsers, toPullRequestStatus } from '@/store/toItem.js';
 import { toDetailProject, toDetailReviewRequests, toItemComment } from '@/store/toItemDetail.js';
+import { isPresent } from '@/utils/isPresent.js';
 
 import type { CloseReason, Edit, EditRequest, EditSubject, EditVerdict, ItemEditRequest } from './EditTypes.js';
 import { getProjectItemValueLayer, sendProjectFieldValue, toFieldValue, withValue } from './projectFieldValues.js';
@@ -106,6 +115,19 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
             return item.kind === 'pullRequest' && item.state === 'OPEN'
                 ? [createUpdateBranchEdit(item, request.method)]
                 : [];
+        case 'enableAutoMerge':
+            // Never for a stacked pull request: GitHub refuses it (live, 2026-11-02).
+            return item.kind === 'pullRequest' && item.state === 'OPEN' && !item.autoMerge && !item.stack
+                ? [createEnableAutoMergeEdit(params, item, request)]
+                : [];
+        case 'disableAutoMerge':
+            return item.kind === 'pullRequest' && item.autoMerge ? [createDisableAutoMergeEdit(item)] : [];
+        case 'jumpQueue':
+            return item.kind === 'pullRequest' && item.state === 'OPEN' && !item.mergeQueueEntry
+                ? [createJumpQueueEdit(item)]
+                : [];
+        case 'dequeue':
+            return item.kind === 'pullRequest' && item.mergeQueueEntry ? [createDequeueEdit(item)] : [];
         default:
             return assertNever(request);
     }
@@ -564,6 +586,112 @@ function createUpdateBranchEdit(item: PullRequestItem, method: PullRequestBranch
             return updatePullRequestBranch?.pullRequest ? { kind: 'confirmed', layer: UNCHANGED } : dropped();
         },
     };
+}
+
+/**
+ * Turns auto-merge on for the head the user saw (`expectedHeadOid`): GitHub refuses it once the branch moved since. It
+ * shows at once, as the viewer's, with the method chosen, and the text goes only when edited: GitHub writes its own
+ * otherwise (merging D6).
+ */
+function createEnableAutoMergeEdit(
+    params: CreateItemEditsParams,
+    item: PullRequestItem,
+    request: Extract<ItemEditRequest, { kind: 'enableAutoMerge' }>,
+): Edit {
+    const { method, title, body } = request;
+    const autoMerge: PullRequestAutoMerge = {
+        mergeMethod: method,
+        enabledAt: params.now,
+        enabledBy: params.viewer.login,
+        commitHeadline: title ?? null,
+    };
+    return {
+        ...base(item, { kind: 'autoMerge', enabled: true }),
+        optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, autoMerge } : current) },
+        send: async ({ sdk }) => {
+            const { enablePullRequestAutoMerge } = await sdk.EnablePullRequestAutoMerge({
+                pullRequestId: item.id,
+                mergeMethod: method,
+                expectedHeadOid: item.headRefOid,
+                ...(title === undefined ? {} : { commitHeadline: title }),
+                ...(body === undefined ? {} : { commitBody: body }),
+            });
+            const answer = enablePullRequestAutoMerge?.pullRequest;
+            return answer?.autoMergeRequest ? confirmedStatus(answer) : dropped();
+        },
+    };
+}
+
+function createDisableAutoMergeEdit(item: PullRequestItem): Edit {
+    return {
+        ...base(item, { kind: 'autoMerge', enabled: false }),
+        optimistic: { item: current => (current.kind === 'pullRequest' ? { ...current, autoMerge: null } : current) },
+        send: async ({ sdk }) => {
+            const { disablePullRequestAutoMerge } = await sdk.DisablePullRequestAutoMerge({ pullRequestId: item.id });
+            const answer = disablePullRequestAutoMerge?.pullRequest;
+            return answer && !answer.autoMergeRequest ? confirmedStatus(answer) : dropped();
+        },
+    };
+}
+
+/**
+ * Puts it at the front of the merge queue, for the head the user saw. Its place is GitHub's to give, so nothing is drawn
+ * until GitHub answered (merging D3); a pull request GitHub doesn't name in its answer is left to the next read.
+ */
+function createJumpQueueEdit(item: PullRequestItem): Edit {
+    return {
+        ...base(item, { kind: 'queueJumped' }),
+        optimistic: UNCHANGED,
+        send: async ({ sdk }) => {
+            const { enqueuePullRequest } = await sdk.EnqueuePullRequest({
+                pullRequestId: item.id,
+                expectedHeadOid: item.headRefOid,
+                jump: true,
+            });
+            const answer = enqueuePullRequest?.mergeQueueEntry?.pullRequest;
+            return answer ? confirmedStatus(answer) : { kind: 'unknown' };
+        },
+    };
+}
+
+/**
+ * Takes it out of the merge queue. Gone from the queue, GitHub's answer may name no pull request: it is read again, and
+ * left to the next sync when that could not be read.
+ */
+function createDequeueEdit(item: PullRequestItem): Edit {
+    return {
+        ...base(item, { kind: 'dequeued' }),
+        optimistic: {
+            item: current => (current.kind === 'pullRequest' ? { ...current, mergeQueueEntry: null } : current),
+        },
+        send: async ({ sdk }) => {
+            const { dequeuePullRequest } = await sdk.DequeuePullRequest({ id: item.id });
+            const answer = dequeuePullRequest?.mergeQueueEntry?.pullRequest ?? (await readStatus(sdk, item.id));
+            if (!answer) {
+                return { kind: 'unknown' };
+            }
+
+            return answer.mergeQueueEntry ? dropped() : confirmedStatus(answer);
+        },
+    };
+}
+
+/** The status of a pull request as GitHub holds it now; `null` when that could not be read. */
+async function readStatus(sdk: GitHubSdk, id: string): Promise<PullRequestStatusFieldsFragment | null> {
+    try {
+        const node = (await sdk.PullRequestStatuses({ ids: [id] })).nodes[0] ?? null;
+        return isPresent(node) ? node : null;
+    } catch {
+        return null;
+    }
+}
+
+/** A change of a pull request's status GitHub confirmed, with the status it answered. */
+function confirmedStatus(answer: PullRequestStatusFieldsFragment) {
+    const status = toPullRequestStatus(answer);
+    return confirmed(answer.updatedAt, current =>
+        current.kind === 'pullRequest' ? { ...current, ...status } : current,
+    );
 }
 
 function base(item: Item, subject: EditSubject) {

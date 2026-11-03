@@ -199,3 +199,23 @@ subjectLabel:
   en: label “{label}”
 selectFailedCommand:
   en: Select the items that failed
+failedAutoMergeOn:
+  en: "Auto-merge wasn't turned on for {reference}"
+failedAutoMergeOff:
+  en: "Auto-merge wasn't turned off for {reference}"
+failedQueueJumped:
+  en: "{reference} didn't jump the queue"
+failedDequeued:
+  en: "{reference} wasn't taken out of the queue"
+changeAutoMergeOn:
+  en: auto-merge on
+changeAutoMergeOff:
+  en: auto-merge off
+changeQueueJumped:
+  en: jumping the queue
+changeDequeued:
+  en: taking out of the queue
+fieldAutoMerge:
+  en: Auto-merge
+fieldQueue:
+  en: Merge queue

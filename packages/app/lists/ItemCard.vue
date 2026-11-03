@@ -292,6 +292,10 @@ const hasFooter = computed(
   }
 }
 
+.itemCard_status_accent {
+  color: $color-accent;
+}
+
 .itemCard_status_danger,
 .itemCard_undone {
   color: $color-red;

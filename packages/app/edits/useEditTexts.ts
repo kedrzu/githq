@@ -179,6 +179,12 @@ export function useEditTexts(): EditTexts {
                 return subject.draft ? t(l.failedDraft, { reference }) : t(l.failedReady, { reference });
             case 'branchUpdated':
                 return t(l.failedBranchUpdated, { reference });
+            case 'autoMerge':
+                return subject.enabled ? t(l.failedAutoMergeOn, { reference }) : t(l.failedAutoMergeOff, { reference });
+            case 'queueJumped':
+                return t(l.failedQueueJumped, { reference });
+            case 'dequeued':
+                return t(l.failedDequeued, { reference });
             case 'merged':
                 return t(l.failedMerged, { reference });
             default:
@@ -222,6 +228,12 @@ export function useEditTexts(): EditTexts {
                 return subject.draft ? t(l.changeDraft) : t(l.changeReady);
             case 'branchUpdated':
                 return t(l.changeBranchUpdated);
+            case 'autoMerge':
+                return subject.enabled ? t(l.changeAutoMergeOn) : t(l.changeAutoMergeOff);
+            case 'queueJumped':
+                return t(l.changeQueueJumped);
+            case 'dequeued':
+                return t(l.changeDequeued);
             case 'merged':
                 return t(l.changeMerged);
             default:
@@ -275,6 +287,11 @@ export function useEditTexts(): EditTexts {
                 return t(l.fieldDraft);
             case 'branchUpdated':
                 return t(l.fieldBranch);
+            case 'autoMerge':
+                return t(l.fieldAutoMerge);
+            case 'queueJumped':
+            case 'dequeued':
+                return t(l.fieldQueue);
             case 'merged':
                 return t(l.fieldMerge);
             default:

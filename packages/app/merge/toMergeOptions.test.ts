@@ -61,6 +61,7 @@ test('reads the status, the proposed texts, what the viewer may do and the check
         requiresLinearHistory: false,
         viewerCanMergeAsAdmin: true,
         viewerCanEnableAutoMerge: false,
+        autoMergeBody: null,
         mergeQueueMethod: null,
         checks: [
             {
@@ -93,6 +94,14 @@ test('reads the status, the proposed texts, what the viewer may do and the check
         headCommit: { oid: 'head-oid', headline: 'Handle an empty billing answer', author: 'dkim' },
     };
     expect(toMergeOptions(node)).toEqual(expected);
+});
+
+test('PM11: the message auto-merge was given is read with the options, none when it is off', () => {
+    const node = mergeNode();
+    expect(toMergeOptions({ ...node, autoMergeBody: { commitBody: 'The message.' } })?.autoMergeBody).toBe(
+        'The message.',
+    );
+    expect(toMergeOptions({ ...node, autoMergeBody: null })?.autoMergeBody).toBeNull();
 });
 
 test('the head commit names its author by login, else by the name in the commit; none read, none named', () => {
@@ -170,6 +179,7 @@ function mergeNode(): MergeNode {
         squashBody: '* Fix it\n\n* Test it',
         viewerCanMergeAsAdmin: true,
         viewerCanEnableAutoMerge: false,
+        autoMergeBody: null,
         headCommit: {
             nodes: [
                 {
