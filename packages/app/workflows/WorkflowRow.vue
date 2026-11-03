@@ -12,7 +12,7 @@ import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import RunStrip from './RunStrip.vue';
 import { useDescribeRunWhen } from './useDescribeRunWhen.js';
-import { getRunVerdict } from './utils/getRunVerdict.js';
+import { getStandingVerdict } from './utils/getStandingVerdict.js';
 import WorkflowRefLabel from './WorkflowRefLabel.vue';
 import * as l from './WorkflowRow.loc.js';
 import type { WorkflowRowRef, WorkflowRowStanding, WorkflowState } from './WorkflowTypes.js';
@@ -92,10 +92,11 @@ const lastResult = computed(() => {
     return t(l.failedWhen, { when: describeRunWhen(workflow.latestFailedRun.createdAt, props.now) });
   }
 
-  const withVerdict = workflow.state === 'disabled' ? null : runs.value.findLast(run => getRunVerdict(run) !== null);
+  const withVerdict =
+    workflow.state === 'disabled' ? null : runs.value.findLast(run => getStandingVerdict(run) !== null);
   if (withVerdict) {
     const when = describeRunWhen(withVerdict.createdAt, props.now);
-    return getRunVerdict(withVerdict) === 'failed' ? t(l.failedWhen, { when }) : t(l.passedWhen, { when });
+    return getStandingVerdict(withVerdict) === 'failed' ? t(l.failedWhen, { when }) : t(l.passedWhen, { when });
   }
 
   const latest = runs.value.at(-1);

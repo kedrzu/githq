@@ -215,3 +215,35 @@ test('a workflow only comments ran, such as CLA, is pull requests only', () => {
 
     expect(namesByGroup(list)).toEqual([['pullRequestsOnly', ['CLA']]]);
 });
+
+test('a run being re-run counts by the verdict it had: a pass keeps the row passing', () => {
+    const list = build({
+        workflows: [
+            {
+                id: 1,
+                name: 'Only run',
+                runs: [{ conclusion: null, ago: '1h', beforeRerun: 'success' }],
+            },
+        ],
+    });
+
+    expect(namesByGroup(list)).toEqual([['passing', ['Only run']]]);
+    expect(list.groups[0]?.rows[0]?.gitRef).toEqual({ name: 'main', kind: 'branch' });
+});
+
+test('a pull requests’ run being re-run still counts as the failure it was', () => {
+    const list = build({
+        workflows: [
+            {
+                id: 1,
+                name: 'CLA',
+                runs: [
+                    { conclusion: 'success', ago: '3h', event: 'pull_request', branch: 'a' },
+                    { conclusion: null, ago: '1h', event: 'pull_request', branch: 'b', beforeRerun: 'failure' },
+                ],
+            },
+        ],
+    });
+
+    expect(list.groups[0]?.rows[0]?.standing).toEqual({ kind: 'pullRequestsOnly', failedCount: 1 });
+});

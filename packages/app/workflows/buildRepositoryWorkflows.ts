@@ -4,7 +4,6 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import { getRepositoryWorkflowState, RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRowRef } from './utils/getRowRef.js';
-import { getRunVerdict } from './utils/getRunVerdict.js';
 import { getStandingVerdict } from './utils/getStandingVerdict.js';
 import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
 import { isPullRequestRun } from './utils/isPullRequestRun.js';
@@ -224,7 +223,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
     const ownRuns = runs.filter(run => !isPullRequestRun(run));
     if (ownRuns.length === 0 && runs.length > 0) {
         const shown = runs.slice(-RUN_STRIP_SLOTS);
-        const failedCount = shown.filter(run => getRunVerdict(run) === 'failed').length;
+        const failedCount = shown.filter(run => getStandingVerdict(run) === 'failed').length;
         return {
             group: 'pullRequestsOnly',
             entry: { ...row, standing: { kind: 'pullRequestsOnly', failedCount }, gitRef: null, runs: shown },
@@ -248,7 +247,7 @@ function placeWorkflow({ stored, entry, workflow, alertsOff }: PlaceWorkflowPara
         };
     }
 
-    const latest = ownRuns.findLast(run => getRunVerdict(run) !== null);
+    const latest = ownRuns.findLast(run => getStandingVerdict(run) !== null);
     const latestRef = getRowRef(stored, latest?.headBranch ?? null);
 
     if (latest) {

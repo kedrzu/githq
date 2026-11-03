@@ -59,6 +59,23 @@ test('a run under a minute old reads "just now", never "now ago"', async () => {
     await expect.element(page.getByText('Broke just now')).toBeVisible();
 });
 
+test('a re-run of a passed run after a red one reads as it stands: passed, not the red one before it', async () => {
+    const workflow = sampleWorkflowState({
+        id: 1,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'failure', ago: '2h' },
+            { conclusion: null, ago: '1h', beforeRerun: 'success' },
+        ],
+    });
+
+    await Passing.run({ args: { ...Passing.args, workflow } });
+
+    await expect.element(page.getByText(/^Passing/u)).toBeVisible();
+    await expect.element(page.getByText('passed 1h ago')).toBeVisible();
+    await expect.element(page.getByText('failed 2h ago')).not.toBeInTheDocument();
+});
+
 test('a failure on no named ref says so in words, with no ref', async () => {
     await FailingOnNoRef.run();
     await expect.element(page.getByText('Failing without alerts')).toBeVisible();

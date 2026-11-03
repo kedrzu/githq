@@ -34,6 +34,8 @@ export interface SampleRun {
     readonly title?: string;
     /** How long it ran, in seconds, from its creation; not known unless given. */
     readonly seconds?: number;
+    /** The conclusion it had before the re-run going now, with a `conclusion` of `null`. */
+    readonly beforeRerun?: string;
 }
 
 /** A sample workflow and its runs. */
@@ -140,6 +142,7 @@ function sampleStoredWorkflow(repository: string, params: SampleWorkflowParams):
             displayTitle: sample.title ?? '',
             updatedAt: new Date(createdAt + (sample.seconds ?? 0) * 1000).toISOString(),
             ...(sample.seconds !== undefined && { runStartedAt: new Date(createdAt).toISOString() }),
+            ...(sample.beforeRerun !== undefined && { conclusionBeforeRerun: sample.beforeRerun }),
         };
     });
 
