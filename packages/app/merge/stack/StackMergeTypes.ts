@@ -46,26 +46,12 @@ export interface StackMerge {
     readonly freshChecks: boolean;
     /** What stops the range as the line has it; `null` when every one going can land. */
     readonly block: StackMergeBlock | null;
-    /** Where the stack stands in a merge queue, when it is there or was thrown out (SP54); `null` otherwise. */
-    readonly queue: StackMergeQueue | null;
+    /**
+     * In a merge queue: its first open one holds an entry, as a single pull request does (SP54). Each member has an entry
+     * and a position of its own (live, 2026-11-03): the group's place is the first one's, and each row says its own.
+     */
+    readonly queued: boolean;
 }
-
-/**
- * A stack in a merge queue, each member with an entry and a position of its own (live, 2026-11-03): the group's place is
- * its first one's, and each row says its own; or out of it: the first the queue took back — GitHub says it won't merge,
- * or it has no entry any more and is still open, and this session didn't take it out itself — the later ones leaving
- * with it (SP54). GitHub's entry doesn't say why, so neither does the panel.
- */
-export type StackMergeQueue =
-    | { readonly kind: 'in' }
-    | {
-          readonly kind: 'out';
-          readonly thrownOut: PullRequestItem;
-          /** The open ones after it. */
-          readonly left: readonly PullRequestItem[];
-          /** One of them still holds an entry: adding it again has to wait until GitHub takes it out. */
-          readonly stillThere: boolean;
-      };
 
 /** What stops a stack's range. */
 export type StackMergeBlock = StackIncompleteBlock | StackNeedsRebaseBlock | StackClosedBlock | StackHeldBlock;
@@ -130,7 +116,7 @@ export interface StackMergeMissingRow {
 /**
  * What a row says of its pull request: its own state as its pip shows it; staying open below the line (SP41); held
  * by an earlier one — blocked, or green itself (SP45, SP48); its checks running again after earlier ones landed (SP58);
- * being merged (SP56); in a merge queue, thrown out of it, or left it with the one thrown out (SP54).
+ * being merged (SP56); in a merge queue (SP54).
  */
 export type StackMergeRowState =
     | { readonly kind: 'own'; readonly pip: StackPullRequestPipKind }
@@ -139,9 +125,7 @@ export type StackMergeRowState =
     | { readonly kind: 'heldBy'; readonly number: number }
     | { readonly kind: 'freshChecks' }
     | { readonly kind: 'merging' }
-    | { readonly kind: 'queued'; readonly entry: PullRequestQueueEntry }
-    | { readonly kind: 'thrownOut' }
-    | { readonly kind: 'leftWithIt' };
+    | { readonly kind: 'queued'; readonly entry: PullRequestQueueEntry };
 
 /** A stack's merge as the merge panel shows it (stacked PRs D11). */
 export interface StackMergeView {

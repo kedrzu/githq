@@ -75,8 +75,6 @@ const Harness = defineComponent({
         allowedMergeMethods: { type: Array as PropType<readonly PullRequestMergeMethod[] | null>, default: null },
         /** GitHub says the viewer may merge past what isn't met. */
         admin: { type: Boolean, default: false },
-        /** The members this session saw in a merge queue. */
-        queued: { type: Array as PropType<readonly string[]>, default: () => [] },
         viewerEmail: { type: String as PropType<string | null>, default: null },
     },
     setup(props) {
@@ -97,7 +95,6 @@ const Harness = defineComponent({
                     movedEnd.value === undefined
                         ? getStackMergeEnd({ description: description.value, openedOn: props.openedOn })
                         : movedEnd.value,
-                queued: props.queued,
             }),
         );
         const pr = computed(() => members.value.find(member => member.state === 'OPEN') ?? members.value[0]);
@@ -525,8 +522,8 @@ export const QueueOneGoing: Story = { args: { members: SEARCH, openedOn: 1212, v
 /** SP54: in the queue, the group's place is its first one's and each row says its own; all that is left is to leave. */
 export const InQueue: Story = { args: { members: searchInQueue(), admin: true } };
 
-/** SP54: GitHub says the first won't merge: thrown out, the later ones with it; nothing to add again until they are out. */
-export const ThrownOutUnmergeable: Story = {
+/** SP54, PM16: GitHub says the first won't merge, and still holds it: it reads as a single pull request's, and can leave. */
+export const InQueueWontMerge: Story = {
     args: {
         members: searchInQueue().map((member, index) =>
             index === 0 ? { ...member, mergeQueueEntry: { ...SEARCH_ENTRY, state: 'UNMERGEABLE' as const } } : member,
@@ -534,24 +531,12 @@ export const ThrownOutUnmergeable: Story = {
     },
 };
 
-/** SP54: seen in the queue, no entry now and still open: it says which one and adds again; why is GitHub's to say. */
-export const ThrownOutEntryGone: Story = {
-    args: { members: SEARCH, queued: SEARCH.map(member => member.id) },
-};
-
-/** SP54: the first went through the queue and the second was thrown out: the last left with it. */
-export const ThrownOutAfterOneLanded: Story = {
+/** SP54: the first went through the queue: the group's place is the next one's. */
+export const InQueueOneLanded: Story = {
     args: {
-        members: SEARCH.map((member, index) => (index === 0 ? { ...member, state: 'MERGED', merged: true } : member)),
-        queued: SEARCH.map(member => member.id),
-    },
-};
-
-/** SP54: the last one thrown out, none after it. */
-export const ThrownOutLast: Story = {
-    args: {
-        members: SEARCH.map((member, index) => (index < 2 ? { ...member, state: 'MERGED', merged: true } : member)),
-        queued: SEARCH.map(member => member.id),
+        members: searchInQueue().map((member, index) =>
+            index === 0 ? { ...member, state: 'MERGED', merged: true, mergeQueueEntry: null } : member,
+        ),
     },
 };
 

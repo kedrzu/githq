@@ -604,7 +604,7 @@ test('SP53: a stack on a queue branch sends the sha alone to its top — whose o
         expect(items.get(id)).not.toHaveProperty('merging');
     }
 
-    expect(lateEnds).toEqual([{ kind: 'enqueued' }]);
+    expect(lateEnds).toEqual([]);
     expect(queue.failures).toEqual([]);
 });
 

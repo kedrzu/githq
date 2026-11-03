@@ -170,7 +170,7 @@ test('SP53, SP54: ⌘↵ on a stack sends the head commit alone to its top; each
     expect(getMergeRequests(github)).toHaveLength(1);
 });
 
-test('SP54: taken out from the panel, a stack goes through its first one, whole, and never reads as thrown out', async ({
+test('SP54: taken out from the panel, a stack goes through its first one, whole, and the rest is read again', async ({
     page,
     github,
 }) => {
@@ -187,28 +187,33 @@ test('SP54: taken out from the panel, a stack goes through its first one, whole,
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
     await expect(panel.stackMembers).toHaveText([/1st/, /2nd/]);
+    const readsBefore = getOperationCalls(github, 'PullRequestStacks').length;
     await page.keyboard.press('Shift+Q');
 
     await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.stackMembers).not.toHaveText([/1st/, /2nd/]);
     expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: first }]);
+    expect(getOperationCalls(github, 'PullRequestStacks').length).toBeGreaterThan(readsBefore);
     expect(world.queuePositionOf(first)).toBeNull();
     expect(world.queuePositionOf(top)).toBeNull();
-    await expect(panel.root).not.toContainText('Out of the queue');
-    await expect(panel.root).not.toContainText('thrown out');
 
-    // Opened again it reads the stack as it does: still not thrown out.
+    // Opened again it reads as any stack, and goes in again.
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
     await expect(panel.primary).toHaveText('Add all 2 to the queue');
-    await expect(panel.root).not.toContainText('Out of the queue');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+    await expect.poll(() => world.queuePositionOf(first)).toBe(1);
 });
 
-test('SP54: a stack whose entries went elsewhere reads as thrown out: this session did not take it out', async ({
+test('SP54: a stack whose entries went elsewhere reads as any stack, whyever they did, and ⌘↵ adds it again', async ({
     page,
     github,
 }) => {
+    // Time runs as usual, and the minute to the next poll of the statuses can be skipped.
+    await page.clock.install();
     const { world, first, top } = createQueueStack();
     const { myWork } = await openMyWork(page, github, world);
     const panel = new MergePanelHarness(page);
@@ -225,10 +230,15 @@ test('SP54: a stack whose entries went elsewhere reads as thrown out: this sessi
     await expect(panel.root).toBeHidden();
 
     world.dequeue(first);
+    await page.clock.fastForward('01:00');
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
 
-    await expect(panel.root).toContainText('Out of the queue');
-    await expect(panel.root).toContainText('#41 was thrown out, the later ones left with it');
+    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.takeOutButton).toBeHidden();
     expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([]);
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+    await expect.poll(() => world.queuePositionOf(first)).toBe(1);
+    expect(world.queuePositionOf(top)).toBe(2);
 });

@@ -12,13 +12,11 @@ const {
     BypassFirst,
     BypassNotTheSecond,
     InQueue,
+    InQueueOneLanded,
+    InQueueWontMerge,
     QueueOneGoing,
     QueueSome,
     QueueWhole,
-    ThrownOutAfterOneLanded,
-    ThrownOutEntryGone,
-    ThrownOutLast,
-    ThrownOutUnmergeable,
     ClosedInside,
     DraftInside,
     Held,
@@ -469,53 +467,34 @@ test('SP54, PM15: a stack in the queue offers taking it out, on ⇧Q and its but
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
 });
 
-test('SP54: thrown out, there is nothing to take out: ⇧Q does nothing', async () => {
-    await ThrownOutUnmergeable.run();
+test("SP54, PM16: GitHub says it won't merge — it reads as a single pull request's, no reason made up, and can leave", async () => {
+    await InQueueWontMerge.run();
 
-    await expect.element(panel()).toHaveTextContent('Out of the queue');
+    await expect.element(panel()).toHaveTextContent("In the queue, won't merge");
+    await expect.element(panel()).toHaveTextContent('2nd · unmergeable');
+    await expect.element(member(1212)).toHaveTextContent('2nd · unmergeable');
+    await expect.element(member(1213)).toHaveTextContent('3rd · waiting for checks');
+    await expect.element(panel()).not.toHaveTextContent('Checks failed');
+    await userEvent.keyboard('{Shift>}Q{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+});
+
+test('SP54: the first gone through the queue, it reads merged and the group is the next one in', async () => {
+    await InQueueOneLanded.run();
+
+    await expect.element(member(1212)).toHaveTextContent('Merged');
+    await expect.element(panel()).toHaveTextContent('In the queue3rd · waiting for checks');
+    await expect.element(page.getByRole('button', { name: /Take out of queue/ })).toBeVisible();
+});
+
+test('SP54: no entry is an ordinary stack: nothing to take out, and ⌘↵ adds it', async () => {
+    await QueueWhole.run();
+
     await expect.element(page.getByRole('button', { name: /Take out of queue/ })).not.toBeInTheDocument();
     await userEvent.keyboard('{Shift>}Q{/Shift}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
-});
-
-test('SP54: UNMERGEABLE — it names the one, the later ones left with it, no reason made up; nothing to add again yet', async () => {
-    await ThrownOutUnmergeable.run();
-
-    await expect.element(panel()).toHaveTextContent('Out of the queue');
-    await expect.element(panel()).toHaveTextContent('#1212 was thrown out, the later ones left with it');
-    await expect.element(member(1212)).toHaveTextContent('Thrown out of the queue');
-    await expect.element(member(1213)).toHaveTextContent('Left with it');
-    await expect.element(panel()).not.toHaveTextContent('Checks failed');
-    await expect.element(primary('Add again')).toBeDisabled();
-});
-
-test('SP54: the entry gone with it still open — ⌘↵ adds again, O goes to the one thrown out', async () => {
-    await ThrownOutEntryGone.run();
-
-    await expect.element(panel()).toHaveTextContent('#1212 was thrown out, the later ones left with it');
-    await expect.element(footer()).toHaveTextContent('#1212 on GitHub');
-    await userEvent.keyboard('o');
-    await expect
-        .element(page.getByTestId('sent'))
-        .toHaveTextContent('Visit: https://github.com/fitloop/webapp/pull/1212');
-
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('"going":[1212,1213,1214]');
-});
-
-test('SP54: those that went through read merged; the thrown out one is the first still open', async () => {
-    await ThrownOutAfterOneLanded.run();
-
-    await expect.element(member(1212)).toHaveTextContent('Merged');
-    await expect.element(panel()).toHaveTextContent('#1213 was thrown out, the later ones left with it');
-    await expect.element(member(1214)).toHaveTextContent('Left with it');
-});
-
-test('SP54: the last one thrown out has no later ones to speak of', async () => {
-    await ThrownOutLast.run();
-
-    await expect.element(panel()).toHaveTextContent('#1214 was thrown out');
-    await expect.element(panel()).not.toHaveTextContent('later ones');
 });
 
 test('SP55: the line speaks of the first alone, ⌥⌘↵ lands exactly that one; ⌘↵ never does', async () => {

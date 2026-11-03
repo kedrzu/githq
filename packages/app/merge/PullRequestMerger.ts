@@ -139,8 +139,8 @@ export const PullRequestMerger = defineService({
         }
 
         /** What GitHub holds of a pull request it put in the merge queue, with its stack's when in one. */
-        async function readQueued(item: PullRequestItem): Promise<boolean> {
-            return item.stack ? await readStack(item.stack.id, item.stack.size) : (await readOptions(item.id)) !== null;
+        async function readQueued(item: PullRequestItem) {
+            await (item.stack ? readStack(item.stack.id, item.stack.size) : readOptions(item.id));
         }
 
         /**

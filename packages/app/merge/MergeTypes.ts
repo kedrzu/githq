@@ -150,12 +150,10 @@ export type MergeEnd =
       };
 
 /**
- * How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time; or, of a stack's pull
- * request, in the merge queue as read: the session then knows it was there when it no longer is (SP54).
+ * How a merge GitHub accepted ended: merged, refused while it ran, or with no answer in time.
  */
 export type MergeLateEnd =
     | { readonly kind: 'merged' }
-    | { readonly kind: 'enqueued' }
     | { readonly kind: 'refused'; readonly reason: EditFailureReason }
     | { readonly kind: 'unknown' };
 

@@ -25,7 +25,7 @@ test('the range starts at the first open member, merged ones before it listed bu
     expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
 });
 
-test('SP54: in a queue when the first one holds an entry; none noted and none held, it is no queue’s business', () => {
+test('SP54: in a queue when its first open one holds an entry, whatever GitHub says of it; with none, an ordinary stack', () => {
     const entry = {
         position: 2,
         state: 'QUEUED',
@@ -33,39 +33,15 @@ test('SP54: in a queue when the first one holds an entry; none noted and none he
         enqueuedAt: '',
         enqueuer: 'a',
     } as const;
+    const queued = (members: Parameters<typeof stackOf>[0]) =>
+        getStackMerge({ description: stackOf(members), end: null }).queued;
 
-    expect(getStackMerge({ description: stackOf([{}, {}]), end: null }).queue).toBeNull();
-    expect(
-        getStackMerge({
-            description: stackOf([{ mergeQueueEntry: entry }, { mergeQueueEntry: { ...entry, position: 3 } }]),
-            end: null,
-        }).queue,
-    ).toEqual({ kind: 'in' });
-});
-
-test('SP54: thrown out: GitHub says UNMERGEABLE, or the entry is gone and it is still open — the first such, later ones with it', () => {
-    const entry = {
-        position: 2,
-        state: 'QUEUED',
-        estimatedTimeToMerge: null,
-        enqueuedAt: '',
-        enqueuer: 'a',
-    } as const;
-    const unmergeable = { ...entry, state: 'UNMERGEABLE' } as const;
-
-    const said = getStackMerge({
-        description: stackOf([{ mergeQueueEntry: unmergeable }, { mergeQueueEntry: entry }]),
-        end: null,
-    }).queue;
-    expect(said).toMatchObject({ kind: 'out', thrownOut: { number: 1 }, stillThere: true });
-
-    const description = stackOf([MERGED, {}, {}]);
-    const ids = description.pips.flatMap(pip => (pip.kind === 'missing' ? [] : [pip.pullRequest.id]));
-    const gone = getStackMerge({ description, end: null, queued: ids }).queue;
-    expect(gone).toMatchObject({ kind: 'out', thrownOut: { number: 2 }, left: [{ number: 3 }], stillThere: false });
-
-    // Never seen in a queue, an entry gone says nothing.
-    expect(getStackMerge({ description, end: null }).queue).toBeNull();
+    expect(queued([{}, {}])).toBe(false);
+    expect(queued([{ mergeQueueEntry: entry }, { mergeQueueEntry: { ...entry, position: 3 } }])).toBe(true);
+    expect(queued([{ mergeQueueEntry: { ...entry, state: 'UNMERGEABLE' } }, { mergeQueueEntry: entry }])).toBe(true);
+    expect(queued([MERGED, { mergeQueueEntry: entry }])).toBe(true);
+    // The first left: the rest are GitHub's to take with it, and it goes back in as any stack.
+    expect(queued([{}, { mergeQueueEntry: entry }])).toBe(false);
 });
 
 test('↑ and ↓ move the line one open member at a time, clamped to the first and the last open one (D18)', () => {

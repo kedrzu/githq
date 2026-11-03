@@ -225,9 +225,14 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 > **Checked 2026-11-03 (live, stack #44 of #41, #42 on a queue branch):** `merge-async` with `sha` only on the top answers `enqueued`, and each
 > member gets its own entry and position (1 and 2), not one shared. `dequeuePullRequest` on the top is refused ("No merge queue found for
 > branch"), on the first it takes the whole stack out. Under a ruleset with no bypass list `viewerCanMergeAsAdmin` is false. So the
-> panel (SP54) gives the group's place as the first one's and each row its own, and "Take out of queue" (`⇧Q`) goes to the first one
-> queued, whichever member asked. Its answer can still say the old state, so githq reads the members again; taken out from the panel,
-> a stack doesn't read as thrown out, as one taken out elsewhere still does: nothing tells that apart from the queue dropping it.
+> panel (SP54) gives the group's place as the first one's and each row its own, and "Take out of queue" (`⇧Q`) is one dequeue of the
+> first open one, after which githq reads the stack again. GitHub's answer names no pull request and a read just after can still say
+> the old state, so GitHub accepting it is the whole answer: no such read turns it into a failure.
+>
+> **Decided 2026-11-03 (owner):** in a merge queue a stack behaves like a single pull request. Its first open one holds an entry: "In the
+> queue" with "Take out of queue", and an `UNMERGEABLE` entry reads as PM16's "In the queue, won't merge". No entry: an ordinary stack, and
+> `⌘↵` adds it again. GitHub's state doesn't say why an entry left (thrown out, or taken out on github.com or here all look the same), so
+> githq doesn't say either, and nothing about the queue is remembered in the session.
 
 **Rejected.**
 
@@ -236,6 +241,10 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 - Per pull request wording for how a merge ended (SP59's "Refused" and "Still open", SP60's own screen, SP62's rows) — a refused stack
   lands nothing (checked above), and the rows of the stack read again already say what is true. One band carries GitHub's words, and
   "Merge stopped at #N" remains for a stack that did land in part. (owner, 2026-11-02)
+- A session's memory of a stack seen in the queue, to say "#N was thrown out, the later ones left with it" once its entries are gone (SP54 as
+  first drawn) — it misread a removal on github.com, was lost on reload, and an `UNMERGEABLE` entry read "Out of the queue" while GitHub still
+  held it, with no action in the panel. (owner, 2026-11-03)
+- Reading `RemovedFromMergeQueueEvent` to say why an entry left — worth adding only if the sentence is missed. (owner, 2026-11-03)
 
 ## D12
 

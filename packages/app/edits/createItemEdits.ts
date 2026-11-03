@@ -1,9 +1,4 @@
-import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
-import type {
-    PullRequestBranchUpdateMethod,
-    PullRequestStatusesQuery,
-    PullRequestStatusFieldsFragment,
-} from '@githq/github/generated.gen.js';
+import type { PullRequestBranchUpdateMethod, PullRequestStatusFieldsFragment } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { describeProjectFieldValue } from '@/projects/describeProjectFieldValue.js';
@@ -27,7 +22,6 @@ import type {
 } from '@/store/ItemTypes.js';
 import { toItemLabels, toItemProject, toItemReviewRequests, toItemUsers, toPullRequestStatus } from '@/store/toItem.js';
 import { toDetailProject, toDetailReviewRequests, toItemComment } from '@/store/toItemDetail.js';
-import { isPresent } from '@/utils/isPresent.js';
 
 import type { CloseReason, Edit, EditRequest, EditSubject, EditVerdict, ItemEditRequest } from './EditTypes.js';
 import { getProjectItemValueLayer, sendProjectFieldValue, toFieldValue, withValue } from './projectFieldValues.js';
@@ -48,11 +42,6 @@ export interface CreateItemEditsParams {
     readonly viewer: ItemUser;
     /** ISO time: when a comment is shown to have been written. */
     readonly now: string;
-    /**
-     * For a pull request in a stack, the stack's pull requests the copy holds, itself included: leaving a merge queue
-     * goes through the first of them there.
-     */
-    readonly stackMembers?: readonly PullRequestItem[];
 }
 
 /**
@@ -145,7 +134,7 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 ? [createJumpQueueEdit(item)]
                 : [];
         case 'dequeue':
-            return item.kind === 'pullRequest' ? createDequeueEdits(params.stackMembers ?? [item]) : [];
+            return item.kind === 'pullRequest' && item.mergeQueueEntry ? [createDequeueEdit(item)] : [];
         default:
             return assertNever(request);
     }
@@ -679,49 +668,17 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
 }
 
 /**
- * Takes it out of the merge queue, with the rest of its stack. GitHub refuses this on a stack's later member and on the
- * first one takes every entry out at once (live, 2026-11-03), so it is sent once, to the first one queued, with an edit
- * of each one queued to draw it out. GitHub's answer can still hold the old state (same check): what it holds is read
- * again, and left to the next sync when that could not be read. Read out, it is drawn out only of the queue and only
- * for a moment, as the next read can still hold the entry; another entry, added since, shows through. A refusal is one
- * failure, the first one's; the others' layers go without a word.
+ * Takes it out of the merge queue; on a stack's first one, the whole stack: GitHub refuses this on a later one (live,
+ * 2026-11-03), so whoever asks names the first, and reads the others again. GitHub accepting it is all it says, and a
+ * read just after can still hold the entry (same check), so no read can refuse it: it is drawn out only of the queue and
+ * only for a moment, the reads then saying what GitHub holds; another entry, added since, shows through.
  */
-function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
-    const queued = stackMembers
-        .filter(member => member.mergeQueueEntry)
-        .toSorted((a, b) => (a.stack?.position ?? 0) - (b.stack?.position ?? 0));
-    const [first] = queued;
-    if (!first) {
-        return [];
-    }
-
-    let leaving: Promise<PullRequestStatusesQuery['nodes']> | undefined;
-
-    return queued.map((member): Edit => ({
-        ...base(member, { kind: 'dequeued' }),
+function createDequeueEdit(item: PullRequestItem): Edit {
+    return {
+        ...base(item, { kind: 'dequeued' }),
         optimistic: { item: withoutQueueEntry },
         send: async ({ sdk }) => {
-            leaving ??= leave(sdk, first.id);
-            let nodes;
-            try {
-                nodes = await leaving;
-            } catch (error) {
-                if (member === first) {
-                    throw error;
-                }
-
-                return { kind: 'unknown' };
-            }
-
-            const node = nodes.find(read => isPresent(read) && read.id === member.id) ?? null;
-            if (!isPresent(node)) {
-                return { kind: 'unknown' };
-            }
-
-            if (node.mergeQueueEntry) {
-                return member === first ? dropped() : { kind: 'unknown' };
-            }
-
+            await sdk.DequeuePullRequest({ id: item.id });
             return {
                 kind: 'confirmed',
                 layer: {
@@ -729,21 +686,12 @@ function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
                     supersededBy: stored =>
                         stored.kind === 'pullRequest' &&
                         stored.mergeQueueEntry !== null &&
-                        stored.mergeQueueEntry.enqueuedAt !== member.mergeQueueEntry?.enqueuedAt,
+                        stored.mergeQueueEntry.enqueuedAt !== item.mergeQueueEntry?.enqueuedAt,
                     heldFor: DEQUEUED_HOLD_MS,
                 },
             };
         },
-    }));
-
-    async function leave(sdk: GitHubSdk, id: string): Promise<PullRequestStatusesQuery['nodes']> {
-        await sdk.DequeuePullRequest({ id: id });
-        try {
-            return (await sdk.PullRequestStatuses({ ids: queued.map(member => member.id) })).nodes;
-        } catch {
-            return [];
-        }
-    }
+    };
 }
 
 function withoutQueueEntry(item: Item): Item {

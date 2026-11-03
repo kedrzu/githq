@@ -3,7 +3,7 @@ import type { StackDescription, StackPullRequestPip } from '@/store/stacks/descr
 import { findStackHolder } from '@/store/stacks/findStackHolder.js';
 import { toStackBlocker } from '@/store/stacks/toStackBlocker.js';
 
-import type { StackMerge, StackMergeBlock, StackMergeQueue, StackRebaseCause } from './StackMergeTypes.js';
+import type { StackMerge, StackMergeBlock, StackRebaseCause } from './StackMergeTypes.js';
 
 /** What a stack's merge is worked out from. */
 export interface GetStackMergeParams {
@@ -14,8 +14,6 @@ export interface GetStackMergeParams {
      * open one before it (the first open one when there is none), one not in the stack to the last open one.
      */
     readonly end: number | null;
-    /** Its pull requests this session saw in a merge queue: one with no entry now and still open was thrown out. */
-    readonly queued?: readonly string[];
 }
 
 /**
@@ -28,7 +26,7 @@ export interface GetStackMergeParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function getStackMerge(params: GetStackMergeParams): StackMerge {
-    const { description, queued = [] } = params;
+    const { description } = params;
     const members = description.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing');
     const open = members.filter(pip => isOpenPullRequest(pip.pullRequest)).map(pip => pip.pullRequest);
     const going = open.slice(0, getEndIndex() + 1);
@@ -46,20 +44,8 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
         checksOf: holder?.pullRequest ?? open[0] ?? null,
         freshChecks: description.landed > 0 && canLand === 0 && holder?.kind === 'moving',
         block,
-        queue: getQueue(),
+        queued: open[0]?.mergeQueueEntry != null,
     };
-
-    function getQueue(): StackMergeQueue | null {
-        const first = open.find(pr => pr.mergeQueueEntry?.state === 'UNMERGEABLE');
-        const thrownOut = first ?? open.find(pr => queued.includes(pr.id) && !pr.mergeQueueEntry && !pr.merging);
-        if (thrownOut) {
-            const left = open.slice(open.indexOf(thrownOut) + 1);
-            const stillThere = thrownOut.mergeQueueEntry !== null || left.some(pr => pr.mergeQueueEntry !== null);
-            return { kind: 'out', thrownOut, left, stillThere };
-        }
-
-        return open[0]?.mergeQueueEntry ? { kind: 'in' } : null;
-    }
 
     function getEndIndex(): number {
         const at = members.findIndex(pip => pip.pullRequest.number === params.end);

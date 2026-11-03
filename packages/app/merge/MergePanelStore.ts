@@ -117,7 +117,6 @@ export const MergePanelStore = defineService({
         const openingRef = shallowRef(0);
         const recordsRef = shallowRef<ReadonlyMap<string, MergeRecord>>(new Map());
         const sentRef = shallowRef<ReadonlyMap<string, SentMerge>>(new Map());
-        const queuedRef = shallowRef<ReadonlyMap<string, readonly string[]>>(new Map());
         const confirmationsRef = shallowRef<readonly MergeConfirmation[]>([]);
         let onSent: (() => void) | undefined;
         let nextConfirmationId = 1;
@@ -125,7 +124,6 @@ export const MergePanelStore = defineService({
         accounts.onChange(() => {
             recordsRef.value = new Map();
             sentRef.value = new Map();
-            queuedRef.value = new Map();
             confirmationsRef.value = [];
         });
 
@@ -164,9 +162,6 @@ export const MergePanelStore = defineService({
             getRecord,
             findRecordHolder,
             getSent,
-            getQueued,
-            noteQueued,
-            forgetQueued,
             noteHeadCommit,
             forget,
             dismissConfirmation,
@@ -219,30 +214,6 @@ export const MergePanelStore = defineService({
         /** The method and text the pull request's last merge that did not end merged was sent with, for the session. */
         function getSent(itemId: string): SentMerge | null {
             return sentRef.value.get(itemId) ?? null;
-        }
-
-        /**
-         * The stack's pull requests this session saw in a merge queue, since the last merge sent from its panel or the
-         * last time it took the stack out: one still open and no longer there was thrown out (SP54). Reactive.
-         */
-        function getQueued(stackId: string): readonly string[] {
-            return queuedRef.value.get(stackId) ?? [];
-        }
-
-        function noteQueued(stackId: string, itemIds: readonly string[]) {
-            const known = getQueued(stackId);
-            const added = itemIds.filter(itemId => !known.includes(itemId));
-            if (added.length > 0) {
-                queuedRef.value = new Map(queuedRef.value).set(stackId, [...known, ...added]);
-            }
-        }
-
-        function forgetQueued(stackId: string) {
-            if (queuedRef.value.has(stackId)) {
-                const queued = new Map(queuedRef.value);
-                queued.delete(stackId);
-                queuedRef.value = queued;
-            }
         }
 
         /**
@@ -314,9 +285,6 @@ export const MergePanelStore = defineService({
             // The next merge of it ends what is known of the last, a stack's that took it included.
             const last = findRecordHolder(item.id);
             forget(item.id, ...(going ?? []), ...(last === null ? [] : [last]));
-            if (item.stack) {
-                forgetQueued(item.stack.id);
-            }
 
             const answer = await merger.merge({
                 item,
@@ -327,12 +295,6 @@ export const MergePanelStore = defineService({
                     switch (end.kind) {
                         case 'merged':
                             confirm();
-                            return;
-                        case 'enqueued':
-                            if (item.stack) {
-                                noteQueued(item.stack.id, going ?? [item.id]);
-                            }
-
                             return;
                         case 'unknown':
                             keep({ kind: 'unknown', sent, at: clock.now(), accepted: true });

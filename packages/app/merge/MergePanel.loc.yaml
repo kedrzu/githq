@@ -310,16 +310,6 @@ setByQueueLine:
   en: Set by the queue
 eachOwnCommit:
   en: each its own commit
-stackOutOfQueue:
-  en: Out of the queue
-stackThrownOut:
-  en: '#{number} was thrown out, the later ones left with it'
-stackThrownOutAlone:
-  en: '#{number} was thrown out'
-addAgain:
-  en: Add again
-numberOnGitHub:
-  en: '#{number} on GitHub'
 bypassTitle:
   en: You may merge past these requirements
 bypassTitleOf:

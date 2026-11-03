@@ -19,7 +19,3 @@ heldBy:
   en: 'Green itself, held by #{number}'
 freshChecks:
   en: Fresh checks running
-thrownOut:
-  en: Thrown out of the queue
-leftWithIt:
-  en: Left with it

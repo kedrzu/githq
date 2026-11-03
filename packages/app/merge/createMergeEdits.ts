@@ -42,10 +42,9 @@ export interface CreateMergeEditsParams {
     /** Told how a merge GitHub accepted ended while it ran: merged, refused, or no answer in time. */
     readonly onLateEnd: (end: MergeLateEnd) => void;
     /**
-     * Reads what GitHub holds into the stores, once the merge put it in the merge queue. Resolves whether it was read;
-     * never rejects.
+     * Reads what GitHub holds into the stores, once the merge put it in the merge queue. Never rejects.
      */
-    readonly readQueued: () => Promise<boolean>;
+    readonly readQueued: () => Promise<void>;
     /**
      * Whether the merge panel shows the pull request: a refusal is then the panel's to show, and otherwise a failed
      * edit, so a panel closed before GitHub answered does not lose it.
@@ -286,13 +285,10 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
 
     /**
      * GitHub put it in the merge queue, and those going with it: confirmed once what it holds is read, or left to the
-     * next sync when that could not be. Only read in the queue does the session know a stack was there (SP54).
+     * next sync when that could not be.
      */
     async function readEnqueued(): Promise<EditVerdict> {
-        if ((await readQueued()) && item.stack) {
-            onLateEnd({ kind: 'enqueued' });
-        }
-
+        await readQueued();
         return { kind: 'confirmed', layer: UNCHANGED };
     }
 

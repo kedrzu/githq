@@ -81,7 +81,8 @@ differs:
 - **Draft inside a stack:** blocks whatever comes after it, like any unready pull request.
 - **Copy not complete yet:** fewer pull requests in githq than the stack's size. Must not read as ready.
 - **Being merged:** a stack takes longer than one pull request; the existing "being merged" state applies to every pull request going.
-- **In a merge queue:** the stack enters as one group. If a pull request is thrown out, the later ones go with it.
+- **In a merge queue:** the stack enters as one group and behaves like one pull request: with an entry it reads in the queue and can be taken out,
+  with none it is an ordinary stack that can be added again. GitHub's state doesn't say why an entry left, so neither does githq.
 - **Someone else's stack:** a colleague asked for review of two of four. The entry is whole, and what is asked of the user shows.
 - **A chain nobody linked:** pull requests based on each other that aren't a stack on GitHub stay ordinary rows. An opened one offers to link it.
 

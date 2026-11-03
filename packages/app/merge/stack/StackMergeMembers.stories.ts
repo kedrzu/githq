@@ -141,13 +141,6 @@ export const Queued: Story = {
     },
 };
 
-/** SP54: the first thrown out of the merge queue, the later ones having left with it. */
-export const ThrownOut: Story = {
-    args: {
-        rows: [going(0, { kind: 'thrownOut' }), going(1, { kind: 'leftWithIt' }), going(2, { kind: 'leftWithIt' })],
-    },
-};
-
 function ownState(pip: StackPullRequestPipKind): StackMergeRowState {
     return { kind: 'own', pip };
 }
