@@ -300,6 +300,60 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     ]);
 });
 
+test('the workflows wait for the open items of the first download, not for the closed ones', async () => {
+    const { session, tracking, workflows } = await setup(sampleWorld());
+    const open = createPromise();
+    session.github.holdIf = request => (request.operation === 'RepositoryIssues' ? open.promise : null);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(actionsRequests(session.github.requests)).toEqual([]);
+
+    session.github.holdIf = request => (isClosedPage(request) ? createPromise().promise : null);
+    open.resolve();
+    await session.clock.advance(0);
+    expect(workflows.getState('acme/web').status).toBe('read');
+    expect(workflows.getState('acme/api').status).toBe('read');
+});
+
+test('a screen asking for the workflows does not wait for the open items', async () => {
+    const { session, tracking, workflows, sync } = await setup(sampleWorld());
+    session.github.holdIf = request => (request.operation === 'RepositoryIssues' ? createPromise().promise : null);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+    expect(actionsRequests(session.github.requests)).toEqual([]);
+
+    sync.pollWorkflowsNow();
+    await session.clock.advance(0);
+    expect(workflows.getState('acme/web').status).toBe('read');
+});
+
+test('a first download that keeps failing does not keep the workflows from being read', async () => {
+    const world = sampleWorld();
+    const { session, tracking, workflows } = await setup(world);
+    world.failing.add('RepositoryIssues null');
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(WORKFLOWS_INTERVAL);
+    expect(workflows.getState('acme/web').status).toBe('read');
+});
+
+test('a reload during the closed items of the first download reads the workflows at once', async () => {
+    const world = sampleWorld();
+    const login = uniqueLogin();
+    const first = await setup(world, { login });
+    first.session.github.holdIf = request => (isClosedPage(request) ? createPromise().promise : null);
+    first.tracking.choose(TRACK_BOTH);
+    await first.session.clock.advance(0);
+
+    const second = await setup(world, {
+        login,
+        persistence: first.persistence,
+        localStorage: first.session.localStorage,
+        holdIf: request => (isClosedPage(request) ? createPromise().promise : null),
+    });
+    await second.session.clock.advance(0);
+    expect(actionsRequests(second.session.github.requests)).not.toEqual([]);
+});
+
 test('an untracked repository is not polled, and its workflows go — here and in the kept copy', async () => {
     const world = sampleWorld();
     const login = uniqueLogin();
@@ -365,6 +419,11 @@ test('an answer on its way when the session ends, or its repository is untracked
 });
 
 /** The world of these tests: acme/web with a broken Deploy, a passing CI and a retired workflow; acme/api with none. */
+/** A page of the closed items of the first download. */
+function isClosedPage(request: TestGraphQLRequest) {
+    return Array.isArray(request.variables.states) && request.variables.states.includes('CLOSED');
+}
+
 function sampleWorld(): TrackingWorld {
     const world = createTrackingWorld();
     const web = world.actions.repository('acme/web');
@@ -408,6 +467,8 @@ interface SetupOptions {
     readonly persistence?: IndexedDbPersistence;
     /** The `localStorage` of an earlier session, to reload it. */
     readonly localStorage?: Map<string, string>;
+    /** Holds back requests from the very first poll on. */
+    readonly holdIf?: (request: TestGraphQLRequest) => Promise<void> | null;
 }
 
 /** Signs a user in against the world, with the sync running, and lets the first poll run. */
@@ -418,6 +479,7 @@ async function setup(world: TrackingWorld, options: SetupOptions = {}) {
         answerRest: request => world.answerRest(request),
         localStorage: options.localStorage,
     });
+    session.github.holdIf = options.holdIf ?? null;
     const persistence = setIndexedDbPersistence(session.container, options.persistence);
 
     const items = session.container.resolve(ItemStore);

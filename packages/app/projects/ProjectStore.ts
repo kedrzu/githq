@@ -36,6 +36,8 @@ interface Session {
     timer: ReturnType<typeof setTimeout> | null;
     /** The write of project items on its way, until it is done. */
     writing: ProjectItemChanges | null;
+    /** Done when the writes asked for so far are: they go one at a time. */
+    saving: Promise<void>;
     /** What other tabs send: held until the kept copy is read, then taken in over it. */
     readonly inbox: TabInbox;
 }
@@ -347,6 +349,16 @@ export const ProjectStore = defineService({
             }
 
             await current.ready;
+            if (!isCurrent(current)) {
+                return;
+            }
+
+            // Waits for the writes before it too: another flush may have taken what this caller changed.
+            current.saving = current.saving.then(() => writeChanges(current));
+            await current.saving;
+        }
+
+        async function writeChanges(current: Session) {
             if (!isCurrent(current) || current.dirtyIds.size === 0) {
                 return;
             }
@@ -524,6 +536,7 @@ export const ProjectStore = defineService({
                 dirtyIds: new Set(),
                 timer: null,
                 writing: null,
+                saving: Promise.resolve(),
                 inbox: createTabInbox(takeIn),
             };
             session = current;

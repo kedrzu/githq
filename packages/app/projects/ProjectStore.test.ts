@@ -14,6 +14,7 @@ import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { toItem } from '@/store/toItem.js';
 import type { ItemProject } from '@/store/ItemTypes.js';
@@ -29,6 +30,39 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { ProjectStore } from './ProjectStore.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
+
+test('a flush is done only when what was changed before it is on disk, whichever flush took it', async () => {
+    const { session, projects } = await setup();
+    await projects.flush();
+
+    const persistence = session.container.resolve(ProjectPersistence);
+    const save = persistence.saveProjectItems.bind(persistence);
+    const held = createPromise();
+    const saved: string[] = [];
+    persistence.saveProjectItems = async (login, changes) => {
+        await held.promise;
+        await save(login, changes);
+        saved.push(...changes.upserted.map(item => item.itemId));
+    };
+
+    const item = assertValue(projects.getStoredItem('PVTI_1'));
+    projects.upsertItems([item]);
+    const first = projects.flush();
+    projects.upsertItems([{ ...item, itemId: 'PVTI_2' }]);
+    let secondDone = false;
+    const second = (async () => {
+        await projects.flush();
+        secondDone = true;
+    })();
+    await new Promise(resolve => {
+        setTimeout(resolve, 10);
+    });
+    expect(secondDone).toBe(false);
+
+    held.resolve();
+    await Promise.all([first, second]);
+    expect(saved).toEqual(['PVTI_1', 'PVTI_2']);
+});
 
 test('a field set from a project view shows there at once, and once GitHub keeps it, it is what the project holds', async () => {
     const { session, projects, editor } = await setup();
