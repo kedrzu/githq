@@ -20,6 +20,22 @@ test('reads the log as the text it is, whatever it looks like', async () => {
     expect(log).toEqual({ status: 200, text: '{"a": 1}' });
 });
 
+test('the log stays out of the browser’s HTTP cache: a private repository’s would outlive signing out', async () => {
+    const requests: Parameters<Fetch>[] = [];
+
+    await readJobLog(restAnswering(new Response('log'), requests), PARAMS);
+
+    expect(requests[0]?.[1]?.cache).toBe('no-store');
+});
+
+test('a request that asks nothing of the cache leaves it to the browser', async () => {
+    const requests: Parameters<Fetch>[] = [];
+
+    await restAnswering(Response.json({}), requests)({ url: '/rate_limit' });
+
+    expect(requests[0]?.[1]?.cache).toBeUndefined();
+});
+
 test.each([404, 410])('a log past retention, answered %d, is gone: a result, not a failure', async status => {
     const rest = restAnswering(Response.json({ message: 'Gone' }, { status }));
 

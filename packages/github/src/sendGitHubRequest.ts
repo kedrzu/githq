@@ -22,6 +22,8 @@ export interface GitHubRequest {
     method: 'GET' | 'POST' | 'PUT';
     headers: Record<string, string>;
     body?: string;
+    /** The browser's HTTP cache for this request; its default without. */
+    cache?: RequestInit['cache'];
 }
 
 /** An answer GitHub did not refuse. */
@@ -52,6 +54,7 @@ export async function sendGitHubRequest(
         method: request.method,
         headers: { ...request.headers, Authorization: `Bearer ${await getToken()}` },
         body: request.body,
+        cache: request.cache,
     });
 
     const rateLimit = readRateLimit(response.headers);
