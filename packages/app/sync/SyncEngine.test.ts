@@ -120,7 +120,7 @@ test('an item GitHub will not show, or shows without a field it refuses, does no
     expect(items.getSyncState('myWork')).toMatchObject({ lastSuccessAt: START + 30_000, lastError: null });
 });
 
-test('each group is written as its search answers: one that fails later leaves the groups before it in place', async () => {
+test('each group is written as its search answers: one that fails leaves the others in place', async () => {
     const github = fakeGitHub();
     github.found.reviewRequested = [pullRequestNode('PR_review', MONDAY)];
     github.found.authored = [pullRequestNode('PR_1', MONDAY)];
@@ -128,9 +128,24 @@ test('each group is written as its search answers: one that fails later leaves t
     github.failSearch = 'assigned';
     const { items } = await setup(github, 'alice');
 
-    expect(items.membership).toEqual({ reviewRequested: new Set(['PR_review']), authored: new Set(['PR_1']) });
+    expect(items.membership).toEqual({
+        reviewRequested: new Set(['PR_review']),
+        authored: new Set(['PR_1']),
+        mentioned: new Set(),
+    });
     expect(items.get('PR_1')?.updatedAt).toBe(MONDAY);
     expect(items.getSyncState('myWork')).toMatchObject({ lastSuccessAt: null, lastError: expect.any(String) });
+});
+
+test('an item two groups hold, found deleted by the read of one, leaves both', async () => {
+    const github = fakeGitHub();
+    github.found.authored = [pullRequestNode('PR_9', MONDAY)];
+    github.found.mentioned = [pullRequestNode('PR_9', MONDAY), issueNode('I_1', MONDAY)];
+    github.deleted.add('PR_9');
+    const { items } = await setup(github, 'alice');
+
+    expect(items.membership.authored).toEqual(new Set());
+    expect(items.membership.mentioned).toEqual(new Set(['I_1']));
 });
 
 test('the open pull requests of my work get their status re-read, without the rest of the item', async () => {
@@ -371,23 +386,26 @@ test('a used-up search allowance pauses the loop until it resets: no request mea
     github.searchAllowance = { remaining: 0, resetAt: START + 90_000 };
     const { sync, clock } = await setup(github, 'alice');
 
-    // The first search reported the bucket empty: the next one is not sent.
-    expect(github.searches()).toHaveLength(1);
+    // The answers reported the bucket empty: the next poll is not sent.
+    expect(github.searches()).toHaveLength(4);
+    await clock.advance(30_000);
+    expect(github.searches()).toHaveLength(4);
     const expectedNotice: SyncNotice = {
         kind: 'paused',
         until: START + 90_000,
         allowance: { resource: 'search', limit: 30, remaining: 0, resetAt: new Date(START + 90_000) },
     };
     expect(sync.notice).toEqual(expectedNotice);
-    const expectedFreshness: Freshness = { kind: 'paused', since: null, until: START + 90_000 };
+    // What it has was read a moment ago: that the next poll waits does not make it stale yet.
+    const expectedFreshness: Freshness = { kind: 'fresh', checkedAt: START };
     expect(sync.myWorkFreshness).toEqual(expectedFreshness);
 
     github.searchAllowance = { remaining: 29, resetAt: START + 150_000 };
-    await clock.advance(89_000);
-    expect(github.searches()).toHaveLength(1);
+    await clock.advance(59_000);
+    expect(github.searches()).toHaveLength(4);
 
     await clock.advance(1000);
-    expect(github.searches()).toHaveLength(5);
+    expect(github.searches()).toHaveLength(8);
     expect(sync.notice).toBeNull();
     expect(sync.myWorkFreshness.kind).toBe('fresh');
 });
@@ -419,19 +437,28 @@ test("polling pauses with the GraphQL allowance down to what is kept for the use
     expect(items.get('I_1')?.updatedAt).toBe(WEDNESDAY);
 });
 
-test('GitHub asking to slow down (403 with retry-after) pauses the loop for that long', async () => {
+test('GitHub asking to slow down (403 with retry-after) pauses every loop for that long', async () => {
     const github = fakeGitHub();
-    github.refuseSearch = { status: 403, retryAfter: 120 };
+    github.found.authored = [pullRequestNode('PR_1', MONDAY)];
     const { sync, clock } = await setup(github, 'alice');
-    expect(github.searches()).toHaveLength(1);
-    expect(sync.notice).toEqual({ kind: 'paused', until: START + 120_000, allowance: null });
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_1']]);
 
+    github.requests.length = 0;
+    github.refuseSearch = { status: 403, retryAfter: 120 };
+    await clock.advance(30_000);
+    expect(github.searches()).toHaveLength(4);
+    expect(sync.notice).toEqual({ kind: 'paused', until: START + 150_000, allowance: null });
+
+    // Statuses, due in the meantime, do not ask either: GitHub said it of all the user asks.
     github.refuseSearch = null;
+    github.requests.length = 0;
     await clock.advance(119_000);
-    expect(github.searches()).toHaveLength(1);
+    expect(github.requests).toEqual([]);
 
     await clock.advance(1000);
-    expect(github.searches()).toHaveLength(5);
+    expect(github.searches()).toHaveLength(4);
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_1']]);
+    expect(sync.notice).toBeNull();
 });
 
 test('a slow poll is never overlapped by the next one — not by its timer, the tab being shown or the connection coming back', async () => {
@@ -439,7 +466,7 @@ test('a slow poll is never overlapped by the next one — not by its timer, the 
     const held = createPromise();
     github.holdSearch = held.promise;
     const { clock, browser } = await setup(github, 'alice');
-    expect(github.searches()).toHaveLength(1);
+    expect(github.searches()).toHaveLength(4);
 
     await clock.advance(10 * 60_000);
     browser.hide();
@@ -447,7 +474,7 @@ test('a slow poll is never overlapped by the next one — not by its timer, the 
     browser.goOffline();
     browser.goOnline();
     await clock.advance(0);
-    expect(github.searches()).toHaveLength(1);
+    expect(github.searches()).toHaveLength(4);
 
     github.holdSearch = null;
     held.resolve();

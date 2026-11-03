@@ -7,6 +7,7 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
+import { forEachParalell } from '@nzyme/utils/array/forEachParalell.js';
 import { splitIntoChunks } from '@nzyme/utils/array/splitIntoChunks.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
@@ -78,6 +79,17 @@ const REFUSED_RETRY_MS = 60 * 60_000;
  */
 export const PROJECT_PROBE_INTERVAL_MS = 5 * 60_000;
 
+/** The phases of the first download the user waits for, and those that only matter for search and history. */
+const OPEN_PHASES: readonly RepositoryDownloadPhase[] = ['openIssues', 'openPullRequests'];
+const CLOSED_PHASES: readonly RepositoryDownloadPhase[] = ['closedIssues', 'closedPullRequests'];
+/** How many repositories' open items are read at once: a short burst, of what the user waits for (D27). */
+const OPEN_DOWNLOADS = 4;
+/**
+ * How many repositories' closed items are read at once: they go on for minutes, against GitHub's 60 seconds of
+ * GraphQL CPU time a minute (D27).
+ */
+const CLOSED_DOWNLOADS = 2;
+
 /** The GraphQL states of a phase. */
 const ISSUE_STATES = { openIssues: ['OPEN'], closedIssues: ['CLOSED'] } as const;
 const PULL_REQUEST_STATES = { openPullRequests: ['OPEN'], closedPullRequests: ['CLOSED', 'MERGED'] } as const;
@@ -87,7 +99,8 @@ const PULL_REQUEST_STATES = { openPullRequests: ['OPEN'], closedPullRequests: ['
  * three loops the sync engine runs, paces and pauses:
  *
  * - {@link download}: the first download, resumable page by page — every tracked repository's open items, then
- *   every tracked project, then the repositories' closed items (G6). "My work" comes before it.
+ *   every tracked project, then the repositories' closed items (G6), a few repositories at once (D27). "My work"
+ *   comes before it.
  * - {@link pollRepositories}: each downloaded repository's changes since the last poll
  *   (`GET /repos/{o}/{r}/issues?since=` with the last ETag — a 304 is free); on a 200, only the items whose
  *   `updated_at` moved are read again (`ItemsByIds`).
@@ -117,7 +130,7 @@ export const TrackingSync = defineService({
         /** When each project in GraphQL's change check was last asked (epoch ms), in this session. */
         const probedAt = new Map<string, number>();
 
-        return { hasDownloadWork, download, pollRepositories, pollProjects };
+        return { hasDownloadWork, hasOpenItemsToDownload, download, pollRepositories, pollProjects };
 
         /** Whether a tracked repository or project still waits for (part of) its first download; reactive. */
         function hasDownloadWork() {
@@ -127,15 +140,22 @@ export const TrackingSync = defineService({
             );
         }
 
+        /** Whether a tracked repository's open items are still to come; reactive. */
+        function hasOpenItemsToDownload() {
+            return tracking.repositories.some(repo => {
+                const phase = getDownloadPhase(repo);
+                return phase !== null && OPEN_PHASES.includes(phase);
+            });
+        }
+
         /**
-         * Downloads what is left: the open items of each tracked repository, each tracked project, then the closed
+         * Downloads what is left: the open items of the tracked repositories, each tracked project, then the closed
          * items — page by page, each page's cursor written after its items, so another session goes on from it.
          */
         async function download(context: TrackingSyncContext) {
-            for (const repo of tracking.repositories) {
-                if (!(await downloadRepository(context, repo, ['openIssues', 'openPullRequests']))) {
-                    return;
-                }
+            await downloadRepositories(context, OPEN_PHASES, OPEN_DOWNLOADS);
+            if (!context.isCurrent()) {
+                return;
             }
 
             for (const project of tracking.projects) {
@@ -144,11 +164,32 @@ export const TrackingSync = defineService({
                 }
             }
 
-            for (const repo of tracking.repositories) {
-                if (!(await downloadRepository(context, repo, ['closedIssues', 'closedPullRequests']))) {
-                    return;
-                }
-            }
+            await downloadRepositories(context, CLOSED_PHASES, CLOSED_DOWNLOADS);
+        }
+
+        /**
+         * Reads the tracked repositories' pages of `phases`, `concurrency` repositories at once. One failing — GitHub
+         * refusing above all, as it warns against asking on — stops the others: a page still on its way is not kept, and
+         * is read again from its cursor.
+         */
+        async function downloadRepositories(
+            context: TrackingSyncContext,
+            phases: readonly RepositoryDownloadPhase[],
+            concurrency: number,
+        ) {
+            let failed = false;
+            const shared: TrackingSyncContext = { ...context, isCurrent: () => !failed && context.isCurrent() };
+            await forEachParalell(tracking.repositories, {
+                concurrency,
+                async callback(repo) {
+                    try {
+                        return await downloadRepository(shared, repo, phases);
+                    } catch (error) {
+                        failed = true;
+                        throw error;
+                    }
+                },
+            });
         }
 
         /** Reads the repository's pages of `phases`; `false` when the session ended. */

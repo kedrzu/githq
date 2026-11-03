@@ -869,12 +869,12 @@ export class GitHubWorld {
     /** Renames an item, which moves its `updated_at` to now. */
     /** The approval it had no longer counts, as after a dismissed review: it needs one again. */
     withdrawApproval(id: string): void {
-        const pullRequest = this.get(id).pullRequest;
-        if (!pullRequest) {
+        const item = this.get(id);
+        if (!item.pullRequest) {
             throw new Error(`${id} is not a pull request`);
         }
 
-        pullRequest.reviewDecision = 'REVIEW_REQUIRED';
+        item.pullRequest = { ...item.pullRequest, reviewDecision: 'REVIEW_REQUIRED' };
     }
 
     retitle(id: string, title: string): void {

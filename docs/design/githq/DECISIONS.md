@@ -497,6 +497,32 @@ command menu: the same chooser both times, for repositories (T18) and projects (
 Undo** (owner, 2026-11-02; T20): the row leaves the list and a toast offers Undo (⌘Z) for 10 seconds; the copy in this
 browser is deleted only when the toast goes. No confirmation on the row.
 
+### D27
+
+The first sync reads **a few things at once** (owner, 2026-11-03, 2 at once for closed items): four repositories for
+their open items, two for their closed ones, the four "my work" searches together and three of a group's item batches.
+Workflows wait for the open items, unless a screen asks for them. When GitHub asks to slow down, every loop waits, and
+the download's other repositories stop at their next page. Departs from GitHub's advice to "make requests serially
+instead of concurrently" (Q2), for the first sync's sake.
+
+**Why.** The first download read one page at a time, and pull request pages are what takes the time. Workflow runs,
+suspected first, run beside the download and do not hold it back.
+
+> **Checked 2026-11-03 (live, the owner's 12 repositories, 1,099 items, one run, serial):** "my work" 10.2 s (one
+> `ItemsByIds` of 50 pull requests: 5.9 s), open items 14 s, closed items 106 s. 54 pull request pages took 111 of the
+> download's 120 s of requests, about 2 s each. 88 workflow requests overlapped the download, which sat idle for
+> 231 ms in all.
+
+> **Checked 2026-11-03 (live, same repositories, one run, this decision):** "my work" 7 s, open items 5.5 s, closed
+> items 70 s. Up to 7 requests in flight and no refusal, at about 2 s of GraphQL response time per second for 70 s.
+
+**Known cost.** GitHub allows "60 seconds" of GraphQL CPU time per 60 seconds of real time and says response time
+estimates CPU time roughly, so this may reach that limit on more or larger repositories; one run does not rule it
+out. A refusal costs a pause and goes on from the last cursor.
+
+**Rejected.** Four repositories at once for closed items: the longest load against that limit. A lighter query for
+closed pull requests (2.5 s to 1.4 s a page, measured on `healedcare/healed`): rows would lose checks and diff size.
+
 ## Open questions
 
 ### D26
