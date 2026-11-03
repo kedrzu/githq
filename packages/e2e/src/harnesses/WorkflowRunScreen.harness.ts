@@ -43,6 +43,11 @@ export class WorkflowRunScreenHarness {
         return this.root.getByTestId('workflow-step');
     }
 
+    /** The button a running job's pane offers to follow it on GitHub. */
+    get watchOnGitHub(): Locator {
+        return this.root.getByRole('button', { name: /Watch on GitHub/u });
+    }
+
     /** The scrolling log; none while something stands in for it. */
     get log(): Locator {
         return this.root.getByTestId('workflow-job-log');

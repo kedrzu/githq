@@ -110,7 +110,7 @@ test('the way to GitHub in what stands in for the log goes to the job', async ({
 
     github.web(jobPath, () => ({ status: 200, body: '<title>Job</title>' }));
     const watching = page.waitForEvent('popup');
-    await screen.root.getByRole('button', { name: /Watch on GitHub/u }).click();
+    await screen.watchOnGitHub.click();
     const watched = await watching;
     expect(watched.url()).toBe(`https://github.com${jobPath}`);
     await watched.close();
@@ -427,13 +427,13 @@ test('a just-finished job’s log GitHub has no answer for yet is not called gon
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.job('build')).toBeVisible();
     await expect(screen.logPlaceholder).toBeVisible();
-    await expect(page.getByText('Reading the log of build…')).toBeVisible();
+    await expect(new AppShellHarness(page).statusBar).toContainText('Reading the log of build…');
     await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
 
     world.jobLog(SAMPLE_REPOSITORY, buildId, RUN_LOG);
     await page.clock.fastForward('00:31');
     await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
-    await expect(page.getByText('Reading the log of build…')).toHaveCount(0);
+    await expect(new AppShellHarness(page).statusBar).not.toContainText('Reading the log of build…');
 });
 
 test('a log GitHub had no answer for just after its job ended is asked for again on coming back to it', async ({
