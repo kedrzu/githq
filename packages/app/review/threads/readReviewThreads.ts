@@ -1,4 +1,5 @@
 import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
+import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 
 import type { ReviewThread, ReviewThreadComment } from './ReviewThread.js';
 
@@ -31,7 +32,7 @@ export async function readReviewThreads(params: ReadReviewThreadsParams): Promis
         for (const node of page.nodes ?? []) {
             if (node) {
                 const { comments, ...thread } = node;
-                const first = (comments.nodes ?? []).filter(comment => comment !== null);
+                const first = filterNotNull(comments.nodes ?? []);
                 threads.push({
                     ...thread,
                     comments: comments.pageInfo.hasNextPage
@@ -58,7 +59,7 @@ async function readLaterComments(
         assertMayAsk();
         const { node } = await sdk.ReviewThreadComments({ id, after });
         const page = node?.comments;
-        comments.push(...(page?.nodes ?? []).filter(comment => comment !== null));
+        comments.push(...filterNotNull(page?.nodes ?? []));
         after = page?.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
     }
 

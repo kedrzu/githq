@@ -1,6 +1,6 @@
-import type { ReviewThreadRow } from '../buildReviewRows.js';
-import type { ThreadPlacement } from './placeThreads.js';
-import type { ReviewThread } from './ReviewThread.js';
+import type { ReviewThreadRow } from '@/review/buildReviewRows.js';
+import type { ThreadPlacement } from '@/review/threads/placeThreads.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 
 /** A thread of two comments, for stories. */
 export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThread {
@@ -59,7 +59,13 @@ export type ThreadRowSample =
           readonly commit?: ThreadCommit;
           readonly thread?: ReviewThread;
       }
-    | { readonly kind: 'inCollapsed' | 'gone'; readonly diffHunk: string; readonly thread?: ReviewThread };
+    | {
+          readonly kind: 'inCollapsed';
+          readonly diffHunk: string;
+          readonly notLoaded?: boolean;
+          readonly thread?: ReviewThread;
+      }
+    | { readonly kind: 'gone'; readonly diffHunk: string; readonly thread?: ReviewThread };
 
 type ThreadCommit = Extract<ThreadPlacement, { kind: 'fileTop' }>['commit'];
 
@@ -87,7 +93,9 @@ function createPlacement(sample: ThreadRowSample, thread: ReviewThread): ThreadP
             };
         case 'fileTop':
             return { kind: 'fileTop', thread, diffHunk: sample.diffHunk, commit: sample.commit ?? null };
+        case 'inCollapsed':
+            return { kind: 'inCollapsed', thread, diffHunk: sample.diffHunk, notLoaded: sample.notLoaded ?? false };
         default:
-            return { kind: sample.kind, thread, diffHunk: sample.diffHunk };
+            return { kind: 'gone', thread, diffHunk: sample.diffHunk };
     }
 }

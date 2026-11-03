@@ -201,21 +201,37 @@ export function addDiffLineRange(ranges: readonly DiffLineRange[], added: DiffLi
  */
 export function getDiffLineRowKey(diff: FileDiff, { side, line }: DiffLine, layout: DiffLayout): string {
     const onBefore = side === 'before';
-    const block = diff.blocks.findLast(({ beforeStart, afterStart }) => (onBefore ? beforeStart : afterStart) < line);
-    const beforeStart = block?.beforeStart ?? 0;
-    const afterStart = block?.afterStart ?? 0;
-    const beforeEnd = block?.beforeEnd ?? 0;
-    const afterEnd = block?.afterEnd ?? 0;
-    if (block && line <= (onBefore ? beforeEnd : afterEnd)) {
-        const offset = line - 1 - (onBefore ? beforeStart : afterStart);
-        const paired = onBefore ? afterStart + offset : beforeStart + offset;
-        const across = layout === 'split' && paired < (onBefore ? afterEnd : beforeEnd) ? paired + 1 : null;
+    const other = onBefore ? 'after' : 'before';
+    const block = diff.blocks.findLast(range => getSideStart(range, side) < line);
+    if (block && line <= getSideEnd(block, side)) {
+        const paired = getSideStart(block, other) + line - 1 - getSideStart(block, side);
+        const across = layout === 'split' && paired < getSideEnd(block, other) ? paired + 1 : null;
         return onBefore ? getLineRowKey(line, across) : getLineRowKey(across, line);
     }
 
+    const beforeEnd = block?.beforeEnd ?? 0;
+    const afterEnd = block?.afterEnd ?? 0;
     return onBefore
         ? getLineRowKey(line, line - beforeEnd + afterEnd)
         : getLineRowKey(line - afterEnd + beforeEnd, line);
+}
+
+/**
+ * Where a range starts on a side.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getSideStart(range: DiffRange, side: DiffLineSide): number {
+    return side === 'before' ? range.beforeStart : range.afterStart;
+}
+
+/**
+ * Where a range ends on a side, exclusive.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getSideEnd(range: DiffRange, side: DiffLineSide): number {
+    return side === 'before' ? range.beforeEnd : range.afterEnd;
 }
 
 /**
