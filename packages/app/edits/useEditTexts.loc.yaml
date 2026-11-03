@@ -246,7 +246,7 @@ fieldChecks:
 fieldRevert:
   en: Revert
 reasonNotActions:
-  en: "None of the checks that failed runs on GitHub Actions: re-run them where they run."
+  en: 'None of the checks that failed runs on GitHub Actions: re-run them where they run.'
 shortNotActions:
   en: not on GitHub Actions
 reasonNothingFailed:
