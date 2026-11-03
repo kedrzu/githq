@@ -46,6 +46,11 @@ owner's repositories do not keep parallel lines.
 > **Checked 2026-11-01 (live, the owner's 24 repositories pushed since May 2026):** none has more than one branch
 > starting with `release`.
 
+**Known cost, an accepted exception to "a rebuilt cache gives the same answer".** What a run concluded before a re-run
+is known only where the run was already stored. On another computer, or once the copy is rebuilt, a workflow reads green
+while a re-run of its failure goes, and a cancelled re-run's remembered failure doesn't return. Accepted because reading
+the earlier attempt from GitHub costs a request per re-running workflow, for a narrow window.
+
 **Rejected.**
 
 - A workflow is broken when its latest finished run on any ref failed: a feature branch flips the state of
