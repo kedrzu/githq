@@ -534,44 +534,19 @@ function getProjectMark(title: string) {
 }
 
 .sidebar_item {
-  @include focus-ring;
-
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  width: 100%;
-  padding: 5px $spacing-8;
-  font-size: $font-size-md;
-  line-height: 18px;
-  color: $color-fg-2;
-  text-decoration: none;
-  border-radius: $radius-md;
-}
-
-.sidebar_item:hover {
-  color: $color-fg;
-  background: $color-bg-3;
+  @include nav-row;
 }
 
 .sidebar_itemLabel {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include nav-row-label;
 }
 
 .sidebar_count {
-  flex: none;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
+  @include nav-row-count;
 }
 
 .sidebar_item_active {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
+  @include nav-row-current;
 }
 
 .sidebar_count_new {

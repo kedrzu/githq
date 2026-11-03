@@ -152,8 +152,6 @@ deleted CH41; no tracked repository for a folder CD6; a second clone CD7.
 Still open, not settled by the screens:
 
 - **Which layout stays (D14)** is decided by trying both.
-- **Settings sync's D7** lists only what is tracked as synced; the repository layout is the first other synced setting, and that
-  design's decisions should say so.
 - **Data the screens need that [D8](../DECISIONS.md#d8) and [D9](../DECISIONS.md#d9) don't fetch yet:**
   - the pull request and CI of each branch's tip in the list (CH3): the rows drawn in the list, a few dozen at most, ask
     with the same `nodes(ids:)` request as the graph's rows;

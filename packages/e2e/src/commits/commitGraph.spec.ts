@@ -3,6 +3,7 @@ import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -263,6 +264,72 @@ test('CH38: an empty repository says it has no commits yet', async ({ page, gith
     await expect(main).toContainText(
         `${SAMPLE_REPOSITORY} is empty on GitHub. Commits appear here after the first push.`,
     );
+});
+
+test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column at once; 2 and 3 change section in it, B, typing and Enter choose a ref from its list, Enter opens the details beside the graph with the list staying, and Esc closes them', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1500, height: 800 });
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    const shell = await openTrackedWork(page, github, sample.world);
+
+    await page.goto('/settings?tab=display');
+    await new SettingsScreenHarness(page).repositoryLayout('Column').click();
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.sectionTitle('Issues')).toBeVisible();
+    await expect(repository.titleMenuButton(SAMPLE_REPOSITORY)).toBeVisible();
+    await expect(repository.groupingButton).toBeVisible();
+
+    await page.keyboard.press('2');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+    await expect(repository.sectionTitle('Pull requests')).toBeVisible();
+
+    await page.keyboard.press('3');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.rows).toHaveCount(6);
+    await expect(graph.refList).toBeVisible();
+    await expect(graph.refListTool).toHaveCount(0);
+    await expect(repository.groupingButton).toHaveCount(0);
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+
+    await page.keyboard.press('b');
+    await expect(graph.refFilter).toBeFocused();
+    await page.keyboard.type('rel');
+    await expect(graph.selectedRef).toContainText('release/1.0');
+    await page.keyboard.press('Enter');
+    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+    await expect(graph.refFilter).toHaveValue('');
+    await expect(graph.root).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
+    await expect(graph.refList).toBeVisible();
+    await expect(graph.details).toHaveCSS('position', 'static');
+
+    await page.keyboard.press('j');
+    await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
+    await page.keyboard.press('p');
+    await expect(graph.detailsHeadline).toHaveText('chore: set up the build');
+
+    await page.keyboard.press('Escape');
+    await expect(graph.details).toHaveCount(0);
+    await expect(graph.refList).toBeVisible();
+    await expect(graph.root).toBeFocused();
+
+    // An item opens in its panel over the list, as in tabs; the column stays.
+    await page.keyboard.press('1');
+    await expect(repository.groupingButton).toBeVisible();
+    await page.keyboard.press('j');
+    await page.keyboard.press('Enter');
+    await expect(new ItemViewHarness(page).title).toHaveText('Crash on start');
+    await expect(repository.sectionTitle('Issues')).toBeVisible();
+    await expect(repository.section('Issues')).toBeVisible();
 });
 
 /**

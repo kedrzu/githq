@@ -81,7 +81,7 @@ type Failure = { readonly kind: 'transient' } | { readonly kind: 'stop'; readonl
  * Every sync is the three-way merge of D11 between this device's settings, the file now, and the file as this
  * device last saw it (kept in `saving`, the settings' slot, through {@link TrackingStore}): it takes the file's
  * changes in, and writes what is new here. It runs once the user's settings are in memory, when the tab is shown
- * again or its window focused, and right after the user changes what is tracked in this tab; one at a time, a
+ * again or its window focused, and right after the user changes their settings in this tab; one at a time, a
  * trigger during one running once after it. GitHub out of reach or the allowance spent leave it on, for the next
  * trigger.
  *

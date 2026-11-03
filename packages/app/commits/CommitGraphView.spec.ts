@@ -2,7 +2,8 @@ import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h, nextTick } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, unref } from 'vue';
+import type { Ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { VIEWER_KEY } from '@/auth/AuthStore.js';
@@ -14,6 +15,7 @@ import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js'
 import { sampleCommit, sampleCommitRef, sampleHistory, sampleWebappHistory } from '@/testing/sampleCommits.js';
 
 import CommitGraphView from './CommitGraphView.vue';
+import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
 import type { CommitState } from './CommitTypes.js';
 
 const REPOSITORY = 'acme/web';
@@ -491,6 +493,79 @@ test("D17: the graph's share is of the pane without the list", async () => {
     expect(graphCells()[0]?.getBoundingClientRect().width).toBe(92);
 });
 
+test('D14, D15, CH6, CH42: with the list in the column it renders there at any window width, leaving the graph the pane; B, typing and Enter behave as in tabs; the details open beside the graph with the list staying, and Esc closes them', async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const target = columnTarget();
+    const view = await mount({ commits: parallelBranches(14) }, undefined, true);
+    const list = target.querySelector.bind(target);
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
+
+    await expect.poll(() => list('[role="listbox"]')).not.toBeNull();
+    expect(view.scroller().clientWidth).toBe(1200);
+    // D17: the share is of the pane, the list taking none of it.
+    expect(graphCells()[0]?.getBoundingClientRect().width).toBe(120);
+
+    await userEvent.keyboard('b');
+    await expect.element(filter()).toHaveFocus();
+    await userEvent.keyboard('branch-3{Enter}');
+    await expect.poll(() => cursor()?.textContent).toContain('branch-3');
+    expect(document.activeElement).toBe(view.scroller());
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    expect(list('[role="listbox"]')).not.toBeNull();
+    expect(view.scroller().clientWidth).toBe(1200 - 440);
+    // Beside the graph, not over it.
+    expect(getComputedStyle(details().element()).position).toBe('static');
+
+    // B with the details open: the filter, and they stay.
+    await userEvent.keyboard('b');
+    await expect.element(filter()).toHaveFocus();
+    await expect.element(details()).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    expect(document.activeElement).toBe(view.scroller());
+    await expect.element(details()).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(list('[role="listbox"]')).not.toBeNull();
+});
+
+test('D15, CH42: with the list in the column, below 1,200 px of window the details open over the graph, and the list stays', async () => {
+    await page.viewport(1100, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const target = columnTarget();
+    const view = await mount({ commits: parallelBranches(14) }, undefined, true);
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
+    const paneWidth = view.scroller().clientWidth;
+
+    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    expect(getComputedStyle(details().element()).position).toBe('absolute');
+    expect(view.scroller().clientWidth).toBe(paneWidth);
+    expect(target.querySelector('[role="listbox"]')).not.toBeNull();
+});
+
+test('D14: the layout changed while the graph is open, by another tab or device: the list moves to the column and back', async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const target = columnTarget();
+    const inColumn = ref(false);
+    await mount({ commits: parallelBranches(14) }, undefined, inColumn);
+
+    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+    expect(target.querySelector('[role="listbox"]')).toBeNull();
+
+    inColumn.value = true;
+    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+
+    inColumn.value = false;
+    await expect.poll(() => target.querySelector('[role="listbox"]')).toBeNull();
+    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+});
+
 test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet, a third of the way down; Esc leaves cursor and scroll where they were', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
@@ -561,6 +636,36 @@ test("D12, CH16: a ref whose commit is not loaded opens its details in the list'
     expect(document.activeElement).toBe(view.scroller());
     expect(cursor()?.textContent).toContain('Commit c2');
     await expect.element(filter()).toHaveValue('');
+});
+
+test("D12, CH42: in the column, with an unloaded tag's details open, choosing the ref on the cursor's commit brings the details to it and draws the cursor", async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
+    columnTarget();
+    await mount(
+        {
+            commits: [...history, sampleCommit('old', 1)],
+            branches: [sampleCommitRef('main', 'c2')],
+            tags: [sampleCommitRef('v0.1', 'old')],
+            kept: history,
+            holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+        },
+        undefined,
+        true,
+    );
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('v0.1{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    expect(cursorDrawn()).toBe(false);
+
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('main{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    expect(cursorDrawn()).toBe(true);
+    expect(cursor()?.textContent).toContain('Commit c2');
 });
 
 test("the commit that's open isn't read again by opening it again; a read that failed is, after a close or a move", async () => {
@@ -1048,11 +1153,24 @@ function parallelBranches(lanes: number) {
     return [...tips, sampleCommit('root', 1)];
 }
 
+/** The element a repository's column gives the list, 232 px wide as the column is. */
+function columnTarget() {
+    const target = document.createElement('div');
+    target.id = COMMIT_REF_LIST_TARGET_ID;
+    target.style.display = 'flex';
+    target.style.flexDirection = 'column';
+    target.style.width = '232px';
+    target.style.height = '600px';
+    document.body.append(target);
+    onTestFinished(() => target.remove());
+    return target;
+}
+
 /**
  * Mounts the section over the real store and a GitHub holding `options`, 600 px tall, at the sample's moment, with
  * `keptShare` kept on this device as the graph's share of the pane.
  */
-async function mount(options: CommitGraphTestOptions, keptShare?: string) {
+async function mount(options: CommitGraphTestOptions, keptShare?: string, refListInColumn?: boolean | Ref<boolean>) {
     const { container, store, github, setOnline, ready } = createCommitGraphTest(options);
     await ready;
     if (keptShare !== undefined) {
@@ -1072,7 +1190,7 @@ async function mount(options: CommitGraphTestOptions, keptShare?: string) {
     document.body.append(host);
 
     const app = createApp({
-        setup: () => () => h(CommitGraphView, { nameWithOwner: REPOSITORY }),
+        setup: () => () => h(CommitGraphView, { nameWithOwner: REPOSITORY, refListInColumn: unref(refListInColumn) }),
     });
     app.use(IocPlugin, { container });
     app.use(router);

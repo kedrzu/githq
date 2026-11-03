@@ -6,9 +6,11 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, ref, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListViewOptions } from '@/lists/ListTypes.js';
+import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
@@ -228,11 +230,105 @@ test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip 
     await expect.element(page.getByText('Concerns you')).not.toBeInTheDocument();
 });
 
+test("D14, CH4: in the column layout the sections and the projects are in the column, and the pane holds the section's name and its tools", async () => {
+    const view = mount({ layout: 'column' });
+    const sections = page.getByRole('group', { name: 'Sections' });
+    const issues = sections.getByRole('button', { name: 'Issues 5' });
+
+    await expect.element(issues).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(issues).toHaveAttribute('aria-keyshortcuts', '1');
+    expect(issues.element().textContent).toContain('1');
+    await expect
+        .element(sections.getByRole('button', { name: 'Commits', exact: true }))
+        .toHaveAttribute('aria-keyshortcuts', '3');
+    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 2 })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Display' })).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}`);
+
+    const projects = page.getByRole('navigation', { name: 'Its issues live in' });
+    await expect
+        .element(projects.getByRole('link', { name: /Platform Q4/ }))
+        .toHaveAttribute('href', '/orgs/acme/projects/1');
+    await expect.element(projects.getByRole('link', { name: /Bug triage/ })).toHaveAttribute('target', '_blank');
+    await expect.element(projects).toHaveTextContent('2 in no project');
+    // The same projects are not drawn again over the list.
+    expect(page.getByRole('navigation').elements()).toHaveLength(1);
+
+    await userEvent.keyboard('2');
+    expect(view.section.value).toBe('pullRequests');
+    await expect
+        .element(sections.getByRole('button', { name: /^Pull requests/ }))
+        .toHaveAttribute('aria-pressed', 'true');
+    await expect.element(page.getByRole('heading', { name: 'Pull requests', level: 1 })).toBeVisible();
+    await expect.element(page.getByRole('navigation', { name: 'Its pull requests live in' })).toBeVisible();
+
+    await userEvent.click(sections.getByRole('button', { name: 'Issues 5' }));
+    expect(view.section.value).toBe('issues');
+});
+
+test('D14, CH6: in the column layout Commits has the plain header over the graph, the way to its history in the column, and the slot told where the list goes', async () => {
+    mount({ layout: 'column', section: 'commits' });
+
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}/commits`);
+    await expect.element(page.getByRole('button', { name: 'Branches and tags' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('navigation')).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
+    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).not.toBeNull();
+});
+
+test("D14, D20: not tracked, in the column layout the chip is in the column, and the pane has the section's name over what concerns the user", async () => {
+    const view = mount({ layout: 'column', tracked: false });
+    const sections = page.getByRole('group', { name: 'Sections' });
+
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` })).toBeVisible();
+    await expect.element(page.getByRole('navigation')).not.toBeInTheDocument();
+
+    await userEvent.keyboard('3');
+    expect(view.section.value).toBe('commits');
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+});
+
+test('D14: in the column layout a long name is cut to the column, its GitHub icon still in it', async () => {
+    const name = 'a-very-long-organisation-name/an-even-longer-repository-name';
+    mount({ layout: 'column', nameWithOwner: name });
+    const github = page.getByRole('link', { name: 'Open on GitHub' });
+    const menu = page.getByRole('heading', { name, level: 2 });
+
+    await expect.element(github).toBeVisible();
+    const column = menu.element().closest('header')?.parentElement?.getBoundingClientRect();
+    const icon = github.element().getBoundingClientRect();
+    expect(column?.width).toBe(232);
+    expect(icon.right).toBeLessThanOrEqual(column?.right ?? 0);
+    expect(menu.element().getBoundingClientRect().right).toBeLessThanOrEqual(icon.left);
+});
+
+test('D14: in the tabs layout the slot is told the list stays beside the graph, and there is no column', async () => {
+    mount({ section: 'commits' });
+
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+    await expect.element(page.getByTestId('target')).toHaveTextContent('beside');
+    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
+});
+
 interface MountOptions {
     readonly tracked?: boolean;
     readonly items?: readonly Item[];
     readonly gitHubOpenCounts?: Readonly<Record<RepositoryItemSection, number>> | null;
     readonly section?: RepositorySection;
+    readonly layout?: RepositoryLayout;
+    readonly nameWithOwner?: string;
 }
 
 /**
@@ -244,6 +340,8 @@ function mount({
     items = SAMPLE_REPOSITORY_ITEMS,
     gitHubOpenCounts = null,
     section: firstSection = 'issues',
+    layout = 'tabs',
+    nameWithOwner = SAMPLE_REPOSITORY,
 }: MountOptions = {}) {
     const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
@@ -274,7 +372,7 @@ function mount({
             return h(
                 RepositoryView,
                 {
-                    nameWithOwner: SAMPLE_REPOSITORY,
+                    nameWithOwner,
                     isPrivate: true,
                     tracked,
                     list: listed
@@ -289,9 +387,18 @@ function mount({
                         : null,
                     openCounts,
                     gitHubOpenCounts,
+                    layout,
                     projects: [
                         { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
+                        {
+                            id: 'PVT_triage',
+                            title: 'Bug triage',
+                            count: 1,
+                            to: 'https://github.com/orgs/acme/projects/2',
+                            external: true,
+                        },
                     ],
+                    withoutProject: 2,
                     viewerLogin: SAMPLE_VIEWER.login,
                     now: SAMPLE_NOW,
                     options: options.value[shown],
@@ -307,7 +414,12 @@ function mount({
                         section.value = value;
                     },
                 },
-                { commits: () => h('p', 'The commit graph') },
+                {
+                    commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) => [
+                        h('p', 'The commit graph'),
+                        h('p', { tid: 'target' }, refListInColumn ? 'column' : 'beside'),
+                    ],
+                },
             );
         },
     });

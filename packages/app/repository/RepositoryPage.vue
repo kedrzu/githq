@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1–J3) at GitHub's addresses of its lists and its history, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1–J3) at GitHub's addresses of its lists and its history, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -296,6 +296,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :opened-id="list.openedId"
     :undone="list.undone"
     :can-move="canMove"
+    :layout="tracking.repositoryLayout"
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
@@ -319,10 +320,11 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
         @open="menu.open"
       />
     </template>
-    <template #commits>
+    <template #commits="{ refListInColumn }">
       <CommitGraphView
         ref="graphView"
         :name-with-owner="nameWithOwner"
+        :ref-list-in-column="refListInColumn"
       />
     </template>
   </RepositoryView>

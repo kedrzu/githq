@@ -60,6 +60,12 @@ looking at now.
 
 - Synchronising how items open — owner, 2026-11-01.
 
+Retired 2026-11-03, the repository layout added in [D7](../DECISIONS.md#d7).
+
+**Synced: only which repositories and projects are tracked. Local: everything about views, meaning a list's layout, grouping,
+sort, visible properties and filter, a project's row field, the last view, how items open, sidebar and panel sizes, plus new issue
+drafts and approval request clicks.** (2026-11-01, owner; the row field counted as a view detail is the design agent's reading)
+
 ## D8
 
 Retired 2026-11-01, sharpened in [D8](../DECISIONS.md#d8).

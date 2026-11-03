@@ -1,4 +1,4 @@
-<!-- The screen of a repository or project not tracked (J3, J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). -->
+<!-- The screen of a repository or project not tracked (J3, J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). `headerless` where the caller's screen has already said all the header would (a repository's column, git-client D14). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight } from 'lucide-vue-next';
@@ -39,6 +39,8 @@ const props = withDefaults(
     openedId?: string | null;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
+    /** Without its header: the caller's screen holds the name, the chip and the way to GitHub. */
+    headerless?: boolean;
   }>(),
   {
     meta: '',
@@ -77,6 +79,7 @@ const groups = computed((): ListGroup<Item>[] => [
 <template>
   <div :class="css.untrackedView">
     <header
+      v-if="!headerless"
       :class="css.untrackedView_header"
       v-bind="WINDOW_DRAG_REGION"
     >

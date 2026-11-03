@@ -4,7 +4,7 @@ import type { Locator, Page } from '@playwright/test';
  * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues` and
  * `/owner/name/pulls`, and `/owner/name` opening one): the title opening its menu, the section tabs, the toolbar's
  * grouping and layout, its groups — named regions, or a board's columns — and their rows; untracked, the lines saying
- * what githq has of it (J3).
+ * what githq has of it (J3). In the column layout the same sections and title are in the column.
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -32,10 +32,15 @@ export class RepositoryScreenHarness {
     }
 
     /** The section tab `name`, a toggle button pressed while it is shown; tracked, its count of open items follows. */
-    section(name: 'Issues' | 'Pull requests'): Locator {
+    section(name: 'Commits' | 'Issues' | 'Pull requests'): Locator {
         return this.root
             .getByRole('group', { name: 'Sections' })
             .getByRole('button', { name: new RegExp(`^${name}\\b`) });
+    }
+
+    /** The pane's title in the column layout: the section's name. */
+    sectionTitle(name: 'Commits' | 'Issues' | 'Pull requests'): Locator {
+        return this.root.getByRole('heading', { name, level: 1 });
     }
 
     /** The grouping menu's button ("Group: Milestone"). */

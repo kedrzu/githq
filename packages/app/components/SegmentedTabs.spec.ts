@@ -27,3 +27,31 @@ test('Tab reaches the chosen option, ←/→ move between options, Space chooses
     await userEvent.click(needsMe);
     await expect.element(page.getByTestId('filter')).toHaveTextContent('Filter: needsMe');
 });
+
+test('vertical: one Tab stop, ↓/↑ move between the rows and ←/→ do not, Space chooses; each row shows its icon and key, read out as its shortcut', async () => {
+    await Gallery.run();
+
+    const sections = page.getByRole('group', { name: 'Sections' });
+    const issues = sections.getByRole('button', { name: 'Issues 5' });
+    const pullRequests = sections.getByRole('button', { name: 'Pull requests 1' });
+    await expect.element(issues).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(issues).toHaveAttribute('aria-keyshortcuts', '1');
+    await expect.element(issues.getByText('1', { exact: true })).toBeVisible();
+    expect(issues.element().querySelector('svg')).not.toBeNull();
+
+    await userEvent.click(issues);
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(issues).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(pullRequests).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(issues).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.keyboard(' ');
+    await expect.element(pullRequests).toHaveAttribute('aria-pressed', 'true');
+    await expect.element(page.getByTestId('section')).toHaveTextContent('Section: pullRequests');
+
+    // Past the group in one Tab: the rows aren't stops of their own.
+    await userEvent.keyboard('{Tab}');
+    expect(sections.element().contains(document.activeElement)).toBe(false);
+});

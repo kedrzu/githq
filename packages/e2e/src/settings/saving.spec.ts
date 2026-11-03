@@ -191,6 +191,50 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
     await expect(shell.account(LOGIN)).toHaveAccessibleName(`Account: ${LOGIN}`);
 });
 
+test('the repository layout chosen with saving on is written to the file, and is still chosen after a reload', async ({
+    page,
+    github,
+}) => {
+    const repository = await openSaving(page, github, { exists: false, file: null });
+    const saving = new SavingScreenHarness(page);
+    await saving.choice.click();
+    await expect(saving.on).toBeVisible();
+    await expect.poll(() => repository.file).not.toBeNull();
+
+    await page.goto('/settings?tab=display');
+    const settings = new SettingsScreenHarness(page);
+    await expect(settings.repositoryLayoutKept(`Saved with your settings in ${LOGIN}/githq-settings`)).toBeVisible();
+    await expect(settings.repositoryLayout('Tabs')).toBeChecked();
+    await settings.repositoryLayout('Tabs').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(settings.repositoryLayout('Column')).toBeChecked();
+
+    await expect
+        .poll((): unknown => repository.file && JSON.parse(repository.file.text))
+        .toMatchObject({ repositoryLayout: 'column' });
+
+    await page.reload();
+    await expect(settings.repositoryLayout('Column')).toBeChecked();
+    await expect(settings.repositoryLayout('Tabs')).not.toBeChecked();
+});
+
+test('the repository layout chosen with saving off stays on this device, through a reload', async ({
+    page,
+    github,
+}) => {
+    await openSaving(page, github, { exists: false, file: null });
+
+    await page.goto('/settings?tab=display');
+    const settings = new SettingsScreenHarness(page);
+    await expect(settings.repositoryLayoutKept('Saving is off, so this stays on this device.')).toBeVisible();
+    await settings.repositoryLayout('Column').click();
+    await expect(settings.repositoryLayout('Column')).toBeChecked();
+
+    await page.reload();
+    await expect(settings.repositoryLayout('Column')).toBeChecked();
+    expect(getSettingsWrites(github)).toEqual([]);
+});
+
 /**
  * Signs in with the sample tracked, then answers the settings repository as `repository` says — none on the first
  * sign-in, so it offers no saved settings — and opens Settings' Sync settings.

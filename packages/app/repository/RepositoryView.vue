@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, are tabs beside the title on `1`, `2` and `3`, the first two with their count of open items while tracked. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, are tabs beside the title on `1`, `2` and `3`, the first two with their count of open items while tracked. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
 import Translate from '@nzyme/vue-i18n/Translate.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -19,6 +19,7 @@ import {
 import { computed } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
+import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -44,15 +45,18 @@ import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
 import UntrackedView from '@/tracking/UntrackedView.vue';
+import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 
 import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
 import { REPOSITORY_STATES } from './buildRepositoryList.js';
+import RepositoryColumn from './RepositoryColumn.vue';
 import RepositoryMeta from './RepositoryMeta.vue';
 import { isItemSection, REPOSITORY_SECTIONS } from './RepositorySection.js';
 import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import * as l from './RepositoryView.loc.js';
+import { useRepositoryMeta } from './useRepositoryMeta.js';
 
 /** A project the repository's listed items live in, and the way there. */
 export interface RepositoryProjectLink {
@@ -94,6 +98,8 @@ const props = withDefaults(
     modified?: boolean;
     /** Whether the user may move the item from one group into another (set that milestone, label…). */
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
+    /** The sections as tabs beside the title, or in a column of the repository's own (git-client D14). */
+    layout?: RepositoryLayout;
   }>(),
   {
     list: null,
@@ -104,6 +110,7 @@ const props = withDefaults(
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
+    layout: 'tabs',
   },
 );
 
@@ -136,8 +143,11 @@ defineSlots<{
   selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
-  /** The Commits section's body, the commit graph. */
-  commits?(): unknown;
+  /**
+   * The Commits section's body, the commit graph; `refListInColumn` says its branches and tags render in the column,
+   * in the element of `COMMIT_REF_LIST_TARGET_ID`, rather than beside it.
+   */
+  commits?(props: { refListInColumn: boolean }): unknown;
 }>();
 
 const t = useTranslate();
@@ -208,7 +218,7 @@ const stateOption = computed((): ListToolbarOption => {
     },
   };
 });
-const meta = computed(() => (props.isPrivate === null ? '' : t(props.isPrivate ? l.private : l.public)));
+const meta = useRepositoryMeta(() => props.isPrivate);
 /** Not tracked: what githq has of the section's items (J3, CH37). */
 const summary = computed(() => {
   const name = props.nameWithOwner;
@@ -228,6 +238,7 @@ const others = computed(() => {
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
+const inColumn = computed(() => props.layout === 'column');
 
 useCommands(() =>
   REPOSITORY_SECTIONS.map(candidate => ({
@@ -245,182 +256,290 @@ useCommands(() =>
 
 <template>
   <div :class="css.repositoryView">
-    <!-- Commits (git-client D10, D11): none of the list's tools apply, and tracked or not it shows in full. -->
-    <template v-if="itemSection === null || !list">
+    <RepositoryColumn
+      v-if="inColumn"
+      v-model:section="section"
+      :name-with-owner="nameWithOwner"
+      :is-private="isPrivate"
+      :tracked="tracked"
+      :sections="sectionOptions"
+      :github-url="itemSection === null ? commitsUrl : githubUrl"
+      :projects="itemSection !== null && tracked ? projects : []"
+      :without-project="withoutProject"
+      :projects-label="t(sectionTexts.liveIn)"
+    >
+      <template
+        v-if="$slots.menu"
+        #menu
+      >
+        <slot name="menu" />
+      </template>
+      <div
+        v-if="section === 'commits'"
+        :id="COMMIT_REF_LIST_TARGET_ID"
+        :class="css.repositoryView_refList"
+      />
+    </RepositoryColumn>
+    <div :class="css.repositoryView_pane">
+      <!-- In the column, the section's name alone, where the section has no tools of its own to put beside it. -->
       <header
+        v-if="inColumn && (itemSection === null || !list || !tracked)"
         :class="css.repositoryView_header"
         v-bind="WINDOW_DRAG_REGION"
       >
-        <ListTitle :title="nameWithOwner">
+        <ListTitle :title="t(l[section])" />
+      </header>
+      <!-- Commits (git-client D10, D11): none of the list's tools apply, and tracked or not it shows in full. -->
+      <template v-if="itemSection === null || !list">
+        <header
+          v-if="!inColumn"
+          :class="css.repositoryView_header"
+          v-bind="WINDOW_DRAG_REGION"
+        >
+          <ListTitle :title="nameWithOwner">
+            <template
+              v-if="$slots.menu"
+              #menu
+            >
+              <slot name="menu" />
+            </template>
+          </ListTitle>
+          <RepositoryMeta :is-private="isPrivate" />
+          <NotTrackedChip v-if="!tracked" />
+          <SegmentedTabs
+            v-model="section"
+            :class="css.repositoryView_sections"
+            :label="t(l.sections)"
+            :options="sectionOptions"
+          />
+          <span :class="css.repositoryView_spacer" />
+          <Button
+            variant="ghost"
+            size="sm"
+            :icon="GitBranch"
+            kbd="B"
+            aria-keyshortcuts="B"
+            @click="emit('openRefList')"
+          >
+            {{ t(l.branchesAndTags) }}
+          </Button>
+          <IconButton
+            :icon="Github"
+            :label="t(l.openOnGitHub)"
+            :link="commitsUrl"
+            target="_blank"
+          />
+        </header>
+        <slot
+          name="commits"
+          :ref-list-in-column="inColumn"
+        />
+      </template>
+
+      <template v-else-if="tracked">
+        <ListToolbar
+          v-model:options="options"
+          :title="inColumn ? t(l[itemSection]) : nameWithOwner"
+          :groupings="groupings"
+          :sorts="choices.sorts.value"
+          :properties="choices.properties.value"
+          :filters="[stateOption]"
+          :modified="modified"
+          @reset="emit('reset')"
+        >
           <template
-            v-if="$slots.menu"
-            #menu
+            v-if="$slots.menu && !inColumn"
+            #titleMenu
           >
             <slot name="menu" />
           </template>
-        </ListTitle>
-        <RepositoryMeta :is-private="isPrivate" />
-        <NotTrackedChip v-if="!tracked" />
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
-        <span :class="css.repositoryView_spacer" />
-        <Button
-          variant="ghost"
-          size="sm"
-          :icon="GitBranch"
-          kbd="B"
-          aria-keyshortcuts="B"
-          @click="emit('openRefList')"
-        >
-          {{ t(l.branchesAndTags) }}
-        </Button>
-        <IconButton
-          :icon="Github"
-          :label="t(l.openOnGitHub)"
-          :link="commitsUrl"
-          target="_blank"
-        />
-      </header>
-      <slot name="commits" />
-    </template>
-
-    <template v-else-if="tracked">
-      <ListToolbar
-        v-model:options="options"
-        :title="nameWithOwner"
-        :groupings="groupings"
-        :sorts="choices.sorts.value"
-        :properties="choices.properties.value"
-        :filters="[stateOption]"
-        :modified="modified"
-        @reset="emit('reset')"
-      >
-        <template
-          v-if="$slots.menu"
-          #titleMenu
-        >
-          <slot name="menu" />
-        </template>
-        <template #title>
-          <RepositoryMeta :is-private="isPrivate" />
-        </template>
-        <slot
-          v-if="checkedIds.length > 0"
-          name="selection"
-          :ids="checkedIds"
-          :span="getSelectionSpan(list.groups, checkedIds)"
-        />
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
-      </ListToolbar>
-
-      <nav
-        v-if="projects.length > 0"
-        :class="css.repositoryView_projects"
-        :aria-label="t(sectionTexts.liveIn)"
-      >
-        <span>{{ t(sectionTexts.liveIn) }}</span>
-        <Button
-          v-for="project in projects"
-          :key="project.id"
-          variant="outline"
-          size="sm"
-          :icon="SquareKanban"
-          :link="project.to"
-          :target="project.external ? '_blank' : undefined"
-        >
-          {{ project.title }}
-          <span :class="css.repositoryView_count">{{ project.count }}</span>
-          <component
-            :is="project.external ? ArrowUpRight : ArrowRight"
-            :class="css.repositoryView_projectIcon"
-            aria-hidden="true"
+          <template
+            v-if="!inColumn"
+            #title
+          >
+            <RepositoryMeta :is-private="isPrivate" />
+          </template>
+          <slot
+            v-if="checkedIds.length > 0"
+            name="selection"
+            :ids="checkedIds"
+            :span="getSelectionSpan(list.groups, checkedIds)"
           />
-        </Button>
-        <span v-if="withoutProject > 0">· {{ t(l.inNoProject, { count: withoutProject }) }}</span>
-      </nav>
+          <SegmentedTabs
+            v-if="!inColumn"
+            v-model="section"
+            :class="css.repositoryView_sections"
+            :label="t(l.sections)"
+            :options="sectionOptions"
+          />
+        </ListToolbar>
 
-      <ListView
+        <nav
+          v-if="!inColumn && projects.length > 0"
+          :class="css.repositoryView_projects"
+          :aria-label="t(sectionTexts.liveIn)"
+        >
+          <span>{{ t(sectionTexts.liveIn) }}</span>
+          <Button
+            v-for="project in projects"
+            :key="project.id"
+            variant="outline"
+            size="sm"
+            :icon="SquareKanban"
+            :link="project.to"
+            :target="project.external ? '_blank' : undefined"
+          >
+            {{ project.title }}
+            <span :class="css.repositoryView_count">{{ project.count }}</span>
+            <component
+              :is="project.external ? ArrowUpRight : ArrowRight"
+              :class="css.repositoryView_projectIcon"
+              aria-hidden="true"
+            />
+          </Button>
+          <span v-if="withoutProject > 0">· {{ t(l.inNoProject, { count: withoutProject }) }}</span>
+        </nav>
+
+        <ListView
+          v-model:selected-id="selectedId"
+          v-model:checked-ids="checkedIds"
+          :groups="list.groups"
+          :layout="options.layout"
+          :opened-id="openedId"
+          :get-url="item => item.url"
+          :can-move="canMove"
+          @open="emit('open', $event)"
+          @listed="emit('listed', $event)"
+          @move="emit('move', $event)"
+        >
+          <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
+            <StackRow
+              v-if="stack"
+              :stack="stack"
+              :properties="properties"
+              :repository="nameWithOwner"
+              :now="now"
+              :checked="checked"
+              :half-checked="halfChecked"
+              :opened-id="openedId"
+            />
+            <ItemRow
+              v-else
+              :item="entry.value"
+              :parent="parent?.value"
+              :properties="properties"
+              people="assignees"
+              :repository="nameWithOwner"
+              :viewer-login="viewerLogin"
+              :now="now"
+              :checked="checked"
+              :undone="undone.get(entry.id)"
+              :stack="stackMarker"
+            />
+          </template>
+          <template
+            #card="{
+              entry,
+              checked,
+              halfChecked,
+              stack,
+              stackMarker,
+              expanded,
+              selectedMember,
+              toggleStack,
+              openMember,
+            }"
+          >
+            <StackCard
+              v-if="stack"
+              :stack="stack"
+              :properties="properties"
+              :repository="nameWithOwner"
+              :now="now"
+              :checked="checked"
+              :half-checked="halfChecked"
+              :opened-id="openedId"
+              :expanded="expanded"
+              :selected-member="selectedMember"
+              @toggle="toggleStack"
+              @open="openMember"
+            />
+            <ItemCard
+              v-else
+              :item="entry.value"
+              :properties="properties"
+              people="assignees"
+              :repository="nameWithOwner"
+              :viewer-login="viewerLogin"
+              :now="now"
+              :checked="checked"
+              :undone="undone.get(entry.id)"
+              :stack="stackMarker"
+            />
+          </template>
+          <template #empty>
+            <EmptyState
+              :icon="BookMarked"
+              :title="t(l.nothingTitle)"
+              :detail="t(sectionTexts.nothing)"
+            />
+          </template>
+          <template
+            v-if="$slots.contextMenu"
+            #contextMenu="menu"
+          >
+            <slot
+              name="contextMenu"
+              v-bind="menu"
+            />
+          </template>
+        </ListView>
+      </template>
+
+      <UntrackedView
+        v-else
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
-        :groups="list.groups"
-        :layout="options.layout"
+        :icon="BookMarked"
+        :name="nameWithOwner"
+        :meta="meta"
+        :github-url="githubUrl"
+        :rows="list.groups.flatMap(group => group.rows)"
+        :summary="summary"
+        :properties="properties"
+        :viewer-login="viewerLogin"
+        :now="now"
         :opened-id="openedId"
-        :get-url="item => item.url"
-        :can-move="canMove"
+        :undone="undone"
+        :headerless="inColumn"
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"
-        @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
-          <StackRow
-            v-if="stack"
-            :stack="stack"
-            :properties="properties"
-            :repository="nameWithOwner"
-            :now="now"
-            :checked="checked"
-            :half-checked="halfChecked"
-            :opened-id="openedId"
-          />
-          <ItemRow
-            v-else
-            :item="entry.value"
-            :parent="parent?.value"
-            :properties="properties"
-            people="assignees"
-            :repository="nameWithOwner"
-            :viewer-login="viewerLogin"
-            :now="now"
-            :checked="checked"
-            :undone="undone.get(entry.id)"
-            :stack="stackMarker"
+        <template #controls>
+          <SegmentedTabs
+            v-model="section"
+            :class="css.repositoryView_sections"
+            :label="t(l.sections)"
+            :options="sectionOptions"
           />
         </template>
-        <template
-          #card="{ entry, checked, halfChecked, stack, stackMarker, expanded, selectedMember, toggleStack, openMember }"
-        >
-          <StackCard
-            v-if="stack"
-            :stack="stack"
-            :properties="properties"
-            :repository="nameWithOwner"
-            :now="now"
-            :checked="checked"
-            :half-checked="halfChecked"
-            :opened-id="openedId"
-            :expanded="expanded"
-            :selected-member="selectedMember"
-            @toggle="toggleStack"
-            @open="openMember"
-          />
-          <ItemCard
-            v-else
-            :item="entry.value"
-            :properties="properties"
-            people="assignees"
-            :repository="nameWithOwner"
-            :viewer-login="viewerLogin"
-            :now="now"
-            :checked="checked"
-            :undone="undone.get(entry.id)"
-            :stack="stackMarker"
-          />
-        </template>
-        <template #empty>
-          <EmptyState
-            :icon="BookMarked"
-            :title="t(l.nothingTitle)"
-            :detail="t(sectionTexts.nothing)"
-          />
+        <template #others>
+          <p>
+            <Translate :t="l.onlyConcernsYou">
+              <template #name>{{ nameWithOwner }}</template>
+              <template #others>{{ others }}</template>
+              <template #settings>
+                <Button
+                  variant="link"
+                  :link="getSettingsPath('repositories', nameWithOwner)"
+                >
+                  {{ t(l.settings) }}
+                </Button>
+              </template>
+            </Translate>
+          </p>
+          <!-- D20: the explanation is about the items; Commits needs no tracking. -->
+          <p>{{ t(l.commitsNeedNoTracking) }}</p>
         </template>
         <template
           v-if="$slots.contextMenu"
@@ -431,63 +550,8 @@ useCommands(() =>
             v-bind="menu"
           />
         </template>
-      </ListView>
-    </template>
-
-    <UntrackedView
-      v-else
-      v-model:selected-id="selectedId"
-      v-model:checked-ids="checkedIds"
-      :icon="BookMarked"
-      :name="nameWithOwner"
-      :meta="meta"
-      :github-url="githubUrl"
-      :rows="list.groups.flatMap(group => group.rows)"
-      :summary="summary"
-      :properties="properties"
-      :viewer-login="viewerLogin"
-      :now="now"
-      :opened-id="openedId"
-      :undone="undone"
-      @open="emit('open', $event)"
-      @listed="emit('listed', $event)"
-    >
-      <template #controls>
-        <SegmentedTabs
-          v-model="section"
-          :class="css.repositoryView_sections"
-          :label="t(l.sections)"
-          :options="sectionOptions"
-        />
-      </template>
-      <template #others>
-        <p>
-          <Translate :t="l.onlyConcernsYou">
-            <template #name>{{ nameWithOwner }}</template>
-            <template #others>{{ others }}</template>
-            <template #settings>
-              <Button
-                variant="link"
-                :link="getSettingsPath('repositories', nameWithOwner)"
-              >
-                {{ t(l.settings) }}
-              </Button>
-            </template>
-          </Translate>
-        </p>
-        <!-- D20: the explanation is about the items; Commits needs no tracking. -->
-        <p>{{ t(l.commitsNeedNoTracking) }}</p>
-      </template>
-      <template
-        v-if="$slots.contextMenu"
-        #contextMenu="menu"
-      >
-        <slot
-          name="contextMenu"
-          v-bind="menu"
-        />
-      </template>
-    </UntrackedView>
+      </UntrackedView>
+    </div>
   </div>
 </template>
 
@@ -495,9 +559,25 @@ useCommands(() =>
 .repositoryView {
   display: flex;
   flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.repositoryView_pane {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+
+// CH6: the column's lower part, where the graph renders its branches and tags.
+.repositoryView_refList {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid $color-border;
 }
 
 .repositoryView_projectIcon {

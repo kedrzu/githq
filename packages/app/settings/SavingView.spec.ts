@@ -6,7 +6,7 @@ import * as stories from './SavingView.stories.js';
 
 const { Combining, CombiningNothingLost, Off, On, Stopped, TurnedOff, Unusable } = composeStories(stories);
 
-const CHOICE = 'Save what I track to my GitHub account';
+const CHOICE = 'Save my settings to my GitHub account';
 
 test('off, Space ticks the box, which asks GitHub first', async () => {
     const turnOn = vi.fn(() => Promise.resolve());
@@ -84,7 +84,7 @@ test('a file found while saving is no longer off: ⌘↵ and Esc do nothing', as
     const onCancel = vi.fn();
     await Combining.run({ args: { ...Combining.args, saving: On.args.saving, combine, onCancel } });
 
-    await expect.element(page.getByText('Saving what you track to your GitHub account')).toBeVisible();
+    await expect.element(page.getByText('Saving your settings to your GitHub account')).toBeVisible();
     await userEvent.keyboard('{Escape}');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     expect(onCancel).not.toHaveBeenCalled();
@@ -105,7 +105,7 @@ test('on: the repository, when it last synced, what is saved; turning off asks n
     const onTurnOff = vi.fn();
     await On.run({ args: { ...On.args, onTurnOff } });
 
-    await expect.element(page.getByText('Saving what you track to your GitHub account')).toBeVisible();
+    await expect.element(page.getByText('Saving your settings to your GitHub account')).toBeVisible();
     await expect
         .element(page.getByRole('link', { name: 'mlaine/githq-settings' }))
         .toHaveAttribute('href', 'https://github.com/mlaine/githq-settings');

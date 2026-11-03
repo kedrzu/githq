@@ -3,7 +3,7 @@ import type {
     TrackingRepositoryFieldsFragment,
     TrackingRepositoryPageFieldsFragment,
 } from '@githq/github/generated.gen.js';
-import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
+import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { readTrackingCandidates } from '@githq/github/tracking/readTrackingCandidates.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
@@ -17,8 +17,17 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
-import { EMPTY_SETTINGS_DOCUMENT, readSettingsDocument } from '@/settings/sync/SettingsDocument.js';
-import type { SettingsDocument, SettingsProject, SettingsRepository } from '@/settings/sync/SettingsDocument.js';
+import {
+    EMPTY_SETTINGS_DOCUMENT,
+    readRepositoryLayout,
+    readSettingsDocument,
+} from '@/settings/sync/SettingsDocument.js';
+import type {
+    RepositoryLayout,
+    SettingsDocument,
+    SettingsProject,
+    SettingsRepository,
+} from '@/settings/sync/SettingsDocument.js';
 import { readSettingsSaving, SETTINGS_SAVING_OFF } from '@/settings/sync/SettingsSaving.js';
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -162,6 +171,10 @@ export const TrackingStore = defineService({
             get document() {
                 return keptRef.value.document;
             },
+            /** How a repository's sections are laid out (git-client D14); reactive. */
+            get repositoryLayout() {
+                return readRepositoryLayout(keptRef.value.document);
+            },
             /**
              * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
              * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
@@ -180,6 +193,7 @@ export const TrackingStore = defineService({
             track,
             untrack,
             replaceDocument,
+            setRepositoryLayout,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -274,6 +288,21 @@ export const TrackingStore = defineService({
         }
 
         /**
+         * The user's choice of the repository layout, in the settings as the slot holds them now. Nothing when it reads
+         * as that already: a value of a newer build, which reads as tabs, stays until the user picks something else.
+         */
+        function setRepositoryLayout(layout: RepositoryLayout) {
+            const written = write(kept =>
+                readRepositoryLayout(kept.document) === layout
+                    ? null
+                    : { ...kept, document: { ...kept.document, repositoryLayout: layout } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
          * Tracks exactly the choice `change` makes of what is tracked now, as {@link choose} does, without counting as
          * the user's choice; nothing when it makes none.
          */
@@ -293,8 +322,8 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Calls `listener` after the user changed what is tracked in this tab — chose, tracked or untracked — not when
-         * another tab did, nor when the document was replaced.
+         * Calls `listener` after the user changed their settings in this tab — chose, tracked or untracked, or picked the
+         * repository layout — not when another tab did, nor when the document was replaced.
          */
         function onLocalChange(listener: () => void) {
             changeListeners.push(listener);
@@ -920,7 +949,7 @@ function toCandidateRepositories(page: TrackingRepositoryPageFieldsFragment, log
  * that name owned by someone else is theirs to track.
  */
 function isSettingsRepository(nameWithOwner: string, login: string) {
-    return nameWithOwner.toLowerCase() === `${login}/${SETTINGS_REPOSITORY_NAME}`.toLowerCase();
+    return nameWithOwner.toLowerCase() === getSettingsNameWithOwner(login).toLowerCase();
 }
 
 function toCandidateRepository(repository: TrackingRepositoryFieldsFragment): CandidateRepository {

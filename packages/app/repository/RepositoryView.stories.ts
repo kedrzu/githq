@@ -216,7 +216,8 @@ export const Commits: Story = {
                         kept.value
                             ? [
                                   h(RepositoryView, args, {
-                                      commits: () => h(CommitGraphView, { nameWithOwner: 'acme/web' }),
+                                      commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) =>
+                                          h(CommitGraphView, { nameWithOwner: 'acme/web', refListInColumn }),
                                   }),
                               ]
                             : [],
@@ -234,6 +235,79 @@ export const CommitsNotTracked: Story = {
     render: Commits.render,
     play: async ({ canvasElement }) => {
         await expect(await within(canvasElement).findByText('chore: bump vite to 6.2')).toBeVisible();
+    },
+};
+
+/** CH4: the column layout on Issues: the sections and the projects its issues live in in the column; the toolbar in the pane. */
+export const ColumnIssues: Story = {
+    args: { layout: 'column', selectedId: 'I_1187' },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
+        await expect(canvas.getByRole('navigation', { name: 'Its issues live in' })).toHaveTextContent(
+            '1 in no project',
+        );
+    },
+};
+
+/** CH5: the column layout on Pull requests. */
+export const ColumnPullRequests: Story = {
+    args: {
+        layout: 'column',
+        section: 'pullRequests',
+        list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'milestone', 'pullRequest'),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: 'Pull requests', level: 1 })).toBeVisible();
+        await expect(canvas.getByRole('navigation', { name: 'Its pull requests live in' })).toBeVisible();
+    },
+};
+
+/** CH6: the column layout on Commits: the list of branches and tags in the column, the graph the whole pane. */
+export const ColumnCommits: Story = {
+    args: { ...Commits.args, layout: 'column' },
+    render: Commits.render,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(await canvas.findByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
+    },
+};
+
+/** D11, D20: the column layout not tracked: the chip in the column's head, Commits in full. */
+export const ColumnCommitsNotTracked: Story = {
+    args: { ...ColumnCommits.args, tracked: false },
+    render: Commits.render,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(canvas.getByText('not tracked')).toBeVisible();
+    },
+};
+
+/** J3, D20: not tracked in the column layout, on Issues: the chip in the column only, and no header of the list's own. */
+export const ColumnNotTracked: Story = {
+    args: { ...NotTrackedNothingConcerns.args, layout: 'column' },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
+        await expect(canvas.getAllByText('not tracked')).toHaveLength(1);
+        await expect(canvas.getByRole('region', { name: "You're not tracking nuxt/nuxt" })).toBeVisible();
+    },
+};
+
+/** CH42: a commit's details in the column layout, on the pane's right, with the list staying in the column. */
+export const ColumnCommitDetails: Story = {
+    args: ColumnCommits.args,
+    render: Commits.render,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('chore: bump vite to 6.2');
+        await userEvent.keyboard('{Enter}');
+        await expect(await canvas.findByRole('region', { name: 'Commit details' })).toBeVisible();
+        await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
     },
 };
 
