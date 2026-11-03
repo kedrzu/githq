@@ -1,9 +1,10 @@
 /// <reference types="bun" />
 import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.js';
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
+import type { RepositoryPermission } from '@githq/github/generated.gen.js';
 import { expect, mock, test } from 'bun:test';
 
-import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
+import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane } from './buildWorkflowRun.js';
 import type { BuildWorkflowRunParams } from './buildWorkflowRun.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobsState, WorkflowRunState } from './WorkflowRunStore.js';
@@ -26,6 +27,28 @@ const RUN: GitHubWorkflowRunDetail = {
     runAttempt: null,
 };
 const NOW = Date.parse('2026-11-02T12:00:00Z');
+
+test('W4k: the failed jobs are re-run once the run stopped going, and only with write or above, known and not archived', () => {
+    const failed = build({ jobs: ready(job(1, 'build', 'failure'), job(2, 'lint', 'success')) });
+    expect(failed.rerunnableJobs.map(entry => entry.name)).toEqual(['build']);
+
+    const metadata = (viewerPermission: RepositoryPermission | null, isArchived = false) => ({
+        viewerPermission,
+        isArchived,
+    });
+    expect(canRerunFailedJobs(failed, metadata('WRITE'))).toBe(true);
+    expect(canRerunFailedJobs(failed, metadata('ADMIN'))).toBe(true);
+    expect(canRerunFailedJobs(failed, metadata('TRIAGE'))).toBe(false);
+    expect(canRerunFailedJobs(failed, metadata(null))).toBe(false);
+    expect(canRerunFailedJobs(failed, undefined)).toBe(false);
+    expect(canRerunFailedJobs(failed, metadata('ADMIN', true))).toBe(false);
+
+    const nothingFailed = build({ jobs: ready(job(1, 'lint', 'success')) });
+    expect(canRerunFailedJobs(nothingFailed, metadata('WRITE'))).toBe(false);
+
+    const going = build({ jobs: ready(job(1, 'build', 'failure'), job(2, 'lint', null, 'in_progress')) });
+    expect(canRerunFailedJobs(going, metadata('WRITE'))).toBe(false);
+});
 
 test('failed jobs come first, then those not finished, the others in GitHub’s order; the head counts them', () => {
     const { jobs, counts } = build({

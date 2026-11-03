@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
@@ -54,8 +54,10 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
 import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
+import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
+import WorkflowRerunToast from '@/workflows/WorkflowRerunToast.vue';
 import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
@@ -75,6 +77,7 @@ const pendingUntracks = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
 const editTexts = useEditTexts();
+const rerunTexts = useWorkflowRerunTexts();
 const registry = useService(CommandRegistry);
 const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
@@ -206,7 +209,8 @@ const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.refe
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
 // The user's edits (D15): the list's segment names the item being sent, the item's the fields. A merge GitHub has not
-// said the end of is grey until the next refresh settles it (merging PM36); it and a failure, the newer one says it.
+// said the end of is grey until the next refresh settles it (merging PM36); it and a failure, the newer one says it. A
+// run's re-run that failed is said the same way, though it is no edit (actions W4l).
 const listEdits = computed((): SegmentEdits | null => {
   if (queue.pending.length > 0) {
     return { kind: 'sending', text: editTexts.sending(queue.pending) };
@@ -226,7 +230,11 @@ const listEdits = computed((): SegmentEdits | null => {
   const failed: DatedSegmentEdits | null = failure
     ? { edits: { kind: 'failed', text: editTexts.failed(failure) }, at: failure.at }
     : null;
-  return getNewestEdits([unanswered, failed]);
+  const rerun = workflowRuns.rerunFailure;
+  const rerunFailed: DatedSegmentEdits | null = rerun
+    ? { edits: { kind: 'failed', text: rerunTexts.segment(rerun) }, at: rerun.at }
+    : null;
+  return getNewestEdits([unanswered, failed, rerunFailed]);
 });
 const itemEdits = computed((): SegmentEdits | null => {
   const id = openedId.value;
@@ -280,8 +288,12 @@ function getTrackedStatus(target: TrackedTarget, openArrived: boolean): SidebarT
 }
 
 function showLastFailure() {
-  if (lastFailure.value) {
-    queue.setToast(lastFailure.value.id, true);
+  const failure = lastFailure.value;
+  const rerun = workflowRuns.rerunFailure;
+  if (rerun && (!failure || rerun.at > failure.at)) {
+    workflowRuns.setRerunToast(true);
+  } else if (failure) {
+    queue.setToast(failure.id, true);
   }
 }
 </script>
@@ -337,6 +349,7 @@ function showLastFailure() {
   <Toaster v-if="auth.viewer">
     <EditToasts />
     <MergeToasts />
+    <WorkflowRerunToast />
     <SyncStoppedToast :login="auth.viewer.login" />
     <UntrackToast />
   </Toaster>

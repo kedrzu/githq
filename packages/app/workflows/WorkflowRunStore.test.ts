@@ -7,11 +7,14 @@ import { computed } from 'vue';
 
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
+import { AuthStore } from '@/auth/AuthStore.js';
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createActionsWorld } from '@/testing/createActionsWorld.js';
 import type { ActionsWorld } from '@/testing/createActionsWorld.js';
 import { createTestSession } from '@/testing/createTestSession.js';
-import type { TestGraphQLRequest } from '@/testing/createTestSession.js';
+import type { TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { WorkflowRunStore } from './WorkflowRunStore.js';
@@ -324,11 +327,190 @@ test('`get…` may be called from a `computed`, which follows the read and the s
     expect(log.value).toBe('loading');
 });
 
-function setup(world: ActionsWorld) {
+test('W4j: a re-run shows at once: the run and its failed jobs running, the attempt moved on, one request whatever is pressed', async () => {
+    const world = worldWithRun();
+    const context = setup(world);
+    const { session, store } = context;
+    await read(context);
+    const passed = { ...job(71), conclusion: 'success' };
+    world.repository(REPO).jobs.set(RUN, [job(JOB), passed]);
+    store.refresh(REPO, RUN);
+    await session.clock.advance(0);
+    const answer = createPromise();
+    session.github.hold = answer.promise;
+
+    store.rerun(REPO, RUN);
+    store.rerun(REPO, RUN);
+
+    expect(store.getRun(REPO, RUN).run).toMatchObject({ status: 'in_progress', conclusion: null });
+    expect(store.getJobs(REPO, RUN).jobs).toMatchObject([
+        { id: JOB, status: 'in_progress', conclusion: null, completedAt: null },
+        { id: 71, status: 'completed', conclusion: 'success' },
+    ]);
+
+    answer.resolve();
+    await session.clock.advance(0);
+    expect(rerunRequests(session.github.requests)).toHaveLength(1);
+});
+
+test('W4j: with GitHub’s reads still saying it failed the run stays running, then their word stands', async () => {
+    const context = setup(worldWithRun());
+    const { session, store } = context;
+    await read(context);
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+    expect(store.getRun(REPO, RUN).run?.status).toBe('in_progress');
+
+    await session.clock.advance(2 * 60_000);
+    expect(store.getRun(REPO, RUN).run).toMatchObject({ status: 'completed', conclusion: 'failure' });
+});
+
+test('W4j: the failed job’s log is read again once it finishes under the same id', async () => {
+    const world = worldWithRun();
+    const context = setup(world);
+    const { session, store } = context;
+    await read(context);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: [] });
+    await session.clock.advance(0);
+    expect(logRequests(session.github.requests)).toHaveLength(1);
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: [] });
+    await session.clock.advance(0);
+
+    expect(logRequests(session.github.requests)).toHaveLength(2);
+});
+
+test('W4l: a refusal takes it all back, shows once until dismissed, and offers the re-run again', async () => {
+    const context = setup(worldWithRun(), () => ({
+        status: 403,
+        body: { message: 'Unable to retry this workflow run because it was created over a month ago' },
+    }));
+    const { session, store } = context;
+    await read(context);
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+
+    expect(store.getRun(REPO, RUN).run).toMatchObject({ status: 'completed', conclusion: 'failure' });
+    expect(store.getJobs(REPO, RUN).jobs).toMatchObject([{ id: JOB, status: 'completed', conclusion: 'failure' }]);
+    expect(store.rerunFailure).toMatchObject({ runId: RUN, reason: { kind: 'tooOld' }, toast: true });
+
+    store.setRerunToast(false);
+    expect(store.rerunFailure).toMatchObject({ toast: false });
+    store.dismissRerunFailure();
+    expect(store.rerunFailure).toBeNull();
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+    expect(rerunRequests(session.github.requests)).toHaveLength(2);
+});
+
+test('W4l: “already running” follows the run GitHub says is going', async () => {
+    const world = worldWithRun();
+    const context = setup(world, () => {
+        const repository = world.repository(REPO);
+        repository.runs = repository.runs.map(run => ({ ...run, status: 'in_progress', conclusion: null }));
+        return { status: 403, body: { message: 'This workflow is already running' } };
+    });
+    const { session, store } = context;
+    await read(context);
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+
+    expect(store.rerunFailure?.reason.kind).toBe('alreadyRunning');
+    expect(store.getRun(REPO, RUN).run?.status).toBe('in_progress');
+});
+
+test('with the allowance used up nothing is sent and nothing shows as running, and it says so', async () => {
+    const context = setup(worldWithRun());
+    const { session, store } = context;
+    await read(context);
+    const until = session.clock.now() + 60_000;
+    session.container.resolve(GitHubRateLimitStore).update({
+        resource: 'core',
+        limit: 5000,
+        remaining: 0,
+        resetAt: new Date(until),
+    });
+
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+
+    expect(rerunRequests(session.github.requests)).toEqual([]);
+    expect(store.getRun(REPO, RUN).run?.status).toBe('completed');
+    expect(store.rerunFailure?.reason).toEqual({ kind: 'allowance', until });
+});
+
+test('nothing failed, or nothing known, sends nothing', async () => {
+    const world = worldWithRun();
+    world.repository(REPO).jobs.set(RUN, [{ ...job(JOB), conclusion: 'success' }]);
+    const context = setup(world);
+    const { session, store } = context;
+
+    store.rerun(REPO, RUN);
+    await read(context);
+    store.rerun(REPO, RUN);
+    await session.clock.advance(0);
+
+    expect(rerunRequests(session.github.requests)).toEqual([]);
+});
+
+test('the tab does not reload while a re-run’s answer is due or its failure not dismissed', async () => {
+    const context = setup(worldWithRun(), () => ({ status: 502, body: { message: 'Bad gateway' } }));
+    const { session, store } = context;
+    await read(context);
+    const holds = session.container.resolve(ReloadHolds);
+    expect(holds.held).toBe(false);
+
+    store.rerun(REPO, RUN);
+    expect(holds.held).toBe(true);
+    await session.clock.advance(0);
+    expect(store.rerunFailure?.reason).toEqual({ kind: 'serverError', status: 502 });
+    expect(holds.held).toBe(true);
+
+    store.dismissRerunFailure();
+    expect(holds.held).toBe(false);
+});
+
+test('an answer for a session that ended changes nothing and throws nothing', async () => {
+    const context = setup(worldWithRun(), () => ({
+        status: 403,
+        body: { message: 'This workflow is already running' },
+    }));
+    const { session, store } = context;
+    await read(context);
+    const answer = createPromise();
+    session.github.hold = answer.promise;
+
+    store.rerun(REPO, RUN);
+    session.container.resolve(AuthStore).signOut();
+    answer.resolve();
+    await session.clock.advance(0);
+
+    expect(store.rerunFailure).toBeNull();
+});
+
+/** Reads run 7 and its jobs, so a re-run has something to re-run. */
+async function read({ session, store }: ReturnType<typeof setup>) {
+    store.getRun(REPO, RUN);
+    store.getJobs(REPO, RUN);
+    await session.clock.advance(0);
+}
+
+function rerunRequests(requests: readonly TestGraphQLRequest[]) {
+    return requests.filter(({ operation }) => operation.endsWith('/rerun-failed-jobs'));
+}
+
+function setup(world: ActionsWorld, rerunAnswer: () => TestRestAnswer = () => ({ status: 201, body: {} })) {
     const session = createTestSession({
         login: `user-${crypto.randomUUID()}`,
         answer: () => undefined,
-        answerRest: request => world.answerRest(request),
+        answerRest: request =>
+            request.operation.endsWith('/rerun-failed-jobs') ? rerunAnswer() : world.answerRest(request),
     });
     setIndexedDbPersistence(session.container);
     return { session, store: session.container.resolve(WorkflowRunStore) };

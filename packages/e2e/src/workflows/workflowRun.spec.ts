@@ -703,3 +703,193 @@ test('⌘F opens the log’s search in place of the browser’s; / and N type in
     await expect(screen.cursorLine.locator('mark')).toHaveText('<b>');
     await expect(screen.cursorLine.locator('b')).toHaveCount(0);
 });
+
+/** A failed run whose failed job has a log, one passed job beside it, and a pass before the run. */
+function createRerunnableRun() {
+    const { world } = createSampleTrackedWork();
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Deploy', runs: [] });
+    world.workflowRun(SAMPLE_REPOSITORY, 'Deploy', { conclusion: 'success', minutesAgo: 60 });
+    const runId = world.workflowRun(SAMPLE_REPOSITORY, 'Deploy', { conclusion: 'failure', minutesAgo: 30 });
+    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD, LINT]);
+    world.jobLog(SAMPLE_REPOSITORY, buildId, RUN_LOG);
+    return { world, runId, buildId, path: `/${SAMPLE_REPOSITORY}/actions/runs/${runId}` };
+}
+
+const rerunCalls = (github: { restCalls: readonly { url: URL }[] }) =>
+    github.restCalls.filter(call => call.url.pathname.endsWith('/rerun-failed-jobs')).length;
+
+test('W4k, W4j: first in ⌘K, no key, no question: the page goes running at once, follows the run, opens the log itself, and the workflow stays broken', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, runId, buildId, path } = createRerunnableRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    const first = menu.root.getByRole('option').first();
+    await expect(first).toContainText('Re-run failed jobs');
+    await expect(first).toContainText('1 job: build');
+    await expect(first.locator('kbd')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog')).not.toContainText('Re-run failed jobs');
+    await page.keyboard.press('Escape');
+    expect(rerunCalls(github)).toBe(0);
+
+    await menu.open();
+    await page.keyboard.press('Enter');
+
+    await expect(screen.summary).toContainText('Running');
+    await expect(screen.summary).toContainText('attempt 2');
+    await expect(screen.message('build is still running')).toBeVisible();
+    await expect(shell.statusBar).toContainText('Status checked');
+    await expect.poll(() => rerunCalls(github)).toBe(1);
+
+    // Going, the command is gone.
+    await menu.open();
+    await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    // The workflow stays broken, as read now by the Workflows tab, though a pass stands before the run re-run.
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.workflow('Deploy')).toBeVisible();
+    await expect(repository.root.locator('[data-kind="running"]')).toBeVisible();
+    await expect(shell.brokenWorkflowsCount).toHaveText('1');
+    await page.goto(path);
+    await expect(screen.summary).toContainText('Running');
+
+    world.finishRun(SAMPLE_REPOSITORY, runId, 'failure');
+    world.finishJob(SAMPLE_REPOSITORY, runId, buildId, 'failure');
+    world.jobLog(SAMPLE_REPOSITORY, buildId, '2026-11-02T11:46:02.0000000Z the second log');
+    await page.clock.fastForward('00:31');
+
+    await expect(screen.logTexts.filter({ hasText: 'the second log' })).toBeVisible();
+    await expect(screen.summary).toContainText('Failed');
+});
+
+test('W4k: without permission to re-run the command is not there', async ({ page, github }) => {
+    const { world, path } = createRerunnableRun();
+    world.repository(SAMPLE_REPOSITORY, { viewerPermission: 'READ' });
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await expect(menu.option(/Open on GitHub/u)).toBeVisible();
+    await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
+});
+
+for (const [message, title, detail, hasLink] of [
+    [
+        'Must have admin rights to Repository.',
+        'wasn’t re-run: no permission',
+        'can’t run workflows. Nothing was started, and the run is still failed.',
+        true,
+    ],
+    [
+        'Unable to retry this workflow run because it was created over a month ago',
+        'wasn’t re-run: the run is too old',
+        'a run can be re-run for about a month after it ran',
+        true,
+    ],
+    [
+        'This workflow is already running',
+        'wasn’t re-run: it’s already running',
+        'someone else re-ran it a moment ago',
+        false,
+    ],
+] as const) {
+    test(`W4l: “${message}” is one toast in its own words, the segment red until dismissed, the run as it was`, async ({
+        page,
+        github,
+    }) => {
+        const { world, path } = createRerunnableRun();
+        world.refuseRerun(SAMPLE_REPOSITORY, 403, message);
+        await openTrackedWork(page, github, world);
+        await page.goto(path);
+        const screen = new WorkflowRunScreenHarness(page);
+        const shell = new AppShellHarness(page);
+        await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+        await new CommandMenuHarness(page).run('Re-run failed');
+
+        const wording = (text: string) => new RegExp(text.replaceAll('’', "['’]").replaceAll(' ', '\\s'), 'u');
+        await expect(shell.toasts).toHaveCount(1);
+        await expect(shell.toasts).toContainText(wording(title));
+        await expect(shell.toasts).toContainText(wording(detail));
+        await expect(shell.toasts.getByRole('link', { name: /Open on GitHub/u })).toHaveCount(hasLink ? 1 : 0);
+        await expect(screen.summary).toContainText('Failed');
+        await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+        await expect(shell.failedRerun).toHaveText(/Re-run\srefused\sby\sGitHub/u);
+
+        await page.keyboard.press('Escape');
+        await expect(shell.toasts).toHaveCount(0);
+        await expect(shell.failedRerun).toHaveCount(0);
+        await expect(page).toHaveURL(path);
+    });
+}
+
+test('W4l: a 5xx and no answer say so, as no refusal; a toast that timed out comes back from the status bar', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, path } = createRerunnableRun();
+    world.refuseRerun(SAMPLE_REPOSITORY, 502, 'Bad gateway');
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    await new CommandMenuHarness(page).run('Re-run failed');
+    await expect(shell.toasts).toContainText(/GitHub\sanswered\s502/u);
+    await expect(shell.failedRerun).toHaveText(/GitHub answered 502/u);
+
+    await page.clock.fastForward('00:13');
+    await expect(shell.toasts).toHaveCount(0);
+    await shell.failedRerun.click();
+    await expect(shell.toasts).toContainText(/GitHub\sanswered\s502/u);
+    await page.keyboard.press('Escape');
+    await expect(shell.failedRerun).toHaveCount(0);
+
+    await page.route('**/rerun-failed-jobs', route => route.abort('failed'));
+    await new CommandMenuHarness(page).run('Re-run failed');
+    await expect(shell.toasts).toContainText(/couldn['’]t\sreach\sGitHub/u);
+    await expect(shell.failedRerun).toHaveText(/GitHub unreachable/u);
+    await expect(screen.summary).toContainText('Failed');
+});
+
+test('W4l: an answer after leaving the page still shows, wherever the user went', async ({ page, github }) => {
+    const { world, path } = createRerunnableRun();
+    world.refuseRerun(SAMPLE_REPOSITORY, 403, 'This workflow is already running');
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+
+    const held = Promise.withResolvers<void>();
+    await page.route('**/rerun-failed-jobs', async route => {
+        await held.promise;
+        await route.fallback();
+    });
+    await new CommandMenuHarness(page).run('Re-run failed');
+    await expect(screen.summary).toContainText('Running');
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    held.resolve();
+
+    await expect(shell.toasts).toContainText(/already\srunning/u);
+});

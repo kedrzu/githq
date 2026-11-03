@@ -5,6 +5,7 @@ import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import { getRepositoryWorkflowState, RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRowRef } from './utils/getRowRef.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
+import { getStandingVerdict } from './utils/getStandingVerdict.js';
 import { getWorkflowPatterns } from './utils/getWorkflowPatterns.js';
 import { isPullRequestRun } from './utils/isPullRequestRun.js';
 import { isWorkflowAlertsOff } from './utils/isWorkflowAlertsOff.js';
@@ -274,12 +275,12 @@ function sortByBreak(rows: readonly RepositoryWorkflowEntry[]) {
 function getLatestStandingFailure(runs: readonly GitHubWorkflowRun[]) {
     const latestByRef = new Map<string | null, GitHubWorkflowRun>();
     for (const run of runs) {
-        if (getRunVerdict(run) !== null) {
+        if (getStandingVerdict(run) !== null) {
             // Deleted first, so the map stays in order of each ref's latest verdict.
             latestByRef.delete(run.headBranch);
             latestByRef.set(run.headBranch, run);
         }
     }
 
-    return Array.from(latestByRef.values()).findLast(run => getRunVerdict(run) === 'failed') ?? null;
+    return Array.from(latestByRef.values()).findLast(run => getStandingVerdict(run) === 'failed') ?? null;
 }

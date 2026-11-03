@@ -14,7 +14,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { getRefGroups } from './utils/getRefGroups.js';
 import { WORKFLOW_RUNS_PAGE_SIZE } from './utils/getRepositoryWorkflowState.js';
-import { getRunVerdict } from './utils/getRunVerdict.js';
+import { getStandingVerdict } from './utils/getStandingVerdict.js';
 import { isRunInGroup } from './utils/isRunInGroup.js';
 import { isWorkflowNeverRead } from './utils/isWorkflowNeverRead.js';
 import { mergeWorkflowRuns } from './utils/mergeWorkflowRuns.js';
@@ -476,7 +476,7 @@ function pickEtags(etags: Readonly<Record<string, string>>, keys: readonly (stri
 
 /** Whether a run of the group among `runs` has a verdict — what decides the workflow there (actions D1). */
 function hasVerdict(runs: readonly GitHubWorkflowRun[], group: WorkflowRefGroup) {
-    return runs.some(run => getRunVerdict(run) !== null && isRunInGroup(run, group));
+    return runs.some(run => getStandingVerdict(run) !== null && isRunInGroup(run, group));
 }
 
 /** Whether a page of runs, the newest first, ends short of `run`: runs may be missing between the two. */

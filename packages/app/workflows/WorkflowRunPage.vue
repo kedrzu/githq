@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line of the job it names, and on no other's. The job the address names is selected, else the one shown so far, else the first failed: as the run goes the jobs change places, and a job that passes or another that fails takes nothing over, reached by ⌥J/⌥K in its place at the top. Selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
+<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line of the job it names, and on no other's. The job the address names is selected, else the one shown so far, else the first failed: as the run goes the jobs change places, and a job that passes or another that fails takes nothing over, reached by ⌥J/⌥K in its place at the top. Selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Re-running the failed jobs is the store's (W4j, W4l): the page follows as the run goes, and the answer, whenever it comes, is shown above the page. Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -6,6 +6,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
@@ -18,7 +19,7 @@ import {
 } from '@/tracking/trackingRoutes.js';
 import { goBack } from '@/utils/goBack.js';
 
-import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
+import { buildWorkflowRun, canRerunFailedJobs, getWorkflowLogPane } from './buildWorkflowRun.js';
 import { getRefKind } from './utils/getRefKind.js';
 import { parseLogLineHash } from './utils/logLineHash.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
@@ -33,6 +34,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useService(WorkflowRunStore);
 const workflows = useService(WorkflowStore);
+const repositories = useService(RepositoryStore);
 const browser = useService(Browser);
 const clock = useService(Clock);
 const now = useNow(REFRESH_MS);
@@ -58,6 +60,7 @@ const model = computed(() =>
     shownJobId: shownJobId.value,
   }),
 );
+const canRerun = computed(() => canRerunFailedJobs(model.value, repositories.get(nameWithOwner)));
 // Only with the columns shown: a run GitHub no longer shows reads no log.
 const logPane = computed(() =>
   getWorkflowLogPane({
@@ -154,7 +157,10 @@ onScopeDispose(() => {
   cancelRefresh?.();
   store.setPageFreshness(null);
 });
-onMounted(() => store.refresh(nameWithOwner, runId));
+onMounted(() => {
+  store.refresh(nameWithOwner, runId);
+  void repositories.ensure(nameWithOwner);
+});
 
 function scheduleRefresh() {
   cancelRefresh = clock.schedule(() => {
@@ -196,8 +202,10 @@ function close() {
     :git-ref="gitRef"
     :workflow-path="workflowPath"
     :still-broken="stillBroken"
+    :can-rerun="canRerun"
     :now="now"
     @select-job="selectJob"
+    @rerun="store.rerun(nameWithOwner, runId)"
     @retry="retry"
     @open-on-git-hub="browser.openInNewTab($event)"
     @close="close"

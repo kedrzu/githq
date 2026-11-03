@@ -26,6 +26,11 @@ export interface GitHubWorkflowRun {
     readonly runStartedAt?: string;
     /** ISO; when the run last changed — once completed, when it finished. */
     readonly updatedAt: string;
+    /**
+     * Not GitHub's: what the run concluded before it was re-run, while it goes again. A re-run keeps the run's id and
+     * blanks its conclusion, and only a copy read before it knows what that was (`mergeWorkflowRuns`).
+     */
+    readonly conclusionBeforeRerun?: string;
 }
 
 /**

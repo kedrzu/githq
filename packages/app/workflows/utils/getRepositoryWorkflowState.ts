@@ -12,7 +12,7 @@ import type {
 } from '../WorkflowTypes.js';
 import { getRefGroups } from './getRefGroups.js';
 import { getRowRef } from './getRowRef.js';
-import { getRunVerdict } from './getRunVerdict.js';
+import { getStandingVerdict } from './getStandingVerdict.js';
 import { getWorkflowVerdict } from './getWorkflowVerdict.js';
 import { isRunInGroup } from './isRunInGroup.js';
 import { isWorkflowNeverRead } from './isWorkflowNeverRead.js';
@@ -146,10 +146,10 @@ function getGroupState({ stored, group, now, runs: all }: GetGroupStateParams): 
     }
 
     // The runs after the last passed one, all of them when none passed: the break is what failed among them.
-    const lastPass = runs.findLastIndex(run => getRunVerdict(run) === 'passed');
+    const lastPass = runs.findLastIndex(run => getStandingVerdict(run) === 'passed');
     const breakRuns = runs.slice(lastPass + 1);
-    const firstFailure = breakRuns.find(run => getRunVerdict(run) === 'failed');
-    const latestFailure = breakRuns.findLast(run => getRunVerdict(run) === 'failed');
+    const firstFailure = breakRuns.find(run => getStandingVerdict(run) === 'failed');
+    const latestFailure = breakRuns.findLast(run => getStandingVerdict(run) === 'failed');
     const breakStartedAt = firstFailure ? Date.parse(firstFailure.createdAt) : null;
     // With no pass stored and more runs than one read returns, the break may be far older than the oldest failure kept.
     const breakStartKnown = lastPass >= 0 || runs.length < WORKFLOW_RUNS_PAGE_SIZE;

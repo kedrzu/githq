@@ -48,7 +48,13 @@ import type {
     GitHubActionsWorkflow,
 } from './answerRepositoryActions.js';
 import { GitHubPartialAnswer } from './GitHubMock.js';
-import type { GitHubGraphQLAnswer, GitHubMock, GitHubOperationData, GitHubSearchHit } from './GitHubMock.js';
+import type {
+    GitHubGraphQLAnswer,
+    GitHubMock,
+    GitHubOperationData,
+    GitHubRestAnswer,
+    GitHubSearchHit,
+} from './GitHubMock.js';
 
 /** One of the four "my work" searches (D11), named as the app names its groups. */
 export type MyWorkSearch = 'reviewRequested' | 'authored' | 'assigned' | 'mentioned';
@@ -449,6 +455,8 @@ interface WorldRepository {
     tagNames: string[];
     jobs: Map<number, readonly GitHubActionsJob[]>;
     logs: Map<number, GitHubActionsLog>;
+    /** What re-running a run's failed jobs answers instead of starting them ({@link GitHubWorld.refuseRerun}). */
+    rerunRefusal: GitHubRestAnswer | null;
     /** Its commits by oid; none for an empty repository. */
     commits: ReadonlyMap<string, WorldCommit>;
     branches: Readonly<Record<string, string>>;
@@ -824,6 +832,11 @@ export class GitHubWorld {
         const answered = jobs.map(job => this.toActionsJob(job, started));
         repository.jobs.set(runId, answered);
         return answered.map(job => job.id);
+    }
+
+    /** Re-running the repository's runs' failed jobs is refused from now on: GitHub's status and its words. */
+    refuseRerun(nameWithOwner: string, status: number, message: string): void {
+        this.getRepository(nameWithOwner).rerunRefusal = { status, json: { message } };
     }
 
     /** A job of the run finishes, as GitHub records it between two reads, keeping its id. */
@@ -1738,7 +1751,12 @@ export class GitHubWorld {
      * and its GitHub Actions ({@link answerRepositoryActions}): no workflows until a test gives it some.
      */
     private answerRepositoryPoll(github: GitHubMock, repository: WorldRepository) {
-        answerRepositoryActions(github, repository.nameWithOwner, () => ({ ...repository, tags: repository.tagNames }));
+        answerRepositoryActions(
+            github,
+            repository.nameWithOwner,
+            () => ({ ...repository, tags: repository.tagNames }),
+            runId => answerRerun(repository, runId),
+        );
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
             const json = [...this.items.values()]
@@ -2659,6 +2677,7 @@ export class GitHubWorld {
                 tagNames: [],
                 jobs: new Map(),
                 logs: new Map(),
+                rerunRefusal: null,
                 commits: new Map(),
                 branches: {},
                 tags: {},
@@ -2995,6 +3014,35 @@ export class GitHubWorld {
 }
 
 /** A ref's target as `CommitRefTargetFields` gives it. */
+/**
+ * Re-runs a run's failed jobs as GitHub does (`POST …/actions/runs/{id}/rerun-failed-jobs`): the run goes again as its next
+ * attempt and those jobs start, unless {@link GitHubWorld.refuseRerun} said otherwise.
+ */
+function answerRerun(repository: WorldRepository, runId: number): GitHubRestAnswer {
+    if (repository.rerunRefusal) {
+        return repository.rerunRefusal;
+    }
+
+    repository.runs = repository.runs.map(run =>
+        run.id === runId ? { ...run, status: 'in_progress', conclusion: null, attempt: (run.attempt ?? 1) + 1 } : run,
+    );
+    repository.jobs.set(
+        runId,
+        (repository.jobs.get(runId) ?? []).map(job =>
+            job.conclusion === 'failure'
+                ? {
+                      ...job,
+                      status: 'in_progress',
+                      conclusion: null,
+                      startedAt: new Date().toISOString(),
+                      completedAt: null,
+                  }
+                : job,
+        ),
+    );
+    return { status: 201, json: {} };
+}
+
 function toCommitTarget(commit: WorldCommit) {
     return { id: `C_${commit.oid}`, oid: commit.oid, committedDate: commit.committedDate };
 }

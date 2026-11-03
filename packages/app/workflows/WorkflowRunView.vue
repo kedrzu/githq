@@ -1,9 +1,20 @@
-<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. No key or command for re-running yet. -->
+<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. Re-running the failed jobs is a command of ⌘K only, first in it, with no key anywhere (D10), and goes with no question asked (W4k). -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleDot, FileX, Ghost, Github, Hourglass, PackageOpen, RotateCw, Unplug, X } from 'lucide-vue-next';
+import {
+  CircleDot,
+  FileX,
+  Ghost,
+  Github,
+  Hourglass,
+  PackageOpen,
+  RefreshCw,
+  RotateCw,
+  Unplug,
+  X,
+} from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 
@@ -40,6 +51,8 @@ const props = defineProps<{
   workflowPath: string | null;
   /** The run's workflow is broken as things stand. */
   stillBroken: boolean;
+  /** "Re-run failed jobs" is offered (`canRerunFailedJobs`). */
+  canRerun?: boolean;
   /** Epoch ms the ages are counted to. */
   now: number;
 }>();
@@ -53,6 +66,8 @@ const emit = defineEmits<{
   openOnGitHub: [url: string];
   /** Esc or the toolbar's close. */
   close: [];
+  /** "Re-run failed jobs" in ⌘K. */
+  rerun: [];
 }>();
 
 /** What stands in for the columns. */
@@ -146,6 +161,19 @@ const selectedIndex = computed(() => {
 });
 
 useCommands(() => [
+  // No key, here or anywhere: it starts something in the repository, so it is never one stray keystroke away (D10).
+  {
+    id: 'workflowRun.rerunFailedJobs',
+    title: t(l.rerunFailedJobs),
+    section: 'view',
+    icon: RefreshCw,
+    detail: t(l.rerunDetail, {
+      count: props.model.rerunnableJobs.length,
+      jobs: props.model.rerunnableJobs.map(job => job.name).join(', '),
+    }),
+    when: () => props.canRerun,
+    run: () => emit('rerun'),
+  },
   {
     id: 'workflowRun.nextJob',
     title: t(l.nextJob),

@@ -2,6 +2,7 @@ import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 
 import type { WorkflowRefGroup } from '../WorkflowTypes.js';
 import { getRunVerdict } from './getRunVerdict.js';
+import { getStandingVerdict } from './getStandingVerdict.js';
 import { isRunInGroup } from './isRunInGroup.js';
 import { mergeRunsById } from './mergeRunsById.js';
 
@@ -22,19 +23,32 @@ export interface MergeWorkflowRunsParams {
  * A workflow's runs after a read: the kept and the read ones merged by id, the newest first by creation time, cut to
  * the latest {@link WORKFLOW_RUNS_KEPT} plus each group's latest run with a verdict, so neither a row of cancelled runs
  * nor a busy ref elsewhere can cut off the failure that keeps a group broken (actions D1). What lies between goes: a
- * break whose start is cut off with it says so ("3h+"), and no group's state changes.
+ * break whose start is cut off with it says so ("3h+"), and no group's state changes. A run re-run keeps its id, so its
+ * new copy says nothing of how it ended: what the kept copy concluded goes along until it finishes again (actions W4j).
  * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function mergeWorkflowRuns(params: MergeWorkflowRunsParams): GitHubWorkflowRun[] {
-    const runs = mergeRunsById([params.stored, params.read]);
+    const kept = new Map(params.stored.map(run => [run.id, run]));
+    const runs = mergeRunsById([params.stored, params.read]).map(run =>
+        withConclusionBeforeRerun(run, kept.get(run.id)),
+    );
     const decidingIds = new Set<number>();
     for (const group of params.groups) {
-        const deciding = runs.find(run => getRunVerdict(run) !== null && isRunInGroup(run, group));
+        const deciding = runs.find(run => getStandingVerdict(run) !== null && isRunInGroup(run, group));
         if (deciding) {
             decidingIds.add(deciding.id);
         }
     }
 
     return runs.filter((run, index) => index < WORKFLOW_RUNS_KEPT || decidingIds.has(run.id));
+}
+
+function withConclusionBeforeRerun(run: GitHubWorkflowRun, kept: GitHubWorkflowRun | undefined): GitHubWorkflowRun {
+    if (!kept || run.status === 'completed') {
+        return run;
+    }
+
+    const conclusion = getRunVerdict(kept) === null ? kept.conclusionBeforeRerun : kept.conclusion;
+    return conclusion == null ? run : { ...run, conclusionBeforeRerun: conclusion };
 }

@@ -204,6 +204,21 @@ test('a run stored in progress but older than the strip shows no longer: its end
     expect(state.workflows[0]).toMatchObject({ state: 'passing' });
 });
 
+test('D1, W4j: the failed run being re-run, on a new or an old pass alike, the workflow stays broken until it finishes', () => {
+    const pass = run(1, 'success', '2026-11-02T09:00:00Z');
+    const rerunning = run(2, null, '2026-11-02T10:00:00Z', { status: 'in_progress', conclusionBeforeRerun: 'failure' });
+    const state = getRepositoryWorkflowState(repository([stored(workflow(1), [rerunning, pass])]), DEFAULT_REFS, NOW);
+
+    expect(state.brokenCount).toBe(1);
+    expect(state.workflows[0]).toMatchObject({ state: 'broken', latestFailedRun: { id: 2 } });
+    expect(state.workflows[0]?.lastRuns.at(-1)).toBe(rerunning);
+
+    const passed = run(2, 'success', '2026-11-02T10:00:00Z');
+    expect(
+        getRepositoryWorkflowState(repository([stored(workflow(1), [passed, pass])]), DEFAULT_REFS, NOW).workflows[0],
+    ).toMatchObject({ state: 'passing' });
+});
+
 test('a workflow GitHub generates counts like any other and says so', () => {
     const state = getRepositoryWorkflowState(
         repository([

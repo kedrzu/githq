@@ -2,6 +2,9 @@ import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { hasRole } from '@/edits/getEditPermissions.js';
+import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
+
 import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobMark } from './utils/getJobMark.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
@@ -46,6 +49,8 @@ export interface WorkflowRunModel {
      * GitHub meanwhile (W4j).
      */
     readonly going: boolean;
+    /** The jobs "Re-run failed jobs" would re-run: those failed, once the run stopped going. */
+    readonly rerunnableJobs: readonly GitHubWorkflowJob[];
 }
 
 /** What a run's page is built from. */
@@ -122,16 +127,31 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
     }
 
     const body = getBody(runState, jobsState);
+    const going =
+        body.kind !== 'gone' &&
+        ((run !== null && run.status !== 'completed') || jobs.some(job => job.status !== 'completed'));
     return {
         run,
         jobs,
         counts,
         selectedJob: jobs.find(job => job.id === jobId) ?? jobs.find(job => job.id === shownJobId) ?? jobs[0] ?? null,
         body,
-        going:
-            body.kind !== 'gone' &&
-            ((run !== null && run.status !== 'completed') || jobs.some(job => job.status !== 'completed')),
+        going,
+        rerunnableJobs: going || run === null ? [] : jobs.filter(job => getJobMark(job) === 'failed'),
     };
+}
+
+/**
+ * Whether "Re-run failed jobs" is offered (actions W4k): something failed and the run stopped going, and the user may, as
+ * with every edit githq knows they can't make: write or above, not in an archived repository. Not while that isn't known.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function canRerunFailedJobs(
+    model: WorkflowRunModel,
+    metadata: Pick<RepositoryMetadata, 'isArchived' | 'viewerPermission'> | undefined,
+): boolean {
+    return model.rerunnableJobs.length > 0 && !metadata?.isArchived && hasRole(metadata?.viewerPermission, 'WRITE');
 }
 
 /**

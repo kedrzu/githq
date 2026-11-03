@@ -72,6 +72,8 @@ export interface GitHubActionsRun {
     readonly conclusion: string | null;
     /** ISO. */
     readonly createdAt: string;
+    /** Which attempt it is on; the first without it. */
+    readonly attempt?: number;
 }
 
 /** A repository with no workflows, on `main`: what every tracked repository answers unless a test gives it some. */
@@ -96,6 +98,7 @@ export function answerRepositoryActions(
     github: GitHubMock,
     nameWithOwner: string,
     read: () => GitHubActionsState,
+    rerun: (runId: number) => GitHubRestAnswer = () => NOT_FOUND,
 ): void {
     const base = `/repos/${nameWithOwner}`;
     const answered = new Set<number>();
@@ -148,10 +151,16 @@ export function answerRepositoryActions(
                   ...toRestRun(nameWithOwner, run),
                   name: read().workflows.find(workflow => workflow.id === run.workflowId)?.name ?? null,
                   head_commit: { message: `Run ${run.id}` },
+                  run_attempt: run.attempt ?? 1,
                   actor: { login: 'monalisa' },
               })
             : NOT_FOUND;
     });
+    github.restMatching(
+        'POST',
+        new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/rerun-failed-jobs$`),
+        (_, match) => rerun(Number(match[1])),
+    );
     github.restMatching('GET', new RegExp(`^${escapeRegExp(base)}/actions/runs/(\\d+)/jobs$`), (request, match) => {
         const run = findRun(match);
         if (!run) {

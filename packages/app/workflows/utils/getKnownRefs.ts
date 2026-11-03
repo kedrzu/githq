@@ -3,7 +3,7 @@ import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 
 import type { RefKind, RepositoryWorkflows, RunVerdict } from '../WorkflowTypes.js';
 import { getRefKind } from './getRefKind.js';
-import { getRunVerdict } from './getRunVerdict.js';
+import { getStandingVerdict } from './getStandingVerdict.js';
 import { isPullRequestRun } from './isPullRequestRun.js';
 import { sortRunsByCreation } from './sortRunsByCreation.js';
 
@@ -50,10 +50,10 @@ export function getKnownRefs(stored: RepositoryWorkflows | undefined): KnownRef[
             const latestRunAt = Math.max(...onRef.map(run => Date.parse(run.createdAt)));
             const known = refs.get(name) ?? { latestRunAt, workflows: [] };
             known.latestRunAt = Math.max(known.latestRunAt, latestRunAt);
-            const decided = sortRunsByCreation(onRef).findLast(run => getRunVerdict(run) !== null);
+            const decided = sortRunsByCreation(onRef).findLast(run => getStandingVerdict(run) !== null);
             known.workflows.push({
                 workflow,
-                verdict: decided ? getRunVerdict(decided) : null,
+                verdict: decided ? getStandingVerdict(decided) : null,
                 verdictAt: decided ? Date.parse(decided.createdAt) : null,
             });
             refs.set(name, known);

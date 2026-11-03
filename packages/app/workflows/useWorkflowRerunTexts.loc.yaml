@@ -1,0 +1,48 @@
+run:
+  en: '{workflow} #{number}'
+runOfNoName:
+  en: 'Run #{number}'
+titleNoPermission:
+  en: "{run} wasn't re-run: no permission"
+titleTooOld:
+  en: "{run} wasn't re-run: the run is too old"
+titleAlreadyRunning:
+  en: "{run} wasn't re-run: it's already running"
+titleOrganizationRestricted:
+  en: "{run} wasn't re-run: {organization} hasn't approved githq"
+titleRefused:
+  en: "{run} wasn't re-run"
+titleUnreachable:
+  en: "{run} wasn't re-run: GitHub couldn't be reached"
+titleServerError:
+  en: "{run} wasn't re-run: GitHub failed"
+titleAllowance:
+  en: "{run} wasn't re-run: the allowance is used up"
+detailNoPermission:
+  en: "GitHub refused it: your role in {repository} can't run workflows. Nothing was started, and the run is still failed."
+detailTooOld:
+  en: 'GitHub refused it: a run can be re-run for about a month after it ran. Nothing was started. A new commit or a manual run on GitHub starts a new one.'
+detailAlreadyRunning:
+  en: 'GitHub refused it: someone else re-ran it a moment ago. This page now follows that run.'
+detailOrganizationRestricted:
+  en: "{organization} hasn't approved githq, so githq can read its public repositories but can't change anything there."
+detailRefused:
+  en: 'GitHub refused it: {message}. Nothing was started, and the run is still failed.'
+detailUnreachable:
+  en: "githq couldn't reach GitHub, so the run stays as GitHub last said it. Try again once you're online."
+detailServerError:
+  en: 'GitHub answered {status}, a failure on its side rather than a refusal. The run stays as GitHub last said it; try again in a moment.'
+detailAllowance:
+  en: "GitHub's API allowance is used up until {time}, so nothing was started."
+segmentRefused:
+  en: Re-run refused by GitHub
+segmentUnreachable:
+  en: Re-run failed · GitHub unreachable
+segmentServerError:
+  en: Re-run failed · GitHub answered {status}
+segmentAllowance:
+  en: Re-run not sent · allowance used up
+openOnGitHub:
+  en: Open on GitHub
+requestAccess:
+  en: Request access on GitHub

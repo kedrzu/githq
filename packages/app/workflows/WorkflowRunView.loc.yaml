@@ -50,3 +50,10 @@ noJobsTitle:
   en: This run has no jobs
 noJobsText:
   en: It finished without running any, so there's nothing to read here.
+rerunFailedJobs:
+  en: Re-run failed jobs
+rerunDetail:
+  plural: count
+  en:
+    one: '1 job: {jobs}'
+    many: '{count} jobs: {jobs}'

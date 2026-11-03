@@ -5,6 +5,7 @@ import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.
 import { listRunJobs } from '@githq/github/rest/listRunJobs.js';
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import { readJobLog } from '@githq/github/rest/readJobLog.js';
+import { rerunFailedJobs } from '@githq/github/rest/rerunFailedJobs.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -20,7 +21,12 @@ import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { getAllowancePause } from '@/sync/getAllowancePause.js';
+import { ReloadHolds } from '@/sync/ReloadHolds.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
+import { getJobMark } from './utils/getJobMark.js';
+import { getRerunReason } from './utils/getRerunReason.js';
+import type { WorkflowRerunReason } from './utils/getRerunReason.js';
 import { parseJobLog } from './utils/parseJobLog.js';
 import type { ParsedJobLog } from './utils/parseJobLog.js';
 import { WorkflowStore } from './WorkflowStore.js';
@@ -28,6 +34,11 @@ import type { RepositoryWorkflows } from './WorkflowTypes.js';
 
 /** How many logs stay in memory: reading one costs little, keeping many costs a lot (actions D12). */
 const KEPT_LOGS = 5;
+/**
+ * How long a re-run GitHub took shows as running with GitHub's reads still saying it ended: its answers may lag behind.
+ * After that GitHub's word stands, so a re-run that never shows up does not keep the page asking for good.
+ */
+const RERUN_LANDING_MS = 2 * 60_000;
 
 /**
  * How reading from GitHub went. `gone`: GitHub no longer has it, past its retention or never there; `failed`: it was
@@ -65,6 +76,31 @@ export type WorkflowLogState =
           readonly httpStatus: number | null;
       };
 
+/** A run's failed jobs that did not re-run, and why: its toast and the status bar's segment (W4l). */
+export interface WorkflowRerunFailure {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    readonly runId: number;
+    /** The run's workflow as GitHub names it; `null` when it does not. */
+    readonly workflowName: string | null;
+    readonly runNumber: number;
+    readonly reason: WorkflowRerunReason;
+    /** Its toast is showing. */
+    readonly toast: boolean;
+    /** Epoch ms it was reported: the status bar says the newest of what it has to say. */
+    readonly at: number;
+}
+
+/** A re-run asked for, drawn over what GitHub's reads say until they show it (W4j). */
+interface RunRerun {
+    /** The attempt the run was on when it was asked; `null` when not known. */
+    readonly attempt: number | null;
+    /** The failed jobs it re-runs. */
+    readonly jobIds: ReadonlySet<number>;
+    /** ISO. */
+    readonly startedAt: string;
+}
+
 /** What a run's or its jobs' conditional read says. */
 type ConditionalAnswer<T> = { status: 304 } | { status: 200; etag: string | undefined; value: T } | { status: 'gone' };
 
@@ -88,6 +124,11 @@ interface RunSession {
     readonly runs: Map<string, ConditionalRead<GitHubWorkflowRunDetail>>;
     readonly jobs: Map<string, ConditionalRead<readonly GitHubWorkflowJob[]>>;
     readonly logs: LruCache<string, ShallowRef<WorkflowLogState>>;
+    readonly reruns: ShallowRef<ReadonlyMap<string, RunRerun>>;
+    /** How many re-runs GitHub has not answered yet. */
+    readonly rerunsOnTheirWay: ShallowRef<number>;
+    /** The latest re-run that failed, until dismissed: one at a time. */
+    readonly rerunFailure: ShallowRef<WorkflowRerunFailure | null>;
 }
 
 /** Which job's log to read: also what {@link WorkflowRunStore}'s `retry` takes. */
@@ -119,6 +160,15 @@ interface OpenParams<T> {
     readonly load: ConditionalRead<T>['load'];
 }
 
+/** A re-run being sent, for whom and what shows meanwhile. */
+interface SendRerunParams {
+    readonly current: RunSession;
+    readonly run: GitHubWorkflowRunDetail;
+    readonly nameWithOwner: string;
+    readonly key: string;
+    readonly layer: RunRerun;
+}
+
 const LOADING: WorkflowLogState = { status: 'loading' };
 
 /**
@@ -128,6 +178,10 @@ const LOADING: WorkflowLogState = { status: 'loading' };
  *
  * Each `get…` starts the read the first time it is asked, so it may be called from a `computed`: what it writes is its
  * own new state, which nothing watches yet.
+ *
+ * Re-running a run's failed jobs (actions D10, W4j, W4l) starts here too, and shows at once: the run and its failed jobs
+ * read as running, until GitHub's reads say so themselves. GitHub refusing it takes that back and is said by a toast and
+ * the status bar's segment of its own: a re-run is no item's edit, so it stays out of the `EditQueue`.
  */
 export type WorkflowRunStore = Resolved<typeof WorkflowRunStore>;
 export const WorkflowRunStore = defineService({
@@ -137,10 +191,11 @@ export const WorkflowRunStore = defineService({
         workflows: WorkflowStore,
         createRest: GitHubRestFactory,
         rateLimits: GitHubRateLimitStore,
+        holds: ReloadHolds,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, workflows, createRest, rateLimits, clock, logger }) {
+    setup({ accounts, workflows, createRest, rateLimits, holds, clock, logger }) {
         const sessionRef = shallowRef<RunSession | null>(null);
         const pageFreshnessRef = shallowRef<Freshness | null>(null);
 
@@ -152,8 +207,16 @@ export const WorkflowRunStore = defineService({
                       runs: new Map(),
                       jobs: new Map(),
                       logs: createLruCache({ maxSize: KEPT_LOGS }),
+                      reruns: shallowRef(new Map()),
+                      rerunsOnTheirWay: shallowRef(0),
+                      rerunFailure: shallowRef(null),
                   }
                 : null;
+        });
+        // A reload would lose the answer, or a failure not dismissed yet: only this tab's memory holds them.
+        holds.holdWhile(() => {
+            const current = sessionRef.value;
+            return current !== null && (current.rerunsOnTheirWay.value > 0 || current.rerunFailure.value !== null);
         });
 
         return {
@@ -162,6 +225,13 @@ export const WorkflowRunStore = defineService({
                 return pageFreshnessRef.value;
             },
             setPageFreshness,
+            /** The latest re-run that failed, until dismissed; reactive. */
+            get rerunFailure() {
+                return sessionRef.value?.rerunFailure.value ?? null;
+            },
+            setRerunToast,
+            dismissRerunFailure,
+            rerun,
             getRun,
             getJobs,
             refresh,
@@ -173,7 +243,103 @@ export const WorkflowRunStore = defineService({
             pageFreshnessRef.value = freshness;
         }
 
-        /** The run as the sync stored it, at once, then as read. Reactive. */
+        /** Shows or hides the failed re-run's toast; it stays in the status bar until dismissed. */
+        function setRerunToast(toast: boolean) {
+            const current = sessionRef.value;
+            const failure = current?.rerunFailure.value;
+            if (current && failure) {
+                current.rerunFailure.value = { ...failure, toast };
+            }
+        }
+
+        function dismissRerunFailure() {
+            const current = sessionRef.value;
+            if (current) {
+                current.rerunFailure.value = null;
+            }
+        }
+
+        /**
+         * Re-runs the run's failed jobs, showing that at once. Nothing while the run goes, which it does from here until
+         * GitHub refuses: it cannot be sent twice. GitHub's answer ends up here, shown or not, and whatever it was the run
+         * is asked for again: a refusal may say someone else re-ran it, and a failure says nothing of what got there.
+         */
+        function rerun(nameWithOwner: string, runId: number) {
+            const current = sessionRef.value;
+            const { run } = getRun(nameWithOwner, runId);
+            const jobIds = getJobs(nameWithOwner, runId)
+                .jobs.filter(job => getJobMark(job) === 'failed')
+                .map(job => job.id);
+            if (!current || run?.status !== 'completed' || jobIds.length === 0) {
+                return;
+            }
+
+            current.rerunFailure.value = null;
+            const pause = getAllowancePause(rateLimits.get('core'), clock.now());
+            if (pause) {
+                putRerunFailure(current, run, nameWithOwner, { kind: 'allowance', until: pause.until });
+                return;
+            }
+
+            const key = getKey(nameWithOwner, runId);
+            const layer: RunRerun = {
+                attempt: run.runAttempt,
+                jobIds: new Set(jobIds),
+                startedAt: new Date(clock.now()).toISOString(),
+            };
+            current.reruns.value = new Map(current.reruns.value).set(key, layer);
+            current.rerunsOnTheirWay.value += 1;
+            void sendRerun({ current, run, nameWithOwner, key, layer });
+        }
+
+        async function sendRerun({ current, run, nameWithOwner, key, layer }: SendRerunParams) {
+            try {
+                await rerunFailedJobs(current.rest, { ...parseRepositoryName(nameWithOwner), runId: run.id });
+                if (!isCurrent(current)) {
+                    return;
+                }
+
+                // A job re-run under the same id has another log coming.
+                for (const jobId of layer.jobIds) {
+                    current.logs.delete(getKey(nameWithOwner, jobId));
+                }
+
+                clock.schedule(() => {
+                    dropRerun(current, key, layer);
+                }, RERUN_LANDING_MS);
+            } catch (error) {
+                if (!isCurrent(current)) {
+                    return;
+                }
+
+                logger.warn('GitHub did not re-run a run’s failed jobs', { error });
+                dropRerun(current, key, layer);
+                const reason = getRerunReason({ error, limit: rateLimits.get('core'), now: clock.now() });
+                putRerunFailure(current, run, nameWithOwner, reason);
+            }
+
+            current.rerunsOnTheirWay.value -= 1;
+            refresh(nameWithOwner, run.id);
+        }
+
+        function putRerunFailure(
+            current: RunSession,
+            run: GitHubWorkflowRunDetail,
+            nameWithOwner: string,
+            reason: WorkflowRerunReason,
+        ) {
+            current.rerunFailure.value = {
+                nameWithOwner,
+                runId: run.id,
+                workflowName: run.workflowName,
+                runNumber: run.runNumber,
+                reason,
+                toast: true,
+                at: clock.now(),
+            };
+        }
+
+        /** The run as the sync stored it, at once, then as read; running from the moment it is re-run. Reactive. */
         function getRun(nameWithOwner: string, runId: number): WorkflowRunState {
             const stored = findStoredRun(workflows.get(nameWithOwner), runId);
             const current = sessionRef.value;
@@ -182,10 +348,12 @@ export const WorkflowRunStore = defineService({
             }
 
             const { value, status, httpStatus } = openRun({ current, nameWithOwner, runId }).state.value;
-            return { run: value ?? stored, status, httpStatus };
+            const run = value ?? stored;
+            const layer = current.reruns.value.get(getKey(nameWithOwner, runId));
+            return { run: run && layer ? withRerun(run, layer) : run, status, httpStatus };
         }
 
-        /** The run's jobs, none until read. Reactive. */
+        /** The run's jobs, none until read; the failed ones running from the moment the run is re-run. Reactive. */
         function getJobs(nameWithOwner: string, runId: number): WorkflowJobsState {
             const current = sessionRef.value;
             if (!current) {
@@ -193,7 +361,11 @@ export const WorkflowRunStore = defineService({
             }
 
             const { value, status, httpStatus, checkedAt } = openJobs({ current, nameWithOwner, runId }).state.value;
-            return { jobs: value ?? [], status, httpStatus, checkedAt };
+            const layer = current.reruns.value.get(getKey(nameWithOwner, runId));
+            const read = layer && openRun({ current, nameWithOwner, runId }).state.value.value;
+            const jobs =
+                layer && !(read && hasFinishedAgain(read, layer)) ? withRerunJobs(value ?? [], layer) : (value ?? []);
+            return { jobs, status, httpStatus, checkedAt };
         }
 
         /**
@@ -363,11 +535,68 @@ export const WorkflowRunStore = defineService({
             }
         }
 
+        /** Unless a newer re-run of the run took its place. */
+        function dropRerun(current: RunSession, key: string, layer: RunRerun) {
+            if (current.reruns.value.get(key) === layer) {
+                const next = new Map(current.reruns.value);
+                next.delete(key);
+                current.reruns.value = next;
+            }
+        }
+
         function isCurrent(current: RunSession) {
             return sessionRef.value === current && accounts.isCurrent(current.account);
         }
     },
 });
+
+/** The re-run's attempt, finished: GitHub's word is all there is to say, whatever the jobs' read says. */
+function hasFinishedAgain(run: GitHubWorkflowRunDetail, layer: RunRerun) {
+    return (
+        run.status === 'completed' &&
+        run.runAttempt !== null &&
+        layer.attempt !== null &&
+        run.runAttempt > layer.attempt
+    );
+}
+
+/** The run as running, unless GitHub's read of it shows the re-run itself. */
+function withRerun(run: GitHubWorkflowRunDetail, layer: RunRerun): GitHubWorkflowRunDetail {
+    if (run.status !== 'completed' || hasFinishedAgain(run, layer)) {
+        return run;
+    }
+
+    return {
+        ...run,
+        status: 'in_progress',
+        conclusion: null,
+        runStartedAt: layer.startedAt,
+        updatedAt: layer.startedAt,
+        runAttempt: run.runAttempt === null ? null : run.runAttempt + 1,
+    };
+}
+
+/** The failed jobs re-run as running from the start, those GitHub's read still has failed. */
+function withRerunJobs(jobs: readonly GitHubWorkflowJob[], layer: RunRerun): readonly GitHubWorkflowJob[] {
+    return jobs.map(job =>
+        layer.jobIds.has(job.id) && getJobMark(job) === 'failed'
+            ? {
+                  ...job,
+                  status: 'in_progress',
+                  conclusion: null,
+                  startedAt: layer.startedAt,
+                  completedAt: null,
+                  steps: job.steps.map(step => ({
+                      ...step,
+                      status: 'queued',
+                      conclusion: null,
+                      startedAt: null,
+                      completedAt: null,
+                  })),
+              }
+            : job,
+    );
+}
 
 /** A read that did not happen: what is known stays as it was; with nothing known, it says so. */
 function putNotRead<T>(read: ConditionalRead<T>, httpStatus: number | null) {

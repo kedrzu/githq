@@ -81,6 +81,27 @@ test('a run deciding one group is kept, with what a quiet group passed long ago 
     ]);
 });
 
+test('W4j: a run re-run keeps what it concluded until it finishes again, its strip showing it running', () => {
+    const failed = run(1, 'failure', 1);
+    const rerunning = mergeWorkflowRuns({
+        stored: [failed],
+        read: [run(1, null, 1, { status: 'in_progress' })],
+        groups: COUNTED,
+    });
+    expect(rerunning[0]).toMatchObject({ status: 'in_progress', conclusion: null, conclusionBeforeRerun: 'failure' });
+
+    const stillGoing = mergeWorkflowRuns({
+        stored: rerunning,
+        read: [run(1, null, 1, { status: 'in_progress' })],
+        groups: COUNTED,
+    });
+    expect(stillGoing[0]?.conclusionBeforeRerun).toBe('failure');
+
+    const finished = mergeWorkflowRuns({ stored: stillGoing, read: [run(1, 'success', 1)], groups: COUNTED });
+    expect(finished[0]).toMatchObject({ conclusion: 'success' });
+    expect(finished[0]?.conclusionBeforeRerun).toBeUndefined();
+});
+
 function run(id: number, conclusion: string | null, hour: number, overrides: Partial<GitHubWorkflowRun> = {}) {
     const created = new Date(Date.UTC(2026, 10, 1) + hour * 60 * 60_000);
     const entry: GitHubWorkflowRun = {
