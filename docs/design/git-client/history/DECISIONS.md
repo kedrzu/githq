@@ -74,3 +74,20 @@ Retired 2026-11-03 in part: the narrowest graph is two lanes, not one, see [D17]
 **A divider between the graph and the rows can be dragged. By default the graph takes a tenth of the pane's width;
 dragged, it can go from one lane (the default branch alone) to every lane. Lanes that don't fit fold into one thicker
 line at the graph's right edge, and their commits sit on it.** (2026-11-02, owner)
+
+## D15
+
+Retired 2026-11-03 in part: the list is on the left in both layouts, one column with one width, see
+[D15](../DECISIONS.md#d15).
+
+**The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it folds
+away and `B` opens it over the graph.** (2026-11-02, design agent's proposal) Why it was on the right: it leaves the app's
+sidebar and the graph's left edge alone.
+
+## D16
+
+Retired 2026-11-03 in part: the details open on the right of the graph with the list staying, see
+[D16](../DECISIONS.md#d16).
+
+**A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page. `Esc`
+closes and the list comes back.** (2026-11-02, design agent's proposal, owner picked the panel over the modal)

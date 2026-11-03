@@ -3,7 +3,8 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h, ref, shallowRef } from 'vue';
+import { createApp, defineComponent, h, ref, shallowRef, Teleport, unref } from 'vue';
+import type { Ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
@@ -25,6 +26,8 @@ import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 
 type Options = ListViewOptions<RepositoryGrouping, ItemSort>;
+
+const COLUMN_WIDTH_KEY = 'githq.panelWidth.repositoryColumn';
 
 const TEXTS: RepositoryListTexts = {
     all: 'All',
@@ -331,7 +334,8 @@ test('D14: in the column layout a long name is cut to the column, its GitHub ico
     await expect.element(github).toBeVisible();
     const column = menu.element().closest('header')?.parentElement?.getBoundingClientRect();
     const icon = github.element().getBoundingClientRect();
-    expect(column?.width).toBe(232);
+    // The default 280 px, less the panel's border.
+    expect(column?.width).toBe(279);
     expect(icon.right).toBeLessThanOrEqual(column?.right ?? 0);
     expect(menu.element().getBoundingClientRect().right).toBeLessThanOrEqual(icon.left);
 });
@@ -347,6 +351,51 @@ test('D14: in the column layout Workflows has its name over its body, the way to
     await expect.element(page.getByRole('button', { name: 'Display' })).not.toBeInTheDocument();
 });
 
+test('D14: the pane stays mounted as the layout changes live, what it holds kept, and on Commits the list has its place in the column', async () => {
+    const layout = ref<RepositoryLayout>('tabs');
+    mount({ layout, section: 'commits' });
+    const held = page.getByRole('textbox', { name: 'Held by the graph' });
+    await userEvent.fill(held, 'kept');
+    const element = held.element();
+
+    layout.value = 'column';
+    await expect.element(page.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
+    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
+    expect(held.element()).toBe(element);
+    await expect.element(held).toHaveValue('kept');
+    await expect
+        .poll(() => document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)?.textContent)
+        .toBe('Branches and tags');
+
+    layout.value = 'tabs';
+    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
+    await expect.element(page.getByTestId('target')).toHaveTextContent('beside');
+    expect(held.element()).toBe(element);
+    await expect.element(held).toHaveValue('kept');
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).not.toBeInTheDocument();
+    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).toBeNull();
+    await expect.element(page.getByTestId('refList')).toBeVisible();
+});
+
+test('D14: the column is as wide on every section of the column layout, resized by its edge', async () => {
+    const view = mount({ layout: 'column' });
+    const edge = page.getByRole('separator', { name: 'Resize the left column' });
+    const column = () => edge.element().previousElementSibling?.getBoundingClientRect().width;
+    await expect.element(edge).toBeInTheDocument();
+    await expect.poll(column).toBe(280);
+    onTestFinished(() => window.localStorage.removeItem(COLUMN_WIDTH_KEY));
+
+    edge.element().focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(column).toBe(200);
+    await expect.poll(() => window.localStorage.getItem(COLUMN_WIDTH_KEY)).toBe('200');
+
+    view.section.value = 'commits';
+    await expect.element(page.getByTestId('target')).toHaveTextContent('column');
+    expect(column()).toBe(200);
+    expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).not.toBeNull();
+});
+
 test('D14: in the tabs layout the slot is told the list stays beside the graph, and there is no column', async () => {
     mount({ section: 'commits' });
 
@@ -360,7 +409,8 @@ interface MountOptions {
     readonly items?: readonly Item[];
     readonly gitHubOpenCounts?: Readonly<Record<RepositoryItemSection, number>> | null;
     readonly section?: RepositorySection;
-    readonly layout?: RepositoryLayout;
+    /** A ref to change it while mounted. */
+    readonly layout?: RepositoryLayout | Ref<RepositoryLayout>;
     readonly nameWithOwner?: string;
     readonly workflowCount?: number | 'unknown' | null;
 }
@@ -423,7 +473,7 @@ function mount({
                         : null,
                     openCounts,
                     gitHubOpenCounts,
-                    layout,
+                    layout: unref(layout),
                     workflowCount: workflowCountRef.value,
                     projects: [
                         { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
@@ -456,6 +506,17 @@ function mount({
                     commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) => [
                         h('p', 'The commit graph'),
                         h('p', { tid: 'target' }, refListInColumn ? 'column' : 'beside'),
+                        h('input', { 'aria-label': 'Held by the graph' }),
+                        // As the graph holds its list of branches and tags.
+                        h(
+                            Teleport,
+                            {
+                                to: refListInColumn ? `#${COMMIT_REF_LIST_TARGET_ID}` : undefined,
+                                disabled: !refListInColumn,
+                                defer: true,
+                            },
+                            h('p', { tid: 'refList' }, 'Branches and tags'),
+                        ),
                     ],
                 },
             );

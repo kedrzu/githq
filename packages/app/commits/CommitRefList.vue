@@ -1,4 +1,4 @@
-<!-- A repository's branches and tags beside its commit graph (git-client D15, CH3, CH10, CH15–CH17): the default branch first, then branches and tags, each newest first — the newest of each drawn and the rest counted, however many there are. Typing in its filter narrows both groups by name, the best match selected; ↑/↓ move through the matches; `Enter` or a click chooses one; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key -->
+<!-- A repository's branches and tags, filling what holds them, left of its commit graph (git-client D15, CH3, CH10, CH15–CH17): the default branch first, then branches and tags, each newest first — the newest of each drawn and the rest counted, however many there are. Typing in its filter narrows both groups by name, the best match selected; ↑/↓ move through the matches; `Enter` or a click chooses one; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -22,8 +22,6 @@ const props = defineProps<{
   refs: KeptCommitRefs;
   /** Epoch ms the ages are counted to. */
   now: number;
-  /** In a repository's column (git-client D15, CH6): as wide and as tall as the place it is put in. */
-  filling?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -304,7 +302,7 @@ function getRowId(row: RefRow) {
 
 <template>
   <section
-    :class="[css.commitRefList, filling && css.commitRefList_filling]"
+    :class="css.commitRefList"
     :aria-label="t(l.title)"
     @keydown="onKeydown"
   >
@@ -396,17 +394,10 @@ function getRowId(row: RefRow) {
 <style lang="scss" module="css">
 .commitRefList {
   display: flex;
-  flex: none;
-  flex-direction: column;
-  width: 280px;
-  min-height: 0;
-  border-left: 1px solid $color-border;
-}
-
-.commitRefList_filling {
   flex: 1;
-  width: auto;
-  border-left: none;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }
 
 .commitRefList_filter {

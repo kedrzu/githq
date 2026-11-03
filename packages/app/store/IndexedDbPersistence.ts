@@ -23,14 +23,16 @@ import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 import type { ItemDetailPersistenceShape, ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
 import type { ItemChanges, ItemPersistenceShape, PersistedItems } from './ItemPersistence.js';
+import type { LocalCopyVersionShape } from './LocalCopyVersion.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from './ItemStoreTypes.js';
 import type { Item } from './ItemTypes.js';
 
 /**
  * The layout of the database and of what it holds. Raise it whenever either changes (the `Item`, `ItemDetail`,
  * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking, `RepositoryWorkflows`, `KeptCommit` or `KeptCommitRefs` types too): a database of another version is dropped
- * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over too (`TabChannel`): raise
- * it when a `TabMessage` changes, so tabs of two githq versions do not hear each other.
+ * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over (`TabChannel`) and the lock of
+ * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` changes, so tabs of two githq versions do not
+ * hear each other, and a tab of one is not left waiting for a tab of another.
  */
 export const LOCAL_DATABASE_VERSION = 8;
 
@@ -46,7 +48,8 @@ export type IndexedDbPersistence = ItemPersistenceShape &
     TrackingPersistenceShape &
     ProjectPersistenceShape &
     WorkflowPersistenceShape &
-    CommitPersistenceShape;
+    CommitPersistenceShape &
+    LocalCopyVersionShape;
 
 type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
@@ -94,8 +97,12 @@ interface LocalDatabase extends DBSchema {
  */
 export function createIndexedDbPersistence(): IndexedDbPersistence {
     const connections = new Map<string, Promise<IDBPDatabase<LocalDatabase>>>();
+    const newerVersionListeners: (() => void)[] = [];
 
     return {
+        onNewerVersion: listener => {
+            newerVersionListeners.push(listener);
+        },
         load,
         save,
         destroy,
@@ -351,10 +358,17 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         let connection = connections.get(login);
         if (!connection) {
             connection = open(getLocalDatabaseName(login)).then(db => {
-                db.addEventListener('versionchange', () => {
+                db.addEventListener('versionchange', event => {
                     db.close();
                     if (connections.get(login) === connection) {
                         connections.delete(login);
+                    }
+
+                    // `null`: the copy is being deleted — another tab signing out — not replaced by a newer one.
+                    if (event.newVersion !== null) {
+                        for (const listener of newerVersionListeners) {
+                            listener();
+                        }
                     }
                 });
                 return db;
