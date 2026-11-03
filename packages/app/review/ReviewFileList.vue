@@ -22,6 +22,8 @@ const props = defineProps<{
   currentPath: string | null;
   /** How many files the pull request really has, once known: GitHub lists at most 3000. */
   changedFiles: number | null;
+  /** Whether `groups` is all GitHub lists: until then the rest is on its way, not beyond what it lists. */
+  listComplete: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -98,7 +100,7 @@ watch(
         </li>
       </ul>
       <p
-        v-if="hasMore"
+        v-if="hasMore && listComplete"
         :class="css.reviewFileList_foot"
       >
         {{ t(l.listedOnly, { listed: numbers.format(listed), total: numbers.format(changedFiles ?? 0) }) }}

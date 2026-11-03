@@ -46,6 +46,7 @@ const Demo = defineComponent({
                     <Button onClick={growRowAbove}>Grow above</Button>
                     <Button onClick={insertRowsAbove}>Insert above</Button>
                     <Button onClick={() => (width.value = width.value === 600 ? 300 : 600)}>Change width</Button>
+                    <Button onClick={() => list.value?.focus()}>Focus</Button>
                 </div>
                 <div
                     tid="anchor"

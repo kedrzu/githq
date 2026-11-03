@@ -12,6 +12,11 @@ export interface AnchoredListSlotProps<T> {
 export interface AnchoredListExposed {
   /** Lands the row at `offset` from the viewport's top and holds it there; an unknown key leaves the list as it is. */
   jumpTo(key: string, offset?: number): void;
+  /**
+   * Gives the list the focus, for the keys to scroll it, moving nothing and without a focus ring: nobody got there by
+   * keyboard, whatever the browser concludes from the last key pressed. Tabbing back to it shows the ring as usual.
+   */
+  focus(): void;
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
 }
@@ -73,6 +78,7 @@ const model = createAnchoredListModel<T>({
 model.setRows(props.rows);
 
 const anchor = shallowRef(model.anchor);
+const focusedQuietly = shallowRef(false);
 const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
 const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
 
@@ -109,7 +115,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, anchor });
+defineExpose({ jumpTo, focus, anchor });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -128,6 +134,11 @@ function jumpTo(key: string, offset = 0) {
     anchor.value = model.anchor;
     applyLayout();
   }
+}
+
+function focus() {
+  focusedQuietly.value = true;
+  assertValue(scroller.value).focus({ preventScroll: true });
 }
 
 function onScroll() {
@@ -225,10 +236,11 @@ function showWindow(layoutChanged: boolean) {
 <template>
   <div
     ref="scroller"
-    :class="css.anchoredList"
+    :class="[css.anchoredList, focusedQuietly && css.anchoredList_quiet]"
     :role="role"
     :aria-label="label"
     tabindex="0"
+    @blur="focusedQuietly = false"
     @scroll.passive="onScroll"
   >
     <!-- Sticky, of no height: it stays out of the scroll height and off the scrollbar. -->
@@ -285,6 +297,10 @@ function showWindow(layoutChanged: boolean) {
   &:focus-visible {
     outline-offset: -2px;
   }
+}
+
+.anchoredList_quiet:focus-visible {
+  outline: none;
 }
 
 .anchoredList_spacer {

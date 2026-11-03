@@ -7,6 +7,24 @@ import { expect, test } from 'bun:test';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
+import type { ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
+
+const FILE_LIST: ReviewKeptFileList = {
+    id: 'PR_7',
+    headRefOid: 'h',
+    baseRefOid: 'b',
+    changedFiles: 1,
+    files: [
+        {
+            path: 'secret.ts',
+            previousPath: null,
+            changeType: 'MODIFIED',
+            additions: 1,
+            deletions: 2,
+            viewed: 'VIEWED',
+        },
+    ],
+};
 
 test('what is written is read back by another tab; a login reads nothing of another login', async () => {
     const [alice, bob] = [uniqueLogin(), uniqueLogin()];
@@ -37,6 +55,40 @@ test('deleting the local copy deletes the file contents with it, even while anot
 
     // The next sign-in of that user starts empty.
     expect(await tab.read(login, ['a1'])).toEqual(new Map());
+});
+
+test('file lists, resolutions and merge bases are per login, go with the local copy, and no late write brings them back', async () => {
+    const [alice, bob] = [uniqueLogin(), uniqueLogin()];
+    const tab = ReviewBlobStore.create();
+    await tab.read(alice, []);
+    const resolution: ReviewKeptResolution = { kind: 'blob', oid: 'o1', byteSize: 3, isBinary: false };
+    const answers = new Map<string, ReviewKeptResolution>([
+        ['acme/web:c1:secret.ts', resolution],
+        ['acme/web:c1:gone.ts', { kind: 'missing' }],
+    ]);
+    await tab.writeResolutions(alice, answers);
+    await tab.writeMergeBase(alice, 'acme/web:b...h', 'fork');
+    await tab.writeFileList(alice, 'acme/web/7', FILE_LIST);
+
+    const another = ReviewBlobStore.create();
+    expect(await another.readResolutions(alice, ['acme/web:c1:secret.ts', 'acme/web:c1:gone.ts', 'x'])).toEqual(
+        answers,
+    );
+    expect(await another.readMergeBase(alice, 'acme/web:b...h')).toBe('fork');
+    expect(await another.readFileList(alice, 'acme/web/7')).toEqual(FILE_LIST);
+    expect(await tab.readFileList(bob, 'acme/web/7')).toBeUndefined();
+
+    await createIndexedDbPersistence().destroy(alice);
+
+    expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(alice));
+    await expect(tab.writeResolutions(alice, answers)).rejects.toThrow();
+    await expect(tab.writeMergeBase(alice, 'acme/web:b...h', 'fork')).rejects.toThrow();
+    await expect(another.writeFileList(alice, 'acme/web/7', FILE_LIST)).rejects.toThrow();
+    expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(alice));
+
+    expect(await tab.readFileList(alice, 'acme/web/7')).toBeUndefined();
+    expect(await tab.readMergeBase(alice, 'acme/web:b...h')).toBeUndefined();
+    expect(await tab.readResolutions(alice, ['acme/web:c1:secret.ts'])).toEqual(new Map());
 });
 
 test('a write with nothing opened fails rather than creating the database', async () => {

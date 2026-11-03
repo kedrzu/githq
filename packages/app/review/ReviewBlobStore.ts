@@ -1,14 +1,18 @@
+import type { ReviewBlobOidAnswer } from '@githq/github/readReviewBlobs.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb';
 
+import type { ReviewFile } from './ReviewFiles.js';
+
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
 const REVIEW_BLOB_DATABASE_VERSION = 1;
 
 /**
- * The database of `login`'s file contents. `IndexedDbPersistence.destroy` deletes it with the local copy, so whatever
- * signs a user out — here, in another tab or by a token GitHub rejects — takes their private files off the disk.
+ * The database of what `login`'s reviews keep: contents, file lists, paths and oids. `IndexedDbPersistence.destroy`
+ * deletes it with the local copy, so whatever signs a user out — here, in another tab or by a token GitHub rejects —
+ * takes their private files off the disk.
  */
 export function getReviewBlobDatabaseName(login: string) {
     return `githq-blobs/${login}`;
@@ -20,18 +24,34 @@ export interface ReviewBlob {
     readonly text: string;
 }
 
+/** What an expression (`<commit oid>:<path>`) resolves to for good. A failure to answer says nothing about that. */
+export type ReviewKeptResolution = Exclude<ReviewBlobOidAnswer, { readonly kind: 'failed' }>;
+
+/** A pull request's list of files, as it was when last read whole. Only ever what to show until GitHub answers. */
+export interface ReviewKeptFileList {
+    readonly id: string;
+    readonly headRefOid: string;
+    readonly baseRefOid: string;
+    readonly changedFiles: number;
+    readonly files: readonly ReviewFile[];
+}
+
 interface ReviewBlobDatabase extends DBSchema {
     blobs: { key: string; value: ReviewBlob };
+    resolutions: { key: string; value: ReviewKeptResolution };
+    mergeBases: { key: string; value: string };
+    fileLists: { key: string; value: ReviewKeptFileList };
 }
 
 /**
- * The contents of reviewed files on disk (D19), by blob oid, in a database per login. A cache kept apart from the local
- * copy, for that one is dropped on every version raise and these are worth not downloading again. Nothing cleans it up
- * yet but signing out.
+ * What makes a review open without the network, on disk (D19) in a database per login: the contents of reviewed files
+ * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files,
+ * which does. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
+ * worth not downloading again. Nothing cleans it up yet but signing out.
  *
- * Only {@link read} opens the database, so it must be called only for the user signed in now. A connection gives way
- * when another one wants the database deleted — this or another tab signing out — and only a later `read` opens it
- * again: a late {@link write} fails rather than bringing back the files of a user who signed out.
+ * Only the `read` functions open the database, so they must be called only for the user signed in now. A connection
+ * gives way when another one wants the database deleted — this or another tab signing out — and only a later read opens
+ * it again: a late write fails rather than bringing back the files of a user who signed out.
  */
 export type ReviewBlobStore = Resolved<typeof ReviewBlobStore>;
 export const ReviewBlobStore = defineService({
@@ -39,7 +59,16 @@ export const ReviewBlobStore = defineService({
     setup() {
         const connections = new Map<string, Promise<IDBPDatabase<ReviewBlobDatabase>>>();
 
-        return { read, write };
+        return {
+            read,
+            write,
+            readResolutions,
+            writeResolutions,
+            readMergeBase,
+            writeMergeBase,
+            readFileList,
+            writeFileList,
+        };
 
         /** Opens `login`'s database when it isn't, and returns the texts of those of `oids` it holds, by oid. */
         async function read(login: string, oids: readonly string[]) {
@@ -56,16 +85,65 @@ export const ReviewBlobStore = defineService({
             return texts;
         }
 
-        /** Keeps `blobs` in the database {@link read} opened; rejects when it is not open (anymore). */
+        /** Keeps `blobs` in the database a read opened; rejects when it is not open (anymore). */
         async function write(login: string, blobs: readonly ReviewBlob[]) {
-            const connection = connections.get(login);
-            if (!connection) {
-                throw new Error(`The file contents of ${login} are not open`);
-            }
-
-            const db = await connection;
+            const db = await getOpen(login);
             const tx = db.transaction('blobs', 'readwrite');
             await Promise.all([...blobs.map(blob => tx.store.put(blob)), tx.done]);
+        }
+
+        /** Those of `keys` it holds, by key, in one transaction. */
+        async function readResolutions(login: string, keys: readonly string[]) {
+            const db = await connect(login);
+            const tx = db.transaction('resolutions');
+            const found = await Promise.all(keys.map(key => tx.store.get(key)));
+            const resolutions = new Map<string, ReviewKeptResolution>();
+            for (const [index, resolution] of found.entries()) {
+                const key = keys[index];
+                if (key !== undefined && resolution) {
+                    resolutions.set(key, resolution);
+                }
+            }
+
+            return resolutions;
+        }
+
+        /** Like {@link write}. */
+        async function writeResolutions(login: string, resolutions: ReadonlyMap<string, ReviewKeptResolution>) {
+            const db = await getOpen(login);
+            const tx = db.transaction('resolutions', 'readwrite');
+            await Promise.all([...[...resolutions].map(([key, resolution]) => tx.store.put(resolution, key)), tx.done]);
+        }
+
+        async function readMergeBase(login: string, key: string) {
+            const db = await connect(login);
+            return await db.get('mergeBases', key);
+        }
+
+        /** Like {@link write}. */
+        async function writeMergeBase(login: string, key: string, oid: string) {
+            const db = await getOpen(login);
+            await db.put('mergeBases', oid, key);
+        }
+
+        async function readFileList(login: string, key: string) {
+            const db = await connect(login);
+            return await db.get('fileLists', key);
+        }
+
+        /** Like {@link write}. */
+        async function writeFileList(login: string, key: string, list: ReviewKeptFileList) {
+            const db = await getOpen(login);
+            await db.put('fileLists', list, key);
+        }
+
+        async function getOpen(login: string) {
+            const connection = connections.get(login);
+            if (!connection) {
+                throw new Error(`What ${login} keeps is not open`);
+            }
+
+            return await connection;
         }
 
         function connect(login: string) {
@@ -77,6 +155,9 @@ export const ReviewBlobStore = defineService({
                     {
                         upgrade(db) {
                             db.createObjectStore('blobs', { keyPath: 'oid' });
+                            db.createObjectStore('resolutions');
+                            db.createObjectStore('mergeBases');
+                            db.createObjectStore('fileLists');
                         },
                     },
                 ).then(db => {

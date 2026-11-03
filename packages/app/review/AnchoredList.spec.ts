@@ -196,6 +196,39 @@ test('the keys scroll the focused list natively, and the anchor follows: the fir
     expect(bottomOf(key!)).toBeGreaterThan(listTop);
 });
 
+test('focused by its owner it scrolls by the keys at once, moved nowhere and with no ring; tabbing back shows the ring', async () => {
+    await Default.run();
+    await clickButton('Jump');
+    await frames(3);
+    const list = scroller();
+    const scrollTop = list.scrollTop;
+
+    // Whatever was pressed last, which is what makes a browser draw the ring for a script's focus.
+    await userEvent.keyboard('{Shift}');
+    jumpButton().focus();
+    await userEvent.keyboard('{Shift}');
+    await clickButton('Focus');
+    await frames(1);
+
+    expect(document.activeElement).toBe(list);
+    expect(list.scrollTop).toBe(scrollTop);
+    expect(getComputedStyle(list).outlineStyle).toBe('none');
+
+    await userEvent.keyboard('{PageDown}');
+    await expect.poll(() => list.scrollTop).toBeGreaterThan(scrollTop + 300);
+
+    const lastButton = page.getByRole('button', { name: 'Focus', exact: true }).element();
+    if (!(lastButton instanceof HTMLElement)) {
+        throw new TypeError('The button is not an HTML element');
+    }
+
+    lastButton.focus();
+    await userEvent.tab();
+    await frames(1);
+    expect(document.activeElement).toBe(list);
+    expect(getComputedStyle(list).outlineStyle).toBe('solid');
+});
+
 /** The main thread's work per scrolled frame: the scroll event, Vue, then layout, measuring and paint. */
 async function measureScrolling() {
     await clickButton('Jump');

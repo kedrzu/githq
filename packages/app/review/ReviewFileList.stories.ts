@@ -33,6 +33,7 @@ const meta = {
         getState: (path: string) => STATES[path] ?? READY,
         currentPath: 'docs/sync.md',
         changedFiles: FILES.length,
+        listComplete: true,
         onSelect: fn(),
     },
     render: args => ({
@@ -54,6 +55,9 @@ export const Empty: Story = { args: { groups: [], currentPath: null, changedFile
 
 /** D35: GitHub lists 3000 at most: "3,000+" and a note at the foot. */
 export const MoreThanListed: Story = { args: { changedFiles: 4210 } };
+
+/** The list still arriving page by page: "10+", and no note at the foot, as the rest is on its way. */
+export const StillArriving: Story = { args: { changedFiles: 238, listComplete: false } };
 
 function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {
     return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED', ...more };

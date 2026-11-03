@@ -218,8 +218,8 @@ test('signing out takes the contents off the disk and out of the model, and an a
     expect(session.container.resolve(ReviewFiles).open(REFERENCE)).toBeNull();
 });
 
-test('texts are asked in the order of the list, at most 50 in a query and 3 queries at a time, and a jump goes next', async () => {
-    const github = createGitHub();
+test('texts are asked in the order of the list, 3 queries at a time, and a jump goes next', async () => {
+    const github = createGitHub({ pageSize: 200 });
     for (let index = 0; index < 200; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
     }
@@ -236,14 +236,14 @@ test('texts are asked in the order of the list, at most 50 in a query and 3 quer
     await session.clock.advance(0);
 
     expect(textQueries(session)).toHaveLength(3);
-    expect(textQueries(session)[0]).toEqual(Array.from({ length: 50 }, (_, index) => oidOf(`text ${index}`)));
-    expect(textQueries(session)[1]?.[0]).toBe(oidOf('text 50'));
+    expect(textQueries(session)[0]?.[0]).toBe(oidOf('text 0'));
+    expect(textQueries(session)[1]?.[0]).toBe(oidOf('text 40'));
 
     model.prioritize('file-199.ts');
     held[0]?.();
-    await waitUntil(() => textQueries(session).length === 4, { timeoutMs: 2000 });
-    expect(textQueries(session)[3]?.[0]).toBe(oidOf('text 199'));
-    expect(textQueries(session)[3]?.[1]).toBe(oidOf('text 150'));
+    await waitUntil(() => session.operations().filter(isOidQuery).length === 4, { timeoutMs: 2000 });
+    const oidQueries = session.github.requests.filter(request => isOidQuery(request.operation));
+    expect(oidQueries[3]?.variables.e0).toBe(`${HEAD}:file-199.ts`);
 
     session.github.holdIf = null;
     for (const release of held) {
@@ -255,8 +255,41 @@ test('texts are asked in the order of the list, at most 50 in a query and 3 quer
     expect(model.getState('file-100.ts')).toEqual({ kind: 'ready', before: null, after: 'text 100' });
 });
 
+test('a query asks at most 50 texts, however many files have got that far', async () => {
+    const github = createGitHub({ pageSize: 200 });
+    for (let index = 0; index < 200; index++) {
+        github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
+    }
+
+    const held: (() => void)[] = [];
+    const { model, session } = open(uniqueLogin(), github, request =>
+        isOidQuery(request.operation)
+            ? new Promise<void>(resolve => {
+                  held.push(resolve);
+              })
+            : null,
+    );
+    await waitUntil(() => held.length === 3, { timeoutMs: 2000 });
+
+    // The freed place goes to the oids of the file jumped to, so the texts of two queries wait for the next one.
+    model.prioritize('file-199.ts');
+    held[0]?.();
+    await waitUntil(() => held.length === 4, { timeoutMs: 2000 });
+    held[1]?.();
+    await waitUntil(() => textQueries(session).length > 0, { timeoutMs: 2000 });
+
+    expect(textQueries(session)[0]).toEqual(Array.from({ length: 50 }, (_, index) => oidOf(`text ${index}`)));
+
+    session.github.holdIf = null;
+    for (const release of held) {
+        release();
+    }
+
+    await settled(model);
+});
+
 test('a query keeps its answer under about 2 MB', async () => {
-    const github = createGitHub();
+    const github = createGitHub({ pageSize: 100 });
     for (let index = 0; index < 5; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}`, byteSize: 900_000 });
     }
@@ -267,19 +300,37 @@ test('a query keeps its answer under about 2 MB', async () => {
     expect(textQueries(session).map(oids => oids.length)).toEqual([2, 2, 1]);
 });
 
-test('oid expressions are asked 100 at a time, and a jump asked before the list arrives goes first', async () => {
-    const github = createGitHub();
-    for (let index = 0; index < 60; index++) {
+test('oid expressions are asked 40 at a time, 3 queries at once, and a jump asked before the list arrives goes first', async () => {
+    const github = createGitHub({ pageSize: 100 });
+    for (let index = 0; index < 90; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'MODIFIED', before: `was ${index}`, after: `is ${index}` });
     }
 
-    const { model, session } = open(uniqueLogin(), github);
-    model.prioritize('file-59.ts');
+    const held: (() => void)[] = [];
+    const { model, session } = open(uniqueLogin(), github, request =>
+        isOidQuery(request.operation)
+            ? new Promise<void>(resolve => {
+                  held.push(resolve);
+              })
+            : null,
+    );
+    model.prioritize('file-89.ts');
+    await waitUntil(() => held.length === 3, { timeoutMs: 2000 });
+    await session.clock.advance(0);
+    expect(held).toHaveLength(3);
+
+    session.github.holdIf = null;
+    for (const release of held) {
+        release();
+    }
+
     await settled(model);
 
-    const oidQueries = session.github.requests.filter(request => request.operation === 'ReviewBlobOids');
-    expect(oidQueries.map(request => Object.keys(request.variables).length - 2)).toEqual([100, 20]);
-    expect(oidQueries[0]?.variables.e0).toBe(`${MERGE_BASE}:file-59.ts`);
+    const oidQueries = session.github.requests.filter(request => isOidQuery(request.operation));
+    expect(oidQueries.map(request => Object.keys(request.variables).length - 2).toSorted()).toEqual([
+        20, 40, 40, 40, 40,
+    ]);
+    expect(oidQueries[0]?.variables.e0).toBe(`${MERGE_BASE}:file-89.ts`);
 });
 
 test('the merge base is asked once for a pull request, and opening it again reuses all unless its head moved', async () => {
@@ -305,7 +356,7 @@ test('the merge base is asked once for a pull request, and opening it again reus
 });
 
 test('many files arriving tell of it once a frame, not once a file', async () => {
-    const github = createGitHub();
+    const github = createGitHub({ pageSize: 250 });
     for (let index = 0; index < 225; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
     }
@@ -318,23 +369,24 @@ test('many files arriving tell of it once a frame, not once a file', async () =>
         request.operation === 'ReviewBlobOids' ? held : null,
     );
     await waitUntil(() => model.list.kind === 'ready', { timeoutMs: 2000 });
-    const lastState = computed(() => model.getState('file-224.ts').kind);
-    expect(lastState.value).toBe('loading');
+    await waitUntil(() => session.operations().includes('ReviewBlobOids'), { timeoutMs: 2000 });
+    const firstState = computed(() => model.getState('file-0.ts').kind);
+    expect(firstState.value).toBe('loading');
 
     // The clock stands still, so no frame comes while they all arrive.
     release();
     await waitUntil(() => model.files.every(file => model.getState(file.path).kind === 'ready'), { timeoutMs: 5000 });
     expect(model.version).toBe(0);
-    expect(lastState.value).toBe('loading');
+    expect(firstState.value).toBe('loading');
 
     await session.clock.advance(16);
 
     expect(model.version).toBe(1);
-    expect(lastState.value).toBe('ready');
+    expect(firstState.value).toBe('ready');
 });
 
 test('a rate-limit refusal fails what is waiting instead of asking on; a retry asks again', async () => {
-    const github = createGitHub();
+    const github = createGitHub({ pageSize: 100 });
     for (let index = 0; index < 1000; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
     }
@@ -357,6 +409,302 @@ test('a rate-limit refusal fails what is waiting instead of asking on; a retry a
     expect(textQueries(session)).toHaveLength(asked + 1);
 });
 
+test('the list shows from its first page, what is known is fetched right away and the rest appends in order, nothing started over', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'a0', after: 'a1' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b1' });
+    github.file({ path: 'c.ts', changeType: 'ADDED', after: 'c1' });
+    let release = () => {};
+    const secondPage = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const { model, session } = open(uniqueLogin(), github, request =>
+        request.operation === 'PullRequestReviewFiles' && request.variables.after ? secondPage : null,
+    );
+
+    await waitUntil(() => model.getState('b.ts').kind === 'ready', { timeoutMs: 2000 });
+    expect(model.list).toEqual({ kind: 'ready' });
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts']);
+    expect(model.changedFiles).toBe(3);
+    expect(model.listComplete).toBe(false);
+    expect(session.operations().some(operation => operation.includes('/compare/'))).toBe(true);
+    const first = model.getState('a.ts');
+
+    release();
+    await settled(model);
+
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts', 'c.ts']);
+    expect(model.listComplete).toBe(true);
+    expect(model.getState('a.ts')).toBe(first);
+    expect(model.getState('c.ts')).toEqual({ kind: 'ready', before: null, after: 'c1' });
+});
+
+test('a later page failing leaves what came, says the list is not whole, warns, and opening again reads the rest', async () => {
+    const github = createGitHub();
+    for (const path of ['a.ts', 'b.ts', 'c.ts']) {
+        github.file({ path, changeType: 'ADDED', after: path });
+    }
+
+    let failed = false;
+    const { model, files, session } = open(uniqueLogin(), github, request => {
+        if (request.operation === 'PullRequestReviewFiles' && request.variables.after && !failed) {
+            failed = true;
+            github.failNext('PullRequestReviewFiles');
+        }
+
+        return null;
+    });
+
+    await waitUntil(() => session.logs.some(log => log.level === 'warn'), { timeoutMs: 2000 });
+    expect(model.list).toEqual({ kind: 'ready' });
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts']);
+    expect(model.listComplete).toBe(false);
+
+    files.open(REFERENCE);
+    await settled(model);
+
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts', 'c.ts']);
+});
+
+test('a renamed file waits for where it came from without holding up the others, and fails alone when that cannot be read; a retry reads it again', async () => {
+    const github = createGitHub();
+    github.file({ path: 'plain.ts', changeType: 'ADDED', after: 'plain' });
+    github.file({ path: 'moved.ts', changeType: 'RENAMED', previousPath: 'old.ts', before: 'was', after: 'is' });
+    let release = () => {};
+    const renames = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const { model } = open(uniqueLogin(), github, request =>
+        request.operation === 'GET /repos/acme/web/pulls/7/files' ? renames : null,
+    );
+
+    await waitUntil(() => model.getState('plain.ts').kind === 'ready', { timeoutMs: 2000 });
+    expect(model.getState('moved.ts')).toEqual({ kind: 'waiting' });
+
+    github.failNext('GET /repos/acme/web/pulls/7/files');
+    release();
+    await settled(model);
+
+    expect(model.list).toEqual({ kind: 'ready' });
+    expect(model.getState('moved.ts').kind).toBe('failed');
+    expect(model.getState('plain.ts')).toEqual({ kind: 'ready', before: null, after: 'plain' });
+
+    model.retry('moved.ts');
+    await settled(model);
+
+    expect(model.getState('moved.ts')).toEqual({ kind: 'ready', before: 'was', after: 'is' });
+    expect(model.files.find(file => file.path === 'moved.ts')?.previousPath).toBe('old.ts');
+});
+
+test('a pull request read before draws its list and code from the disk with GitHub silent, where renames came from included', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    github.file({ path: 'moved.ts', changeType: 'RENAMED', previousPath: 'old.ts', before: 'was', after: 'is' });
+    github.file({ path: 'huge.ts', changeType: 'MODIFIED', before: 'small', after: 'huge', byteSize: 1_000_001 });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${HEAD}:huge.ts`, `${MERGE_BASE}:old.ts`], oidOf('is'));
+
+    const silent = createSilentHold();
+    const reloaded = open(login, github, silent.hold);
+    await settled(reloaded.model);
+
+    expect(reloaded.model.list).toEqual({ kind: 'ready' });
+    expect(reloaded.model.id).toBe('PR_7');
+    expect(reloaded.model.headRefOid).toBe(HEAD);
+    expect(reloaded.model.listComplete).toBe(true);
+    expectStates(reloaded.model, {
+        'a.ts': { kind: 'ready', before: 'before', after: 'after' },
+        'moved.ts': { kind: 'ready', before: 'was', after: 'is' },
+        'huge.ts': { kind: 'tooLarge' },
+    });
+    // Only the list's check behind it, which GitHub has not answered.
+    expect(reviewOperations(reloaded.session)).toEqual(['PullRequestReviewFiles']);
+
+    silent.release();
+    await waitUntil(() => reviewOperations(reloaded.session).length === 2, { timeoutMs: 2000 });
+    await reloaded.session.clock.advance(0);
+    expect(reviewOperations(reloaded.session)).toEqual(['PullRequestReviewFiles', 'PullRequestReviewFiles']);
+});
+
+test('a viewed mark changed on github.com updates a kept list without starting anything over, and is what the next open starts from', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('after'));
+
+    github.setViewed('a.ts', 'VIEWED');
+    const second = open(login, github);
+    await settled(second.model);
+    const state = second.model.getState('a.ts');
+    await waitUntil(() => second.model.files[0]?.viewed === 'VIEWED', { timeoutMs: 2000 });
+    await second.session.clock.advance(50);
+
+    expect(second.model.getState('a.ts')).toBe(state);
+    expect(reviewOperations(second.session)).toEqual(['PullRequestReviewFiles']);
+
+    await waitUntil(
+        async () => (await ReviewBlobStore.create().readFileList(login, LIST_KEY))?.files[0]?.viewed === 'VIEWED',
+        { timeoutMs: 2000 },
+    );
+    const silent = createSilentHold();
+    const third = open(login, github, silent.hold);
+    await settled(third.model);
+    expect(third.model.files[0]?.viewed).toBe('VIEWED');
+    silent.release();
+});
+
+test('a pull request that moved shows what is new once GitHub answers, asking only for what the disk does not know', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    github.file({ path: 'new.ts', changeType: 'ADDED', after: 'new' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${MERGE_BASE}:a.ts`, `${HEAD}:a.ts`], oidOf('after'));
+
+    github.moveHead('head-2');
+    github.blobAt('head-2:a.ts', { text: 'pushed' });
+    github.blobAt('head-2:new.ts', { text: 'new' });
+    const silent = createSilentHold();
+    const moved = open(login, github, silent.hold);
+    await settled(moved.model);
+    expect(moved.model.headRefOid).toBe(HEAD);
+    expect(moved.model.getState('a.ts')).toEqual({ kind: 'ready', before: 'before', after: 'after' });
+
+    silent.release();
+    await waitUntil(() => moved.model.headRefOid === 'head-2', { timeoutMs: 2000 });
+    expect(moved.model.list).toEqual({ kind: 'ready' });
+    await settled(moved.model);
+
+    expect(moved.model.getState('a.ts')).toEqual({ kind: 'ready', before: 'before', after: 'pushed' });
+    const asked = moved.session.github.requests
+        .filter(request => isOidQuery(request.operation))
+        .flatMap(request => variablesOf(request, 'e').map(([, expression]) => expression));
+    expect(asked.toSorted()).toEqual(['head-2:a.ts', 'head-2:new.ts']);
+});
+
+test('a push in the middle of reading the list starts it over at the new head', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    github.file({ path: 'c.ts', changeType: 'ADDED', after: 'c' });
+    github.blobAt('head-2:a.ts', { text: 'pushed' });
+    github.blobAt('head-2:b.ts', { text: 'b' });
+    github.blobAt('head-2:c.ts', { text: 'c' });
+    const { model } = open(uniqueLogin(), github, request => {
+        if (request.operation === 'PullRequestReviewFiles' && request.variables.after) {
+            github.moveHead('head-2');
+        }
+
+        return null;
+    });
+
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+    await settled(model);
+
+    expect(model.files.map(file => file.path)).toEqual(['a.ts', 'b.ts', 'c.ts']);
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'pushed' });
+});
+
+test('a base whose tip moved on starts nothing over while the merge base stays; a new merge base shows what is new', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+    const state = model.getState('a.ts');
+
+    github.moveBase('base-tip-2', MERGE_BASE);
+    files.open(REFERENCE);
+    await waitUntil(() => session.operations().includes('GET /repos/acme/web/compare/base-tip-2...head-1'), {
+        timeoutMs: 2000,
+    });
+    await session.clock.advance(50);
+
+    expect(model.getState('a.ts')).toBe(state);
+    expect(session.operations().filter(isOidQuery)).toHaveLength(1);
+
+    github.moveBase('base-tip-3', 'merge-base-2');
+    github.blobAt('merge-base-2:a.ts', { text: 'rebased onto' });
+    files.open(REFERENCE);
+    await waitUntil(() => model.getState('a.ts') !== state, { timeoutMs: 2000 });
+    await settled(model);
+
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: 'rebased onto', after: 'after' });
+});
+
+test('a refresh that fails keeps the list shown and warns; nothing kept, the failure shows', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('a'));
+
+    github.failNext('PullRequestReviewFiles');
+    const second = open(login, github);
+
+    await waitUntil(() => second.session.logs.some(log => log.level === 'warn'), { timeoutMs: 2000 });
+    expect(second.model.list).toEqual({ kind: 'ready' });
+    await settled(second.model);
+    expect(second.model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+});
+
+test('nothing at an expression stays known for its commit; retrying the file that makes fail asks GitHub past it', async () => {
+    const github = createGitHub();
+    github.file({ path: 'gone.ts', changeType: 'ADDED' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    expect(first.model.getState('gone.ts').kind).toBe('failed');
+    await waitUntilAllKept(login, [`${HEAD}:gone.ts`], null);
+
+    const second = open(login, github);
+    await settled(second.model);
+
+    expect(second.model.getState('gone.ts').kind).toBe('failed');
+    expect(second.session.operations()).not.toContain('ReviewBlobOids');
+
+    github.blobAt(`${HEAD}:gone.ts`, { text: 'there after all' });
+    second.model.retry('gone.ts');
+    await settled(second.model);
+
+    expect(second.model.getState('gone.ts')).toEqual({ kind: 'ready', before: null, after: 'there after all' });
+});
+
+test('signing out with every kind of answer on its way: the kept list, oids and merge base stay off the disk', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    github.file({ path: 'c.ts', changeType: 'ADDED', after: 'c' });
+    const login = uniqueLogin();
+    const silent = createSilentHold(
+        request => request.operation !== 'PullRequestReviewFiles' || !!request.variables.after,
+    );
+    const { model, session } = open(login, github, silent.hold);
+    session.container.resolve(ItemStore);
+    await waitUntil(() => session.operations().some(operation => operation.includes('/compare/')), {
+        timeoutMs: 2000,
+    });
+    await waitUntil(async () => (await databaseNames()).includes(getReviewBlobDatabaseName(login)), {
+        timeoutMs: 2000,
+    });
+
+    session.signOutFromAnotherTab();
+    await waitUntil(async () => !(await databaseNames()).includes(getReviewBlobDatabaseName(login)), {
+        timeoutMs: 2000,
+    });
+
+    silent.release();
+    await session.clock.advance(100);
+
+    expect(model.files).toEqual([]);
+    expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
+});
+
 interface TestFile {
     readonly path: string;
     readonly changeType: ReviewFile['changeType'];
@@ -371,14 +719,17 @@ interface TestFile {
     readonly submodule?: boolean;
 }
 
+/** The key the list of {@link REFERENCE} is kept under. */
+const LIST_KEY = 'acme/web/7';
+
 interface TestBlob {
     readonly text: string;
     readonly isBinary?: boolean;
     readonly byteSize?: number;
 }
 
-/** A fake GitHub over one pull request: a page holds at most 2 files. */
-function createGitHub() {
+/** A fake GitHub over one pull request: a page holds at most `pageSize` files, 2 unless told, to show page after page. */
+function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     const files: TestFile[] = [];
     const objects = new Map<string, TestBlob | 'submodule'>();
     const blobs = new Map<string, TestBlob>();
@@ -386,7 +737,10 @@ function createGitHub() {
     const failing = new Set<string>();
     let failedExpression: string | null = null;
     let rateLimited: string | null = null;
+    const viewed = new Map<string, ReviewFile['viewed']>();
     let head = HEAD;
+    let base = BASE_TIP;
+    let mergeBase = MERGE_BASE;
 
     return {
         file,
@@ -402,6 +756,11 @@ function createGitHub() {
         moveHead: (oid: string) => {
             head = oid;
         },
+        moveBase: (oid: string, newMergeBase: string) => {
+            base = oid;
+            mergeBase = newMergeBase;
+        },
+        setViewed: (path: string, state: ReviewFile['viewed']) => viewed.set(path, state),
         answer,
         answerRest,
     };
@@ -456,13 +815,13 @@ function createGitHub() {
 
     function answerList(request: TestGraphQLRequest) {
         const start = Number(request.variables.after ?? 0);
-        const end = start + 2;
+        const end = start + pageSize;
         return {
             repository: {
                 pullRequest: {
                     id: 'PR_7',
                     headRefOid: head,
-                    baseRefOid: BASE_TIP,
+                    baseRefOid: base,
                     changedFiles: files.length,
                     files: {
                         pageInfo: { hasNextPage: end < files.length, endCursor: String(end) },
@@ -471,7 +830,7 @@ function createGitHub() {
                             changeType,
                             additions: 1,
                             deletions: 2,
-                            viewerViewedState: 'UNVIEWED',
+                            viewerViewedState: viewed.get(path) ?? 'UNVIEWED',
                         })),
                     },
                 },
@@ -522,7 +881,13 @@ function createGitHub() {
             return undefined;
         }
 
-        if (request.operation === `GET /repos/acme/web/compare/${BASE_TIP}...${head}`) {
+        const compared = /^GET \/repos\/acme\/web\/compare\/([^.]+)\.\.\.(.+)$/.exec(request.operation);
+        if (compared?.[1] === base && compared[2] === head) {
+            return { status: 200, body: { merge_base_commit: { sha: mergeBase }, commits: [] } };
+        }
+
+        // An earlier base of the same head is still a commit GitHub can compare; one that has not moved with it forked here.
+        if (compared?.[2] === head) {
             return { status: 200, body: { merge_base_commit: { sha: MERGE_BASE }, commits: [] } };
         }
 
@@ -585,7 +950,11 @@ async function settled(model: PullRequestFiles) {
     await waitUntil(
         () => {
             const kinds = model.files.map(file => model.getState(file.path).kind);
-            return model.list.kind === 'ready' && kinds.every(kind => kind !== 'waiting' && kind !== 'loading');
+            return (
+                model.list.kind === 'ready' &&
+                model.listComplete &&
+                kinds.every(kind => kind !== 'waiting' && kind !== 'loading')
+            );
         },
         { timeoutMs: 5000 },
     );
@@ -595,6 +964,48 @@ async function settled(model: PullRequestFiles) {
 async function waitUntilKept(login: string, oid: string) {
     const store = ReviewBlobStore.create();
     await waitUntil(async () => (await store.read(login, [oid])).has(oid), { timeoutMs: 2000 });
+}
+
+/**
+ * Waits until a reload would find what the first read kept: the list, the merge base, the expressions and a blob, all
+ * written behind.
+ */
+async function waitUntilAllKept(login: string, expressions: readonly string[], oid: string | null) {
+    const store = ReviewBlobStore.create();
+    const keys = expressions.map(expression => `acme/web:${expression}`);
+    await waitUntil(
+        async () => {
+            const resolutions = await store.readResolutions(login, keys);
+            const blobs = oid === null ? null : await store.read(login, [oid]);
+            return (
+                resolutions.size === keys.length &&
+                (blobs === null || blobs.size === 1) &&
+                (await store.readFileList(login, LIST_KEY)) !== undefined
+            );
+        },
+        { timeoutMs: 2000 },
+    );
+}
+
+/** Holds GitHub's answers to what `applies` says, every request if not told, until released. */
+function createSilentHold(applies: (request: TestGraphQLRequest) => boolean = () => true) {
+    let release = () => {};
+    const held = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    return {
+        hold: (request: TestGraphQLRequest) => (applies(request) ? held : null),
+        release: () => release(),
+    };
+}
+
+/** What the review asked of GitHub: not who is signed in, which the session asks in its own time. */
+function reviewOperations(session: TestSession) {
+    return session.operations().filter(operation => operation !== 'Viewer');
+}
+
+function isOidQuery(operation: string) {
+    return operation === 'ReviewBlobOids';
 }
 
 function oidOf(text: string) {

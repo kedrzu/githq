@@ -135,7 +135,7 @@ export function buildReviewRows({ files, getContent }: BuildReviewRowsParams): R
                 assertNever(content);
         }
 
-        rows.push({ kind: 'end', key: path + KEY_SEPARATOR + 'end' });
+        rows.push({ kind: 'end', key: getReviewEndKey(path) });
     }
 
     const last = files.at(-1);
@@ -175,6 +175,10 @@ export function buildFileLineRows(path: string, diff: FileDiff, layout: DiffLayo
  */
 export function getReviewHeaderKey(path: string) {
     return path + KEY_SEPARATOR + 'header';
+}
+
+function getReviewEndKey(path: string) {
+    return path + KEY_SEPARATOR + 'end';
 }
 
 /**
@@ -226,7 +230,8 @@ export function getPlaceholderHeight(file: ReviewFile): number {
 /**
  * The row to hold in place when the one held is gone from the new rows, because the layout or the whitespace setting
  * changed or the file arrived: the same line, or the first after it, of the same file; for anything else the top of
- * what its file now shows. `null` when the row is still there, or its file is gone: the list's own rule then applies.
+ * what its file now shows; for the room under what was the last file, what now follows that file, which is at the same
+ * place. `null` when the row is still there, or its file is gone: the list's own rule then applies.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -248,6 +253,10 @@ export function findReplacementRow(
     const held = previous.find(row => row.key === key);
     const place = held ? getRowPlace(held) : null;
     const first = next[start + 1] ?? null;
+    if (held?.kind === 'tail') {
+        return next[next.findIndex(row => row.key === getReviewEndKey(path)) + 1] ?? first;
+    }
+
     if (!place) {
         return first;
     }

@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
+import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
@@ -274,6 +275,69 @@ test('a pull request with no changes says so', async ({ page, github }) => {
     await page.goto(REVIEW_ADDRESS);
     await expect(page.getByRole('heading', { name: 'No changes' })).toBeVisible();
     await expect(review.fileList).toContainText('0 of 0 viewed');
+});
+
+test('D leaves the keyboard in the diff: PageDown scrolls it at once', async ({ page, github }) => {
+    await openPullRequest(page, github);
+    const numbers = Array.from({ length: 300 }, (_, index) => index);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            {
+                path: 'long.ts',
+                before: numbers.map(index => `old ${index}\n`).join(''),
+                after: numbers.map(index => `new ${index}\n`).join(''),
+            },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+
+    await page.keyboard.press('d');
+    await expect(review.code('new 0')).toHaveCount(1);
+    await expect(review.diff).toBeFocused();
+
+    await page.keyboard.press('PageDown');
+    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBeGreaterThan(100);
+});
+
+test('the diff arriving does not take the keyboard from a field the user went to meanwhile', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const menu = new CommandMenuHarness(page);
+
+    github.holdAnswers();
+    await page.keyboard.press('d');
+    await expect(page).toHaveURL(REVIEW_ADDRESS);
+    await menu.open();
+    await expect(menu.field).toBeFocused();
+
+    github.releaseAnswers();
+    // Behind the open menu, out of the accessibility tree.
+    await expect(page.locator('code', { hasText: 'export const client = 2;' })).toBeAttached();
+
+    await expect(menu.field).toBeFocused();
+});
+
+test('a pull request read before draws its list and its code on a reload with GitHub silent', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const review = new ReviewScreenHarness(page);
+    await page.keyboard.press('d');
+    await expect(review.code('export const client = 2;')).toBeVisible();
+    // All of it is written to disk behind what shows.
+    await page.waitForTimeout(300);
+
+    github.holdAnswers();
+    await page.reload();
+
+    await expect(review.fileRow('engine.ts')).toBeVisible();
+    await expect(review.code('export const client = 2;')).toBeVisible();
+    github.releaseAnswers();
 });
 
 /** Signs in and opens the sample's pull request on its own page, its review answered. */

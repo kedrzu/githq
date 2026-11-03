@@ -114,6 +114,15 @@ test('a placeholder held gives way to the first row of the file that arrived', (
     expect(findReplacementRow(held.key, waiting, arrived)?.key).toBe(arrived[1]?.key ?? '');
 });
 
+test('the room under what was the last file gives way to what now follows that file, as more of the list arrives', () => {
+    const previous = buildReviewRows({ files: [A], getContent: () => ({ kind: 'binary' }) });
+    const next = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'binary' }) });
+    const tail = previous.at(-1);
+    expect(tail?.kind).toBe('tail');
+
+    expect(findReplacementRow(tail?.key ?? '', previous, next)?.key).toBe(getReviewHeaderKey(B.path));
+});
+
 test('nothing replaces a row still there, or one of a file that is gone', () => {
     const split = buildAll([A, B], 'split');
     const header = split[0];

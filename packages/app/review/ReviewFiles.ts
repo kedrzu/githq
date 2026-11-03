@@ -27,7 +27,7 @@ import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
 
 import { ReviewBlobStore } from './ReviewBlobStore.js';
-import type { ReviewBlob } from './ReviewBlobStore.js';
+import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
 
 /** A file of a pull request, as its list shows it. */
 export interface ReviewFile {
@@ -62,8 +62,13 @@ export type ReviewFileListState =
 /** A pull request's files for its review, and their contents as they arrive. Reactive, except for its methods. */
 export interface PullRequestFiles {
     readonly list: ReviewFileListState;
-    /** In GitHub's order; empty until the whole list is read. A failed reload leaves the list it had. */
+    /**
+     * In GitHub's order; grows page by page after `list` is `ready`, until {@link listComplete}. Kept from the last read
+     * until GitHub answers, then what it says. A failed reload leaves the list it had.
+     */
     readonly files: readonly ReviewFile[];
+    /** Whether {@link files} is all GitHub lists. A failed read of a later page leaves it `false` and what came. */
+    readonly listComplete: boolean;
     /** The pull request's node id, once the list is read. */
     readonly id: string | null;
     /** The commit the files are read at, once the list is read. */
@@ -85,8 +90,11 @@ export interface PullRequestFiles {
 
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
 const MAX_FILE_BYTES = 1_000_000;
-/** A query with many aliased objects costs one point, so size is about the answer. */
-const MAX_EXPRESSIONS_PER_QUERY = 100;
+/**
+ * About 20 files. A query with many aliased objects costs one point, but GitHub takes about 3 s to answer 100 of these,
+ * and the first files are what the user is waiting for.
+ */
+const MAX_EXPRESSIONS_PER_QUERY = 40;
 const MAX_BLOBS_PER_QUERY = 50;
 const MAX_BYTES_PER_QUERY = 2_000_000;
 const MAX_QUERIES_AT_ONCE = 3;
@@ -108,21 +116,24 @@ interface BlobSide {
 }
 
 interface FileEntry {
-    readonly file: ReviewFile;
+    file: ReviewFile;
     /** Known once its oids are read, kept for a retry. */
     sides: FileSides | null;
     /** Its oids are being read. */
     resolving: boolean;
+    /** It failed and the user asked again: what the disk says of it is what they are asking past. */
+    retried: boolean;
 }
 
-/** What one list of files at one head is being read into. Replaced whole when the head moves. */
+/** What one list of files at one head is being read into. Replaced whole when the pull request moves. */
 interface FileRun {
     readonly id: string;
     readonly headRefOid: string;
-    readonly baseRefOid: string;
+    /** Follows the base's tip for as long as that leaves the merge base where it was. */
+    baseRefOid: string;
     readonly changedFiles: number;
-    readonly files: readonly ReviewFile[];
-    readonly entries: ReadonlyMap<string, FileEntry>;
+    /** The files read so far, in GitHub's order. */
+    readonly entries: Map<string, FileEntry>;
     /** The files with something left to fetch, next first. */
     queue: FileEntry[];
     readonly states: Map<string, ReviewFileState>;
@@ -132,6 +143,13 @@ interface FileRun {
     readonly fetching: Set<string>;
     /** Queries on their way. */
     running: number;
+    /** Where renamed and copied files came from, once read: until then those wait, in the queue. */
+    renames: ReadonlyMap<string, string> | null;
+    readingRenames: boolean;
+    /** Whether the merge base was asked for ahead of the first query needing it. */
+    mergeBaseAsked: boolean;
+    /** GitHub refused for the rate: files listed from now on fail with it, until a retry. */
+    refusal: Error | null;
 }
 
 /** What the files are read with for one signed-in user. Dropped whole when they sign out. */
@@ -140,7 +158,7 @@ interface Session {
     readonly requester: Requester<GitHubGraphQLCallOptions>;
     readonly rest: GitHubRestRequester;
     readonly models: Map<string, Model>;
-    /** By `<repository>:<base>...<head>`, which never changes its answer. */
+    /** By {@link ReviewBlobStore}'s key, `<repository>:<base>...<head>`, which never changes its answer. */
     readonly mergeBases: Map<string, Promise<string>>;
 }
 
@@ -155,8 +173,10 @@ type FileListNode = NonNullable<NonNullable<NonNullable<FileListPage['files']>['
 
 /**
  * Loads what a pull request's review shows (D6, D19): its files, and for each the text at the merge base — not the
- * base branch's tip, which moves on — and at the head. Contents come from the user's {@link ReviewBlobStore} or GraphQL,
- * in batches, in the list's order or as a jump asks; what GraphQL truncates comes whole over REST.
+ * base branch's tip, which moves on — and at the head. A pull request read before starts from the
+ * {@link ReviewBlobStore} at once, its list read again behind it; one that wasn't shows its files page by page as they
+ * come. Whatever the disk doesn't hold comes from GraphQL, in batches, in the list's order or as a jump asks; what
+ * GraphQL truncates comes whole over REST.
  *
  * Follows the signed-in user: when they sign out what was read leaves memory, and an answer arriving later is
  * neither shown nor written to disk.
@@ -181,7 +201,7 @@ export const ReviewFiles = defineService({
 
         /**
          * The files of the pull request, reading them when first opened. Opened again in the session it is the same
-         * model, its list read anew only if that failed or the head has moved since. `null` while signed out.
+         * model, its list read anew behind what it shows. `null` while signed out.
          */
         function open(reference: ItemReference): PullRequestFiles | null {
             const current = session;
@@ -218,13 +238,17 @@ export const ReviewFiles = defineService({
         function createModel(current: Session, reference: ItemReference): Model {
             const repository = { owner: reference.owner, name: reference.name };
             const nameWithOwner = `${reference.owner}/${reference.name}`;
+            const listKey = `${nameWithOwner}/${reference.number}`;
+            const { login } = current.account;
 
             const listRef = shallowRef<ReviewFileListState>(LOADING);
             const runRef = shallowRef<FileRun | null>(null);
+            const filesRef = shallowRef<readonly ReviewFile[]>([]);
+            const listCompleteRef = shallowRef(false);
             const versionRef = shallowRef(0);
 
             let dropped = false;
-            let rechecking = false;
+            let readingList = false;
             let cancelUpdate: (() => void) | null = null;
             let jumpedTo: string | null = null;
 
@@ -236,7 +260,10 @@ export const ReviewFiles = defineService({
                         return listRef.value;
                     },
                     get files() {
-                        return runRef.value?.files ?? [];
+                        return filesRef.value;
+                    },
+                    get listComplete() {
+                        return listCompleteRef.value;
                     },
                     get id() {
                         return runRef.value?.id ?? null;
@@ -265,19 +292,24 @@ export const ReviewFiles = defineService({
             }
 
             function prioritize(path: string) {
+                // Also for a file not listed yet, or that a new head lists later.
+                jumpedTo = path;
                 const run = runRef.value;
-                if (!run) {
-                    jumpedTo = path;
-                    return;
-                }
-
-                const entry = run.entries.get(path);
-                const index = entry ? run.queue.indexOf(entry) : -1;
-                if (entry && index >= 0) {
-                    run.queue.splice(index, 1);
-                    run.queue.unshift(entry);
+                if (run && moveToFront(run, path)) {
                     pump(run);
                 }
+            }
+
+            function moveToFront(run: FileRun, path: string) {
+                const entry = run.entries.get(path);
+                const index = entry ? run.queue.indexOf(entry) : -1;
+                if (!entry || index < 0) {
+                    return false;
+                }
+
+                run.queue.splice(index, 1);
+                run.queue.unshift(entry);
+                return true;
             }
 
             function retry(path: string) {
@@ -286,6 +318,12 @@ export const ReviewFiles = defineService({
                 if (run && entry && run.states.get(path)?.kind === 'failed') {
                     setState(run, path, WAITING);
                     run.queue.unshift(entry);
+                    entry.retried = true;
+                    run.refusal = null;
+                    if (isHeldForRenames(run, entry)) {
+                        void readRenames(run);
+                    }
+
                     // Its texts may have arrived since it failed.
                     takeReady(run);
                     pump(run);
@@ -299,7 +337,7 @@ export const ReviewFiles = defineService({
                         void load();
                         break;
                     case 'ready':
-                        void recheckHead();
+                        void readList();
                         break;
                     case 'loading':
                         break;
@@ -314,6 +352,8 @@ export const ReviewFiles = defineService({
                 cancelUpdate?.();
                 cancelUpdate = null;
                 runRef.value = null;
+                filesRef.value = [];
+                listCompleteRef.value = false;
                 listRef.value = LOADING;
                 versionRef.value++;
             }
@@ -324,42 +364,79 @@ export const ReviewFiles = defineService({
 
             async function load() {
                 listRef.value = LOADING;
+                const kept = await readFromDisk(() => blobs.readFileList(login, listKey));
+                if (dropped) {
+                    return;
+                }
+
+                if (kept) {
+                    const run = startRun(kept);
+                    addFiles(run, kept.files);
+                    listCompleteRef.value = true;
+                }
+
+                await readList();
+            }
+
+            /** Reads the list from GitHub into what is shown; with something to show, failing only leaves that as it is. */
+            async function readList() {
+                if (readingList) {
+                    return;
+                }
+
+                readingList = true;
                 try {
-                    const { pullRequest, files } = await readList();
-                    if (dropped) {
-                        return;
-                    }
-
-                    const hasRenames = files.some(
-                        file => file.changeType === 'RENAMED' || file.changeType === 'COPIED',
-                    );
-                    const renames = hasRenames
-                        ? await listPullRequestRenames(current.rest, { nameWithOwner, number: reference.number })
-                        : new Map<string, string>();
-                    if (dropped) {
-                        return;
-                    }
-
-                    start(pullRequest, files, renames);
+                    await readPages();
                 } catch (error) {
-                    if (!dropped) {
+                    if (dropped) {
+                        return;
+                    }
+
+                    if (runRef.value) {
+                        logger.warn("Could not read a pull request's list of files", { error });
+                    } else {
                         listRef.value = { kind: 'failed', error: toError(error) };
                     }
+                } finally {
+                    readingList = false;
                 }
             }
 
-            async function readList() {
-                const files: (FileListNode | null)[] = [];
-                let pullRequest: FileListPage | null = null;
+            async function readPages(): Promise<void> {
+                let run = runRef.value;
+                const listed = new Set<string>();
                 let after: string | null = null;
                 do {
                     const page: FileListPage = await readListPage(after);
-                    pullRequest ??= page;
-                    files.push(...(page.files?.nodes ?? []));
+                    if (dropped) {
+                        return;
+                    }
+
+                    const moved: boolean = run !== null && (await hasMoved(run, page));
+                    if (dropped) {
+                        return;
+                    }
+
+                    if (moved && after !== null) {
+                        // Pushed to in the middle of the read: the rest of the pages are another list's.
+                        await readPages();
+                        return;
+                    }
+
+                    if (!run || moved) {
+                        run = startRun(page);
+                    }
+
+                    const files = (page.files?.nodes ?? []).filter(node => node !== null).map(toReviewFile);
+                    for (const file of files) {
+                        listed.add(file.path);
+                    }
+
+                    addFiles(run, files);
                     after = page.files?.pageInfo.hasNextPage ? (page.files.pageInfo.endCursor ?? null) : null;
                 } while (after !== null);
 
-                return { pullRequest, files: files.filter(file => file !== null) };
+                endList(run, listed);
             }
 
             async function readListPage(after: string | null) {
@@ -376,65 +453,201 @@ export const ReviewFiles = defineService({
                 return page;
             }
 
-            /** Opened again: only a head that moved makes what is held out of date. */
-            async function recheckHead() {
-                const run = runRef.value;
-                if (rechecking || !run) {
-                    return;
+            /**
+             * Whether what the run holds is out of date. The tip of a base moves on all the time: as long as the merge
+             * base stays, the diff is the same and nothing needs to start over.
+             */
+            async function hasMoved(run: FileRun, page: FileListPage) {
+                if (page.headRefOid !== run.headRefOid) {
+                    return true;
                 }
 
-                rechecking = true;
-                try {
-                    const page = await readListPage(null);
-                    if (isLive(run) && page.headRefOid !== run.headRefOid) {
-                        await load();
-                    }
-                } catch (error) {
-                    logger.warn('Could not check whether a pull request moved on', { error });
-                } finally {
-                    rechecking = false;
+                if (page.baseRefOid === run.baseRefOid) {
+                    return false;
                 }
+
+                const [held, answered] = await Promise.all([
+                    readMergeBase(run.baseRefOid, run.headRefOid),
+                    readMergeBase(page.baseRefOid, run.headRefOid),
+                ]);
+                if (held !== answered) {
+                    return true;
+                }
+
+                run.baseRefOid = page.baseRefOid;
+                return false;
             }
 
-            function start(
-                pullRequest: FileListPage,
-                nodes: readonly FileListNode[],
-                renames: ReadonlyMap<string, string>,
-            ) {
-                const files = nodes.map((node): ReviewFile => ({
-                    path: node.path,
-                    previousPath: renames.get(node.path) ?? null,
-                    changeType: node.changeType,
-                    additions: node.additions,
-                    deletions: node.deletions,
-                    viewed: node.viewerViewedState,
-                }));
-                const entries = new Map(
-                    files.map((file): [string, FileEntry] => [file.path, { file, sides: null, resolving: false }]),
-                );
+            function startRun(pullRequest: Omit<ReviewKeptFileList, 'files'>) {
                 const run: FileRun = {
                     id: pullRequest.id,
                     headRefOid: pullRequest.headRefOid,
                     baseRefOid: pullRequest.baseRefOid,
                     changedFiles: pullRequest.changedFiles,
-                    files,
-                    entries,
-                    // The one place deciding which files get fetched: all of them.
-                    queue: [...entries.values()],
+                    entries: new Map(),
+                    queue: [],
                     states: new Map(),
                     texts: new Map(),
                     fetching: new Set(),
                     running: 0,
+                    renames: null,
+                    readingRenames: false,
+                    mergeBaseAsked: false,
+                    refusal: null,
                 };
 
                 runRef.value = run;
+                filesRef.value = [];
+                listCompleteRef.value = false;
                 listRef.value = { kind: 'ready' };
-                if (jumpedTo !== null) {
-                    prioritize(jumpedTo);
-                    jumpedTo = null;
+                return run;
+            }
+
+            /**
+             * Takes a page of the list, or the list kept on disk: a file not known yet joins the queue, the only place
+             * deciding which files get fetched, and one known just takes what GitHub says of it now, its state left alone.
+             */
+            function addFiles(run: FileRun, files: readonly ReviewFile[]) {
+                let changed = false;
+                for (const file of files) {
+                    const entry = run.entries.get(file.path);
+                    if (entry) {
+                        changed = updateFile(entry, file) || changed;
+                        continue;
+                    }
+
+                    changed = true;
+                    const previousPath = file.previousPath ?? run.renames?.get(file.path) ?? null;
+                    const added: FileEntry = {
+                        file: { ...file, previousPath },
+                        sides: null,
+                        resolving: false,
+                        retried: false,
+                    };
+                    run.entries.set(file.path, added);
+                    run.queue.push(added);
+                    if (run.refusal) {
+                        endEntry(run, added, { kind: 'failed', error: run.refusal });
+                    }
                 }
 
-                pump(run);
+                if (changed) {
+                    publishFiles(run);
+                }
+
+                if (jumpedTo !== null) {
+                    moveToFront(run, jumpedTo);
+                }
+
+                if (run.queue.some(entry => isHeldForRenames(run, entry))) {
+                    void readRenames(run);
+                }
+
+                if (!run.mergeBaseAsked && files.some(file => getExistingSides(file.changeType).before)) {
+                    // On its own, ahead of the first query needing it; that query shares it, and tells of a failure.
+                    run.mergeBaseAsked = true;
+                    void readMergeBase(run.baseRefOid, run.headRefOid);
+                }
+
+                // Not until the screen, told of the files, has said which one it shows: the first queries are the ones
+                // the user waits for.
+                void Promise.resolve().then(() => pump(run));
+            }
+
+            function updateFile(entry: FileEntry, file: ReviewFile) {
+                const { viewed, additions, deletions, previousPath } = entry.file;
+                if (viewed === file.viewed && additions === file.additions && deletions === file.deletions) {
+                    return false;
+                }
+
+                entry.file = { ...file, previousPath };
+                return true;
+            }
+
+            function publishFiles(run: FileRun) {
+                if (isLive(run)) {
+                    filesRef.value = [...run.entries.values()].map(entry => entry.file);
+                }
+            }
+
+            /** The whole list is read. Under the same head and base it can't really have lost files, but GitHub decides. */
+            function endList(run: FileRun, listed: ReadonlySet<string>) {
+                let changed = false;
+                for (const [path, entry] of run.entries) {
+                    if (!listed.has(path)) {
+                        run.entries.delete(path);
+                        run.queue = run.queue.filter(other => other !== entry);
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    publishFiles(run);
+                }
+
+                listCompleteRef.value = true;
+                keepList(run);
+            }
+
+            /** What a later open starts from, once it is whole: a list missing where renames came from would not be. */
+            function keepList(run: FileRun) {
+                const entries = [...run.entries.values()];
+                if (!isLive(run) || !listCompleteRef.value || entries.some(entry => isHeldForRenames(run, entry))) {
+                    return;
+                }
+
+                keepOnDisk(() =>
+                    blobs.writeFileList(login, listKey, {
+                        id: run.id,
+                        headRefOid: run.headRefOid,
+                        baseRefOid: run.baseRefOid,
+                        changedFiles: run.changedFiles,
+                        files: filesRef.value,
+                    }),
+                );
+            }
+
+            /**
+             * Where renamed and copied files came from. Read when the first of them is listed, as the answer says it of
+             * all; failing fails only those, and retrying one of them reads it again.
+             */
+            async function readRenames(run: FileRun) {
+                if (run.readingRenames) {
+                    return;
+                }
+
+                run.readingRenames = true;
+                try {
+                    const renames = await listPullRequestRenames(current.rest, {
+                        nameWithOwner,
+                        number: reference.number,
+                    });
+                    if (!isLive(run)) {
+                        return;
+                    }
+
+                    run.renames = renames;
+                    for (const entry of run.entries.values()) {
+                        const previousPath = renames.get(entry.file.path);
+                        if (previousPath !== undefined) {
+                            entry.file = { ...entry.file, previousPath };
+                        }
+                    }
+
+                    publishFiles(run);
+                    keepList(run);
+                    pump(run);
+                } catch (error) {
+                    if (isLive(run)) {
+                        failEntries(
+                            run,
+                            run.queue.filter(entry => isHeldForRenames(run, entry)),
+                            toError(error),
+                        );
+                    }
+                } finally {
+                    run.readingRenames = false;
+                }
             }
 
             /** Starts as many queries as may run, each for what is next in the queue. */
@@ -456,7 +669,7 @@ export const ReviewFiles = defineService({
             /** The next query: whichever the first file with something to fetch needs. */
             function takeWork(run: FileRun) {
                 for (const entry of run.queue) {
-                    if (entry.resolving) {
+                    if (entry.resolving || isHeldForRenames(run, entry)) {
                         continue;
                     }
 
@@ -478,7 +691,7 @@ export const ReviewFiles = defineService({
                 const entries: FileEntry[] = [];
                 let expressions = 0;
                 for (const entry of run.queue) {
-                    if (entry.sides !== null || entry.resolving) {
+                    if (entry.sides !== null || entry.resolving || isHeldForRenames(run, entry)) {
                         continue;
                     }
 
@@ -525,7 +738,8 @@ export const ReviewFiles = defineService({
                 let failure: Error | null = null;
                 try {
                     const needsBase = entries.some(entry => getExistingSides(entry.file.changeType).before);
-                    ended = await readSides(run, entries, needsBase ? await readMergeBase(run) : null);
+                    const mergeBase = needsBase ? await readMergeBase(run.baseRefOid, run.headRefOid) : null;
+                    ended = await readSides(run, entries, mergeBase);
                     if (isLive(run)) {
                         const known = entries.flatMap(entry => getBlobs(entry.sides));
                         await readKept(
@@ -559,26 +773,37 @@ export const ReviewFiles = defineService({
                 takeReady(run);
             }
 
-            function readMergeBase(run: FileRun) {
-                const key = `${nameWithOwner}:${run.baseRefOid}...${run.headRefOid}`;
+            function readMergeBase(baseOid: string, headOid: string) {
+                const key = `${nameWithOwner}:${baseOid}...${headOid}`;
                 const held = current.mergeBases.get(key);
                 if (held) {
                     return held;
                 }
 
-                const reading = getMergeBase(current.rest, {
-                    nameWithOwner,
-                    baseOid: run.baseRefOid,
-                    headOid: run.headRefOid,
-                });
+                const reading = findMergeBase(key, baseOid, headOid);
                 current.mergeBases.set(key, reading);
                 reading.catch(() => current.mergeBases.delete(key));
                 return reading;
             }
 
+            async function findMergeBase(key: string, baseOid: string, headOid: string) {
+                const kept = await readFromDisk(() => blobs.readMergeBase(login, key));
+                if (kept !== undefined) {
+                    return kept;
+                }
+
+                if (dropped) {
+                    throw new Error('Signed out');
+                }
+
+                const mergeBase = await getMergeBase(current.rest, { nameWithOwner, baseOid, headOid });
+                keepOnDisk(() => blobs.writeMergeBase(login, key, mergeBase));
+                return mergeBase;
+            }
+
             /**
-             * Reads each file's blobs and sets {@link FileEntry.sides} of those that go on to their text; returns what
-             * ended the others.
+             * Reads each file's blobs, what the disk doesn't know from GitHub, and sets {@link FileEntry.sides} of those
+             * that go on to their text; returns what ended the others.
              */
             async function readSides(run: FileRun, entries: readonly FileEntry[], mergeBase: string | null) {
                 const expressions = new Map<FileEntry, { before: string | null; after: string | null }>();
@@ -602,13 +827,31 @@ export const ReviewFiles = defineService({
                     });
                 }
 
-                const wanted = [...expressions.values()].flatMap(({ before, after }) =>
-                    [before, after].filter(expression => expression !== null),
+                // Signed out by now, the disk is not to be opened again.
+                if (!isLive(run)) {
+                    return ended;
+                }
+
+                const answers = await readKeptAnswers(
+                    [...expressions].flatMap(([entry, { before, after }]) =>
+                        entry.retried ? [] : [before, after].filter(expression => expression !== null),
+                    ),
                 );
-                const answers =
-                    wanted.length > 0
-                        ? await readReviewBlobOids(current.requester, repository, wanted)
-                        : new Map<string, ReviewBlobOidAnswer>();
+                if (!isLive(run)) {
+                    return ended;
+                }
+
+                const unknown = [...expressions.values()]
+                    .flatMap(({ before, after }) => [before, after])
+                    .filter(expression => expression !== null)
+                    .filter(expression => !answers.has(expression));
+                if (unknown.length > 0) {
+                    const answered = await readReviewBlobOids(current.requester, repository, unknown);
+                    keepAnswers(answered);
+                    for (const [expression, answer] of answered) {
+                        answers.set(expression, answer);
+                    }
+                }
 
                 for (const [entry, { before, after }] of expressions) {
                     const outcome = readOutcome(before, after, answers);
@@ -622,20 +865,71 @@ export const ReviewFiles = defineService({
                 return ended;
             }
 
+            async function readKeptAnswers(expressions: readonly string[]) {
+                const answers = new Map<string, ReviewBlobOidAnswer>();
+                if (expressions.length === 0) {
+                    return answers;
+                }
+
+                const kept = await readFromDisk(() => blobs.readResolutions(login, expressions.map(getResolutionKey)));
+                for (const expression of expressions) {
+                    const answer = kept?.get(getResolutionKey(expression));
+                    if (answer) {
+                        answers.set(expression, answer);
+                    }
+                }
+
+                return answers;
+            }
+
+            /** Everything but a failure to answer: the commit in the expression fixes the rest for good. */
+            function keepAnswers(answers: ReadonlyMap<string, ReviewBlobOidAnswer>) {
+                const resolutions = new Map<string, ReviewKeptResolution>();
+                for (const [expression, answer] of answers) {
+                    if (answer.kind !== 'failed') {
+                        resolutions.set(getResolutionKey(expression), answer);
+                    }
+                }
+
+                if (resolutions.size > 0) {
+                    keepOnDisk(() => blobs.writeResolutions(login, resolutions));
+                }
+            }
+
+            function getResolutionKey(expression: string) {
+                return `${nameWithOwner}:${expression}`;
+            }
+
             async function readKept(run: FileRun, oids: readonly string[]) {
                 if (oids.length === 0) {
                     return;
                 }
 
-                try {
-                    const kept = await blobs.read(current.account.login, oids);
-                    for (const [oid, text] of kept) {
-                        run.texts.set(oid, text);
-                    }
-                } catch (error) {
-                    // A cache: GitHub still has them.
-                    logger.warn('Could not read kept file contents', { error });
+                const kept = await readFromDisk(() => blobs.read(login, oids));
+                for (const [oid, text] of kept ?? []) {
+                    run.texts.set(oid, text);
                 }
+            }
+
+            /** A cache: GitHub still has it. */
+            async function readFromDisk<T>(read: () => Promise<T>) {
+                try {
+                    return await read();
+                } catch (error) {
+                    logger.warn('Could not read what a review keeps on disk', { error });
+                    return undefined;
+                }
+            }
+
+            /** Written behind: the reader has it from memory, and a cache can lose it. */
+            function keepOnDisk(write: () => Promise<void>) {
+                if (dropped) {
+                    return;
+                }
+
+                write().catch((error: unknown) => {
+                    logger.warn('Could not keep what a review read on disk', { error });
+                });
             }
 
             /** Step two: the texts of blobs, those GraphQL truncates whole from REST. */
@@ -706,16 +1000,11 @@ export const ReviewFiles = defineService({
                 takeReady(run);
             }
 
-            /** Written behind: the reader has it from memory, and a cache can lose it. */
             function keep(texts: ReadonlyMap<string, string>) {
-                if (texts.size === 0) {
-                    return;
+                if (texts.size > 0) {
+                    const kept = [...texts].map(([oid, text]): ReviewBlob => ({ oid, text }));
+                    keepOnDisk(() => blobs.write(login, kept));
                 }
-
-                const kept = [...texts].map(([oid, text]): ReviewBlob => ({ oid, text }));
-                blobs.write(current.account.login, kept).catch((error: unknown) => {
-                    logger.warn('Could not keep file contents', { error });
-                });
             }
 
             function failEntries(run: FileRun, entries: readonly FileEntry[], error: Error) {
@@ -729,6 +1018,7 @@ export const ReviewFiles = defineService({
             /** GitHub refused for the rate: asking on for the rest only makes it worse, so they fail with it. */
             function stopOnRateLimit(run: FileRun, error: Error) {
                 if (error instanceof GitHubApiError && isRateLimitRefusal(error)) {
+                    run.refusal = error;
                     for (const entry of run.queue) {
                         if (!entry.resolving) {
                             endEntry(run, entry, { kind: 'failed', error });
@@ -764,6 +1054,26 @@ export const ReviewFiles = defineService({
         }
     },
 });
+
+function toReviewFile(node: FileListNode): ReviewFile {
+    return {
+        path: node.path,
+        previousPath: null,
+        changeType: node.changeType,
+        additions: node.additions,
+        deletions: node.deletions,
+        viewed: node.viewerViewedState,
+    };
+}
+
+/** A renamed or copied file whose source isn't known yet: `waiting`, without holding up the others. */
+function isHeldForRenames(run: FileRun, { file }: FileEntry) {
+    return (
+        run.renames === null &&
+        file.previousPath === null &&
+        (file.changeType === 'RENAMED' || file.changeType === 'COPIED')
+    );
+}
 
 function getExistingSides(changeType: PatchStatus) {
     switch (changeType) {

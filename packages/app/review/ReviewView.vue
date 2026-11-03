@@ -68,6 +68,21 @@ const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.it
 const openedAt = performance.now();
 let firstRowMeasured = false;
 
+// Once, when the diff first shows: PageDown, Space and the arrows then scroll it at once. By then the user may be in a
+// field, like the command palette's, which nothing here takes them out of.
+const stopFocusing = watch(
+  list,
+  exposed => {
+    if (exposed) {
+      stopFocusing();
+      if (!document.activeElement || document.activeElement === document.body) {
+        exposed.focus();
+      }
+    }
+  },
+  { flush: 'post' },
+);
+
 // Signed in again as someone else, this is their read of the pull request.
 watch(
   () => accounts.current,
@@ -191,6 +206,7 @@ function readAgain() {
           :get-state="getState"
           :current-path="currentPath"
           :changed-files="files?.changedFiles ?? null"
+          :list-complete="files?.listComplete ?? false"
           @select="jumpToFile"
         />
       </div>
