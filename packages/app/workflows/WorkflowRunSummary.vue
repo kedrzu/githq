@@ -60,13 +60,15 @@ const when = computed(() => {
     return '';
   }
 
-  const started = describeRunWhen(run.createdAt, now);
   if (run.status !== 'completed') {
+    // A re-run keeps the run's creation time: what goes now started later.
+    const started = describeRunWhen(run.runStartedAt ?? run.createdAt, now);
     return stillBroken && run.workflowName !== null
       ? t(l.startedBroken, { when: started, workflow: run.workflowName })
       : t(l.startedWhen, { when: started });
   }
 
+  const started = describeRunWhen(run.createdAt, now);
   const days = getElapsedUnit(now - Date.parse(run.createdAt), ['day'])?.count ?? 0;
   const dated = days > 0 ? t(l.daysAgo, { when: started, count: days }) : started;
   const tail = description.value?.tail;

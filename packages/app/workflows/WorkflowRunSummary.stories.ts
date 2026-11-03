@@ -61,6 +61,21 @@ export const RunningStillBroken: Story = {
     args: { run: { ...RUN, status: 'in_progress', conclusion: null }, stillBroken: true },
 };
 
+/** A week-old run re-run a minute ago: since the re-run, which is what goes now. */
+export const RerunGoing: Story = {
+    args: {
+        run: {
+            ...RUN,
+            status: 'in_progress',
+            conclusion: null,
+            createdAt: ago(7 * DAY),
+            runStartedAt: ago(MINUTE),
+            runAttempt: 2,
+        },
+        stillBroken: true,
+    },
+};
+
 /** Not started: GitHub's own status. */
 export const Queued: Story = { args: { run: { ...RUN, status: 'queued', conclusion: null } } };
 
