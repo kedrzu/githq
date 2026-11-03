@@ -56,7 +56,6 @@ test('reads a job with its steps, a step’s missing times and a step number’s
                 conclusion: 'failure',
                 startedAt: '2026-11-02T19:14:17Z',
                 completedAt: '2026-11-02T19:18:35Z',
-                htmlUrl: 'https://github.com/kedrzu/githq/actions/runs/41507834451/job/125492293728',
                 steps: [
                     {
                         name: 'Set up job',
@@ -116,7 +115,6 @@ test.each([
     ['refused', Response.json({ message: 'Forbidden' }, { status: 403 })],
     ['not a job list', Response.json({ total_count: 1 })],
     ['a job without its id', Response.json({ jobs: [{ ...JOB, id: '1' }] })],
-    ['a job without its link', Response.json({ jobs: [{ ...JOB, html_url: null }] })],
     ['a job whose steps are no list', Response.json({ jobs: [{ ...JOB, steps: {} }] })],
     ['a step without its number', Response.json({ jobs: [{ ...JOB, steps: [{ ...JOB.steps[0], number: null }] }] })],
     ['a step with a time not text', Response.json({ jobs: [{ ...JOB, steps: [{ ...JOB.steps[0], started_at: 1 }] }] })],

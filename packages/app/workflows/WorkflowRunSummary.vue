@@ -6,6 +6,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
 import { formatDuration } from '@/utils/formatDuration.js';
+import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import { useDescribeRunWhen } from './useDescribeRunWhen.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
@@ -24,7 +25,6 @@ const props = defineProps<{
   now: number;
 }>();
 
-const DAY = 24 * 60 * 60_000;
 const SHORT_SHA = 7;
 
 const t = useTranslate();
@@ -67,7 +67,7 @@ const when = computed(() => {
       : t(l.startedWhen, { when: started });
   }
 
-  const days = Math.floor((now - Date.parse(run.createdAt)) / DAY);
+  const days = getElapsedUnit(now - Date.parse(run.createdAt), ['day'])?.count ?? 0;
   const dated = days > 0 ? t(l.daysAgo, { when: started, count: days }) : started;
   const tail = description.value?.tail;
   return tail?.kind === 'duration' ? t(l.tookWhen, { when: dated, duration: formatDuration(tail.ms) }) : dated;

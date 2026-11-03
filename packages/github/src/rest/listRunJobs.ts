@@ -33,7 +33,6 @@ export interface GitHubWorkflowJob {
     readonly startedAt: string | null;
     /** ISO; `null` before it finishes. */
     readonly completedAt: string | null;
-    readonly htmlUrl: string;
     /** In GitHub's order; none before the job starts. */
     readonly steps: readonly GitHubWorkflowStep[];
 }
@@ -110,7 +109,6 @@ function readJobs(status: number, payload: unknown) {
             !isTextOrNothing(entry.conclusion) ||
             !isTextOrNothing(entry.started_at) ||
             !isTextOrNothing(entry.completed_at) ||
-            typeof entry.html_url !== 'string' ||
             !(entry.steps === undefined || Array.isArray(entry.steps))
         ) {
             throw malformed(status);
@@ -123,7 +121,6 @@ function readJobs(status: number, payload: unknown) {
             conclusion: entry.conclusion ?? null,
             startedAt: entry.started_at ?? null,
             completedAt: entry.completed_at ?? null,
-            htmlUrl: entry.html_url,
             steps: readSteps(status, entry.steps ?? []),
         });
     }

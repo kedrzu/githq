@@ -4,6 +4,7 @@ import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { CircleAlert } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, triggerRef, useTemplateRef, watch } from 'vue';
 
@@ -26,9 +27,9 @@ import {
   getRowSection,
 } from './buildLogDocument.js';
 import type { LogDocumentRow, LogSection } from './buildLogDocument.js';
-import { getJobMark } from './buildWorkflowRun.js';
 import { useLogWindow } from './useLogWindow.js';
 import type { LogRevealMode } from './useLogWindow.js';
+import { getJobMark } from './utils/getJobMark.js';
 import { getLogLineParts, MAX_SHOWN_CHARACTERS } from './utils/getLogLineParts.js';
 import type { LogLineParts, LogTextRange } from './utils/getLogLineParts.js';
 import { formatLogLineHash } from './utils/logLineHash.js';
@@ -113,7 +114,7 @@ const logDocument = computed(() =>
   buildLogDocument({ log: props.log, steps: props.job.steps, folded: folded.value, endNote: noMarker.value }),
 );
 const textWidth = computed(
-  () => view.viewportWidth.value - NUMBER_WIDTH - (showTimes.value ? TIME_WIDTH : 0) - TEXT_END_PADDING,
+  () => view.viewportWidth - NUMBER_WIDTH - (showTimes.value ? TIME_WIDTH : 0) - TEXT_END_PADDING,
 );
 const heights = computed(() => {
   const { rows } = logDocument.value;
@@ -142,7 +143,7 @@ const contentWidth = computed(() => {
 const shownRows = computed(() => {
   const { rows } = logDocument.value;
   const shown: ShownRow[] = [];
-  for (let row = view.start.value; row < view.end.value; row++) {
+  for (let row = view.start; row < view.end; row++) {
     const entry = rows[row];
     if (entry) {
       shown.push(toShownRow(entry, row));
@@ -157,8 +158,8 @@ const errorPosition = computed(() => (cursor.value === null ? 1 : getErrorPositi
 
 /** What the sticky header names: the step the top of the view is in, once that step's head has left the view. */
 const stickySection = computed(() => {
-  const section = getRowSection(logDocument.value, view.firstVisible.value);
-  return section?.headRow != null && view.scrollTop.value > view.getRowTop(section.headRow) ? section : null;
+  const section = getRowSection(logDocument.value, view.firstVisible);
+  return section?.headRow != null && view.scrollTop > view.getRowTop(section.headRow) ? section : null;
 });
 /** The next step's head pushes the sticky header out as it comes up to it. */
 const stickyOffset = computed(() => {
@@ -168,7 +169,7 @@ const stickyOffset = computed(() => {
   }
 
   const next = logDocument.value.sections[logDocument.value.sections.indexOf(section) + 1];
-  return next?.headRow == null ? 0 : Math.min(0, view.getRowTop(next.headRow) - view.scrollTop.value - STEP_HEIGHT);
+  return next?.headRow == null ? 0 : Math.min(0, view.getRowTop(next.headRow) - view.scrollTop - STEP_HEIGHT);
 });
 const mapSteps = computed(() =>
   logDocument.value.sections.flatMap(({ headRow }) => (headRow === null ? [] : [view.getRowTop(headRow)])),
@@ -256,7 +257,7 @@ useCommands(() => [
     menu: false,
     run: () => {
       moveCursor(props.log.lines.length - 1, 'nearest');
-      view.scrollTo(view.totalHeight.value);
+      view.scrollTo(view.totalHeight);
     },
   },
   {
@@ -318,16 +319,18 @@ watch(
   },
 );
 // What shows is laid out by now; a wrapped line says how high it really is.
-watch([shownRows, wrap, view.viewportWidth], measureRows, { flush: 'post' });
+watch([shownRows, wrap, () => view.viewportWidth], measureRows, { flush: 'post' });
 // Within the change, so that `keepInPlace` around it sees the heights before and after.
 watch(
-  [wrap, showTimes, view.viewportWidth],
+  [wrap, showTimes, () => view.viewportWidth],
   () => {
     measured.value = new Map();
   },
   { flush: 'sync' },
 );
 
+onWindowEvent('keydown', onKeydown);
+onWindowEvent('mouseup', stopSelecting);
 onMounted(() => {
   characterWidth.value = measureCharacterWidth();
   if (cursorRow.value !== null) {
@@ -339,15 +342,9 @@ onMounted(() => {
     view.reveal(logDocument.value.rows.length - 1, 'nearest');
   }
 
-  window.addEventListener('keydown', onKeydown);
-  window.addEventListener('mouseup', stopSelecting);
   window.document.addEventListener('selectionchange', onSelectionChange);
 });
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKeydown);
-  window.removeEventListener('mouseup', stopSelecting);
-  window.document.removeEventListener('selectionchange', onSelectionChange);
-});
+onBeforeUnmount(() => window.document.removeEventListener('selectionchange', onSelectionChange));
 
 function getRowHeight(entry: LogDocumentRow, perLine: number | null, known: ReadonlyMap<number, number>) {
   switch (entry.kind) {
@@ -435,7 +432,7 @@ function moveCursor(index: number | null, mode: LogRevealMode) {
 
 function moveByLine(by: 1 | -1) {
   if (cursor.value !== null) {
-    moveCursor(getAdjacentLine(logDocument.value, cursor.value, by), 'nearest');
+    moveCursor(getAdjacentLine({ document: logDocument.value, index: cursor.value, by }), 'nearest');
   }
 }
 
@@ -444,7 +441,7 @@ function moveByStep(by: 1 | -1) {
     return;
   }
 
-  const target = getAdjacentStepLine(logDocument.value, cursor.value, by);
+  const target = getAdjacentStepLine({ document: logDocument.value, index: cursor.value, by });
   moveCursor(target, 'nearest');
   const headRow = target === null ? null : getLineSection(logDocument.value, target)?.headRow;
   if (headRow != null) {
@@ -454,7 +451,7 @@ function moveByStep(by: 1 | -1) {
 
 function moveByError(by: 1 | -1) {
   if (cursor.value !== null) {
-    moveCursor(getAdjacentError(props.log, cursor.value, by), 'context');
+    moveCursor(getAdjacentError({ log: props.log, index: cursor.value, by }), 'context');
   }
 }
 
@@ -463,9 +460,9 @@ function moveByHalfPage(by: 1 | -1) {
     return;
   }
 
-  const distance = (view.viewportHeight.value / 2) * by;
+  const distance = (view.viewportHeight / 2) * by;
   const row = view.getRowAt(view.getRowTop(cursorRow.value) + distance);
-  const top = view.scrollTop.value + distance;
+  const top = view.scrollTop + distance;
   moveCursor(findLineFrom(row, by), 'nearest');
   view.scrollTo(top);
   revealCursor();
@@ -512,7 +509,7 @@ function toggleSection(section: LogSection) {
 
 /** A head pressed, in the document or stuck on top: the keys stay the log's, and a fold from above shows its head. */
 function pressHead(section: LogSection) {
-  const wasAbove = section.headRow !== null && view.getRowTop(section.headRow) < view.scrollTop.value;
+  const wasAbove = section.headRow !== null && view.getRowTop(section.headRow) < view.scrollTop;
   toggleSection(section);
   focusLog();
   if (wasAbove && section.headRow !== null) {
@@ -551,8 +548,9 @@ function copyLineLink() {
     line.stepNumber !== null && line.stepLine !== null
       ? formatLogLineHash({ stepNumber: line.stepNumber, stepLine: line.stepLine })
       : '';
+  const { nameWithOwner, runId, job } = props;
   void navigator.clipboard.writeText(
-    `${getGitHubUrl(getWorkflowRunPath(props.nameWithOwner, props.runId, props.job.id))}${hash}`,
+    `${getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId, jobId: job.id }))}${hash}`,
   );
 }
 
@@ -562,7 +560,7 @@ function moveToMapped(y: number) {
     cursor.value = entry.index;
   }
 
-  view.scrollTo(y - view.viewportHeight.value / 2);
+  view.scrollTo(y - view.viewportHeight / 2);
 }
 
 /** A line clicked takes the cursor, unless the click ended a selection. */
@@ -704,8 +702,8 @@ function measureCharacterWidth() {
             ref="list"
             :class="[css.workflowJobLog_list, wrap && css.workflowJobLog_list_wrapped]"
             :style="{
-              paddingTop: `${view.getRowTop(view.start.value)}px`,
-              paddingBottom: `${view.totalHeight.value - view.getRowTop(view.end.value)}px`,
+              paddingTop: `${view.getRowTop(view.start)}px`,
+              paddingBottom: `${view.totalHeight - view.getRowTop(view.end)}px`,
             }"
             :aria-label="job.name"
           >
@@ -716,7 +714,7 @@ function measureCharacterWidth() {
               <li
                 v-if="shown.kind === 'step'"
                 :class="css.workflowJobLog_step"
-                :style="{ width: `${view.viewportWidth.value}px` }"
+                :style="{ width: `${view.viewportWidth}px` }"
                 tid="workflow-log-step"
               >
                 <WorkflowLogStepRow
@@ -769,7 +767,7 @@ function measureCharacterWidth() {
               <li
                 v-else
                 :class="css.workflowJobLog_end"
-                :style="{ width: `${view.viewportWidth.value}px` }"
+                :style="{ width: `${view.viewportWidth}px` }"
                 tid="workflow-log-end"
               >
                 <CircleAlert
@@ -785,7 +783,7 @@ function measureCharacterWidth() {
           v-if="stickySection"
           :class="css.workflowJobLog_sticky"
           :style="{
-            width: `${view.viewportWidth.value}px`,
+            width: `${view.viewportWidth}px`,
             transform: stickyOffset < 0 ? `translateY(${stickyOffset}px)` : undefined,
           }"
           tid="workflow-log-sticky"
@@ -798,9 +796,9 @@ function measureCharacterWidth() {
         </div>
       </div>
       <WorkflowLogMap
-        :total="view.totalHeight.value"
-        :view-top="view.scrollTop.value"
-        :view-height="view.viewportHeight.value"
+        :total="view.totalHeight"
+        :view-top="view.scrollTop"
+        :view-height="view.viewportHeight"
         :steps="mapSteps"
         :errors="mapErrors"
         :cursor="mapCursor"
@@ -954,20 +952,20 @@ function measureCharacterWidth() {
 .workflowJobLog_number {
   flex: none;
   width: 52px;
-  margin-right: 14px;
+  margin-right: $spacing-14;
   text-align: right;
 }
 
 .workflowJobLog_time {
   flex: none;
   width: 56px;
-  margin-right: 14px;
+  margin-right: $spacing-14;
 }
 
 .workflowJobLog_text {
   flex: 1;
   min-width: 0;
-  padding-right: 12px;
+  padding-right: $spacing-12;
   white-space: pre;
 }
 

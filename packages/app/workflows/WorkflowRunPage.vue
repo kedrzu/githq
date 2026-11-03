@@ -15,6 +15,7 @@ import {
   getWorkflowRunPath,
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
+import { goBack } from '@/utils/goBack.js';
 
 import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
 import { getRefKind } from './utils/getRefKind.js';
@@ -55,11 +56,11 @@ const model = computed(() =>
 );
 // Only with the columns shown: a run GitHub no longer shows reads no log.
 const logPane = computed(() =>
-  getWorkflowLogPane(
-    model.value.body.kind === 'jobs' ? model.value.selectedJob : null,
-    job => store.getLog(nameWithOwner, job.id, job.steps),
-    now.value,
-  ),
+  getWorkflowLogPane({
+    job: model.value.body.kind === 'jobs' ? model.value.selectedJob : null,
+    readLog: job => store.getLog({ nameWithOwner, jobId: job.id, steps: job.steps }),
+    now: now.value,
+  }),
 );
 const logNotThereYet = computed(() => logPane.value.kind === 'loading' && logPane.value.notThereYet === true);
 const lineAddress = computed(() => (route.name === 'workflow-run-job' ? parseLogLineHash(route.hash) : null));
@@ -115,7 +116,7 @@ function scheduleRefresh() {
     store.refresh(nameWithOwner, runId);
     const pane = logPane.value;
     if (logNotThereYet.value && pane.job) {
-      store.retry(nameWithOwner, pane.job.id, pane.job.steps);
+      store.retry({ nameWithOwner, jobId: pane.job.id, steps: pane.job.steps });
     }
 
     scheduleRefresh();
@@ -123,28 +124,24 @@ function scheduleRefresh() {
 }
 
 function selectJob(job: GitHubWorkflowJob) {
-  void router.replace(getWorkflowRunPath(nameWithOwner, runId, job.id));
+  void router.replace(getWorkflowRunPath({ nameWithOwner, runId, jobId: job.id }));
 }
 
 function retry() {
   const pane = logPane.value;
   if (pane.kind === 'failed') {
-    store.retry(nameWithOwner, pane.job.id, pane.job.steps);
+    store.retry({ nameWithOwner, jobId: pane.job.id, steps: pane.job.steps });
   } else {
     store.refresh(nameWithOwner, runId);
   }
 }
 
 function openOnGitHub() {
-  browser.openInNewTab(getGitHubUrl(getWorkflowRunPath(nameWithOwner, runId)));
+  browser.openInNewTab(getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId })));
 }
 
 function close() {
-  if (router.options.history.state.back) {
-    router.back();
-  } else {
-    void router.replace(getRepositoryPath(nameWithOwner, 'workflows'));
-  }
+  goBack(router, getRepositoryPath(nameWithOwner, 'workflows'));
 }
 </script>
 

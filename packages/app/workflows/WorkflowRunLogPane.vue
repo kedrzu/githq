@@ -10,9 +10,10 @@ import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
+import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
-import { getJobMark } from './buildWorkflowRun.js';
 import type { WorkflowLogPane } from './buildWorkflowRun.js';
+import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowJobLog from './WorkflowJobLog.vue';
@@ -49,7 +50,6 @@ interface LogMessage {
   readonly gitHubLabel: string;
 }
 
-const DAY = 24 * 60 * 60_000;
 /** What GitHub keeps logs for by default (actions D3); a repository can set otherwise, and githq can't see it. */
 const RETENTION_DAYS = 90;
 const PLACEHOLDER_LINES = [62, 48, 71, 35, 55, 80, 44, 66, 30, 58, 74, 40];
@@ -124,7 +124,7 @@ function getRunningMessage(pane: Extract<WorkflowLogPane, { kind: 'running' }>):
 
 function getGoneMessage(pane: Extract<WorkflowLogPane, { kind: 'gone' }>): LogMessage {
   const days =
-    props.runCreatedAt === null ? 0 : Math.max(0, Math.floor((props.now - Date.parse(props.runCreatedAt)) / DAY));
+    props.runCreatedAt === null ? 0 : (getElapsedUnit(props.now - Date.parse(props.runCreatedAt), ['day'])?.count ?? 0);
   const failedStep = pane.job.steps.find(step => getJobMark(step) === 'failed');
   const retention = days >= RETENTION_DAYS ? t(l.goneOld, { days }) : t(l.goneYoung);
   return {

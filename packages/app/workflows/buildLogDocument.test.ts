@@ -148,36 +148,36 @@ test('J/K go line by line across steps, stop at the ends, and from a folded step
     const open = document(new Set());
     const textOf = (index: number | null) => (index === null ? null : (LOG.lines[index]?.text ?? null));
 
-    expect(textOf(getAdjacentLine(open, 3, 1))).toBe('e');
-    expect(textOf(getAdjacentLine(open, 4, 1))).toBe('f');
-    expect(textOf(getAdjacentLine(open, 5, -1))).toBe('e');
-    expect(getAdjacentLine(open, 0, -1)).toBeNull();
-    expect(getAdjacentLine(open, LOG.lines.length - 1, 1)).toBeNull();
+    expect(textOf(getAdjacentLine({ document: open, index: 3, by: 1 }))).toBe('e');
+    expect(textOf(getAdjacentLine({ document: open, index: 4, by: 1 }))).toBe('f');
+    expect(textOf(getAdjacentLine({ document: open, index: 5, by: -1 }))).toBe('e');
+    expect(getAdjacentLine({ document: open, index: 0, by: -1 })).toBeNull();
+    expect(getAdjacentLine({ document: open, index: LOG.lines.length - 1, by: 1 })).toBeNull();
 
     const folded = document(new Set([2]));
-    expect(textOf(getAdjacentLine(folded, 3, 1))).toBe('f');
-    expect(textOf(getAdjacentLine(folded, 4, -1))).toBe('c');
+    expect(textOf(getAdjacentLine({ document: folded, index: 3, by: 1 }))).toBe('f');
+    expect(textOf(getAdjacentLine({ document: folded, index: 4, by: -1 }))).toBe('c');
 });
 
 test('⇧J/⇧K go to the first line of the next or previous step with lines, skipping a skipped one', () => {
     const built = document(new Set());
     const textOf = (index: number | null) => (index === null ? null : (LOG.lines[index]?.text ?? null));
 
-    expect(textOf(getAdjacentStepLine(built, 3, 1))).toBe('f');
-    expect(textOf(getAdjacentStepLine(built, 5, -1))).toBe('d');
-    expect(getAdjacentStepLine(built, 9, 1)).toBeNull();
-    expect(getAdjacentStepLine(built, 0, -1)).toBeNull();
+    expect(textOf(getAdjacentStepLine({ document: built, index: 3, by: 1 }))).toBe('f');
+    expect(textOf(getAdjacentStepLine({ document: built, index: 5, by: -1 }))).toBe('d');
+    expect(getAdjacentStepLine({ document: built, index: 9, by: 1 })).toBeNull();
+    expect(getAdjacentStepLine({ document: built, index: 0, by: -1 })).toBeNull();
 });
 
 test('E/⇧E go to the next or previous error, none past the ends; the toolbar counts where the cursor is', () => {
     const first = 6;
     const second = 8;
 
-    expect(getAdjacentError(LOG, 0, 1)).toBe(first);
-    expect(getAdjacentError(LOG, first, 1)).toBe(second);
-    expect(getAdjacentError(LOG, second, 1)).toBeNull();
-    expect(getAdjacentError(LOG, second, -1)).toBe(first);
-    expect(getAdjacentError(LOG, first, -1)).toBeNull();
+    expect(getAdjacentError({ log: LOG, index: 0, by: 1 })).toBe(first);
+    expect(getAdjacentError({ log: LOG, index: first, by: 1 })).toBe(second);
+    expect(getAdjacentError({ log: LOG, index: second, by: 1 })).toBeNull();
+    expect(getAdjacentError({ log: LOG, index: second, by: -1 })).toBe(first);
+    expect(getAdjacentError({ log: LOG, index: first, by: -1 })).toBeNull();
 
     expect(getErrorPosition(LOG, 0)).toBe(1);
     expect(getErrorPosition(LOG, first)).toBe(1);

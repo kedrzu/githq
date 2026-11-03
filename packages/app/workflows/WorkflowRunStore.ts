@@ -85,13 +85,33 @@ interface RunSession {
     readonly logs: Map<string, ShallowRef<WorkflowLogState>>;
 }
 
-/** Which job's log. */
-interface LogParams {
-    readonly current: RunSession;
-    readonly state: ShallowRef<WorkflowLogState>;
+/** Which job's log to read: also what {@link WorkflowRunStore}'s `retry` takes. */
+export interface GetLogParams {
+    /** `owner/name`. */
     readonly nameWithOwner: string;
     readonly jobId: number;
     readonly steps: readonly GitHubWorkflowStep[];
+}
+
+/** Which job's log is being read, for whom, and where it goes. */
+interface LogParams extends GetLogParams {
+    readonly current: RunSession;
+    readonly state: ShallowRef<WorkflowLogState>;
+}
+
+/** Whose run, or jobs of a run, to open. */
+interface OpenRunParams {
+    readonly current: RunSession;
+    readonly nameWithOwner: string;
+    readonly runId: number;
+}
+
+/** A conditional read to open, unless it is known already. */
+interface OpenParams<T> {
+    readonly current: RunSession;
+    readonly reads: Map<string, ConditionalRead<T>>;
+    readonly key: string;
+    readonly load: ConditionalRead<T>['load'];
 }
 
 const LOADING: WorkflowLogState = { status: 'loading' };
@@ -148,7 +168,7 @@ export const WorkflowRunStore = defineService({
                 return { run: stored, status: 'loading', httpStatus: null };
             }
 
-            const { value, status, httpStatus } = openRun(current, nameWithOwner, runId).state.value;
+            const { value, status, httpStatus } = openRun({ current, nameWithOwner, runId }).state.value;
             return { run: value ?? stored, status, httpStatus };
         }
 
@@ -159,7 +179,7 @@ export const WorkflowRunStore = defineService({
                 return { jobs: [], status: 'loading', httpStatus: null };
             }
 
-            const { value, status, httpStatus } = openJobs(current, nameWithOwner, runId).state.value;
+            const { value, status, httpStatus } = openJobs({ current, nameWithOwner, runId }).state.value;
             return { jobs: value ?? [], status, httpStatus };
         }
 
@@ -170,13 +190,14 @@ export const WorkflowRunStore = defineService({
         function refresh(nameWithOwner: string, runId: number) {
             const current = sessionRef.value;
             if (current) {
-                ask(current, openRun(current, nameWithOwner, runId));
-                ask(current, openJobs(current, nameWithOwner, runId));
+                ask(current, openRun({ current, nameWithOwner, runId }));
+                ask(current, openJobs({ current, nameWithOwner, runId }));
             }
         }
 
         /** The job's log, read and parsed the first time it is asked. Reactive. */
-        function getLog(nameWithOwner: string, jobId: number, steps: readonly GitHubWorkflowStep[]): WorkflowLogState {
+        function getLog(params: GetLogParams): WorkflowLogState {
+            const { nameWithOwner, jobId, steps } = params;
             const current = sessionRef.value;
             if (!current) {
                 return LOADING;
@@ -205,36 +226,42 @@ export const WorkflowRunStore = defineService({
         }
 
         /** Reads the job's log again, whatever came of the last read; nothing while one is being read. */
-        function retry(nameWithOwner: string, jobId: number, steps: readonly GitHubWorkflowStep[]) {
+        function retry(params: GetLogParams) {
+            const { nameWithOwner, jobId, steps } = params;
             const current = sessionRef.value;
             const state = current?.logs.get(getKey(nameWithOwner, jobId));
             if (!current || !state) {
-                getLog(nameWithOwner, jobId, steps);
+                getLog(params);
             } else if (state.value.status !== 'loading') {
                 askLog({ current, state, nameWithOwner, jobId, steps });
             }
         }
 
-        function openRun(current: RunSession, nameWithOwner: string, runId: number) {
-            return open(current, current.runs, getKey(nameWithOwner, runId), async etag => {
-                const answer = await getWorkflowRun(current.rest, { nameWithOwner, runId, etag });
-                return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.run } : answer;
+        function openRun({ current, nameWithOwner, runId }: OpenRunParams) {
+            return open({
+                current,
+                reads: current.runs,
+                key: getKey(nameWithOwner, runId),
+                load: async etag => {
+                    const answer = await getWorkflowRun(current.rest, { nameWithOwner, runId, etag });
+                    return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.run } : answer;
+                },
             });
         }
 
-        function openJobs(current: RunSession, nameWithOwner: string, runId: number) {
-            return open(current, current.jobs, getKey(nameWithOwner, runId), async etag => {
-                const answer = await listRunJobs(current.rest, { nameWithOwner, runId, etag });
-                return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.jobs } : answer;
+        function openJobs({ current, nameWithOwner, runId }: OpenRunParams) {
+            return open({
+                current,
+                reads: current.jobs,
+                key: getKey(nameWithOwner, runId),
+                load: async etag => {
+                    const answer = await listRunJobs(current.rest, { nameWithOwner, runId, etag });
+                    return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.jobs } : answer;
+                },
             });
         }
 
-        function open<T>(
-            current: RunSession,
-            reads: Map<string, ConditionalRead<T>>,
-            key: string,
-            load: ConditionalRead<T>['load'],
-        ) {
+        function open<T>({ current, reads, key, load }: OpenParams<T>) {
             const known = reads.get(key);
             if (known) {
                 return known;
@@ -350,7 +377,7 @@ function findStoredRun(stored: RepositoryWorkflows | undefined, runId: number): 
     for (const { workflow, runs } of stored?.workflows ?? []) {
         const run = runs.find(candidate => candidate.id === runId);
         if (run) {
-            return { ...run, workflowName: workflow.name, headCommitMessage: null, actorLogin: null, runAttempt: null };
+            return { ...run, workflowName: workflow.name, headCommitMessage: null, runAttempt: null };
         }
     }
 

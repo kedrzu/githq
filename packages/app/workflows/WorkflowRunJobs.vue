@@ -7,8 +7,10 @@ import { computed } from 'vue';
 
 import { formatDuration } from '@/utils/formatDuration.js';
 
-import { getJobMark } from './buildWorkflowRun.js';
-import type { WorkflowJobCounts, WorkflowJobMark } from './buildWorkflowRun.js';
+import type { WorkflowJobCounts } from './buildWorkflowRun.js';
+import { formatTimeTaken } from './utils/formatTimeTaken.js';
+import { getJobMark } from './utils/getJobMark.js';
+import type { WorkflowJobMark } from './utils/getJobMark.js';
 import * as l from './WorkflowRunJobs.loc.js';
 
 const props = defineProps<{
@@ -69,7 +71,7 @@ function getTaken(mark: WorkflowJobMark, entry: GitHubWorkflowJob | GitHubWorkfl
     return formatDuration(props.now - Date.parse(startedAt));
   }
 
-  return completedAt === null ? null : formatDuration(Date.parse(completedAt) - Date.parse(startedAt));
+  return completedAt === null ? null : formatTimeTaken(startedAt, completedAt);
 }
 
 function describeJobTime(job: GitHubWorkflowJob) {
@@ -328,7 +330,7 @@ $jobs-width: 268px;
 
 .workflowRunJobs_step {
   display: flex;
-  gap: 7px;
+  gap: $spacing-7;
   align-items: center;
   padding: 3px $spacing-8 3px 29px;
   border-radius: 5px;

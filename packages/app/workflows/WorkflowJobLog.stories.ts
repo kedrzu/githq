@@ -147,7 +147,6 @@ function viewOf(steps: readonly GitHubWorkflowStep[], lines: readonly string[], 
         conclusion,
         startedAt: '2026-11-02T14:00:00Z',
         completedAt: '2026-11-02T14:02:00Z',
-        htmlUrl: 'https://github.com/fitloop/webapp/actions/runs/4821/job/103',
         steps,
     };
     return {

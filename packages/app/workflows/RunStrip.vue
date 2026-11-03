@@ -112,7 +112,7 @@ function getRunTitle(run: GitHubWorkflowRun) {
         <RouterLink
           v-if="tick.run"
           :class="css.runStrip_tick"
-          :to="getWorkflowRunPath(nameWithOwner, tick.run.id)"
+          :to="getWorkflowRunPath({ nameWithOwner, runId: tick.run.id })"
           :title="getRunTitle(tick.run)"
           tabindex="-1"
         >

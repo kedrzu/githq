@@ -31,7 +31,6 @@ const RUN: GitHubWorkflowRunDetail = {
     displayTitle: 'Move design tokens into the ui package',
     workflowName: 'Deploy',
     headCommitMessage: 'Move design tokens into the ui package\n\nAnd the rest.',
-    actorLogin: 'mlaine',
     runAttempt: 1,
 };
 
@@ -206,11 +205,11 @@ function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => Workflow
         nameWithOwner: 'fitloop/webapp',
         runId: RUN.id,
         model,
-        logPane: getWorkflowLogPane(
-            model.body.kind === 'jobs' ? model.selectedJob : null,
+        logPane: getWorkflowLogPane({
+            job: model.body.kind === 'jobs' ? model.selectedJob : null,
             readLog,
-            SAMPLE_WORKFLOWS_NOW,
-        ),
+            now: SAMPLE_WORKFLOWS_NOW,
+        }),
         gitRef: { name: 'main', kind: 'branch' } as const,
         workflowPath: null,
         stillBroken: false,
@@ -241,7 +240,6 @@ function job(
         conclusion,
         startedAt: status === 'waiting' ? null : ago(14 * MINUTE),
         completedAt: conclusion === null ? null : ago(14 * MINUTE - 151_000),
-        htmlUrl: `https://github.com/fitloop/webapp/actions/runs/4821/job/${id}`,
         steps,
     };
 }

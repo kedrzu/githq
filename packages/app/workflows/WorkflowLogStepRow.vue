@@ -4,10 +4,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, ChevronDown, ChevronRight, CircleSlash, CircleX } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import { formatDuration } from '@/utils/formatDuration.js';
-
 import type { LogSection } from './buildLogDocument.js';
-import { getJobMark } from './buildWorkflowRun.js';
+import { formatTimeTaken } from './utils/formatTimeTaken.js';
+import { getJobMark } from './utils/getJobMark.js';
 import * as l from './WorkflowLogStepRow.loc.js';
 
 const props = defineProps<{
@@ -47,9 +46,7 @@ const meta = computed(() => {
 });
 const taken = computed(() => {
   const { startedAt, completedAt } = props.section.step ?? {};
-  return startedAt && completedAt && props.range
-    ? formatDuration(Date.parse(completedAt) - Date.parse(startedAt))
-    : null;
+  return startedAt && completedAt && props.range ? formatTimeTaken(startedAt, completedAt) : null;
 });
 </script>
 

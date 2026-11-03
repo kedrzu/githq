@@ -1,6 +1,6 @@
 import type { GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 
-import { getJobMark } from './buildWorkflowRun.js';
+import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import type { JobLogLine, ParsedJobLog } from './utils/parseJobLog.js';
 
@@ -64,6 +64,30 @@ export interface GetLogOpeningParams {
     readonly jobFailed: boolean;
     /** The line the address names; `null` with none. */
     readonly address: LogLineAddress | null;
+}
+
+/** From which line, and which way, the cursor moves by one. */
+export interface GetAdjacentLineParams {
+    readonly document: LogDocument;
+    /** The line's index in the log's `lines`. */
+    readonly index: number;
+    readonly by: 1 | -1;
+}
+
+/** From which line, and which way, the cursor moves by a step. */
+export interface GetAdjacentStepLineParams {
+    readonly document: LogDocument;
+    /** The line's index in the log's `lines`. */
+    readonly index: number;
+    readonly by: 1 | -1;
+}
+
+/** From which line, and which way, the cursor moves to an error. */
+export interface GetAdjacentErrorParams {
+    readonly log: ParsedJobLog;
+    /** The line's index in the log's `lines`. */
+    readonly index: number;
+    readonly by: 1 | -1;
 }
 
 /**
@@ -183,7 +207,8 @@ export function getRowSection(document: LogDocument, row: number) {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getAdjacentLine(document: LogDocument, index: number, by: 1 | -1) {
+export function getAdjacentLine(params: GetAdjacentLineParams) {
+    const { document, index, by } = params;
     const section = getLineSection(document, index);
     if (section?.folded && section.lines) {
         return getLineNextTo(document, by > 0 ? section.lines.last : section.lines.first, by);
@@ -197,7 +222,8 @@ export function getAdjacentLine(document: LogDocument, index: number, by: 1 | -1
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getAdjacentStepLine(document: LogDocument, index: number, by: 1 | -1) {
+export function getAdjacentStepLine(params: GetAdjacentStepLineParams) {
+    const { document, index, by } = params;
     const steps = document.sections.filter(section => section.step !== null && section.lines !== null);
     const at = steps.findIndex(({ lines }) => lines !== null && lines.first <= index && index <= lines.last);
     // Before the first step: its next is the first, and it has no previous.
@@ -210,7 +236,8 @@ export function getAdjacentStepLine(document: LogDocument, index: number, by: 1 
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getAdjacentError(log: ParsedJobLog, index: number, by: 1 | -1) {
+export function getAdjacentError(params: GetAdjacentErrorParams) {
+    const { log, index, by } = params;
     const from = log.lines[index]?.number ?? 0;
     const number = by > 0 ? log.errors.find(error => error > from) : log.errors.findLast(error => error < from);
     return number === undefined ? null : findLineIndex(log.lines, number);

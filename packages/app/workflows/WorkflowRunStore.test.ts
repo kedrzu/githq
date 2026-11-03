@@ -48,14 +48,14 @@ test('a run is told as stored at once, then as read', async () => {
 
     expect(store.getRun(REPO, RUN)).toMatchObject({
         status: 'loading',
-        run: { id: RUN, workflowName: 'Stored name', headCommitMessage: null, actorLogin: null },
+        run: { id: RUN, workflowName: 'Stored name', headCommitMessage: null },
     });
 
     await session.clock.advance(0);
 
     expect(store.getRun(REPO, RUN)).toMatchObject({
         status: 'ready',
-        run: { id: RUN, workflowName: 'Deploy', headCommitMessage: `Commit of run ${RUN}`, actorLogin: 'monalisa' },
+        run: { id: RUN, workflowName: 'Deploy', headCommitMessage: `Commit of run ${RUN}` },
     });
     expect(runRequests(session.github.requests)).toEqual([`GET /repos/${REPO}/actions/runs/${RUN}`]);
 });
@@ -114,11 +114,11 @@ test('jobs are read once, refreshed conditionally: a 304 keeps them, a change is
 test('a log loads, is read once however often asked, and comes parsed', async () => {
     const { session, store } = setup(worldWithRun());
 
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'loading' });
-    store.getLog(REPO, JOB, STEPS);
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: 'loading' });
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     await session.clock.advance(0);
 
-    const state = store.getLog(REPO, JOB, STEPS);
+    const state = store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     if (state.status !== 'ready') {
         throw new Error(`Expected a read log, got ${state.status}`);
     }
@@ -136,10 +136,10 @@ test.each([404, 410])('a log answering %d is gone, and no failure', async status
     world.repository(REPO).logs.set(JOB, status);
     const { session, store } = setup(world);
 
-    store.getLog(REPO, JOB, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     await session.clock.advance(0);
 
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'gone' });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: 'gone' });
 });
 
 test('a log failing says with what, and retrying reads it, one read at a time', async () => {
@@ -147,17 +147,20 @@ test('a log failing says with what, and retrying reads it, one read at a time', 
     world.repository(REPO).logs.set(JOB, 502);
     const { session, store } = setup(world);
 
-    store.getLog(REPO, JOB, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     await session.clock.advance(0);
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'failed', httpStatus: 502 });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({
+        status: 'failed',
+        httpStatus: 502,
+    });
 
     world.repository(REPO).logs.set(JOB, LOG);
-    store.retry(REPO, JOB, STEPS);
-    store.retry(REPO, JOB, STEPS);
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'loading' });
+    store.retry({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
+    store.retry({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: 'loading' });
     await session.clock.advance(0);
 
-    expect(store.getLog(REPO, JOB, STEPS).status).toBe('ready');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status).toBe('ready');
     expect(logRequests(session.github.requests)).toHaveLength(2);
 });
 
@@ -169,19 +172,19 @@ test('of the logs read the 5 last asked stay; one dropped is read anew', async (
 
     const { session, store } = setup(world);
     for (const id of [1, 2, 3, 4, 5]) {
-        store.getLog(REPO, id, STEPS);
+        store.getLog({ nameWithOwner: REPO, jobId: id, steps: STEPS });
     }
 
     await session.clock.advance(0);
-    store.getLog(REPO, 1, STEPS);
-    store.getLog(REPO, 6, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: 1, steps: STEPS });
+    store.getLog({ nameWithOwner: REPO, jobId: 6, steps: STEPS });
     await session.clock.advance(0);
     expect(logRequests(session.github.requests)).toHaveLength(6);
 
-    expect(store.getLog(REPO, 1, STEPS).status).toBe('ready');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: 1, steps: STEPS }).status).toBe('ready');
     expect(logRequests(session.github.requests)).toHaveLength(6);
 
-    expect(store.getLog(REPO, 2, STEPS).status).toBe('loading');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: 2, steps: STEPS }).status).toBe('loading');
     await session.clock.advance(0);
     expect(logRequests(session.github.requests)).toHaveLength(7);
 });
@@ -196,8 +199,11 @@ test('with the core allowance used up nothing is asked, and each read says it wa
 
     expect(store.getRun(REPO, RUN)).toMatchObject({ status: 'failed', httpStatus: null });
     expect(store.getJobs(REPO, RUN)).toMatchObject({ status: 'failed', httpStatus: null });
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'failed', httpStatus: null });
-    store.retry(REPO, JOB, STEPS);
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({
+        status: 'failed',
+        httpStatus: null,
+    });
+    store.retry({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     store.refresh(REPO, RUN);
     await session.clock.advance(0);
 
@@ -206,48 +212,48 @@ test('with the core allowance used up nothing is asked, and each read says it wa
 
 test('an answer for an ended session is dropped, and what was read goes with the user', async () => {
     const { session, store } = setup(worldWithRun());
-    store.getLog(REPO, JOB, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     await session.clock.advance(0);
-    expect(store.getLog(REPO, JOB, STEPS).status).toBe('ready');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status).toBe('ready');
 
     // The first user's reads are held past their session's end, the next user's until the end of the test.
     const first = createPromise();
     const second = createPromise();
     let held = first;
     session.github.holdIf = () => held.promise;
-    store.getLog(REPO, 71, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: 71, steps: STEPS });
     store.getJobs(REPO, RUN);
     store.getRun(REPO, RUN);
 
     session.signInFromAnotherTab('someone-else');
     held = second;
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'loading' });
-    expect(store.getLog(REPO, 71, STEPS)).toEqual({ status: 'loading' });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: 'loading' });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: 71, steps: STEPS })).toEqual({ status: 'loading' });
     expect(store.getRun(REPO, RUN)).toMatchObject({ status: 'loading', run: null });
 
     first.resolve();
     await session.clock.advance(0);
-    expect(store.getLog(REPO, 71, STEPS)).toEqual({ status: 'loading' });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: 71, steps: STEPS })).toEqual({ status: 'loading' });
     expect(store.getJobs(REPO, RUN).jobs).toEqual([]);
     expect(store.getRun(REPO, RUN)).toMatchObject({ status: 'loading', run: null });
 
     second.resolve();
     await session.clock.advance(0);
-    expect(store.getLog(REPO, JOB, STEPS).status).toBe('ready');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status).toBe('ready');
 });
 
 test('signing out drops the logs, and nothing is read while signed out', async () => {
     const { session, store } = setup(worldWithRun());
-    store.getLog(REPO, JOB, STEPS);
+    store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     await session.clock.advance(0);
-    expect(store.getLog(REPO, JOB, STEPS).status).toBe('ready');
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status).toBe('ready');
 
     session.github.requests.length = 0;
     session.signOutFromAnotherTab();
 
-    expect(store.getLog(REPO, JOB, STEPS)).toEqual({ status: 'loading' });
+    expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: 'loading' });
     expect(store.getJobs(REPO, RUN)).toMatchObject({ status: 'loading', jobs: [] });
-    store.retry(REPO, JOB, STEPS);
+    store.retry({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
     store.refresh(REPO, RUN);
     await session.clock.advance(0);
     expect(session.github.requests.filter(({ operation }) => operation.includes('/actions/'))).toEqual([]);
@@ -255,7 +261,7 @@ test('signing out drops the logs, and nothing is read while signed out', async (
 
 test('`get…` may be called from a `computed`, which follows the read and the sign-out', async () => {
     const { session, store } = setup(worldWithRun());
-    const log = computed(() => store.getLog(REPO, JOB, STEPS).status);
+    const log = computed(() => store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status);
     const jobs = computed(() => store.getJobs(REPO, RUN).status);
 
     expect(log.value).toBe('loading');

@@ -124,8 +124,10 @@ test("a run's page is one instance for its jobs, another for another run", () =>
     expect(key('/acme/web/actions/runs/1/job/2')).toBe(key('/acme/web/actions/runs/1'));
     expect(key('/acme/web/actions/runs/2')).not.toBe(key('/acme/web/actions/runs/1'));
     expect(key('/acme/other/actions/runs/1')).not.toBe(key('/acme/web/actions/runs/1'));
-    expect(getWorkflowRunPath('acme/web', 1)).toBe('/acme/web/actions/runs/1');
-    expect(getWorkflowRunPath('acme/web', 1, 2)).toBe('/acme/web/actions/runs/1/job/2');
+    expect(getWorkflowRunPath({ nameWithOwner: 'acme/web', runId: 1 })).toBe('/acme/web/actions/runs/1');
+    expect(getWorkflowRunPath({ nameWithOwner: 'acme/web', runId: 1, jobId: 2 })).toBe(
+        '/acme/web/actions/runs/1/job/2',
+    );
 });
 
 test("an item's sub-addresses settle on the item's own, keeping the query and the fragment", () => {

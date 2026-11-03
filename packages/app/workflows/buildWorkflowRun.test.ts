@@ -3,8 +3,9 @@ import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { expect, mock, test } from 'bun:test';
 
-import { buildWorkflowRun, getJobMark, getWorkflowLogPane } from './buildWorkflowRun.js';
+import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
 import type { BuildWorkflowRunParams } from './buildWorkflowRun.js';
+import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobsState, WorkflowRunState } from './WorkflowRunStore.js';
 
 const RUN: GitHubWorkflowRunDetail = {
@@ -22,7 +23,6 @@ const RUN: GitHubWorkflowRunDetail = {
     displayTitle: 'Fix',
     workflowName: 'Deploy',
     headCommitMessage: null,
-    actorLogin: null,
     runAttempt: null,
 };
 const NOW = Date.parse('2026-11-02T12:00:00Z');
@@ -117,26 +117,30 @@ test('a job’s and a step’s mark: running, waiting, then by the conclusion', 
 test('a log is read only for a job that finished and ran', () => {
     const readLog = mock(() => ({ status: 'gone' }) as const);
 
-    expect(getWorkflowLogPane(null, readLog, NOW).kind).toBe('loading');
-    expect(getWorkflowLogPane(job(1, 'build', null), readLog, NOW).kind).toBe('running');
-    expect(getWorkflowLogPane(job(1, 'build', null, 'queued'), readLog, NOW).kind).toBe('running');
-    expect(getWorkflowLogPane(job(1, 'build', 'skipped'), readLog, NOW).kind).toBe('skipped');
+    expect(getWorkflowLogPane({ job: null, readLog: readLog, now: NOW }).kind).toBe('loading');
+    expect(getWorkflowLogPane({ job: job(1, 'build', null), readLog: readLog, now: NOW }).kind).toBe('running');
+    expect(getWorkflowLogPane({ job: job(1, 'build', null, 'queued'), readLog: readLog, now: NOW }).kind).toBe(
+        'running',
+    );
+    expect(getWorkflowLogPane({ job: job(1, 'build', 'skipped'), readLog: readLog, now: NOW }).kind).toBe('skipped');
     expect(readLog).not.toHaveBeenCalled();
 
-    expect(getWorkflowLogPane(job(1, 'build', 'failure'), readLog, NOW).kind).toBe('gone');
+    expect(getWorkflowLogPane({ job: job(1, 'build', 'failure'), readLog: readLog, now: NOW }).kind).toBe('gone');
     expect(readLog).toHaveBeenCalledTimes(1);
 });
 
 test('a finished job’s pane follows its log’s read', () => {
     const build1 = job(1, 'build', 'failure');
-    expect(getWorkflowLogPane(build1, () => ({ status: 'loading' }), NOW).kind).toBe('loading');
-    expect(getWorkflowLogPane(build1, () => ({ status: 'failed', httpStatus: 502 }), NOW)).toEqual({
+    expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'loading' }), now: NOW }).kind).toBe('loading');
+    expect(
+        getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'failed', httpStatus: 502 }), now: NOW }),
+    ).toEqual({
         kind: 'failed',
         job: build1,
         httpStatus: 502,
     });
     const log = { lines: [], errors: [], steps: [], characters: 0, hasErrorMarker: false };
-    expect(getWorkflowLogPane(build1, () => ({ status: 'ready', log }), NOW)).toEqual({
+    expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'ready', log }), now: NOW })).toEqual({
         kind: 'ready',
         job: build1,
         log,
@@ -150,9 +154,15 @@ test('GitHub having no log for a job finished under 5 minutes ago means not yet:
     });
     const readLog = () => ({ status: 'gone' }) as const;
 
-    expect(getWorkflowLogPane(finished(0), readLog, NOW)).toMatchObject({ kind: 'loading', notThereYet: true });
-    expect(getWorkflowLogPane(finished(4.9), readLog, NOW)).toMatchObject({ kind: 'loading', notThereYet: true });
-    expect(getWorkflowLogPane(finished(5), readLog, NOW).kind).toBe('gone');
+    expect(getWorkflowLogPane({ job: finished(0), readLog: readLog, now: NOW })).toMatchObject({
+        kind: 'loading',
+        notThereYet: true,
+    });
+    expect(getWorkflowLogPane({ job: finished(4.9), readLog: readLog, now: NOW })).toMatchObject({
+        kind: 'loading',
+        notThereYet: true,
+    });
+    expect(getWorkflowLogPane({ job: finished(5), readLog: readLog, now: NOW }).kind).toBe('gone');
 });
 
 function build(params: Partial<BuildWorkflowRunParams>) {
@@ -185,7 +195,6 @@ function job(
         conclusion,
         startedAt: null,
         completedAt: null,
-        htmlUrl: '',
         steps: [],
     } satisfies GitHubWorkflowJob;
 }

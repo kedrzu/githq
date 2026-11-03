@@ -8,6 +8,7 @@ import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest } from 
 import { computed, useId } from 'vue';
 
 import { formatAge } from '@/utils/formatAge.js';
+import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import RunStrip from './RunStrip.vue';
 import { useDescribeRunWhen } from './useDescribeRunWhen.js';
@@ -54,7 +55,6 @@ interface RowLook {
 
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
-const WEEK = 7 * DAY;
 /** From three weeks on a break is counted in weeks: "Broken for 19 days", then "Broken for 3 weeks". */
 const WEEKS_FROM = 3;
 
@@ -165,12 +165,12 @@ function describeBreak() {
     return breakStartKnown ? t(l.brokenFor, { age }) : t(l.brokenForOrMore, { age });
   }
 
-  const weeks = Math.floor(elapsed / WEEK);
+  const weeks = getElapsedUnit(elapsed, ['week'])?.count ?? 0;
   if (weeks >= WEEKS_FROM) {
     return t(breakStartKnown ? l.brokenForWeeks : l.brokenForWeeksOrMore, { count: weeks });
   }
 
-  const days = Math.floor(elapsed / DAY);
+  const days = getElapsedUnit(elapsed, ['day'])?.count ?? 0;
   return t(breakStartKnown ? l.brokenForDays : l.brokenForDaysOrMore, { count: days });
 }
 

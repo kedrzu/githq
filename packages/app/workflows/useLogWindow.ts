@@ -1,16 +1,18 @@
+import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
+import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import type { ComputedRef, Ref, ShallowRef } from 'vue';
+import type { MaybeRefOrGetter } from 'vue';
 
 /** What a log window is laid over. */
-export interface UseLogWindowParams {
+export interface UseLogWindowOptions {
     /** The scrolling element. */
-    readonly element: Readonly<ShallowRef<HTMLElement | null>>;
+    readonly element: MaybeRefOrGetter<HTMLElement | null>;
     /** Each row's height. */
-    readonly heights: Readonly<Ref<Float64Array>>;
+    readonly heights: MaybeRefOrGetter<Float64Array>;
     /** A row kept in the DOM wherever the view goes (a selection's start), within {@link MAX_PINNED_ROWS}. */
-    readonly pinnedRow: Readonly<Ref<number | null>>;
+    readonly pinnedRow: MaybeRefOrGetter<number | null>;
     /** How much of the top of the view is covered (the sticky header). */
-    readonly coveredTop: number;
+    readonly coveredTop: MaybeRefOrGetter<number>;
 }
 
 /**
@@ -20,18 +22,18 @@ export interface UseLogWindowParams {
 export type LogRevealMode = 'nearest' | 'context' | 'top';
 
 /** A log's rows in view, as {@link useLogWindow} tells them. */
-export interface LogWindow {
+export interface LogWindowViewModel {
     /** The first row to render. */
-    readonly start: ComputedRef<number>;
+    readonly start: number;
     /** Past the last row to render. */
-    readonly end: ComputedRef<number>;
+    readonly end: number;
     /** The first row at least partly in view. */
-    readonly firstVisible: ComputedRef<number>;
-    readonly totalHeight: ComputedRef<number>;
-    readonly scrollTop: Readonly<Ref<number>>;
-    readonly viewportHeight: Readonly<Ref<number>>;
+    readonly firstVisible: number;
+    readonly totalHeight: number;
+    readonly scrollTop: number;
+    readonly viewportHeight: number;
     /** Inside the scrollbar, if there is one. */
-    readonly viewportWidth: Readonly<Ref<number>>;
+    readonly viewportWidth: number;
     getRowTop(row: number): number;
     getRowAt(y: number): number;
     reveal(row: number, mode: LogRevealMode): void;
@@ -56,8 +58,11 @@ const CONTEXT_POSITION = 0.8;
  * Tells which rows of a log are in view, by their heights, so only those (and a few around them) are in the DOM; and
  * moves the view. The rows' tops are worked out in one pass over the heights, which is what a change of them costs.
  */
-export function useLogWindow(params: UseLogWindowParams): LogWindow {
-    const { element, heights, pinnedRow, coveredTop } = params;
+export function useLogWindow(options: UseLogWindowOptions): LogWindowViewModel {
+    const element = makeRef(options.element);
+    const heights = makeRef(options.heights);
+    const pinnedRow = makeRef(options.pinnedRow);
+    const coveredTop = makeRef(options.coveredTop);
 
     const scrollTop = ref(0);
     const viewportHeight = ref(0);
@@ -116,7 +121,7 @@ export function useLogWindow(params: UseLogWindowParams): LogWindow {
     });
     onBeforeUnmount(() => observer?.disconnect());
 
-    return {
+    return reactive<LogWindowViewModel>({
         start,
         end,
         firstVisible,
@@ -130,7 +135,7 @@ export function useLogWindow(params: UseLogWindowParams): LogWindow {
         scrollTo,
         keepInPlace,
         onScroll,
-    };
+    });
 
     function getRowTop(row: number) {
         return tops.value[row] ?? 0;
@@ -161,7 +166,7 @@ export function useLogWindow(params: UseLogWindowParams): LogWindow {
     function applyReveal(row: number, mode: LogRevealMode) {
         const top = getRowTop(row);
         const bottom = getRowTop(row + 1);
-        const isAbove = top < scrollTop.value + coveredTop && scrollTop.value > 0;
+        const isAbove = top < scrollTop.value + coveredTop.value && scrollTop.value > 0;
         const isBelow = bottom > scrollTop.value + viewportHeight.value;
         switch (mode) {
             case 'top':
@@ -175,7 +180,7 @@ export function useLogWindow(params: UseLogWindowParams): LogWindow {
                 break;
             case 'nearest':
                 if (isAbove) {
-                    moveTo(top - coveredTop);
+                    moveTo(top - coveredTop.value);
                 } else if (isBelow) {
                     moveTo(bottom - viewportHeight.value);
                 }

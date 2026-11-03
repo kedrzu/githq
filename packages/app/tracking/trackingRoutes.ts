@@ -58,11 +58,16 @@ export const REPOSITORY_SETTINGS_SECTIONS = {
 /** A section of a tracked repository's settings page. */
 export type RepositorySettingsSection = keyof typeof REPOSITORY_SETTINGS_SECTIONS;
 
+/** What {@link getRouteNameWithOwner} reads of a route. */
+export interface GetRouteNameWithOwnerParams {
+    readonly params: Readonly<Record<string, unknown>>;
+}
+
 /**
  * The `owner/name` a repository's route names.
  * @util
  */
-export function getRouteNameWithOwner(route: { readonly params: Readonly<Record<string, unknown>> }) {
+export function getRouteNameWithOwner(route: GetRouteNameWithOwnerParams) {
     return `${String(route.params.owner)}/${String(route.params.name)}`;
 }
 
@@ -145,13 +150,22 @@ export function getRepositoryPath(nameWithOwner: string, tab: RepositoryTab = 'a
     return tab === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_TAB_SEGMENTS[tab]}`;
 }
 
+/** Which run's address, and of which of its jobs. */
+export interface GetWorkflowRunPathParams {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    readonly runId: number;
+    readonly jobId?: number;
+}
+
 /**
  * The address of a workflow's run, as on GitHub (`/owner/name/actions/runs/123`), or of one of its jobs
  * (`/owner/name/actions/runs/123/job/456`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getWorkflowRunPath(nameWithOwner: string, runId: number, jobId?: number) {
+export function getWorkflowRunPath(params: GetWorkflowRunPathParams) {
+    const { nameWithOwner, runId, jobId } = params;
     const path = `/${nameWithOwner}/actions/runs/${runId}`;
     return jobId === undefined ? path : `${path}/job/${jobId}`;
 }
@@ -167,12 +181,17 @@ export function getRepositorySettingsPath(nameWithOwner: string, section?: Repos
     return section ? `${path}#${REPOSITORY_SETTINGS_SECTIONS[section]}` : path;
 }
 
+/** What {@link isWorkflowRunRoute} reads of a route. */
+export interface IsWorkflowRunRouteParams {
+    readonly name?: unknown;
+}
+
 /**
  * Whether a route shows a run of a repository's workflows.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function isWorkflowRunRoute(route: { readonly name?: unknown }) {
+export function isWorkflowRunRoute(route: IsWorkflowRunRouteParams) {
     return route.name === 'workflow-run' || route.name === 'workflow-run-job';
 }
 

@@ -79,7 +79,9 @@ const title = computed(() => {
     : t(l.title, { workflow: run.workflowName, number: run.runNumber });
 });
 const mark = computed(() => (props.model.run ? describeWorkflowRun(props.model.run, props.now).mark : 'none'));
-const gitHubUrl = computed(() => getGitHubUrl(getWorkflowRunPath(props.nameWithOwner, props.runId)));
+const gitHubUrl = computed(() =>
+  getGitHubUrl(getWorkflowRunPath({ nameWithOwner: props.nameWithOwner, runId: props.runId })),
+);
 const showsColumns = computed(() => props.model.body.kind === 'jobs' || props.model.body.kind === 'loading');
 const message = computed((): RunMessage | null => {
   const { body } = props.model;
@@ -343,7 +345,7 @@ function getInvalidFileMessage(): RunMessage {
   gap: $spacing-10;
   align-items: center;
   height: $list-header-height;
-  padding: 0 14px 0 $spacing-16;
+  padding: 0 $spacing-14 0 $spacing-16;
   font-size: $font-size-sm;
   border-bottom: 1px solid $color-border;
 }

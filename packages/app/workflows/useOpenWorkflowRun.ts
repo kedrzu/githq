@@ -13,6 +13,6 @@ export function useOpenWorkflowRun() {
     return openWorkflowRun;
 
     function openWorkflowRun(nameWithOwner: string, run: GitHubWorkflowRun) {
-        void router.push(getWorkflowRunPath(nameWithOwner, run.id));
+        void router.push(getWorkflowRunPath({ nameWithOwner, runId: run.id }));
     }
 }

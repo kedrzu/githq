@@ -318,7 +318,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
 .brokenWorkflowsView_message {
   display: flex;
   justify-content: center;
-  padding: 96px $spacing-16 48px;
+  padding: $spacing-96 $spacing-16 $spacing-48;
 }
 
 .brokenWorkflowsView_group {

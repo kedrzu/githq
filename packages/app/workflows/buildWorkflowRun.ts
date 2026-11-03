@@ -2,12 +2,11 @@ import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { getJobMark } from './utils/getJobMark.js';
+import type { WorkflowJobMark } from './utils/getJobMark.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 import type { ParsedJobLog } from './utils/parseJobLog.js';
 import type { WorkflowJobsState, WorkflowLogState, WorkflowRunState } from './WorkflowRunStore.js';
-
-/** How a job or a step stands: by its status while it has not finished, by its conclusion after. */
-export type WorkflowJobMark = 'failed' | 'running' | 'waiting' | 'skipped' | 'passed' | 'none';
 
 /** What the page shows under the run's summary. */
 export type WorkflowRunBody =
@@ -68,6 +67,15 @@ export type WorkflowLogPane =
     | { readonly kind: 'failed'; readonly job: GitHubWorkflowJob; readonly httpStatus: number | null }
     | { readonly kind: 'ready'; readonly job: GitHubWorkflowJob; readonly log: ParsedJobLog };
 
+/** What decides a job's log pane. */
+export interface GetWorkflowLogPaneParams {
+    readonly job: GitHubWorkflowJob | null;
+    /** Starts the read the first time it is asked. */
+    readonly readLog: (job: GitHubWorkflowJob) => WorkflowLogState;
+    /** Epoch ms "just finished" is counted from. */
+    readonly now: number;
+}
+
 /** How long after a job finishes GitHub saying it has no log means "not yet", not "no longer". */
 const LOG_LANDING_MS = 5 * 60_000;
 
@@ -113,34 +121,11 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
 }
 
 /**
- * How a job or a step stands.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getJobMark(job: Pick<GitHubWorkflowJob, 'status' | 'conclusion'>): WorkflowJobMark {
-    if (job.status !== 'completed') {
-        return job.status === 'in_progress' ? 'running' : 'waiting';
-    }
-
-    if (job.conclusion === 'skipped') {
-        return 'skipped';
-    }
-
-    return getRunVerdict(job) ?? 'none';
-}
-
-/**
  * What a job's log pane shows. Reads the log only for a job that finished and ran: a running job's may answer 404, which
  * would read as gone.
- *
- * @param readLog Starts the read the first time it is asked.
- * @param now Epoch ms "just finished" is counted from.
  */
-export function getWorkflowLogPane(
-    job: GitHubWorkflowJob | null,
-    readLog: (job: GitHubWorkflowJob) => WorkflowLogState,
-    now: number,
-): WorkflowLogPane {
+export function getWorkflowLogPane(params: GetWorkflowLogPaneParams): WorkflowLogPane {
+    const { job, readLog, now } = params;
     if (!job) {
         return { kind: 'loading', job };
     }

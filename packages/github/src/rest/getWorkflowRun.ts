@@ -13,8 +13,6 @@ export interface GitHubWorkflowRunDetail extends GitHubWorkflowRun {
     readonly workflowName: string | null;
     /** The whole message of the commit it ran on; `null` when GitHub gives none. */
     readonly headCommitMessage: string | null;
-    /** Who started it; `null` when GitHub gives none. */
-    readonly actorLogin: string | null;
     /** Which attempt this is, from 1; `null` when GitHub gives none. */
     readonly runAttempt: number | null;
 }
@@ -66,7 +64,6 @@ export async function getWorkflowRun(
                 ...run,
                 workflowName: isPlainObject(body) && typeof body.name === 'string' ? body.name : null,
                 headCommitMessage: readHeadCommitMessage(body),
-                actorLogin: readActorLogin(body),
                 runAttempt: isPlainObject(body) && typeof body.run_attempt === 'number' ? body.run_attempt : null,
             },
         };
@@ -85,12 +82,4 @@ function readHeadCommitMessage(body: unknown) {
     }
 
     return typeof body.head_commit.message === 'string' ? body.head_commit.message : null;
-}
-
-function readActorLogin(body: unknown) {
-    if (!isPlainObject(body) || !isPlainObject(body.actor)) {
-        return null;
-    }
-
-    return typeof body.actor.login === 'string' ? body.actor.login : null;
 }
