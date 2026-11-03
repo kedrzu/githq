@@ -41,27 +41,10 @@ export const LocalPreferences = defineService({
             serialize: value => value,
             deserialize: raw => ITEM_ARRANGEMENTS.find(candidate => candidate === raw) ?? 'panel',
         });
-        const sidebarCollapsed = storageRef<boolean>({
-            key: SIDEBAR_COLLAPSED_KEY,
-            storage,
-            default: () => false,
-            serialize: String,
-            deserialize: raw => raw === 'true',
-        });
-        const logWrap = storageRef<boolean>({
-            key: LOG_WRAP_KEY,
-            storage,
-            default: () => false,
-            serialize: String,
-            deserialize: raw => raw === 'true',
-        });
-        const logTimes = storageRef<boolean>({
-            key: LOG_TIMES_KEY,
-            storage,
-            default: () => false,
-            serialize: String,
-            deserialize: raw => raw === 'true',
-        });
+        const flags = new Map<string, StorageRef<boolean>>();
+        const sidebarCollapsed = getFlag(SIDEBAR_COLLAPSED_KEY);
+        const logWrap = getFlag(LOG_WRAP_KEY);
+        const logTimes = getFlag(LOG_TIMES_KEY);
         const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -72,16 +55,10 @@ export const LocalPreferences = defineService({
                 itemArrangement.reload();
             }
 
-            if (key === null || key === SIDEBAR_COLLAPSED_KEY) {
-                sidebarCollapsed.reload();
-            }
-
-            if (key === null || key === LOG_WRAP_KEY) {
-                logWrap.reload();
-            }
-
-            if (key === null || key === LOG_TIMES_KEY) {
-                logTimes.reload();
+            for (const [flagKey, flag] of flags) {
+                if (key === null || key === flagKey) {
+                    flag.reload();
+                }
             }
 
             for (const [panelKey, size] of panelSizes) {
@@ -103,6 +80,19 @@ export const LocalPreferences = defineService({
             getPanelWidth,
             getPanelShare,
         };
+
+        /** A yes or no kept under `key`, no by default. */
+        function getFlag(key: string) {
+            const flag = storageRef<boolean>({
+                key,
+                storage,
+                default: () => false,
+                serialize: String,
+                deserialize: raw => raw === 'true',
+            });
+            flags.set(key, flag);
+            return flag;
+        }
 
         /**
          * The width in pixels the user dragged the panel `panel` to (`githq.panelWidth.<panel>`); `null` while none is

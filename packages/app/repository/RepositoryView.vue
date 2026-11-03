@@ -44,6 +44,7 @@ import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
+import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 
@@ -254,7 +255,7 @@ const others = computed(() => {
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
-const workflowsUrl = computed(() => `${githubUrl.value}/actions`);
+const workflowsUrl = computed(() => getGitHubUrl(getRepositoryPath(props.nameWithOwner, 'workflows')));
 const columnGitHubUrl = computed(() => {
   switch (section.value) {
     case 'commits':

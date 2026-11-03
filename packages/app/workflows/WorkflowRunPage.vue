@@ -1,6 +1,7 @@
 <!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line. The job the address names is selected, else the first failed; selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted, onScopeDispose, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -10,7 +11,6 @@ import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import {
-  getGitHubUrl,
   getRepositoryPath,
   getRouteNameWithOwner,
   getWorkflowRunPath,
@@ -75,8 +75,12 @@ const pageFreshness = computed((): Freshness | null => {
       const { checkedAt } = store.getJobs(nameWithOwner, runId);
       return checkedAt === null ? null : { kind: 'statusChecked', checkedAt };
     }
-    default:
+    case 'skipped':
+    case 'gone':
+    case 'ready':
       return null;
+    default:
+      return assertNever(pane);
   }
 });
 const lineAddress = computed(() => (route.name === 'workflow-run-job' ? parseLogLineHash(route.hash) : null));
@@ -116,7 +120,7 @@ watch(
 watch(
   pageFreshness,
   freshness => {
-    store.pageFreshness.value = freshness;
+    store.setPageFreshness(freshness);
   },
   { immediate: true },
 );
@@ -133,7 +137,7 @@ watch(
 );
 onScopeDispose(() => {
   cancelRefresh?.();
-  store.pageFreshness.value = null;
+  store.setPageFreshness(null);
 });
 onMounted(() => store.refresh(nameWithOwner, runId));
 
@@ -162,10 +166,6 @@ function retry() {
   }
 }
 
-function openOnGitHub() {
-  browser.openInNewTab(getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId, jobId: model.value.selectedJob?.id })));
-}
-
 function close() {
   goBack(router, getRepositoryPath(nameWithOwner, 'workflows'));
 }
@@ -184,7 +184,7 @@ function close() {
     :now="now"
     @select-job="selectJob"
     @retry="retry"
-    @open-on-git-hub="openOnGitHub"
+    @open-on-git-hub="browser.openInNewTab($event)"
     @close="close"
   />
 </template>

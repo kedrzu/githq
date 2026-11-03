@@ -277,6 +277,13 @@ $landing-reveal-stagger: 80ms;
     border-radius: 50%;
 }
 
+// A bar standing in for text on its way.
+@mixin placeholder-bar {
+    height: 10px;
+    background: $color-bg-3;
+    border-radius: $radius-sm;
+}
+
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.
 @mixin list-header {
     display: flex;

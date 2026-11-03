@@ -1,5 +1,6 @@
 <!-- A step's head in the log viewer (actions W4a): whether it is folded and how it went, its name, the lines it holds and how long it took. Pressing it folds or opens the step; a step with no lines has nothing to fold. The same in the document and stuck to the top of the view. -->
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, ChevronDown, ChevronRight, CircleSlash, CircleX } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -31,8 +32,13 @@ const icon = computed(() => {
       return CircleX;
     case 'passed':
       return Check;
-    default:
+    case 'running':
+    case 'waiting':
+    case 'skipped':
+    case 'none':
       return CircleSlash;
+    default:
+      return assertNever(mark.value);
   }
 });
 const meta = computed(() => {
@@ -104,8 +110,7 @@ const taken = computed(() => {
 }
 
 .workflowLogStepRow_cursor {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+  @include row-selected;
 }
 
 .workflowLogStepRow_chevron,
@@ -145,7 +150,7 @@ const taken = computed(() => {
 .workflowLogStepRow_time {
   flex: none;
   font-family: $font-family-mono;
-  font-size: 11px;
+  font-size: $font-size-3xs;
   color: $color-fg-dim;
 }
 </style>

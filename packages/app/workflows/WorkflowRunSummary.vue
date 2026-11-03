@@ -189,9 +189,8 @@ const event = computed(() => {
 }
 
 .workflowRunSummary_placeholder {
+  @include placeholder-bar;
+
   width: 320px;
-  height: 10px;
-  background: $color-bg-3;
-  border-radius: $radius-sm;
 }
 </style>

@@ -298,10 +298,9 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
 }
 
 .workflowRunLogPane_placeholder {
+  @include placeholder-bar;
+
   flex: none;
-  height: 10px;
-  background: $color-bg-3;
-  border-radius: $radius-sm;
 }
 
 .workflowRunLogPane_message {

@@ -418,8 +418,11 @@ function getLinePrefix(line: JobLogLine) {
       return `${t(l.errorPrefix)} `;
     case 'warning':
       return `${t(l.warningPrefix)} `;
-    default:
+    case 'group':
+    case 'plain':
       return '';
+    default:
+      return assertNever(line.kind);
   }
 }
 
@@ -1042,7 +1045,7 @@ function measureCharacterWidth() {
 
 // `isolate`: what the character does to the direction of text ends at the end of this element, which it is alone in.
 .workflowJobLog_control {
-  padding-inline: 2px;
+  padding-inline: $spacing-2;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
   background: $color-bg-3;

@@ -258,7 +258,7 @@ function onKeydown(event: KeyboardEvent) {
 .workflowPatternEditor_syntax {
   flex: none;
   font-family: $font-family-mono;
-  font-size: 11px;
+  font-size: $font-size-3xs;
   color: $color-fg-dim;
   white-space: pre;
 }

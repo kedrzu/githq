@@ -8,6 +8,8 @@ import { readJobLog } from '@githq/github/rest/readJobLog.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import { createLruCache } from '@nzyme/utils/createLruCache.js';
+import type { LruCache } from '@nzyme/utils/createLruCache.js';
 import { shallowRef } from 'vue';
 import type { ShallowRef } from 'vue';
 
@@ -85,8 +87,7 @@ interface RunSession {
     readonly rest: GitHubRestRequester;
     readonly runs: Map<string, ConditionalRead<GitHubWorkflowRunDetail>>;
     readonly jobs: Map<string, ConditionalRead<readonly GitHubWorkflowJob[]>>;
-    /** The least recently asked first. */
-    readonly logs: Map<string, ShallowRef<WorkflowLogState>>;
+    readonly logs: LruCache<string, ShallowRef<WorkflowLogState>>;
 }
 
 /** Which job's log to read: also what {@link WorkflowRunStore}'s `retry` takes. */
@@ -141,6 +142,7 @@ export const WorkflowRunStore = defineService({
     },
     setup({ accounts, workflows, createRest, rateLimits, clock, logger }) {
         const sessionRef = shallowRef<RunSession | null>(null);
+        const pageFreshnessRef = shallowRef<Freshness | null>(null);
 
         accounts.onChange(account => {
             sessionRef.value = account
@@ -149,20 +151,27 @@ export const WorkflowRunStore = defineService({
                       rest: createRest(() => account.token),
                       runs: new Map(),
                       jobs: new Map(),
-                      logs: new Map(),
+                      logs: createLruCache({ maxSize: KEPT_LOGS }),
                   }
                 : null;
         });
 
         return {
             /** What the run's page shown says in the status bar instead of the workflows' poll (W4e, W4i, W4j); `null` if nothing. */
-            pageFreshness: shallowRef<Freshness | null>(null),
+            get pageFreshness() {
+                return pageFreshnessRef.value;
+            },
+            setPageFreshness,
             getRun,
             getJobs,
             refresh,
             getLog,
             retry,
         };
+
+        function setPageFreshness(freshness: Freshness | null) {
+            pageFreshnessRef.value = freshness;
+        }
 
         /** The run as the sync stored it, at once, then as read. Reactive. */
         function getRun(nameWithOwner: string, runId: number): WorkflowRunState {
@@ -210,21 +219,11 @@ export const WorkflowRunStore = defineService({
             const key = getKey(nameWithOwner, jobId);
             const known = current.logs.get(key);
             if (known) {
-                current.logs.delete(key);
-                current.logs.set(key, known);
                 return known.value;
             }
 
             const state = shallowRef(LOADING);
             current.logs.set(key, state);
-            for (const oldest of current.logs.keys()) {
-                if (current.logs.size <= KEPT_LOGS) {
-                    break;
-                }
-
-                current.logs.delete(oldest);
-            }
-
             askLog({ current, state, nameWithOwner, jobId, steps });
             return state.value;
         }
@@ -233,7 +232,7 @@ export const WorkflowRunStore = defineService({
         function retry(params: GetLogParams) {
             const { nameWithOwner, jobId, steps } = params;
             const current = sessionRef.value;
-            const state = current?.logs.get(getKey(nameWithOwner, jobId));
+            const state = current?.logs.cache.get(getKey(nameWithOwner, jobId));
             if (!current || !state) {
                 getLog(params);
             } else if (state.value.status !== 'loading') {

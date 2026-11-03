@@ -136,14 +136,19 @@ export function getWorkflowLogPane(params: GetWorkflowLogPaneParams): WorkflowLo
         return { kind: 'loading', job };
     }
 
-    switch (getJobMark(job)) {
+    const mark = getJobMark(job);
+    switch (mark) {
         case 'running':
         case 'waiting':
             return { kind: 'running', job };
         case 'skipped':
             return { kind: 'skipped', job };
-        default:
+        case 'failed':
+        case 'passed':
+        case 'none':
             return getReadPane(job, readLog(job), now);
+        default:
+            return assertNever(mark);
     }
 }
 

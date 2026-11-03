@@ -1,6 +1,7 @@
 <!-- The Jobs column of a run's page (actions W4a, `Workflow / Jobs`): how many jobs stand how, then the jobs — failed first — each with its state and how long it took, or its status. The selected job shows its steps, each with its state and time; a failed step and a running one stand out. Placeholder rows while the jobs are on their way (W4e). A click selects a job; the keys are the page's (⌥J/⌥K). -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleCheck, CircleDashed, CircleSlash, CircleX, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -83,8 +84,12 @@ function describeJobTime(job: GitHubWorkflowJob) {
       return t(l.skippedTime);
     case 'none':
       return job.conclusion;
-    default:
+    case 'failed':
+    case 'passed':
+    case 'running':
       return getTaken(mark, job);
+    default:
+      return assertNever(mark);
   }
 }
 
@@ -226,9 +231,7 @@ $jobs-width: 268px;
 }
 
 .workflowRunJobs_placeholder {
-  height: 10px;
-  background: $color-bg-3;
-  border-radius: $radius-sm;
+  @include placeholder-bar;
 }
 
 .workflowRunJobs_list {
@@ -365,7 +368,7 @@ $jobs-width: 268px;
 .workflowRunJobs_stepTime {
   flex: none;
   font-family: $font-family-mono;
-  font-size: 11px;
+  font-size: $font-size-3xs;
   color: $color-fg-dim;
 }
 </style>

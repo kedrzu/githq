@@ -49,7 +49,7 @@ const emit = defineEmits<{
   /** Enter or "Try again": the caller reads again what failed. */
   retry: [];
   /** O or a way to GitHub: the caller opens the selected job there, the run with none selected. */
-  openOnGitHub: [];
+  openOnGitHub: [url: string];
   /** Esc or the toolbar's close. */
   close: [];
 }>();
@@ -176,7 +176,7 @@ useCommands(() => [
     section: 'view',
     key: 'O',
     icon: Github,
-    run: () => emit('openOnGitHub'),
+    run: () => emit('openOnGitHub', gitHubUrl.value),
   },
   {
     id: 'workflowRun.back',
@@ -294,7 +294,7 @@ function getInvalidFileMessage(): RunMessage {
         :run-created-at="model.run?.createdAt ?? null"
         :now="now"
         @retry="emit('retry')"
-        @open-on-git-hub="emit('openOnGitHub')"
+        @open-on-git-hub="emit('openOnGitHub', gitHubUrl)"
       />
     </div>
     <div
@@ -326,7 +326,7 @@ function getInvalidFileMessage(): RunMessage {
             :icon="Github"
             kbd="O"
             aria-keyshortcuts="O"
-            @click="emit('openOnGitHub')"
+            @click="emit('openOnGitHub', gitHubUrl)"
           >
             {{ message.gitHubLabel }}
           </Button>
@@ -346,14 +346,10 @@ function getInvalidFileMessage(): RunMessage {
 }
 
 .workflowRunView_toolbar {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-14 0 $spacing-16;
+  @include list-header;
+
+  padding-right: $spacing-14;
   font-size: $font-size-sm;
-  border-bottom: 1px solid $color-border;
 }
 
 .workflowRunView_mark {

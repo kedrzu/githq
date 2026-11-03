@@ -130,7 +130,7 @@ const screenFreshness = computed((): Freshness => {
 
   const { owner, name, number } = route.params;
   if (isWorkflowRunRoute(route)) {
-    return workflowRuns.pageFreshness.value ?? sync.getRepositoryWorkflowsFreshness(getRouteNameWithOwner(route));
+    return workflowRuns.pageFreshness ?? sync.getRepositoryWorkflowsFreshness(getRouteNameWithOwner(route));
   }
 
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {
