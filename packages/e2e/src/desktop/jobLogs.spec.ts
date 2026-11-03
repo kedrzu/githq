@@ -46,10 +46,28 @@ test('what the native side answers is told as on the web: a refusal with its sta
     await expect(screen.message("The log of build didn't load")).toBeVisible();
     await expect(screen.root).toContainText(`GET …/jobs/${jobId}/logs → 502`);
 
-    // Past the limit, among others: the native side fails with a code, and the page has no status to tell.
+    // Out of reach: the native side fails with a code, and the page has no status to tell.
     native.jobLogs.delete(jobId);
     await page.reload();
     await expect(screen.root).toContainText(`GET …/jobs/${jobId}/logs → no answer`);
+
+    // Past the limit: not GitHub's doing, and nothing to try again.
+    native.jobLogFailures.set(jobId, 'tooLarge');
+    await page.reload();
+    await expect(screen.message('The log of build is too big to open here')).toBeVisible();
+    await expect(screen.root).not.toContainText("didn't answer");
+    await expect(screen.root.getByRole('button', { name: /Try again/u })).toHaveCount(0);
+    const reads = native.jobLogRequests.length;
+    await page.keyboard.press('Enter');
+    await expect(screen.message('The log of build is too big to open here')).toBeVisible();
+    expect(native.jobLogRequests).toHaveLength(reads);
+
+    // Turned down for another reason: the app says it did, and it can be tried again.
+    native.jobLogFailures.set(jobId, 'refused');
+    await page.reload();
+    await expect(screen.root).toContainText('githq refused this log');
+    await expect(screen.root.getByRole('button', { name: /Try again/u })).toBeVisible();
+    native.jobLogFailures.delete(jobId);
 
     native.jobLogs.set(jobId, { status: 410, headers: {}, text: '' });
     await page.reload();

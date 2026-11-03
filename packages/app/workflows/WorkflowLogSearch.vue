@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Search } from 'lucide-vue-next';
-import { computed, useTemplateRef } from 'vue';
+import { computed, onBeforeUnmount, useTemplateRef } from 'vue';
 
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Kbd from '@/components/Kbd.vue';
@@ -30,6 +30,8 @@ const emit = defineEmits<{
   previous: [];
   toggleOnly: [];
   close: [];
+  /** The field took or lost the focus; it lost it too as the bar goes. */
+  fieldFocus: [focused: boolean];
 }>();
 
 /** Past it the query scrolls in its field, and what stands beside it stays. */
@@ -66,6 +68,8 @@ const positionText = computed(() => {
     total: `${NUMBER_FORMAT.format(total.value)}${found.capped ? '+' : ''}`,
   });
 });
+
+onBeforeUnmount(() => emit('fieldFocus', false));
 
 defineExpose({
   /** Puts the cursor in the field, what is typed selected to type over. */
@@ -142,6 +146,8 @@ function onKeydown(event: KeyboardEvent) {
       tid="workflow-log-search-field"
       @input="onInput"
       @keydown="onKeydown"
+      @focus="emit('fieldFocus', true)"
+      @blur="emit('fieldFocus', false)"
     />
     <span
       v-if="onlyMatches"

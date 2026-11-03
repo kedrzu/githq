@@ -5,6 +5,8 @@ import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { createGitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { readJobLog } from '@githq/github/rest/readJobLog.js';
 
+import { JobLogRefusal } from '@/workflows/utils/JobLogRefusal.js';
+
 import type { JobLogAnswer, ReadJobLogParams } from './NativeBridge.js';
 import { withNativeJobLogs } from './withNativeJobLogs.js';
 
@@ -66,17 +68,28 @@ test('a refusal’s allowance reaches whoever keeps it, as on the web', async ()
     expect(allowances).toEqual([{ resource: 'core', limit: 5000, remaining: 0, resetAt: new Date(1_790_000_000_000) }]);
 });
 
-test.each(['tooLarge', 'refused', 'offline'])(
-    'the native side’s %s is a failure with no status to tell',
-    async code => {
-        const { rest } = setup(code);
+test('the native side unable to reach GitHub is a failure with no status to tell', async () => {
+    const { rest } = setup('offline');
 
-        const error: unknown = await readJobLog(rest, JOB).catch((caught: unknown) => caught);
+    const error: unknown = await readJobLog(rest, JOB).catch((caught: unknown) => caught);
 
-        expect(error).not.toBeInstanceOf(GitHubApiError);
-        expect(error).toBe(code);
-    },
-);
+    expect(error).not.toBeInstanceOf(GitHubApiError);
+    expect(error).toBe('offline');
+});
+
+test.each([
+    ['tooLarge', 'tooLarge'],
+    ['refused', 'refused'],
+    ['invalid', 'refused'],
+    ['failed', 'refused'],
+])('the native side’s %s is the app refusing the log: %s, GitHub having no part in it', async (code, reason) => {
+    const { rest } = setup(code);
+
+    const error: unknown = await readJobLog(rest, JOB).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(JobLogRefusal);
+    expect(error).toMatchObject({ reason });
+});
 
 /** The requester the app builds, over the desktop's browser, with the native side answering `answer` or failing with it. */
 function setup(answer: JobLogAnswer | string) {

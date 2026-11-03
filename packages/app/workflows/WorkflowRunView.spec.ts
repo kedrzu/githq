@@ -17,6 +17,8 @@ const {
     LogGone,
     LogLoading,
     LogNoAnswer,
+    LogRefused,
+    LogTooLarge,
     NoJobYet,
     NothingKnown,
     OtherJob,
@@ -177,6 +179,19 @@ test('W4i with no answer says that', async () => {
     await LogNoAnswer.run();
 
     await expect.element(page.getByText('GET …/jobs/103/logs → no answer')).toBeVisible();
+});
+
+test('a log too big to open: Enter reads nothing again; one the app refused, Enter tries again', async () => {
+    const retry = vi.fn();
+    await LogTooLarge.run({ args: { ...LogTooLarge.args, onRetry: retry } });
+    await expect.element(page.getByRole('heading', { name: 'The log of build is too big to open here' })).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    expect(retry).not.toHaveBeenCalled();
+
+    await LogRefused.run({ args: { ...LogRefused.args, onRetry: retry } });
+    await expect.element(page.getByText(/githq refused this log/u)).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    expect(retry).toHaveBeenCalledTimes(1);
 });
 
 test('Enter does nothing with nothing to try again', async () => {

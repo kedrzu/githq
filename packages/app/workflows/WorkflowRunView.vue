@@ -154,7 +154,9 @@ const message = computed((): RunMessage | null => {
       return assertNever(body);
   }
 });
-const canRetry = computed(() => props.logPane.kind === 'failed' || message.value?.retry === true);
+const canRetry = computed(
+  () => props.logPane.kind === 'failed' || props.logPane.kind === 'refused' || message.value?.retry === true,
+);
 const selectedIndex = computed(() => {
   const { jobs, selectedJob } = props.model;
   return selectedJob ? jobs.indexOf(selectedJob) : -1;

@@ -128,6 +128,12 @@ export const LogFailed: Story = { args: viewOf({}, () => ({ status: 'failed', ht
 /** W4i with no answer at all. */
 export const LogNoAnswer: Story = { args: viewOf({}, () => ({ status: 'failed', httpStatus: null })) };
 
+/** A log past what the desktop app reads at most: nothing to try again. */
+export const LogTooLarge: Story = { args: viewOf({}, () => ({ status: 'tooLarge' })) };
+
+/** A log the desktop app turned down: Enter tries again. */
+export const LogRefused: Story = { args: viewOf({}, () => ({ status: 'refused' })) };
+
 /** W4j: the run still going, its running job selected, no log read for it. */
 export const Running: Story = {
     args: {

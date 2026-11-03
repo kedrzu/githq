@@ -81,6 +81,10 @@ export type WorkflowLogPane =
     | { readonly kind: 'gone'; readonly job: GitHubWorkflowJob }
     /** This log failed to read; the rest of the page goes on (W4i). */
     | { readonly kind: 'failed'; readonly job: GitHubWorkflowJob; readonly httpStatus: number | null }
+    /** Past what the app reads at most: GitHub is the way, as trying again would read as much again. */
+    | { readonly kind: 'tooLarge'; readonly job: GitHubWorkflowJob }
+    /** The app turned the log down, GitHub having no part in it. */
+    | { readonly kind: 'refused'; readonly job: GitHubWorkflowJob }
     | { readonly kind: 'ready'; readonly job: GitHubWorkflowJob; readonly log: ParsedJobLog };
 
 /** What decides a job's log pane. */
@@ -191,6 +195,9 @@ function getReadPane(job: GitHubWorkflowJob, state: WorkflowLogState, now: numbe
             return isJustFinished(job, now) ? { kind: 'loading', job, notThereYet: true } : { kind: 'gone', job };
         case 'failed':
             return { kind: 'failed', job, httpStatus: state.httpStatus };
+        case 'tooLarge':
+        case 'refused':
+            return { kind: state.status, job };
         default:
             return assertNever(state);
     }

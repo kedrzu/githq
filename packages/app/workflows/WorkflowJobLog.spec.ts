@@ -16,6 +16,7 @@ const {
     OnlyMatches,
     Passed,
     Polled,
+    SearchBoundByParent,
     SearchLiterally,
     SearchPastTheCut,
     Searching,
@@ -978,6 +979,73 @@ test('W4c: Enter on a line returns to the full log there, its neighbours around 
     expect(cursorText()).toBe(chosen);
     expect(inView(cursorLine())).toBe(true);
     expect(marks()).toEqual([]);
+});
+
+test('W4c, bound like the page: Enter on a match in a step folded in the full log opens it there, in view', async () => {
+    await SearchBoundByParent.run();
+    await settled();
+    await settled();
+    log().focus();
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await userEvent.keyboard('n');
+    await settled();
+    expect(cursorText()).toBe('checkout could not resolve it');
+
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    await settled();
+
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'false');
+    expect(cursorText()).toBe('checkout could not resolve it');
+    expect(inView(cursorLine())).toBe(true);
+    expect(log().scrollTop).toBeGreaterThan(0);
+    expect(lines().some(line => line.textContent?.includes('checkout line 249'))).toBe(true);
+    expect(document.activeElement).toBe(log());
+});
+
+test('W4c, bound like the page: Tab back to the full log stays at the line, its step opening', async () => {
+    await SearchBoundByParent.run();
+    await settled();
+    await settled();
+    log().focus();
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await userEvent.keyboard('n');
+    await settled();
+
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await settled();
+
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'false');
+    expect(cursorText()).toBe('checkout could not resolve it');
+    expect(inView(cursorLine())).toBe(true);
+    expect(log().scrollTop).toBeGreaterThan(0);
+});
+
+test('W4c, bound like the page: Tab to only the matches brings the line landed on into view, in the document it shows', async () => {
+    await SearchBoundByParent.run();
+    await settled();
+    await settled();
+    await userEvent.keyboard('/');
+    await settled();
+    await userEvent.keyboard('line 2');
+    await expect.element(position()).toHaveTextContent(/ of 220$/u);
+    await settled();
+    log().focus();
+    // Past the first step's matches, in a list of them longer than the view, far above where the full log has the line.
+    await userEvent.keyboard('{Shift>}j{/Shift}n');
+    await settled();
+    expect(cursorText()).toBe('checkout line 2');
+
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await settled();
+
+    await expect.element(position()).toHaveTextContent('220 lines');
+    expect(cursorText()).toBe('checkout line 2');
+    expect(inView(cursorLine())).toBe(true);
 });
 
 test('Esc closes the search and returns to where the view was: cursor, scroll, folds; the keys back on the log', async () => {

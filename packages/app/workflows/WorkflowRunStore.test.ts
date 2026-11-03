@@ -17,6 +17,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
+import { JobLogRefusal } from './utils/JobLogRefusal.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
 import { WorkflowStore } from './WorkflowStore.js';
 
@@ -215,6 +216,31 @@ test('a log failing says with what, and retrying reads it, one read at a time', 
     expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS }).status).toBe('ready');
     expect(logRequests(session.github.requests)).toHaveLength(2);
 });
+
+test.each(['tooLarge', 'refused'] as const)(
+    'a log the app itself turned down (%s) says so, not that GitHub did not answer',
+    async reason => {
+        const world = worldWithRun();
+        const session = createTestSession({
+            login: `user-${crypto.randomUUID()}`,
+            answer: () => undefined,
+            answerRest: request => {
+                if (request.operation.endsWith('/logs')) {
+                    throw new JobLogRefusal(reason);
+                }
+
+                return world.answerRest(request);
+            },
+        });
+        setIndexedDbPersistence(session.container);
+        const store = session.container.resolve(WorkflowRunStore);
+
+        store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS });
+        await session.clock.advance(0);
+
+        expect(store.getLog({ nameWithOwner: REPO, jobId: JOB, steps: STEPS })).toEqual({ status: reason });
+    },
+);
 
 test('of the logs read the 5 last asked stay; one dropped is read anew', async () => {
     const world = worldWithRun();

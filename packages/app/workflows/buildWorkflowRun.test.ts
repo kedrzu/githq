@@ -207,6 +207,14 @@ test('a finished job’s pane follows its log’s read', () => {
         job: build1,
         httpStatus: 502,
     });
+    expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'tooLarge' }), now: NOW })).toEqual({
+        kind: 'tooLarge',
+        job: build1,
+    });
+    expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'refused' }), now: NOW })).toEqual({
+        kind: 'refused',
+        job: build1,
+    });
     const log = { lines: [], errors: [], steps: [], characters: 0 };
     expect(getWorkflowLogPane({ job: build1, readLog: () => ({ status: 'ready', log }), now: NOW })).toEqual({
         kind: 'ready',

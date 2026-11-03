@@ -718,6 +718,32 @@ function createRerunnableRun() {
 const rerunCalls = (github: { restCalls: readonly { url: URL }[] }) =>
     github.restCalls.filter(call => call.url.pathname.endsWith('/rerun-failed-jobs')).length;
 
+test('W4k: searching the log from ⌘K ends with the cursor in the field, the menu closing around it', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun();
+    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, RUN_LOG);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.cursorLine).toContainText('Process completed');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await page.keyboard.type('search log');
+    await expect(menu.option(/Search/u).first()).toContainText('/');
+    await page.keyboard.press('Enter');
+
+    await expect(menu.root).toHaveCount(0);
+    await expect(screen.searchField).toBeFocused();
+    // The menu hands the focus back as it goes: what is typed next must still land here.
+    await page.keyboard.type('<b>');
+    await expect(screen.searchField).toHaveValue('<b>');
+    await expect(screen.searchPosition).toHaveText('1 of 1');
+});
+
 test('W4k, W4j: first in ⌘K, no key, no question: the page goes running at once, follows the run, opens the log itself, and the workflow stays broken', async ({
     page,
     github,

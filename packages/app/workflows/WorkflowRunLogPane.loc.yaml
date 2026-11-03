@@ -61,6 +61,16 @@ failedDetail:
   en: 'GET …/jobs/{id}/logs → {status}'
 failedNoAnswerDetail:
   en: 'GET …/jobs/{id}/logs → no answer'
+tooLargeTitle:
+  en: 'The log of {job} is too big to open here'
+tooLargeText:
+  en: "githq reads a log of up to 256 MB and this one is bigger, so trying again wouldn't help. GitHub can still show it, and other jobs' logs still open with ⌥J and ⌥K."
+tooLargeDetail:
+  en: 'GET …/jobs/{id}/logs → over 256 MB'
+refusedText:
+  en: "githq refused this log, so this isn't GitHub's doing. It may read it if you try again, and GitHub can still show it. Other jobs' logs still open with ⌥J and ⌥K."
+refusedDetail:
+  en: 'GET …/jobs/{id}/logs → refused by githq'
 neverRanTitle:
   en: '{job} never ran'
 neverRanText:

@@ -1,8 +1,8 @@
-<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c). In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
+<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c). In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a log the desktop app refused, which says so and can be tried again, or one too big for it, which GitHub is the way to and nothing tries again; a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleSlash, Ghost, Github, Hourglass, RotateCw, Unplug } from 'lucide-vue-next';
+import { CircleSlash, FileX, Ghost, Github, Hourglass, RotateCw, ShieldX, Unplug } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -71,6 +71,8 @@ const t = useTranslate();
 
 /** Another job's log shows in full, its matches yet to be looked at. */
 const onlyMatches = ref(false);
+/** The search's field has the focus: its letters are typed, so Enter stands for N. */
+const searchFieldFocused = ref(false);
 
 const size = computed(() => {
   const { pane } = props;
@@ -88,6 +90,8 @@ const size = computed(() => {
     case 'gone':
       return t(l.logDeleted);
     case 'failed':
+    case 'tooLarge':
+    case 'refused':
       return t(l.notLoaded);
     case 'neverRan':
       return getConclusion(pane);
@@ -107,6 +111,24 @@ const message = computed((): LogMessage | null => {
       return getGoneMessage(pane);
     case 'failed':
       return getFailedMessage(pane);
+    case 'tooLarge':
+      return {
+        icon: FileX,
+        tone: 'amber',
+        title: t(l.tooLargeTitle, { job: pane.job.name }),
+        text: t(l.tooLargeText),
+        detail: t(l.tooLargeDetail, { id: pane.job.id }),
+        gitHubLabel: t(l.openOnGitHub),
+      };
+    case 'refused':
+      return {
+        icon: ShieldX,
+        tone: 'amber',
+        title: t(l.failedTitle, { job: pane.job.name }),
+        text: t(l.refusedText),
+        detail: t(l.refusedDetail, { id: pane.job.id }),
+        gitHubLabel: t(l.openOnGitHub),
+      };
     case 'neverRan':
       return {
         icon: CircleSlash,
@@ -121,12 +143,13 @@ const message = computed((): LogMessage | null => {
   }
 });
 
+const canRetry = computed(() => props.pane.kind === 'failed' || props.pane.kind === 'refused');
 const hints = computed((): readonly KeyHint[] => {
   const { pane } = props;
   const job = { keys: ['Alt+J', 'Alt+K'], label: t(l.job) };
   const gitHub = { keys: ['O'], label: t(l.gitHub) };
   if (pane.kind !== 'ready') {
-    return pane.kind === 'failed' ? [{ keys: ['Enter'], label: t(l.tryAgain) }, job, gitHub] : [job, gitHub];
+    return canRetry.value ? [{ keys: ['Enter'], label: t(l.tryAgain) }, job, gitHub] : [job, gitHub];
   }
 
   const step = { keys: ['Shift+J', 'Shift+K'], label: t(l.step) };
@@ -154,8 +177,8 @@ const hints = computed((): readonly KeyHint[] => {
   }
 
   return [
-    { keys: ['N'], label: t(l.nextMatch) },
-    { keys: ['Shift+N'], label: t(l.previousMatch) },
+    { keys: [searchFieldFocused.value ? 'Enter' : 'N'], label: t(l.nextMatch) },
+    { keys: [searchFieldFocused.value ? 'Shift+Enter' : 'Shift+N'], label: t(l.previousMatch) },
     ...errors,
     step,
     job,
@@ -240,6 +263,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       :size="size"
       :address="lineAddress"
       @matches="matches = $event"
+      @search-field-focus="searchFieldFocused = $event"
     />
     <WorkflowLogToolbar
       v-else
@@ -272,7 +296,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       >
         <template #actions>
           <Button
-            v-if="pane.kind === 'failed'"
+            v-if="canRetry"
             variant="secondary"
             size="sm"
             :icon="RotateCw"

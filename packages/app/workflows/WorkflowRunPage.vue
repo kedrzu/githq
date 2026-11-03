@@ -76,6 +76,8 @@ const pageFreshness = computed((): Freshness | null => {
     case 'loading':
       return pane.job ? { kind: 'readingLog', job: pane.job.name } : null;
     case 'failed':
+    case 'tooLarge':
+    case 'refused':
       return { kind: 'logFailed', job: pane.job.name };
     case 'running': {
       const { checkedAt } = store.getJobs(nameWithOwner, runId);
@@ -180,7 +182,7 @@ function selectJob(job: GitHubWorkflowJob) {
 
 function retry() {
   const pane = logPane.value;
-  if (pane.kind === 'failed') {
+  if (pane.kind === 'failed' || pane.kind === 'refused') {
     store.retry({ nameWithOwner, jobId: pane.job.id, steps: pane.job.steps });
   } else {
     store.refresh(nameWithOwner, runId);

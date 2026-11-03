@@ -109,6 +109,15 @@ export const FailedNoAnswer: Story = {
     args: { pane: { kind: 'failed', job: BUILD_JOB, httpStatus: null } },
 };
 
+/** Past what the desktop app reads at most: trying again would read as much again, so GitHub is the way. */
+export const TooLarge: Story = { args: { pane: { kind: 'tooLarge', job: BUILD_JOB } } };
+
+/** The desktop app turned the log down, GitHub having answered or not. */
+export const Refused: Story = { args: { pane: { kind: 'refused', job: BUILD_JOB } } };
+
+/** W4b: a search open: the keys of searching along the bottom, which ones following where the focus is. */
+export const Searching: Story = { args: { query: 'build' } };
+
 /** When step `number` started: they run one after the other, so a log's lines tell which they belong to. */
 function stepStart(number: number) {
     return ago(14 * MINUTE - number * STEP_MS);

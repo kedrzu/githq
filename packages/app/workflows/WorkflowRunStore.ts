@@ -25,6 +25,7 @@ import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getJobMark } from './utils/getJobMark.js';
+import { JobLogRefusal } from './utils/JobLogRefusal.js';
 import { getRerunReason } from './utils/getRerunReason.js';
 import type { WorkflowRerunReason } from './utils/getRerunReason.js';
 import { parseJobLog } from './utils/parseJobLog.js';
@@ -74,7 +75,11 @@ export type WorkflowLogState =
           readonly status: 'failed';
           /** The status GitHub refused with; `null` for no answer, or nothing asked with the allowance used up. */
           readonly httpStatus: number | null;
-      };
+      }
+    /** Past what the app reads at most: reading it again would only read as much again. */
+    | { readonly status: 'tooLarge' }
+    /** The app turned it down, GitHub having no part in it. */
+    | { readonly status: 'refused' };
 
 /** A run's failed jobs that did not re-run, and why: its toast and the status bar's segment (W4l). */
 export interface WorkflowRerunFailure {
@@ -540,7 +545,10 @@ export const WorkflowRunStore = defineService({
             } catch (error) {
                 if (isCurrent(current)) {
                     logger.warn('Could not read a job’s log', { error });
-                    state.value = { status: 'failed', httpStatus: getHttpStatus(error) };
+                    state.value =
+                        error instanceof JobLogRefusal
+                            ? { status: error.reason }
+                            : { status: 'failed', httpStatus: getHttpStatus(error) };
                 }
             }
         }

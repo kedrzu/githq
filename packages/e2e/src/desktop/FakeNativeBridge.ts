@@ -83,6 +83,9 @@ export class FakeNativeBridge {
     /** What `read_job_log` answers for each job id; a job not here fails as the native side does offline. */
     readonly jobLogs = new Map<number, FakeJobLogAnswer>();
 
+    /** The code `read_job_log` fails with for each job id, before anything in {@link jobLogs}. */
+    readonly jobLogFailures = new Map<number, string>();
+
     /** The version of the update ready to run (`update_status`); set by {@link sendUpdateReady} too. */
     readyUpdate: string | null = null;
 
@@ -172,7 +175,13 @@ export class FakeNativeBridge {
                 return { ok: true, value: null };
             case 'read_job_log': {
                 this.jobLogReads.push(args);
-                const log = this.jobLogs.get(isPlainObject(args) && typeof args.jobId === 'number' ? args.jobId : -1);
+                const jobId = isPlainObject(args) && typeof args.jobId === 'number' ? args.jobId : -1;
+                const failure = this.jobLogFailures.get(jobId);
+                if (failure !== undefined) {
+                    return { ok: false, error: failure };
+                }
+
+                const log = this.jobLogs.get(jobId);
                 return log ? { ok: true, value: log } : { ok: false, error: 'offline' };
             }
             case 'device_start':

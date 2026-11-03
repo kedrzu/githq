@@ -1,6 +1,6 @@
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { h, shallowRef } from 'vue';
+import { h, ref, shallowRef } from 'vue';
 
 import Button from '@/components/Button.vue';
 
@@ -212,6 +212,39 @@ export const Searching: Story = {
 /** W4c: only the matching lines, by step, with what was skipped between them. */
 export const OnlyMatches: Story = {
     args: { ...viewOf(STEPS, RESOLVE_LOG), query: 'resolve', onlyMatches: true },
+};
+
+/**
+ * The search bound as the page binds it, with `onUpdate:`: a model written shows only once its parent has rendered, and
+ * so does everything worked out from it. Matches in two long steps folded in the full log.
+ */
+export const SearchBoundByParent: Story = {
+    render: () => ({
+        setup: () => {
+            const filler = (name: string) =>
+                Array.from({ length: 300 }, (_, index) =>
+                    index === 250 ? `${name} could not resolve it` : `${name} line ${index}`,
+                );
+            const view = viewOf(
+                STEPS,
+                sections({
+                    1: filler('setup'),
+                    2: filler('checkout'),
+                    3: ['building', '##[error]Process completed with exit code 1.'],
+                }),
+            );
+            const query = ref<string | null>('resolve');
+            const onlyMatches = ref(false);
+            return () =>
+                h(WorkflowJobLog, {
+                    ...view,
+                    query: query.value,
+                    'onUpdate:query': (value: string | null) => (query.value = value),
+                    onlyMatches: onlyMatches.value,
+                    'onUpdate:onlyMatches': (value: boolean) => (onlyMatches.value = value),
+                });
+        },
+    }),
 };
 
 /** A match past where a long line is cut, and another line of nothing but the same letter. */

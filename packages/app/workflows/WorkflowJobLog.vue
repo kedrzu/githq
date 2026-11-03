@@ -74,6 +74,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** What the search found in this log, as it changes; `null` with no search, or as the log goes. */
   matches: [matches: LogMatches | null];
+  /** The search's field took or lost the focus. */
+  searchFieldFocus: [focused: boolean];
 }>();
 
 /** What is searched for; `null` with the search closed. Kept by the parent, as it outlives one job's log. */
@@ -282,7 +284,6 @@ useCommands(() => [
     key: '/',
     // ⌘F is `onKeydown`'s: one command runs by one key.
     otherKeys: ['Mod+F'],
-    menu: false,
     run: () => void openSearch(),
   },
   {
@@ -311,7 +312,13 @@ useCommands(() => [
     key: 'Enter',
     menu: false,
     when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
-    run: () => (showsOnlyMatches.value ? showInFullLog() : moveByMatch(1)),
+    run: () => {
+      if (showsOnlyMatches.value) {
+        void showInFullLog();
+      } else {
+        moveByMatch(1);
+      }
+    },
   },
   // Not from a button, which Tab leaves for the next thing.
   {
@@ -321,7 +328,7 @@ useCommands(() => [
     key: 'Tab',
     menu: false,
     when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
-    run: toggleOnlyMatches,
+    run: () => void toggleOnlyMatches(),
   },
   {
     id: 'workflowLog.closeSearch',
@@ -817,6 +824,7 @@ async function openSearch() {
     query.value = '';
   }
 
+  // Run from ⌘K this is past the menu going too, which hands the focus back as it unmounts.
   await nextTick();
   searchBar.value?.focus();
 }
@@ -911,13 +919,15 @@ function followCursorToMatch() {
   }
 }
 
-function toggleOnlyMatches() {
+// `onlyMatches` is the parent's: what is worked out from it, and so the document moved in, follows once it has rendered.
+async function toggleOnlyMatches() {
   if (!isQueryApplied()) {
     applyQuery();
   }
 
   if (showsOnlyMatches.value) {
     onlyMatches.value = false;
+    await nextTick();
     moveCursor(cursor.value, 'context');
     return;
   }
@@ -925,6 +935,7 @@ function toggleOnlyMatches() {
   if (matchTotal.value > 0) {
     onlyFolded.value = new Set();
     onlyMatches.value = true;
+    await nextTick();
     const position = currentMatch.value;
     moveCursor(position === null ? cursor.value : (matches.value?.lines[position] ?? null), 'context');
     focusLog();
@@ -932,10 +943,11 @@ function toggleOnlyMatches() {
 }
 
 /** Enter among only the matches: the line in the full log, where closing the search leaves it too. */
-function showInFullLog() {
+async function showInFullLog() {
   const index = cursor.value;
   onlyMatches.value = false;
   placeBeforeSearch = null;
+  await nextTick();
   moveToMiddle(index);
   followCursorToMatch();
   focusLog();
@@ -1080,6 +1092,7 @@ function measureCharacterWidth() {
       @previous="moveByMatch(-1)"
       @toggle-only="toggleOnlyMatches"
       @close="closeSearch"
+      @field-focus="emit('searchFieldFocus', $event)"
     />
     <!-- Hidden and not gone: W and T stay on while the search is open. -->
     <WorkflowLogToolbar
