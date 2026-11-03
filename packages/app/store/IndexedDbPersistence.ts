@@ -3,6 +3,8 @@ import type { DBSchema, IDBPDatabase } from 'idb';
 
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import type { CommitPersistenceShape, PersistedCommits } from '@/commits/CommitPersistence.js';
+import type { KeptCommit, KeptCommitRefs } from '@/commits/CommitTypes.js';
 import type {
     PersistedProject,
     PersistedProjects,
@@ -26,11 +28,11 @@ import type { Item } from './ItemTypes.js';
 
 /**
  * The layout of the database and of what it holds. Raise it whenever either changes (the `Item`, `ItemDetail`,
- * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking or `RepositoryWorkflows` types too): a database of another version is dropped
+ * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking, `RepositoryWorkflows`, `KeptCommit` or `KeptCommitRefs` types too): a database of another version is dropped
  * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over too (`TabChannel`): raise
  * it when a `TabMessage` changes, so tabs of two githq versions do not hear each other.
  */
-export const LOCAL_DATABASE_VERSION = 6;
+export const LOCAL_DATABASE_VERSION = 7;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -43,7 +45,8 @@ export type IndexedDbPersistence = ItemPersistenceShape &
     RepositoryPersistenceShape &
     TrackingPersistenceShape &
     ProjectPersistenceShape &
-    WorkflowPersistenceShape;
+    WorkflowPersistenceShape &
+    CommitPersistenceShape;
 
 type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
@@ -73,13 +76,16 @@ interface LocalDatabase extends DBSchema {
     projectItems: { key: string; value: ProjectItem; indexes: { projectId: string } };
     trackedSync: { key: string; value: SyncStateRecord };
     workflows: { key: string; value: RepositoryWorkflows };
+    commits: { key: [string, string]; value: KeptCommit; indexes: { repository: string } };
+    commitRefs: { key: string; value: KeptCommitRefs };
 }
 
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
  * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
  * (by `owner/name`), `openCounts` (an untracked repository's open issues and pull requests, by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
- * repository's and project's sync state) and `workflows` (each tracked repository's, by `owner/name`). One object for the interfaces it is set as: they share the
+ * repository's and project's sync state), `workflows` (each tracked repository's, by `owner/name`), `commits` (by
+ * `[repository, oid]`, kept for good) and `commitRefs` (each repository's branches and tags, by `owner/name`). One object for the interfaces it is set as: they share the
  * connection.
  *
  * Only {@link ItemPersistenceShape.load} opens the database. A connection gives way when another one wants
@@ -111,6 +117,9 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         loadWorkflows,
         saveWorkflows,
         deleteWorkflows,
+        loadCommits,
+        saveCommits,
+        saveCommitRefs,
     };
 
     async function load(login: string): Promise<PersistedItems> {
@@ -306,6 +315,28 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         await db.delete('workflows', nameWithOwner);
     }
 
+    async function loadCommits(login: string, repository: string): Promise<PersistedCommits> {
+        const db = await getOpen(login);
+        const tx = db.transaction(['commits', 'commitRefs']);
+        const [commits, refs] = await Promise.all([
+            tx.objectStore('commits').index('repository').getAll(repository),
+            tx.objectStore('commitRefs').get(repository),
+        ]);
+
+        return { commits, refs: refs ?? null };
+    }
+
+    async function saveCommits(login: string, commits: readonly KeptCommit[]) {
+        const db = await getOpen(login);
+        const tx = db.transaction('commits', 'readwrite');
+        await Promise.all([...commits.map(commit => tx.store.put(commit)), tx.done]);
+    }
+
+    async function saveCommitRefs(login: string, refs: KeptCommitRefs) {
+        const db = await getOpen(login);
+        await db.put('commitRefs', refs);
+    }
+
     /** The connection `load` opened; rejects when there is none (anymore). */
     async function getOpen(login: string) {
         const connection = connections.get(login);
@@ -372,6 +403,8 @@ function openDatabase(name: string) {
             db.createObjectStore('projectItems', { keyPath: 'itemId' }).createIndex('projectId', 'projectId');
             db.createObjectStore('trackedSync', { keyPath: 'key' });
             db.createObjectStore('workflows', { keyPath: 'nameWithOwner' });
+            db.createObjectStore('commits', { keyPath: ['repository', 'oid'] }).createIndex('repository', 'repository');
+            db.createObjectStore('commitRefs', { keyPath: 'repository' });
         },
     });
 }

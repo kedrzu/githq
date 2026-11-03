@@ -1,7 +1,7 @@
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListViewOptions } from '@/lists/ListTypes.js';
 
-import type { RepositorySection } from './RepositorySection.js';
+import type { RepositoryItemSection } from './RepositorySection.js';
 
 /**
  * What a repository's issues or pull requests can be grouped by — GitHub's own properties (J2): its milestones,
@@ -10,7 +10,7 @@ import type { RepositorySection } from './RepositorySection.js';
 export type RepositoryGrouping = 'assignee' | 'issueType' | 'label' | 'milestone' | 'none';
 
 /** Each section's groupings, in the order the grouping menu lists them: pull requests have no issue type. */
-export const REPOSITORY_GROUPINGS: Readonly<Record<RepositorySection, readonly RepositoryGrouping[]>> = {
+export const REPOSITORY_GROUPINGS: Readonly<Record<RepositoryItemSection, readonly RepositoryGrouping[]>> = {
     issues: ['none', 'milestone', 'assignee', 'label', 'issueType'],
     pullRequests: ['none', 'milestone', 'assignee', 'label'],
 };

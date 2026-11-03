@@ -32,6 +32,8 @@ test("a repository's link opens the section it was left on, Issues before it has
     expect(tabs.getPath('octocat/app')).toBe('/octocat/app/issues');
     tabs.remember('octocat/app', 'pullRequests');
     expect(tabs.getPath('octocat/app')).toBe('/octocat/app/pulls');
+    tabs.remember('octocat/app', 'commits');
+    expect(tabs.getPath('octocat/app')).toBe('/octocat/app/commits');
     tabs.remember('octocat/app', 'issues');
     expect(tabs.getPath('octocat/app')).toBe('/octocat/app/issues');
 });

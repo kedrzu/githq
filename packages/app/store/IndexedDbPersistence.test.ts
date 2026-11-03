@@ -6,6 +6,8 @@ import { expect, test } from 'bun:test';
 
 import { openDB } from 'idb';
 
+import type { PersistedCommits } from '@/commits/CommitPersistence.js';
+import type { KeptCommit, KeptCommitRefs } from '@/commits/CommitTypes.js';
 import type { PersistedProjects } from '@/projects/ProjectPersistence.js';
 import type { Project, ProjectItem } from '@/projects/ProjectTypes.js';
 import type { RepositoryMetadata, RepositoryOpenCounts } from '@/repos/RepositoryTypes.js';
@@ -214,4 +216,76 @@ function sampleProjectItem(itemId: string, projectId: string): ProjectItem {
         updatedAt: '2026-10-30T10:00:00Z',
         isArchived: false,
     };
+}
+
+test("a repository's commits and refs are kept across sessions, each repository's apart from another's", async () => {
+    const login = uniqueLogin();
+    const tab = createIndexedDbPersistence();
+    await tab.load(login);
+    const [root, tip] = [sampleCommit('acme/web', 'a1'), sampleCommit('acme/web', 'b2', ['a1'])];
+    // The same oid in another repository (a fork) is another repository's commit.
+    const forked = sampleCommit('acme/fork', 'a1');
+    await tab.saveCommits(login, [root, tip, forked]);
+    // A commit read again (another page reaching it) replaces itself, not adds a copy.
+    await tab.saveCommits(login, [tip]);
+    await tab.saveCommitRefs(login, sampleRefs('acme/web', 'b2', 1000));
+    await tab.saveCommitRefs(login, sampleRefs('acme/web', 'b2', 2000));
+
+    const reloaded = createIndexedDbPersistence();
+    await reloaded.load(login);
+
+    const web: PersistedCommits = { commits: [root, tip], refs: sampleRefs('acme/web', 'b2', 2000) };
+    expect(sortCommits(await reloaded.loadCommits(login, 'acme/web'))).toEqual(web);
+    const fork: PersistedCommits = { commits: [forked], refs: null };
+    expect(await reloaded.loadCommits(login, 'acme/fork')).toEqual(fork);
+    const unseen: PersistedCommits = { commits: [], refs: null };
+    expect(await reloaded.loadCommits(login, 'acme/other')).toEqual(unseen);
+});
+
+test('signing out deletes the kept commits, and a late write of them does not bring the copy back', async () => {
+    const login = uniqueLogin();
+    const tab = createIndexedDbPersistence();
+    await tab.load(login);
+    await tab.saveCommits(login, [sampleCommit('acme/web', 'a1')]);
+    await tab.saveCommitRefs(login, sampleRefs('acme/web', 'a1', 1000));
+
+    await tab.destroy(login);
+
+    expect(await databaseNames()).not.toContain(getLocalDatabaseName(login));
+    await expect(tab.saveCommits(login, [sampleCommit('acme/web', 'b2')])).rejects.toThrow();
+    await expect(tab.saveCommitRefs(login, sampleRefs('acme/web', 'b2', 2000))).rejects.toThrow();
+    await expect(tab.loadCommits(login, 'acme/web')).rejects.toThrow();
+    expect(await databaseNames()).not.toContain(getLocalDatabaseName(login));
+
+    const signedInAgain = createIndexedDbPersistence();
+    await signedInAgain.load(login);
+    const empty: PersistedCommits = { commits: [], refs: null };
+    expect(await signedInAgain.loadCommits(login, 'acme/web')).toEqual(empty);
+});
+
+function sampleCommit(repository: string, oid: string, parentOids: readonly string[] = []): KeptCommit {
+    return {
+        repository,
+        oid,
+        id: `C_${repository}_${oid}`,
+        headline: `Commit ${oid}`,
+        committedDate: '2026-11-01T10:00:00Z',
+        author: { name: 'Ada', login: 'ada', avatarUrl: 'https://avatars.githubusercontent.com/u/1' },
+        parents: parentOids.map(parent => ({ id: `C_${repository}_${parent}`, oid: parent })),
+    };
+}
+
+function sampleRefs(repository: string, mainOid: string, fetchedAt: number): KeptCommitRefs {
+    const main = {
+        name: 'main',
+        oid: mainOid,
+        commitId: `C_${repository}_${mainOid}`,
+        committedDate: '2026-11-01T10:00:00Z',
+    };
+    return { repository, defaultBranch: 'main', branches: [main], tags: [{ ...main, name: 'v1.0.0' }], fetchedAt };
+}
+
+/** The commits in oid order: the order IndexedDB returns them in is not part of the contract. */
+function sortCommits(persisted: PersistedCommits): PersistedCommits {
+    return { ...persisted, commits: persisted.commits.toSorted((a, b) => a.oid.localeCompare(b.oid)) };
 }

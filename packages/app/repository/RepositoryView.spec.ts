@@ -16,8 +16,8 @@ import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
-import { getSectionItemKind } from './RepositorySection.js';
-import type { RepositorySection } from './RepositorySection.js';
+import { getSectionItemKind, isItemSection } from './RepositorySection.js';
+import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import RepositoryView from './RepositoryView.vue';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
@@ -54,7 +54,10 @@ test('D14: Issues and Pull requests are sections on 1 and 2, each counting its o
         .element(sections.getByRole('button', { name: 'Pull requests 1' }))
         .toHaveAttribute('aria-keyshortcuts', '2');
     await expect.element(sections.getByRole('button', { name: 'Issues 5' })).toHaveAttribute('aria-keyshortcuts', '1');
-    expect(sections.getByRole('button').elements()).toHaveLength(2);
+    await expect
+        .element(sections.getByRole('button', { name: 'Commits', exact: true }))
+        .toHaveAttribute('aria-keyshortcuts', '3');
+    expect(sections.getByRole('button').elements()).toHaveLength(3);
     await expect.element(page.getByText(/\d open/)).not.toBeInTheDocument();
     await expect.element(page.getByRole('navigation', { name: 'Its issues live in' })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Board' }));
@@ -133,6 +136,8 @@ test('J3, CH37: not tracked, it lists what concerns the user of the section, how
         .toHaveTextContent(
             `githq has only the issues and pull requests of ${SAMPLE_REPOSITORY} that concern you; its other 892 open issues are on GitHub. Track it in Settings to have them all here.`,
         );
+    // D20: the explanation is about the items; Commits needs no tracking.
+    await expect.element(lines).toHaveTextContent("Its commits don't need tracking: 3 opens them in full.");
     await expect
         .element(lines.getByRole('link', { name: 'Settings' }))
         .toHaveAttribute('href', `/settings?q=${encodeURIComponent(SAMPLE_REPOSITORY)}`);
@@ -187,23 +192,65 @@ test("tracked, GitHub's counts of open items are not shown", async () => {
     await expect.element(page.getByText(/897|892/)).not.toBeInTheDocument();
 });
 
+test('D10, D11, CH3: Commits on 3 has none of the list tools, only the way to its history on GitHub, over the graph the page puts in', async () => {
+    const view = mount();
+    await userEvent.keyboard('3');
+    expect(view.section.value).toBe('commits');
+
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Board' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Open', exact: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('navigation', { name: 'Its issues live in' })).not.toBeInTheDocument();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}/commits`);
+    // The tabs keep the items' counts; Commits has none.
+    const sections = page.getByRole('group', { name: 'Sections' });
+    await expect.element(sections.getByRole('button', { name: 'Issues 5' })).toBeVisible();
+    await expect
+        .element(sections.getByRole('button', { name: 'Commits', exact: true }))
+        .toHaveAttribute('aria-pressed', 'true');
+
+    await userEvent.keyboard('1');
+    expect(view.section.value).toBe('issues');
+    await expect.element(page.getByText('The commit graph')).not.toBeInTheDocument();
+});
+
+test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the explanation about items', async () => {
+    mount({ tracked: false, section: 'commits' });
+
+    await expect.element(page.getByText('The commit graph')).toBeVisible();
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect
+        .element(page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` }))
+        .not.toBeInTheDocument();
+    await expect.element(page.getByText('Concerns you')).not.toBeInTheDocument();
+});
+
 interface MountOptions {
     readonly tracked?: boolean;
     readonly items?: readonly Item[];
-    readonly gitHubOpenCounts?: Readonly<Record<RepositorySection, number>> | null;
+    readonly gitHubOpenCounts?: Readonly<Record<RepositoryItemSection, number>> | null;
+    readonly section?: RepositorySection;
 }
 
 /**
  * Mounts a repository over the samples, building the section's list from the options and state each section holds,
  * as the page does.
  */
-function mount({ tracked = true, items = SAMPLE_REPOSITORY_ITEMS, gitHubOpenCounts = null }: MountOptions = {}) {
-    const options = shallowRef<Record<RepositorySection, Options>>({
+function mount({
+    tracked = true,
+    items = SAMPLE_REPOSITORY_ITEMS,
+    gitHubOpenCounts = null,
+    section: firstSection = 'issues',
+}: MountOptions = {}) {
+    const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
         pullRequests: REPOSITORY_VIEW_DEFAULTS,
     });
-    const section = ref<RepositorySection>('issues');
-    const state = ref<Record<RepositorySection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
+    const section = ref<RepositorySection>(firstSection);
+    const state = ref<Record<RepositoryItemSection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
     const view = { options, section, state };
     const open = items.filter(item => item.state === 'OPEN');
     const openCounts = {
@@ -220,39 +267,49 @@ function mount({ tracked = true, items = SAMPLE_REPOSITORY_ITEMS, gitHubOpenCoun
     document.body.append(host);
 
     const app = createApp({
-        setup: () => () =>
-            h(RepositoryView, {
-                nameWithOwner: SAMPLE_REPOSITORY,
-                isPrivate: true,
-                tracked,
-                list: buildRepositoryList({
-                    items,
-                    state: 'open',
-                    kind: getSectionItemKind(section.value),
-                    grouping: tracked ? options.value[section.value].grouping : 'none',
-                    sort: options.value[section.value].sort,
-                    texts: TEXTS,
-                }),
-                openCounts,
-                gitHubOpenCounts,
-                projects: [
-                    { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
-                ],
-                viewerLogin: SAMPLE_VIEWER.login,
-                now: SAMPLE_NOW,
-                options: options.value[section.value],
-                'onUpdate:options': (value: Options) => {
-                    options.value = { ...options.value, [section.value]: value };
+        setup: () => () => {
+            // On Commits the options and state are the issues' — not shown there.
+            const listed = isItemSection(section.value) ? section.value : null;
+            const shown = listed ?? 'issues';
+            return h(
+                RepositoryView,
+                {
+                    nameWithOwner: SAMPLE_REPOSITORY,
+                    isPrivate: true,
+                    tracked,
+                    list: listed
+                        ? buildRepositoryList({
+                              items,
+                              state: 'open',
+                              kind: getSectionItemKind(listed),
+                              grouping: tracked ? options.value[listed].grouping : 'none',
+                              sort: options.value[listed].sort,
+                              texts: TEXTS,
+                          })
+                        : null,
+                    openCounts,
+                    gitHubOpenCounts,
+                    projects: [
+                        { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
+                    ],
+                    viewerLogin: SAMPLE_VIEWER.login,
+                    now: SAMPLE_NOW,
+                    options: options.value[shown],
+                    'onUpdate:options': (value: Options) => {
+                        options.value = { ...options.value, [shown]: value };
+                    },
+                    state: state.value[shown],
+                    'onUpdate:state': (value: RepositoryState) => {
+                        state.value = { ...state.value, [shown]: value };
+                    },
+                    section: section.value,
+                    'onUpdate:section': (value: RepositorySection) => {
+                        section.value = value;
+                    },
                 },
-                state: state.value[section.value],
-                'onUpdate:state': (value: RepositoryState) => {
-                    state.value = { ...state.value, [section.value]: value };
-                },
-                section: section.value,
-                'onUpdate:section': (value: RepositorySection) => {
-                    section.value = value;
-                },
-            }),
+                { commits: () => h('p', 'The commit graph') },
+            );
+        },
     });
     app.use(IocPlugin, { container });
     // The Settings link of an untracked repository is a `RouterLink`.

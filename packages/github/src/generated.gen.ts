@@ -337,6 +337,54 @@ export type StatusState =
     /** Status is successful. */
     | 'SUCCESS';
 
+export type CommitHistoriesQueryVariables = Exact<{
+    ids: Array<string> | string;
+    first: number;
+}>;
+
+export type CommitHistoriesQuery = {
+    nodes: Array<
+        | {
+              history: {
+                  nodes: Array<{
+                      id: string;
+                      oid: string;
+                      messageHeadline: string;
+                      committedDate: string;
+                      author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+                      parents: { nodes: Array<{ id: string; oid: string } | null> | null };
+                  } | null> | null;
+              };
+          }
+        | Record<PropertyKey, never>
+        | null
+    >;
+};
+
+export type CommitStatesQueryVariables = Exact<{
+    ids: Array<string> | string;
+}>;
+
+export type CommitStatesQuery = {
+    nodes: Array<
+        | {
+              id: string;
+              associatedPullRequests: {
+                  nodes: Array<{
+                      number: number;
+                      state: PullRequestState;
+                      title: string;
+                      url: string;
+                      isDraft: boolean;
+                  } | null> | null;
+              } | null;
+              statusCheckRollup: { state: StatusState } | null;
+          }
+        | Record<PropertyKey, never>
+        | null
+    >;
+};
+
 export type ItemByNumberQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -2420,6 +2468,64 @@ export type RepositoryAssignableUsersQuery = {
     } | null;
 };
 
+export type RepositoryCommitRefsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    withHistory: boolean;
+    withBranches: boolean;
+    withTags: boolean;
+    branchesAfter?: string | null | undefined;
+    tagsAfter?: string | null | undefined;
+}>;
+
+export type RepositoryCommitRefsQuery = {
+    repository: {
+        defaultBranchRef: {
+            name: string;
+            target:
+                | {
+                      id: string;
+                      oid: string;
+                      committedDate: string;
+                      history?: {
+                          nodes: Array<{
+                              id: string;
+                              oid: string;
+                              messageHeadline: string;
+                              committedDate: string;
+                              author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+                              parents: { nodes: Array<{ id: string; oid: string } | null> | null };
+                          } | null> | null;
+                      };
+                  }
+                | Record<PropertyKey, never>
+                | null;
+        } | null;
+        branches?: {
+            pageInfo: { hasNextPage: boolean; endCursor: string | null };
+            nodes: Array<{
+                name: string;
+                target:
+                    | { id: string; oid: string; committedDate: string }
+                    | { target: { id: string; oid: string; committedDate: string } | Record<PropertyKey, never> }
+                    | Record<PropertyKey, never>
+                    | null;
+            } | null> | null;
+        } | null;
+        tags?: {
+            pageInfo: { hasNextPage: boolean; endCursor: string | null };
+            nodes: Array<{
+                name: string;
+                target:
+                    | { id: string; oid: string; committedDate: string }
+                    | { target: { id: string; oid: string; committedDate: string } | Record<PropertyKey, never> }
+                    | Record<PropertyKey, never>
+                    | null;
+            } | null> | null;
+        } | null;
+    } | null;
+};
+
 export type RepositoryForTrackingQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -2914,6 +3020,26 @@ export type CommentPageFieldsFragment = {
             | null;
     } | null> | null;
 };
+
+export type CommitFieldsFragment = {
+    id: string;
+    oid: string;
+    messageHeadline: string;
+    committedDate: string;
+    author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+    parents: { nodes: Array<{ id: string; oid: string } | null> | null };
+};
+
+export type CommitRefFieldsFragment = {
+    name: string;
+    target:
+        | { id: string; oid: string; committedDate: string }
+        | { target: { id: string; oid: string; committedDate: string } | Record<PropertyKey, never> }
+        | Record<PropertyKey, never>
+        | null;
+};
+
+export type CommitRefTargetFieldsFragment = { id: string; oid: string; committedDate: string };
 
 export type DraftIssueFieldsFragment = {
     __typename: 'DraftIssue';
@@ -5332,6 +5458,64 @@ export const AssignableResultFieldsFragmentDoc = new TypedDocumentString(
     `,
     { fragmentName: 'AssignableResultFields' },
 );
+export const CommitFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment CommitFields on Commit {
+  id
+  oid
+  messageHeadline
+  committedDate
+  author {
+    name
+    user {
+      login
+      avatarUrl
+    }
+  }
+  parents(first: 30) {
+    nodes {
+      id
+      oid
+    }
+  }
+}
+    `,
+    { fragmentName: 'CommitFields' },
+);
+export const CommitRefTargetFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment CommitRefTargetFields on Commit {
+  id
+  oid
+  committedDate
+}
+    `,
+    { fragmentName: 'CommitRefTargetFields' },
+);
+export const CommitRefFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment CommitRefFields on Ref {
+  name
+  target {
+    ... on Commit {
+      ...CommitRefTargetFields
+    }
+    ... on Tag {
+      target {
+        ... on Commit {
+          ...CommitRefTargetFields
+        }
+      }
+    }
+  }
+}
+    fragment CommitRefTargetFields on Commit {
+  id
+  oid
+  committedDate
+}`,
+    { fragmentName: 'CommitRefFields' },
+);
 export const ItemRepositoryFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment ItemRepositoryFields on Repository {
@@ -7544,6 +7728,58 @@ export const ViewerProjectFieldsFragmentDoc = new TypedDocumentString(
     `,
     { fragmentName: 'ViewerProjectFields' },
 );
+export const CommitHistoriesDocument = new TypedDocumentString(`
+    query CommitHistories($ids: [ID!]!, $first: Int!) {
+  nodes(ids: $ids) {
+    ... on Commit {
+      history(first: $first) {
+        nodes {
+          ...CommitFields
+        }
+      }
+    }
+  }
+}
+    fragment CommitFields on Commit {
+  id
+  oid
+  messageHeadline
+  committedDate
+  author {
+    name
+    user {
+      login
+      avatarUrl
+    }
+  }
+  parents(first: 30) {
+    nodes {
+      id
+      oid
+    }
+  }
+}`);
+export const CommitStatesDocument = new TypedDocumentString(`
+    query CommitStates($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ... on Commit {
+      id
+      associatedPullRequests(first: 1) {
+        nodes {
+          number
+          state
+          title
+          url
+          isDraft
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+}
+    `);
 export const ItemByNumberDocument = new TypedDocumentString(`
     query ItemByNumber($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -9816,6 +10052,86 @@ export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
   name
   avatarUrl
 }`);
+export const RepositoryCommitRefsDocument = new TypedDocumentString(`
+    query RepositoryCommitRefs($owner: String!, $name: String!, $withHistory: Boolean!, $withBranches: Boolean!, $withTags: Boolean!, $branchesAfter: String, $tagsAfter: String) {
+  repository(owner: $owner, name: $name) {
+    defaultBranchRef {
+      name
+      target {
+        ... on Commit {
+          ...CommitRefTargetFields
+          history(first: 100) @include(if: $withHistory) {
+            nodes {
+              ...CommitFields
+            }
+          }
+        }
+      }
+    }
+    branches: refs(refPrefix: "refs/heads/", first: 100, after: $branchesAfter) @include(if: $withBranches) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        ...CommitRefFields
+      }
+    }
+    tags: refs(
+      refPrefix: "refs/tags/"
+      first: 100
+      after: $tagsAfter
+      orderBy: {field: TAG_COMMIT_DATE, direction: DESC}
+    ) @include(if: $withTags) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        ...CommitRefFields
+      }
+    }
+  }
+}
+    fragment CommitFields on Commit {
+  id
+  oid
+  messageHeadline
+  committedDate
+  author {
+    name
+    user {
+      login
+      avatarUrl
+    }
+  }
+  parents(first: 30) {
+    nodes {
+      id
+      oid
+    }
+  }
+}
+fragment CommitRefFields on Ref {
+  name
+  target {
+    ... on Commit {
+      ...CommitRefTargetFields
+    }
+    ... on Tag {
+      target {
+        ... on Commit {
+          ...CommitRefTargetFields
+        }
+      }
+    }
+  }
+}
+fragment CommitRefTargetFields on Commit {
+  id
+  oid
+  committedDate
+}`);
 export const RepositoryForTrackingDocument = new TypedDocumentString(`
     query RepositoryForTracking($owner: String!, $name: String!) {
   repository(owner: $owner, name: $name) {
@@ -11404,6 +11720,20 @@ export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
 export type Requester<C = {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>;
 export function getSdk<C>(requester: Requester<C>) {
     return {
+        CommitHistories(variables: CommitHistoriesQueryVariables, options?: C): Promise<CommitHistoriesQuery> {
+            return requester<CommitHistoriesQuery, CommitHistoriesQueryVariables>(
+                CommitHistoriesDocument,
+                variables,
+                options,
+            ) as Promise<CommitHistoriesQuery>;
+        },
+        CommitStates(variables: CommitStatesQueryVariables, options?: C): Promise<CommitStatesQuery> {
+            return requester<CommitStatesQuery, CommitStatesQueryVariables>(
+                CommitStatesDocument,
+                variables,
+                options,
+            ) as Promise<CommitStatesQuery>;
+        },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(
                 ItemByNumberDocument,
@@ -11510,6 +11840,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositoryAssignableUsersQuery>;
+        },
+        RepositoryCommitRefs(
+            variables: RepositoryCommitRefsQueryVariables,
+            options?: C,
+        ): Promise<RepositoryCommitRefsQuery> {
+            return requester<RepositoryCommitRefsQuery, RepositoryCommitRefsQueryVariables>(
+                RepositoryCommitRefsDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryCommitRefsQuery>;
         },
         RepositoryForTracking(
             variables: RepositoryForTrackingQueryVariables,

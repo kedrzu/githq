@@ -1,12 +1,17 @@
+import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
+import { defineComponent, h, shallowRef } from 'vue';
 
+import CommitGraphView from '@/commits/CommitGraphView.vue';
 import { foldStacks } from '@/lists/foldStacks.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListLayout, ListViewOptions } from '@/lists/ListTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
+import { sampleWebappHistory } from '@/testing/sampleCommits.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SPREAD_STACK_ITEMS } from '@/testing/sampleStacks.js';
@@ -185,6 +190,51 @@ export const NotTrackedNothingConcerns: Story = {
 /** J3 before GitHub's counts are known (a first visit offline): the lines say it without a number. */
 export const NotTrackedCountUnknown: Story = {
     args: { ...NotTrackedNothingConcerns.args, gitHubOpenCounts: null },
+};
+
+/**
+ * CH3, D10: the Commits section has none of the list's tools: the title, the tabs and the way to its history on GitHub,
+ * over the graph.
+ */
+export const Commits: Story = {
+    args: { nameWithOwner: 'acme/web', section: 'commits', list: null, projects: [], withoutProject: 0 },
+    render: args =>
+        defineComponent({
+            setup() {
+                const { container, ready } = createCommitGraphTest(sampleWebappHistory());
+                provideContainer(container);
+                const kept = shallowRef(false);
+                const showOnceKept = async () => {
+                    await ready;
+                    kept.value = true;
+                };
+                void showOnceKept();
+                return () =>
+                    h(
+                        'div',
+                        { style: 'display: flex; height: 100vh' },
+                        kept.value
+                            ? [
+                                  h(RepositoryView, args, {
+                                      commits: () => h(CommitGraphView, { nameWithOwner: 'acme/web' }),
+                                  }),
+                              ]
+                            : [],
+                    );
+            },
+        }),
+    play: async ({ canvasElement }) => {
+        await expect(await within(canvasElement).findByText('chore: bump vite to 6.2')).toBeVisible();
+    },
+};
+
+/** D11: not tracked, the Commits section shows in full; only the chip says so. */
+export const CommitsNotTracked: Story = {
+    args: { ...Commits.args, tracked: false },
+    render: Commits.render,
+    play: async ({ canvasElement }) => {
+        await expect(await within(canvasElement).findByText('chore: bump vite to 6.2')).toBeVisible();
+    },
 };
 
 function sampleList(items: readonly Item[], grouping: RepositoryGrouping, kind: Item['kind'] = 'issue') {

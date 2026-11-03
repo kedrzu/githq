@@ -35,7 +35,7 @@ import { WorkflowSync } from '@/workflows/WorkflowSync.js';
 import type { Freshness } from './Freshness.js';
 import { FRESH_SLACK_MS, getFreshness } from './Freshness.js';
 import { getAllowancePause } from './getAllowancePause.js';
-import { isRateLimitRefusal } from './isRateLimitRefusal.js';
+import { getRefusalPause } from './getRefusalPause.js';
 import { readItemsByIds } from './readItemsByIds.js';
 import { SyncLeadership } from './SyncLeadership.js';
 import { SyncPausedError } from './SyncPausedError.js';
@@ -86,8 +86,6 @@ const MY_WORK_BATCH_SIZE = 20;
 const MY_WORK_READS = 3;
 /** The most pull requests a GitHub stack holds, and the most `PullRequestStacks` asks of one. */
 const STACK_MAX_SIZE = 100;
-/** How long to wait on a rate-limit refusal that says neither when to retry nor which bucket ran out. */
-const UNKNOWN_PAUSE_MS = 60_000;
 
 /** The signed-in user the loops poll for, captured when they started. */
 interface Session {
@@ -977,23 +975,11 @@ export const SyncEngine = defineService({
                 return error.pause;
             }
 
-            if (!(error instanceof GitHubApiError) || !isRateLimitRefusal(error)) {
-                return null;
-            }
-
-            const now = clock.now();
-            if (error.retryAfter != null) {
-                return { until: now + error.retryAfter * 1000, bucket: null };
-            }
-
-            for (const bucket of LOOP_BUCKETS[loop]) {
-                const limit = rateLimits.get(bucket);
-                if (limit && limit.remaining === 0 && limit.resetAt.getTime() > now) {
-                    return { until: limit.resetAt.getTime(), bucket };
-                }
-            }
-
-            return { until: now + UNKNOWN_PAUSE_MS, bucket: null };
+            return getRefusalPause({
+                error,
+                limits: LOOP_BUCKETS[loop].map(bucket => rateLimits.get(bucket)),
+                now: clock.now(),
+            });
         }
 
         function followVisibility() {

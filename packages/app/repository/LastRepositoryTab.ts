@@ -44,16 +44,24 @@ export const LastRepositoryTab = defineService({
             }
         });
 
-        return { get, getPath, remember };
+        return { get, getPath, getShown, remember };
 
         /** The repository's last section, `null` when it has none; reactive. */
         function get(nameWithOwner: string): RepositorySection | null {
             return tabsRef.value[nameWithOwner] ?? null;
         }
 
+        /**
+         * The section the repository's view shows at an address naming `addressSection`: that one, else — at the
+         * repository's own address — the one it was last on, Issues the first time; reactive.
+         */
+        function getShown(nameWithOwner: string, addressSection: RepositorySection | null): RepositorySection {
+            return addressSection ?? get(nameWithOwner) ?? 'issues';
+        }
+
         /** The address of the repository's view on the section it was last on, Issues before it has one; reactive. */
         function getPath(nameWithOwner: string) {
-            return getRepositoryPath(nameWithOwner, get(nameWithOwner) ?? 'issues');
+            return getRepositoryPath(nameWithOwner, getShown(nameWithOwner, null));
         }
 
         function remember(nameWithOwner: string, section: RepositorySection) {

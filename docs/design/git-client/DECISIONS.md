@@ -348,10 +348,16 @@ right commit. The stripe carries the eye from a dot far to the left to its row i
 ## D19
 
 **Commits loaded later on a first open appear between rows already on screen with no tint or motion, and the row
-under the cursor keeps its place; the status bar says branches are filling in.** (2026-11-02, design agent's
-proposal; CH32, CH33)
+under the cursor keeps its place, whether the user has moved the cursor yet or not: newer commits land above the
+screen. The status bar says branches are filling in.** (2026-11-02, design agent's proposal; CH32, CH33; a cursor not
+yet moved settled by the owner 2026-11-03)
 
 **Why.** They are not news, only late; marking them would make them read as something that just happened.
+
+**Rejected.**
+
+- A cursor not yet moved following the newest commit as branches arrive — the row being read jumps down in the first
+  seconds (owner, 2026-11-03).
 
 ## D20
 
@@ -389,3 +395,15 @@ tab like General or Display"; the section's name and place are the design agent'
 
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
 would collect anything.
+
+## D23
+
+**The repository's sections tell how current they are in the status bar only. The Commits header holds the title, the
+tabs, the branch list's tool and the GitHub mark, an icon alone.** (2026-11-03, owner; CH3 and every Commits screen
+redrawn without the header's freshness mark)
+
+**Why.** The status bar already says it on every screen, and the header has no room to spare in a calm view.
+
+**Rejected.**
+
+- A freshness mark in the Commits header as well (the first drawing of CH3) — the same fact in two places (owner).
