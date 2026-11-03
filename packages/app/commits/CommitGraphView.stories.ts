@@ -6,8 +6,15 @@ import { defineComponent, h, shallowRef } from 'vue';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
-import { sampleCommit, sampleCommitRef, sampleHistory, sampleWebappHistory } from '@/testing/sampleCommits.js';
+import {
+    SAMPLE_COMMITS_NOW,
+    sampleCommit,
+    sampleCommitRef,
+    sampleHistory,
+    sampleWebappHistory,
+} from '@/testing/sampleCommits.js';
 
+import CommitDetails from './CommitDetails.vue';
 import CommitGraphView from './CommitGraphView.vue';
 
 const NEVER = new Promise<void>(() => {});
@@ -157,6 +164,201 @@ export const ListOverTheGraph: Story = {
     },
 };
 
+/** A plain commit's details in the list's place: no pull request and no checks to tell of. */
+export const DetailsPlain: Story = {
+    render: () =>
+        renderOver({
+            commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+            bodies: new Map([['c2', 'What changed, and why.\n\nRefs #1187']]),
+        }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('Commit c2');
+        await userEvent.keyboard('{Enter}');
+        const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
+        await expect(await panel.findByText(/What changed, and why/)).toBeVisible();
+    },
+};
+
+/** CH18: a failing commit's details, its pull request and CI below; no count of failing checks, which is not read. */
+export const DetailsFailing: Story = {
+    render: () => renderOver({ ...sampleWebappHistory(), bodies: new Map([['a1', 'Stored in the wrong timezone.']]) }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('chore: bump vite to 6.2');
+        await userEvent.keyboard('j{Enter}');
+        const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
+        await expect(await panel.findByText('Failing')).toBeVisible();
+    },
+};
+
+/** CH20: a merge's details: two parents, on `P` and `Shift+P`. */
+export const DetailsOfAMerge: Story = {
+    render: () =>
+        renderOver({
+            commits: [sampleCommit('merge', 30, ['a', 'b']), sampleCommit('a', 20), sampleCommit('b', 10)],
+            branches: [sampleCommitRef('main', 'merge')],
+        }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('Commit merge');
+        await userEvent.keyboard('{Enter}');
+        const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
+        await expect(await panel.findByRole('heading', { name: 'Parents' })).toBeVisible();
+    },
+};
+
+/** CH16: a tag whose commit is not loaded: its details say why the graph stayed. */
+export const DetailsNotLoaded: Story = {
+    render: () =>
+        renderOver({
+            commits: [sampleCommit('c1', 10, ['old']), sampleCommit('old', 1)],
+            branches: [sampleCommitRef('main', 'c1')],
+            tags: [sampleCommitRef('v0.1', 'old')],
+            kept: [sampleCommit('c1', 10, ['old'])],
+            holdIf: operation => (operation === 'CommitHistories' ? NEVER : null),
+        }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('Commit c1');
+        await userEvent.keyboard('b');
+        await userEvent.keyboard('v0.1{Enter}');
+        const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
+        await expect(await panel.findByText(/Not in the loaded history/)).toBeVisible();
+        await expect(await panel.findByRole('heading', { name: 'Commit old' })).toBeVisible();
+    },
+};
+
+/** A commit not loaded, its read on its way: nothing to draw yet but the line saying so. */
+export const DetailsReading: Story = {
+    render: () => renderOver(notLoadedTag({ holdIf: holdDetailAndHistory })),
+    play: async ({ canvasElement }) => {
+        const panel = await openNotLoadedTag(canvasElement);
+        await expect(await panel.findByText('Reading this commit…')).toBeVisible();
+    },
+};
+
+/** CH40: a commit not loaded whose read failed says so; the rest of the panel stays usable. */
+export const DetailsReadFailed: Story = {
+    render: () =>
+        renderOver(
+            notLoadedTag({
+                holdIf: operation => (operation === 'CommitHistories' ? NEVER : null),
+                failIf: operation => operation === 'CommitDetail',
+            }),
+        ),
+    play: async ({ canvasElement }) => {
+        const panel = await openNotLoadedTag(canvasElement);
+        await expect(await panel.findByText("GitHub can't be asked for this commit right now.")).toBeVisible();
+    },
+};
+
+/** CH40: a loaded commit whose message could not be read has all the rest, and says what is missing. */
+export const DetailsBodyFailed: Story = {
+    render: () =>
+        renderOver({
+            commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+            failIf: operation => operation === 'CommitDetail',
+        }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await canvas.findByText('Commit c2');
+        await userEvent.keyboard('{Enter}');
+        const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
+        const notice = "GitHub can't be asked for the rest of this message right now.";
+        await expect(await panel.findByText(notice)).toBeVisible();
+        await expect(panel.getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    },
+};
+
+/** CH40: offline, what is kept stays and the last row says older commits wait. */
+export const Offline: Story = {
+    render: () =>
+        renderOver({
+            commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['c0'])],
+            branches: [sampleCommitRef('main', 'c2')],
+            failIf: () => true,
+            online: false,
+        }),
+    play: async ({ canvasElement }) => {
+        const notice = "Older commits load when you're back online";
+        await expect(await within(canvasElement).findByText(notice)).toBeVisible();
+    },
+};
+
+/** CH41: a commit no ref reaches any more, its details saying so; the sha of what replaced it is not told (no walk). */
+export const DetailsGone: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const old = sampleCommit('old', 30, ['c1']);
+                const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)];
+                const { container, store, ready } = createCommitGraphTest({
+                    commits: [old, ...history],
+                    kept: [old, ...history],
+                    branches: [sampleCommitRef('main', 'c2')],
+                });
+                provideContainer(container);
+                const kept = shallowRef(false);
+                void showOnceKept();
+                return () =>
+                    h(
+                        'div',
+                        { style: 'display: flex; justify-content: flex-end; height: 100vh' },
+                        kept.value
+                            ? [
+                                  h(CommitDetails, {
+                                      nameWithOwner: 'acme/web',
+                                      oid: 'old',
+                                      refs: [],
+                                      chosenRef: null,
+                                      url: 'https://github.com/acme/web/commit/old',
+                                      now: SAMPLE_COMMITS_NOW,
+                                  }),
+                              ]
+                            : [],
+                    );
+
+                async function showOnceKept() {
+                    await ready;
+                    await store.open('acme/web');
+                    store.ensureDetail('acme/web', { oid: 'old', id: 'C_old' });
+                    kept.value = true;
+                }
+            },
+        }),
+    play: async ({ canvasElement }) => {
+        const panel = within(await within(canvasElement).findByRole('region', { name: 'Commit details' }));
+        await expect(await panel.findByText(/It is no longer in the graph/)).toBeVisible();
+        await expect(panel.getByText('None any more.')).toBeVisible();
+    },
+};
+
+/** A tag whose commit is on GitHub and not loaded. */
+function notLoadedTag(options: Pick<CommitGraphTestOptions, 'failIf' | 'holdIf'>): CommitGraphTestOptions {
+    const history = [sampleCommit('c1', 10, ['old'])];
+    return {
+        ...options,
+        commits: [...history, sampleCommit('old', 1)],
+        branches: [sampleCommitRef('main', 'c1')],
+        tags: [sampleCommitRef('v0.1', 'old')],
+        kept: history,
+    };
+}
+
+function holdDetailAndHistory(operation: string) {
+    return operation === 'CommitDetail' || operation === 'CommitHistories' ? NEVER : null;
+}
+
+/** Chooses the tag of {@link notLoadedTag}, and answers with the panel opened on its commit. */
+async function openNotLoadedTag(canvasElement: HTMLElement) {
+    const canvas = within(canvasElement);
+    await canvas.findByText('Commit c1');
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('v0.1{Enter}');
+    return within(await canvas.findByRole('region', { name: 'Commit details' }));
+}
+
 /** The view over the real store and a GitHub holding `options`, at the sample's moment, the graph at `share` of it. */
 function renderOver(options: CommitGraphTestOptions, share?: number) {
     return defineComponent({
@@ -168,10 +370,6 @@ function renderOver(options: CommitGraphTestOptions, share?: number) {
             }
 
             const kept = shallowRef(false);
-            const showOnceKept = async () => {
-                await ready;
-                kept.value = true;
-            };
             void showOnceKept();
             return () =>
                 h(
@@ -179,6 +377,11 @@ function renderOver(options: CommitGraphTestOptions, share?: number) {
                     { style: 'display: flex; height: 100vh' },
                     kept.value ? [h(CommitGraphView, { nameWithOwner: 'acme/web' })] : [],
                 );
+
+            async function showOnceKept() {
+                await ready;
+                kept.value = true;
+            }
         },
     });
 }

@@ -10,7 +10,7 @@ export interface KeptCommit {
     readonly oid: string;
     /** Its GraphQL node id, to read its history or state through `nodes(ids:)`. */
     readonly id: string;
-    /** The first line of its message. */
+    /** The first line of its message, as GitHub's `messageHeadline`: cut when it is long. */
     readonly headline: string;
     readonly committedDate: string;
     readonly author: CommitAuthor;
@@ -70,3 +70,25 @@ export interface CommitPullRequest {
     readonly url: string;
     readonly isDraft: boolean;
 }
+
+/**
+ * What is known of a commit's details once they were opened (git-client D13). `read` holds the commit and its full
+ * message, which never change. Not `read` yet, the panel draws what the graph knows; `failed` says so quietly, and
+ * opening the commit again asks again.
+ */
+export type CommitDetailRead =
+    | { readonly kind: 'reading' | 'failed' }
+    | {
+          readonly kind: 'read';
+          readonly commit: KeptCommit;
+          /** The first line of its message, whole however long; plain text, written by whoever pushed it. */
+          readonly headline: string;
+          /** Its message below the first line; plain text too. */
+          readonly body: string;
+      };
+
+/**
+ * Where a commit stands with the graph: `shown` is one of its rows, `gone` is loaded and no ref reaches it any more (a
+ * branch force-pushed), `notLoaded` was never read into it (D12: an old tag, a parent below the loaded history).
+ */
+export type CommitPlace = 'gone' | 'notLoaded' | 'shown';

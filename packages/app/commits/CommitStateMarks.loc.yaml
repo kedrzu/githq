@@ -1,11 +1,3 @@
-pullRequestOpen:
-  en: Open pull request
-pullRequestDraft:
-  en: Draft pull request
-pullRequestMerged:
-  en: Merged pull request
-pullRequestClosed:
-  en: Closed pull request
 checksPassing:
   en: Checks passing
 checksFailing:

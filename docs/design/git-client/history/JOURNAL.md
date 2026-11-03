@@ -49,3 +49,4 @@ Append-only; one line per turn that settled something.
   bar only (D23); the Commits screens redrawn.
 - 2026-11-03 — Owner on the branch list: `↵` goes back to the graph (D12, CH15 redrawn), `↑`/`↓` through matches (D15, CH30),
   not on `FilterList`, all drawn tips ask for their state; the narrowest graph is two lanes (D17).
+- 2026-11-03 — Building the details: the body is read on opening (D13), no count of failing checks; CH16, CH18, CH20, CH27, CH40, CH41 follow.

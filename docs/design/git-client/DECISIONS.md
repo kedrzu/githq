@@ -243,8 +243,9 @@ proposal, owner agreed; the unloaded case chosen by the owner; going back to the
 at it, its pull request and CI state, and a link to it on GitHub — no files and no diff in the first
 version.** (2026-11-02, design agent's proposal, owner agreed; "no code for now" is the owner's)
 
-**Why.** Everything here is already fetched for the graph ([D8](#d8), [D9](#d9)); files and diffs are the
-owner's explicit "not yet".
+**Why.** Everything but the message's body is already fetched for the graph ([D8](#d8), [D9](#d9)); the body is one
+request when the details open, kept for the session. Files and diffs are the owner's explicit "not yet". CI is the rollup
+alone: no count of failing checks, nothing else fetches them.
 
 ## D14
 

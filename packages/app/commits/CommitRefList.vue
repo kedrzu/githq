@@ -178,12 +178,14 @@ watch(
 );
 
 // The tips of the branch rows drawn ask for their pull request and CI state: a few dozen at most, so all of them.
-const tipOids = computed(() => [...new Set(shownRows.value.filter(row => row.kind !== 'tag').map(row => row.ref.oid))]);
+const tips = computed(() =>
+  shownRows.value.filter(row => row.kind !== 'tag').map(row => ({ oid: row.ref.oid, id: row.ref.commitId })),
+);
 watch(
-  () => tipOids.value.join(' '),
+  () => tips.value.map(tip => tip.oid).join(' '),
   () => {
-    if (tipOids.value.length > 0) {
-      store.ensureStates(props.nameWithOwner, tipOids.value);
+    if (tips.value.length > 0) {
+      store.ensureStates(props.nameWithOwner, tips.value);
     }
   },
   { immediate: true },

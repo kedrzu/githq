@@ -1,4 +1,5 @@
 import type {
+    CommitDetailQuery,
     CommitFieldsFragment,
     CommitHistoriesQuery,
     CommitRefFieldsFragment,
@@ -12,7 +13,7 @@ import { orderCommits } from '@/commits/orderCommits.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from './createTestSession.js';
 import { sampleCommit } from './sampleCommits.js';
 
-/** A fake GitHub answering the three commit operations, in `bun test` and in a browser alike. */
+/** A fake GitHub answering the commit operations, in `bun test` and in a browser alike. */
 export interface FakeCommitGitHub {
     /** The repository `owner/name`, created empty the first time. */
     repository(nameWithOwner: string): FakeCommitRepository;
@@ -30,6 +31,10 @@ export interface FakeCommitRepository {
     readonly tags: Map<string, string>;
     /** The pull request and CI state of the commits having any, by oid. */
     readonly states: Map<string, CommitState>;
+    /** The full message below the first line of the commits having one, by oid. */
+    readonly bodies: Map<string, string>;
+    /** The first line of the commits whose headline cuts it, by oid; the headline for any other. */
+    readonly subjects: Map<string, string>;
     /** The default branch's name. */
     defaultBranch: string | null;
     /** How many branches or tags a page of them holds. */
@@ -85,6 +90,18 @@ export function fakeCommitGitHub(): FakeCommitGitHub {
                     };
                     return { data };
                 }
+                case 'CommitDetail': {
+                    const found = findCommit(String(variables.id));
+                    const data: CommitDetailQuery = {
+                        node: found
+                            ? {
+                                  ...toNode(found.commit),
+                                  message: toMessage(found.repository, found.commit),
+                              }
+                            : null,
+                    };
+                    return { data };
+                }
                 case 'CommitStates': {
                     const data: CommitStatesQuery = {
                         nodes: readIds(variables).map(id => {
@@ -127,6 +144,8 @@ function createRepository(): FakeCommitRepository {
         branches: new Map(),
         tags: new Map(),
         states: new Map(),
+        bodies: new Map(),
+        subjects: new Map(),
         defaultBranch: 'main',
         refsPerPage: 100,
         add(oid, minutes, parents) {
@@ -212,6 +231,13 @@ function refPage(repository: FakeCommitRepository, refs: ReadonlyMap<string, str
     }
 
     return { pageInfo: { hasNextPage: end < names.length, endCursor: String(Math.min(end, names.length)) }, nodes };
+}
+
+/** A commit's whole message, as git keeps it. */
+function toMessage(repository: FakeCommitRepository, { oid, headline }: KeptCommit) {
+    const subject = repository.subjects.get(oid) ?? headline;
+    const body = repository.bodies.get(oid);
+    return body ? `${subject}\n\n${body}` : subject;
 }
 
 function toNode(commit: KeptCommit): CommitFieldsFragment {

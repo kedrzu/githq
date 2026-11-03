@@ -14,6 +14,7 @@ import type { Freshness } from '@/sync/Freshness.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { fakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
 import type { FakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
+import { sampleCommit } from '@/testing/sampleCommits.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
@@ -38,12 +39,15 @@ test('a first open shows the default branch at once, then joins a branch a few c
     // The first page of the default branch is shown before the branch is joined.
     expect(shownOids(graphs, 'acme/web')).toEqual(oids('c', 20, 120).toReversed());
     expect(graphs.get('acme/web')?.joining).toBe(true);
-    const fresh: Freshness = { kind: 'fresh', checkedAt: session.clock.now() };
-    expect(graphs.getFreshness('acme/web')).toEqual(fresh);
+    // D19: the status bar says the other branches are filling in.
+    const filling: Freshness = { kind: 'filling', done: 0, total: 1 };
+    expect(graphs.getFreshness('acme/web')).toEqual(filling);
 
     held.resolve();
     await opened;
 
+    const fresh: Freshness = { kind: 'fresh', checkedAt: session.clock.now() };
+    expect(graphs.getFreshness('acme/web')).toEqual(fresh);
     const graph = graphs.get('acme/web');
     expect(graph?.joining).toBe(false);
     expect(graph?.commits.slice(0, 4).map(commit => commit.oid)).toEqual(['f3', 'f2', 'f1', 'c119']);
@@ -236,7 +240,7 @@ test('nothing is asked once the GraphQL allowance is spent', async () => {
 
     await graphs.open('acme/web');
     await graphs.loadMore('acme/web');
-    graphs.ensureStates('acme/web', ['c9']);
+    graphs.ensureStates('acme/web', [{ oid: 'c9', id: 'C_c9' }]);
     await session.clock.advance(1000);
 
     expect(requests()).toEqual([]);
@@ -315,8 +319,9 @@ test('the state of the rows on screen is read in batches, used for a minute, and
     const before = requests().length;
 
     // Two calls a moment apart go out together; over 100 commits take two requests.
-    graphs.ensureStates('acme/web', oids('c', 0, 50));
-    graphs.ensureStates('acme/web', oids('c', 50, 150));
+    const commitsOf = (from: number, to: number) => oids('c', from, to).map(oid => ({ oid, id: `C_${oid}` }));
+    graphs.ensureStates('acme/web', commitsOf(0, 50));
+    graphs.ensureStates('acme/web', commitsOf(50, 150));
     expect(graphs.getState('acme/web', 'c149')).toBeUndefined();
     await session.clock.advance(100);
 
@@ -339,12 +344,12 @@ test('the state of the rows on screen is read in batches, used for a minute, and
     // Another repository's commit of the same oid is not known.
     expect(graphs.getState('acme/api', 'c149')).toBeUndefined();
 
-    graphs.ensureStates('acme/web', ['c149']);
+    graphs.ensureStates('acme/web', [{ oid: 'c149', id: 'C_c149' }]);
     await session.clock.advance(100);
     expect(requests().length).toBe(before + 2);
 
     await session.clock.advance(60_000);
-    graphs.ensureStates('acme/web', ['c149']);
+    graphs.ensureStates('acme/web', [{ oid: 'c149', id: 'C_c149' }]);
     await session.clock.advance(100);
     expect(requests().slice(before + 2)).toEqual([{ operation: 'CommitStates', variables: { ids: ['C_c149'] } }]);
 });
@@ -558,6 +563,248 @@ test('a refusal while the bucket is spent pauses until it resets', async () => {
     expect(freshness.kind === 'paused' && freshness.until).toBe(resetAt ?? -1);
 });
 
+test('CH40: coming back online reads a graph left offline again, and clears it; going offline asks nothing', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let failing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (failing ? undefined : world.answer(request)),
+    });
+    session.setOnline(false);
+    await graphs.open('acme/web');
+    const offline: Freshness = { kind: 'stale', since: null, reason: 'offline' };
+    expect(graphs.getFreshness('acme/web')).toEqual(offline);
+
+    const asked = requests().length;
+    session.setOnline(false);
+    await session.clock.advance(0);
+    expect(requests()).toHaveLength(asked);
+
+    failing = false;
+    session.setOnline(true);
+    await session.clock.advance(0);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+    expect(shownOids(graphs, 'acme/web')).toEqual(oids('c', 0, 5).toReversed());
+});
+
+test('coming back online leaves a graph that failed for another reason alone', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    const { graphs, session, requests } = setup(uniqueLogin(), { answer: () => undefined });
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    const asked = requests().length;
+    session.setOnline(true);
+    await session.clock.advance(0);
+    expect(requests()).toHaveLength(asked);
+});
+
+test('a later good page clears what a failed one said, a failure and a pause alike', async () => {
+    const refusal = { data: null, errors: [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }] };
+    for (const [failure, kind] of [
+        [undefined, 'stale'],
+        [refusal, 'paused'],
+    ] as const) {
+        const world = fakeCommitGitHub();
+        const web = world.repository('acme/web');
+        web.line('c', 0, 250);
+        web.branch('main', 'c249');
+        let failing = true;
+        const { graphs } = setup(uniqueLogin(), {
+            answer: request => (request.operation === 'CommitHistories' && failing ? failure : world.answer(request)),
+        });
+        await graphs.open('acme/web');
+        await graphs.loadMore('acme/web');
+        expect(graphs.getFreshness('acme/web').kind).toBe(kind);
+
+        failing = false;
+        await graphs.loadMore('acme/web');
+        expect(shownOids(graphs, 'acme/web')).toHaveLength(200);
+        expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+    }
+});
+
+test("a good older page leaves another check's failure standing: the status bar stays stale", async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.refsPerPage = 1;
+    web.line('c', 0, 250);
+    web.branch('main', 'c249');
+    web.tag('v1', 'c0');
+    web.tag('v2', 'c1');
+    const { graphs } = setup(uniqueLogin(), {
+        answer: request => (request.variables.tagsAfter ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    const stale = graphs.getFreshness('acme/web');
+    expect(stale).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    await graphs.loadMore('acme/web');
+
+    expect(shownOids(graphs, 'acme/web').length).toBeGreaterThan(100);
+    expect(graphs.getFreshness('acme/web')).toEqual(stale);
+});
+
+test('opening again clears what a failed older page said', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 250);
+    web.branch('main', 'c249');
+    let failing = true;
+    const { graphs } = setup(uniqueLogin(), {
+        answer: request => (request.operation === 'CommitHistories' && failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    await graphs.loadMore('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    failing = false;
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('coming back online reads a graph again when only its older page failed for want of the connection', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 250);
+    web.branch('main', 'c249');
+    let failing = true;
+    const { graphs, session } = setup(uniqueLogin(), {
+        answer: request => (request.operation === 'CommitHistories' && failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    session.setOnline(false);
+    await graphs.loadMore('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'offline' });
+
+    failing = false;
+    session.setOnline(true);
+    await session.clock.advance(0);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('a reconnect during a running check reads the graph again once it ended, left offline', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.refsPerPage = 1;
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    web.add('f1', 100, ['c3']);
+    web.branch('feature', 'f1');
+    web.tag('v1', 'c0');
+    web.tag('v2', 'c1');
+    let failing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (request.variables.tagsAfter && failing ? undefined : world.answer(request)),
+    });
+    const held = createPromise();
+    session.github.holdIf = request => (request.operation === 'CommitHistories' ? held.promise : null);
+    session.setOnline(false);
+    const opened = graphs.open('acme/web');
+    await session.clock.advance(0);
+
+    // The page of tags failed for want of the connection, and the joining is still running: nothing to start yet.
+    const asked = requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+    failing = false;
+    session.setOnline(true);
+    await session.clock.advance(0);
+    expect(requests().filter(request => request.operation === 'RepositoryCommitRefs')).toHaveLength(asked);
+
+    held.resolve();
+    await opened;
+    await session.clock.advance(0);
+
+    expect(requests().filter(request => request.operation === 'RepositoryCommitRefs').length).toBeGreaterThan(asked);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('a reconnect with the allowance spent does not spin on a graph left offline: nothing is asked', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    const { graphs, session, requests } = setup(uniqueLogin(), { answer: () => undefined });
+    await session.clock.advance(0);
+    session.setOnline(false);
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'offline' });
+
+    session.container.resolve(GitHubRateLimitStore).update({
+        resource: 'graphql',
+        limit: 5000,
+        remaining: 0,
+        resetAt: new Date(session.clock.now() + 60_000),
+    });
+    const asked = requests().length;
+    session.setOnline(true);
+    await session.clock.advance(0);
+
+    expect(requests()).toHaveLength(asked);
+    expect(graphs.getFreshness('acme/web').kind).toBe('paused');
+});
+
+test('D19: what is done stays done, though a merge at the bottom of a page leaves more to follow', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 120);
+    web.branch('main', 'c119');
+    web.add('near', 1191, ['c118']);
+    web.branch('near', 'near');
+    web.add('x', 1001, ['c100']);
+    web.add('y', 1002, ['c100']);
+    web.add('d0', 1003, ['x', 'y']);
+    web.line('d', 1, 70, 1004);
+    web.branch('deep', 'd69');
+    const { graphs, session } = setup(uniqueLogin(), world);
+    const held = createPromise();
+    let histories = 0;
+    session.github.holdIf = request => {
+        if (request.operation !== 'CommitHistories') {
+            return null;
+        }
+
+        // The third round: the first joined `near`, the second ended on the merge, with two parents to follow.
+        histories++;
+        return histories === 3 ? held.promise : null;
+    };
+    const opened = graphs.open('acme/web');
+    await session.clock.advance(0);
+
+    const filling: Freshness = { kind: 'filling', done: 1, total: 2 };
+    expect(graphs.getFreshness('acme/web')).toEqual(filling);
+
+    held.resolve();
+    await opened;
+});
+
+test('a pause whose time has passed is no longer a pause', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 250);
+    web.branch('main', 'c249');
+    const { graphs, session } = setup(uniqueLogin(), {
+        answer: request =>
+            request.operation === 'CommitHistories'
+                ? { data: null, errors: [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }] }
+                : world.answer(request),
+    });
+    await graphs.open('acme/web');
+    await graphs.loadMore('acme/web');
+    expect(graphs.getFreshness('acme/web').kind).toBe('paused');
+
+    await session.clock.advance(60_001);
+    session.github.holdIf = () => new Promise(() => {});
+    void graphs.loadMore('acme/web');
+
+    expect(graphs.get('acme/web')?.loadingMore).toBe(true);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
 test('opening a graph again reads its refs again, however soon', async () => {
     const world = fakeCommitGitHub();
     const web = world.repository('acme/web');
@@ -572,6 +819,168 @@ test('opening a graph again reads its refs again, however soon', async () => {
 
     expect(requests().filter(request => request.operation === 'RepositoryCommitRefs')).toHaveLength(2);
     expect(shownOids(graphs, 'acme/web')[0]).toBe('c5');
+});
+
+test("D13, D12: a commit's details are read once, by oid, and a commit not loaded never joins the graph", async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('old', 1, []);
+    web.add('c1', 10, ['old']);
+    web.add('c2', 20, ['c1']);
+    web.branch('main', 'c2');
+    web.tag('v0.1', 'old');
+    web.bodies.set('old', 'Fixes the export.');
+    const { graphs, session, requests } = setup(uniqueLogin(), world);
+    session.github.holdIf = request => (request.operation === 'CommitHistories' ? new Promise(() => {}) : null);
+    await graphs.open('acme/web');
+    expect(graphs.getCommitPlace('acme/web', 'c2')).toBe('shown');
+    const shown = shownOids(graphs, 'acme/web');
+    const commit = { id: 'C_old', oid: 'old' };
+
+    expect(graphs.getDetail('acme/web', 'old')).toBeUndefined();
+    const before = graphs.getCommitPlace('acme/web', 'old');
+    graphs.ensureDetail('acme/web', commit);
+    expect(graphs.getDetail('acme/web', 'old')).toEqual({ kind: 'reading' });
+    graphs.ensureDetail('acme/web', commit);
+    await session.clock.advance(0);
+
+    expect(graphs.getDetail('acme/web', 'old')).toMatchObject({
+        kind: 'read',
+        body: 'Fixes the export.',
+        commit: { oid: 'old', headline: 'Commit old' },
+    });
+    expect(graphs.getCommit('acme/web', 'old')?.headline).toBe('Commit old');
+
+    // Read again it is not asked for; and it stays out of the graph, as loaded as it was.
+    graphs.ensureDetail('acme/web', commit);
+    await session.clock.advance(0);
+    expect(requests().filter(request => request.operation === 'CommitDetail')).toEqual([
+        { operation: 'CommitDetail', variables: { id: 'C_old' } },
+    ]);
+    expect(shownOids(graphs, 'acme/web')).toEqual(shown);
+    expect(graphs.getCommitPlace('acme/web', 'old')).toBe(before);
+});
+
+test('D13: a long subject GitHub cuts in the headline reads whole in the details, and only there, with nothing of it in the body', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    const cut = 'feat: render the list like vdom (#16…';
+    web.commits.set('long', { ...sampleCommit('long', 10), headline: cut });
+    web.subjects.set('long', 'feat: render the list like vdom (#16077)');
+    web.bodies.set('long', 'Why it renders like that.\n');
+    web.add('short', 20, ['long']);
+    web.branch('main', 'short');
+    const { graphs, session } = setup(uniqueLogin(), world);
+    await graphs.open('acme/web');
+
+    graphs.ensureDetail('acme/web', { id: 'C_long', oid: 'long' });
+    graphs.ensureDetail('acme/web', { id: 'C_short', oid: 'short' });
+    await session.clock.advance(0);
+
+    expect(graphs.getDetail('acme/web', 'long')).toMatchObject({
+        kind: 'read',
+        headline: 'feat: render the list like vdom (#16077)',
+        body: 'Why it renders like that.',
+    });
+    expect(graphs.getDetail('acme/web', 'short')).toMatchObject({ headline: 'Commit short', body: '' });
+    expect(graphs.get('acme/web')?.commits.at(-1)?.headline).toBe(cut);
+});
+
+test('D12: a commit not loaded is asked for its state by its id, though neither its history nor a ref knows it', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('old', 1, []);
+    web.add('c1', 10, ['old']);
+    web.branch('main', 'c1');
+    web.states.set('old', { pullRequest: null, ci: 'SUCCESS' });
+    const { graphs, session } = setup(uniqueLogin(), world);
+    session.github.holdIf = request => (request.operation === 'CommitHistories' ? new Promise(() => {}) : null);
+    await graphs.open('acme/web');
+
+    graphs.ensureStates('acme/web', [{ oid: 'old', id: 'C_old' }]);
+    await session.clock.advance(100);
+
+    expect(graphs.getState('acme/web', 'old')?.ci).toBe('SUCCESS');
+});
+
+test('D13, CH40: a read that fails says so and opening again asks again; with the allowance spent nothing is sent', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.branch('main', 'c1');
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (request.operation === 'CommitDetail' && failing ? undefined : world.answer(request)),
+    });
+    let failing = true;
+    await graphs.open('acme/web');
+    const commit = { id: 'C_c1', oid: 'c1' };
+
+    graphs.ensureDetail('acme/web', commit);
+    await session.clock.advance(0);
+    expect(graphs.getDetail('acme/web', 'c1')).toEqual({ kind: 'failed' });
+
+    failing = false;
+    graphs.ensureDetail('acme/web', commit);
+    await session.clock.advance(0);
+    expect(graphs.getDetail('acme/web', 'c1')?.kind).toBe('read');
+
+    const asked = requests().length;
+    session.github.graphqlRemaining = 0;
+    await graphs.open('acme/web');
+    expect(session.container.resolve(GitHubRateLimitStore).remaining('graphql')).toBe(0);
+    const after = requests().length;
+    expect(after).toBeGreaterThan(asked);
+    graphs.ensureDetail('acme/web', { id: 'C_other', oid: 'other' });
+    await session.clock.advance(0);
+    expect(requests()).toHaveLength(after);
+    expect(graphs.getDetail('acme/web', 'other')).toEqual({ kind: 'failed' });
+});
+
+test('D13: details arriving after the user signed out, or another signed in, are dropped', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.branch('main', 'c1');
+
+    for (const change of ['signOut', 'switch'] as const) {
+        const { graphs, session } = setup(uniqueLogin(), world);
+        await graphs.open('acme/web');
+        const held = createPromise();
+        session.github.hold = held.promise;
+        graphs.ensureDetail('acme/web', { id: 'C_c1', oid: 'c1' });
+        await session.clock.advance(0);
+
+        if (change === 'signOut') {
+            session.signOutFromAnotherTab();
+        } else {
+            session.signInFromAnotherTab(uniqueLogin());
+        }
+
+        held.resolve();
+        await session.clock.advance(0);
+
+        expect(graphs.getDetail('acme/web', 'c1')).toBeUndefined();
+        expect(graphs.getCommit('acme/web', 'c1')).toBeUndefined();
+    }
+});
+
+test("a force-pushed branch's old commit stays known, and stands as gone from the graph", async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('base', 1, []);
+    web.add('old', 10, ['base']);
+    web.add('new', 11, ['base']);
+    web.branch('main', 'old');
+    const { graphs } = setup(uniqueLogin(), world);
+    await graphs.open('acme/web');
+    expect(graphs.getCommitPlace('acme/web', 'old')).toBe('shown');
+
+    web.branch('main', 'new');
+    await graphs.open('acme/web');
+
+    expect(graphs.getCommitPlace('acme/web', 'old')).toBe('gone');
+    expect(graphs.getCommit('acme/web', 'old')?.headline).toBe('Commit old');
+    expect(graphs.getCommitPlace('acme/web', 'never')).toBe('notLoaded');
 });
 
 function setup(login: string, world: Pick<FakeCommitGitHub, 'answer'>, persistence?: IndexedDbPersistence) {

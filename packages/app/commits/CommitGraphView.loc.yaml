@@ -18,6 +18,18 @@ previous:
   en: Previous commit
 findRef:
   en: Find a branch or tag
+openDetails:
+  en: Open the commit's details
+firstParent:
+  en: First parent
+secondParent:
+  en: Second parent
+openPullRequest:
+  en: Open its pull request
+openOnGitHub:
+  en: Open on GitHub
+closeDetails:
+  en: Close the details
 resizeGraph:
   en: Resize the commit graph
 lanesFit:
@@ -25,3 +37,5 @@ lanesFit:
   en:
     one: '{fit} of {total} lane'
     many: '{fit} of {total} lanes'
+olderWhenOnline:
+  en: Older commits load when you're back online

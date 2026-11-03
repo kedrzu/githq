@@ -1,0 +1,60 @@
+title:
+  en: Commit details
+previous:
+  en: Previous commit
+next:
+  en: Next commit
+openOnGitHub:
+  en: Open on GitHub
+close:
+  en: Close the details
+notLoaded:
+  en: Not in the loaded history. The graph loads as you scroll, so it stayed where it was.
+notLoadedRef:
+  en: Not in the loaded history. {name} is from {age}; the graph loads as you scroll, so it stayed where it was.
+gone:
+  en: No branch or tag reaches this commit any more. It is no longer in the graph.
+reading:
+  en: Reading this commit…
+readFailed:
+  en: GitHub can't be asked for this commit right now.
+bodyFailed:
+  en: GitHub can't be asked for the rest of this message right now.
+author:
+  en: Author
+committed:
+  en: Committed
+committedAt:
+  en: '{age} · {date}, {time}'
+commit:
+  en: Commit
+parent:
+  en: Parent
+parents:
+  en: Parents
+refsHere:
+  en: Branches and tags here
+noRefs:
+  en: None.
+noRefsAnyMore:
+  en: None any more.
+pullRequest:
+  en: Pull request
+ci:
+  en: CI on this commit
+ciPassing:
+  en: Passing
+ciFailing:
+  en: Failing
+ciRunning:
+  en: Running
+checksOnGitHub:
+  en: · the checks are listed on GitHub
+keyCommit:
+  en: Commit
+keyParent:
+  en: Parent
+keyPullRequest:
+  en: Pull request
+keyGitHub:
+  en: GitHub

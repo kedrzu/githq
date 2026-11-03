@@ -18,6 +18,8 @@ notRefreshedSince:
   en: Not refreshed since {time}
 pausedUntil:
   en: Paused until {time}
+filling:
+  en: Filling in the other branches · {done} of {total}
 downloading:
   en: Downloading · what's here is usable
 checkedAgo:

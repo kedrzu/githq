@@ -1,4 +1,5 @@
 import type {
+    CommitDetailQuery,
     CommitFieldsFragment,
     CommitHistoriesQuery,
     CommitStatesQuery,
@@ -175,6 +176,8 @@ export interface GitHubWorldCommitParams {
     /** Its id, any unique string; its node id is `C_<oid>`. */
     readonly oid: string;
     readonly headline: string;
+    /** Its message below the headline; none by default. */
+    readonly body?: string;
     /** Its author's login. */
     readonly author: string;
     readonly minutesAgo: number;
@@ -914,6 +917,18 @@ export class GitHubWorld {
                 return found ? { history: toHistory(found.repository, found.commit, first) } : null;
             });
             return { nodes };
+        });
+        github.graphql('CommitDetail', ({ variables }) => {
+            const found = this.findCommit(String(variables.id));
+            const node: CommitDetailQuery['node'] = found
+                ? {
+                      ...toCommitFields(found.commit),
+                      message: found.commit.body
+                          ? `${found.commit.headline}\n\n${found.commit.body}`
+                          : found.commit.headline,
+                  }
+                : null;
+            return { node };
         });
         github.graphql('CommitStates', ({ variables }) => {
             const nodes: CommitStatesQuery['nodes'] = readIds(variables).map(id => {

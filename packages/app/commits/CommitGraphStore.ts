@@ -1,4 +1,5 @@
 import type {
+    CommitDetailQuery,
     CommitFieldsFragment,
     CommitRefFieldsFragment,
     CommitStatesQuery,
@@ -24,7 +25,15 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { CommitPersistence } from './CommitPersistence.js';
 import type { PersistedCommits } from './CommitPersistence.js';
-import type { CommitParent, CommitRef, CommitState, KeptCommit, KeptCommitRefs } from './CommitTypes.js';
+import type {
+    CommitDetailRead,
+    CommitParent,
+    CommitPlace,
+    CommitRef,
+    CommitState,
+    KeptCommit,
+    KeptCommitRefs,
+} from './CommitTypes.js';
 import { layoutCommitGraph } from './layoutCommitGraph.js';
 import type { CommitGraphLayout } from './layoutCommitGraph.js';
 import { orderCommits } from './orderCommits.js';
@@ -65,7 +74,7 @@ export interface CommitGraph {
     readonly joining: boolean;
     /**
      * How current the refs are, for the status bar (githq D15): `partial` until first read, `checking` while read again,
-     * `fresh` once GitHub answered, `stale` when it did not, `paused` when the allowance was spent.
+     * `filling` while a first open's branches are read down (git-client D19), `fresh` once GitHub answered, `stale` when it did not, `paused` when the allowance was spent.
      */
     readonly freshness: Freshness;
 }
@@ -97,7 +106,13 @@ interface RepositoryGraph {
     problem: 'offline' | 'failing' | null;
     /** The last refs check, or the joining after it, was not sent: the allowance is spent until then. */
     pausedUntil: number | null;
+    /** Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. */
+    moreProblem: 'offline' | 'failing' | null;
+    /** The last older page was refused: the allowance is spent until then. */
+    morePausedUntil: number | null;
     joining: boolean;
+    /** A first open's branches being read down to the loaded history, and how many of them are (git-client D19). */
+    filling: { readonly done: number; readonly total: number } | null;
     /** The `loadMore` under way. */
     more: Promise<void> | null;
     /** The shown commits and their layout, computed once per change of the commits or refs. */
@@ -122,8 +137,8 @@ interface Session {
     readonly account: Account;
     /** By `owner/name`. */
     readonly graphs: Map<string, RepositoryGraph>;
-    /** The oids waiting to be asked for their state, by `owner/name`. */
-    readonly pendingStates: Map<string, Set<string>>;
+    /** The commits waiting to be asked for their state, each oid by its commit id, by `owner/name`. */
+    readonly pendingStates: Map<string, Map<string, string>>;
     /** The oids whose state is being read, by `owner/name`. */
     readonly statesInFlight: Map<string, Set<string>>;
     cancelStatesBatch: (() => void) | null;
@@ -132,13 +147,15 @@ interface Session {
 /**
  * The commit graphs of the repositories the signed-in user opens the Commits section of (git-client D9), in any
  * repository they can see, tracked or not (D11). Nothing is read in the background: a graph is read when it opens
- * ({@link open}) and scrolls down ({@link loadMore}), and the rows on screen ask for their pull request and CI
- * state ({@link ensureStates}, D8).
+ * ({@link open}) and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
+ * state ({@link ensureStates}, D8), and a commit whose details open asks for its full message ({@link ensureDetail},
+ * D13).
  *
  * Commits and refs are kept in the user's local copy for good, so a graph opened before draws at once; the refs
  * are then read again and the branches that moved to commits not loaded are read down to the loaded history, as soon
  * as the branches are read, while the remaining pages of tags still are.
- * Pull request and CI state is kept in memory only.
+ * Pull request and CI state and details are kept in memory only, and a commit read for its details never joins the
+ * graph (D12).
  *
  * Like the other stores it follows the signed-in user: their graphs leave memory when they sign out or another
  * user signs in, and an answer arriving for a session that ended is dropped, never kept or shown.
@@ -158,18 +175,24 @@ export const CommitGraphStore = defineService({
     setup({ accounts, items, persistence, rateLimits, browser, clock, logger }) {
         const graphsRef = shallowRef<ReadonlyMap<string, CommitGraph>>(new Map());
         const statesRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, ReadState>>>(new Map());
+        const detailsRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitDetailRead>>>(new Map());
 
         let session: Session | null = null;
 
         accounts.onChange(follow);
+        browser.onOnlineChange(reopenOffline);
 
         return {
             get,
             getFreshness,
             getState,
+            getCommit,
+            getCommitPlace,
+            getDetail,
             open,
             loadMore,
             ensureStates,
+            ensureDetail,
         };
 
         /** The graph of `owner/name`, or `undefined` until {@link open} brought its kept copy; reactive. */
@@ -188,6 +211,26 @@ export const CommitGraphStore = defineService({
          */
         function getState(nameWithOwner: string, oid: string): CommitState | undefined {
             return statesRef.value.get(nameWithOwner)?.get(oid)?.state;
+        }
+
+        /** The commit `oid` of `owner/name` as known: loaded, shown or not, or read for its details; reactive. */
+        function getCommit(nameWithOwner: string, oid: string): KeptCommit | undefined {
+            const read = getDetail(nameWithOwner, oid);
+            return findLoadedCommit(nameWithOwner, oid) ?? (read?.kind === 'read' ? read.commit : undefined);
+        }
+
+        /** Where the commit `oid` of `owner/name` stands with the graph; reactive. */
+        function getCommitPlace(nameWithOwner: string, oid: string): CommitPlace {
+            if (graphsRef.value.get(nameWithOwner)?.commits.some(commit => commit.oid === oid)) {
+                return 'shown';
+            }
+
+            return findLoadedCommit(nameWithOwner, oid) ? 'gone' : 'notLoaded';
+        }
+
+        /** What is known of the details of the commit `oid` of `owner/name`; `undefined` until asked for. Reactive. */
+        function getDetail(nameWithOwner: string, oid: string): CommitDetailRead | undefined {
+            return detailsRef.value.get(nameWithOwner)?.get(oid);
         }
 
         /**
@@ -215,6 +258,11 @@ export const CommitGraphStore = defineService({
 
             const refreshing = refresh(graph).finally(() => {
                 graph.refreshing = null;
+                // A reconnect while this ran found nothing to start. With the allowance spent the retry would send
+                // nothing and clear nothing, and come straight back here; a retry that sends fails as `failing` online.
+                if (rateLimits.remaining('graphql') !== 0) {
+                    reopenOffline();
+                }
             });
             graph.refreshing = refreshing;
             return refreshing;
@@ -252,11 +300,10 @@ export const CommitGraphStore = defineService({
         }
 
         /**
-         * Asks for the pull request and CI state of the commits `oids` of `owner/name` — those not known, or read
-         * over a minute ago — gathering the calls of a short moment into requests of up to 100. A commit is found
-         * among the loaded ones or the refs' tips; one neither knows is not asked for.
+         * Asks for the pull request and CI state of `commits` of `owner/name` — those not known, or read over a minute
+         * ago — gathering the calls of a short moment into requests of up to 100. They need not be loaded (D12).
          */
-        function ensureStates(nameWithOwner: string, oids: readonly string[]) {
+        function ensureStates(nameWithOwner: string, commits: readonly CommitParent[]) {
             const current = session;
             if (!current) {
                 return;
@@ -264,14 +311,14 @@ export const CommitGraphStore = defineService({
 
             const read = statesRef.value.get(nameWithOwner);
             const inFlight = current.statesInFlight.get(nameWithOwner);
-            const pending = current.pendingStates.get(nameWithOwner) ?? new Set<string>();
-            for (const oid of oids) {
+            const pending = current.pendingStates.get(nameWithOwner) ?? new Map<string, string>();
+            for (const { oid, id } of commits) {
                 const state = read?.get(oid);
                 if ((state && clock.now() - state.readAt < STATES_TTL_MS) || inFlight?.has(oid)) {
                     continue;
                 }
 
-                pending.add(oid);
+                pending.set(id, oid);
             }
 
             if (pending.size === 0) {
@@ -285,12 +332,34 @@ export const CommitGraphStore = defineService({
             }, STATES_BATCH_MS);
         }
 
+        /**
+         * Asks for the details of `commit` of `owner/name` — once a session, for a commit never changes — and keeps them
+         * apart from the graph. Asked again only after a read that failed. With the allowance spent nothing is sent and
+         * it reads as failed, for the panel not to wait for good.
+         */
+        function ensureDetail(nameWithOwner: string, commit: CommitParent) {
+            const current = session;
+            const known = getDetail(nameWithOwner, commit.oid);
+            if (!current || known?.kind === 'read' || known?.kind === 'reading') {
+                return;
+            }
+
+            if (rateLimits.remaining('graphql') === 0) {
+                setDetail(nameWithOwner, commit.oid, { kind: 'failed' });
+                return;
+            }
+
+            setDetail(nameWithOwner, commit.oid, { kind: 'reading' });
+            void readDetail(current, nameWithOwner, commit);
+        }
+
         /** Another account signed in, or none: the graphs of whoever was before leave memory. */
         function follow(account: Account | null) {
             session?.cancelStatesBatch?.();
             session = null;
             graphsRef.value = new Map();
             statesRef.value = new Map();
+            detailsRef.value = new Map();
             if (!account) {
                 return;
             }
@@ -302,6 +371,19 @@ export const CommitGraphStore = defineService({
                 statesInFlight: new Map(),
                 cancelStatesBatch: null,
             };
+        }
+
+        /** The connection came back: the graphs that could not be read for want of it are read again. */
+        function reopenOffline() {
+            if (!session || !browser.isOnline()) {
+                return;
+            }
+
+            for (const [nameWithOwner, graph] of session.graphs) {
+                if (graph.problem === 'offline' || graph.moreProblem === 'offline') {
+                    void open(nameWithOwner);
+                }
+            }
         }
 
         function createGraph(current: Session, nameWithOwner: string): RepositoryGraph {
@@ -318,7 +400,10 @@ export const CommitGraphStore = defineService({
                 checkedAt: null,
                 problem: null,
                 pausedUntil: null,
+                moreProblem: null,
+                morePausedUntil: null,
                 joining: false,
+                filling: null,
                 more: null,
                 shown: { commits: [], layout: { rows: [], maxWidth: 0, hasMainLane: false }, frontier: null },
             };
@@ -368,6 +453,8 @@ export const CommitGraphStore = defineService({
 
             graph.pausedUntil = null;
             graph.problem = null;
+            graph.morePausedUntil = null;
+            graph.moreProblem = null;
             graph.checking = true;
             publish(graph);
             await readRefs(graph);
@@ -384,9 +471,10 @@ export const CommitGraphStore = defineService({
         async function readRefs(graph: RepositoryGraph) {
             const current = graph.session;
             let joined: Promise<void> | null = null;
+            const firstOpen = graph.refs === null || graph.commits.size === 0;
             try {
                 const first = await readRefsPage(graph, {
-                    withHistory: graph.refs === null || graph.commits.size === 0,
+                    withHistory: firstOpen,
                     withBranches: true,
                     withTags: true,
                 });
@@ -439,7 +527,7 @@ export const CommitGraphStore = defineService({
                 graph.refs = allBranches;
                 graph.branchesRead = true;
                 regraph(graph);
-                joined = join(graph, allBranches.branches);
+                joined = join(graph, allBranches.branches, firstOpen);
 
                 let tagsInfo = first.tags?.pageInfo;
                 while (tagsInfo?.hasNextPage) {
@@ -504,7 +592,7 @@ export const CommitGraphStore = defineService({
          * request, then deeper — from the oldest commit read — only for those that met no loaded commit, for a few
          * rounds. A branch still not joined then continues off the bottom; scrolling down fills it in.
          */
-        async function join(graph: RepositoryGraph, branches: readonly CommitRef[]) {
+        async function join(graph: RepositoryGraph, branches: readonly CommitRef[], firstOpen: boolean) {
             const tips = new Set<string>();
             for (const branch of branches) {
                 if (!graph.commits.has(branch.oid)) {
@@ -518,6 +606,8 @@ export const CommitGraphStore = defineService({
             }
 
             graph.joining = true;
+            const total = ids.length;
+            graph.filling = firstOpen ? { done: 0, total } : null;
             publish(graph);
             try {
                 for (let round = 0; round < JOIN_ROUNDS && ids.length > 0; round++) {
@@ -550,6 +640,11 @@ export const CommitGraphStore = defineService({
                     }
 
                     ids = [...next];
+                    if (graph.filling) {
+                        // A merge at the bottom of a page leaves more to follow than it took: what is done stays done.
+                        graph.filling = { done: Math.max(graph.filling.done, total - ids.length), total };
+                        publish(graph);
+                    }
                 }
             } catch (error) {
                 if (isCurrent(graph.session)) {
@@ -560,6 +655,7 @@ export const CommitGraphStore = defineService({
                     noteFailure(graph, error);
                 }
             } finally {
+                graph.filling = null;
                 graph.joining = false;
                 if (isCurrent(graph.session)) {
                     publish(graph);
@@ -574,10 +670,16 @@ export const CommitGraphStore = defineService({
                     return;
                 }
 
+                // GitHub answered: an older page failing before no longer holds. A refs check failing still does.
+                graph.moreProblem = null;
+                graph.morePausedUntil = null;
                 keepCommits(graph, pages[0] ?? []);
             } catch (error) {
                 if (isCurrent(graph.session)) {
                     logger.warn('More history could not be read', { nameWithOwner: graph.nameWithOwner, error });
+                    const failure = readFailure(error);
+                    graph.moreProblem = failure.problem;
+                    graph.morePausedUntil = failure.pausedUntil;
                 }
             }
         }
@@ -642,16 +744,7 @@ export const CommitGraphStore = defineService({
             }
 
             for (const [nameWithOwner, oids] of pending) {
-                const ids = new Map<string, string>();
-                const graph = current.graphs.get(nameWithOwner);
-                for (const oid of oids) {
-                    const id = graph && findCommitId(graph, oid);
-                    if (id) {
-                        ids.set(id, oid);
-                    }
-                }
-
-                for (const chunk of splitIntoChunks([...ids], MAX_IDS)) {
+                for (const chunk of splitIntoChunks([...oids], MAX_IDS)) {
                     void readStates({ session: current, nameWithOwner, oids: new Map(chunk) });
                 }
             }
@@ -689,6 +782,38 @@ export const CommitGraphStore = defineService({
             }
         }
 
+        /** Reads a commit's details; never rejects — a read that fails says so. An ended session's answer is dropped. */
+        async function readDetail(current: Session, nameWithOwner: string, { id, oid }: CommitParent) {
+            let read: CommitDetailRead = { kind: 'failed' };
+            try {
+                const { node } = await current.account.sdk.CommitDetail({ id });
+                if (isCommitNode(node)) {
+                    const [commit] = toKeptCommits(nameWithOwner, [node]);
+                    read = commit ? { kind: 'read', commit, ...splitMessage(node.message) } : read;
+                }
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('The details of a commit could not be read', { nameWithOwner, error });
+                }
+            }
+
+            if (isCurrent(current)) {
+                setDetail(nameWithOwner, oid, read);
+            }
+        }
+
+        function setDetail(nameWithOwner: string, oid: string, read: CommitDetailRead) {
+            const details = new Map(detailsRef.value.get(nameWithOwner)).set(oid, read);
+            detailsRef.value = new Map(detailsRef.value).set(nameWithOwner, details);
+        }
+
+        /** The commit if loaded, shown or not; reactive, for every change of the loaded commits publishes the graph. */
+        function findLoadedCommit(nameWithOwner: string, oid: string) {
+            return graphsRef.value.has(nameWithOwner)
+                ? session?.graphs.get(nameWithOwner)?.commits.get(oid)
+                : undefined;
+        }
+
         /** Computes the shown commits and their layout again — the commits or refs changed — and publishes them. */
         function regraph(graph: RepositoryGraph) {
             graph.shown = toShownGraph(graph);
@@ -703,12 +828,20 @@ export const CommitGraphStore = defineService({
 
         /** Says why the refs check, or the joining after it, failed: GitHub refusing for the rate is a pause. */
         function noteFailure(graph: RepositoryGraph, error: unknown) {
-            const refusal = getRefusalPause({ error, limits: [rateLimits.get('graphql')], now: clock.now() });
-            if (refusal) {
-                pause(graph, refusal.until);
+            const failure = readFailure(error);
+            if (failure.pausedUntil === null) {
+                graph.problem = failure.problem;
             } else {
-                graph.problem = browser.isOnline() ? 'failing' : 'offline';
+                pause(graph, failure.pausedUntil);
             }
+        }
+
+        /** What a read's failure says: GitHub refusing for the rate is a pause, anything else a problem. */
+        function readFailure(error: unknown): ReadFailure {
+            const refusal = getRefusalPause({ error, limits: [rateLimits.get('graphql')], now: clock.now() });
+            return refusal
+                ? { problem: null, pausedUntil: refusal.until }
+                : { problem: browser.isOnline() ? 'failing' : 'offline', pausedUntil: null };
         }
 
         /** Publishes the graph's state for the view. */
@@ -727,7 +860,7 @@ export const CommitGraphStore = defineService({
                     refs.branches.every(branch => graph.commits.has(branch.oid)),
                 loadingMore: graph.more !== null,
                 joining: graph.joining,
-                freshness: toFreshness(graph),
+                freshness: toFreshness(graph, clock.now()),
             };
             graphsRef.value = new Map(graphsRef.value).set(graph.nameWithOwner, view);
         }
@@ -745,6 +878,12 @@ type RefsPage = Partial<Omit<RepositoryCommitRefsQueryVariables, 'owner' | 'name
 /** The repository as a `RepositoryCommitRefs` request answers it. */
 type ReadRepository = NonNullable<RepositoryCommitRefsQuery['repository']>;
 
+/** What a read's failure says; one of the two is set. */
+interface ReadFailure {
+    readonly problem: 'offline' | 'failing' | null;
+    readonly pausedUntil: number | null;
+}
+
 /** The parameters of a `CommitHistories` read. */
 interface ReadHistoriesParams {
     readonly ids: readonly string[];
@@ -752,18 +891,24 @@ interface ReadHistoriesParams {
     readonly first: number;
 }
 
-function toFreshness(graph: RepositoryGraph): Freshness {
+function toFreshness(graph: RepositoryGraph, now: number): Freshness {
+    if (graph.filling) {
+        return { kind: 'filling', ...graph.filling };
+    }
+
     const since = graph.refs?.fetchedAt ?? null;
     if (graph.checking) {
         return since === null ? { kind: 'partial' } : { kind: 'checking', since };
     }
 
-    if (graph.pausedUntil !== null) {
-        return { kind: 'paused', since, until: graph.pausedUntil };
+    const pausedUntil = Math.max(graph.pausedUntil ?? 0, graph.morePausedUntil ?? 0);
+    if (pausedUntil > now) {
+        return { kind: 'paused', since, until: pausedUntil };
     }
 
-    if (graph.problem) {
-        return { kind: 'stale', since, reason: graph.problem };
+    const problem = graph.problem ?? graph.moreProblem;
+    if (problem) {
+        return { kind: 'stale', since, reason: problem };
     }
 
     if (graph.checkedAt !== null) {
@@ -883,6 +1028,27 @@ function toKeptCommits(
     }));
 }
 
+/**
+ * Whether `node(id:)` answered with the commit asked for. A guard, not `'message' in node` where it is used: the
+ * generated type's `Record<PropertyKey, never>` for any other node survives that test, and isn't a commit's fields.
+ */
+function isCommitNode(
+    node: CommitDetailQuery['node'],
+): node is Extract<NonNullable<CommitDetailQuery['node']>, { message: string }> {
+    return node !== null && node !== undefined && 'message' in node;
+}
+
+/**
+ * A commit's message as its author wrote it: its first line whole, and the rest. Not GitHub's `messageHeadline` and
+ * `messageBody`, which cut a long first line and start the body with what they cut.
+ */
+function splitMessage(message: string) {
+    const end = message.indexOf('\n');
+    return end === -1
+        ? { headline: message.trim(), body: '' }
+        : { headline: message.slice(0, end).trim(), body: message.slice(end).trim() };
+}
+
 /** A commit GitHub gave nothing for has neither a pull request nor checks. */
 function toCommitState(node: CommitStatesQuery['nodes'][number]): CommitState {
     if (!node || !('id' in node)) {
@@ -900,15 +1066,4 @@ function toCommitState(node: CommitStatesQuery['nodes'][number]): CommitState {
         },
         ci: node.statusCheckRollup?.state ?? null,
     };
-}
-
-/** The commit id of `oid`: a loaded commit's, or a ref's tip. */
-function findCommitId(graph: RepositoryGraph, oid: string): string | undefined {
-    const commit = graph.commits.get(oid);
-    if (commit) {
-        return commit.id;
-    }
-
-    const refs = [...(graph.refs?.branches ?? []), ...(graph.refs?.tags ?? [])];
-    return refs.find(ref => ref.oid === oid)?.commitId;
 }
