@@ -278,7 +278,7 @@ test("a file that fails says GitHub's words in place and marks its row, the othe
     await expect(review.diff.getByText("Couldn't fetch this file")).toBeVisible();
     await expect(review.diff.getByText(/Server Error 502/)).toBeVisible();
     await expect(review.fileRow('client.ts').getByRole('img', { name: "Couldn't fetch this file" })).toBeVisible();
-    await expect(review.code('# Web')).toHaveCount(2);
+    await expect(review.code('const MAX_BATCH = 50;')).toBeVisible();
 
     await review.fileRow('logo.png').click();
     await expect(review.diff.getByText('Binary file, nothing to diff')).toBeVisible();
@@ -312,7 +312,7 @@ test('the allowance running out pauses the missing files, saying when, while a v
         review.fileRow('client.ts').getByRole('img', { name: "Waiting for GitHub's API allowance" }),
     ).toBeVisible();
     const status = page.getByRole('contentinfo', { name: 'Status' });
-    await expect(status).toContainText('API allowance used up · 5 files wait until');
+    await expect(status).toContainText('API allowance used up · 4 files wait until');
     await expect(status).toContainText('edits still go through');
 
     await review.fileRow('client.ts').click();
@@ -323,7 +323,7 @@ test('the allowance running out pauses the missing files, saying when, while a v
     github.rateLimit = { limit: 5000, remaining: 4000, resetAt: new Date(resetAt.getTime() + 3_600_000) };
     await page.clock.fastForward('01:00:01');
 
-    await expect(review.code('export const client = 2;')).toBeVisible();
+    await expect(review.code('const MAX_BATCH = 50;')).toBeVisible();
     await expect(status).not.toContainText('API allowance used up');
 });
 
@@ -356,6 +356,39 @@ test('a push since the last visit names the files that lost their viewed mark, t
     await line.getByRole('button', { name: 'Dismiss' }).click();
     await expect(line).toHaveCount(0);
     await expect(review.fileRow('README.md')).toContainText('changed since');
+});
+
+test('V collapses the file in place with viewed files shown, nothing moving; a second V opens it, and Space opens a viewed one and collapses it back (D13)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, { repository: 'acme/web', number: 15, files: FILES });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('export const client = 2;')).toBeVisible();
+    // The one GitHub says is viewed comes as a header, nothing of it read.
+    await expect(review.fileHeader(README)).toBeAttached();
+    await expect(review.code('The web app.')).toHaveCount(0);
+
+    await review.fileRow('client.ts').click();
+    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
+
+    await page.keyboard.press('v');
+    await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'true');
+    await expect(review.code('export const client = 2;')).toHaveCount(0);
+    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
+    await expect(review.currentFileRow).toContainText('client.ts');
+
+    await page.keyboard.press('v');
+    await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'false');
+    await expect(review.code('export const client = 2;')).toBeVisible();
+
+    await review.fileRow('README.md').click();
+    await page.keyboard.press('Space');
+    await expect(review.code('The web app.')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(review.code('The web app.')).toHaveCount(0);
 });
 
 test('a pull request with no changes says so', async ({ page, github }) => {
@@ -507,7 +540,8 @@ test('V with viewed files hidden brings the next file to the top of the screen, 
     await page.keyboard.press('v');
     await expect(page.getByRole('heading', { name: 'All 2 files viewed' })).toBeVisible();
     await page.getByRole('button', { name: 'Show viewed files' }).click();
-    await expect(review.code('const a = 2;')).toBeVisible();
+    await expect(review.viewedButton('src/a.ts')).toHaveAttribute('aria-pressed', 'true');
+    await expect(review.code('const a = 2;')).toHaveCount(0);
     await expect(review.fileList).toContainText('2 of 2 viewed');
 });
 
@@ -576,12 +610,18 @@ test('ten files selected with shift+click, x and { } are marked viewed at once i
     await review.fileRow('file00.ts').click();
     await page.keyboard.press('x');
     await expect(review.selectionCount('1 file selected')).toBeVisible();
+    await expect(page.getByText('x select · { } extend · V mark viewed · Esc clear')).toBeVisible();
     await page.keyboard.type('}}');
     await expect(review.selectionCount('3 files selected')).toBeVisible();
     await expect(review.currentFileRow).toContainText('file02.ts');
     await page.keyboard.type('{');
     await expect(review.currentFileRow).toContainText('file01.ts');
     await expect(review.selectionCount('3 files selected')).toBeVisible();
+
+    // A plain click ends it: V acts on the file clicked, not on the ones selected before.
+    await review.fileRow('file20.ts').click();
+    await expect(review.markViewedButton).toBeHidden();
+    await expect(page.getByText('x select · { } extend · V mark viewed · Esc clear')).toBeHidden();
 
     await review.fileRow('file00.ts').click();
     await review.fileRow('file09.ts').click({ modifiers: ['Shift'] });

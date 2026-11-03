@@ -53,6 +53,8 @@ export interface ReviewGapRow {
     readonly atFileEnd: boolean;
     /** The declaration what follows it sits in ({@link findEnclosing}). */
     readonly enclosing: string | null;
+    /** The file's first gap, saying that the context expanded in it was reset by a push (CR62). */
+    readonly expansionReset: boolean;
 }
 
 /** A file not read or not computed yet: quiet bars about as tall as its diff (D35). */
@@ -226,6 +228,8 @@ export interface BuildFileLineRowsParams {
     readonly layout: DiffLayout;
     /** The lines shown beyond the context. */
     readonly expanded?: readonly DiffLineRange[];
+    /** A push reset the context expanded in the file: its first gap says so. */
+    readonly expansionReset?: boolean;
 }
 
 /**
@@ -234,7 +238,15 @@ export interface BuildFileLineRowsParams {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildFileLineRows({ path, diff, syntax, layout, expanded }: BuildFileLineRowsParams): ReviewRow[] {
+export function buildFileLineRows({
+    path,
+    diff,
+    syntax,
+    layout,
+    expanded,
+    expansionReset = false,
+}: BuildFileLineRowsParams): ReviewRow[] {
+    let resetToSay = expansionReset;
     return buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
@@ -243,6 +255,8 @@ export function buildFileLineRows({ path, diff, syntax, layout, expanded }: Buil
 
         const { range } = row;
         const atFileEnd = range.afterEnd === diff.after.length;
+        const saysReset = resetToSay;
+        resetToSay = false;
         return {
             kind: 'gap',
             key,
@@ -252,6 +266,7 @@ export function buildFileLineRows({ path, diff, syntax, layout, expanded }: Buil
             range,
             atFileEnd,
             enclosing: findEnclosing(diff.after, atFileEnd ? range.afterStart : range.afterEnd),
+            expansionReset: saysReset,
         };
     });
 }

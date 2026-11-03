@@ -32,6 +32,9 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** Files of a review selected together: the keys that act on them (CR23). */
+export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
+
 /** A first open's other branches arriving (git-client D19). */
 export const FillingIn: Story = { args: { freshness: { kind: 'filling', done: 3, total: 7 } } };
 

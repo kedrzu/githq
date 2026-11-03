@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -134,9 +134,13 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :class="css.reviewDiffRow_gapIcon"
           aria-hidden="true"
         />
-        {{ t(l.hiddenLines, { count: row.hidden, formatted: numbers.format(row.hidden) }) }}
+        {{
+          row.expansionReset
+            ? t(l.expansionReset)
+            : t(l.hiddenLines, { count: row.hidden, formatted: numbers.format(row.hidden) })
+        }}
         <button
-          v-if="row.hidden > EXPAND_STEP"
+          v-if="row.hidden > EXPAND_STEP && !row.expansionReset"
           type="button"
           :class="css.reviewDiffRow_gapAction"
           @click="emit('expand', row, EXPAND_STEP)"
@@ -151,7 +155,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           {{ t(l.showAll) }}
         </button>
         <span
-          v-if="row.enclosing"
+          v-if="row.enclosing && !row.expansionReset"
           :class="css.reviewDiffRow_gapEnclosing"
           >{{ row.enclosing }}</span
         >

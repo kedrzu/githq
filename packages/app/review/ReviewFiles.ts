@@ -80,10 +80,11 @@ export type ReviewFileState =
 export type ReviewFileCollapseReason = 'lockFile' | 'generated' | 'large';
 
 /**
- * Why a file shows only its header: its {@link ReviewFileCollapseReason}, or `byHand` when it has none. `undecided`: it may
- * be generated, which isn't known until `.gitattributes` is read, and it must not flip from open to collapsed (D35).
+ * Why a file shows only its header: its {@link ReviewFileCollapseReason}, or `byHand` when it has none, or `viewed` when
+ * it is marked so (D13), which its header's pressed button says. `undecided`: it may be generated, which isn't known until
+ * `.gitattributes` is read, and it must not flip from open to collapsed (D35).
  */
-export type ReviewFileCollapse = ReviewFileCollapseReason | 'byHand' | 'undecided';
+export type ReviewFileCollapse = ReviewFileCollapseReason | 'byHand' | 'viewed' | 'undecided';
 
 /** How far the list of files is. */
 export type ReviewFileListState =
@@ -142,11 +143,12 @@ export interface PullRequestFiles {
     getCollapse(path: string): ReviewFileCollapse | null;
     /** Why the file starts collapsed, which it still says once opened (CR13). */
     getCollapseReason(path: string): ReviewFileCollapseReason | null;
-    /** Collapses the file, or opens it, which fetches it next. Kept for as long as the model, whatever the head. */
+    /** Collapses the file, or opens it, which fetches it next. Kept for as long as the model, whatever the head, until its viewed mark changes. */
     setCollapsed(path: string, collapsed: boolean): void;
     /**
      * Sets GitHub's viewed marks, shown at once in {@link files} and sent together with whatever else is waiting. GitHub
-     * refusing puts them back and tells {@link ReviewViewedFailures}.
+     * refusing puts them back and tells {@link ReviewViewedFailures}. A file whose mark changes goes back to how it starts:
+     * what {@link setCollapsed} chose for it is dropped, so that the mark always shows.
      */
     setViewed(paths: readonly string[], viewed: boolean): void;
     /** Whether viewed files leave the list and the diff (D9). */
@@ -160,6 +162,8 @@ export interface PullRequestFiles {
      * were expanded on: the author changing the file drops them, as its lines no longer mean the same (D14).
      */
     getExpandedLines(path: string): readonly DiffLineRange[];
+    /** Whether the author changing the file dropped lines shown beyond the context, until more are shown (CR62). */
+    isExpansionReset(path: string): boolean;
     /** Shows more of the file, at once. */
     expandLines(path: string, lines: DiffLineRange): void;
 }
@@ -278,6 +282,8 @@ interface ViewedMark {
     pending: boolean;
     /** When it last changed, on {@link createModel}'s own count: a list asked for before that may not know of it. */
     changedAt: number;
+    /** GitHub took the mark off before this was set, which going back has to say again. */
+    wasLost: boolean;
 }
 
 /** What the files are read with for one signed-in user. Dropped whole when they sign out. */
@@ -478,6 +484,7 @@ export const ReviewFiles = defineService({
                         filterRef.value = filter;
                     },
                     getExpandedLines,
+                    isExpansionReset,
                     expandLines,
                 },
                 reopen,
@@ -584,7 +591,19 @@ export const ReviewFiles = defineService({
                     return null;
                 }
 
-                return collapseReason ?? (choice === false ? 'byHand' : run.isGenerated === null ? 'undecided' : null);
+                if (collapseReason) {
+                    return collapseReason;
+                }
+
+                if (choice === false) {
+                    return 'byHand';
+                }
+
+                if (file.viewed === 'VIEWED') {
+                    return 'viewed';
+                }
+
+                return run.isGenerated === null ? 'undecided' : null;
             }
 
             function getHeadBlobOid(path: string) {
@@ -595,6 +614,13 @@ export const ReviewFiles = defineService({
                 void versionRef.value;
                 const held = expandedLines.get(path);
                 return held && held.oid === getHeadBlobOid(path) ? held.lines : NO_LINES;
+            }
+
+            function isExpansionReset(path: string) {
+                void versionRef.value;
+                const held = expandedLines.get(path);
+                const oid = getHeadBlobOid(path);
+                return held !== undefined && oid !== null && held.oid !== oid;
             }
 
             function expandLines(path: string, lines: DiffLineRange) {
@@ -619,11 +645,38 @@ export const ReviewFiles = defineService({
                         return;
                     }
 
-                    // Out of the queue: whatever is on its way for it is kept, for when it is opened.
-                    run.queue = run.queue.filter(other => other !== entry);
-                    if (run.states.get(path)?.kind === 'loading') {
-                        setState(run, path, WAITING);
+                    leaveQueue(run, entry);
+                }
+            }
+
+            /** Out of the queue: whatever is on its way for it is kept, for when it is opened. */
+            function leaveQueue(run: FileRun, entry: FileEntry) {
+                const { path } = entry.file;
+                run.queue = run.queue.filter(other => other !== entry);
+                if (run.states.get(path)?.kind === 'loading') {
+                    setState(run, path, WAITING);
+                }
+            }
+
+            /**
+             * A viewed mark changing collapses the file or opens it. One opened joins at the tail: a mark coming from a
+             * list read or put back must not take the place of a jump.
+             */
+            function followViewed(run: FileRun, entry: FileEntry) {
+                scheduleUpdate();
+                if (!isFetchable(run, entry)) {
+                    leaveQueue(run, entry);
+                    return;
+                }
+
+                const kind = run.states.get(entry.file.path)?.kind ?? 'waiting';
+                if ((kind === 'waiting' || kind === 'loading') && !run.queue.includes(entry)) {
+                    run.queue.push(entry);
+                    if (isHeldForRenames(run, entry)) {
+                        void run.renamesReader.execute();
                     }
+
+                    takeReady(run);
                 }
             }
 
@@ -654,7 +707,6 @@ export const ReviewFiles = defineService({
                 }
 
                 const wanted = viewed ? 'VIEWED' : 'UNVIEWED';
-                forgetLostViewed(paths);
                 for (const path of paths) {
                     const entry = run.entries.get(path);
                     if (!entry || entry.file.viewed === wanted) {
@@ -667,12 +719,17 @@ export const ReviewFiles = defineService({
                         confirmed: held?.pending ? held.confirmed : entry.file.viewed,
                         pending: true,
                         changedAt: ++markCount,
+                        wasLost: lostViewedRef.value.has(path) || (held?.pending === true && held.wasLost),
                     });
                     entry.file = { ...entry.file, viewed: wanted };
                     unsentMarks.set(path, viewed);
+                    collapseChoices.delete(path);
+                    followViewed(run, entry);
                 }
 
+                forgetLostViewed(paths);
                 publishFiles(run);
+                pump(run);
                 void marksSender.execute();
             }
 
@@ -712,6 +769,7 @@ export const ReviewFiles = defineService({
 
                     if (!failure) {
                         mark.confirmed = viewed ? 'VIEWED' : 'UNVIEWED';
+                        mark.wasLost = false;
                     }
 
                     // A newer one for this file is waiting: that one decides.
@@ -724,8 +782,14 @@ export const ReviewFiles = defineService({
                     if (failure) {
                         mark.viewed = mark.confirmed;
                         const entry = run?.entries.get(path);
-                        if (entry) {
+                        if (run && entry) {
                             entry.file = { ...entry.file, viewed: mark.confirmed };
+                            followViewed(run, entry);
+                        }
+
+                        if (mark.wasLost) {
+                            mark.wasLost = false;
+                            lostViewedRef.value = new Set([...lostViewedRef.value, path]);
                         }
                     }
                 }
@@ -733,6 +797,7 @@ export const ReviewFiles = defineService({
                 if (run) {
                     publishFiles(run);
                     keepList(run);
+                    pump(run);
                 }
 
                 if (failure) {
@@ -902,16 +967,18 @@ export const ReviewFiles = defineService({
             /** Page by page, so that what GitHub took off is named even if a later page never comes. */
             function noteLostViewed(files: readonly ReviewFile[]) {
                 const lost = new Set(lostViewedRef.value);
+                let changed = false;
                 for (const file of files) {
                     if (file.viewed !== 'DISMISSED') {
-                        lost.delete(file.path);
+                        changed = lost.delete(file.path) || changed;
                     } else if (viewedBefore.has(file.path) && !lost.has(file.path)) {
                         lost.add(file.path);
                         lostViewedNoticeRef.value = true;
+                        changed = true;
                     }
                 }
 
-                if (lost.size !== lostViewedRef.value.size) {
+                if (changed) {
                     lostViewedRef.value = lost;
                 }
             }
@@ -924,6 +991,7 @@ export const ReviewFiles = defineService({
                     }
 
                     lostViewedRef.value = lost;
+                    lostViewedNoticeRef.value = false;
                 }
             }
 
@@ -1005,7 +1073,7 @@ export const ReviewFiles = defineService({
                 for (const file of files) {
                     const entry = run.entries.get(file.path);
                     if (entry) {
-                        changed = updateFile(entry, file) || changed;
+                        changed = updateFile(run, entry, file) || changed;
                         continue;
                     }
 
@@ -1048,13 +1116,17 @@ export const ReviewFiles = defineService({
                 void Promise.resolve().then(() => pump(run));
             }
 
-            function updateFile(entry: FileEntry, file: ReviewFile) {
+            function updateFile(run: FileRun, entry: FileEntry, file: ReviewFile) {
                 const { viewed, additions, deletions, previousPath } = entry.file;
                 if (viewed === file.viewed && additions === file.additions && deletions === file.deletions) {
                     return false;
                 }
 
                 entry.file = { ...file, previousPath };
+                if (viewed !== file.viewed) {
+                    followViewed(run, entry);
+                }
+
                 return true;
             }
 

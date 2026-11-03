@@ -1,13 +1,9 @@
 <!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner until it is here, a red mark when it failed, an amber pause while it waits for GitHub's allowance, a tag for what has no diff, with a binary file's sizes in place of its lines. A file GitHub took the viewed mark off since the last visit is tagged (D35). While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
-<script lang="ts">
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-
-const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-</script>
-
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, Eye, LoaderCircle, Pause } from 'lucide-vue-next';
+
+import PullRequestSize from '@/lists/PullRequestSize.vue';
 
 import { getFileFolder } from './utils/getFileFolder.js';
 import { getFileName } from './utils/getFileName.js';
@@ -98,14 +94,12 @@ const t = useTranslate();
       :class="css.reviewFileRow_size"
       >{{ formatFileSizes(state) }}</span
     >
-    <span
+    <PullRequestSize
       v-else
       :class="css.reviewFileRow_size"
-    >
-      <template v-if="file.additions > 0 || file.deletions === 0">+{{ numbers.format(file.additions) }}</template>
-      <template v-if="file.additions > 0 && file.deletions > 0">&nbsp;</template>
-      <template v-if="file.deletions > 0">−{{ numbers.format(file.deletions) }}</template>
-    </span>
+      :additions="file.additions"
+      :deletions="file.deletions"
+    />
     <LoaderCircle
       v-if="state.kind === 'loading' || (state.kind === 'waiting' && !collapsed)"
       :class="[css.reviewFileRow_status, css.reviewFileRow_status_loading]"

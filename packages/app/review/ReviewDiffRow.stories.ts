@@ -97,8 +97,13 @@ export const Collapsed: Story = {
         ]),
 };
 
-/** CR21: a viewed file: the name dimmed and the mark ticked. */
+/** CR21: a viewed file: only its header, the name dimmed and the mark ticked (D13). */
 export const Viewed: Story = {
+    render: () => renderRows(fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'collapsed' })),
+};
+
+/** A viewed file opened with Space. */
+export const ViewedOpened: Story = {
     render: () =>
         renderRows(
             fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'lines', rows: lines('split') }),
@@ -110,6 +115,17 @@ export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { ki
 
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
+
+/** CR62: a push reset the context expanded in the file: its first gap says so, and offers it all again. */
+export const ExpansionReset: Story = {
+    render: () =>
+        renderRows(
+            fileRows(FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }),
+            }),
+        ),
+};
 
 /** CR62: GitHub took its viewed mark off since the last visit. */
 export const ChangedSince: Story = {

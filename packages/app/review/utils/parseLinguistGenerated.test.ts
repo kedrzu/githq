@@ -54,3 +54,48 @@ test('a pattern written to take a tab down answers at once', () => {
 
     expect(parseLinguistGenerated(line)('a'.repeat(4000))).toBe(false);
 });
+
+test('a line of 2048 bytes or more says nothing, as for git, counted in bytes; shorter ones around it do', () => {
+    const shortest = (filler: string, bytes: number) =>
+        `${filler.repeat(bytes - ' linguist-generated'.length)} linguist-generated`;
+    const isGenerated = parseLinguistGenerated(
+        [
+            shortest('x', 2047),
+            shortest('y', 2048),
+            `${'é'.repeat(1015)} linguist-generated`,
+            '*.gen.ts linguist-generated',
+        ].join('\n'),
+    );
+
+    expect(isGenerated('x'.repeat(2047 - ' linguist-generated'.length))).toBe(true);
+    expect(isGenerated('y'.repeat(2048 - ' linguist-generated'.length))).toBe(false);
+    expect(isGenerated('é'.repeat(1015))).toBe(false);
+    expect(isGenerated('a.gen.ts')).toBe(true);
+});
+
+test('over 16 KiB of rules for this attribute the file marks nothing generated', () => {
+    const rule = '*.gen.ts linguist-generated';
+    const within = Math.floor((16 * 1024) / rule.length);
+
+    expect(parseLinguistGenerated(Array.from({ length: within }, () => rule).join('\n'))('a.gen.ts')).toBe(true);
+    expect(parseLinguistGenerated(Array.from({ length: within + 1 }, () => rule).join('\n'))('a.gen.ts')).toBe(false);
+});
+
+test('rules of other attributes, however many, cost nothing of it', () => {
+    const lfs = Array.from({ length: 5000 }, (_, index) => `assets/${index}.bin filter=lfs diff=lfs merge=lfs -text`);
+
+    expect(parseLinguistGenerated([...lfs, '*.gen.ts linguist-generated'].join('\n'))('a.gen.ts')).toBe(true);
+});
+
+test('a tree and rules made to cost too much stop being matched, in well under a second', () => {
+    const isGenerated = parseLinguistGenerated(Array.from({ length: 780 }, () => 'z/ linguist-generated').join('\n'));
+    const deep = `${'a/'.repeat(2047)}z/file.ts`;
+
+    const start = performance.now();
+    const answers = Array.from({ length: 3000 }, () => isGenerated(deep));
+    const elapsed = performance.now() - start;
+
+    expect(answers[0]).toBe(true);
+    expect(answers.at(-1)).toBe(false);
+    expect(elapsed).toBeLessThan(3000);
+});

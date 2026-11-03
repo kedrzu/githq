@@ -55,6 +55,32 @@ describe('a pattern (D11)', () => {
         expect(matching('./docs/*.md')).toEqual(['docs/guide.md']);
     });
 
+    test.each([
+        ['docs/*.png', 'mydocs/x.png'],
+        ['test*.ts', 'src/mytest1.ts'],
+        ['src/**/a.ts', 'src/b/xa.ts'],
+        ['**/a.ts', 'src/xa.ts'],
+        ['a/**/b', 'a/xb'],
+    ])('%s does not start in the middle of a name: %s', (pattern, path) => {
+        const filter = createFileFilter({ pattern, regex: false });
+        expect(filter.kind === 'on' && filter.matches(path)).toBe(false);
+    });
+
+    test.each([
+        ['docs/*.png', 'docs/x.png'],
+        ['docs/*.png', 'a/docs/x.png'],
+        ['test*.ts', 'src/test1.ts'],
+        ['src/**/a.ts', 'src/a.ts'],
+        ['src/**/a.ts', 'src/b/c/a.ts'],
+        ['a/**/b', 'a/b'],
+        ['*.ts', 'a.ts'],
+        ['src/*a.ts', 'src/xa.ts'],
+        ['src/**a.ts', 'src/b/xa.ts'],
+    ])('%s still matches %s', (pattern, path) => {
+        const filter = createFileFilter({ pattern, regex: false });
+        expect(filter.kind === 'on' && filter.matches(path)).toBe(true);
+    });
+
     test('? is one character of a name', () => {
         expect(matching('docs/lo?o.png')).toEqual(['docs/logo.png']);
         expect(matching('docs?logo.png')).toEqual([]);
@@ -89,6 +115,20 @@ describe('a pattern (D11)', () => {
         expect(filter.kind === 'on' && filter.matches(`${'a'.repeat(4000)}c`)).toBe(false);
         expect(performance.now() - started).toBeLessThan(200);
     });
+});
+
+test('given paths, those files exactly, whatever the pattern says: not one holding one of them, one with a comma included', () => {
+    const paths = ['a.ts', 'docs/x, y.md'];
+    const filter = createFileFilter({ pattern: paths.join(', '), regex: false, paths });
+
+    if (filter.kind !== 'on') {
+        throw new Error(filter.kind);
+    }
+
+    expect(['a.ts', 'data.ts', 'docs/x, y.md', 'docs/x', 'y.md'].filter(filter.matches)).toEqual([
+        'a.ts',
+        'docs/x, y.md',
+    ]);
 });
 
 describe('a regular expression (D11)', () => {

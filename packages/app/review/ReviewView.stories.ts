@@ -158,7 +158,9 @@ function createFiles(
         getCollapse: path => collapsed[path] ?? null,
         getCollapseReason: path => {
             const collapse = collapsed[path];
-            return collapse === 'byHand' || collapse === 'undecided' || collapse === undefined ? null : collapse;
+            return collapse === 'byHand' || collapse === 'viewed' || collapse === 'undecided' || collapse === undefined
+                ? null
+                : collapse;
         },
         setCollapsed: () => {},
         setViewed: () => {},
@@ -167,6 +169,7 @@ function createFiles(
         filter: { pattern: '', regex: false },
         setFilter: () => {},
         getExpandedLines: () => [],
+        isExpansionReset: () => false,
         expandLines: () => {},
     };
 }

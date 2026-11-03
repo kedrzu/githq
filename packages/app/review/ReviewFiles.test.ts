@@ -385,6 +385,7 @@ test("a file's expanded lines stay through a read of the same head and go when t
 
     model.expandLines('a.ts', { start: 10, end: 30 });
     model.expandLines('a.ts', { start: 30, end: 50 });
+    expect(model.isExpansionReset('a.ts')).toBe(false);
     const lines = model.getExpandedLines('a.ts');
     expect(lines).toEqual([{ start: 10, end: 50 }]);
     // The same array: the rows built for it are kept.
@@ -401,6 +402,11 @@ test("a file's expanded lines stay through a read of the same head and go when t
     await settled(model);
 
     expect(model.getExpandedLines('a.ts')).toEqual([]);
+    expect(model.isExpansionReset('a.ts')).toBe(true);
+
+    model.expandLines('a.ts', { start: 0, end: 5 });
+    expect(model.isExpansionReset('a.ts')).toBe(false);
+    expect(model.getExpandedLines('a.ts')).toEqual([{ start: 0, end: 5 }]);
 });
 
 test('many files arriving tell of it once a frame, not once a file', async () => {
@@ -958,6 +964,169 @@ test('signing out with every kind of answer on its way: the kept list, oids and 
 
     expect(model.files).toEqual([]);
     expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
+});
+
+test('a viewed file shows its header, nothing of it read; opened it is read and collapses back, and with its mark gone it is simply open (D13)', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'seen.ts', changeType: 'ADDED', after: 'seen' });
+    github.file({ path: 'new.ts', changeType: 'ADDED', after: 'new' });
+    github.setViewed('seen.ts', 'VIEWED');
+    const { model, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    expect(model.getCollapse('seen.ts')).toBe('viewed');
+    expect(model.getCollapseReason('seen.ts')).toBeNull();
+    expect(textsAsked(session)).toEqual([oidOf('new')]);
+    expect(model.progress).toEqual({ here: 1, total: 1 });
+
+    model.setCollapsed('seen.ts', false);
+    expect(model.getCollapse('seen.ts')).toBeNull();
+    await settled(model);
+    expect(model.getState('seen.ts')).toEqual({ kind: 'ready', before: null, after: 'seen' });
+
+    model.setCollapsed('seen.ts', true);
+    expect(model.getCollapse('seen.ts')).toBe('byHand');
+
+    model.setViewed(['seen.ts'], false);
+    expect(model.getCollapse('seen.ts')).toBeNull();
+    model.setViewed(['seen.ts'], true);
+    expect(model.getCollapse('seen.ts')).toBe('viewed');
+
+    model.setCollapsed('seen.ts', false);
+    model.setViewed(['new.ts'], true);
+    expect(model.getCollapse('seen.ts')).toBeNull();
+    expect(model.getCollapse('new.ts')).toBe('viewed');
+});
+
+test('marking a file viewed takes it out of the queue; unmarking one puts it at the tail, behind a jump, wherever the mark came from', async () => {
+    const github = createGitHub({ pageSize: 200 });
+    for (let index = 0; index < 200; index++) {
+        github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
+    }
+
+    github.setViewed('file-0.ts', 'VIEWED');
+    const held: (() => void)[] = [];
+    const { model, session, files } = open(uniqueLogin(), github, request =>
+        request.operation === 'ReviewBlobTexts'
+            ? new Promise<void>(resolve => {
+                  held.push(resolve);
+              })
+            : null,
+    );
+    await waitUntil(() => textQueries(session).length === 3, { timeoutMs: 2000 });
+
+    // One not asked about yet, by V; one by what GitHub says.
+    model.setViewed(['file-190.ts'], true);
+    github.setViewed('file-195.ts', 'VIEWED');
+    files.open(REFERENCE);
+    await waitUntil(() => viewedOf(model, 'file-195.ts') === 'VIEWED', { timeoutMs: 2000 });
+
+    model.setViewed(['file-0.ts'], false);
+    expect(model.getState('file-0.ts').kind).toBe('waiting');
+    model.prioritize('file-199.ts');
+
+    const asked = session.github.requests.filter(isOidQuery).length;
+    held[0]?.();
+    await waitUntil(() => session.github.requests.filter(isOidQuery).length > asked, { timeoutMs: 2000 });
+    expect(session.github.requests.filter(isOidQuery)[asked]?.variables.e0).toBe(`${HEAD}:file-199.ts`);
+
+    session.github.holdIf = null;
+    for (const release of held) {
+        release();
+    }
+
+    await settled(model);
+    const everything = oidExpressions(session);
+    expect(everything.at(-1)).toBe(`${HEAD}:file-0.ts`);
+    expect(everything).not.toContain(`${HEAD}:file-190.ts`);
+    expect(everything).not.toContain(`${HEAD}:file-195.ts`);
+    expect(model.getState('file-0.ts')).toEqual({ kind: 'ready', before: null, after: 'text 0' });
+});
+
+test('a refused mark opens its file again, which is then read', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const hold = createSilentHold(request => request.operation === 'ReviewBlobOids');
+    const { model, session } = open(uniqueLogin(), github, hold.hold);
+    await waitUntil(() => model.files.length === 1, { timeoutMs: 2000 });
+
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['a.ts'], true);
+    expect(model.getCollapse('a.ts')).toBe('viewed');
+    const failures = session.container.resolve(ReviewViewedFailures);
+    await waitUntil(() => failures.latest !== null, { timeoutMs: 2000 });
+    hold.release();
+
+    await settled(model);
+    expect(model.getCollapse('a.ts')).toBeNull();
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+});
+
+test('marking a lost file viewed ends the line about the push; refused, the file is named again without it, through marks set while it was on its way', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    github.setViewed('a.ts', 'VIEWED');
+    github.setViewed('b.ts', 'VIEWED');
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+
+    github.moveHead('head-2');
+    github.setViewed('a.ts', 'DISMISSED');
+    github.setViewed('b.ts', 'DISMISSED');
+    files.open(REFERENCE);
+    await waitUntil(() => model.lostViewed.size === 2, { timeoutMs: 2000 });
+    expect(model.lostViewedNotice).toBe(true);
+
+    const hold = createSilentHold(request => request.operation === 'MarkFilesViewed');
+    session.github.holdIf = hold.hold;
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['a.ts'], true);
+    expect([...model.lostViewed]).toEqual(['b.ts']);
+    expect(model.lostViewedNotice).toBe(false);
+    await waitUntil(() => session.operations().includes('MarkFilesViewed'), { timeoutMs: 2000 });
+    model.setViewed(['a.ts'], false);
+
+    session.github.holdIf = null;
+    hold.release();
+    await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
+    await waitUntil(() => model.lostViewed.has('a.ts') || viewedOf(model, 'a.ts') === 'UNVIEWED', {
+        timeoutMs: 2000,
+    });
+    // The first failed and the second went through: GitHub says what the file is now, so nothing is named any more.
+    expect(viewedOf(model, 'a.ts')).toBe('UNVIEWED');
+    expect(model.lostViewed.has('a.ts')).toBe(false);
+
+    const failures = session.container.resolve(ReviewViewedFailures);
+    github.failNext('MarkFilesViewed');
+    model.setViewed(['b.ts'], true);
+    expect(model.lostViewed.size).toBe(0);
+    await waitUntil(() => failures.latest?.paths.includes('b.ts') === true, { timeoutMs: 2000 });
+
+    expect(viewedOf(model, 'b.ts')).toBe('DISMISSED');
+    expect([...model.lostViewed]).toEqual(['b.ts']);
+    expect(model.lostViewedNotice).toBe(false);
+});
+
+test('a read that names one lost file and clears another says so, though the count stays', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    github.setViewed('a.ts', 'VIEWED');
+    github.setViewed('b.ts', 'VIEWED');
+    const { model, files } = open(uniqueLogin(), github);
+    await settled(model);
+
+    github.setViewed('a.ts', 'DISMISSED');
+    files.open(REFERENCE);
+    await waitUntil(() => model.lostViewed.size === 1, { timeoutMs: 2000 });
+
+    github.setViewed('a.ts', 'VIEWED');
+    github.setViewed('b.ts', 'DISMISSED');
+    files.open(REFERENCE);
+    await waitUntil(() => viewedOf(model, 'b.ts') === 'DISMISSED', { timeoutMs: 2000 });
+
+    expect([...model.lostViewed]).toEqual(['b.ts']);
 });
 
 test('a lock file, a generated and a very large file are neither read nor asked about until opened; opening one fetches it next', async () => {

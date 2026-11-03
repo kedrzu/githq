@@ -1,10 +1,4 @@
 <!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its size, if it has lines to count, and its viewed mark (`V`). A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
-<script lang="ts">
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-
-const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-</script>
-
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight, Square, SquareCheckBig } from 'lucide-vue-next';
@@ -12,6 +6,7 @@ import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
+import PullRequestSize from '@/lists/PullRequestSize.vue';
 
 import * as l from './DiffFileHeader.loc.js';
 import { getFileFolder } from './utils/getFileFolder.js';
@@ -85,10 +80,12 @@ function onClick(event: MouseEvent) {
       >{{ t(l.changedSince) }}</span
     >
     <span :class="css.diffFileHeader_spacer" />
-    <template v-if="file.additions + file.deletions > 0">
-      <span :class="css.diffFileHeader_added">+{{ numbers.format(file.additions) }}</span>
-      <span :class="css.diffFileHeader_deleted">−{{ numbers.format(file.deletions) }}</span>
-    </template>
+    <PullRequestSize
+      v-if="file.additions + file.deletions > 0"
+      :class="css.diffFileHeader_size"
+      :additions="file.additions"
+      :deletions="file.deletions"
+    />
     <Button
       :class="[css.diffFileHeader_viewed, viewed && css.diffFileHeader_viewed_on]"
       variant="outline"
@@ -172,19 +169,8 @@ function onClick(event: MouseEvent) {
   flex: 1;
 }
 
-.diffFileHeader_added,
-.diffFileHeader_deleted {
-  flex: none;
-  font-family: $font-family-mono;
+.diffFileHeader_size {
   font-size: 11px;
-}
-
-.diffFileHeader_added {
-  color: $color-green;
-}
-
-.diffFileHeader_deleted {
-  color: $color-red;
 }
 
 .diffFileHeader_viewed {

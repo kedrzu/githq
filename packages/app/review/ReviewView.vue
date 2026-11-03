@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9); with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). ⌘B hides the file list (D26). GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). ⌘B hides the file list (D26). GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -114,11 +114,11 @@ const listGroups = computed(() =>
 const allPaths = computed(() => groupReviewFiles(allFiles.value).flatMap(group => group.files.map(file => file.path)));
 const filterPattern = computed({
   get: () => filterInput.value.pattern,
-  set: pattern => files.value?.setFilter({ ...filterInput.value, pattern }),
+  set: pattern => files.value?.setFilter({ pattern, regex: filterInput.value.regex }),
 });
 const filterRegex = computed({
   get: () => filterInput.value.regex,
-  set: regex => files.value?.setFilter({ ...filterInput.value, regex }),
+  set: regex => files.value?.setFilter({ pattern: filterInput.value.pattern, regex }),
 });
 const currentPath = computed(() => {
   const anchor = list.value?.anchor;
@@ -190,7 +190,15 @@ watch(currentPath, (path, previous) => {
   }
 });
 
-onScopeDispose(screenFreshness.show(() => (files.value ? getReviewFreshness(files.value) : { kind: 'partial' })));
+onScopeDispose(
+  screenFreshness.show(() => {
+    if (selected.value.size > 0) {
+      return { kind: 'filesSelected' };
+    }
+
+    return files.value ? getReviewFreshness(files.value) : { kind: 'partial' };
+  }),
+);
 
 // Runs before the list gets the rows, when `anchor` is still the row being read: if that row goes with them, its
 // counterpart takes its place once they are in.
@@ -441,7 +449,9 @@ function jumpToFile(path: string) {
   list.value?.jumpTo(getReviewHeaderKey(path), 0);
 }
 
+/** A plain click: on its own, or `V` would go on marking the files selected before. */
 function selectFile(path: string) {
+  selected.value = new Set();
   selectionStart = path;
   jumpToFile(path);
   list.value?.focus();
@@ -466,7 +476,13 @@ function toggleCollapsed(path: string) {
 
 function toggleViewed(path: string) {
   const file = allFiles.value.find(other => other.path === path);
-  files.value?.setViewed([path], file?.viewed !== 'VIEWED');
+  const viewed = file?.viewed !== 'VIEWED';
+  files.value?.setViewed([path], viewed);
+  // Opened again in front of the reader: what's in view is fetched next (D35), not after every other file.
+  if (!viewed && path === currentPath.value) {
+    files.value?.prioritize(path);
+  }
+
   returnKeysToDiff();
 }
 
@@ -477,8 +493,8 @@ function returnKeysToDiff() {
 
 /** "Show only these": through the filter, which says what is on and which Esc clears. */
 function showOnlyLostViewed() {
-  filterRegex.value = false;
-  filterPattern.value = lostViewedPaths.value.join(', ');
+  const paths = lostViewedPaths.value;
+  files.value?.setFilter({ pattern: paths.join(', '), regex: false, paths });
   fileListHidden.value = false;
 }
 

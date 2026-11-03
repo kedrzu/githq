@@ -153,7 +153,8 @@ when the file changes in a later push, so a second round of review shows only wh
 **Rejected.**
 
 - Collapsing a viewed file to its header in the diff and filtering only the list (agent) — owner prefers GitHub's
-  behaviour; the next file arriving is not a disturbing jump.
+  behaviour; the next file arriving is not a disturbing jump. This is about the filter being on: with it off, a viewed
+  file stays in the diff collapsed to its header ([D13](#d13)).
 
 ## D10
 

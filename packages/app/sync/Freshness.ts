@@ -16,7 +16,8 @@
  *   ahead of the rest (code review D35);
  * - `filesPaused`: `waiting` of a review's files wait for the API allowance, until `until`;
  * - `filesCapped`: GitHub lists only the first `listed` of a pull request's `total` changed files;
- * - `filesUnread`: GitHub didn't give a pull request's list of files.
+ * - `filesUnread`: GitHub didn't give a pull request's list of files;
+ * - `filesSelected`: files of a review are selected together: not how fresh it is, but what the segment says then (CR23).
  *
  * The user's own edits on the way, or one GitHub rejected, are said over it in the segment (`FreshnessSegment`).
  */
@@ -38,7 +39,8 @@ export type Freshness =
       }
     | { readonly kind: 'filesPaused'; readonly waiting: number; readonly until: number }
     | { readonly kind: 'filesCapped'; readonly listed: number; readonly total: number }
-    | { readonly kind: 'filesUnread' };
+    | { readonly kind: 'filesUnread' }
+    | { readonly kind: 'filesSelected' };
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {

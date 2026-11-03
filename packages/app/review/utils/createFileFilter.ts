@@ -5,6 +5,8 @@ export interface FileFilterInput {
     readonly pattern: string;
     /** The pattern is a regular expression, matched anywhere in the whole path. */
     readonly regex: boolean;
+    /** These files exactly, whatever the pattern, which only says so to the reader. Editing it goes back to what it says. */
+    readonly paths?: readonly string[];
 }
 
 /** What a typed filter means: nothing, a test of paths, or a regular expression that doesn't compile. */
@@ -38,7 +40,12 @@ const WILDCARD = /[*?]/u;
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function createFileFilter({ pattern, regex }: FileFilterInput): FileFilter {
+export function createFileFilter({ pattern, regex, paths }: FileFilterInput): FileFilter {
+    if (paths) {
+        const exact = new Set(paths);
+        return { kind: 'on', matches: path => exact.has(path) };
+    }
+
     if (pattern.trim() === '') {
         return { kind: 'off' };
     }
@@ -130,7 +137,7 @@ function matchesGlob(tokens: readonly GlobToken[], path: string) {
     let current = new Uint8Array(tokens.length + 1);
     let next = new Uint8Array(tokens.length + 1);
     current[0] = 1;
-    spreadOverEmpty(tokens, current);
+    spreadOverEmpty(tokens, current, true);
 
     for (const char of path) {
         next.fill(0);
@@ -145,7 +152,7 @@ function matchesGlob(tokens: readonly GlobToken[], path: string) {
             return false;
         }
 
-        spreadOverEmpty(tokens, next);
+        spreadOverEmpty(tokens, next, char === '/');
         [current, next] = [next, current];
     }
 
@@ -192,11 +199,29 @@ function step(token: GlobToken, char: string, state: number, next: Uint8Array) {
     }
 }
 
-/** The tokens that can match nothing let a state through to the one after: they only ever lead forward. */
-function spreadOverEmpty(tokens: readonly GlobToken[], states: Uint8Array) {
+/**
+ * The tokens that can match nothing let a state through to the one after: they only ever lead forward. Whole folders can
+ * only be none at the start of a name, `atNameStart`, or `docs/*` would match `mydocs/a`.
+ */
+function spreadOverEmpty(tokens: readonly GlobToken[], states: Uint8Array, atNameStart: boolean) {
     for (const [state, token] of tokens.entries()) {
-        if (states[state] === 1 && token.kind !== 'char' && token.kind !== 'one') {
+        if (states[state] === 1 && canBeEmpty(token, atNameStart)) {
             states[state + 1] = 1;
         }
+    }
+}
+
+function canBeEmpty({ kind }: GlobToken, atNameStart: boolean) {
+    switch (kind) {
+        case 'name':
+        case 'anything':
+            return true;
+        case 'folders':
+            return atNameStart;
+        case 'char':
+        case 'one':
+            return false;
+        default:
+            return assertNever(kind);
     }
 }

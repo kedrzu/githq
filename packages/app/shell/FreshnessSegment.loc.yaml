@@ -47,3 +47,5 @@ filesCapped:
   en: GitHub lists only the first {listed} of {total} changed files
 filesUnread:
   en: GitHub didn't give the list of this pull request's files
+filesSelected:
+  en: x select · \{ \} extend · V mark viewed · Esc clear

@@ -30,6 +30,7 @@ type LinesContent = Extract<ReviewFileContent, { kind: 'lines' }>;
 /** A file's rows in a layout, for as long as the same lines are expanded. */
 interface BuiltLines {
     readonly expanded: readonly DiffLineRange[];
+    readonly expansionReset: boolean;
     readonly content: LinesContent;
 }
 
@@ -163,8 +164,9 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         }
 
         const expanded = toValue(options.files)?.getExpandedLines(file.path) ?? [];
+        const expansionReset = toValue(options.files)?.isExpansionReset(file.path) ?? false;
         const built = byLayout[layout];
-        if (built?.expanded === expanded) {
+        if (built?.expanded === expanded && built.expansionReset === expansionReset) {
             return built.content;
         }
 
@@ -176,9 +178,10 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
                 syntax: syntax.get({ path: file.path, before: state.before, after: state.after }),
                 layout,
                 expanded,
+                expansionReset,
             }),
         };
-        byLayout[layout] = { expanded, content };
+        byLayout[layout] = { expanded, expansionReset, content };
         return content;
     }
 

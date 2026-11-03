@@ -37,3 +37,5 @@ showSome:
   en: Show {count}
 showAll:
   en: Show all
+expansionReset:
+  en: Context you expanded here was reset by the push

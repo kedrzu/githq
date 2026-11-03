@@ -329,6 +329,19 @@ test('expanded lines keep the keys of the lines shown, and the rest of the gap k
     expect(after.find(row => row.key === gap.key)).toMatchObject({ kind: 'gap', hidden: gap.hidden - 5 });
 });
 
+test('a push having reset what was expanded, only the first gap says so', () => {
+    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', expansionReset: true });
+
+    expect(rows.filter(row => row.kind === 'gap').map(gap => gap.expansionReset)).toEqual([
+        true,
+        ...rows
+            .filter(row => row.kind === 'gap')
+            .slice(1)
+            .map(() => false),
+    ]);
+    expect(rows.filter(row => row.kind === 'gap').length).toBeGreaterThan(1);
+});
+
 test('a gap at the end of the file shows from its top, none being below it', () => {
     const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
     const gap = rows.findLast(row => row.kind === 'gap');
