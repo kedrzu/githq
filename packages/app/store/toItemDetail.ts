@@ -29,6 +29,7 @@ import type {
     ProjectFieldValue,
     PullRequestDetail,
 } from './ItemDetailTypes.js';
+import type { ItemUser } from './ItemTypes.js';
 import { toItem } from './toItem.js';
 import type { GitHubNodes, ReviewRequestNode } from './toItem.js';
 import { toItemCheck } from './toItemCheck.js';
@@ -83,11 +84,15 @@ export function toItemComment(comment: IssueCommentFieldsFragment): ItemComment 
     return {
         id: comment.id,
         url: comment.url,
-        author: comment.author ? { login: comment.author.login, avatarUrl: comment.author.avatarUrl } : null,
+        author: toDetailAuthor(comment.author),
         bodyHtml: comment.bodyHTML,
         createdAt: comment.createdAt,
         lastEditedAt: comment.lastEditedAt,
     };
+}
+
+function toDetailAuthor(author: ItemUser | null | undefined): ItemUser | null {
+    return author ? { login: author.login, avatarUrl: author.avatarUrl } : null;
 }
 
 function toIssueDetail(node: IssueDetailFieldsFragment, fetchedAt: number): IssueDetail | null {
@@ -116,7 +121,7 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         node.latestReviews?.nodes ?? [],
         (review): ItemDetailReview | null =>
             review && {
-                author: review.author ? { login: review.author.login, avatarUrl: review.author.avatarUrl } : null,
+                author: toDetailAuthor(review.author),
                 state: review.state,
                 submittedAt: review.submittedAt,
             },
@@ -135,13 +140,14 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
                 ? {
                       id: review.id,
                       url: review.url,
-                      author: review.author ? { login: review.author.login, avatarUrl: review.author.avatarUrl } : null,
+                      author: toDetailAuthor(review.author),
                       state: review.state,
                       bodyHtml: review.bodyHTML,
                       submittedAt: review.submittedAt,
                   }
                 : null,
         ),
+        olderReviewCount: (node.reviews?.totalCount ?? 0) - (node.reviews?.nodes?.length ?? 0),
         reviewRequests: toDetailReviewRequests(node.reviewRequests),
     };
 }

@@ -196,7 +196,7 @@ test('a thread on the file itself goes to the top though GitHub says it is on li
 test('with the text not here a thread is from its diffHunk alone, whatever it says', () => {
     const threads = [threadWith({ line: 3, diffHunk: '@@ x @@\n+a' }), threadWith({ subjectType: 'FILE' })];
     expect(
-        placeThreads({ kind: 'collapsed' }, threads).map(placed => [
+        placeThreads({ kind: 'collapsed', notLoaded: false }, threads).map(placed => [
             placed.kind,
             'diffHunk' in placed && placed.diffHunk,
         ]),
@@ -212,7 +212,7 @@ test('a file gone keeps its entry until all of its threads are resolved', () => 
     const placements = new Map<string, readonly ThreadPlacement[]>([
         ['open.ts', placeThreads({ kind: 'gone' }, [open, { ...open, isResolved: true }])],
         ['resolved.ts', placeThreads({ kind: 'gone' }, [resolved])],
-        ['listed.ts', placeThreads({ kind: 'collapsed' }, [threadWith({})])],
+        ['listed.ts', placeThreads({ kind: 'collapsed', notLoaded: false }, [threadWith({})])],
     ]);
     expect(listGoneEntries(placements)).toEqual(['open.ts']);
 });
@@ -237,7 +237,7 @@ test('over random files and threads every thread lands exactly once, each where 
         const threads = Array.from({ length: pick(12) }, (_, index) => randomThread(index));
         const views: readonly ThreadFileView[] = [
             { kind: 'open', diff, expanded },
-            { kind: 'collapsed' },
+            { kind: 'collapsed', notLoaded: false },
             { kind: 'gone' },
         ];
         for (const view of views) {
@@ -349,12 +349,18 @@ describe('groupThreadsByFile', () => {
     });
 });
 
-test('countThreads tells resolved first, then unresolved by whether they are outdated', () => {
-    const placements = placeThreads({ kind: 'collapsed' }, [
+test('countThreads tells resolved first, then unresolved by whether they are outdated and whether their line is gone', () => {
+    const placements = placeThreads({ kind: 'collapsed', notLoaded: false }, [
         threadWith({ id: '1' }),
         threadWith({ id: '2', isOutdated: true }),
         threadWith({ id: '3', isOutdated: true, isResolved: true }),
     ]);
 
-    expect(countThreads(placements)).toEqual({ open: 1, outdated: 1, resolved: 1 });
+    expect(countThreads(placements)).toEqual({ open: 1, outdated: 1, lineGone: 0, resolved: 1 });
+
+    const diff = computeFileDiff({ before: 'one\n', after: 'two\n', ignoreWhitespace: false });
+    const atTop = placeThreads({ kind: 'open', diff, expanded: [] }, [
+        threadWith({ id: '4', isOutdated: true, diffHunk: '@@ -1,1 +1,1 @@\n+a line nobody has now' }),
+    ]);
+    expect(countThreads(atTop)).toEqual({ open: 0, outdated: 0, lineGone: 1, resolved: 0 });
 });

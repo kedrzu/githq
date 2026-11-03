@@ -1,4 +1,4 @@
-<!-- The mark above code shown out of place for its thread (D29): a vertical arrow, how far it is from the nearest change, or that the line is a hidden whitespace change (CR11), why it shows, a rule, and "Expand to here", which brings out the context up to it. Not the filled gap between hunks. -->
+<!-- The mark above code shown out of place for its thread (D29): a vertical arrow, how far it is from the nearest change, or that the line is a hidden whitespace change (CR11), why it shows, a rule, and "Expand to here", which brings out the context up to it. Under the last such code of a file's last gap it says what is left to the file's end (CR11). Not the filled gap between hunks. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -8,12 +8,14 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { MoveVertical } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+import type { ReviewDistanceRow, ReviewFileEndRow } from '../buildReviewRows.js';
 
 import * as l from './ReviewDistanceRow.loc.js';
-import type { ThreadOnHiddenLine } from './placeThreads.js';
 
-defineProps<{
-  placement: ThreadOnHiddenLine;
+const props = defineProps<{
+  row: ReviewDistanceRow | ReviewFileEndRow;
 }>();
 
 const emit = defineEmits<{
@@ -21,6 +23,26 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+
+const distance = computed(() => {
+  const { row } = props;
+  if (row.kind === 'fileEnd') {
+    return t(l.toFileEnd, { count: row.hidden, formatted: numbers.format(row.hidden) });
+  }
+
+  const { whitespaceChange, line, distance: lines, direction } = row.placement;
+  return whitespaceChange
+    ? t(l.whitespaceLine, { line })
+    : t(l.further, { count: lines, formatted: numbers.format(lines), way: t(l[direction]) });
+});
+const why = computed(() => {
+  const { row } = props;
+  if (row.kind === 'fileEnd') {
+    return t(l.noChangesThere);
+  }
+
+  return row.placement.whitespaceChange ? t(l.whitespaceWhy) : t(l.why);
+});
 </script>
 
 <template>
@@ -29,16 +51,8 @@ const t = useTranslate();
       :class="css.reviewDistanceRow_icon"
       aria-hidden="true"
     />
-    <span :class="css.reviewDistanceRow_distance">{{
-      placement.whitespaceChange
-        ? t(l.whitespaceLine, { line: placement.line })
-        : t(l.further, {
-            count: placement.distance,
-            formatted: numbers.format(placement.distance),
-            way: t(l[placement.direction]),
-          })
-    }}</span>
-    <span :class="css.reviewDistanceRow_why">{{ placement.whitespaceChange ? t(l.whitespaceWhy) : t(l.why) }}</span>
+    <span :class="css.reviewDistanceRow_distance">{{ distance }}</span>
+    <span :class="css.reviewDistanceRow_why">{{ why }}</span>
     <span :class="css.reviewDistanceRow_rule" />
     <button
       type="button"

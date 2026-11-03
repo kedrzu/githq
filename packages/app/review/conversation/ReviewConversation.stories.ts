@@ -116,6 +116,24 @@ export const ShortDescription: Story = {
     },
 };
 
+/** GitHub gives the newest 100 reviews at once: the others are counted, with the way to them. */
+export const OlderReviews: Story = {
+    args: {
+        detail: {
+            ...quietDetail(),
+            reviewSummaries: [summary('PRR_1', 'APPROVED', '<p>Fine by me.</p>')],
+            olderReviewCount: 26,
+        },
+    },
+    play: async ({ canvas, args }) => {
+        await expect(canvas.getByRole('link', { name: /26 older reviews on.GitHub/u })).toHaveAttribute(
+            'href',
+            args.item?.url,
+        );
+        await expect(canvas.getByText('27')).toBeInTheDocument();
+    },
+};
+
 /** CR2: what a review started: a click lands on them, and all of them resolved it says so. */
 export const ReviewThreads: Story = {
     args: {
@@ -172,6 +190,7 @@ function quietDetail(): PullRequestDetail {
         ...F1_PULL_REQUEST_DETAIL,
         bodyHtml: '',
         reviewSummaries: [],
+        olderReviewCount: 0,
         comments: { totalCount: 0, nodes: [], olderCursor: null },
     };
 }

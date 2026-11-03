@@ -55,11 +55,14 @@ const outdatedNote = computed(() => {
 });
 const codeLabel = computed(() => {
   const line = commentedLine.value;
-  switch (props.row.placement.kind) {
+  const { placement } = props.row;
+  switch (placement.kind) {
     case 'fileTop':
       return t(l.codeAtCommit, { commit: commit.value });
     case 'gone':
       return t(l.asCommentedAt, { line, commit: commit.value });
+    case 'inCollapsed':
+      return placement.notLoaded ? t(l.asCommentedNotLoaded, { line }) : t(l.asCommented, { line });
     default:
       return t(l.asCommented, { line });
   }

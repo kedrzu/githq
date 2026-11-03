@@ -2,13 +2,15 @@ import { expect, test } from 'bun:test';
 
 import { placeThreads } from '../threads/placeThreads.js';
 import type { ReviewThread } from '../threads/ReviewThread.js';
-import { sampleThread } from '../threads/sampleThreads.js';
+import { sampleThread } from '@/testing/sampleThreads.js';
 
 import { getReviewOwnThreads } from './getReviewOwnThreads.js';
 
 test('a thread is the review of its first comment, not of a reply in another', () => {
     const own = getReviewOwnThreads({
-        byFile: new Map([['src/a.ts', placeThreads({ kind: 'collapsed' }, [threadOf('T_1', 'R_1', ['R_2'])])]]),
+        byFile: new Map([
+            ['src/a.ts', placeThreads({ kind: 'collapsed', notLoaded: false }, [threadOf('T_1', 'R_1', ['R_2'])])],
+        ]),
         goneEntries: [],
     });
 
@@ -21,7 +23,7 @@ test('resolved only when every thread of the review is', () => {
         byFile: new Map([
             [
                 'src/a.ts',
-                placeThreads({ kind: 'collapsed' }, [
+                placeThreads({ kind: 'collapsed', notLoaded: false }, [
                     threadOf('T_1', 'R_1', [], true),
                     threadOf('T_2', 'R_1', [], false),
                     threadOf('T_3', 'R_2', [], true),

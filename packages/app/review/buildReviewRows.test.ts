@@ -74,7 +74,74 @@ test('a thread on a hidden line comes with its mark and up to three lines, nothi
 
     expect(
         around.map(row => (row.kind === 'line' && row.line.layout === 'split' ? row.line.right?.line : row.kind)),
-    ).toEqual(['gap', 'distance', 3, 4, 5, 'thread', 'distance', 37, 38, 39, 'thread', 'gap']);
+    ).toEqual(['gap', 'distance', 3, 4, 5, 'thread', 'distance', 37, 38, 39, 'thread', 'fileEnd']);
+});
+
+test("the file's last gap under a thread's code says what is left to the end and brings out just that; with nothing left it goes", () => {
+    const rows = rowsWithThreads([threadOnLine(39)]);
+
+    expect(rows.at(-1)).toMatchObject({ kind: 'fileEnd', hidden: 2, lines: { start: 39, end: 41 } });
+    expect(rows.filter(row => row.kind === 'gap')).toHaveLength(1);
+    expect(rowsWithThreads([threadOnLine(41)]).at(-1)).toMatchObject({ kind: 'thread' });
+});
+
+test('a gap counts the lines nothing shows, not those shown for its threads, overlapping ones once; Show all still takes them all', () => {
+    const rows = rowsWithThreads([threadOnLine(5, { id: 'one' }), threadOnLine(6, { id: 'two' })]);
+    const gap = rows.find(row => row.kind === 'gap');
+
+    // Lines 1 to 16, of which 3 to 6 show.
+    expect(gap).toMatchObject({ hidden: 12, range: { afterStart: 0, afterEnd: 16 } });
+    if (gap?.kind === 'gap') {
+        expect(getGapLinesToShow(gap, gap.range.afterEnd - gap.range.afterStart)).toEqual({ start: 0, end: 16 });
+    }
+});
+
+test('a gap all of whose lines show for threads is no row at all', () => {
+    const before = lines(10);
+    const after = before.replace('line 1\n', 'line one\n').replace('line 10\n', 'line ten\n');
+    const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+    const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(6, { id: 'gapEnd' })]);
+
+    const rows = buildFileLineRows({ path: A.path, diff, layout: 'split', threads });
+
+    // Context around the two changes leaves lines 5 and 6 hidden, and the thread on 6 shows both.
+    expect(rows.filter(row => row.kind === 'gap')).toEqual([]);
+});
+
+test('a file with nothing but hidden whitespace changes says so in place of a gap as long as the file, its thread with its line', () => {
+    const before = 'one\ntwo\nthree\nfour\nfive\n';
+    const after = 'one\n  two\nthree\nfour\nfive\n';
+    const diff = computeFileDiff({ before, after, ignoreWhitespace: true });
+    const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(2)]);
+
+    const kinds = buildFileLineRows({ path: A.path, diff, layout: 'split', threads }).map(row => row.kind);
+
+    expect(kinds).toEqual(['onlyWhitespace', 'distance', 'line', 'line', 'thread']);
+    expect(buildFileLineRows({ path: A.path, diff, layout: 'split' }).map(row => row.kind)).toEqual(['onlyWhitespace']);
+
+    const same = computeFileDiff({ before, after: before, ignoreWhitespace: true });
+    expect(buildFileLineRows({ path: A.path, diff: same, layout: 'split' }).map(row => row.kind)).toEqual(['gap']);
+});
+
+test('what is left to the end held when it is expanded gives way to the nearest line, not the top of the file', () => {
+    const shown = rowsWithThreads([threadOnLine(39)]);
+    const mark = shown.at(-1);
+    const expanded = buildFileLineRows({
+        path: A.path,
+        diff: DIFF,
+        layout: 'split',
+        expanded: [{ start: 39, end: 41 }],
+        threads: placeThreads({ kind: 'open', diff: DIFF, expanded: [{ start: 39, end: 41 }] }, [threadOnLine(39)]),
+    });
+
+    const replacement = findReplacementRow({
+        key: mark?.key ?? '',
+        offset: 5,
+        previous: withHeader(shown),
+        next: withHeader(expanded),
+    });
+
+    expect(replacement?.row).toMatchObject({ kind: 'line', line: { right: { line: 40 } } });
 });
 
 test('threads on the same hidden line share their code, and all keys are unique', () => {
@@ -102,7 +169,7 @@ test("a thread that found no line comes first, closed off from the diff; one in 
     const open = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads: fileTop });
     expect(open[0]).toMatchObject({ kind: 'thread', inline: null });
 
-    const placements = placeThreads({ kind: 'collapsed' }, [threadOnLine(1)]);
+    const placements = placeThreads({ kind: 'collapsed', notLoaded: false }, [threadOnLine(1)]);
     const rows = buildReviewRows({
         files: [A],
         getContent: () => ({ kind: 'collapsed' }),
@@ -384,6 +451,10 @@ function buildAll(files: readonly ReviewFile[], layout: 'split' | 'unified'): Re
             rows: buildFileLineRows({ path: file.path, diff: DIFF, layout }),
         }),
     });
+}
+
+function withHeader(rows: readonly ReviewRow[]): ReviewRow[] {
+    return buildReviewRows({ files: [A], getContent: () => ({ kind: 'lines', rows }) });
 }
 
 function rowsOf(diff: typeof DIFF): ReviewRow[] {

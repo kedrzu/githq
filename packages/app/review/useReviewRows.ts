@@ -73,7 +73,8 @@ const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
 const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
 const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
 const GONE: ReviewFileContent = { kind: 'gone' };
-const COLLAPSED_VIEW: ThreadFileView = { kind: 'collapsed' };
+const COLLAPSED_VIEW: ThreadFileView = { kind: 'collapsed', notLoaded: false };
+const NOT_LOADED_VIEW: ThreadFileView = { kind: 'collapsed', notLoaded: true };
 const GONE_VIEW: ThreadFileView = { kind: 'gone' };
 
 /**
@@ -114,8 +115,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             () => toValue(options.layout),
             () => toValue(options.files)?.threads,
             () => toValue(options.files)?.files,
-            () => toValue(options.files)?.listComplete,
-            () => toValue(options.files)?.listFailing,
+            () => toValue(options.files)?.listEnd,
             () => toValue(options.threadsInCollapsed),
         ],
         () => {
@@ -261,10 +261,10 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
 
         threadsByFile = regroupThreads(threads, files?.files ?? []);
         const listed = new Set(files?.files.map(file => file.path));
-        const listEnded = files != null && (files.listComplete || files.listFailing || files.pausedUntil !== null);
+        const listEnded = files != null && files.listEnd !== 'growing';
         const byFile = new Map<string, readonly ThreadPlacement[]>();
         for (const [path, fileThreads] of threadsByFile) {
-            // Not gone yet, while a later page may yet list it.
+            // Not gone yet, while a later page may yet list it or a rename account for it.
             if (listed.has(path) || listEnded) {
                 byFile.set(path, placeFileThreads(path, fileThreads, listed.has(path)));
             }
@@ -295,8 +295,13 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
 
         const state = toValue(options.files)?.getState(path);
         const diff = state?.kind === 'ready' ? getDiffs().get(state) : undefined;
-        if (!diff || toValue(options.files)?.getCollapse(path) != null) {
-            return placeElsewhere(COLLAPSED_VIEW, threads);
+        const collapse = toValue(options.files)?.getCollapse(path) ?? null;
+        if (!diff || collapse !== null) {
+            const notLoaded =
+                collapse !== null &&
+                collapse !== 'undecided' &&
+                (state?.kind === 'waiting' || state?.kind === 'loading' || state?.kind === 'paused');
+            return placeElsewhere(notLoaded ? NOT_LOADED_VIEW : COLLAPSED_VIEW, threads);
         }
 
         const expanded = toValue(options.files)?.getExpandedLines(path) ?? [];

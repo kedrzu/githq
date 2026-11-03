@@ -63,7 +63,8 @@ const olderCount = computed(() => {
   const comments = props.detail?.comments;
   return comments?.olderCursor ? comments.totalCount - comments.nodes.length : 0;
 });
-const count = computed(() => entries.value.length + olderCount.value);
+const olderReviewCount = computed(() => props.detail?.olderReviewCount ?? 0);
+const count = computed(() => entries.value.length + olderCount.value + olderReviewCount.value);
 const description = computed(() => props.detail?.bodyHtml ?? '');
 const openedAge = computed(() => (props.item ? formatAge(Date.parse(props.item.createdAt), now.value) : ''));
 
@@ -202,6 +203,16 @@ async function showOlder() {
           @click="showOlder"
         >
           {{ t(l.showOlder, { count: olderCount }) }}
+        </Button>
+        <Button
+          v-if="olderReviewCount > 0"
+          variant="link"
+          size="sm"
+          :link="item?.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t(l.olderReviews, { count: olderReviewCount }) }}
         </Button>
         <p
           v-if="!detail"

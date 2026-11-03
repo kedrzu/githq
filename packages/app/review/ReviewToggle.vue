@@ -2,6 +2,7 @@
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import IconButton from '@/components/IconButton.vue';
 
 defineProps<{
@@ -23,7 +24,7 @@ defineProps<{
     :label="label"
     :kbd="kbd"
     :aria-pressed="pressed"
-    :aria-keyshortcuts="kbd"
+    :aria-keyshortcuts="kbd && formatAriaKeyShortcuts(kbd)"
   />
 </template>
 

@@ -919,6 +919,7 @@ export type ItemDetailQuery = {
                   } | null> | null;
               } | null;
               reviews: {
+                  totalCount: number;
                   nodes: Array<{
                       id: string;
                       url: string;
@@ -1447,6 +1448,7 @@ export type ItemDetailsQuery = {
                   } | null> | null;
               } | null;
               reviews: {
+                  totalCount: number;
                   nodes: Array<{
                       id: string;
                       url: string;
@@ -5111,6 +5113,7 @@ export type PullRequestDetailFieldsFragment = {
         } | null> | null;
     } | null;
     reviews: {
+        totalCount: number;
         nodes: Array<{
             id: string;
             url: string;
@@ -8600,6 +8603,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    totalCount
     nodes {
       id
       url
@@ -9525,6 +9529,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    totalCount
     nodes {
       id
       url
@@ -10021,6 +10026,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    totalCount
     nodes {
       id
       url

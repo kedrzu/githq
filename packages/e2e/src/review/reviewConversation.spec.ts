@@ -112,7 +112,7 @@ test("a summary's threads land exactly on the first of them, as N does; a resolv
 
     await review.conversation.getByRole('button', { name: '1 thread in files, resolved' }).click();
     await expect(review.focusedThread).toContainText('Settled');
-    await expect(page.getByText('Thread 2 of 3')).toBeVisible();
+    await expect(page.getByText('Thread 3 of 3')).toBeVisible();
 
     await review.filterField.fill('other');
     await expect(review.fileRow('long.ts')).toBeHidden();

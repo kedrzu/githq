@@ -222,11 +222,11 @@ export const WithThreads: Story = {
                 collapsed: false,
                 collapseReason: null,
                 threadsUnder: false,
-                threads: { open: 1, outdated: 1, resolved: 1 },
+                threads: { open: 1, outdated: 1, lineGone: 1, resolved: 1 },
             },
         ]),
     play: async ({ canvas }) => {
-        await expect(canvas.getByText('1 open · 1 outdated · 1 resolved')).toBeInTheDocument();
+        await expect(canvas.getByText('1 open · 1 outdated · 1 outdated, line gone · 1 resolved')).toBeInTheDocument();
     },
 };
 
@@ -237,17 +237,65 @@ export const GoneHeader: Story = {
             {
                 kind: 'header',
                 key: 'header',
-                file: file('src/sync/retry-policy.ts', 0, 0, { gone: true, changeType: 'DELETED' }),
+                file: file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notInDiff' }, changeType: 'DELETED' }),
                 collapsed: false,
                 collapseReason: null,
                 threadsUnder: true,
-                threads: { open: 1, outdated: 0, resolved: 0 },
+                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
             },
         ]),
     play: async ({ canvas }) => {
         await expect(canvas.getByText("No longer in this pull request's diff")).toBeInTheDocument();
         await expect(canvas.queryByRole('button', { name: /Viewed/u })).not.toBeInTheDocument();
     },
+};
+
+/** CR14: gone, with what its commits say of it. */
+export const GoneWithReason: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: file('src/sync/retry-policy.ts', 0, 0, {
+                    gone: { kind: 'deletedAgain', added: '3f0c2aa', deleted: '9b7e411' },
+                    changeType: 'DELETED',
+                }),
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: true,
+                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getByText('Not in the diff: added in 3f0c2aa, deleted again in 9b7e411'),
+        ).toBeInTheDocument();
+    },
+};
+
+/** The list stopped short: it isn't known to be gone. */
+export const GoneUncertain: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notListed' }, changeType: 'DELETED' }),
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: true,
+                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Not among the files GitHub has listed')).toBeInTheDocument();
+    },
+};
+
+/** CR11: nothing but whitespace changed, and it's hidden. */
+export const OnlyWhitespace: Story = {
+    render: () => renderRows([{ kind: 'onlyWhitespace', key: 'onlyWhitespace' }]),
 };
 
 /** A new file with nothing in it. */

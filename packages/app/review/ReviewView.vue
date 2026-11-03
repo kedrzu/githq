@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, each landing held in place (D7, D32). ⌘B hides the file list and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). ⌘B hides the file list and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -37,6 +37,7 @@ import { formatItemReference, getItemPagePath } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
+import type { Freshness } from '@/sync/Freshness.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
@@ -52,7 +53,13 @@ import {
   getReviewRowPath,
   getReviewThreadKey,
 } from './buildReviewRows.js';
-import type { ReviewDistanceRow, ReviewGapRow, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
+import type {
+  ReviewDistanceRow,
+  ReviewFileEndRow,
+  ReviewGapRow,
+  ReviewRow,
+  ReviewThreadRow,
+} from './buildReviewRows.js';
 import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
 import ReviewConversation from './conversation/ReviewConversation.vue';
 import { groupReviewFiles } from './groupReviewFiles.js';
@@ -63,6 +70,7 @@ import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewScreenFreshness } from './ReviewScreenFreshness.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
 import { countThreads } from './threads/countThreads.js';
+import { findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
 import { useReviewRows } from './useReviewRows.js';
@@ -71,6 +79,7 @@ import { createFileFilter } from './utils/createFileFilter.js';
 import type { FileFilter, FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getReviewFreshness } from './utils/getReviewFreshness.js';
+import { getThreadPositionFreshness } from './utils/getThreadPositionFreshness.js';
 
 const props = defineProps<{
   reference: ItemReference;
@@ -120,23 +129,33 @@ const matchedFiles = computed(() => {
 });
 // By its own `threadPlacements`: `useReviewRows` publishes them first, and reads `ordered` right after.
 const placements = shallowRef<ReviewThreadPlacements>({ byFile: new Map(), goneEntries: [] });
+// Apart: nothing downstream of `goneFiles` is to be rebuilt by what doesn't change them.
+const listEnd = computed(() => files.value?.listEnd ?? 'growing');
 const goneFiles = computed(() =>
-  placements.value.goneEntries.map((path): ReviewFile => ({
-    path,
-    previousPath: null,
-    changeType: 'DELETED',
-    additions: 0,
-    deletions: 0,
-    viewed: 'UNVIEWED',
-    gone: true,
-  })),
+  placements.value.goneEntries.map((path): ReviewFile => {
+    const history = files.value?.goneHistory.get(path);
+    return {
+      path,
+      previousPath: null,
+      changeType: 'DELETED',
+      additions: 0,
+      deletions: 0,
+      viewed: 'UNVIEWED',
+      gone:
+        listEnd.value !== 'certain'
+          ? { kind: 'notListed' }
+          : history
+            ? { kind: 'deletedAgain', ...history }
+            : { kind: 'notInDiff' },
+    };
+  }),
 );
 const openThreads = computed(() => {
   const counts = new Map<string, number>();
   for (const [path, placed] of placements.value.byFile) {
-    const { open, outdated } = countThreads(placed);
-    if (open + outdated > 0) {
-      counts.set(path, open + outdated);
+    const { open, outdated, lineGone } = countThreads(placed);
+    if (open + outdated + lineGone > 0) {
+      counts.set(path, open + outdated + lineGone);
     }
   }
 
@@ -194,13 +213,8 @@ const currentFile = computed(() => {
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
 const detail = computed(() => (opened.detail?.kind === 'pullRequest' ? opened.detail : null));
 const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
-/** The threads N and ⇧N walk, in diff order: all but resolved ones folded to their line. */
-const walkedThreads = computed(() =>
-  rows.value.filter(
-    (row): row is ReviewThreadRow =>
-      row.kind === 'thread' && (!row.placement.thread.isResolved || isThreadOpen(row.placement.thread.id)),
-  ),
-);
+/** The threads N and ⇧N walk (CR15). */
+const walkedThreads = computed(() => listWalkedThreads(rows.value));
 /** What the line about a push names, in the list's order. */
 const lostViewedPaths = computed(() =>
   files.value?.lostViewedNotice ? allPaths.value.filter(path => lostViewed.value.has(path)) : [],
@@ -265,18 +279,17 @@ onScopeDispose(
       return { kind: 'filesSelected' };
     }
 
+    const freshness: Freshness = files.value ? getReviewFreshness(files.value) : { kind: 'partial' };
     const walked = walkedThreads.value;
     const at = walked.findIndex(row => row.placement.thread.id === focusedThread.value);
-    if (at !== -1) {
-      return {
-        kind: 'threadPosition',
-        position: at + 1,
-        total: walked.length,
-        open: walked.filter(row => !row.placement.thread.isResolved).length,
-      };
-    }
-
-    return files.value ? getReviewFreshness(files.value) : { kind: 'partial' };
+    return at === -1
+      ? freshness
+      : getThreadPositionFreshness(freshness, {
+          kind: 'threadPosition',
+          position: at + 1,
+          total: walked.length,
+          open: walked.filter(row => !row.placement.thread.isResolved).length,
+        });
   }),
 );
 
@@ -508,24 +521,23 @@ function stepThread(delta: 1 | -1) {
   const at = walked.findIndex(
     row => row.placement.thread.id === focusedThread.value && list.value?.getRowOffset(row.key) != null,
   );
-  const target = at === -1 ? findThreadFromAnchor(delta) : walked[at + delta];
+  const target =
+    at === -1
+      ? findThreadFromRow({ rows: rows.value, key: list.value?.anchor?.key ?? null, delta })
+      : walked[at + delta];
   if (target) {
     jumpToThread(target);
   }
 }
 
-function findThreadFromAnchor(delta: 1 | -1) {
-  const key = list.value?.anchor?.key;
-  const anchor = rows.value.findIndex(row => row.key === key);
-  const walked = walkedThreads.value;
-  return delta === 1
-    ? walked.find(row => rows.value.indexOf(row) > anchor)
-    : walked.findLast(row => rows.value.indexOf(row) <= anchor);
-}
-
-/** A quarter down the screen, the code above it in sight (CR15), and held there (D7). */
+/** A quarter down the screen, the code above it in sight (CR15), and held there (D7). A resolved one opens, to be read. */
 function jumpToThread(row: ReviewThreadRow) {
-  focusedThread.value = row.placement.thread.id;
+  const { id, isResolved } = row.placement.thread;
+  if (isResolved) {
+    files.value?.setThreadOpen(id, true);
+  }
+
+  focusedThread.value = id;
   const height = diffColumn.value?.clientHeight ?? 0;
   list.value?.jumpTo(row.key, Math.round(Math.max(height / 4, THREAD_MIN_OFFSET)));
   list.value?.focus();
@@ -552,7 +564,7 @@ async function jumpToReviewThreads(reviewId: string) {
     return;
   }
 
-  if (!findFirstThreadRow(own.ids)) {
+  if (!findFirstThreadRow(own.ids) && own.paths.some(isHeldBack)) {
     filterPattern.value = '';
     hideViewed.value = false;
     await nextTick();
@@ -560,14 +572,16 @@ async function jumpToReviewThreads(reviewId: string) {
 
   const row = findFirstThreadRow(own.ids);
   if (row) {
-    if (row.placement.thread.isResolved) {
-      files.value?.setThreadOpen(row.placement.thread.id, true);
-    }
-
     jumpToThread(row);
   } else if (own.paths[0] !== undefined) {
     selectFile(own.paths[0]);
   }
+}
+
+/** Whether the filter or hidden viewed files are what keeps the file out of the diff. */
+function isHeldBack(path: string) {
+  const known = [...allFiles.value, ...goneFiles.value].some(file => file.path === path);
+  return known && !ordered.value.some(file => file.path === path);
 }
 
 function findFirstThreadRow(ids: ReadonlySet<string>) {
@@ -589,6 +603,11 @@ function expandToThread(mark: ReviewDistanceRow) {
   const offset = list.value?.getRowOffset(key) ?? null;
   heldInExpanding = offset === null ? null : { key, offset };
   files.value?.expandLines(path, getDistanceLinesToShow(mark));
+  returnKeysToDiff();
+}
+
+function expandToFileEnd(mark: ReviewFileEndRow) {
+  files.value?.expandLines(getReviewRowPath(mark.key), mark.lines);
   returnKeysToDiff();
 }
 
@@ -619,6 +638,11 @@ function selectRange(path: string) {
   const paths = ordered.value.filter(file => !file.gone).map(file => file.path);
   const start = paths.indexOf(selectionStart ?? currentPath.value ?? path);
   const end = paths.indexOf(path);
+  // A gone file's row: it can't be selected.
+  if (end === -1) {
+    return;
+  }
+
   selected.value = new Set(start === -1 ? [path] : paths.slice(Math.min(start, end), Math.max(start, end) + 1));
   selectionStart = paths[start] ?? path;
 }
@@ -800,6 +824,8 @@ function readAgain() {
               :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
               @expand="expandGap"
               @expand-to-thread="expandToThread"
+              @expand-to-file-end="expandToFileEnd"
+              @show-whitespace="hideWhitespace = false"
               @toggle-thread="toggleThread"
               @retry="path => files?.retry(path)"
               @toggle-collapsed="toggleCollapsed"

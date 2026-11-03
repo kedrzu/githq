@@ -12,6 +12,15 @@ import type { ReviewThread } from './threads/ReviewThread.js';
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
 const REVIEW_BLOB_DATABASE_VERSION = 2;
 
+/** Every store of the database, with how it is keyed. */
+const STORES = [
+    ['blobs', { keyPath: 'oid' }],
+    ['resolutions', {}],
+    ['mergeBases', {}],
+    ['fileLists', {}],
+    ['threads', {}],
+] as const;
+
 /**
  * The database of what `login`'s reviews keep: contents, file lists, review threads, paths and oids. `IndexedDbPersistence.destroy`
  * deletes it with the local copy, so whatever signs a user out — here, in another tab or by a token GitHub rejects —
@@ -183,16 +192,12 @@ export const ReviewBlobStore = defineService({
 function openDatabase(login: string) {
     return openDB<ReviewBlobDatabase>(getReviewBlobDatabaseName(login), REVIEW_BLOB_DATABASE_VERSION, {
         upgrade(db) {
-            // Another layout: a cache, read again rather than carried over.
-            for (const store of db.objectStoreNames) {
-                db.deleteObjectStore(store);
+            // Added to, never dropped: what's in `blobs` is named by its oid for good and costly to read again.
+            for (const [name, options] of STORES) {
+                if (!db.objectStoreNames.contains(name)) {
+                    db.createObjectStore(name, options);
+                }
             }
-
-            db.createObjectStore('blobs', { keyPath: 'oid' });
-            db.createObjectStore('resolutions');
-            db.createObjectStore('mergeBases');
-            db.createObjectStore('fileLists');
-            db.createObjectStore('threads');
         },
     });
 }

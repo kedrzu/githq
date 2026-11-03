@@ -1,6 +1,7 @@
+import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
-import { buildDiffRows, createDiffChangedRows, createDiffContextRow } from './diff/buildDiffRows.js';
+import { buildDiffRows, createDiffChangedRows, createDiffContextRow, getSideStart } from './diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
 import { findEnclosing } from './diff/findEnclosing.js';
@@ -58,6 +59,7 @@ export interface ReviewLineRow {
 export interface ReviewGapRow {
     readonly kind: 'gap';
     readonly key: string;
+    /** How many of its lines nothing shows: not those shown for a thread. */
     readonly hidden: number;
     /** The first hidden line of the newer version, 1-based. */
     readonly firstLine: number;
@@ -126,6 +128,22 @@ export interface ReviewDistanceRow {
     readonly placement: ThreadOnHiddenLine;
 }
 
+/** What is left of a file's last gap under the code shown for a thread: no changes follow (CR11). */
+export interface ReviewFileEndRow {
+    readonly kind: 'fileEnd';
+    readonly key: string;
+    /** How many lines are left to the file's end. */
+    readonly hidden: number;
+    /** What "Expand to here" brings out. */
+    readonly lines: DiffLineRange;
+}
+
+/** A file whose only changes are in whitespace, which is hidden, so its diff has none (CR11). */
+export interface ReviewOnlyWhitespaceRow {
+    readonly kind: 'onlyWhitespace';
+    readonly key: string;
+}
+
 /** The bottom edge of a file's block, and the space under it. */
 export interface ReviewEndRow {
     readonly kind: 'end';
@@ -145,10 +163,12 @@ export type ReviewRow =
     | ReviewDistanceRow
     | ReviewEndRow
     | ReviewFailedRow
+    | ReviewFileEndRow
     | ReviewGapRow
     | ReviewHeaderRow
     | ReviewLineRow
     | ReviewNoticeRow
+    | ReviewOnlyWhitespaceRow
     | ReviewPausedRow
     | ReviewPlaceholderRow
     | ReviewTailRow
@@ -339,7 +359,25 @@ export function buildFileLineRows({
         };
     });
 
-    return threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows;
+    const withThreads = threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows;
+    if (!isOnlyWhitespaceChanged(diff)) {
+        return withThreads;
+    }
+
+    // In place of the gap that would be the whole file, nothing having been expanded.
+    return [
+        { kind: 'onlyWhitespace', key: path + KEY_SEPARATOR + 'onlyWhitespace' + KEY_SEPARATOR + layout },
+        ...withThreads.filter(row => row.kind !== 'gap' || !isWholeFile(row)),
+    ];
+}
+
+/** Nothing changed, as far as the diff goes, and yet the lines differ: only hidden whitespace can do that. */
+function isOnlyWhitespaceChanged({ blocks, before, after }: FileDiff) {
+    return blocks.length === 0 && before.some((line, index) => line !== after[index]);
+}
+
+function isWholeFile({ atFileEnd, range }: ReviewGapRow) {
+    return atFileEnd && range.afterStart === 0;
 }
 
 interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'diff' | 'syntax' | 'layout'> {
@@ -354,18 +392,17 @@ interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 
  */
 function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertThreadRowsParams) {
     const result: ReviewRow[] = [];
-    const underRows = new Map<string, ThreadOnLine[]>();
-    const inGaps = new Map<number, ThreadOnHiddenLine[]>();
+    const underRows = groupByToMap(
+        threads.filter(placement => placement.kind === 'onLine'),
+        placement => placement.rowKeys[layout],
+    );
+    const inGaps = groupByToMap(
+        threads.filter(placement => placement.kind === 'hiddenLine'),
+        placement => placement.gap.afterStart,
+    );
     for (const placement of threads) {
-        switch (placement.kind) {
-            case 'onLine':
-                addTo(underRows, placement.rowKeys[layout], placement);
-                break;
-            case 'hiddenLine':
-                addTo(inGaps, placement.gap.afterStart, placement);
-                break;
-            default:
-                result.push(createThreadRow(path, placement, null));
+        if (placement.kind !== 'onLine' && placement.kind !== 'hiddenLine') {
+            result.push(createThreadRow(path, placement, null));
         }
     }
 
@@ -375,7 +412,17 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
                 (a, b) => getGapOffset(a, a.line) - getGapOffset(b, b.line),
             );
             pushPieces(inGap.filter(placement => placement.direction === 'down'));
-            result.push(row);
+            const last = inGap.at(-1);
+            if (last && row.atFileEnd && !isWholeFile(row) && !row.expansionReset) {
+                pushFileEnd(row, getGapOffset(last, last.line) + 1);
+            } else {
+                const hidden = row.hidden - countShownLines(inGap);
+                // Nothing left of it but a push to say, which only it can.
+                if (hidden > 0 || row.expansionReset) {
+                    result.push({ ...row, hidden });
+                }
+            }
+
             pushPieces(inGap.filter(placement => placement.direction === 'up'));
         } else {
             result.push(row);
@@ -388,6 +435,19 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
     }
 
     return result;
+
+    /** In place of the file's last gap, under the code shown for the last thread in it. */
+    function pushFileEnd({ range, hidden, key }: ReviewGapRow, shown: number) {
+        const left = hidden - shown;
+        if (left > 0) {
+            result.push({
+                kind: 'fileEnd',
+                key: key + KEY_SEPARATOR + 'end',
+                hidden: left,
+                lines: { start: range.afterStart + shown, end: range.afterEnd },
+            });
+        }
+    }
 
     /** Each with its mark and its code, or under the last one's code when that reaches its line. */
     function pushPieces(placements: readonly ThreadOnHiddenLine[]) {
@@ -441,13 +501,17 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
     }
 }
 
-function addTo<K, V>(map: Map<K, V[]>, key: K, value: V) {
-    const values = map.get(key);
-    if (values) {
-        values.push(value);
-    } else {
-        map.set(key, [value]);
+/** How many lines of a gap the threads in it show, however many of them show the same line. */
+function countShownLines(placements: readonly ThreadOnHiddenLine[]) {
+    const shown = new Set<number>();
+    for (const placement of placements) {
+        const last = getGapOffset(placement, placement.line);
+        for (let offset = getGapOffset(placement, placement.firstLine); offset <= last; offset++) {
+            shown.add(offset);
+        }
     }
+
+    return shown.size;
 }
 
 function createThreadRow(path: string, placement: ThreadPlacement, inline: ReviewThreadRow['inline']): ReviewThreadRow {
@@ -464,7 +528,7 @@ function getInlineSide(side: ThreadOnLine['side'], layout: DiffLayout): ReviewTh
 
 /** How far into its gap a line of a thread's side is, the same on both sides of the gap. */
 function getGapOffset({ gap, side }: ThreadOnHiddenLine, line: number) {
-    return line - 1 - (side === 'before' ? gap.beforeStart : gap.afterStart);
+    return line - 1 - getSideStart(gap, side);
 }
 
 /**
@@ -535,7 +599,10 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'gap':
             return 28;
         case 'distance':
+        case 'fileEnd':
             return 26;
+        case 'onlyWhitespace':
+            return 30;
         case 'thread':
             return estimateThreadHeight(row);
         case 'placeholder':
@@ -708,6 +775,8 @@ function getRowPlace(row: ReviewRow): RowPlace | null {
             return { side: 'after', line: row.firstLine };
         case 'distance':
             return { side: row.placement.side, line: row.placement.firstLine };
+        case 'fileEnd':
+            return { side: 'after', line: row.lines.start + 1 };
         default:
             return null;
     }

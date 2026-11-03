@@ -12,5 +12,7 @@ codeAtCommit:
   en: The code it was written on, at {commit}
 asCommented:
   en: Line {line}, as it was when commented
+asCommentedNotLoaded:
+  en: Line {line}, as it was when commented · the file isn't loaded while collapsed
 asCommentedAt:
   en: Line {line}, as it was when commented at {commit}

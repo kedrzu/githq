@@ -20,6 +20,8 @@ large:
   en: large
 notInDiff:
   en: not in the diff
+notListed:
+  en: not listed by GitHub
 openThreads:
   plural: count
   en:

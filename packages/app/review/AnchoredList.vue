@@ -150,7 +150,8 @@ function getRowOffset(key: string) {
 
 function focus() {
   focusedQuietly.value = true;
-  assertValue(scroller.value).focus({ preventScroll: true });
+  // Not there anymore when the whole list goes with the row that had the focus.
+  scroller.value?.focus({ preventScroll: true });
 }
 
 function onScroll() {

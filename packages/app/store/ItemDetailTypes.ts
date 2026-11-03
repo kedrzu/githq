@@ -59,6 +59,8 @@ export interface PullRequestDetail extends ItemDetailBase {
     readonly reviews: readonly ItemDetailReview[];
     /** The newest submitted reviews (GitHub's last 100), every one of each reviewer, oldest first. */
     readonly reviewSummaries: readonly ItemReviewSummary[];
+    /** How many submitted reviews are older than those: GitHub gives no more than 100 at once. */
+    readonly olderReviewCount: number;
     readonly reviewRequests: readonly ItemDetailReviewRequest[];
 }
 

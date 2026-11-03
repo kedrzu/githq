@@ -9,6 +9,13 @@ up:
   en: up
 why:
   en: shown for its thread; nothing between is expanded
+toFileEnd:
+  plural: count
+  en:
+    one: 1 line to the end of the file
+    many: '{formatted} lines to the end of the file'
+noChangesThere:
+  en: no changes there
 whitespaceLine:
   en: Line {line}, a hidden whitespace change
 whitespaceWhy:

@@ -56,7 +56,7 @@ test('what is written is read back by another tab; a login reads nothing of anot
     expect(await tab.read(bob, ['a1'])).toEqual(new Map());
 });
 
-test('a database of the layout before threads opens as an empty cache of the layout now', async () => {
+test('a database of an older layout keeps its contents, which never change, and gains the stores it lacks', async () => {
     const login = uniqueLogin();
     const old = await openDB(getReviewBlobDatabaseName(login), 1, {
         upgrade(db) {
@@ -64,10 +64,12 @@ test('a database of the layout before threads opens as an empty cache of the lay
             db.createObjectStore('fileLists');
         },
     });
+    await old.put('blobs', { oid: 'a1', text: 'costly to read again' });
     old.close();
 
     const tab = ReviewBlobStore.create();
 
+    expect(await tab.read(login, ['a1'])).toEqual(new Map([['a1', 'costly to read again']]));
     expect(await tab.readThreads(login, 'acme/web#7')).toBeUndefined();
     await tab.writeThreads(login, 'acme/web#7', []);
     expect(await tab.readThreads(login, 'acme/web#7')).toEqual([]);

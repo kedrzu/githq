@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent } from 'storybook/test';
 
+import { sampleThread } from '@/testing/sampleThreads.js';
+
 import type { ThreadOnHiddenLine } from './placeThreads.js';
 import ReviewDistanceRow from './ReviewDistanceRow.vue';
-import { sampleThread } from './sampleThreads.js';
 
 const PLACEMENT: ThreadOnHiddenLine = {
     kind: 'hiddenLine',
@@ -20,7 +21,7 @@ const PLACEMENT: ThreadOnHiddenLine = {
 
 const meta = {
     component: ReviewDistanceRow,
-    args: { placement: PLACEMENT, onExpand: fn() },
+    args: { row: { kind: 'distance', key: 'mark', placement: PLACEMENT }, onExpand: fn() },
     render: args => ({
         components: { ReviewDistanceRow },
         setup: () => ({ args }),
@@ -42,7 +43,20 @@ export const FurtherDown: Story = {
 };
 
 /** Above the nearest change. */
-export const FurtherUp: Story = { args: { placement: { ...PLACEMENT, direction: 'up', distance: 1 } } };
+export const FurtherUp: Story = {
+    args: { row: { kind: 'distance', key: 'mark', placement: { ...PLACEMENT, direction: 'up', distance: 1 } } },
+};
 
 /** CR11: a line changed in whitespace alone, that being hidden. */
-export const HiddenWhitespace: Story = { args: { placement: { ...PLACEMENT, whitespaceChange: true } } };
+export const HiddenWhitespace: Story = {
+    args: { row: { kind: 'distance', key: 'mark', placement: { ...PLACEMENT, whitespaceChange: true } } },
+};
+
+/** CR11: what is left of the file's last gap under the code shown for a thread. */
+export const ToFileEnd: Story = {
+    args: { row: { kind: 'fileEnd', key: 'end', hidden: 38, lines: { start: 215, end: 253 } } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('38 lines to the end of the file')).toBeInTheDocument();
+        await expect(canvas.getByText('no changes there')).toBeInTheDocument();
+    },
+};

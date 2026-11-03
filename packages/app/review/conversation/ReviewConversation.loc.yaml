@@ -13,6 +13,11 @@ showOlder:
   en:
     one: Show 1 older comment
     many: 'Show {count} older comments'
+olderReviews:
+  plural: count
+  en:
+    one: 1 older review on GitHub
+    many: '{count} older reviews on GitHub'
 reading:
   en: Reading the conversation…
 empty:

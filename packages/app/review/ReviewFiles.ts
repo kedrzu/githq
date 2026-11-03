@@ -6,6 +6,8 @@ import type {
     Requester,
 } from '@githq/github/generated.gen.js';
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
+import { readGoneFileHistory } from '@githq/github/readGoneFileHistory.js';
+import type { GoneFileHistory } from '@githq/github/readGoneFileHistory.js';
 import { readReviewBlobOids, readReviewBlobTexts } from '@githq/github/readReviewBlobs.js';
 import type { ReviewBlobOidAnswer } from '@githq/github/readReviewBlobs.js';
 import { getGitBlobText } from '@githq/github/rest/getGitBlobText.js';
@@ -41,6 +43,7 @@ import type { DiffLineRange } from './diff/buildDiffRows.js';
 import { ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
+import { groupThreadsByFile } from './threads/placeThreads.js';
 import { readReviewThreads } from './threads/readReviewThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
@@ -59,8 +62,23 @@ export interface ReviewFile {
     /** `DISMISSED`: viewed once, changed since. */
     readonly viewed: FileViewedState;
     /** Not in the diff: an entry only for its threads (D12), which GitHub doesn't list and nothing can be done to. */
-    readonly gone?: boolean;
+    readonly gone?: ReviewFileGone;
 }
+
+/** What is known of why a file with threads is not on the list (D30). */
+export type ReviewFileGone =
+    /** The list is whole and doesn't have it, and its commits don't say why. */
+    | { readonly kind: 'notInDiff' }
+    /** The list is whole and doesn't have it: its commits say why. */
+    | ({ readonly kind: 'deletedAgain' } & GoneFileHistory)
+    /** The list stopped short of being certain: it may be on it for all anyone knows. */
+    | { readonly kind: 'notListed' };
+
+/**
+ * Whether a path missing from the list says anything. `growing`: not yet, a later page or where a renamed file came from
+ * may still account for it. `uncertain`: nothing more is coming for now, and what came isn't all of it. `certain`: it is.
+ */
+export type ReviewFileListEnd = 'growing' | 'uncertain' | 'certain';
 
 /** How large a file's two sides are in bytes; `null` for the side it doesn't exist on, or whose size GitHub doesn't give. */
 export interface ReviewFileSizes {
@@ -129,6 +147,9 @@ export interface PullRequestFiles {
     readonly threadsState: ReviewThreadsState;
     /** Whether {@link files} is all GitHub lists. A failed read of a later page leaves it `false` and what came. */
     readonly listComplete: boolean;
+    readonly listEnd: ReviewFileListEnd;
+    /** How files gone from the diff came and went, by path, as far as their commits say: read once the list is certain. */
+    readonly goneHistory: ReadonlyMap<string, GoneFileHistory>;
     /** The pull request's node id, once the list is read. */
     readonly id: string | null;
     /** The commit the files are read at, once the list is read. */
@@ -289,6 +310,8 @@ interface FileRun {
     running: number;
     /** Where renamed and copied files came from, once read: until then those wait, in the queue. */
     renames: ReadonlyMap<string, string> | null;
+    /** The paths whose history was asked of GitHub, at this head. */
+    readonly goneHistoryAsked: Set<string>;
     readonly renamesReader: SingleRunnerState<void>;
     /** Whether the merge base was asked for ahead of the first query needing it. */
     mergeBaseAsked: boolean;
@@ -429,6 +452,9 @@ export const ReviewFiles = defineService({
             const openThreadsRef = shallowRef<ReadonlySet<string>>(new Set());
             const threadsRef = shallowRef<readonly ReviewThread[]>([]);
             const threadsStateRef = shallowRef<ReviewThreadsState>(LOADING);
+            /** The last read of where renamed files came from failed: those files stay without it. */
+            const renamesFailedRef = shallowRef(false);
+            const goneHistoryRef = shallowRef<ReadonlyMap<string, GoneFileHistory>>(new Map());
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
@@ -473,6 +499,12 @@ export const ReviewFiles = defineService({
                     },
                     get listComplete() {
                         return listCompleteRef.value;
+                    },
+                    get listEnd() {
+                        return readListEnd();
+                    },
+                    get goneHistory() {
+                        return goneHistoryRef.value;
                     },
                     get id() {
                         return runRef.value?.id ?? null;
@@ -572,6 +604,76 @@ export const ReviewFiles = defineService({
                     !getBlobs(entry.sides).some(blob => run.fetching.has(blob.oid)) &&
                     (entry.sides !== null || entry.diskRead || run.isGenerated === null || isHeldForRenames(run, entry))
                 );
+            }
+
+            /** Reads no {@link versionRef}: a run's renames are told of by publishing the files. */
+            function readListEnd(): ReviewFileListEnd {
+                const run = runRef.value;
+                if (!run) {
+                    return 'growing';
+                }
+
+                const listed = filesRef.value.length;
+                if (listFailingRef.value || pausedRef.value !== null) {
+                    return 'uncertain';
+                }
+
+                const held = [...run.entries.values()].some(entry => isHeldForRenames(run, entry));
+                if (!listCompleteRef.value || (held && !renamesFailedRef.value)) {
+                    return 'growing';
+                }
+
+                return held || run.changedFiles > listed ? 'uncertain' : 'certain';
+            }
+
+            /**
+             * Asks how the files gone from the diff came and went, those not asked yet, once GitHub answered the whole list:
+             * only a list that certain says they are in neither the base nor the head.
+             */
+            async function readGoneHistory() {
+                const run = runRef.value;
+                if (!run || checkedAtRef.value === null || readListEnd() !== 'certain') {
+                    return;
+                }
+
+                const paths = listGonePaths().filter(path => !run.goneHistoryAsked.has(path));
+                if (paths.length === 0 || findPause()) {
+                    return;
+                }
+
+                for (const path of paths) {
+                    run.goneHistoryAsked.add(path);
+                }
+
+                try {
+                    const histories = await readGoneFileHistory({
+                        requester: current.requester,
+                        repository,
+                        head: run.headRefOid,
+                        paths,
+                    });
+                    if (isLive(run)) {
+                        goneHistoryRef.value = new Map([...goneHistoryRef.value, ...histories]);
+                    }
+                } catch (error) {
+                    // Only a reason: the entry says it without. Opening the pull request again asks anew.
+                    for (const path of paths) {
+                        run.goneHistoryAsked.delete(path);
+                    }
+
+                    if (!readPauseOf(error)) {
+                        logger.warn('Could not read how files gone from the diff came and went', { error });
+                    }
+                }
+            }
+
+            /** The paths with an entry of their own for being gone (D12): an unresolved thread on a file not on the list. */
+            function listGonePaths() {
+                const files = filesRef.value;
+                const listed = new Set(files.map(file => file.path));
+                return [...groupThreadsByFile(threadsRef.value, files)]
+                    .filter(([path, threads]) => !listed.has(path) && threads.some(thread => !thread.isResolved))
+                    .map(([path]) => path);
             }
 
             function readProgress(): ReviewFilesProgress {
@@ -920,6 +1022,8 @@ export const ReviewFiles = defineService({
                 threadsHeld = false;
                 threadsRef.value = [];
                 threadsStateRef.value = LOADING;
+                renamesFailedRef.value = false;
+                goneHistoryRef.value = new Map();
                 versionRef.value++;
             }
 
@@ -980,6 +1084,7 @@ export const ReviewFiles = defineService({
                     threadsRef.value = threads;
                     threadsStateRef.value = THREADS_READY;
                     keepOnDisk(() => blobs.writeThreads(login, listKey, threads));
+                    void readGoneHistory();
                 } catch (error) {
                     if (dropped) {
                         return;
@@ -1023,6 +1128,7 @@ export const ReviewFiles = defineService({
                     await readPages();
                     listFailingRef.value = false;
                     checkedAtRef.value = clock.now();
+                    void readGoneHistory();
                 } catch (error) {
                     if (dropped) {
                         return;
@@ -1212,6 +1318,7 @@ export const ReviewFiles = defineService({
                     fetching: new Set(),
                     running: 0,
                     renames: null,
+                    goneHistoryAsked: new Set(),
                     renamesReader: createSingleRunner({ handler: () => readRenames(run) }),
                     mergeBaseAsked: false,
                     isGenerated: null,
@@ -1221,6 +1328,8 @@ export const ReviewFiles = defineService({
                 runRef.value = run;
                 filesRef.value = [];
                 listCompleteRef.value = false;
+                renamesFailedRef.value = false;
+                goneHistoryRef.value = new Map();
                 listRef.value = { kind: 'ready' };
                 void readGitAttributes(run);
                 return run;
@@ -1466,6 +1575,7 @@ export const ReviewFiles = defineService({
                     }
 
                     run.renames = renames;
+                    renamesFailedRef.value = false;
                     for (const entry of run.entries.values()) {
                         const previousPath = renames.get(entry.file.path);
                         if (previousPath !== undefined) {
@@ -1476,8 +1586,10 @@ export const ReviewFiles = defineService({
                     publishFiles(run);
                     keepList(run);
                     pump(run);
+                    void readGoneHistory();
                 } catch (error) {
                     if (isLive(run)) {
+                        renamesFailedRef.value = readPauseOf(error) === null;
                         failEntries(
                             run,
                             run.queue.filter(entry => isHeldForRenames(run, entry)),
@@ -1992,6 +2104,7 @@ export const ReviewFiles = defineService({
                     }
 
                     pump(run);
+                    void readGoneHistory();
                 }
             }
 

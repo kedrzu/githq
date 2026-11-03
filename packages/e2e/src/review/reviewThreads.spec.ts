@@ -6,7 +6,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 import { answerReview } from './answerReview.js';
-import type { AnsweredReview, SampleReviewFile, SampleReviewThread } from './answerReview.js';
+import type { AnsweredReview, AnswerReviewParams, SampleReviewFile, SampleReviewThread } from './answerReview.js';
 
 const REVIEW_ADDRESS = '/acme/web/pull/15/files';
 
@@ -120,7 +120,9 @@ test('every thread shows where it belongs, hidden lines and collapsed files with
     // On its line, with GitHub's HTML, its link going outside; the header counts what the file has.
     await goToThread(review, 'On its line');
     await expect(review.thread('On its line').getByRole('link', { name: 'docs' })).toHaveAttribute('target', '_blank');
-    await expect(review.topHeader(ENGINE).locator('..')).toContainText('2 open · 2 outdated · 1 resolved');
+    await expect(review.topHeader(ENGINE).locator('..')).toContainText(
+        '2 open · 1 outdated · 1 outdated, line gone · 1 resolved',
+    );
 
     // Resolved is one line until opened.
     await expect(review.thread('Settled long ago')).toContainText('2 comments');
@@ -143,6 +145,16 @@ test('every thread shows where it belongs, hidden lines and collapsed files with
     await expect(review.focusedThread).toContainText('On a file gone');
     await expect(review.diff).toContainText("No longer in this pull request's diff");
     await expect(review.diff).toContainText('Line 2, as it was when commented at a91d03b');
+});
+
+test('a file gone from the diff says what its commits say of it', async ({ page, github }) => {
+    const { review } = await openThreads(page, github, THREADS, {
+        [GONE]: { added: '3f0c2aa', deleted: '9b7e411' },
+    });
+
+    await review.openThreadsMark('removed.ts', 1).click();
+    await expect(review.diff).toContainText('Not in the diff: added in 3f0c2aa, deleted again in 9b7e411');
+    await expect(review.fileRow('removed.ts')).toContainText('not in the diff');
 });
 
 test('N lands exactly on a thread and stays there as a comment above it grows late', async ({ page, github }) => {
@@ -210,11 +222,13 @@ test('a growth above the screen moves nothing seen', async ({ page, github }) =>
     expect(after.y).toBeCloseTo(seen.y, 0);
 });
 
-test('N and ⇧N walk the threads in diff order, skipping resolved ones until opened, and a key on a row scrolled away keeps working', async ({
+test('N and ⇧N walk every open thread in diff order, then the resolved ones, opening each, without wrapping; a key on a row scrolled away goes on from what is being read', async ({
     page,
     github,
 }) => {
     const { review } = await openThreads(page, github);
+    // A file not here yet has its threads under its header, in another order.
+    await expect(page.getByText(/Fetching file contents/u)).toHaveCount(0);
 
     await page.keyboard.press('n');
     await expect(review.focusedThread).toContainText('In a collapsed file');
@@ -228,16 +242,54 @@ test('N and ⇧N walk the threads in diff order, skipping resolved ones until op
     await page.keyboard.press('n');
     await page.keyboard.press('n');
     await expect(review.focusedThread).toContainText('On its line');
-    await expect(page.getByText('Thread 4 of 8, 8 open')).toBeVisible();
+    await expect(page.getByText('Thread 4 of 9, 8 open')).toBeVisible();
 
-    // The resolved one lies right before it: skipped until opened.
-    const resolved = review.thread('Settled long ago').getByRole('button').first();
-    await resolved.focus();
+    // The resolved one lying right before it comes after all the open ones, and opens.
+    await goToThread(review, 'On a file gone');
+    await expect(page.getByText('Thread 8 of 9, 8 open')).toBeVisible();
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('Settled long ago');
+    await expect(review.focusedThread).toContainText('Indeed');
+    await expect(page.getByText('Thread 9 of 9, 8 open')).toBeVisible();
+
+    // The walk ends there.
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('Settled long ago');
+    await page.keyboard.press('Shift+n');
+    await expect(review.focusedThread).toContainText('On a file gone');
+
+    await goToThread(review, 'Settled long ago');
+    await review.thread('Settled long ago').getByRole('button').first().focus();
     await review.diff.evaluate(diff => diff.scrollTo(0, diff.scrollHeight));
     await expect(review.thread('Settled long ago')).toHaveCount(0);
     await expect(review.diff).toBeFocused();
     await page.keyboard.press('Shift+n');
     await expect(review.focusedThread).toBeVisible();
+    await expect(review.focusedThread).not.toContainText('Settled long ago');
+});
+
+test('a pull request with only resolved threads still has them to walk, each landing open', async ({
+    page,
+    github,
+}) => {
+    const threads: SampleReviewThread[] = [
+        { id: 'first', path: ENGINE, line: 98, isResolved: true, comments: ['<p>First settled</p>', '<p>Quite</p>'] },
+        { id: 'second', path: ENGINE, line: 102, isResolved: true, comments: ['<p>Second settled</p>'] },
+    ];
+    const { review } = await openThreads(page, github, threads);
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First settled');
+    await expect(review.focusedThread).toContainText('Quite');
+    await expect(page.getByText('Thread 1 of 2, 0 open')).toBeVisible();
+});
+
+test("a gone file can't be selected: ⇧click on its row selects nothing", async ({ page, github }) => {
+    const { review } = await openThreads(page, github);
+
+    await review.fileRow('removed.ts').click();
+    await review.fileRow('removed.ts').click({ modifiers: ['Shift'] });
+    await expect(review.fileRow('removed.ts')).not.toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the viewed filter keeps a viewed file with an open thread, as its header with the thread; so does a viewed file with the filter off', async ({
@@ -296,9 +348,10 @@ async function openThreads(
     page: Page,
     github: Parameters<typeof openMyWork>[1],
     threads: readonly SampleReviewThread[] = THREADS,
+    goneHistory?: AnswerReviewParams['goneHistory'],
 ): Promise<{ review: ReviewScreenHarness; answered: AnsweredReview }> {
     await openMyWork(page, github, createSampleMyWork().world);
-    const answered = answerReview(github, { repository: 'acme/web', number: 15, files: FILES, threads });
+    const answered = answerReview(github, { repository: 'acme/web', number: 15, files: FILES, threads, goneHistory });
     const review = new ReviewScreenHarness(page);
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('engine.ts')).toBeVisible();

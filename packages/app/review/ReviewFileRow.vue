@@ -102,7 +102,7 @@ function onClick(event: MouseEvent) {
     <span
       v-if="file.gone"
       :class="css.reviewFileRow_tag"
-      >{{ t(l.notInDiff) }}</span
+      >{{ file.gone.kind === 'notListed' ? t(l.notListed) : t(l.notInDiff) }}</span
     >
     <span
       v-else-if="state.kind === 'binary'"

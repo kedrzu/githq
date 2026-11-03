@@ -8,7 +8,13 @@ import { Clock } from '@/services/Clock.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 
 import type { DiffLineRange } from './diff/buildDiffRows.js';
-import type { PullRequestFiles, ReviewFile, ReviewFileCollapse, ReviewFileState } from './ReviewFiles.js';
+import type {
+    PullRequestFiles,
+    ReviewFile,
+    ReviewFileCollapse,
+    ReviewFileListEnd,
+    ReviewFileState,
+} from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import { useReviewRows } from './useReviewRows.js';
 
@@ -44,10 +50,10 @@ test('a thread is placed by what its file shows now, moving as the file arrives 
 });
 
 test('a file not listed is gone only once the list stops growing, and its entry lasts until its threads are resolved', async () => {
-    const view = open([fileRow('a.ts')], [threadOn('later.ts', 1)], { listComplete: false });
+    const view = open([fileRow('a.ts')], [threadOn('later.ts', 1)], { listEnd: 'growing' });
     expect(view.placements.value.byFile.size).toBe(0);
 
-    view.setListComplete(true);
+    view.setListEnd('uncertain');
     await view.settle();
     expect(view.placements.value.byFile.get('later.ts')?.map(placement => placement.kind)).toEqual(['gone']);
     expect(view.placements.value.goneEntries).toEqual(['later.ts']);
@@ -55,6 +61,25 @@ test('a file not listed is gone only once the list stops growing, and its entry 
     view.setThreads([{ ...threadOn('later.ts', 1), isResolved: true }]);
     await view.settle();
     expect(view.placements.value.goneEntries).toEqual([]);
+    view.stop();
+});
+
+test('a collapsed file only says it is not loaded when it is so: not one whose text is here, nor one not collapsed', async () => {
+    const view = open([fileRow('a.ts')], [threadOn('a.ts', 10)]);
+    const notLoaded = () => {
+        const [placement] = view.placements.value.byFile.get('a.ts') ?? [];
+        return placement?.kind === 'inCollapsed' ? placement.notLoaded : null;
+    };
+
+    expect(notLoaded()).toBe(false);
+
+    view.setCollapse('a.ts', 'generated');
+    await view.settle();
+    expect(notLoaded()).toBe(true);
+
+    view.setState('a.ts', { kind: 'ready', before: BEFORE, after: AFTER });
+    await view.settle();
+    expect(notLoaded()).toBe(false);
     view.stop();
 });
 
@@ -89,7 +114,7 @@ test('rows follow the placements: threads under a collapsed header, on their lin
 });
 
 interface OpenOptions {
-    readonly listComplete?: boolean;
+    readonly listEnd?: ReviewFileListEnd;
     readonly ordered?: readonly ReviewFile[];
 }
 
@@ -99,7 +124,7 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
     const collapses = new Map<string, ReviewFileCollapse | null>();
     const version = shallowRef(0);
     const threadsRef = shallowRef(threads);
-    const listComplete = shallowRef(options.listComplete ?? true);
+    const listEnd = shallowRef<ReviewFileListEnd>(options.listEnd ?? 'certain');
     const files = createFiles();
     const ordered = options.ordered ?? listed;
 
@@ -137,8 +162,8 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
             collapses.set(path, collapse);
             version.value++;
         },
-        setListComplete(complete: boolean) {
-            listComplete.value = complete;
+        setListEnd(end: ReviewFileListEnd) {
+            listEnd.value = end;
         },
         setThreads(next: readonly ReviewThread[]) {
             threadsRef.value = next;
@@ -158,9 +183,11 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
                 return threadsRef.value;
             },
             threadsState: { kind: 'ready' },
-            get listComplete() {
-                return listComplete.value;
+            listComplete: true,
+            get listEnd() {
+                return listEnd.value;
             },
+            goneHistory: new Map(),
             id: 'PR_7',
             headRefOid: 'head',
             changedFiles: listed.length,

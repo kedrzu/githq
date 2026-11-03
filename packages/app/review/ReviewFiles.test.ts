@@ -736,6 +736,83 @@ test('a renamed file waits for where it came from without holding up the others,
     expect(model.files.find(file => file.path === 'moved.ts')?.previousPath).toBe('old.ts');
 });
 
+test('a list has not ended until where its renamed files came from is known; that read failing leaves it ended, but uncertain', async () => {
+    const github = createGitHub();
+    github.file({ path: 'moved.ts', changeType: 'RENAMED', previousPath: 'old.ts', before: 'was', after: 'is' });
+    let release = () => {};
+    const renames = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const { model } = open(uniqueLogin(), github, request =>
+        request.operation === 'GET /repos/acme/web/pulls/7/files' ? renames : null,
+    );
+
+    await waitUntil(() => model.listComplete, { timeoutMs: 2000 });
+    expect(model.listEnd).toBe('growing');
+
+    github.failNext('GET /repos/acme/web/pulls/7/files');
+    release();
+    await settled(model);
+    expect(model.listEnd).toBe('uncertain');
+
+    model.retry('moved.ts');
+    await settled(model);
+    expect(model.listEnd).toBe('certain');
+});
+
+test('how a file gone from the diff came and went is read once, once the list is certain, and only for a file with an unresolved thread on it', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setThreads([
+        threadOn('gone.ts', 'T1'),
+        threadOn('a.ts', 'T2'),
+        { ...threadOn('settled.ts', 'T3'), isResolved: true },
+    ]);
+    github.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
+    const { model, session, files } = open(uniqueLogin(), github);
+
+    await settled(model);
+    await waitUntil(() => model.goneHistory.size > 0, { timeoutMs: 2000 });
+
+    expect(model.goneHistory).toEqual(new Map([['gone.ts', { added: '3f0c2aa', deleted: '9b7e411' }]]));
+    const queries = () => session.github.requests.filter(request => request.operation === 'ReviewGoneFileHistory');
+    expect(queries().map(request => request.variables.p0)).toEqual(['gone.ts']);
+    expect(queries()[0]?.variables.p1).toBeUndefined();
+
+    files.open(REFERENCE);
+    await settled(model);
+    await Bun.sleep(10);
+    expect(queries()).toHaveLength(1);
+});
+
+test('nothing is asked of a pull request with no file gone, nor of one whose list is capped, and a failure only leaves the reason out', async () => {
+    const quiet = createGitHub({ pageSize: 10 });
+    quiet.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    quiet.setThreads([threadOn('a.ts', 'T1')]);
+    const none = open(uniqueLogin(), quiet);
+    await settled(none.model);
+    expect(none.session.operations()).not.toContain('ReviewGoneFileHistory');
+
+    const capped = createGitHub({ pageSize: 10 });
+    capped.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    capped.setThreads([threadOn('gone.ts', 'T1')]);
+    capped.setChangedFiles(4812);
+    const tooMany = open(uniqueLogin(), capped);
+    await settled(tooMany.model);
+    expect(tooMany.model.listEnd).toBe('uncertain');
+    expect(tooMany.session.operations()).not.toContain('ReviewGoneFileHistory');
+
+    const failing = createGitHub({ pageSize: 10 });
+    failing.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    failing.setThreads([threadOn('gone.ts', 'T1')]);
+    failing.failNext('ReviewGoneFileHistory');
+    const failed = open(uniqueLogin(), failing);
+    await settled(failed.model);
+    await waitUntil(() => failed.session.operations().includes('ReviewGoneFileHistory'), { timeoutMs: 2000 });
+    expect(failed.model.goneHistory).toEqual(new Map());
+    expect(failed.model.listEnd).toBe('certain');
+});
+
 test('a pull request read before draws its list and code from the disk with GitHub silent, where renames came from included', async () => {
     const github = createGitHub();
     github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
@@ -1701,9 +1778,15 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     let base = BASE_TIP;
     let mergeBase = MERGE_BASE;
     let threads: readonly TestThread[] = [];
+    const goneHistory = new Map<string, { added: string; deleted: string }>();
+    let changedFiles: number | null = null;
 
     return {
         file,
+        setGoneHistory: (path: string, history: { added: string; deleted: string }) => goneHistory.set(path, history),
+        setChangedFiles: (count: number) => {
+            changedFiles = count;
+        },
         setThreads: (next: readonly TestThread[]) => {
             threads = next;
         },
@@ -1784,9 +1867,32 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                 return { data: answerThreads(request) };
             case 'ReviewThreadComments':
                 return { data: answerThreadComments(request) };
+            case 'ReviewGoneFileHistory':
+                return { data: answerGoneHistory(request) };
             default:
                 return undefined;
         }
+    }
+
+    function answerGoneHistory(request: TestGraphQLRequest) {
+        const object: Record<string, unknown> = {};
+        for (const [name, path] of variablesOf(request, 'p')) {
+            const history = goneHistory.get(path);
+            object[`h${name}`] = {
+                nodes: history
+                    ? [
+                          {
+                              abbreviatedOid: history.deleted,
+                              file: null,
+                              parents: { nodes: [{ file: { oid: 'x' } }] },
+                          },
+                          { abbreviatedOid: history.added, file: { oid: 'x' }, parents: { nodes: [{ file: null }] } },
+                      ]
+                    : [],
+            };
+        }
+
+        return { repository: { object } };
     }
 
     /** Pages of one thread, each thread's first page holding one comment. */
@@ -1834,7 +1940,7 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                     id: 'PR_7',
                     headRefOid: head,
                     baseRefOid: base,
-                    changedFiles: files.length,
+                    changedFiles: changedFiles ?? files.length,
                     files: {
                         pageInfo: { hasNextPage: end < files.length, endCursor: String(end) },
                         nodes: files.slice(start, end).map(({ path, changeType, additions = 1 }) => ({

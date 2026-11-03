@@ -46,9 +46,22 @@ const threadsText = computed(() => {
   const said = [
     threads.open > 0 && t(l.threadsOpen, { count: threads.open }),
     threads.outdated > 0 && t(l.threadsOutdated, { count: threads.outdated }),
+    threads.lineGone > 0 && t(l.threadsLineGone, { count: threads.lineGone }),
     threads.resolved > 0 && t(l.threadsResolved, { count: threads.resolved }),
   ];
   return said.filter(Boolean).join(' · ');
+});
+
+const goneText = computed(() => {
+  const { gone } = props.file;
+  switch (gone?.kind) {
+    case 'deletedAgain':
+      return t(l.deletedAgain, { added: gone.added, deleted: gone.deleted });
+    case 'notListed':
+      return t(l.notListed);
+    default:
+      return t(l.notInDiff);
+  }
 });
 
 function onClick(event: MouseEvent) {
@@ -102,7 +115,7 @@ function onClick(event: MouseEvent) {
     <span
       v-if="file.gone"
       :class="css.diffFileHeader_from"
-      >{{ t(l.notInDiff) }}</span
+      >{{ goneText }}</span
     >
     <span
       v-if="file.previousPath !== null"

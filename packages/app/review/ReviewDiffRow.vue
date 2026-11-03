@@ -7,7 +7,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, FileDiff, LoaderCircle, Pause, UnfoldVertical } from 'lucide-vue-next';
+import { CircleAlert, FileDiff, LoaderCircle, Pause, Pilcrow, UnfoldVertical } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -15,7 +15,7 @@ import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight } from './buildReviewRows.js';
-import type { ReviewDistanceRow as DistanceRow, ReviewGapRow, ReviewRow } from './buildReviewRows.js';
+import type { ReviewDistanceRow as DistanceRow, ReviewFileEndRow, ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
@@ -44,6 +44,10 @@ const emit = defineEmits<{
   expand: [gap: ReviewGapRow, count: number];
   /** "Expand to here" of a thread's mark (D29). */
   expandToThread: [mark: DistanceRow];
+  /** "Expand to here" of what is left of a file's last gap (CR11). */
+  expandToFileEnd: [mark: ReviewFileEndRow];
+  /** "Show it" of a file whose only changes are in hidden whitespace. */
+  showWhitespace: [];
   toggleThread: [threadId: string];
   retry: [path: string];
   toggleCollapsed: [path: string];
@@ -146,9 +150,31 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       />
       <ReviewDistanceRow
         v-else-if="row.kind === 'distance'"
-        :placement="row.placement"
+        :row="row"
         @expand="emit('expandToThread', row)"
       />
+      <ReviewDistanceRow
+        v-else-if="row.kind === 'fileEnd'"
+        :row="row"
+        @expand="emit('expandToFileEnd', row)"
+      />
+      <div
+        v-else-if="row.kind === 'onlyWhitespace'"
+        :class="css.reviewDiffRow_onlyWhitespace"
+      >
+        <Pilcrow
+          :class="css.reviewDiffRow_gapIcon"
+          aria-hidden="true"
+        />
+        {{ t(l.onlyWhitespace) }}
+        <button
+          type="button"
+          :class="css.reviewDiffRow_gapAction"
+          @click="emit('showWhitespace')"
+        >
+          {{ t(l.showWhitespace) }}
+        </button>
+      </div>
       <div
         v-else-if="row.kind === 'gap'"
         :class="css.reviewDiffRow_gap"
@@ -173,7 +199,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         <button
           type="button"
           :class="css.reviewDiffRow_gapAction"
-          @click="emit('expand', row, row.hidden)"
+          @click="emit('expand', row, row.range.afterEnd - row.range.afterStart)"
         >
           {{ t(l.showAll) }}
         </button>
@@ -334,6 +360,18 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   color: $color-fg-dim;
   background: $color-bg-2;
   border-top: 1px solid $color-border;
+  border-bottom: 1px solid $color-border;
+}
+
+.reviewDiffRow_onlyWhitespace {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+  height: 30px;
+  padding: 0 $spacing-14;
+  font-size: $font-size-xs;
+  color: $color-fg-2;
+  background: $color-bg-2;
   border-bottom: 1px solid $color-border;
 }
 

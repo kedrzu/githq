@@ -18,7 +18,7 @@ import type {
     ReviewFileState,
 } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
-import { sampleThread } from './threads/sampleThreads.js';
+import { sampleThread } from '@/testing/sampleThreads.js';
 import ReviewView from './ReviewView.vue';
 
 const REFERENCE = { owner: 'fitloop', name: 'webapp', number: 1202 };
@@ -179,6 +179,8 @@ function createFiles(
         threads,
         threadsState: { kind: 'ready' },
         listComplete: list.kind === 'ready',
+        listEnd: list.kind === 'ready' ? 'certain' : 'growing',
+        goneHistory: new Map(),
         id: 'PR_1202',
         headRefOid: 'head',
         changedFiles: files.length,

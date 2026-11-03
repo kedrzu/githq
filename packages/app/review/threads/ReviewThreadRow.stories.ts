@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent } from 'storybook/test';
 
-import { createThreadRowSample, sampleThread } from './sampleThreads.js';
+import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
 import ReviewThreadRow from './ReviewThreadRow.vue';
 
 const HUNK = '@@ -212,3 +212,3 @@ export interface WorkoutPatch {\n title?: string\n-notes?: string\n+note?: string';
@@ -58,6 +58,14 @@ export const OutdatedFound: Story = {
     },
     play: async ({ canvas }) => {
         await expect(canvas.getByText(/so the place is approximate/u)).toBeInTheDocument();
+    },
+};
+
+/** CR12: a collapsed file not loaded says so, by the code. */
+export const InCollapsedNotLoaded: Story = {
+    args: { row: createThreadRowSample({ kind: 'inCollapsed', diffHunk: HUNK, notLoaded: true }) },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/the file isn't loaded while collapsed/u)).toBeInTheDocument();
     },
 };
 

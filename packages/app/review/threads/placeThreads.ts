@@ -1,18 +1,20 @@
+import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { CONTEXT_LINES } from '../buildReviewRows.js';
-import { buildDiffRows, getDiffLineRowKey } from '../diff/buildDiffRows.js';
+import { buildDiffRows, getDiffLineRowKey, getSideEnd, getSideStart } from '../diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffLineSide } from '../diff/buildDiffRows.js';
 import type { DiffRange, FileDiff } from '../diff/computeFileDiff.js';
 import type { ReviewFile } from '../ReviewFiles.js';
+import { parseDiffHunk } from './parseDiffHunk.js';
 import type { ReviewThread } from './ReviewThread.js';
 
 /** What a file shows, which decides where its threads go. */
 export type ThreadFileView =
     /** Its diff is here: `expanded` as `BuildDiffRowsOptions.expanded`, so that what is hidden is what the rows hide. */
     | { readonly kind: 'open'; readonly diff: FileDiff; readonly expanded: readonly DiffLineRange[] }
-    /** Its text isn't here: collapsed and not fetched (D13), or with no diff to show, for now or for good. */
-    | { readonly kind: 'collapsed' }
+    /** Its text isn't here: collapsed and not fetched (D13), which `notLoaded` says, or with no diff to show, for now or for good. */
+    | { readonly kind: 'collapsed'; readonly notLoaded: boolean }
     /** Not in the list of files (D12). */
     | { readonly kind: 'gone' };
 
@@ -63,6 +65,8 @@ export interface ThreadInCollapsed {
     readonly thread: ReviewThread;
     /** Empty on a `FILE` thread. */
     readonly diffHunk: string;
+    /** The file is collapsed and for that isn't loaded: what the code's label says (CR12). */
+    readonly notLoaded: boolean;
 }
 
 /** In the entry of a file gone from the diff (D12): see {@link listGoneEntries}. */
@@ -96,7 +100,12 @@ export function placeThreads(view: ThreadFileView, threads: readonly ReviewThrea
         case 'open':
             return placeInDiff(view.diff, view.expanded, threads);
         case 'collapsed':
-            return threads.map(thread => ({ kind: 'inCollapsed', thread, diffHunk: getDiffHunk(thread) }));
+            return threads.map(thread => ({
+                kind: 'inCollapsed',
+                thread,
+                diffHunk: getDiffHunk(thread),
+                notLoaded: view.notLoaded,
+            }));
         case 'gone':
             return threads.map(thread => ({ kind: 'gone', thread, diffHunk: getDiffHunk(thread) }));
         default:
@@ -135,18 +144,7 @@ export function groupThreadsByFile(
         }
     }
 
-    const byFile = new Map<string, ReviewThread[]>();
-    for (const thread of threads) {
-        const path = renamedTo.get(thread.path) ?? thread.path;
-        const fileThreads = byFile.get(path);
-        if (fileThreads) {
-            fileThreads.push(thread);
-        } else {
-            byFile.set(path, [thread]);
-        }
-    }
-
-    return byFile;
+    return groupByToMap(threads, thread => renamedTo.get(thread.path) ?? thread.path);
 }
 
 function placeInDiff(
@@ -237,26 +235,11 @@ function getHiddenPlace(diff: FileDiff, gap: DiffRange, side: DiffLineSide, line
         : ({ distance: fromBelow, direction: 'up', firstLine, whitespaceChange } as const);
 }
 
-function getSideStart(range: DiffRange, side: DiffLineSide) {
-    return side === 'before' ? range.beforeStart : range.afterStart;
-}
-
-function getSideEnd(range: DiffRange, side: DiffLineSide) {
-    return side === 'before' ? range.beforeEnd : range.afterEnd;
-}
-
 function getDiffHunk(thread: ReviewThread) {
     return thread.comments[0]?.diffHunk ?? '';
 }
 
 /** The commented line of a `diffHunk`, its last, without its `+`, `-` or space; `null` for a hunk with no code. */
 function getCommentedText(diffHunk: string) {
-    const lines = diffHunk.split('\n');
-    // "\ No newline at end of file" says something of the line above it.
-    const last = lines.findLast(line => !line.startsWith('\\'));
-    if (last === undefined || last === '' || last.startsWith('@@')) {
-        return null;
-    }
-
-    return last.slice(1).replace(/\r$/u, '');
+    return parseDiffHunk(diffHunk).at(-1)?.text ?? null;
 }

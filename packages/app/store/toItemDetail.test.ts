@@ -135,6 +135,7 @@ test("a review summary keeps its text and id; one not submitted is nobody else's
         {
             ...samplePullRequestDetailNode('PR_1', MONDAY),
             reviews: {
+                totalCount: 130,
                 nodes: [
                     review,
                     null,
@@ -157,6 +158,7 @@ test("a review summary keeps its text and id; one not submitted is nobody else's
         },
     ];
     expect(detail?.kind === 'pullRequest' ? detail.reviewSummaries : null).toEqual(expected);
+    expect(detail?.kind === 'pullRequest' ? detail.olderReviewCount : null).toBe(126);
 });
 
 test("a pull request's reviewers keep their avatars; a bot asked to review has no one to show", () => {

@@ -196,7 +196,7 @@ thread on a file that is no longer in the diff — deleted, or created and delet
 that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
 such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
 me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
-pass)
+pass) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
 
 **Why.** File comments belong with the files, consistently, rather than in the pull request's own conversation
 (owner). An approximate place is enough (owner), and the search needs nothing beyond what GitHub sends with the

@@ -2642,6 +2642,7 @@ export class GitHubWorld {
             },
             latestReviews: { nodes: [] },
             reviews: {
+                totalCount: item.pullRequest.reviews.length,
                 nodes: item.pullRequest.reviews.map(review => ({
                     id: review.id,
                     url: `${toUrl(item)}#pullrequestreview-${review.id}`,

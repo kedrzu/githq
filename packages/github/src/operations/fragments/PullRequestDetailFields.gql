@@ -39,6 +39,7 @@ fragment PullRequestDetailFields on PullRequest {
     # Every submitted review for the conversation beside the diff, unlike `latestReviews`' one per reviewer. Each reply to a
     # thread is a review of its own, hence GitHub's most at once rather than the 50 of `commentPage`.
     reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+        totalCount
         nodes {
             id
             url

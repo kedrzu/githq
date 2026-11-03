@@ -90,7 +90,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         commits: { totalCount: 1 },
         headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },
-        reviews: { nodes: [] },
+        reviews: { totalCount: 0, nodes: [] },
         projectItems: { nodes: [] },
     };
 }

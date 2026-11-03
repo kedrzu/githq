@@ -75,7 +75,7 @@ export const Threads: Story = {
     args: {
         groups: groupReviewFiles([
             ...FILES,
-            { ...file('src/sync/retry-policy.ts', 0, 0, { changeType: 'DELETED' }), gone: true },
+            { ...file('src/sync/retry-policy.ts', 0, 0, { changeType: 'DELETED' }), gone: { kind: 'notInDiff' } },
         ]),
         openThreads: new Map([
             ['docs/sync.md', 2],
