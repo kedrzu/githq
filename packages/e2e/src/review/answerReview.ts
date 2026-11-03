@@ -39,6 +39,8 @@ export interface AnsweredReview {
     readonly asked: readonly string[];
     /** The paths whose viewed mark changed, in the order they did. */
     readonly marked: readonly string[];
+    /** How many requests set marks. */
+    readonly markRequests: () => number;
 }
 
 const HEAD_OID = 'head0000';
@@ -54,6 +56,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     const failures = new Map<string, string>();
     const held = new Map<string, Promise<void>>();
     const marked: string[] = [];
+    let markRequests = 0;
     const asked: string[] = [];
     let marksRefused: string | null = null;
     const repositoryPath = `/repos/${params.repository}`;
@@ -145,6 +148,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     });
 
     github.graphqlDocument('MarkFilesViewed', ({ variables }) => {
+        markRequests++;
         if (marksRefused !== null) {
             return { data: null, errors: [{ message: marksRefused }] };
         }
@@ -161,6 +165,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     return {
         asked,
         marked,
+        markRequests: () => markRequests,
         refuseMarks: message => {
             marksRefused = message;
         },

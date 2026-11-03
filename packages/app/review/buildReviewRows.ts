@@ -1,8 +1,9 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { buildDiffRows } from './diff/buildDiffRows.js';
-import type { DiffLayout, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
-import type { FileDiff } from './diff/computeFileDiff.js';
+import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
+import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
+import { findEnclosing } from './diff/findEnclosing.js';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 
 /** How many unchanged lines show around a change. */
@@ -42,6 +43,11 @@ export interface ReviewGapRow {
     readonly firstLine: number;
     /** The first hidden line of the older version, 1-based. */
     readonly firstOlderLine: number;
+    readonly range: DiffRange;
+    /** No change follows it: what shows of it comes from its top. */
+    readonly atFileEnd: boolean;
+    /** The declaration what follows it sits in ({@link findEnclosing}). */
+    readonly enclosing: string | null;
 }
 
 /** A file not read or not computed yet: quiet bars about as tall as its diff (D35). */
@@ -165,6 +171,8 @@ export interface BuildFileLineRowsParams {
     readonly path: string;
     readonly diff: FileDiff;
     readonly layout: DiffLayout;
+    /** The lines shown beyond the context. */
+    readonly expanded?: readonly DiffLineRange[];
 }
 
 /**
@@ -173,19 +181,39 @@ export interface BuildFileLineRowsParams {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildFileLineRows({ path, diff, layout }: BuildFileLineRowsParams): ReviewRow[] {
-    return buildDiffRows(diff, { layout, context: CONTEXT_LINES }).map((row): ReviewRow => {
+export function buildFileLineRows({ path, diff, layout, expanded }: BuildFileLineRowsParams): ReviewRow[] {
+    return buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
-        return row.kind === 'gap'
-            ? {
-                  kind: 'gap',
-                  key,
-                  hidden: row.hidden,
-                  firstLine: row.range.afterStart + 1,
-                  firstOlderLine: row.range.beforeStart + 1,
-              }
-            : { kind: 'line', key, line: row, diff };
+        if (row.kind !== 'gap') {
+            return { kind: 'line', key, line: row, diff };
+        }
+
+        const { range } = row;
+        const atFileEnd = range.afterEnd === diff.after.length;
+        return {
+            kind: 'gap',
+            key,
+            hidden: row.hidden,
+            firstLine: range.afterStart + 1,
+            firstOlderLine: range.beforeStart + 1,
+            range,
+            atFileEnd,
+            enclosing: findEnclosing(diff.after, atFileEnd ? range.afterStart : range.afterEnd),
+        };
     });
+}
+
+/**
+ * The lines "Show 20" and "Show all" bring out of a gap (D6): those right above the change below it, the ones that say
+ * what that change is in; at the file's end, with no change below, those right after the last one shown.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapLinesToShow(gap: ReviewGapRow, count: number): DiffLineRange {
+    const { afterStart, afterEnd } = gap.range;
+    return gap.atFileEnd
+        ? { start: afterStart, end: Math.min(afterStart + count, afterEnd) }
+        : { start: Math.max(afterEnd - count, afterStart), end: afterEnd };
 }
 
 /**
@@ -251,6 +279,8 @@ export interface FindReplacementRowParams {
     readonly offset: number;
     readonly previous: readonly ReviewRow[];
     readonly next: readonly ReviewRow[];
+    /** Every file in the order they show, those not shown too; only those of `previous` if not given. */
+    readonly order?: readonly string[];
 }
 
 /** The row to hold instead of one that is gone, and the distance of its top from the viewport's top. */
@@ -267,9 +297,9 @@ export interface ReviewRowReplacement {
  * for a placeholder: how far into it the reader was says nothing about what replaced it, often much shorter, so its
  * file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
  *
- * A file gone from the rows, marked viewed with those hidden, gives way to the next file still there, or the last before it
- * when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the row is still there,
- * or no file is left.
+ * A file gone from the rows, marked viewed with those hidden or filtered away, gives way to the next file still there, or
+ * the last before it when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the
+ * row is still there, or no file is left.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -278,6 +308,7 @@ export function findReplacementRow({
     offset,
     previous,
     next,
+    order,
 }: FindReplacementRowParams): ReviewRowReplacement | null {
     if (next.some(row => row.key === key)) {
         return null;
@@ -288,7 +319,7 @@ export function findReplacementRow({
     const header = next[start];
     const held = previous.find(row => row.key === key);
     if (!header) {
-        return held ? findNextFileHeader({ key, offset, previous, next }) : null;
+        return findNextFileHeader({ key, offset, previous, next, order });
     }
 
     if (held?.kind === 'placeholder' || held?.kind === 'end' || next[start + 1]?.kind === 'end') {
@@ -326,21 +357,31 @@ export function findReplacementRow({
     return { row: nearest, offset };
 }
 
-function findNextFileHeader({ key, offset, previous, next }: FindReplacementRowParams): ReviewRowReplacement | null {
-    const shown = new Set(next.filter(row => row.kind === 'header').map(row => row.key));
-    const at = previous.findIndex(row => row.key === key);
-    const headers = previous.filter(row => row.kind === 'header');
-    const before = previous.slice(0, at).filter(row => row.kind === 'header').length;
+function findNextFileHeader({
+    key,
+    offset,
+    previous,
+    next,
+    order,
+}: FindReplacementRowParams): ReviewRowReplacement | null {
+    const path = getReviewRowPath(key);
+    const paths = order ?? previous.filter(row => row.kind === 'header').map(row => getReviewRowPath(row.key));
+    const at = paths.indexOf(path);
+    if (at === -1) {
+        return null;
+    }
+
+    const shown = new Map(next.filter(row => row.kind === 'header').map(row => [getReviewRowPath(row.key), row]));
     const heading =
-        headers.slice(before).find(row => shown.has(row.key)) ??
-        headers.slice(0, before).findLast(row => shown.has(row.key));
-    const row = heading && next.find(other => other.key === heading.key);
+        paths.slice(at + 1).find(other => shown.has(other)) ?? paths.slice(0, at).findLast(other => shown.has(other));
+    const row = heading === undefined ? undefined : shown.get(heading);
     if (!row) {
         return null;
     }
 
     // Only a header can be below the top: the first row with its bottom below the top is any other's anchor, above it.
-    return { row, offset: previous[at]?.kind === 'header' ? Math.max(offset, 0) : 0 };
+    const held = previous.find(other => other.key === key);
+    return { row, offset: held?.kind === 'header' ? Math.max(offset, 0) : 0 };
 }
 
 interface RowPlace {

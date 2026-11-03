@@ -31,9 +31,12 @@ import { GitHubRequesterFactory } from '@/services/GitHubRequesterFactory.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
 
+import { addDiffLineRange } from './diff/buildDiffRows.js';
+import type { DiffLineRange } from './diff/buildDiffRows.js';
 import { ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
+import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
 
@@ -119,6 +122,16 @@ export interface PullRequestFiles {
     /** Whether viewed files leave the list and the diff (D9). */
     readonly hideViewed: boolean;
     setHideViewed(hide: boolean): void;
+    /** What the file list's filter holds (D11): for this pull request, for as long as the model. */
+    readonly filter: FileFilterInput;
+    setFilter(filter: FileFilterInput): void;
+    /**
+     * The lines of the file shown beyond the context (D6), the same array until they change. Only for the head blob they
+     * were expanded on: the author changing the file drops them, as its lines no longer mean the same (D14).
+     */
+    getExpandedLines(path: string): readonly DiffLineRange[];
+    /** Shows more of the file, at once. */
+    expandLines(path: string, lines: DiffLineRange): void;
 }
 
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
@@ -157,6 +170,7 @@ const UPDATE_EVERY_MS = 16;
 
 const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
+const NO_LINES: readonly DiffLineRange[] = [];
 
 /** Each side's blob: `null` for the side the file doesn't exist on. */
 interface FileSides {
@@ -325,6 +339,9 @@ export const ReviewFiles = defineService({
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
+            const filterRef = shallowRef<FileFilterInput>({ pattern: '', regex: false });
+            /** The head blob each file's lines were expanded on, and the lines. */
+            const expandedLines = new Map<string, { oid: string; lines: readonly DiffLineRange[] }>();
 
             let unsentMarks = new Map<string, boolean>();
             let markCount = 0;
@@ -376,6 +393,14 @@ export const ReviewFiles = defineService({
                     setHideViewed(hide) {
                         hideViewedRef.value = hide;
                     },
+                    get filter() {
+                        return filterRef.value;
+                    },
+                    setFilter(filter) {
+                        filterRef.value = filter;
+                    },
+                    getExpandedLines,
+                    expandLines,
                 },
                 reopen,
                 drop,
@@ -439,6 +464,25 @@ export const ReviewFiles = defineService({
                 }
 
                 return collapseReason ?? (choice === false ? 'byHand' : run.isGenerated === null ? 'undecided' : null);
+            }
+
+            function getHeadBlobOid(path: string) {
+                return runRef.value?.entries.get(path)?.sides?.after?.oid ?? null;
+            }
+
+            function getExpandedLines(path: string) {
+                void versionRef.value;
+                const held = expandedLines.get(path);
+                return held && held.oid === getHeadBlobOid(path) ? held.lines : NO_LINES;
+            }
+
+            function expandLines(path: string, lines: DiffLineRange) {
+                const oid = getHeadBlobOid(path);
+                if (oid !== null) {
+                    expandedLines.set(path, { oid, lines: addDiffLineRange(getExpandedLines(path), lines) });
+                    // Not through `setState`'s frame: this is a click.
+                    versionRef.value++;
+                }
             }
 
             function setCollapsed(path: string, collapsed: boolean) {

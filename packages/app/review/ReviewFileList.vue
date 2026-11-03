@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label, a click on one jumping to it. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -7,15 +7,19 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { EyeOff, Folder } from 'lucide-vue-next';
+import { EyeOff, Folder, ListFilter, Regex } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
 
-import IconButton from '@/components/IconButton.vue';
+import Button from '@/components/Button.vue';
+import Kbd from '@/components/Kbd.vue';
+import SearchField from '@/components/SearchField.vue';
+import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
 import type { ReviewFileGroup } from './groupReviewFiles.js';
 import * as l from './ReviewFileList.loc.js';
 import ReviewFileRow from './ReviewFileRow.vue';
 import type { ReviewFile, ReviewFileCollapse, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
+import ReviewToggle from './ReviewToggle.vue';
 
 const props = defineProps<{
   /** What shows: without the viewed files when those are hidden. */
@@ -31,20 +35,41 @@ const props = defineProps<{
   changedFiles: number | null;
   /** Whether `groups` is all GitHub lists: until then the rest is on its way, not beyond what it lists. */
   listComplete: boolean;
+  /** How many files the filter matches; `null` while none is on. The list then goes flat. */
+  matched: number | null;
+  /** The regular expression doesn't compile: the list stays as it was (CR28). */
+  filterInvalid: boolean;
+  /** The files selected together. */
+  selected: ReadonlySet<string>;
 }>();
 
 const emit = defineEmits<{
   select: [path: string];
+  /** ⇧click. */
+  selectRange: [path: string];
+  /** ⌘/Ctrl+click. */
+  toggleSelected: [path: string];
+  markSelected: [];
+  clearSelection: [];
+  /** Esc or Enter in the filter: the keys go back to the diff. */
+  leaveFilter: [];
 }>();
 
 const hideViewed = defineModel<boolean>('hideViewed', { required: true });
+const filterPattern = defineModel<string>('filterPattern', { required: true });
+const filterRegex = defineModel<boolean>('filterRegex', { required: true });
 
 const t = useTranslate();
 const scroller = useTemplateRef<HTMLElement>('scroller');
+const filterField = useTemplateRef<InstanceType<typeof SearchField>>('filterField');
 
 const listed = computed(() => props.files.length);
 const viewed = computed(() => props.files.filter(file => file.viewed === 'VIEWED').length);
 const hasMore = computed(() => props.changedFiles !== null && props.changedFiles > listed.value);
+const flat = computed(() => props.matched !== null);
+const allSelectedViewed = computed(() =>
+  props.files.every(file => !props.selected.has(file.path) || file.viewed === 'VIEWED'),
+);
 
 watch(
   () => props.currentPath,
@@ -54,6 +79,46 @@ watch(
   },
   { immediate: true },
 );
+
+defineExpose({
+  /** Puts the cursor in the filter. */
+  focusFilter: () => filterField.value?.focus(),
+});
+
+function onRowClick(path: string, event: MouseEvent) {
+  if (event.shiftKey) {
+    emit('selectRange', path);
+  } else if (event.metaKey || event.ctrlKey) {
+    emit('toggleSelected', path);
+  } else {
+    emit('select', path);
+  }
+}
+
+function onFilterKeydown(event: KeyboardEvent) {
+  if (event.isComposing) {
+    return;
+  }
+
+  switch (event.key) {
+    case 'Escape':
+      // A layer open over it (a tooltip, a menu) takes the Escape; the filter under it stays.
+      if (isLayerOpen()) {
+        return;
+      }
+
+      filterPattern.value = '';
+      break;
+    case 'Enter':
+      break;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  emit('leaveFilter');
+}
 </script>
 
 <template>
@@ -68,22 +133,56 @@ watch(
       }}</span>
       <span :class="css.reviewFileList_spacer" />
       <span :class="css.reviewFileList_count">{{
-        t(l.viewed, { viewed: numbers.format(viewed), total: numbers.format(listed) })
+        matched === null
+          ? t(l.viewed, { viewed: numbers.format(viewed), total: numbers.format(listed) })
+          : t(l.matching, { matched: numbers.format(matched), total: numbers.format(listed) })
       }}</span>
       <div :class="css.reviewFileList_tools">
-        <IconButton
-          :class="css.reviewFileList_hide"
+        <SearchField
+          ref="filterField"
+          v-model="filterPattern"
+          size="sm"
+          :class="[css.reviewFileList_filter, filterInvalid && css.reviewFileList_filter_invalid]"
+          :icon="ListFilter"
+          :label="t(l.filter)"
+          :placeholder="t(l.filterPlaceholder)"
+          @keydown="onFilterKeydown"
+        >
+          <template #end>
+            <ReviewToggle
+              :icon="Regex"
+              :label="t(l.useRegex)"
+              :pressed="filterRegex"
+              quiet
+              @click="filterRegex = !filterRegex"
+            />
+          </template>
+        </SearchField>
+        <ReviewToggle
           :icon="EyeOff"
           :label="t(l.hideViewed)"
-          :aria-pressed="hideViewed"
+          :pressed="hideViewed"
           @click="hideViewed = !hideViewed"
         />
       </div>
+      <p
+        v-if="filterInvalid"
+        :class="css.reviewFileList_problem"
+        role="status"
+      >
+        {{ t(l.invalidRegex) }}
+      </p>
     </header>
     <div
       ref="scroller"
       :class="css.reviewFileList_scroll"
     >
+      <p
+        v-if="flat && groups.length === 0"
+        :class="css.reviewFileList_foot"
+      >
+        {{ t(l.noMatch) }}
+      </p>
       <ul :class="css.reviewFileList_groups">
         <li
           v-for="group in groups"
@@ -112,7 +211,9 @@ watch(
                 :collapse-reason="getCollapseReason(file.path)"
                 :current="file.path === currentPath"
                 :indented="group.folder !== null"
-                @select="emit('select', file.path)"
+                :selected="selected.has(file.path)"
+                :show-folder="flat"
+                @select="onRowClick(file.path, $event)"
               />
             </li>
           </ul>
@@ -125,6 +226,33 @@ watch(
         {{ t(l.listedOnly, { listed: numbers.format(listed), total: numbers.format(changedFiles ?? 0) }) }}
       </p>
     </div>
+    <footer
+      v-if="selected.size > 0"
+      :class="css.reviewFileList_selection"
+    >
+      <span :class="css.reviewFileList_selected">{{
+        t(l.filesSelected, { count: selected.size, formatted: numbers.format(selected.size) })
+      }}</span>
+      <span :class="css.reviewFileList_spacer" />
+      <Button
+        variant="light"
+        size="sm"
+        kbd="V"
+        aria-keyshortcuts="V"
+        @click="emit('markSelected')"
+      >
+        {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}
+      </Button>
+      <button
+        type="button"
+        :class="css.reviewFileList_clear"
+        :aria-label="t(l.clearSelection)"
+        aria-keyshortcuts="Escape"
+        @click="emit('clearSelection')"
+      >
+        <Kbd keys="Escape" />
+      </button>
+    </footer>
   </section>
 </template>
 
@@ -163,21 +291,30 @@ watch(
   flex: 1;
 }
 
-// A row of its own, for what else filters the list.
+// A row of its own: the filter and the eye.
 .reviewFileList_tools {
   display: flex;
   flex-basis: 100%;
-  justify-content: flex-end;
+  gap: $spacing-6;
+  align-items: center;
+  margin-top: $spacing-2;
 }
 
-.reviewFileList_hide {
-  border: 1px solid $color-border;
+.reviewFileList_filter {
+  flex: 1;
+  // The toggle sits at the end, and the field stays as tall as the eye.
+  padding-right: $spacing-2;
+}
 
-  &[aria-pressed='true'] {
-    color: $color-accent;
-    background: color-mix(in srgb, #{$color-accent} 15%, transparent);
-    border-color: $color-accent;
-  }
+.reviewFileList_filter_invalid {
+  --search-field-color: #{$color-red};
+}
+
+.reviewFileList_problem {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: $font-size-2xs;
+  color: $color-red;
 }
 
 .reviewFileList_scroll {
@@ -234,5 +371,33 @@ watch(
   margin: 0;
   font-size: $font-size-2xs;
   color: $color-fg-dim;
+}
+.reviewFileList_selection {
+  display: flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
+  height: 44px;
+  padding: 0 $spacing-8 0 $spacing-12;
+  background: $color-bg-2;
+  border-top: 1px solid $color-border-2;
+}
+
+.reviewFileList_selected {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-fg;
+  white-space: nowrap;
+}
+
+.reviewFileList_clear {
+  @include focus-ring;
+
+  display: inline-flex;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: 4px;
 }
 </style>

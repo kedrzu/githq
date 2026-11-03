@@ -8,3 +8,26 @@ listedOnly:
   en: GitHub lists the first {listed} of {total} files; the rest are on github.com.
 hideViewed:
   en: Hide viewed files
+matching:
+  en: '{matched} of {total} match'
+filter:
+  en: Filter files
+filterPlaceholder:
+  en: 'Filter: *.ts, docs/**'
+useRegex:
+  en: Use a regular expression
+invalidRegex:
+  en: Not a valid regular expression
+noMatch:
+  en: No files match this filter.
+filesSelected:
+  plural: count
+  en:
+    one: 1 file selected
+    many: '{formatted} files selected'
+markViewed:
+  en: Mark viewed
+markNotViewed:
+  en: Mark not viewed
+clearSelection:
+  en: Esc, clear the selection

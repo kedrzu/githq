@@ -36,3 +36,23 @@ allViewedDetail:
   en: Hidden files stay viewed on GitHub. Show them to read them again.
 showViewed:
   en: Show viewed files
+noMatch:
+  en: No files match this filter
+noMatchViewedHidden:
+  en: Viewed files are hidden too.
+clearFilter:
+  en: Clear the filter
+focusFilter:
+  en: Filter files
+toggleSelected:
+  en: Select this file
+selectNext:
+  en: Select down to the next file
+selectPrevious:
+  en: Select up to the previous file
+clearSelection:
+  en: Clear the selection
+hideFileList:
+  en: Hide the file list
+showFileList:
+  en: Show the file list

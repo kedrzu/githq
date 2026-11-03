@@ -16,12 +16,13 @@ const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
 const PANEL_SHARE_KEY_PREFIX = 'githq.panelShare.';
 const REVIEW_LAYOUT_KEY = 'githq.reviewLayout';
 const REVIEW_HIDE_WHITESPACE_KEY = 'githq.reviewHideWhitespace';
+const REVIEW_FILE_LIST_HIDDEN_KEY = 'githq.reviewFileListHidden';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
  * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or
- * as a share of what holds them, and how a code review shows a diff (D4, D14: for every pull request). The one
- * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
+ * as a share of what holds them, how a code review shows a diff and whether its file list shows (D4, D14, D26: for every
+ * pull request). The one place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
  * The values are kept as plain strings (`panel`, `true`, `412`), as githq always kept them, so an arrangement chosen
@@ -64,6 +65,13 @@ export const LocalPreferences = defineService({
             serialize: String,
             deserialize: raw => raw === 'true',
         });
+        const reviewFileListHidden = storageRef<boolean>({
+            key: REVIEW_FILE_LIST_HIDDEN_KEY,
+            storage,
+            default: () => false,
+            serialize: String,
+            deserialize: raw => raw === 'true',
+        });
         const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -86,6 +94,10 @@ export const LocalPreferences = defineService({
                 reviewHideWhitespace.reload();
             }
 
+            if (key === null || key === REVIEW_FILE_LIST_HIDDEN_KEY) {
+                reviewFileListHidden.reload();
+            }
+
             for (const [panelKey, size] of panelSizes) {
                 if (key === null || key === panelKey) {
                     size.reload();
@@ -102,6 +114,8 @@ export const LocalPreferences = defineService({
             reviewLayout,
             /** Whether a code review leaves whitespace changes out, in every one. */
             reviewHideWhitespace,
+            /** Whether a code review's diff has the whole width, in every one (⌘B, D26). */
+            reviewFileListHidden,
             getPanelWidth,
             getPanelShare,
         };

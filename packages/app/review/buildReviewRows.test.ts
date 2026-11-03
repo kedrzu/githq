@@ -5,6 +5,7 @@ import {
     buildReviewRows,
     estimateReviewRowHeight,
     findReplacementRow,
+    getGapLinesToShow,
     getReviewHeaderKey,
     getReviewRowPath,
 } from './buildReviewRows.js';
@@ -296,3 +297,48 @@ function lines(count: number) {
 function sampleFile(path: string, additions = 2, deletions = 1): ReviewFile {
     return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED' };
 }
+
+test('expanded lines keep the keys of the lines shown, and the rest of the gap keeps its own', () => {
+    const before = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
+    const gap = before.find(row => row.kind === 'gap');
+    if (gap?.kind !== 'gap') {
+        throw new Error('No gap');
+    }
+
+    const shown = getGapLinesToShow(gap, 5);
+    expect(shown).toEqual({ start: gap.range.afterEnd - 5, end: gap.range.afterEnd });
+
+    const after = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', expanded: [shown] });
+    const keys = new Set(after.map(row => row.key));
+    expect(before.every(row => keys.has(row.key))).toBe(true);
+    expect(after.length).toBe(before.length + 5);
+    expect(after.find(row => row.key === gap.key)).toMatchObject({ kind: 'gap', hidden: gap.hidden - 5 });
+});
+
+test('a gap at the end of the file shows from its top, none being below it', () => {
+    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
+    const gap = rows.findLast(row => row.kind === 'gap');
+    if (gap?.kind !== 'gap') {
+        throw new Error('No gap');
+    }
+
+    expect(gap.atFileEnd).toBe(true);
+    expect(getGapLinesToShow(gap, 2)).toEqual({ start: gap.range.afterStart, end: gap.range.afterStart + 2 });
+    expect(getGapLinesToShow(gap, 1000)).toEqual({ start: gap.range.afterStart, end: gap.range.afterEnd });
+});
+
+test('a file filtered away gives way to the next left in the whole order, one the rows held before not shown (D7)', () => {
+    const c = sampleFile('src/c.ts');
+    const previous = buildReviewRows({ files: [A], getContent: () => ({ kind: 'binary' }) });
+    const next = buildReviewRows({ files: [c], getContent: () => ({ kind: 'binary' }) });
+
+    const replacement = findReplacementRow({
+        key: getReviewHeaderKey(A.path),
+        offset: 0,
+        previous,
+        next,
+        order: [A.path, B.path, c.path],
+    });
+
+    expect(replacement?.row.key).toBe(getReviewHeaderKey(c.path));
+});

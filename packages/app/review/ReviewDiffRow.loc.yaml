@@ -17,3 +17,7 @@ tryAgain:
   en: Try again
 openOnGitHub:
   en: Open on GitHub
+showSome:
+  en: Show {count}
+showAll:
+  en: Show all

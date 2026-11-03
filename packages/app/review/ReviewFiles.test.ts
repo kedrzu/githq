@@ -374,6 +374,33 @@ test('the merge base is asked once for a pull request, and opening it again reus
     expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: 'before', after: 'pushed' });
 });
 
+test("a file's expanded lines stay through a read of the same head and go when the author changes the file (D14)", async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    const { model, files, session } = open(uniqueLogin(), github);
+    await settled(model);
+    expect(model.getExpandedLines('a.ts')).toEqual([]);
+
+    model.expandLines('a.ts', { start: 10, end: 30 });
+    model.expandLines('a.ts', { start: 30, end: 50 });
+    const lines = model.getExpandedLines('a.ts');
+    expect(lines).toEqual([{ start: 10, end: 50 }]);
+    // The same array: the rows built for it are kept.
+    expect(model.getExpandedLines('a.ts')).toBe(lines);
+
+    files.open(REFERENCE);
+    await session.clock.advance(50);
+    expect(model.getExpandedLines('a.ts')).toBe(lines);
+
+    github.moveHead('head-2');
+    github.blobAt('head-2:a.ts', { text: 'pushed' });
+    files.open(REFERENCE);
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+    await settled(model);
+
+    expect(model.getExpandedLines('a.ts')).toEqual([]);
+});
+
 test('many files arriving tell of it once a frame, not once a file', async () => {
     const github = createGitHub({ pageSize: 250 });
     for (let index = 0; index < 225; index++) {

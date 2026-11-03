@@ -16,6 +16,8 @@ export interface AnchoredListExposed {
    * keyboard, whatever the browser concludes from the last key pressed. Tabbing back to it shows the ring as usual.
    */
   focus(): void;
+  /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
+  getRowOffset(key: string): number | null;
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
 }
@@ -115,7 +117,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, anchor });
+defineExpose({ jumpTo, focus, getRowOffset, anchor });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -134,6 +136,11 @@ function jumpTo(key: string, offset = 0) {
     anchor.value = model.anchor;
     applyLayout();
   }
+}
+
+function getRowOffset(key: string) {
+  const placed = placedRows.value.find(({ row }) => row.key === key);
+  return placed ? placed.top - knownScrollTop : null;
 }
 
 function focus() {

@@ -9,6 +9,14 @@ export interface BuildDiffRowsOptions {
     readonly layout: DiffLayout;
     /** How many unchanged lines to show on each side of a change. */
     readonly context: number;
+    /** Lines shown although unchanged and away from any change (D6), as {@link addDiffLineRange} keeps them. */
+    readonly expanded?: readonly DiffLineRange[];
+}
+
+/** Lines of a file's newer version, in 0-based indices, the end exclusive. */
+export interface DiffLineRange {
+    readonly start: number;
+    readonly end: number;
 }
 
 /** One side of a split row. Its text is `FileDiff.before[line - 1]` on the left and `FileDiff.after[line - 1]` on the right. */
@@ -55,12 +63,13 @@ export type DiffRow = DiffSplitRow | DiffUnifiedRow | DiffGapRow;
 /**
  * The flat rows of a file's diff. Rows hold line numbers, not text, to stay small on a file of 100k lines. A key is built
  * from line numbers alone and is unique within one layout of one file, so the same line keeps its key whatever else is
- * rebuilt around it. The layouts share keys, so heights measured under a key belong to one layout.
+ * rebuilt around it, expanded lines arriving included. The layouts share keys, so heights measured under a key belong to
+ * one layout.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function buildDiffRows(diff: FileDiff, options: BuildDiffRowsOptions): DiffRow[] {
-    const { layout, context } = options;
+    const { layout, context, expanded = [] } = options;
     const rows: DiffRow[] = [];
 
     let previous: DiffRange | null = null;
@@ -83,21 +92,39 @@ export function buildDiffRows(diff: FileDiff, options: BuildDiffRowsOptions): Di
         const hidden = count - leading - trailing;
 
         pushContext(beforeStart, afterStart, leading);
-        if (hidden > 0) {
+
+        // What the expanded lines leave of the part out of reach of any context. Unchanged, so the versions are a shift apart.
+        const shift = beforeStart - afterStart;
+        const stop = afterStart + leading + hidden;
+        let at = afterStart + leading;
+        for (const range of expanded) {
+            const from = Math.max(range.start, at);
+            const to = Math.min(range.end, stop);
+            if (from < to) {
+                pushGap(at, from, shift);
+                pushContext(from + shift, from, to - from);
+                at = to;
+            }
+        }
+
+        pushGap(at, stop, shift);
+        pushContext(stop + shift, stop, trailing);
+    }
+
+    function pushGap(afterStart: number, afterEnd: number, shift: number) {
+        if (afterStart < afterEnd) {
             rows.push({
                 kind: 'gap',
-                key: `gap:${beforeStart + leading + 1}:${afterStart + leading + 1}`,
-                hidden,
+                key: `gap:${afterStart + shift + 1}:${afterStart + 1}`,
+                hidden: afterEnd - afterStart,
                 range: {
-                    beforeStart: beforeStart + leading,
-                    beforeEnd: beforeStart + leading + hidden,
-                    afterStart: afterStart + leading,
-                    afterEnd: afterStart + leading + hidden,
+                    beforeStart: afterStart + shift,
+                    beforeEnd: afterEnd + shift,
+                    afterStart,
+                    afterEnd,
                 },
             });
         }
-
-        pushContext(beforeStart + leading + hidden, afterStart + leading + hidden, trailing);
     }
 
     function pushContext(beforeStart: number, afterStart: number, count: number) {
@@ -146,6 +173,25 @@ export function buildDiffRows(diff: FileDiff, options: BuildDiffRowsOptions): Di
                 assertNever(layout);
         }
     }
+}
+
+/**
+ * The ranges with one more, in order, those touching merged: what {@link BuildDiffRowsOptions.expanded} takes.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function addDiffLineRange(ranges: readonly DiffLineRange[], added: DiffLineRange): DiffLineRange[] {
+    const merged: DiffLineRange[] = [];
+    for (const range of [...ranges, added].toSorted((a, b) => a.start - b.start)) {
+        const last = merged.at(-1);
+        if (last && range.start <= last.end) {
+            merged[merged.length - 1] = { start: last.start, end: Math.max(last.end, range.end) };
+        } else {
+            merged.push(range);
+        }
+    }
+
+    return merged;
 }
 
 function createSplitRow(left: DiffCell | null, right: DiffCell | null): DiffSplitRow {

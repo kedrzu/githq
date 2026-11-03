@@ -6,7 +6,7 @@ import { Clock } from '@/services/Clock.js';
 
 import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
-import type { DiffLayout } from './diff/buildDiffRows.js';
+import type { DiffLayout, DiffLineRange } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
@@ -25,6 +25,12 @@ export interface UseReviewRowsOptions {
 type ReadyState = Extract<ReviewFileState, { kind: 'ready' }>;
 type LinesContent = Extract<ReviewFileContent, { kind: 'lines' }>;
 
+/** A file's rows in a layout, for as long as the same lines are expanded. */
+interface BuiltLines {
+    readonly expanded: readonly DiffLineRange[];
+    readonly content: LinesContent;
+}
+
 /** How long a turn of computing diffs may take before the browser gets to draw. */
 const COMPUTE_TURN_MS = 6;
 /** Rows are rebuilt at most this often while diffs are being computed: one rebuild is O(all the rows). */
@@ -37,7 +43,7 @@ const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
  * The review's flat rows, as a new plain array whenever what they show changes. Diffs are computed on the main thread a
  * turn at a time, the files nearest the one in view first, so 225 files don't hold the first paint back; a file not yet
  * computed is a placeholder, like one not yet read. Each diff is kept by the file's content and the whitespace setting
- * and each file's rows by its diff and the layout, so that a setting's second visit and a file's arrival compute only
+ * and each file's rows by its diff, the layout and the lines expanded, so that a setting's second visit and a file's arrival compute only
  * what they must.
  */
 export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRef<readonly ReviewRow[]>> {
@@ -47,7 +53,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     // By the state object, which a new head replaces: what a moved pull request read before goes with it.
     const fullDiffs = new WeakMap<ReadyState, FileDiff>();
     const trimmedDiffs = new WeakMap<ReadyState, FileDiff>();
-    const contents = new WeakMap<FileDiff, Partial<Record<DiffLayout, LinesContent>>>();
+    const contents = new WeakMap<FileDiff, Partial<Record<DiffLayout, BuiltLines>>>();
 
     let builtFrom: readonly ReviewFileContent[] = [];
     let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
@@ -143,8 +149,18 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
             contents.set(diff, byLayout);
         }
 
-        byLayout[layout] ??= { kind: 'lines', rows: buildFileLineRows({ path: file.path, diff, layout }) };
-        return byLayout[layout];
+        const expanded = toValue(options.files)?.getExpandedLines(file.path) ?? [];
+        const built = byLayout[layout];
+        if (built?.expanded === expanded) {
+            return built.content;
+        }
+
+        const content: LinesContent = {
+            kind: 'lines',
+            rows: buildFileLineRows({ path: file.path, diff, layout, expanded }),
+        };
+        byLayout[layout] = { expanded, content };
+        return content;
     }
 
     function scheduleTurn() {

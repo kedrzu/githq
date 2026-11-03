@@ -15,6 +15,7 @@ const meta = {
         githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files',
         layout: 'split',
         hideWhitespace: false,
+        fileListHidden: false,
         onBack: fn(),
     },
 } satisfies Meta<typeof ReviewToolbar>;
@@ -42,6 +43,7 @@ export const ViewOptionsOpen: Story = {
         await userEvent.click(canvas.getByRole('button', { name: 'Split' }));
         const panel = await within(canvasElement.ownerDocument.body).findByRole('dialog');
         await expect(within(panel).getByRole('switch', { name: 'Hide whitespace changes' })).toBeVisible();
+        await expect(within(panel).getByRole('switch', { name: 'File list' })).toBeChecked();
     },
 };
 

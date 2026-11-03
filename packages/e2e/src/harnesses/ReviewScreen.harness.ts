@@ -80,6 +80,36 @@ export class ReviewScreenHarness {
         return this.fileList.getByRole('button', { name: 'Hide viewed files' });
     }
 
+    /** The filter in the list's head. */
+    get filterField(): Locator {
+        return this.fileList.getByRole('textbox', { name: 'Filter files' });
+    }
+
+    /** The toggle of the filter to a regular expression. */
+    get regexToggle(): Locator {
+        return this.fileList.getByRole('button', { name: 'Use a regular expression' });
+    }
+
+    /** The bar at the foot of the list, naming how many are selected. */
+    selectionCount(text: string): Locator {
+        return this.fileList.getByText(text, { exact: true });
+    }
+
+    /** The bar's "Mark viewed". */
+    get markViewedButton(): Locator {
+        return this.fileList.getByRole('button', { name: 'Mark viewed' });
+    }
+
+    /** The file list's toggle in the toolbar. */
+    get fileListToggle(): Locator {
+        return this.page.getByRole('button', { name: 'File list', exact: true });
+    }
+
+    /** A gap's button of that name, in the diff. */
+    gapButton(name: 'Show 20' | 'Show all'): Locator {
+        return this.diff.getByRole('button', { name, exact: true });
+    }
+
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */
     async topLine(prefix: string): Promise<{ text: string; y: number }> {
         return await this.diff.evaluate((diff, wanted) => {

@@ -483,6 +483,212 @@ test('a mark GitHub refuses goes back and a toast says so; V typed in a field do
     await expect.poll(() => files.marked).toEqual(['src/a.ts']);
 });
 
+test('ten files selected with shift+click, x and { } are marked viewed at once in one request, and leave a list hiding viewed ones; Esc clears', async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    const files = answerReview(github, { repository: 'acme/web', number: 15, files: manyFiles() });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('file00.ts')).toBeVisible();
+
+    await review.fileRow('file00.ts').click();
+    await review.fileRow('file09.ts').click({ modifiers: ['Shift'] });
+    await expect(review.selectionCount('10 files selected')).toBeVisible();
+    await expect(review.fileRow('file05.ts')).toHaveAttribute('aria-pressed', 'true');
+    await expect(review.fileRow('file10.ts')).not.toHaveAttribute('aria-pressed', 'true');
+
+    await review.fileRow('file20.ts').click({ modifiers: ['ControlOrMeta'] });
+    await expect(review.selectionCount('11 files selected')).toBeVisible();
+    await review.fileRow('file20.ts').click({ modifiers: ['ControlOrMeta'] });
+    await expect(review.selectionCount('10 files selected')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(review.markViewedButton).toBeHidden();
+
+    await review.fileRow('file00.ts').click();
+    await page.keyboard.press('x');
+    await expect(review.selectionCount('1 file selected')).toBeVisible();
+    await page.keyboard.type('}}');
+    await expect(review.selectionCount('3 files selected')).toBeVisible();
+    await expect(review.currentFileRow).toContainText('file02.ts');
+    await page.keyboard.type('{');
+    await expect(review.currentFileRow).toContainText('file01.ts');
+    await expect(review.selectionCount('3 files selected')).toBeVisible();
+
+    await review.fileRow('file00.ts').click();
+    await review.fileRow('file09.ts').click({ modifiers: ['Shift'] });
+    await review.hideViewedButton.click();
+    await review.markViewedButton.click();
+
+    await expect(review.fileList).toContainText('10 of 40 viewed');
+    await expect(review.fileRow('file00.ts')).toBeHidden();
+    await expect(review.markViewedButton).toBeHidden();
+    await expect.poll(() => files.marked.length).toBe(10);
+    expect(files.markRequests()).toBe(1);
+});
+
+test('V takes the selection; x, {, }, / and V typed in the filter are typed', async ({ page, github }) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    const files = answerReview(github, { repository: 'acme/web', number: 15, files: manyFiles() });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('file00.ts')).toBeVisible();
+
+    await page.keyboard.press('/');
+    await expect(review.filterField).toBeFocused();
+    await page.keyboard.type('x{}/V');
+    await expect(review.filterField).toHaveValue('x{}/V');
+    await expect(review.markViewedButton).toBeHidden();
+    await expect(review.fileList).toContainText('0 of 40 match');
+
+    await page.keyboard.press('Escape');
+    await expect(review.filterField).toHaveValue('');
+    await expect(review.filterField).not.toBeFocused();
+    await expect(review.fileList).toContainText('0 of 40 viewed');
+
+    await page.keyboard.press('x');
+    await page.keyboard.type('}');
+    await page.keyboard.press('v');
+    await expect(review.fileList).toContainText('2 of 40 viewed');
+    await expect.poll(() => files.marked.length).toBe(2);
+});
+
+test('the filter takes a pattern and a regular expression, holds what stays on screen and lands a filtered file on the next one', async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            ...manyFiles(),
+            { path: 'docs/images/logo.svg', before: '<a/>\n', after: '<b/>\n' },
+            { path: 'docs/guide.md', before: 'one\n', after: 'two\n' },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('file00.ts')).toBeVisible();
+
+    // Hiding the files above leaves the file read, and its line, where they are.
+    await review.fileRow('file05.ts').click();
+    await expect(review.code('const changed5 = 2;').first()).toBeAttached();
+    await review.diff.evaluate(diff => diff.scrollBy(0, 40));
+    const before = await review.topLine('const line');
+    expect(before.text).toContain('= 5;');
+    await page.keyboard.press('/');
+    await page.keyboard.type('**/file05.ts');
+    await expect(review.fileList).toContainText('1 of 42 match');
+    await expect(review.fileRow('file04.ts')).toBeHidden();
+    expect(await review.topLine('const line')).toEqual(before);
+    await page.keyboard.press('Enter');
+    await expect(review.diff).toBeFocused();
+
+    // Filtered away, it gives way to the next file left.
+    await review.filterField.fill('file07, file09');
+    await expect(review.currentFileRow).toContainText('file07.ts');
+
+    await review.filterField.fill('.md');
+    await expect(review.fileList).toContainText('1 of 42 match');
+    await expect(review.fileHeader('docs/guide.md')).toBeVisible();
+
+    await review.filterField.fill('docs/**/*.svg');
+    await expect(review.fileHeader('docs/images/logo.svg')).toBeVisible();
+
+    await review.regexToggle.click();
+    await expect(review.regexToggle).toHaveAttribute('aria-pressed', 'true');
+    await review.filterField.fill('^src/a/file0[12]');
+    await expect(review.fileList).toContainText('2 of 42 match');
+
+    await review.filterField.fill('^src/a/file0[');
+    await expect(review.fileList.getByRole('status')).toContainText('Not a valid regular expression');
+    await expect(review.fileList).toContainText('2 of 42 match');
+
+    await review.filterField.fill('^nothing$');
+    await expect(review.fileList).toContainText('No files match this filter.');
+    await expect(page.getByRole('heading', { name: 'No files match this filter' })).toBeVisible();
+    await page.getByRole('button', { name: 'Clear the filter' }).click();
+    await expect(review.fileList).toContainText('0 of 42 viewed');
+});
+
+test('Show 20 brings the lines nearest the change below and keeps the line being read; Show all empties the gap', async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    const body = Array.from({ length: 100 }, (_, index) => `    const kept${index} = ${index};`).join('\n');
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            {
+                path: 'src/long.ts',
+                before: `export class SyncEngine {\n    const first = 1;\n${body}\n    const last = 1;\n}\n`,
+                after: `export class SyncEngine {\n    const first = 2;\n${body}\n    const last = 2;\n}\n`,
+            },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const last = 2;')).toBeVisible();
+    await expect(review.diff.getByText('export class SyncEngine {').last()).toBeVisible();
+
+    const read = await review.code('const last = 2;').boundingBox();
+    await review.gapButton('Show 20').click();
+    await expect(review.code('const kept96 = 96;').first()).toBeAttached();
+    await expect(review.code('const kept77 = 77;').first()).toBeAttached();
+    await expect(review.code('const kept76 = 76;')).toHaveCount(0);
+    expect((await review.code('const last = 2;').boundingBox())?.y).toBe(read?.y);
+
+    await review.diff.evaluate(diff => diff.scrollTo(0, 0));
+    await review.gapButton('Show all').click();
+    await expect(review.code('const kept50 = 50;').first()).toBeAttached();
+    await expect(review.gapButton('Show all')).toHaveCount(0);
+});
+
+test('⌘B hides the file list and remembers it, the toggle and the view options say so; [ and ] still walk the files', async ({
+    page,
+    github,
+}) => {
+    const review = await openReview(page, github);
+    await expect(review.fileList).toBeVisible();
+
+    await page.keyboard.press('ControlOrMeta+b');
+    await expect(review.fileList).toBeHidden();
+    await expect(review.fileListToggle).toHaveAttribute('aria-pressed', 'false');
+    await page.keyboard.press(']');
+    await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
+
+    await page.reload();
+    await expect(review.fileHeader(README)).toBeAttached();
+    await expect(review.fileList).toBeHidden();
+
+    await review.viewOptionsButton.click();
+    await page.getByRole('switch', { name: 'File list' }).click();
+    await page.keyboard.press('Escape');
+    await expect(review.fileList).toBeVisible();
+
+    await review.fileListToggle.click();
+    await expect(review.fileList).toBeHidden();
+    await page.keyboard.press('/');
+    await expect(review.filterField).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+b');
+    await expect(review.fileList).toBeHidden();
+});
+
+/** Signs in and opens the review of the sample's pull request at its address. */
+async function openReview(page: Parameters<typeof openMyWork>[0], github: Parameters<typeof openMyWork>[1]) {
+    await openMyWork(page, github, createSampleMyWork().world);
+    answerReview(github, { repository: 'acme/web', number: 15, files: FILES });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('client.ts')).toBeVisible();
+    return review;
+}
+
 /** Signs in and opens the sample's pull request on its own page, its review answered. */
 async function openPullRequest(
     page: Parameters<typeof openMyWork>[0],

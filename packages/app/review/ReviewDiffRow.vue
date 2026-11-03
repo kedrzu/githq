@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out, quiet bars while the file is on its way, or what the file says in place of a diff (D35): binary, too large or empty with a link to github.com, failed with GitHub's words and Try again, which touches no other file. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, quiet bars while the file is on its way, or what the file says in place of a diff (D35): binary, too large or empty with a link to github.com, failed with GitHub's words and Try again, which touches no other file. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -12,7 +12,7 @@ import { CircleAlert, FileDiff, UnfoldVertical } from 'lucide-vue-next';
 import Button from '@/components/Button.vue';
 
 import { getPlaceholderHeight } from './buildReviewRows.js';
-import type { ReviewRow } from './buildReviewRows.js';
+import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
@@ -25,12 +25,17 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
+  /** Shows that many lines of the gap. */
+  expand: [gap: ReviewGapRow, count: number];
   retry: [path: string];
   toggleCollapsed: [path: string];
   toggleViewed: [path: string];
 }>();
 
 const t = useTranslate();
+
+/** What "Show 20" shows; with no more than that hidden, "Show all" says the same. */
+const EXPAND_STEP = 20;
 </script>
 
 <template>
@@ -79,6 +84,26 @@ const t = useTranslate();
           aria-hidden="true"
         />
         {{ t(l.hiddenLines, { count: row.hidden, formatted: numbers.format(row.hidden) }) }}
+        <button
+          v-if="row.hidden > EXPAND_STEP"
+          type="button"
+          :class="css.reviewDiffRow_gapAction"
+          @click="emit('expand', row, EXPAND_STEP)"
+        >
+          {{ t(l.showSome, { count: EXPAND_STEP }) }}
+        </button>
+        <button
+          type="button"
+          :class="css.reviewDiffRow_gapAction"
+          @click="emit('expand', row, row.hidden)"
+        >
+          {{ t(l.showAll) }}
+        </button>
+        <span
+          v-if="row.enclosing"
+          :class="css.reviewDiffRow_gapEnclosing"
+          >{{ row.enclosing }}</span
+        >
       </div>
       <div
         v-else-if="row.kind === 'placeholder'"
@@ -193,6 +218,35 @@ const t = useTranslate();
   width: 13px;
   height: 13px;
   color: $color-fg-3;
+}
+
+.reviewDiffRow_gapAction {
+  @include focus-ring;
+
+  flex: none;
+  padding: 0;
+  font: inherit;
+  color: $color-fg-2;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: 3px;
+
+  &:hover {
+    color: $color-fg;
+  }
+}
+
+.reviewDiffRow_gapEnclosing {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-family: $font-family-mono;
+  font-size: 11px;
+  color: $color-fg-dim;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // Quiet bars, one per line the file will about take.

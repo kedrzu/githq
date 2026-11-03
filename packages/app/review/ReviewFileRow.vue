@@ -1,4 +1,4 @@
-<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner while it loads, a red mark when it failed, a tag for what has no diff. A click jumps to it; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
+<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner while it loads, a red mark when it failed, a tag for what has no diff. While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -9,6 +9,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, Eye, LoaderCircle } from 'lucide-vue-next';
 
+import { getFileFolder } from './utils/getFileFolder.js';
 import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
@@ -25,10 +26,14 @@ defineProps<{
   current?: boolean;
   /** Under a folder's label. */
   indented?: boolean;
+  /** Among the files selected together. */
+  selected?: boolean;
+  /** Its folder follows its name, there being no label for it. */
+  showFolder?: boolean;
 }>();
 
 const emit = defineEmits<{
-  select: [];
+  select: [event: MouseEvent];
 }>();
 
 const t = useTranslate();
@@ -37,11 +42,17 @@ const t = useTranslate();
 <template>
   <button
     type="button"
-    :class="[css.reviewFileRow, current && css.reviewFileRow_current, indented && css.reviewFileRow_indented]"
+    :class="[
+      css.reviewFileRow,
+      selected && css.reviewFileRow_selected,
+      current && css.reviewFileRow_current,
+      indented && css.reviewFileRow_indented,
+    ]"
     :title="file.path"
     :tabindex="current ? 0 : -1"
     :aria-current="current ? 'true' : undefined"
-    @click="emit('select')"
+    :aria-pressed="selected ? 'true' : undefined"
+    @click="emit('select', $event)"
   >
     <ReviewChange :change="file.changeType" />
     <span :class="[css.reviewFileRow_name, (file.viewed === 'VIEWED' || collapsed) && css.reviewFileRow_name_dim]">{{
@@ -53,6 +64,11 @@ const t = useTranslate();
       role="img"
       :aria-label="t(l.viewed)"
     />
+    <span
+      v-if="showFolder"
+      :class="css.reviewFileRow_folder"
+      >{{ getFileFolder(file.path) }}</span
+    >
     <span
       v-if="collapsed && collapseReason"
       :class="css.reviewFileRow_tag"
@@ -123,6 +139,11 @@ const t = useTranslate();
   background: $color-bg-3;
 }
 
+.reviewFileRow_selected,
+.reviewFileRow_selected:hover {
+  background: $color-sel;
+}
+
 .reviewFileRow_indented {
   padding-left: $spacing-8 + $spacing-10;
 }
@@ -136,6 +157,14 @@ const t = useTranslate();
 
 .reviewFileRow_name_dim {
   color: $color-fg-2;
+}
+
+.reviewFileRow_folder {
+  overflow: hidden;
+  font-size: $font-size-2xs;
+  color: $color-fg-dim;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reviewFileRow_viewed,

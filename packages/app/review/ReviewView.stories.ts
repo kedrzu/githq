@@ -140,5 +140,9 @@ function createFiles(
         setViewed: () => {},
         hideViewed,
         setHideViewed: () => {},
+        filter: { pattern: '', regex: false },
+        setFilter: () => {},
+        getExpandedLines: () => [],
+        expandLines: () => {},
     };
 }

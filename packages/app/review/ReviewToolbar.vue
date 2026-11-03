@@ -1,11 +1,12 @@
-<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), and github.com. -->
+<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), the file list's toggle beside them (D26, D31), and github.com. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowLeft, ChevronDown, Columns2, Github, GitPullRequest, Rows2 } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Columns2, Github, GitPullRequest, PanelLeft, Rows2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
+import Kbd from '@/components/Kbd.vue';
 import Popover from '@/components/Popover.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
@@ -15,6 +16,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
 
 import type { DiffLayout } from './diff/buildDiffRows.js';
+import ReviewToggle from './ReviewToggle.vue';
 import * as l from './ReviewToolbar.loc.js';
 
 const props = defineProps<{
@@ -30,6 +32,7 @@ const emit = defineEmits<{
 
 const layout = defineModel<DiffLayout>('layout', { required: true });
 const hideWhitespace = defineModel<boolean>('hideWhitespace', { required: true });
+const fileListHidden = defineModel<boolean>('fileListHidden', { required: true });
 
 const t = useTranslate();
 
@@ -42,6 +45,12 @@ const state = computed(() => {
 
   const { icon, tone, label } = getPullRequestStateLook(item);
   return { icon, tone, label: t(label) };
+});
+const fileListShown = computed({
+  get: () => !fileListHidden.value,
+  set: shown => {
+    fileListHidden.value = !shown;
+  },
 });
 const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   { value: 'split', label: t(l.split), icon: Columns2 },
@@ -107,9 +116,26 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
             :label="t(l.hideWhitespace)"
           />
         </label>
+        <label :class="css.reviewToolbar_switch">
+          {{ t(l.fileList) }}
+          <span :class="css.reviewToolbar_switchEnd">
+            <Kbd keys="Mod+B" />
+            <Switch
+              v-model="fileListShown"
+              :label="t(l.fileList)"
+            />
+          </span>
+        </label>
         <p :class="css.reviewToolbar_note">{{ t(l.keptNote) }}</p>
       </div>
     </Popover>
+    <ReviewToggle
+      :icon="PanelLeft"
+      :label="t(l.fileList)"
+      :pressed="fileListShown"
+      kbd="Mod+B"
+      @click="fileListShown = !fileListShown"
+    />
     <IconButton
       :icon="Github"
       :label="t(l.openOnGitHub)"
@@ -236,6 +262,12 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   font-size: $font-size-sm;
   color: $color-fg;
   cursor: pointer;
+}
+
+.reviewToolbar_switchEnd {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
 }
 
 .reviewToolbar_note {

@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { createSeededRandom } from '@/testing/createSeededRandom.js';
 
-import { buildDiffRows } from './buildDiffRows.js';
+import { addDiffLineRange, buildDiffRows } from './buildDiffRows.js';
 import type { DiffCell, DiffLayout, DiffRow } from './buildDiffRows.js';
 import { computeFileDiff } from './computeFileDiff.js';
 import type { FileDiff } from './computeFileDiff.js';
@@ -288,3 +288,41 @@ function randomLines(random: () => number): string[] {
         () => variants[Math.floor(random() * variants.length)] ?? '',
     );
 }
+
+describe('expanded lines (D6)', () => {
+    const lines = numbered(100);
+    const changed = lines.map((line, index) => (index === 0 || index === 99 ? `${line} changed` : line));
+    const diff = computeFileDiff({ before: file(lines), after: file(changed), ...exact });
+
+    test.each(layouts)('come out of the gap in order, each line once, in %s', layout => {
+        const rows = buildDiffRows(diff, { layout, context: 3, expanded: [{ start: 40, end: 45 }] });
+
+        const gaps = rows.flatMap(row => (row.kind === 'gap' ? [row.range] : []));
+        expect(gaps.map(gap => [gap.afterStart, gap.afterEnd])).toEqual([
+            [4, 40],
+            [45, 96],
+        ]);
+        expect(new Set(rows.map(row => row.key)).size).toBe(rows.length);
+        expect(rows.filter(row => row.kind === 'line')).toHaveLength((layout === 'split' ? 2 : 4) + 6 + 5);
+    });
+
+    test('that fill the gap leave none', () => {
+        const rows = buildDiffRows(diff, { layout: 'split', context: 3, expanded: [{ start: 0, end: 100 }] });
+        expect(rows.some(row => row.kind === 'gap')).toBe(false);
+    });
+
+    test('outside any gap change nothing', () => {
+        expect(buildDiffRows(diff, { layout: 'split', context: 3, expanded: [{ start: 0, end: 3 }] })).toEqual(
+            buildDiffRows(diff, { layout: 'split', context: 3 }),
+        );
+    });
+
+    test('merge when they touch, and stay in order', () => {
+        const ranges = addDiffLineRange([{ start: 50, end: 60 }], { start: 10, end: 20 });
+        expect(ranges).toEqual([
+            { start: 10, end: 20 },
+            { start: 50, end: 60 },
+        ]);
+        expect(addDiffLineRange(ranges, { start: 20, end: 50 })).toEqual([{ start: 10, end: 60 }]);
+    });
+});

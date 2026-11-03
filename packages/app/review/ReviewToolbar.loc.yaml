@@ -20,3 +20,5 @@ keptNote:
   en: Kept for every pull request on this device.
 openOnGitHub:
   en: Open on GitHub
+fileList:
+  en: File list
