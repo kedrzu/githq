@@ -75,7 +75,7 @@ test.each([
     [
         'broken longer than the runs known, a run going',
         RunningAfterFailures,
-        'Broken for 4+ days · #204 running 2m',
+        'Broken for 4+ days · #209 running 2m',
         'failed 23h ago',
     ],
     ['broken for weeks', ByGitHub, 'Broken for 3+ weeks', /^failed\sOct\s(30|31)$/],
