@@ -132,7 +132,7 @@ repositories are guesses; the rate-limit pause in `packages/app/sync/SyncEngine.
 > **Checked 2026-11-01:** no log streaming endpoint is documented for a running job; the logs endpoint returns
 > a plain-text file — [workflow jobs](https://docs.github.com/en/rest/actions/workflow-jobs).
 
-**The desktop app reads a log through its Rust side.** (2026-11-04, owner, on the agent's recommendation) Its content
+**The desktop app reads a log through its Rust side.** (2026-11-03, owner, on the agent's recommendation) Its content
 security policy allows only `api.github.com`, and a log redirects to Azure Blob Storage. A native command that asks
 only for job logs adds no way out of the webview, which holds the token. It follows the redirect to the blob, and for
 a renamed or moved repository one hop before it, which GitHub answers with a 301 to
