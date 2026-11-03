@@ -1,0 +1,28 @@
+ordinalOne:
+  en: '{position}st'
+ordinalTwo:
+  en: '{position}nd'
+ordinalFew:
+  en: '{position}rd'
+ordinalOther:
+  en: '{position}th'
+queued:
+  en: queued
+awaitingChecks:
+  en: waiting for checks
+mergeable:
+  en: mergeable
+mergingNext:
+  en: mergeable · merging next
+locked:
+  en: locked for merging
+unmergeable:
+  en: unmergeable
+aboutMinutes:
+  en: about {count} min
+aboutHours:
+  en: about {count} h
+inGroup:
+  en: In queue as one group · {where}
+inGroupWontMerge:
+  en: In queue as one group, won't merge · {place}

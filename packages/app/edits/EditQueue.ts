@@ -1,4 +1,3 @@
-import { GitHubApiError } from '@githq/github/GitHubApiError.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -16,7 +15,8 @@ import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, ItemConfirmation } from '@/store/ItemTypes.js';
 
-import type { Edit, EditFailureReason, EditSubject, EditVerdict } from './EditTypes.js';
+import type { Edit, EditAnswer, EditFailureReason, EditSubject, EditVerdict } from './EditTypes.js';
+import { toEditFailureReason } from './toEditFailureReason.js';
 
 /** An edit GitHub did not take, and why. */
 export interface FailedEdit {
@@ -37,6 +37,8 @@ export interface EditFailure {
     readonly failed: readonly FailedEdit[];
     /** Its toast is showing. */
     readonly toast: boolean;
+    /** Epoch ms it was reported: the status bar says the newest of what it has to say. */
+    readonly at: number;
 }
 
 /** An action's edits as they ended. */
@@ -88,7 +90,8 @@ interface Session {
  * GitHub's answer decides: an edit is done only when the answer holds its value (GitHub silently drops what the
  * user may not do). A confirmed edit is written into the stores and its layer drawn over older sync answers for
  * a while (last write wins); a rejected or failed one is undone, listed as a failure (toast, status bar) and
- * named in its row for a moment.
+ * named in its row for a moment — unless whoever asked shows the refusal itself. One GitHub did not say the end of
+ * in time (a merge still running) is undone without a word, and the next sync shows what GitHub holds.
  *
  * It follows the signed-in user: when they sign out or another account signs in, the edits not sent yet are
  * dropped — never sent with another account's token — and those on the way are forgotten.
@@ -192,7 +195,7 @@ export const EditQueue = defineService({
         /** Runs the edit after the item's edits queued before it, a few items at once. */
         function enqueue(current: Session, edit: Edit): Promise<readonly FailedEdit[]> {
             const previous = current.tails.get(edit.itemId) ?? Promise.resolve();
-            const run = previous.then(() => current.semaphore.run(() => send(current, edit)));
+            const run = previous.then(() => send(current, edit));
             current.tails.set(edit.itemId, run);
             void run.finally(() => {
                 if (current.tails.get(edit.itemId) === run) {
@@ -203,22 +206,19 @@ export const EditQueue = defineService({
         }
 
         async function send(current: Session, edit: Edit): Promise<readonly FailedEdit[]> {
-            // Signed out while it waited: it goes nowhere, never with another account's token.
-            if (!isCurrent(current) || !edit.send) {
+            const answer = await current.semaphore.run(async () => {
+                // Signed out while it waited: it goes nowhere, never with another account's token.
+                const { send: request } = edit;
+                return isCurrent(current) && request
+                    ? await readAnswer(current, edit, () => request(current.account))
+                    : null;
+            });
+            if (answer === null) {
                 return [];
             }
 
-            let verdict: EditVerdict;
-            try {
-                verdict = await edit.send(current.account.sdk);
-            } catch (error) {
-                if (isCurrent(current)) {
-                    logger.warn('An edit failed', { subject: edit.subject.kind, reference: edit.reference, error });
-                }
-
-                verdict = { kind: 'rejected', reason: toFailureReason(error) };
-            }
-
+            // GitHub goes on with it: asked outside the edits sent at once, so the others do not wait for it.
+            const verdict = answer.kind === 'following' ? await readAnswer(current, edit, answer.follow) : answer;
             if (!isCurrent(current)) {
                 return [];
             }
@@ -239,14 +239,42 @@ export const EditQueue = defineService({
             }
 
             overlay.remove(edit.itemId, edit.optimistic);
+            if (verdict.kind === 'unknown') {
+                logger.info('GitHub did not say in time how an edit ended', {
+                    subject: edit.subject.kind,
+                    reference: edit.reference,
+                });
+                return [];
+            }
 
             logger.warn('GitHub did not take an edit', {
                 subject: edit.subject.kind,
                 reference: edit.reference,
                 reason: verdict.reason.kind,
             });
+            if (verdict.quiet) {
+                return [];
+            }
+
             markUndone(current, edit);
             return [{ edit, reason: verdict.reason }];
+        }
+
+        /** GitHub's answer to `request`; one that rejects — not reached, or an error — is a rejection of the edit. */
+        async function readAnswer<T extends EditAnswer>(
+            current: Session,
+            edit: Edit,
+            request: () => Promise<T>,
+        ): Promise<T | EditVerdict> {
+            try {
+                return await request();
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('An edit failed', { subject: edit.subject.kind, reference: edit.reference, error });
+                }
+
+                return { kind: 'rejected', reason: toEditFailureReason(error) };
+            }
         }
 
         /**
@@ -309,8 +337,9 @@ export const EditQueue = defineService({
             current.timers.add(cancel);
         }
 
-        function report(failure: Omit<EditFailure, 'id' | 'toast'>) {
-            failuresRef.value = [...failuresRef.value, { ...failure, id: nextFailureId++, toast: true }];
+        function report(failure: Omit<EditFailure, 'at' | 'id' | 'toast'>) {
+            const reported = { ...failure, id: nextFailureId++, toast: true, at: clock.now() };
+            failuresRef.value = [...failuresRef.value, reported];
         }
 
         /**
@@ -360,17 +389,4 @@ function withConfirmation(item: Item, confirmation: ItemConfirmation | null): It
         ...item,
         confirmation: previous && previous.at > confirmation.at ? { ...confirmation, at: previous.at } : confirmation,
     };
-}
-
-/** Why an edit that threw failed: GitHub's error, or no answer at all. */
-function toFailureReason(error: unknown): EditFailureReason {
-    if (!(error instanceof GitHubApiError)) {
-        return { kind: 'offline' };
-    }
-
-    if (error.errors.some(entry => entry.type === 'NOT_FOUND')) {
-        return { kind: 'missing' };
-    }
-
-    return { kind: 'refused', message: error.errors[0]?.message ?? error.message };
 }

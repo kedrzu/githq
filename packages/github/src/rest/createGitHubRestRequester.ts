@@ -13,6 +13,11 @@ export interface GitHubRestRequest {
     etag?: string;
     /** Sent as JSON. */
     body?: unknown;
+    /**
+     * How the browser's HTTP cache may serve it. GitHub marks REST answers cacheable for a minute
+     * (`Cache-Control: private, max-age=60`), so a request polled for a change must say `no-store`.
+     */
+    cache?: RequestInit['cache'];
 }
 
 /** Sends one REST request; made by {@link createGitHubRestRequester}. */
@@ -25,7 +30,7 @@ export type GitHubRestRequester = (request: GitHubRestRequest) => Promise<GitHub
  * @__NO_SIDE_EFFECTS__
  */
 export function createGitHubRestRequester(options: GitHubRequesterOptions): GitHubRestRequester {
-    return function request({ method = 'GET', url, query, etag, body }) {
+    return function request({ method = 'GET', url, query, etag, body, cache }) {
         const target = new URL(url, GITHUB_REST_URL);
         for (const [name, value] of Object.entries(query ?? {})) {
             target.searchParams.set(name, value);
@@ -37,10 +42,16 @@ export function createGitHubRestRequester(options: GitHubRequesterOptions): GitH
         }
 
         if (body === undefined) {
-            return sendGitHubRequest(options, { url: target.toString(), method, headers });
+            return sendGitHubRequest(options, { url: target.toString(), method, headers, cache });
         }
 
         headers['Content-Type'] = 'application/json';
-        return sendGitHubRequest(options, { url: target.toString(), method, headers, body: JSON.stringify(body) });
+        return sendGitHubRequest(options, {
+            url: target.toString(),
+            method,
+            headers,
+            body: JSON.stringify(body),
+            cache,
+        });
     };
 }

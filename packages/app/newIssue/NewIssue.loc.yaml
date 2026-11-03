@@ -33,6 +33,8 @@ rejectedRefused:
   en: 'GitHub said: {message}.'
 rejectedOffline:
   en: githq couldn't reach GitHub.
+rejectedOrganizationRestricted:
+  en: "{organization} hasn't approved githq, so githq can read its public repositories but can't create issues there."
 rejectedMissing:
   en: GitHub doesn't show you {repository} (any more).
 rejectedNotAllowed:

@@ -10,12 +10,14 @@ import type {
     IssueStateReason,
     IssueTypeColor,
     ItemProjectItemFieldsFragment,
+    MergeableState,
     MergeStateStatus,
     ProjectFieldFieldsFragment,
     ProjectItemDetailFieldsFragment,
     ProjectItemFieldResultFieldsFragment,
     ProjectItemPageFieldsFragment,
     ProjectItemRowFieldsFragment,
+    PullRequestMergeOptionsQuery,
     ProjectItemValuesFieldsFragment,
     ProjectV2FieldType,
     ProjectV2SingleSelectFieldOptionColor,
@@ -23,6 +25,7 @@ import type {
     ProjectViewFieldsFragment,
     PullRequestDetailFieldsFragment,
     PullRequestFieldsFragment,
+    PullRequestMergeMethod,
     PullRequestReviewDecision,
     PullRequestState,
     RepositoryPermission,
@@ -65,6 +68,15 @@ export type GitHubWorldMutation =
     | 'RequestReviews'
     | 'MarkReadyForReview'
     | 'ConvertToDraft'
+    | 'UpdatePullRequestBranch'
+    | 'EnablePullRequestAutoMerge'
+    | 'DisablePullRequestAutoMerge'
+    | 'EnqueuePullRequest'
+    | 'DequeuePullRequest'
+    | 'MergePullRequest'
+    | 'DeleteRef'
+    | 'CreateRef'
+    | 'RevertPullRequest'
     | 'CreateIssue';
 
 const MY_WORK_SEARCHES: readonly MyWorkSearch[] = ['reviewRequested', 'authored', 'assigned', 'mentioned'];
@@ -133,10 +145,37 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly failingChecks?: number;
     /** It conflicts with its base branch. */
     readonly conflicts?: boolean;
+    /**
+     * Its failing checks that GitHub Actions ran, by their workflow runs' ids; listed by the merge options, none by
+     * default — the failing ones then only count on the row, as a count gone stale does.
+     */
+    readonly failedRuns?: readonly number[];
+    /** Its failing checks from outside GitHub Actions, by name; listed by the merge options, none by default. */
+    readonly failedOutsideActions?: readonly string[];
     /** Whose review it asks for (logins). */
     readonly reviewRequests?: readonly string[];
-    /** Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip). */
+    /**
+     * Its base branch moved on since it was last rebased (`baseRefOid` is not the base's tip): `BEHIND` when its
+     * repository requires branches to be up to date ({@link GitHubWorldRepositoryParams.requiresUpToDate}).
+     */
     readonly behindBase?: boolean;
+    /** GitHub has not worked out yet whether it merges: `mergeable` and `mergeStateStatus` read `UNKNOWN`. */
+    readonly mergeabilityUnknown?: boolean;
+    /**
+     * The commit texts GitHub proposes to the viewer for a merge commit and a squash (`viewerMergeHeadlineText`,
+     * `viewerMergeBodyText`); GitHub's usual ones by default — for a merge commit "Merge pull request #N from
+     * owner/branch" over its title, for a squash its title with "(#N)" over no message.
+     */
+    readonly proposedTexts?: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
+}
+
+/** The merge methods that make a commit of their own, with a text GitHub proposes for it. */
+export type GitHubWorldCommitMethod = Exclude<PullRequestMergeMethod, 'REBASE'>;
+
+/** A commit's title and message. */
+export interface GitHubWorldCommitText {
+    readonly title: string;
+    readonly body: string;
 }
 
 /** A stack of open pull requests of the world, as GitHub links them: in one repository, each on the one below. */
@@ -167,8 +206,32 @@ export interface GitHubWorldRepositoryParams {
     readonly issuesDisabled?: boolean;
     /** Its issue templates and forms; none (blank issues allowed) by default. */
     readonly templates?: GitHubWorldTemplates;
+    /** The merge methods its settings allow; all three by default. */
+    readonly mergeMethods?: readonly PullRequestMergeMethod[];
+    /** The method its merges start on for the viewer (`viewerDefaultMergeMethod`); `MERGE` by default. */
+    readonly defaultMergeMethod?: PullRequestMergeMethod;
+    /**
+     * The merge methods a ruleset on its base branch allows (a pull request rule's `allowedMergeMethods`); no
+     * ruleset by default. Only the merge panel's read (`PullRequestMergeOptions`) sees it, as on GitHub.
+     */
+    readonly rulesetMergeMethods?: readonly PullRequestMergeMethod[];
+    /** Its base branch requires branches to be up to date before merging: one behind it reads `BEHIND`. */
+    readonly requiresUpToDate?: boolean;
     /** What GitHub calls its default branch; `main` by default. */
     readonly defaultBranch?: string;
+    /**
+     * Its default branch has a merge queue, merging with this method (`isMergeQueueEnabled`, a ruleset's
+     * `mergeMethod`); none by default.
+     */
+    readonly mergeQueueMethod?: PullRequestMergeMethod;
+    /** Auto-merge allowed in its settings (`autoMergeAllowed`), and the viewer may turn it on: as on GitHub, in a stack too. */
+    readonly autoMergeAllowed?: boolean;
+    /** The viewer may merge past the rules (`viewerCanMergeAsAdmin`). */
+    readonly viewerCanMergeAsAdmin?: boolean;
+    /** GitHub deletes a pull request's branch once merged (`deleteBranchOnMerge`). */
+    readonly deleteBranchOnMerge?: boolean;
+    /** The addresses the viewer may commit a merge with, their default first; none by default. */
+    readonly commitEmails?: readonly string[];
 }
 
 /** A commit of a repository's history (git-client D8), and what GitHub tells of it apart: its pull request and CI. */
@@ -329,6 +392,8 @@ export interface GitHubWorldItemState {
     readonly comments: readonly string[];
     /** Whose review a pull request asks for (logins). */
     readonly reviewRequests: readonly string[];
+    /** A pull request was merged. */
+    readonly merged: boolean;
     /** Its "Status" in each project it is in, by the project's title; `null` when empty. */
     readonly projects: Readonly<Record<string, GitHubWorldStatus | null>>;
 }
@@ -343,7 +408,18 @@ interface WorldRepository {
     isArchived: boolean;
     issuesDisabled: boolean;
     templates: GitHubWorldTemplates;
+    mergeMethods: readonly PullRequestMergeMethod[];
+    defaultMergeMethod: PullRequestMergeMethod;
+    rulesetMergeMethods: readonly PullRequestMergeMethod[] | null;
+    requiresUpToDate: boolean;
     defaultBranch: string;
+    mergeQueueMethod: PullRequestMergeMethod | null;
+    /** Its merge queue, the next to merge first; a pull request's position is its place here. */
+    readonly queue: WorldStackEntry[];
+    autoMergeAllowed: boolean;
+    viewerCanMergeAsAdmin: boolean;
+    deleteBranchOnMerge: boolean;
+    commitEmails: readonly string[];
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
     /** Its commits by oid; none for an empty repository. */
@@ -393,15 +469,74 @@ interface WorldComment {
 }
 
 interface WorldPullRequest {
+    /** Its branch was deleted (`headRef` reads `null`). */
+    branchDeleted: boolean;
+    readonly failedRuns: readonly number[];
+    readonly failedOutsideActions: readonly string[];
     isDraft: boolean;
-    readonly reviewDecision: PullRequestReviewDecision | null;
+    reviewDecision: PullRequestReviewDecision | null;
     readonly failingChecks: number;
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly closes: readonly string[];
-    readonly behindBase: boolean;
+    behindBase: boolean;
+    readonly mergeabilityUnknown: boolean;
+    /**
+     * An update of its branch GitHub accepted but has not made yet: as on GitHub, the pull request still reads the old
+     * head, its mergeability `UNKNOWN`, until the update lands — after the next read of the merge panel.
+     */
+    updatingBranch: boolean;
+    /** The last commit pushed to its branch since the test began ({@link GitHubWorld.push}); `null` for none. */
+    pushed: WorldPushedCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
     readonly stack: WorldStackPlace | null;
+    /**
+     * In a stack, above its first: the head of the pull request below it — its base — as it was when this one was
+     * last rebased on it; `null` for one based on the default branch. A push to the one below leaves it behind, as on
+     * GitHub, until the stack is rebased.
+     */
+    rebasedOn: string | null;
+    readonly proposedTexts: Partial<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>>;
+    /** Merged: its item is closed too, as GitHub's `state` then reads `MERGED`. */
+    merged: boolean;
+    /** Who put it in its repository's merge queue, and how; `null` outside it. */
+    queued: WorldQueueEntry | null;
+    /** The auto-merge turned on for it; `null` for none. */
+    autoMerge: WorldAutoMerge | null;
+}
+
+/** What a pull request's entry in a merge queue holds besides its place. */
+interface WorldQueueEntry {
+    readonly enqueuedAt: string;
+}
+
+/** Auto-merge turned on, with what it will merge with. */
+interface WorldAutoMerge {
+    readonly mergeMethod: PullRequestMergeMethod;
+    readonly commitHeadline: string | null;
+    readonly commitBody: string | null;
+    readonly enabledAt: string;
+}
+
+/** A commit pushed to a pull request's branch. */
+interface WorldPushedCommit {
+    readonly oid: string;
+    readonly headline: string;
+    readonly author: string;
+}
+
+/** A merge GitHub accepted ({@link GitHubWorld.holdMerges}), by the `uuid` it is followed by. */
+interface WorldMerge {
+    /**
+     * The pull requests it lands, in order — the one it was sent to last: one alone, or in a stack every open one
+     * from the lowest up to it (stacked PRs D11).
+     */
+    readonly landing: readonly WorldStackEntry[];
+    readonly uuid: string;
+    /** GitHub puts it in the merge queue rather than merging it: it lands nothing here. */
+    readonly enqueues: boolean;
+    /** What GitHub said refusing it while it ran ({@link GitHubWorld.refuseHeldMerges}); `null` while it may merge. */
+    refusal: string | null;
 }
 
 /** A stack of pull requests, bottom first. */
@@ -457,8 +592,12 @@ interface WorldMutationHandler<TName extends GitHubWorldMutation> {
     readonly apply: (item: WorldItem, variables: Readonly<Record<string, unknown>>) => void;
     /** GitHub's answer: the item as it is now. */
     readonly answer: (item: WorldItem, variables: Readonly<Record<string, unknown>>) => GitHubOperationData<TName>;
+    /** What GitHub says refusing the mutation for what the item is (`UNPROCESSABLE`); `null` when it takes it. */
+    readonly refuse?: (item: WorldItem, variables: Readonly<Record<string, unknown>>) => string | null;
     /** The answer's data when it fails with an error: its field `null`. */
     readonly refused: GitHubOperationData<TName>;
+    /** The change doesn't move the item's `updatedAt` on GitHub. */
+    readonly keepsUpdatedAt?: boolean;
 }
 
 /** How many checks a pull request of the world runs. */
@@ -467,6 +606,10 @@ const CHECK_COUNT = 5;
 const BASE_OID = '0000000000000000000000000000000000000001';
 /** Where a pull request behind its base branch was last rebased on. */
 const STALE_BASE_OID = '0000000000000000000000000000000000000002';
+/** The commit a merge of the world makes on the base branch. */
+const MERGE_COMMIT_OID = '0000000000000000000000000000000000000003';
+/** What GitHub says refusing a mutation that names a head the branch has moved on from. */
+const HEAD_MOVED = 'Head branch was modified. Review and try the merge again.';
 /** A connection the world answers whole: no page after it. */
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
@@ -512,7 +655,8 @@ const PROJECT_FIRST_PAGE = 100;
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
  * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
- * `ItemDetail` and `MoreComments` by node id (the check list and the reviews left out); `ItemByNumber`;
+ * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
+ * out, no rules on a base branch); `ItemByNumber`;
  * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
@@ -527,8 +671,12 @@ const PROJECT_FIRST_PAGE = 100;
  * It answers the app's edits as GitHub does: each mutation changes the world and answers with the state it
  * then has — unless the test said GitHub fails it ({@link failEdit}). {@link holdEdits} keeps their answers
  * back, to see an edit before GitHub confirms it; {@link edits} lists what the app sent, {@link stateOf} what an
- * item is now. And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
- * {@link delete}), as GitHub does between two polls.
+ * item is now. It merges pull requests as GitHub's asynchronous merge does (`PUT …/pulls/{n}/merge-async`, then
+ * `GET …/merge-async/{uuid}`): refused at once when the head commit named is not the pull request's
+ * ({@link headOf}) or the test said so ({@link refuseMerge}), else accepted — and kept pending while
+ * {@link holdMerges} holds. A merge of a stacked pull request lands every open one below it too, each its own
+ * commit, and is refused while one of them sits on an old head of the one below it (a {@link push} to it). And it can change while the app runs ({@link retitle}, {@link setStatus}, {@link leave},
+ * {@link delete}, {@link push}), as GitHub does between two polls.
  */
 export class GitHubWorld {
     private readonly items = new Map<string, WorldItem>();
@@ -540,6 +688,11 @@ export class GitHubWorld {
     private readonly failures = new Map<string, GitHubWorldFailure>();
     private readonly received: GitHubWorldEdit[] = [];
     private heldEdits: Promise<void> | null = null;
+    private readonly mergeRefusals = new Map<string, string>();
+    /** The merges GitHub accepted, by their `uuid`. */
+    private readonly merges = new Map<string, WorldMerge>();
+    /** Whether merges GitHub accepts stay pending ({@link holdMerges}). */
+    private mergesHeld = false;
     private nextWorkflowId = 1;
     private nextRunId = 1;
     /** The mock it answers for, once installed: a repository or project added later is answered too. */
@@ -564,7 +717,16 @@ export class GitHubWorld {
         repository.isArchived = params.isArchived ?? repository.isArchived;
         repository.issuesDisabled = params.issuesDisabled ?? repository.issuesDisabled;
         repository.templates = params.templates ?? repository.templates;
+        repository.mergeMethods = params.mergeMethods ?? repository.mergeMethods;
+        repository.defaultMergeMethod = params.defaultMergeMethod ?? repository.defaultMergeMethod;
+        repository.rulesetMergeMethods = params.rulesetMergeMethods ?? repository.rulesetMergeMethods;
+        repository.requiresUpToDate = params.requiresUpToDate ?? repository.requiresUpToDate;
         repository.defaultBranch = params.defaultBranch ?? repository.defaultBranch;
+        repository.mergeQueueMethod = params.mergeQueueMethod ?? repository.mergeQueueMethod;
+        repository.autoMergeAllowed = params.autoMergeAllowed ?? repository.autoMergeAllowed;
+        repository.viewerCanMergeAsAdmin = params.viewerCanMergeAsAdmin ?? repository.viewerCanMergeAsAdmin;
+        repository.deleteBranchOnMerge = params.deleteBranchOnMerge ?? repository.deleteBranchOnMerge;
+        repository.commitEmails = params.commitEmails ?? repository.commitEmails;
     }
 
     /**
@@ -727,8 +889,63 @@ export class GitHubWorld {
             milestone: item.milestone,
             comments: item.comments.map(comment => comment.body),
             reviewRequests: [...(item.pullRequest?.reviewRequests ?? [])],
+            merged: item.pullRequest?.merged ?? false,
             projects,
         };
+    }
+
+    /** The place in its repository's merge queue of a pull request, from 1; `null` outside it. */
+    queuePositionOf(id: string): number | null {
+        const item = this.get(id);
+        return item.pullRequest?.queued ? toQueuePosition(this.getRepository(item.repository), item.pullRequest) : null;
+    }
+
+    /** The auto-merge turned on for a pull request; `null` for none. */
+    autoMergeOf(id: string): Readonly<WorldAutoMerge> | null {
+        return this.get(id).pullRequest?.autoMerge ?? null;
+    }
+
+    /** Someone puts the pull request `id` in its repository's merge queue, last, on github.com. */
+    enqueue(id: string): void {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`Item ${id} is not a pull request in the GitHub world`);
+        }
+
+        this.addToQueue([{ item, pullRequest: item.pullRequest }], false);
+    }
+
+    /** Someone takes the pull request `id`, and the rest of its stack, out of the merge queue on github.com. */
+    dequeue(id: string): void {
+        this.removeFromQueue(this.get(id));
+    }
+
+    /** The head commit of a pull request: the `sha` a merge of it must name. */
+    headOf(id: string): string {
+        return toHeadRefOid(this.get(id));
+    }
+
+    /**
+     * Pushes a commit by `author` to the branch of the pull request `id`, as someone does on github.com: its head
+     * moves, so a merge naming the one before is refused. Returns the new head.
+     */
+    push(id: string, author: string, headline: string): string {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`Item ${id} is not a pull request in the GitHub world`);
+        }
+
+        return pushCommit(item, item.pullRequest, { author, headline });
+    }
+
+    /** The approval it had no longer counts, as after a dismissed review: it needs one again. */
+    withdrawApproval(id: string): void {
+        const { pullRequest } = this.get(id);
+        if (!pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        pullRequest.reviewDecision = 'REVIEW_REQUIRED';
     }
 
     /** Renames an item, which moves its `updated_at` to now. */
@@ -792,6 +1009,44 @@ export class GitHubWorld {
     }
 
     /**
+     * Makes GitHub refuse every merge of the pull request `id` at once from now on, as it refuses a merge it will not
+     * make (`400`, `failed`), saying `message`.
+     */
+    refuseMerge(id: string, message: string): void {
+        this.get(id);
+        this.mergeRefusals.set(id, message);
+    }
+
+    /**
+     * Keeps the merges GitHub accepts pending — the pull request still open — until the returned function is
+     * called, which merges them: to see a pull request being merged before GitHub says it is.
+     */
+    holdMerges(): () => void {
+        this.mergesHeld = true;
+        return () => {
+            this.mergesHeld = false;
+            for (const merge of this.merges.values()) {
+                if (merge.refusal === null) {
+                    this.completeMerge(merge);
+                }
+            }
+        };
+    }
+
+    /**
+     * Refuses the merges {@link holdMerges} holds, as GitHub fails a merge while it runs (`failed`, saying `message`):
+     * the pull requests stay open, and merges accepted from now on are no longer held.
+     */
+    refuseHeldMerges(message: string): void {
+        this.mergesHeld = false;
+        for (const merge of this.merges.values()) {
+            if (merge.landing.some(entry => !entry.pullRequest.merged)) {
+                merge.refusal = message;
+            }
+        }
+    }
+
+    /**
      * Keeps `search` from answering until the returned function is called — a slow search on the first
      * download. The test calls it before it ends: a request still waiting when the browser closes cannot be
      * answered.
@@ -824,6 +1079,10 @@ export class GitHubWorld {
         for (const project of this.projects.values()) {
             this.answerProjectPoll(github, project);
         }
+
+        for (const item of this.items.values()) {
+            this.answerMerge(github, item);
+        }
     }
 
     private installReads(github: GitHubMock) {
@@ -841,6 +1100,14 @@ export class GitHubWorld {
                     viewerPermission: repository.viewerPermission,
                     isArchived: repository.isArchived,
                     hasIssuesEnabled: !repository.issuesDisabled,
+                    mergeCommitAllowed: repository.mergeMethods.includes('MERGE'),
+                    squashMergeAllowed: repository.mergeMethods.includes('SQUASH'),
+                    rebaseMergeAllowed: repository.mergeMethods.includes('REBASE'),
+                    viewerDefaultMergeMethod: repository.defaultMergeMethod,
+                    autoMergeAllowed: repository.autoMergeAllowed,
+                    deleteBranchOnMerge: repository.deleteBranchOnMerge,
+                    viewerDefaultCommitEmail: repository.commitEmails[0] ?? null,
+                    viewerPossibleCommitEmails: [...repository.commitEmails],
                     labels: {
                         pageInfo: LAST_PAGE,
                         nodes: repository.labels.map(label => ({
@@ -1115,6 +1382,79 @@ export class GitHubWorld {
                 { node: node ?? null },
                 node ? [] : [notFoundError(id, ['node'])],
             );
+        });
+        github.graphql('PullRequestMergeGuard', ({ variables }) => {
+            const item = this.readItem(String(variables.id));
+            return {
+                node: item?.pullRequest
+                    ? {
+                          mergeable: getMergeable(item.pullRequest),
+                          mergeStateStatus: getMergeStateStatus(item.pullRequest, this.getRepository(item.repository)),
+                          viewerCanMergeAsAdmin: this.getRepository(item.repository).viewerCanMergeAsAdmin,
+                      }
+                    : null,
+            };
+        });
+        // Read by the merge panel, and by the opened item of a pull request with failing checks for which are required:
+        // the texts GitHub proposes, the base branch's ruleset if its repository has one, and no check listed, as
+        // `ItemDetail` lists none.
+        github.graphql('PullRequestMergeOptions', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item?.pullRequest) {
+                return new GitHubPartialAnswer<'PullRequestMergeOptions'>({ node: null }, [
+                    notFoundError(id, ['node']),
+                ]);
+            }
+
+            const node = this.toPullRequestNode(item, item.pullRequest);
+            const texts = toProposedTexts(item, item.pullRequest);
+            const repository = this.getRepository(item.repository);
+            const allowed = repository.rulesetMergeMethods;
+            const rules = [
+                ...(allowed
+                    ? [{ type: 'PULL_REQUEST' as const, parameters: { allowedMergeMethods: [...allowed] } }]
+                    : []),
+                ...(repository.mergeQueueMethod
+                    ? [{ type: 'MERGE_QUEUE' as const, parameters: { mergeMethod: repository.mergeQueueMethod } }]
+                    : []),
+            ];
+            const answer: PullRequestMergeOptionsQuery = {
+                node: {
+                    ...node,
+                    mergeHeadline: texts.MERGE.title,
+                    mergeBody: texts.MERGE.body,
+                    squashHeadline: texts.SQUASH.title,
+                    squashBody: texts.SQUASH.body,
+                    viewerCanMergeAsAdmin: repository.viewerCanMergeAsAdmin,
+                    viewerCanEnableAutoMerge: repository.autoMergeAllowed,
+                    autoMergeBody: item.pullRequest.autoMerge && { commitBody: item.pullRequest.autoMerge.commitBody },
+                    // The commit pushed last, else the head as the author's, under the pull request's title.
+                    headCommit: {
+                        nodes: [
+                            {
+                                commit: toHeadCommit(item, item.pullRequest),
+                            },
+                        ],
+                    },
+                    baseRef: {
+                        target: node.baseRef?.target ?? null,
+                        rules: { nodes: rules },
+                        branchProtectionRule: null,
+                    },
+                    statusCheckRollup: node.statusCheckRollup && {
+                        ...node.statusCheckRollup,
+                        contextPage: {
+                            nodes: [
+                                ...item.pullRequest.failedRuns.map(toFailedCheckRun),
+                                ...item.pullRequest.failedOutsideActions.map(toFailedCheckOutsideActions),
+                            ],
+                        },
+                    },
+                },
+            };
+            this.landBranchUpdate(item, item.pullRequest);
+            return answer;
         });
         github.graphql('MoreComments', ({ variables }) => {
             const id = String(variables.id);
@@ -1536,6 +1876,171 @@ export class GitHubWorld {
             answer: item => ({ markPullRequestReadyForReview: { pullRequest: toPullRequestState(item) } }),
             refused: { markPullRequestReadyForReview: null },
         });
+        // Brings the base branch in with a merge commit by the viewer — not at once, as on GitHub: the answer and the
+        // next read of the merge panel still find the old head (live, 2026-11-02), then it lands
+        // (`landBranchUpdate`).
+        this.mutation(github, 'UpdatePullRequestBranch', {
+            findItem: byItemId('pullRequestId'),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.updatingBranch = true;
+                }
+            },
+            answer: item => ({ updatePullRequestBranch: { pullRequest: { id: item.id } } }),
+            refused: { updatePullRequestBranch: null },
+        });
+        // Auto-merge: GitHub refuses it for a stacked pull request, though `viewerCanEnableAutoMerge` reads true (live,
+        // 2026-11-02).
+        this.mutation(github, 'EnablePullRequestAutoMerge', {
+            findItem: byItemId('pullRequestId'),
+            refuse: (item, variables) => {
+                if (item.pullRequest?.stack) {
+                    return 'Auto-merge is not supported for stacked pull requests.';
+                }
+
+                if (!this.getRepository(item.repository).autoMergeAllowed) {
+                    return 'Pull request Auto merge is not allowed for this repository';
+                }
+
+                return variables.expectedHeadOid === toHeadRefOid(item) ? null : HEAD_MOVED;
+            },
+            apply: (item, variables) => {
+                if (item.pullRequest) {
+                    item.pullRequest.autoMerge = {
+                        mergeMethod: readMergeMethod(variables.mergeMethod),
+                        commitHeadline: readText(variables.commitHeadline),
+                        commitBody: readText(variables.commitBody),
+                        enabledAt: new Date().toISOString(),
+                    };
+                }
+            },
+            answer: item => ({ enablePullRequestAutoMerge: { pullRequest: this.toPullRequestAnswer(item) } }),
+            refused: { enablePullRequestAutoMerge: null },
+        });
+        this.mutation(github, 'DisablePullRequestAutoMerge', {
+            findItem: byItemId('pullRequestId'),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.autoMerge = null;
+                }
+            },
+            answer: item => ({ disablePullRequestAutoMerge: { pullRequest: this.toPullRequestAnswer(item) } }),
+            refused: { disablePullRequestAutoMerge: null },
+        });
+        this.mutation(github, 'EnqueuePullRequest', {
+            findItem: byItemId('pullRequestId'),
+            refuse: (item, variables) => {
+                if (!this.getRepository(item.repository).mergeQueueMethod) {
+                    return `No merge queue found for branch '${toHeadRefName(item)}'`;
+                }
+
+                return variables.expectedHeadOid === toHeadRefOid(item) ? null : HEAD_MOVED;
+            },
+            // The one way here to ask for the queue, and it always jumps it (`EnqueuePullRequest.gql`).
+            apply: item => {
+                if (item.pullRequest) {
+                    this.addToQueue([{ item, pullRequest: item.pullRequest }], true);
+                }
+            },
+            keepsUpdatedAt: true,
+            answer: item => ({
+                enqueuePullRequest: {
+                    mergeQueueEntry: {
+                        position: item.pullRequest
+                            ? toQueuePosition(this.getRepository(item.repository), item.pullRequest)
+                            : 0,
+                    },
+                },
+            }),
+            refused: { enqueuePullRequest: null },
+        });
+        // A stack leaves whole, and only through its first member in the queue (live, 2026-11-03).
+        this.mutation(github, 'DequeuePullRequest', {
+            findItem: byItemId('id'),
+            refuse: item => {
+                const first = item.pullRequest && getQueuedInStack({ item, pullRequest: item.pullRequest })[0];
+                return first?.item === item ? null : `No merge queue found for branch '${toHeadRefName(item)}'`;
+            },
+            apply: item => this.removeFromQueue(item),
+            keepsUpdatedAt: true,
+            answer: () => ({ dequeuePullRequest: { clientMutationId: null } }),
+            refused: { dequeuePullRequest: null },
+        });
+        // Its branch: deleted, and restored at its last head (live, #56). The answers say nothing of the pull request.
+        this.mutation(github, 'DeleteRef', {
+            findItem: variables => this.findByHeadRefId(String(variables.refId)),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.branchDeleted = true;
+                }
+            },
+            keepsUpdatedAt: true,
+            answer: () => ({ deleteRef: { clientMutationId: null } }),
+            refused: { deleteRef: null },
+        });
+        this.mutation(github, 'CreateRef', {
+            findItem: variables =>
+                [...this.items.values()].find(
+                    item =>
+                        `R_${slug(item.repository)}` === variables.repositoryId &&
+                        item.pullRequest !== null &&
+                        `refs/heads/${toHeadRefName(item)}` === variables.name &&
+                        toHeadRefOid(item) === variables.oid,
+                ),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.branchDeleted = false;
+                }
+            },
+            keepsUpdatedAt: true,
+            answer: item => ({ createRef: { ref: { id: toHeadRefId(item) } } }),
+            refused: { createRef: null },
+        });
+        // A new open pull request at once, on a branch of its own (live, #59).
+        this.mutation(github, 'RevertPullRequest', {
+            findItem: byItemId('pullRequestId'),
+            apply: () => undefined,
+            keepsUpdatedAt: true,
+            answer: item => {
+                const number = Math.max(...[...this.items.values()].map(other => other.number)) + 1;
+                this.pullRequest({
+                    repository: item.repository,
+                    number,
+                    title: `Revert "${item.title}"`,
+                    foundBy: ['authored'],
+                    minutesAgo: 0,
+                });
+                return {
+                    revertPullRequest: {
+                        revertPullRequest: { number, url: `https://github.com/${item.repository}/pull/${number}` },
+                    },
+                };
+            },
+            refused: { revertPullRequest: null },
+        });
+        // A merge with a chosen commit email: it answers at once, and doesn't take a stack (merging D5).
+        this.mutation(github, 'MergePullRequest', {
+            findItem: byItemId('pullRequestId'),
+            refuse: (item, variables) => {
+                if (item.pullRequest?.stack) {
+                    return 'Merging with this API does not support stacked pull requests.';
+                }
+
+                return variables.expectedHeadOid === toHeadRefOid(item) ? null : HEAD_MOVED;
+            },
+            apply: item => {
+                if (item.pullRequest) {
+                    this.completeMerge({
+                        landing: [{ item, pullRequest: item.pullRequest }],
+                        uuid: '',
+                        enqueues: false,
+                        refusal: null,
+                    });
+                }
+            },
+            answer: () => ({ mergePullRequest: { pullRequest: { mergeCommit: { oid: MERGE_COMMIT_OID } } } }),
+            refused: { mergePullRequest: null },
+        });
         this.mutation(github, 'ConvertToDraft', {
             findItem: byItemId('pullRequestId'),
             apply: item => {
@@ -1771,7 +2276,7 @@ export class GitHubWorld {
 
     /**
      * Answers the mutation `name`: held while {@link holdEdits} holds, recorded, failed as {@link failEdit} said,
-     * else applied — the item's `updatedAt` moving to now — and answered with the item as it then is.
+     * else applied — the item's `updatedAt` moving to now, unless the handler keeps it — and answered with the item as it then is.
      */
     private mutation<TName extends GitHubWorldMutation>(
         github: GitHubMock,
@@ -1797,17 +2302,127 @@ export class GitHubWorld {
                 ]);
             }
 
+            const refusal = handler.refuse?.(item, variables) ?? null;
+            if (refusal !== null) {
+                return new GitHubPartialAnswer<TName>(handler.refused, [
+                    { type: 'UNPROCESSABLE', path: [field], message: refusal },
+                ]);
+            }
+
             if (failure?.kind !== 'drop') {
                 handler.apply(item, variables);
-                item.updatedAt = new Date().toISOString();
+                if (!handler.keepsUpdatedAt) {
+                    item.updatedAt = new Date().toISOString();
+                }
             }
 
             return handler.answer(item, variables);
         });
     }
 
+    /**
+     * Answers the merges of the pull request `item` (`PUT …/merge-async`) as GitHub does: refused at once (`400`,
+     * `failed`) when {@link refuseMerge} said so of one it lands, the `sha` sent is not its head, or the stack must be
+     * rebased first; else accepted (`202`, `pending`) with a `uuid` to ask by — merged at once, or once
+     * {@link holdMerges} lets go. In a stack it lands every open one from the lowest up to it, in order (live,
+     * 2026-11-02). On a merge queue's branch it merges nothing: with the `sha` alone it answers `enqueued` as it follows,
+     * every one going in the queue with a position of its own, and with a method or a text it accepts and then fails
+     * (live, 2026-11-03) — unless asked past the rules to merge directly. Past the rules (`bypass_rules`) is refused to
+     * who isn't {@link GitHubWorldRepositoryParams.viewerCanMergeAsAdmin}.
+     */
+    private answerMerge(github: GitHubMock, item: WorldItem) {
+        for (const runId of item.pullRequest?.failedRuns ?? []) {
+            github.rest('POST', `/repos/${item.repository}/actions/runs/${runId}/rerun-failed-jobs`, () => ({
+                status: 201,
+                json: {},
+            }));
+        }
+
+        const { pullRequest } = item;
+        if (!pullRequest) {
+            return;
+        }
+
+        const path = `/repos/${item.repository}/pulls/${item.number}/merge-async`;
+        github.rest('PUT', path, ({ body }) => {
+            if (item.deleted || item.state !== 'OPEN') {
+                return { status: 405, json: { message: 'Pull Request is not mergeable' } };
+            }
+
+            const landing = getLanding({ item, pullRequest });
+            const sha = isPlainObject(body) ? body.sha : undefined;
+            let message = landing.map(entry => this.mergeRefusals.get(entry.item.id)).find(text => text !== undefined);
+            if (message === undefined && sha !== toHeadRefOid(item)) {
+                message = 'Pull request head branch was modified.';
+            }
+
+            if (message === undefined && landing.slice(1).some(entry => isBehindBelow(entry.pullRequest))) {
+                message = 'This stack must be rebased before it can be merged.';
+            }
+
+            const repository = this.getRepository(item.repository);
+            const asked = isPlainObject(body) ? body : {};
+            const past = asked.bypass_rules === true;
+            if (message === undefined && past && !repository.viewerCanMergeAsAdmin) {
+                message = 'You do not have permission to bypass the rules of this branch.';
+            }
+
+            if (message !== undefined) {
+                return { status: 400, json: { status: 'failed', details: { message } } };
+            }
+
+            const direct = past && asked.merge_action === 'direct_merge';
+            const enqueues = repository.mergeQueueMethod !== null && !direct;
+            const custom = enqueues && ['merge_method', 'commit_title', 'commit_message'].some(key => key in asked);
+            const uuid = `merge-${slug(item.id)}-${this.merges.size + 1}`;
+            const merge: WorldMerge = {
+                landing,
+                uuid,
+                enqueues,
+                refusal: custom ? 'Custom merge params are not supported when merging via a merge queue' : null,
+            };
+            this.merges.set(merge.uuid, merge);
+            github.rest('GET', `${path}/${merge.uuid}`, () => {
+                if (merge.refusal !== null) {
+                    return { status: 200, json: { status: 'failed', details: { message: merge.refusal } } };
+                }
+
+                if (pullRequest.queued) {
+                    return {
+                        status: 200,
+                        json: {
+                            status: 'enqueued',
+                            details: { message: 'Pull request was added to the merge queue.' },
+                        },
+                    };
+                }
+
+                return {
+                    status: 200,
+                    json: pullRequest.merged
+                        ? { status: 'merged', details: { message: 'Pull request was merged.', sha: MERGE_COMMIT_OID } }
+                        : { status: 'pending', details: { message: 'Merge request is in progress.', uuid } },
+                };
+            });
+            if (!this.mergesHeld && merge.refusal === null) {
+                this.completeMerge(merge);
+            }
+
+            return {
+                status: 202,
+                json: {
+                    status: 'pending',
+                    details: { message: 'Merge request enqueued.', uuid: merge.uuid, expected_head_sha: sha },
+                },
+            };
+        });
+    }
+
     private createPullRequest(params: GitHubWorldPullRequestParams, stack: WorldStackPlace | null): WorldStackEntry {
         const pullRequest: WorldPullRequest = {
+            branchDeleted: false,
+            failedRuns: params.failedRuns ?? [],
+            failedOutsideActions: params.failedOutsideActions ?? [],
             isDraft: params.isDraft ?? false,
             reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
             failingChecks: params.failingChecks ?? 0,
@@ -1815,9 +2430,23 @@ export class GitHubWorld {
             reviewRequests: [...(params.reviewRequests ?? [])],
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
+            mergeabilityUnknown: params.mergeabilityUnknown ?? false,
+            updatingBranch: false,
+            pushed: null,
             stack,
+            rebasedOn: null,
+            proposedTexts: params.proposedTexts ?? {},
+            merged: false,
+            queued: null,
+            autoMerge: null,
         };
         const item = this.createItem(`PR_${slug(params.repository)}_${params.number}`, params, pullRequest);
+        const below = getBelow(pullRequest);
+        pullRequest.rebasedOn = below ? toHeadRefOid(below.item) : null;
+        if (this.github) {
+            this.answerMerge(this.github, item);
+        }
+
         return { item, pullRequest };
     }
 
@@ -1888,7 +2517,17 @@ export class GitHubWorld {
                 isArchived: false,
                 issuesDisabled: false,
                 templates: {},
+                mergeMethods: ['MERGE', 'SQUASH', 'REBASE'],
+                defaultMergeMethod: 'MERGE',
+                rulesetMergeMethods: null,
+                requiresUpToDate: false,
                 defaultBranch: 'main',
+                mergeQueueMethod: null,
+                queue: [],
+                autoMergeAllowed: false,
+                viewerCanMergeAsAdmin: false,
+                deleteBranchOnMerge: false,
+                commitEmails: [],
                 workflows: [],
                 runs: [],
                 commits: new Map(),
@@ -1983,18 +2622,35 @@ export class GitHubWorld {
         };
     }
 
+    /** Makes the update of the branch GitHub accepted: no longer behind, at a merge commit by the viewer. */
+    private landBranchUpdate(item: WorldItem, pullRequest: WorldPullRequest) {
+        if (!pullRequest.updatingBranch) {
+            return;
+        }
+
+        pullRequest.updatingBranch = false;
+        pullRequest.behindBase = false;
+        const below = getBelow(pullRequest);
+        pullRequest.rebasedOn = below ? toHeadRefOid(below.item) : null;
+        pushCommit(item, pullRequest, {
+            author: this.viewer,
+            headline: `Merge branch '${this.getRepository(item.repository).defaultBranch}' into ${toHeadRefName(item)}`,
+        });
+    }
+
     private toPullRequestNode(item: WorldItem, pullRequest: WorldPullRequest): PullRequestFieldsFragment {
-        const { failingChecks, reviewDecision, stack: place } = pullRequest;
-        const below = place && place.position > 1 ? place.stack.entries[place.position - 2] : undefined;
+        const { failingChecks, reviewDecision, stack: place, queued, autoMerge } = pullRequest;
+        const below = getBelow(pullRequest);
+        const repository = this.getRepository(item.repository);
         return {
             ...this.createItemFields(item),
             __typename: 'PullRequest',
-            state: item.state,
+            state: pullRequest.merged ? 'MERGED' : item.state,
             isDraft: pullRequest.isDraft,
-            merged: false,
+            merged: pullRequest.merged,
             reviewDecision,
-            mergeable: pullRequest.conflicts ? 'CONFLICTING' : 'MERGEABLE',
-            mergeStateStatus: getMergeStateStatus(pullRequest),
+            mergeable: getMergeable(pullRequest),
+            mergeStateStatus: getMergeStateStatus(pullRequest, repository),
             statusCheckRollup: {
                 state: failingChecks > 0 ? 'FAILURE' : 'SUCCESS',
                 contexts: {
@@ -2011,15 +2667,102 @@ export class GitHubWorld {
             latestOpinionatedReviews: { nodes: [] },
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
-            baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : BASE_OID,
-            baseRef: { target: { oid: BASE_OID } },
+            headRefOid: toHeadRefOid(item),
+            headRef: pullRequest.branchDeleted ? null : { id: toHeadRefId(item) },
+            isCrossRepository: false,
+            // Only once its pull request closed (live, #56): false again once it is gone.
+            viewerCanDeleteHeadRef: item.state !== 'OPEN' && !pullRequest.branchDeleted,
+            baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : (pullRequest.rebasedOn ?? BASE_OID),
+            // A stack's later one is based on another member's branch, which has no queue.
+            isMergeQueueEnabled: repository.mergeQueueMethod !== null && !below,
+            mergeQueueEntry: queued && {
+                position: toQueuePosition(repository, pullRequest),
+                state: 'AWAITING_CHECKS',
+                estimatedTimeToMerge: 13 * 60,
+                enqueuedAt: queued.enqueuedAt,
+                enqueuer: { login: this.viewer },
+            },
+            autoMergeRequest: autoMerge && {
+                mergeMethod: autoMerge.mergeMethod,
+                enabledAt: autoMerge.enabledAt,
+                enabledBy: { login: this.viewer },
+                commitHeadline: autoMerge.commitHeadline,
+            },
+            baseRef: { target: { oid: below ? toHeadRefOid(below.item) : BASE_OID } },
             additions: 12 * item.number,
             deletions: 3 * item.number,
             changedFiles: 2,
             headRefName: toHeadRefName(item),
-            baseRefName: below ? toHeadRefName(below.item) : 'main',
+            baseRefName: below ? toHeadRefName(below.item) : repository.defaultBranch,
             closingIssuesReferences: { nodes: pullRequest.closes.map(issueId => ({ id: issueId })) },
         };
+    }
+
+    private findByHeadRefId(refId: string) {
+        return [...this.items.values()].find(item => item.pullRequest !== null && toHeadRefId(item) === refId);
+    }
+
+    /** The pull request `item` as a mutation answers with it. */
+    private toPullRequestAnswer(item: WorldItem): PullRequestFieldsFragment {
+        if (!item.pullRequest) {
+            throw new Error(`Item ${item.id} is not a pull request in the GitHub world`);
+        }
+
+        return this.toPullRequestNode(item, item.pullRequest);
+    }
+
+    /** Lands the pull requests of a merge GitHub accepted, or puts them in the merge queue, as the merge says. */
+    private completeMerge(merge: WorldMerge) {
+        if (merge.enqueues) {
+            this.addToQueue(merge.landing, false);
+            return;
+        }
+
+        for (const { item, pullRequest } of merge.landing) {
+            if (pullRequest.merged) {
+                continue;
+            }
+
+            const now = new Date().toISOString();
+            pullRequest.merged = true;
+            pullRequest.queued = null;
+            pullRequest.branchDeleted = this.getRepository(item.repository).deleteBranchOnMerge;
+            item.state = 'CLOSED';
+            item.closedAt = now;
+            item.updatedAt = now;
+        }
+    }
+
+    /**
+     * Puts the pull requests in their repository's merge queue, in order: last, or at its front when they jump it. Their
+     * `updatedAt` stays: the queue doesn't move it on GitHub (live, 2026-11-03).
+     */
+    private addToQueue(entries: readonly WorldStackEntry[], jump: boolean) {
+        const now = new Date().toISOString();
+        const added = entries.filter(entry => !entry.pullRequest.queued);
+        for (const entry of added) {
+            entry.pullRequest.queued = { enqueuedAt: now };
+        }
+
+        const [first] = added;
+        if (first) {
+            const { queue } = this.getRepository(first.item.repository);
+            queue.splice(jump ? 0 : queue.length, 0, ...added);
+        }
+    }
+
+    /** Takes the pull request and every other of its stack in the queue out of it, all at once; `updatedAt` stays. */
+    private removeFromQueue(item: WorldItem) {
+        if (!item.pullRequest) {
+            return;
+        }
+
+        const repository = this.getRepository(item.repository);
+        const { queue } = repository;
+        for (const entry of getQueuedInStack({ item, pullRequest: item.pullRequest })) {
+            entry.pullRequest.queued = null;
+            queue.splice(toQueuePosition(repository, entry.pullRequest) - 1, 1);
+        }
     }
 
     private createItemFields(item: WorldItem) {
@@ -2435,9 +3178,31 @@ function findSearch(q: string): MyWorkSearch | undefined {
     return MY_WORK_SEARCHES.find(search => MY_WORK_QUERIES[search] === q);
 }
 
-function getMergeStateStatus(pullRequest: WorldPullRequest): MergeStateStatus {
+/** Whether it merges, as GitHub has worked it out. */
+function getMergeable(pullRequest: WorldPullRequest): MergeableState {
+    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
+        return 'UNKNOWN';
+    }
+
+    return pullRequest.conflicts ? 'CONFLICTING' : 'MERGEABLE';
+}
+
+/** Where its merge stands, in the order GitHub tells it: not worked out, conflicts, a draft, behind, then the rest. */
+function getMergeStateStatus(pullRequest: WorldPullRequest, repository: WorldRepository): MergeStateStatus {
+    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
+        return 'UNKNOWN';
+    }
+
     if (pullRequest.conflicts) {
         return 'DIRTY';
+    }
+
+    if (pullRequest.isDraft) {
+        return 'DRAFT';
+    }
+
+    if (pullRequest.behindBase && repository.requiresUpToDate) {
+        return 'BEHIND';
     }
 
     if (pullRequest.failingChecks > 0) {
@@ -2472,12 +3237,134 @@ function parseCursor(value: unknown): number | undefined {
     return match?.[1] === undefined ? undefined : Number(match[1]);
 }
 
-/** `acme/web` → `acme_web`, for node ids. */
 /** The branch a pull request of the world is opened from. */
+function toHeadRefId(item: WorldItem) {
+    return `REF_${item.id}`;
+}
+
+/** A failed check of the merge options, of a GitHub Actions run. */
+function toFailedCheckRun(runId: number) {
+    return {
+        __typename: 'CheckRun' as const,
+        id: `CR_${runId}`,
+        name: `ci / run ${runId}`,
+        status: 'COMPLETED' as const,
+        conclusion: 'FAILURE' as const,
+        detailsUrl: `https://github.com/actions/runs/${runId}`,
+        startedAt: null,
+        completedAt: null,
+        isRequired: false,
+        checkSuite: { app: { slug: 'github-actions' }, workflowRun: { databaseId: runId, workflow: { name: 'ci' } } },
+    };
+}
+
+function toFailedCheckOutsideActions(name: string) {
+    return {
+        ...toFailedCheckRun(0),
+        id: `CR_${name}`,
+        name,
+        detailsUrl: null,
+        checkSuite: { app: { slug: 'other' }, workflowRun: null },
+    };
+}
+
 function toHeadRefName(item: WorldItem) {
     return `change-${item.number}`;
 }
 
+/** The head commit as `PullRequestMergeOptions` reads it: the one pushed last, else the author's under the title. */
+function toHeadCommit(item: WorldItem, pullRequest: WorldPullRequest) {
+    const author = pullRequest.pushed?.author ?? item.author;
+    return {
+        oid: toHeadRefOid(item),
+        messageHeadline: pullRequest.pushed?.headline ?? item.title,
+        author: { name: author, user: { login: author } },
+    };
+}
+
+/** The commit texts GitHub proposes for a pull request: the test's, else GitHub's usual ones. */
+function toProposedTexts(
+    item: WorldItem,
+    pullRequest: WorldPullRequest,
+): Readonly<Record<GitHubWorldCommitMethod, GitHubWorldCommitText>> {
+    const [owner = ''] = item.repository.split('/');
+    return {
+        MERGE: pullRequest.proposedTexts.MERGE ?? {
+            title: `Merge pull request #${item.number} from ${owner}/${toHeadRefName(item)}`,
+            body: item.title,
+        },
+        SQUASH: pullRequest.proposedTexts.SQUASH ?? { title: `${item.title} (#${item.number})`, body: '' },
+    };
+}
+
+/** The head commit of a pull request: one of its own, so a merge naming another one can be told apart. */
+function toHeadRefOid(item: WorldItem) {
+    return item.pullRequest?.pushed?.oid ?? item.number.toString(16).padStart(40, 'f');
+}
+
+/** Pushes a commit to the pull request's branch: its head moves to a commit of its own. Returns the new head. */
+function pushCommit(item: WorldItem, pullRequest: WorldPullRequest, commit: Omit<WorldPushedCommit, 'oid'>): string {
+    const previous = pullRequest.pushed ? Number.parseInt(pullRequest.pushed.oid.slice(0, 8), 16) : 0;
+    const oid = `${(previous + 1).toString(16).padStart(8, '0')}${item.number.toString(16).padStart(32, 'e')}`;
+    pullRequest.pushed = { ...commit, oid };
+    item.updatedAt = new Date().toISOString();
+    return oid;
+}
+
+/** The pull request below it in its stack — its base; `undefined` for one on the default branch. */
+function getBelow(pullRequest: WorldPullRequest): WorldStackEntry | undefined {
+    const place = pullRequest.stack;
+    return place && place.position > 1 ? place.stack.entries[place.position - 2] : undefined;
+}
+
+/** In a stack, it sits on an old head of the one below it, or its base moved: the stack must be rebased (D21). */
+function isBehindBelow(pullRequest: WorldPullRequest): boolean {
+    const below = getBelow(pullRequest);
+    return pullRequest.behindBase || (below !== undefined && pullRequest.rebasedOn !== toHeadRefOid(below.item));
+}
+
+/**
+ * What a merge of `entry` lands, in order: it alone, or in a stack every open one from the lowest up to it — GitHub
+ * merges "a contiguous group starting from the lowest unmerged pull request" (stacked PRs D11).
+ */
+function getLanding(entry: WorldStackEntry): WorldStackEntry[] {
+    const place = entry.pullRequest.stack;
+    if (!place) {
+        return [entry];
+    }
+
+    return place.stack.entries
+        .slice(0, place.position)
+        .filter(other => !other.item.deleted && other.item.state === 'OPEN');
+}
+
+/** The pull request itself when in a merge queue — in a stack, every one of it there, the lowest first. */
+function getQueuedInStack(entry: WorldStackEntry): WorldStackEntry[] {
+    const all = entry.pullRequest.stack?.stack.entries ?? [entry];
+    return all.filter(other => other.pullRequest.queued);
+}
+
+/** The place of the pull request in its repository's merge queue, from 1. */
+function toQueuePosition(repository: WorldRepository, pullRequest: WorldPullRequest): number {
+    return repository.queue.findIndex(entry => entry.pullRequest === pullRequest) + 1;
+}
+
+function readMergeMethod(value: unknown): PullRequestMergeMethod {
+    switch (value) {
+        case 'MERGE':
+        case 'SQUASH':
+        case 'REBASE':
+            return value;
+        default:
+            throw new Error(`Not a merge method: ${String(value)}`);
+    }
+}
+
+function readText(value: unknown): string | null {
+    return typeof value === 'string' ? value : null;
+}
+
+/** `acme/web` → `acme_web`, for node ids. */
 function slug(text: string) {
     return text.replace(/[^\w]/g, '_');
 }

@@ -1,0 +1,24 @@
+backToMerge:
+  en: Back to the merge
+backToMergeCommand:
+  en: Back to the refused merge
+openOnGitHub:
+  en: Open on GitHub
+requestAccess:
+  en: Request access on GitHub
+merged:
+  en: '{reference} merged into {base}'
+mergedStack:
+  en: '{repository} · {count} pull requests merged into {base}'
+mergedBranchCommand:
+  en: Delete or restore the merged branch
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch
+revert:
+  en: Revert
+reverted:
+  en: '{reference} reverted by #{number}'
+openRevert:
+  en: Open

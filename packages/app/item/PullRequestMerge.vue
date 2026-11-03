@@ -1,130 +1,139 @@
-<!-- Where an opened pull request stands (F1–F4): the verdict in one line — "Can't merge yet", "Ready to merge" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the way to GitHub, where merging happens (D10). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives. Approvals are counted without "of N" (D14). -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. -->
 <script lang="ts" setup>
-import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import type { LucideIcon } from 'lucide-vue-next';
-import {
-  ArrowRight,
-  CircleCheck,
-  CircleDashed,
-  CircleX,
-  FileDiff,
-  GitBranch,
-  GitMerge,
-  GitPullRequestClosed,
-  GitPullRequestDraft,
-  Github,
-  Hourglass,
-} from 'lucide-vue-next';
+import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
+import type { EditFailureReason } from '@/edits/EditTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import { getMergeEnd } from '@/merge/getMergeEnd.js';
+import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
+import { getReasonTitle } from '@/merge/getReasonTitle.js';
+import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import * as l from './PullRequestMerge.loc.js';
+import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
+import { usePullRequestConditions } from './usePullRequestConditions.js';
+import { usePullRequestVerdict } from './usePullRequestVerdict.js';
+import type { PullRequestVerdict } from './usePullRequestVerdict.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
   /** Read with the opened item; the branch's owner comes from it. */
   detail?: PullRequestDetail | null;
+  /**
+   * The viewer may merge it (`EditPermissions.mergePanel`): "Merge…" is offered while it is not being merged; `false`
+   * says they can't, while it is open, not being merged and merges alone. `null` when not known: neither shows.
+   */
+  canMerge?: boolean | null;
+  /**
+   * Its checks counted by whether the base branch requires them, once the merge options are read: the verdict then
+   * weighs only the required ones, as the merge panel does (PM38). `null` until then: the row's summary decides.
+   */
+  checks?: MergeCheckCounts | null;
+  /** What this session knows of its last merge that did not end merged, while it speaks for it (merging D15). */
+  record?: MergeRecord | null;
+  /** Auto-merge may wait for what is not met (`isAutoMergeAllowed`): the verdict's way forward says so, as the panel's does. */
+  autoMergeAllowed?: boolean;
+  /** Its ordinary commands that apply now (merging D16): those of the moment show here, beside the reason (PM38). */
+  commands?: readonly PullRequestCommand[];
 }>();
 
-type Tone = 'danger' | 'done' | 'muted' | 'success' | 'warning';
-
-interface Line {
-  tone: Tone;
-  icon: LucideIcon;
-  text: string;
-  /** Quieter text at the end ("1 approval · pnowak"). */
-  aside?: string | null;
-}
+const emit = defineEmits<{
+  /** "Merge…": the merge panel is wanted. */
+  merge: [];
+  /** One of its ordinary commands, from its button. */
+  command: [command: PullRequestCommand];
+}>();
 
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-const names = new Intl.ListFormat(APP_LANGUAGE);
 
-const standing = computed(() => getPullRequestStanding(props.pr));
-// Ready: approved as "my work" says, or with no review required, and GitHub would merge it now.
-const mergeable = computed(() => {
-  const { pr } = props;
-  const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
-  return (
-    standing.value.readyToMerge || (clean && !pr.isDraft && pr.reviewDecision === null && !standing.value.needsAuthor)
-  );
+const mergeVerdict = usePullRequestVerdict({
+  pr: () => props.pr,
+  checks: () => props.checks ?? null,
+  autoMergeAllowed: () => props.autoMergeAllowed,
 });
+const lines = usePullRequestConditions(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
-
-const verdict = computed((): Line => {
-  const { pr } = props;
-  const now = standing.value;
-  if (pr.merged) {
-    return { tone: 'done', icon: GitMerge, text: t(l.merged) };
+const merging = computed(() => props.pr.merging !== undefined);
+/** How its last merge ended, while it still says something: open, and not being merged again. */
+const ended = computed(() => getMergeEnd(props.record ?? null, props.pr, null));
+const verdict = computed((): PullRequestVerdict => {
+  const record = ended.value;
+  if (!record) {
+    return mergeVerdict.verdict;
   }
 
-  if (pr.state !== 'OPEN') {
-    return { tone: 'danger', icon: GitPullRequestClosed, text: t(l.closedUnmerged) };
-  }
-
-  if (pr.isDraft) {
-    return { tone: 'muted', icon: GitPullRequestDraft, text: t(l.draft), aside: t(l.draftDetail) };
-  }
-
-  if (now.needsAuthor) {
-    const parts: string[] = [];
-    if (now.checksFailing) {
-      parts.push(
-        now.failingChecks > 0 ? t(l.checksFailing, { count: now.failingChecks }) : t(l.checksFailingUncounted),
-      );
+  const look = getMergeEndLook(record.kind);
+  switch (record.kind) {
+    case 'refused': {
+      return { ...look, text: t(l.refused), aside: refusedAside(record.reason) };
     }
-
-    if (now.changesRequested) {
-      parts.push(t(l.changesRequested));
+    case 'methodNotAllowed':
+      return { ...look, text: t(l.refused), aside: t(l.nothingMerged) };
+    case 'headMoved': {
+      const author = record.commit?.author;
+      const aside = author ? t(l.newCommitFrom, { author }) : t(l.newCommit);
+      return { ...look, text: t(l.notMerged), aside };
     }
-
-    if (now.conflicts) {
-      parts.push(t(l.conflicts));
-    }
-
-    return { tone: 'danger', icon: CircleX, text: t(l.cannotMerge), aside: parts.join(' · ') };
+    case 'unknown':
+      return {
+        ...look,
+        text: t(l.outcomeUnknown),
+        aside: record.refusal ? refusedAside(record.refusal) : t(l.notAnswered),
+      };
+    default:
+      return assertNever(record);
+  }
+});
+/** What stands in "Merge…"'s place when it is not offered: waiting for GitHub, or why the viewer can't. */
+const note = computed(() => {
+  if (!open.value || props.pr.merged) {
+    return null;
   }
 
-  if (mergeable.value) {
-    return {
-      tone: 'success',
-      icon: CircleCheck,
-      text: t(l.ready),
-      aside: now.readyToMerge ? t(l.readyDetail) : t(l.readyNoReview),
-    };
+  if (merging.value) {
+    return t(l.waitingForGitHub);
   }
 
-  const parts: string[] = [];
-  if (now.checksRunning) {
-    parts.push(t(l.checksRunning));
+  if (ended.value?.kind === 'unknown') {
+    return t(l.nextRefreshSettles);
   }
 
-  if (now.waitingForReview) {
-    parts.push(t(l.waitingForReview));
+  return props.canMerge === false ? t(l.cannotMerge) : null;
+});
+/** "Merge…" opens the panel, and says the way forward it leads to (PM38). */
+const mergeLabel = computed(() => {
+  if (ended.value && ended.value.kind !== 'unknown') {
+    return t(l.backToMerge);
   }
 
-  if (parts.length === 0) {
-    if (pr.mergeStateStatus === 'BEHIND') {
-      parts.push(t(l.behind, { base: pr.baseRefName }));
-    } else if (pr.mergeStateStatus === 'BLOCKED') {
-      parts.push(t(l.blocked));
-    }
-  }
-
-  return { tone: 'warning', icon: Hourglass, text: t(l.notReady), aside: parts.join(' · ') };
+  return mergeVerdict.forwardTitle;
 });
 
-const conditions = computed((): { label: string; line: Line }[] => [
-  { label: t(l.checks), line: checksLine() },
-  { label: t(l.reviews), line: reviewsLine() },
-  { label: t(l.conflictsLabel), line: conflictsLine() },
+/** Behind, it updates by its own key, no panel needed (PM38), whether or not that is the way forward: something else may hold it too. */
+const updateCommand = computed(() =>
+  !ended.value && props.pr.mergeStateStatus === 'BEHIND'
+    ? (props.commands?.find(command => command.kind === 'updateBranch' && command.method === 'MERGE') ?? null)
+    : null,
+);
+/** What deleting or restoring its branch offers, once its pull request closed (PM26, PM26b). */
+const branchCommand = computed(() =>
+  props.commands?.find(command => command.kind === 'deleteBranch' || command.kind === 'restoreBranch'),
+);
+
+const conditions = computed(() => [
+  { label: t(l.checks), line: lines.checks },
+  { label: t(l.reviews), line: lines.reviews },
+  { label: t(l.conflictsLabel), line: lines.conflicts },
 ]);
 
 const head = computed(() => {
@@ -135,110 +144,27 @@ const head = computed(() => {
 
 const filesUrl = computed(() => `${props.pr.url}/files`);
 
-function checksLine(): Line {
-  const { checks } = props.pr;
-  if (!checks || checks.passing + checks.failing + checks.pending === 0) {
-    return { tone: 'muted', icon: CircleDashed, text: t(l.noChecks) };
+/** Why GitHub refused it, in a few words: GitHub's own title, or the organisation that has not approved githq (G5). */
+function refusedAside(reason: EditFailureReason) {
+  switch (reason.kind) {
+    case 'refused':
+      return getReasonTitle(reason.message) || t(l.nothingMerged);
+    case 'organizationRestricted':
+      return t(l.organizationRestricted, { organization: reason.organization });
+    default:
+      return t(l.nothingMerged);
   }
-
-  if (checks.failing === 0 && checks.pending === 0) {
-    return { tone: 'success', icon: CircleCheck, text: t(l.allPassed, { count: checks.passing }) };
-  }
-
-  const parts: string[] = [];
-  if (checks.failing > 0) {
-    parts.push(t(l.failingCount, { count: numbers.format(checks.failing) }));
-  }
-
-  if (checks.pending > 0) {
-    parts.push(t(l.runningCount, { count: numbers.format(checks.pending) }));
-  }
-
-  if (checks.passing > 0) {
-    parts.push(t(l.passedCount, { count: numbers.format(checks.passing) }));
-  }
-
-  return {
-    tone: checks.failing > 0 ? 'danger' : 'warning',
-    icon: checks.failing > 0 ? CircleX : Hourglass,
-    text: parts.join(', '),
-  };
-}
-
-function reviewsLine(): Line {
-  const { pr } = props;
-  const approvers = authorsOf('APPROVED');
-  const approvals = approvers.length > 0 ? t(l.approvals, { count: approvers.length }) : null;
-  if (standing.value.changesRequested) {
-    return {
-      tone: 'danger',
-      icon: FileDiff,
-      text: t(l.changesRequestedBy, { names: names.format(authorsOf('CHANGES_REQUESTED')) }),
-      aside: approvals && `${approvals} · ${names.format(approvers)}`,
-    };
-  }
-
-  if (standing.value.approved) {
-    return {
-      tone: 'success',
-      icon: CircleCheck,
-      text: t(l.approvedBy, { names: names.format(approvers) }),
-      aside: approvals,
-    };
-  }
-
-  const requested = pr.reviewRequests.map(request => (request.kind === 'user' ? request.login : request.name));
-  if (requested.length > 0) {
-    return {
-      tone: 'warning',
-      icon: Hourglass,
-      text: t(l.waitingFor, { names: names.format(requested) }),
-      aside: approvals,
-    };
-  }
-
-  if (pr.reviewDecision === 'REVIEW_REQUIRED') {
-    return { tone: 'warning', icon: Hourglass, text: t(l.reviewRequired), aside: approvals };
-  }
-
-  return { tone: 'muted', icon: CircleDashed, text: t(l.noReviewRequired), aside: approvals };
-}
-
-function conflictsLine(): Line {
-  const { pr } = props;
-  if (standing.value.conflicts) {
-    return { tone: 'danger', icon: CircleX, text: t(l.conflictsWith, { base: pr.baseRefName }) };
-  }
-
-  if (pr.mergeable === 'UNKNOWN') {
-    return { tone: 'muted', icon: CircleDashed, text: t(l.mergeabilityUnknown) };
-  }
-
-  return { tone: 'success', icon: CircleCheck, text: t(l.noConflicts, { base: pr.baseRefName }) };
-}
-
-function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
-  return mapNotNull(props.pr.latestReviews, review => (review.state === state ? review.author : null));
 }
 </script>
 
 <template>
-  <section :class="[css.pullRequestMerge, css[`pullRequestMerge_${verdict.tone}`]]">
-    <h2 :class="css.pullRequestMerge_verdict">
-      <component
-        :is="verdict.icon"
-        :class="css.pullRequestMerge_verdictIcon"
-        aria-hidden="true"
-      />
-      <span :class="css.pullRequestMerge_verdictTitle">{{ verdict.text }}</span>
-      <span
-        v-if="verdict.aside"
-        :class="css.pullRequestMerge_verdictDetail"
-        >{{ verdict.aside }}</span
-      >
-    </h2>
+  <section :class="css.pullRequestMerge">
+    <PullRequestVerdictLine
+      :verdict="verdict"
+      tag="h2"
+    />
     <dl
-      v-if="open && !pr.isDraft"
+      v-if="open && !pr.isDraft && !merging"
       :class="css.pullRequestMerge_conditions"
     >
       <div
@@ -291,7 +217,41 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        :variant="mergeable && open ? 'light' : 'secondary'"
+        v-if="branchCommand"
+        variant="secondary"
+        size="sm"
+        :icon="GitBranch"
+        :kbd="EDIT_KEYS.branch"
+        :aria-keyshortcuts="EDIT_KEYS.branch"
+        @click="emit('command', branchCommand)"
+      >
+        {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
+      </Button>
+      <Button
+        v-if="updateCommand"
+        variant="secondary"
+        size="sm"
+        :icon="GitPullRequestArrow"
+        :kbd="EDIT_KEYS.updateBranch"
+        :aria-keyshortcuts="EDIT_KEYS.updateBranch"
+        @click="emit('command', updateCommand)"
+      >
+        {{ t(l.updateBranch) }}
+      </Button>
+      <!-- Updating being the way forward, its button above says all "Merge…" would. -->
+      <Button
+        v-if="canMerge && !merging && !(updateCommand && mergeVerdict.forward === 'updateBranch')"
+        :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
+        size="sm"
+        :icon="GitMerge"
+        :kbd="EDIT_KEYS.merge"
+        :aria-keyshortcuts="EDIT_KEYS.merge"
+        @click="emit('merge')"
+      >
+        {{ mergeLabel }}
+      </Button>
+      <Button
+        variant="secondary"
         size="sm"
         :icon="Github"
         :link="pr.url"
@@ -315,7 +275,11 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         {{ t(l.reviewFiles) }}
       </Button>
       <span :class="css.pullRequestMerge_spacer" />
-      <span :class="css.pullRequestMerge_note">{{ t(l.noMerge) }}</span>
+      <span
+        v-if="note"
+        :class="css.pullRequestMerge_note"
+        >{{ note }}</span
+      >
     </div>
   </section>
 </template>
@@ -326,71 +290,6 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
   background: $color-bg-2;
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
-}
-
-.pullRequestMerge_verdict {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-10 $spacing-12;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-normal;
-
-  .pullRequestMerge_danger & {
-    background: rgba($color-red, 0.08);
-  }
-
-  .pullRequestMerge_success & {
-    background: rgba($color-green, 0.08);
-  }
-
-  .pullRequestMerge_warning & {
-    background: rgba($color-amber, 0.08);
-  }
-
-  .pullRequestMerge_done & {
-    background: rgba($color-purple, 0.08);
-  }
-}
-
-.pullRequestMerge_verdictIcon {
-  flex: none;
-  width: 15px;
-  height: 15px;
-
-  .pullRequestMerge_danger & {
-    color: $color-red;
-  }
-
-  .pullRequestMerge_success & {
-    color: $color-green;
-  }
-
-  .pullRequestMerge_warning & {
-    color: $color-amber;
-  }
-
-  .pullRequestMerge_done & {
-    color: $color-purple;
-  }
-
-  .pullRequestMerge_muted & {
-    color: $color-fg-3;
-  }
-}
-
-.pullRequestMerge_verdictTitle {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
-.pullRequestMerge_verdictDetail {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: $color-fg-2;
-  white-space: nowrap;
 }
 
 .pullRequestMerge_conditions {

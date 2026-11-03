@@ -1,0 +1,23 @@
+# Turns auto-merge on (merging D3): GitHub merges once the requirements are met, only while the head is the one the
+# user saw.
+mutation EnablePullRequestAutoMerge(
+    $pullRequestId: ID!
+    $mergeMethod: PullRequestMergeMethod!
+    $commitHeadline: String
+    $commitBody: String
+    $expectedHeadOid: GitObjectID!
+) {
+    enablePullRequestAutoMerge(
+        input: {
+            pullRequestId: $pullRequestId
+            mergeMethod: $mergeMethod
+            commitHeadline: $commitHeadline
+            commitBody: $commitBody
+            expectedHeadOid: $expectedHeadOid
+        }
+    ) {
+        pullRequest {
+            ...PullRequestStatusFields
+        }
+    }
+}

@@ -1,0 +1,6 @@
+# Deletes a pull request's branch (merging D16): GitHub answers nothing of the pull request; what it holds is read apart.
+mutation DeleteRef($refId: ID!) {
+    deleteRef(input: { refId: $refId }) {
+        clientMutationId
+    }
+}
