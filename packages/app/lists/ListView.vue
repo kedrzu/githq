@@ -10,7 +10,8 @@ import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS, usePullRequestCommands } from '@/commands/useEditCommands.js';
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';

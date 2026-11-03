@@ -147,9 +147,11 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly conflicts?: boolean;
     /**
      * Its failing checks that GitHub Actions ran, by their workflow runs' ids; listed by the merge options, none by
-     * default — the failing ones then count, and run outside Actions.
+     * default — the failing ones then only count on the row, as a count gone stale does.
      */
     readonly failedRuns?: readonly number[];
+    /** Its failing checks from outside GitHub Actions, by name; listed by the merge options, none by default. */
+    readonly failedOutsideActions?: readonly string[];
     /** Whose review it asks for (logins). */
     readonly reviewRequests?: readonly string[];
     /**
@@ -470,6 +472,7 @@ interface WorldPullRequest {
     /** Its branch was deleted (`headRef` reads `null`). */
     branchDeleted: boolean;
     readonly failedRuns: readonly number[];
+    readonly failedOutsideActions: readonly string[];
     isDraft: boolean;
     reviewDecision: PullRequestReviewDecision | null;
     readonly failingChecks: number;
@@ -1441,7 +1444,12 @@ export class GitHubWorld {
                     },
                     statusCheckRollup: node.statusCheckRollup && {
                         ...node.statusCheckRollup,
-                        contextPage: { nodes: item.pullRequest.failedRuns.map(toFailedCheckRun) },
+                        contextPage: {
+                            nodes: [
+                                ...item.pullRequest.failedRuns.map(toFailedCheckRun),
+                                ...item.pullRequest.failedOutsideActions.map(toFailedCheckOutsideActions),
+                            ],
+                        },
                     },
                 },
             };
@@ -2414,6 +2422,7 @@ export class GitHubWorld {
         const pullRequest: WorldPullRequest = {
             branchDeleted: false,
             failedRuns: params.failedRuns ?? [],
+            failedOutsideActions: params.failedOutsideActions ?? [],
             isDraft: params.isDraft ?? false,
             reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
             failingChecks: params.failingChecks ?? 0,
@@ -2590,7 +2599,7 @@ export class GitHubWorld {
             ...node,
             ...details,
             commits: { totalCount: 1 },
-            headRepository: { id: `R_${slug(item.repository)}`, nameWithOwner: item.repository },
+            headRepository: { nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
                 contextPage: { totalCount: 0, nodes: [] },
@@ -2660,7 +2669,6 @@ export class GitHubWorld {
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
             headRef: pullRequest.branchDeleted ? null : { id: toHeadRefId(item) },
-            headRepository: { id: `R_${slug(item.repository)}` },
             isCrossRepository: false,
             // Only once its pull request closed (live, #56): false again once it is gone.
             viewerCanDeleteHeadRef: item.state !== 'OPEN' && !pullRequest.branchDeleted,
@@ -3247,6 +3255,16 @@ function toFailedCheckRun(runId: number) {
         completedAt: null,
         isRequired: false,
         checkSuite: { app: { slug: 'github-actions' }, workflowRun: { databaseId: runId, workflow: { name: 'ci' } } },
+    };
+}
+
+function toFailedCheckOutsideActions(name: string) {
+    return {
+        ...toFailedCheckRun(0),
+        id: `CR_${name}`,
+        name,
+        detailsUrl: null,
+        checkSuite: { app: { slug: 'other' }, workflowRun: null },
     };
 }
 

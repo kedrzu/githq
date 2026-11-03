@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 
 import { describe, expect, test } from 'bun:test';
 
-import type { UpdatePullRequestBranchMutation } from '@githq/github/generated.gen.js';
+import type { RepositoryMetadataQuery, UpdatePullRequestBranchMutation } from '@githq/github/generated.gen.js';
 
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -266,12 +266,23 @@ describe('its branch and checks (merging D16)', () => {
     };
 
     /** The pull request as `item` is; GitHub answers a mutation with `answers[operation]`. */
-    async function setupWith(item: PullRequestItem, answers: Record<string, TestGraphQLAnswer>) {
+    async function setupWith(
+        item: PullRequestItem,
+        answers: Record<string, TestGraphQLAnswer>,
+        refusedRuns: readonly number[] = [],
+    ) {
         const session = createTestSession({
             login: `user-${crypto.randomUUID()}`,
             answer: request => answers[request.operation],
-            answerRest: request =>
-                request.operation.endsWith('/rerun-failed-jobs') ? { status: 201, body: {} } : undefined,
+            answerRest: request => {
+                if (!request.operation.endsWith('/rerun-failed-jobs')) {
+                    return undefined;
+                }
+
+                return refusedRuns.some(run => request.operation.includes(`/runs/${run}/`))
+                    ? { status: 403, body: { message: 'This workflow is already running' } }
+                    : { status: 201, body: {} };
+            },
         });
         setIndexedDbPersistence(session.container);
         const items = session.container.resolve(ItemStore);
@@ -305,25 +316,53 @@ describe('its branch and checks (merging D16)', () => {
         expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_1' });
     });
 
-    test('restoring creates the branch at its last head, showing once GitHub made it', async () => {
-        const deleted: PullRequestItem = {
-            ...MERGED,
-            headRefId: null,
-            viewerCanDeleteHeadRef: false,
-            headRefOid: 'last-head',
-            headRefName: 'retry-stripe',
-        };
-        const { editor, items, session } = await setupWith(deleted, {
-            CreateRef: { data: { createRef: { ref: { id: 'REF_NEW' } } } },
+    const DELETED: PullRequestItem = {
+        ...MERGED,
+        headRefId: null,
+        viewerCanDeleteHeadRef: false,
+        headRefOid: 'last-head',
+        headRefName: 'retry-stripe',
+    };
+    // GitHub gives a branch restored the id it had (live, 2026-11-03).
+    const RESTORED: TestGraphQLAnswer = { data: { createRef: { ref: { id: 'REF_1' } } } };
+
+    test('restoring creates the branch at its last head, in the repository as read, showing once GitHub made it', async () => {
+        const { editor, items, session } = await setupWith(DELETED, {
+            RepositoryMetadata: { data: metadataOfWeb() },
+            CreateRef: RESTORED,
         });
 
         const outcome = await editor.edit(['PR_1'], { kind: 'restoreBranch' });
 
         expect(outcome.failed).toEqual([]);
         expect(requests(session, 'CreateRef')).toEqual([
-            { repositoryId: 'R_1', name: 'refs/heads/retry-stripe', oid: 'last-head' },
+            { repositoryId: 'R_web', name: 'refs/heads/retry-stripe', oid: 'last-head' },
         ]);
-        expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_NEW' });
+        expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_1', viewerCanDeleteHeadRef: true });
+    });
+
+    test("restoring where the repository can't be read is a failed edit: nothing is sent", async () => {
+        const { editor, session } = await setupWith(DELETED, {});
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'restoreBranch' });
+
+        expect(outcome.failed.map(({ edit }) => edit.subject.kind)).toEqual(['branchRestored']);
+        expect(requests(session, 'CreateRef')).toEqual([]);
+    });
+
+    test('deleted, then restored: the delete still drawn, it shows there and deletes again', async () => {
+        const { editor, items } = await setupWith(MERGED, {
+            DeleteRef: { data: { deleteRef: { clientMutationId: null } } },
+            RepositoryMetadata: { data: metadataOfWeb() },
+            CreateRef: RESTORED,
+        });
+
+        await editor.edit(['PR_1'], { kind: 'deleteBranch' });
+        expect(items.get('PR_1')).toMatchObject({ headRefId: null, viewerCanDeleteHeadRef: false });
+        const outcome = await editor.edit(['PR_1'], { kind: 'restoreBranch' });
+
+        expect(outcome.failed).toEqual([]);
+        expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_1', viewerCanDeleteHeadRef: true });
     });
 
     test("nothing is sent where it wouldn't work: a delete of a branch gone, a restore of one there", async () => {
@@ -413,7 +452,81 @@ describe('its branch and checks (merging D16)', () => {
         expect(outcome.failed.map(({ reason }) => reason)).toEqual([{ kind: 'notActions' }]);
         expect(session.github.requests.some(request => request.operation.startsWith('POST'))).toBe(false);
     });
+
+    test('nothing failing any more isn\'t "outside Actions": nothing is sent, and it says so', async () => {
+        const { editor, session } = await setupWith(samplePullRequest('PR_1'), {
+            PullRequestMergeOptions: optionsWith([]),
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(outcome.failed.map(({ reason }) => reason)).toEqual([{ kind: 'nothingFailed' }]);
+        expect(session.github.requests.some(request => request.operation.startsWith('POST'))).toBe(false);
+    });
+
+    test('a pull request GitHub doesn\'t show isn\'t "outside Actions" either', async () => {
+        const { editor } = await setupWith(samplePullRequest('PR_1'), {
+            PullRequestMergeOptions: { data: { node: null } },
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(outcome.failed.map(({ reason }) => reason)).toEqual([{ kind: 'dropped' }]);
+    });
+
+    test('a run GitHub refuses stops none of the others: the edit stands, the refusal reported', async () => {
+        const { editor, session } = await setupWith(
+            samplePullRequest('PR_1'),
+            { PullRequestMergeOptions: optionsWith([failedRun('a', 7), failedRun('b', 8)]) },
+            [7],
+        );
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(session.github.requests.filter(request => request.operation.startsWith('POST'))).toHaveLength(2);
+        expect(outcome.failed.map(({ edit, reason }) => [edit.subject.kind, reason.kind])).toEqual([
+            ['checksRerun', 'refused'],
+        ]);
+    });
+
+    test('every run refused is a failed edit, each still asked', async () => {
+        const { editor, session } = await setupWith(
+            samplePullRequest('PR_1'),
+            { PullRequestMergeOptions: optionsWith([failedRun('a', 7), failedRun('b', 8)]) },
+            [7, 8],
+        );
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(session.github.requests.filter(request => request.operation.startsWith('POST'))).toHaveLength(2);
+        expect(outcome.failed.map(({ reason }) => reason.kind)).toEqual(['refused']);
+    });
 });
+
+/** `acme/web`, as restoring reads it for its node id. */
+function metadataOfWeb(): RepositoryMetadataQuery {
+    return {
+        repository: {
+            id: 'R_web',
+            nameWithOwner: 'acme/web',
+            viewerPermission: 'WRITE',
+            isArchived: false,
+            hasIssuesEnabled: true,
+            mergeCommitAllowed: true,
+            squashMergeAllowed: true,
+            rebaseMergeAllowed: true,
+            viewerDefaultMergeMethod: 'MERGE',
+            autoMergeAllowed: false,
+            deleteBranchOnMerge: false,
+            viewerDefaultCommitEmail: null,
+            viewerPossibleCommitEmails: [],
+            labels: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] },
+            milestones: { totalCount: 0, nodes: [] },
+            assignableUsers: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] },
+            issueTypes: { nodes: [] },
+        },
+    };
+}
 
 /** The status fields GitHub answers, its update time the row's: neither the queue nor checks move it (live). */
 function statusUnmoved(fields: Record<string, unknown>) {

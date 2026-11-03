@@ -249,3 +249,7 @@ reasonNotActions:
   en: "None of the checks that failed runs on GitHub Actions: re-run them where they run."
 shortNotActions:
   en: not on GitHub Actions
+reasonNothingFailed:
+  en: 'No check is failing any more: there is nothing to re-run.'
+shortNothingFailed:
+  en: nothing failing

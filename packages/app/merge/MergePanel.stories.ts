@@ -13,6 +13,7 @@ import MergePanel from './MergePanel.vue';
 import type {
     MergeOptions,
     MergeRecord,
+    MergeAdvancing,
     MergeStep,
     MergeSubmission,
     PullRequestCommand,
@@ -137,7 +138,7 @@ const Harness = defineComponent({
         /** The pull request once the step asked for is done; `null` for it as it was. */
         stepped: { type: Object as PropType<PullRequestItem | null>, default: null },
         /** A step asked for before, still on its way. */
-        advancing: { type: String as PropType<MergeStep | null>, default: null },
+        advancing: { type: String as PropType<MergeAdvancing | null>, default: null },
         viewerLogin: { type: String as PropType<string | null>, default: null },
         /** Its ordinary commands that apply. */
         commands: { type: Array as PropType<readonly PullRequestCommand[]>, default: () => [] },
@@ -150,7 +151,7 @@ const Harness = defineComponent({
         const alreadyMerged = ref(false);
         const options = shallowRef(props.options);
         const sending = ref(false);
-        const advancing = ref<MergeStep | null>(props.advancing);
+        const advancing = ref<MergeAdvancing | null>(props.advancing);
         const current = shallowRef(props.pr);
 
         return () =>
@@ -224,6 +225,10 @@ const Harness = defineComponent({
                         if (step !== 'resolveConflicts') {
                             advancing.value = step;
                         }
+                    },
+                    onCommand: (command: PullRequestCommand) => {
+                        sent.value = `Command: ${command.kind === 'updateBranch' ? `updateBranch ${command.method}` : command.kind}`;
+                        advancing.value = command.kind;
                     },
                     onEnableAutoMerge: (submission: MergeSubmission) => {
                         sent.value = `Enable: ${JSON.stringify(submission.request)}`;
@@ -614,6 +619,18 @@ export const Behind: Story = {
             { kind: 'updateBranch', method: 'MERGE' },
             { kind: 'updateBranch', method: 'REBASE' },
         ],
+    },
+};
+
+/**
+ * PM20: behind main with a required check failed — a pull request reads so (live, 2026-11-03). ⌘↵ stays what the verdict
+ * says, nothing here; `U` and `⇧U` update all the same.
+ */
+export const BehindRequiredFailed: Story = {
+    args: {
+        ...Behind.args,
+        pr: { ...PR, mergeStateStatus: 'BEHIND', checks: { state: 'FAILURE', passing: 7, failing: 2, pending: 0 } },
+        options: RequiredFailed.args?.options,
     },
 };
 

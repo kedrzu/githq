@@ -1,3 +1,4 @@
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { expect, test } from '../fixtures.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
@@ -47,13 +48,25 @@ test('⇧E: failed checks re-run from the list, once per run', async ({ page, gi
 });
 
 test('⇧E outside GitHub Actions: nothing is sent, and it says why', async ({ page, github }) => {
+    const sample = createSampleMergeableWork({ first: { failingChecks: 1, failedOutsideActions: ['vercel'] } });
+    const { myWork } = await openMyWork(page, github, sample.world);
+    await selectRow(myWork, FIRST_TITLE);
+
+    await page.keyboard.press('Shift+E');
+
+    await expect(
+        new AppShellHarness(page).toasts.getByText('None of the checks that failed runs on GitHub Actions'),
+    ).toBeVisible();
+});
+
+test('⇧E with a row older than the checks: nothing is failing any more, and it says so', async ({ page, github }) => {
     const sample = createSampleMergeableWork({ first: { failingChecks: 1 } });
     const { myWork } = await openMyWork(page, github, sample.world);
     await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+E');
 
-    await expect(page.getByText('None of the checks that failed runs on GitHub Actions')).toBeVisible();
+    await expect(new AppShellHarness(page).toasts.getByText('there is nothing to re-run')).toBeVisible();
 });
 
 test('PM34: a merge confirmed after moving on offers ⌥D, on the pull request merged, not the row selected (D15)', async ({
@@ -63,6 +76,7 @@ test('PM34: a merge confirmed after moving on offers ⌥D, on the pull request m
     const sample = createSampleMergeableWork();
     const { myWork } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
+    const { toasts } = new AppShellHarness(page);
     await selectRow(myWork, FIRST_TITLE);
     const land = sample.world.holdMerges();
 
@@ -72,8 +86,8 @@ test('PM34: a merge confirmed after moving on offers ⌥D, on the pull request m
     await expect(panel.root).toBeHidden();
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     land();
-    await expect(page.getByText('acme/web#15 merged into main', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^Delete branch/u })).toBeVisible();
+    await expect(toasts.getByText('acme/web#15 merged into main', { exact: true })).toBeVisible();
+    await expect(toasts.getByRole('button', { name: /^Delete branch/u })).toBeVisible();
 
     await page.keyboard.press('Alt+d');
 
@@ -81,10 +95,11 @@ test('PM34: a merge confirmed after moving on offers ⌥D, on the pull request m
     expect(await myWork.selectedRow.textContent()).toContain(SECOND_TITLE);
 });
 
-test('PM34: "Revert…" opens a new pull request, and its toast leads to it', async ({ page, github }) => {
+test('PM34: "Revert" opens a new pull request, and its toast leads to it', async ({ page, github }) => {
     const sample = createSampleMergeableWork();
     const { myWork } = await openMyWork(page, github, sample.world);
     const panel = new MergePanelHarness(page);
+    const { toasts } = new AppShellHarness(page);
     await selectRow(myWork, FIRST_TITLE);
     const land = sample.world.holdMerges();
 
@@ -93,11 +108,11 @@ test('PM34: "Revert…" opens a new pull request, and its toast leads to it', as
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     land();
-    await page.getByRole('button', { name: /^Revert…/u }).click();
+    await toasts.getByRole('button', { name: /^Revert/u }).click();
 
-    await expect(page.getByText('acme/web#15 reverted by #17')).toBeVisible();
+    await expect(toasts.getByText('acme/web#15 reverted by #17')).toBeVisible();
     expect(getOperationCalls(github, 'RevertPullRequest')).toEqual([{ pullRequestId: sample.first }]);
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await toasts.getByRole('button', { name: 'Open', exact: true }).click();
     await expect(page).toHaveURL(/\/acme\/web\/pull\/17$/u);
 });
 
@@ -114,7 +129,7 @@ test('the palette offers only what applies: a pull request behind updates, and n
 
     await expect(menu.option(/^Update branch by rebase/u)).toBeVisible();
     await expect(menu.option(/^Delete branch/u)).toBeHidden();
-    await expect(menu.option(/^Revert…/u)).toBeHidden();
+    await expect(menu.option(/^Revert/u)).toBeHidden();
     await expect(menu.option(/^Take out of queue/u)).toBeHidden();
 });
 

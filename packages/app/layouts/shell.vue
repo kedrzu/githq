@@ -91,7 +91,9 @@ provideContext(MergeContext, {
   getRecord: id => mergePanel.getRecord(id),
   getCommands: id => {
     const item = details.getItem(id);
-    return item?.kind === 'pullRequest' ? getPullRequestCommands(item, editor.getPermissions(item)) : [];
+    return item?.kind === 'pullRequest'
+      ? getPullRequestCommands({ pr: item, permissions: editor.getPermissions(item), items: items.all })
+      : [];
   },
   run: (id, command) => {
     const item = details.getItem(id);

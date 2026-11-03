@@ -13,11 +13,10 @@ import Toast from '@/components/Toast.vue';
 import type { EditFailure } from '@/edits/EditQueue.js';
 import { EditQueue } from '@/edits/EditQueue.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
-import { getItemPagePath } from '@/item/itemRoutes.js';
+import { getItemPagePath, parseItemUrl } from '@/item/itemRoutes.js';
 import { Browser } from '@/services/Browser.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
-import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { isMergeFailure } from './isMergeFailure.js';
 import { MergeContext } from './MergeContext.js';
@@ -114,13 +113,15 @@ function runBranch(confirmation: MergeConfirmation) {
   }
 }
 
-/** The new pull request's own page in githq; the toast goes. */
+/** The new pull request's own page in githq, or GitHub's for an address githq can't read; the toast goes. */
 function openRevert(revert: MergeRevert) {
-  const repository = revert.reference.slice(0, revert.reference.lastIndexOf('#'));
+  const reference = parseItemUrl(revert.opened.url);
   store.dismissRevert(revert.id);
-  void router.push(
-    getItemPagePath({ ...parseRepositoryName(repository), number: revert.opened.number }, 'pullRequest'),
-  );
+  if (reference) {
+    void router.push(getItemPagePath(reference, 'pullRequest'));
+  } else {
+    browser.openInNewTab(revert.opened.url);
+  }
 }
 
 /** The latest refusal showing that leads back to the panel. */

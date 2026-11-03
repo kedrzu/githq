@@ -118,16 +118,10 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
         addToProject: true,
         mergePanel,
         merge: mergePanel && !merging,
-        deleteBranch: pr !== null && pr.state !== 'OPEN' && pr.headRefId !== null && pr.viewerCanDeleteHeadRef,
-        restoreBranch:
-            write &&
-            pr !== null &&
-            pr.state !== 'OPEN' &&
-            pr.headRefId === null &&
-            !pr.isCrossRepository &&
-            pr.headRepositoryId !== null,
+        deleteBranch: pr !== null && !isOpenPullRequest(pr) && pr.headRefId !== null && pr.viewerCanDeleteHeadRef,
+        restoreBranch: write && pr !== null && !isOpenPullRequest(pr) && pr.headRefId === null && !pr.isCrossRepository,
         revert: write && merged,
-        rerunChecks: write && pr !== null && pr.state === 'OPEN',
+        rerunChecks: write && pr !== null && isOpenPullRequest(pr),
     };
 }
 

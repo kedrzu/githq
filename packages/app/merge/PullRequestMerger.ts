@@ -98,7 +98,7 @@ export const PullRequestMerger = defineService({
 
         /**
          * Opens the pull request reverting a merged one, as an edit with its failure toast: nothing shows until GitHub made
-         * it. Resolves with it; `null` when it wasn't made, or the user may not.
+         * it. Resolves with it; `null` when it wasn't made, the user may not, or the account changed meanwhile.
          */
         async function revert(item: PullRequestItem): Promise<RevertedPullRequest | null> {
             const account = accounts.current;
@@ -116,7 +116,7 @@ export const PullRequestMerger = defineService({
                 account,
                 itemCount: 1,
             });
-            return opened;
+            return accounts.isCurrent(account) ? opened : null;
         }
 
         /**

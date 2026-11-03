@@ -9,7 +9,15 @@ import { sampleStack, sampleStackDescription, SAMPLE_STACKS } from '@/testing/sa
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
+import type {
+    MergeAdvancing,
+    MergeOptions,
+    MergeRecord,
+    MergeStep,
+    MergeSubmission,
+    PullRequestCommand,
+    SentMerge,
+} from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
 import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
@@ -88,7 +96,7 @@ const Harness = defineComponent({
         const record = shallowRef(props.record);
         const movedEnd = shallowRef<number | null | undefined>(undefined);
         const sending = ref(false);
-        const advancing = ref<MergeStep | null>(null);
+        const advancing = ref<MergeAdvancing | null>(null);
 
         const description = computed(() => sampleStackDescription(members.value));
         const merge = computed(() =>
@@ -211,6 +219,10 @@ const Harness = defineComponent({
                         onStep: (step: MergeStep) => {
                             sent.value = `Step: ${step}`;
                             advancing.value = step;
+                        },
+                        onCommand: (command: PullRequestCommand) => {
+                            sent.value = `Command: ${command.kind}`;
+                            advancing.value = command.kind;
                         },
                         viewerLogin: first.author?.login ?? null,
                         onVisit: (url: string) => (sent.value = `Visit: ${url}`),

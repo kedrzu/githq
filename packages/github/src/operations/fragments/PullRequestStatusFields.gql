@@ -22,11 +22,8 @@ fragment PullRequestStatusFields on PullRequest {
     # The commit a merge names (`sha`), so GitHub refuses it when the head moved since.
     headRefOid
     baseRefOid
-    # The branch's follow-ups (merging D16): `headRef` is gone once it is deleted, and restoring it needs its repository.
+    # The branch's follow-ups (merging D16): `headRef` is gone once it is deleted.
     headRef {
-        id
-    }
-    headRepository {
         id
     }
     isCrossRepository

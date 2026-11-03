@@ -132,6 +132,8 @@ export type EditFailureReason =
     | { readonly kind: 'notReached' }
     /** Never sent: none of the checks that failed runs on GitHub Actions, and only those re-run from here (merging D16). */
     | { readonly kind: 'notActions' }
+    /** Never sent: none of its checks fails any more, whatever the row said, so there is nothing to re-run (merging D16). */
+    | { readonly kind: 'nothingFailed' }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 

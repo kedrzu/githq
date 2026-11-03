@@ -28,6 +28,7 @@ import { toDetailProject, toDetailReviewRequests, toItemComment } from '@/store/
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import type { CloseReason, Edit, EditRequest, EditSubject, EditVerdict, ItemEditRequest } from './EditTypes.js';
+import { toEditFailureReason } from './toEditFailureReason.js';
 import { getProjectItemValueLayer, sendProjectFieldValue, toFieldValue, withValue } from './projectFieldValues.js';
 
 /** What {@link createItemEdits} turns a request into edits of. */
@@ -138,9 +139,15 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 ? [createDeleteBranchEdit(item, item.headRefId)]
                 : [];
         case 'restoreBranch':
-            return item.kind === 'pullRequest' && item.headRefId === null && item.headRepositoryId !== null
-                ? [createRestoreBranchEdit(item, item.headRepositoryId)]
-                : [];
+            if (item.kind !== 'pullRequest' || item.headRefId !== null) {
+                return [];
+            }
+
+            return [
+                params.metadata
+                    ? createRestoreBranchEdit(item, params.metadata.id)
+                    : failed(item, { kind: 'branchRestored' }),
+            ];
         case 'rerunFailedChecks':
             return item.kind === 'pullRequest' ? [createRerunChecksEdit(item)] : [];
         default:
@@ -703,7 +710,9 @@ function createDequeueEdit(item: PullRequestItem): Edit {
 
 /**
  * Deletes its branch, showing gone at once. GitHub answers nothing of the pull request, so whoever asked reads it again;
- * until then the branch stays drawn gone, unless the read holds another (restored by someone since).
+ * until then the branch stays drawn gone, unless the read holds another. A branch restored keeps its id (live,
+ * 2026-11-03), so a read can't tell it from one older than the delete: restored on github.com while the layer lives, it
+ * may draw as gone until the layer ends (merging D16). Restored from here, the restore's own layer draws over this one.
  */
 function createDeleteBranchEdit(item: PullRequestItem, refId: string): Edit {
     return {
@@ -727,7 +736,10 @@ function withoutHeadRef(item: Item): Item {
     return item.kind === 'pullRequest' ? { ...item, headRefId: null, viewerCanDeleteHeadRef: false } : item;
 }
 
-/** Creates its branch again at its last head commit; it shows once GitHub made it, with the new branch's id. */
+/**
+ * Creates its branch again at its last head commit. It shows once GitHub made it, with the id it had before (live,
+ * 2026-11-03), and it deletes again.
+ */
 function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): Edit {
     return {
         ...base(item, { kind: 'branchRestored' }),
@@ -747,7 +759,10 @@ function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): E
             return {
                 kind: 'confirmed',
                 layer: {
-                    item: current => (current.kind === 'pullRequest' ? { ...current, headRefId: ref.id } : current),
+                    item: current =>
+                        current.kind === 'pullRequest'
+                            ? { ...current, headRefId: ref.id, viewerCanDeleteHeadRef: true }
+                            : current,
                 },
             };
         },
@@ -756,31 +771,60 @@ function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): E
 
 /**
  * Re-runs the workflow runs of its checks that failed, as read now: rows don't hold them, and a run re-run since must not
- * be asked for again. Nothing is drawn: whoever asked reads it again. With no such run — checks from outside Actions —
- * nothing is sent, and the failure says so.
+ * be asked for again. Nothing is drawn: whoever asked reads it again. With nothing failing any more, or no such run —
+ * checks from outside Actions — nothing is sent, and the failure says which. Every run is asked: GitHub refuses one still
+ * going, which says nothing of the others, so only all refused fails the edit.
  */
 function createRerunChecksEdit(item: PullRequestItem): Edit {
+    const subject: EditSubject = { kind: 'checksRerun' };
+    const { itemId, reference } = base(item, subject);
     return {
-        ...base(item, { kind: 'checksRerun' }),
+        ...base(item, subject),
         optimistic: UNCHANGED,
         send: async ({ sdk, rest }) => {
             // The protection of the base branch is not readable without admin rights: the checks are.
             const { node } = await sdk.PullRequestMergeOptions({ id: item.id }, { onPartialErrors: () => undefined });
-            const runs = new Set(
-                (toMergeOptions(node)?.checks ?? []).flatMap(check =>
-                    check.state === 'failing' && check.workflowRunId !== null ? [check.workflowRunId] : [],
-                ),
-            );
+            const options = toMergeOptions(node);
+            if (!options) {
+                return dropped();
+            }
+
+            const failing = options.checks.filter(check => check.state === 'failing');
+            if (failing.length === 0) {
+                return { kind: 'rejected', reason: { kind: 'nothingFailed' } };
+            }
+
+            const runs = new Set(failing.flatMap(check => (check.workflowRunId === null ? [] : [check.workflowRunId])));
             if (runs.size === 0) {
                 return { kind: 'rejected', reason: { kind: 'notActions' } };
             }
 
             const repository = parseRepositoryName(item.repository.nameWithOwner);
+            const refusals: unknown[] = [];
             for (const runId of runs) {
-                await rerunFailedJobs(rest, { ...repository, runId });
+                try {
+                    await rerunFailedJobs(rest, { ...repository, runId });
+                } catch (error) {
+                    refusals.push(error);
+                }
             }
 
-            return { kind: 'confirmed', layer: UNCHANGED };
+            if (refusals.length === runs.size) {
+                throw refusals[0];
+            }
+
+            return {
+                kind: 'confirmed',
+                layer: UNCHANGED,
+                partial:
+                    refusals.length > 0
+                        ? {
+                              itemId,
+                              reference,
+                              failed: refusals.map(error => ({ subject, reason: toEditFailureReason(error) })),
+                          }
+                        : undefined,
+            };
         },
     };
 }
@@ -800,7 +844,8 @@ function confirmedAutoMerge(answer: PullRequestStatusFieldsFragment) {
     );
 }
 
-function base(item: Item, subject: EditSubject) {
+/** What every edit of an item says of it: which it is, as named to the user, and what changes. */
+export function base(item: Item, subject: EditSubject) {
     return { itemId: item.id, reference: `${item.repository.nameWithOwner}#${item.number}`, subject };
 }
 
@@ -809,7 +854,8 @@ function failed(item: Item, subject: EditSubject): Edit {
     return { ...base(item, subject), optimistic: UNCHANGED, failure: { kind: 'missing' } };
 }
 
-function dropped(): EditVerdict {
+/** GitHub answered without the change: it silently drops what the user may not do (D14). */
+export function dropped(): EditVerdict {
     return { kind: 'rejected', reason: { kind: 'dropped' } };
 }
 

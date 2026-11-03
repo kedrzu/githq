@@ -1,6 +1,6 @@
 <!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known; GitHub out of reach before anything was sent, that nothing was, and ⌘↵ tries again. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). Past what isn't met, for a viewer GitHub says may: a line of its own above the footer lists it, as read for the head it would name, and `⌥⌘↵` alone merges — never `⌘↵` (D12, PM12a) — in a stack only its first open pull request (SP55). A commit email to choose, where GitHub offers one, is a line of its own: `Y` moves to the next (PM6). A stack on a merge queue's branch reads ready for the queue, with no method or text to choose, and enters as one group (SP53); in the queue each one says its own position, the verdict the first one's, and it leaves whole; with no entry it is a stack like any (SP54). -->
 <script lang="ts" setup>
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
+import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -80,6 +80,7 @@ import MergeChecks from './MergeChecks.vue';
 import MergeCondition from './MergeCondition.vue';
 import * as l from './MergePanel.loc.js';
 import type {
+  MergeAdvancing,
   MergeCommitText,
   MergeOptions,
   MergeRecord,
@@ -132,10 +133,10 @@ const props = defineProps<{
   /** Its ordinary commands that apply now (merging D16): those of the moment show beside their reason (PM20, PM26). */
   commands?: readonly PullRequestCommand[];
   /**
-   * The step towards the merge asked for from the panel — marking it ready, updating its branch — until GitHub
-   * answered and the panel's read came back: the primary stays that step's, busy, meanwhile.
+   * The step towards the merge or the command asked for from the panel — marking it ready, updating its branch — until
+   * GitHub answered and the panel's read came back: the primary stays that step's, busy, meanwhile.
    */
-  advancing: MergeStep | null;
+  advancing: MergeAdvancing | null;
   /** Epoch ms a running check's time is counted to. */
   now: number;
   /**
@@ -152,7 +153,9 @@ const emit = defineEmits<{
   /** `⌘↵` or the primary: merge as shown. */
   merge: [submission: MergeSubmission];
   /** `⌘↵` or the primary where it can't merge yet: the step towards the merge (merging D12); or a step with a key of its own. */
-  step: [step: Exclude<MergeStep, 'enableAutoMerge'>];
+  step: [step: Exclude<MergeStep, 'enableAutoMerge' | 'updateBranch'>];
+  /** One of its ordinary commands (merging D16): updating its branch, also as `⌘↵` where that is the way forward. */
+  command: [command: PullRequestCommand];
   /** `⌘↵` or the primary where auto-merge may wait for what isn't met: on, with the method and text as shown (PM10). */
   enableAutoMerge: [submission: MergeSubmission];
   /** `⌥⌘↵` or its button: past what isn't met, the pull request `pr` alone (D12, PM12a, SP55). */
@@ -401,15 +404,8 @@ const mergesNow = computed(() => {
 
   return !merging.value && !outcomeUnknown.value && forwardMerges.value;
 });
-/**
- * The step ⌘↵ takes instead of merging: the one asked for until it is done, else the way forward where it can't
- * merge yet (D12). `null` where it merges, or nothing is left to do.
- */
-const step = computed((): MergeStep | null => {
-  if (props.advancing) {
-    return props.advancing;
-  }
-
+/** The way forward where it can't merge yet (D12): what ⌘↵ takes instead. `null` where it merges, or nothing is left to do. */
+const forwardStep = computed((): MergeStep | null => {
   if (stackSays.value) {
     return stackSays.value.forward.kind === 'markReady' ? 'markReady' : null;
   }
@@ -417,6 +413,8 @@ const step = computed((): MergeStep | null => {
   const forward = merging.value || outcomeUnknown.value ? null : standing.forward;
   return forward === 'merge' || forward === 'enqueue' ? null : forward;
 });
+/** What the panel speaks of instead of merging: what was asked for until it is done, else the way forward. */
+const step = computed((): MergeAdvancing | null => props.advancing ?? forwardStep.value);
 /**
  * Where the way forward ends in a merge — not for a draft or conflicts (PM19, PM21) — or auto-merge is on, the merge on
  * its way (PM11): the method and the text show.
@@ -509,7 +507,7 @@ const verdict = computed((): PanelVerdict => {
   }
 
   // The panel stays, and merging comes back when GitHub says so (PM20).
-  if (props.advancing === 'updateBranch' || props.advancing === 'updateBranchByRebase') {
+  if (props.advancing === 'updateBranch') {
     const aside = t(l.updatingDetail, { base: props.pr.baseRefName });
     return { kind: 'ready', tone: 'warning', icon: RefreshCw, text: t(l.updating), aside };
   }
@@ -612,7 +610,7 @@ const stepButton = computed((): StepButton | null => {
     case 'disableAutoMerge':
     case 'jumpQueue':
     case 'dequeue':
-    case 'updateBranchByRebase':
+    case 'rerunFailedChecks':
     case 'deleteBranch':
     case 'restoreBranch':
     case 'revert':
@@ -623,10 +621,13 @@ const stepButton = computed((): StepButton | null => {
   }
 });
 const conflictsUrl = computed(() => getConflictEditorUrl(props.pr));
-/** Behind and nothing on its way, `⇧U` updates by rebase beside the reason, and `U` as `⌘↵` does (PM20, PM40). */
+/**
+ * Behind and nothing on its way, `⇧U` updates by rebase beside the reason, and `U` by a merge (PM20, PM40), whether or not
+ * updating is the way forward: something else may hold it too, as a failed required check.
+ */
 const canUpdate = computed(
   () =>
-    step.value === 'updateBranch' &&
+    props.pr.mergeStateStatus === 'BEHIND' &&
     props.allowed &&
     props.advancing === null &&
     !props.sending &&
@@ -650,7 +651,7 @@ const mergedBranch = computed(() => {
     label: t(l.restoreBranch),
   };
 });
-/** "Revert…" of one merged pull request (PM26). */
+/** "Revert" of one merged pull request (PM26). */
 const canRevert = computed(() => !props.stack && (props.commands ?? []).some(command => command.kind === 'revert'));
 /** PM15: where it is in the queue, and GitHub's state with who put it there. */
 const queueLines = computed((): ConditionLine[] => {
@@ -1253,7 +1254,8 @@ function refusalBand(reason: EditFailureReason): Band {
     case 'offline':
     case 'dropped':
     case 'missing':
-    case 'notActions': // Re-running checks' alone: a merge never meets it.
+    case 'notActions': // Re-running checks' alone, as the next: a merge never meets them.
+    case 'nothingFailed':
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonOther), text: null, link: null };
     default:
       return assertNever(reason);
@@ -1397,11 +1399,13 @@ function goForward() {
     return;
   }
 
-  const next = step.value;
-  if (next === null) {
+  const next = forwardStep.value;
+  if (step.value === null) {
     send();
-  } else if (props.allowed && props.advancing === null && !props.sending) {
-    if (next !== 'enableAutoMerge') {
+  } else if (next !== null && props.allowed && props.advancing === null && !props.sending) {
+    if (next === 'updateBranch') {
+      emit('command', { kind: 'updateBranch', method: 'MERGE' });
+    } else if (next !== 'enableAutoMerge') {
       emit('step', next);
     } else if (method.value !== null) {
       // PM10: on with the method chosen now, and only the text edited: GitHub writes its own otherwise (D6).
@@ -1445,9 +1449,9 @@ function stepIfOffered(kind: 'deleteBranch' | 'restoreBranch') {
 }
 
 /** `U` and `⇧U` beside "Behind" (PM20). */
-function update(next: 'updateBranch' | 'updateBranchByRebase') {
+function update(updateMethod: PullRequestBranchUpdateMethod) {
   if (canUpdate.value) {
-    emit('step', next);
+    emit('command', { kind: 'updateBranch', method: updateMethod });
   }
 }
 
@@ -1455,19 +1459,19 @@ function update(next: 'updateBranch' | 'updateBranchByRebase') {
 function takeBranchStep() {
   const next = mergedBranch.value?.step;
   if (next && props.advancing === null) {
-    emit('step', next);
+    emit('command', { kind: next });
   }
 }
 
 function revert() {
   if (canRevert.value && props.advancing === null) {
-    emit('step', 'revert');
+    emit('command', { kind: 'revert' });
   }
 }
 
 function takeOutOfQueue() {
   if (props.allowed && props.advancing === null) {
-    emit('step', 'dequeue');
+    emit('command', { kind: 'dequeue' });
   }
 }
 
@@ -1578,10 +1582,10 @@ function onKeydown(event: KeyboardEvent) {
     takeOutOfQueue();
   } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranch)) {
     event.preventDefault();
-    update('updateBranch');
+    update('MERGE');
   } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranchByRebase)) {
     event.preventDefault();
-    update('updateBranchByRebase');
+    update('REBASE');
   } else if (mergedBranch.value?.step && matchesCommandKey(event, EDIT_KEYS.branch)) {
     event.preventDefault();
     takeBranchStep();
@@ -1758,7 +1762,7 @@ function onOpenFocus(event: Event) {
               size="sm"
               :kbd="EDIT_KEYS.updateBranchByRebase"
               :aria-keyshortcuts="EDIT_KEYS.updateBranchByRebase"
-              @click="update('updateBranchByRebase')"
+              @click="update('REBASE')"
               >{{ t(l.updateByRebase) }}</Button
             >
           </MergeCondition>

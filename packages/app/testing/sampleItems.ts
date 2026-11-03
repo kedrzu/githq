@@ -62,7 +62,6 @@ export function samplePullRequest(id: string): PullRequestItem {
         stack: null,
         behindBase: false,
         headRefId: `REF_${id}`,
-        headRepositoryId: 'R_1',
         isCrossRepository: false,
         viewerCanDeleteHeadRef: false,
         isMergeQueueEnabled: false,

@@ -4,9 +4,11 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
 
+import { createPromise } from '@nzyme/utils/createPromise.js';
+
 import { ItemStore } from '@/store/ItemStore.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
-import type { TestGraphQLAnswer } from '@/testing/createTestSession.js';
+import type { TestGraphQLAnswer, TestRestAnswer } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -32,10 +34,22 @@ function member(id: string, position: number): PullRequestItem {
     };
 }
 
-async function setup(rows: readonly PullRequestItem[], answers: Record<string, TestGraphQLAnswer>) {
+const BEHIND: PullRequestItem = { ...samplePullRequest('PR_1'), mergeStateStatus: 'BEHIND' };
+const UPDATED: TestGraphQLAnswer = {
+    data: { updatePullRequestBranch: { pullRequest: { id: 'PR_1' } } },
+};
+/** Longer than an update's head is waited for. */
+const PAST_THE_WAIT_MS = 31_000;
+
+async function setup(
+    rows: readonly PullRequestItem[],
+    answers: Record<string, TestGraphQLAnswer>,
+    answerRest?: () => TestRestAnswer,
+) {
     const session = createTestSession({
         login: `user-${crypto.randomUUID()}`,
         answer: request => answers[request.operation],
+        answerRest,
     });
     setIndexedDbPersistence(session.container);
     const items = session.container.resolve(ItemStore);
@@ -81,6 +95,91 @@ test('reverting says where the new pull request is, for its toast, and on the pu
             opened: { number: 59, url: 'https://github.com/a/b/pull/59' },
         }),
     ]);
+});
+
+test('U and ⇧U are one update: none is sent while one is on its way, and until its head moved, then it may be', async () => {
+    const { commands, session } = await setup([BEHIND], { UpdatePullRequestBranch: UPDATED });
+
+    const first = commands.run(BEHIND, { kind: 'updateBranch', method: 'MERGE' });
+    expect(await commands.run(BEHIND, { kind: 'updateBranch', method: 'MERGE' })).toBe(false);
+
+    // GitHub answered: waiting for the new head.
+    await session.clock.advance(0);
+    expect(sent(session, 'UpdatePullRequestBranch')).toHaveLength(1);
+    expect(await commands.run(BEHIND, { kind: 'updateBranch', method: 'REBASE' })).toBe(false);
+    expect(sent(session, 'UpdatePullRequestBranch')).toHaveLength(1);
+
+    await session.clock.advance(PAST_THE_WAIT_MS);
+    expect(await first).toBe(true);
+
+    const again = commands.run(BEHIND, { kind: 'updateBranch', method: 'REBASE' });
+    await session.clock.advance(PAST_THE_WAIT_MS);
+    expect(await again).toBe(true);
+    expect(sent(session, 'UpdatePullRequestBranch')).toHaveLength(2);
+});
+
+test('a second press of ⇧D while the first is on its way sends one; another command of it is not held back', async () => {
+    const merged: PullRequestItem = { ...MERGED, headRefId: 'REF_1', viewerCanDeleteHeadRef: true };
+    const { commands, session } = await setup([merged], {
+        DeleteRef: { data: { deleteRef: { clientMutationId: null } } },
+        RevertPullRequest: {
+            data: { revertPullRequest: { revertPullRequest: { number: 59, url: 'https://github.com/a/b/pull/59' } } },
+        },
+    });
+
+    const results = await Promise.all([
+        commands.run(merged, { kind: 'deleteBranch' }),
+        commands.run(merged, { kind: 'deleteBranch' }),
+        commands.run(merged, { kind: 'revert' }),
+    ]);
+
+    expect(results).toEqual([true, false, true]);
+    expect(sent(session, 'DeleteRef')).toHaveLength(1);
+    expect(sent(session, 'RevertPullRequest')).toHaveLength(1);
+});
+
+test("updating from a stack's member ends the record of the stack's merge that took it, held under the top", async () => {
+    const stack = { id: 'S_1', number: 1, size: 2 };
+    const first: PullRequestItem = { ...BEHIND, stack: { ...stack, position: 1 } };
+    const top: PullRequestItem = { ...samplePullRequest('PR_2'), stack: { ...stack, position: 2 } };
+    const { commands, store, session } = await setup([first, top], { UpdatePullRequestBranch: UPDATED }, () => ({
+        status: 405,
+        body: { status: 'failed', details: { message: 'Required status check "ci" is expected.' } },
+    }));
+    store.open('PR_2', { wholeStack: true });
+    const refused = store.merge({
+        item: top,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: [first, top] },
+    });
+    await session.clock.advance(0);
+    await refused;
+    expect(store.findRecordHolder('PR_1')).toBe('PR_2');
+
+    const updating = commands.run(first, { kind: 'updateBranch', method: 'MERGE' });
+
+    expect(store.findRecordHolder('PR_1')).toBeNull();
+    await session.clock.advance(PAST_THE_WAIT_MS);
+    await updating;
+});
+
+test('a revert GitHub answers once another account signed in leaves no toast there', async () => {
+    const { commands, store, session } = await setup([MERGED], {
+        RevertPullRequest: {
+            data: { revertPullRequest: { revertPullRequest: { number: 59, url: 'https://github.com/a/b/pull/59' } } },
+        },
+    });
+    const held = createPromise();
+    session.github.hold = held.promise;
+
+    const reverting = commands.run(MERGED, { kind: 'revert' });
+    await session.clock.advance(0);
+    session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
+    await session.clock.advance(0);
+    held.resolve();
+
+    expect(await reverting).toBe(false);
+    expect(store.reverts).toEqual([]);
 });
 
 test('a second press of ⇧Z while the first is on its way opens no second pull request', async () => {

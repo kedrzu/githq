@@ -119,9 +119,9 @@ const mergeLabel = computed(() => {
   return mergeVerdict.forwardTitle;
 });
 
-/** Behind, updating is the way forward, by its own key: no panel needed (PM38). */
-const updateForward = computed(() =>
-  !ended.value && mergeVerdict.forward === 'updateBranch'
+/** Behind, it updates by its own key, no panel needed (PM38), whether or not that is the way forward: something else may hold it too. */
+const updateCommand = computed(() =>
+  !ended.value && props.pr.mergeStateStatus === 'BEHIND'
     ? (props.commands?.find(command => command.kind === 'updateBranch' && command.method === 'MERGE') ?? null)
     : null,
 );
@@ -228,18 +228,19 @@ function refusedAside(reason: EditFailureReason) {
         {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
       </Button>
       <Button
-        v-if="updateForward"
+        v-if="updateCommand"
         variant="secondary"
         size="sm"
         :icon="GitPullRequestArrow"
         :kbd="EDIT_KEYS.updateBranch"
         :aria-keyshortcuts="EDIT_KEYS.updateBranch"
-        @click="emit('command', updateForward)"
+        @click="emit('command', updateCommand)"
       >
-        {{ mergeLabel }}
+        {{ t(l.updateBranch) }}
       </Button>
+      <!-- Updating being the way forward, its button above says all "Merge…" would. -->
       <Button
-        v-else-if="canMerge && !merging"
+        v-if="canMerge && !merging && !(updateCommand && mergeVerdict.forward === 'updateBranch')"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"

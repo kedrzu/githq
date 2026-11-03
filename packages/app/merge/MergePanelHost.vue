@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`; a stack leaves whole, through its first one, its later ones then read again) — and, merged, deleting or restoring its branch, read the pull request again once done; reverting leaves for the toast leading to the new one (`PullRequestCommands`). Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, turning auto-merge on or off, jumping the queue (`ItemEditor`) — and its ordinary commands, the same path as every screen's (`PullRequestCommands`) — updating its branch, leaving the queue (a stack leaves whole, through its first one, its later ones then read again) and, merged, deleting or restoring its branch — read the pull request again once done; reverting leaves for the toast leading to the new one. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -22,7 +22,7 @@ import { MergePanelStore } from './MergePanelStore.js';
 import { getPullRequestCommands } from './getPullRequestCommands.js';
 import { PullRequestCommands } from './PullRequestCommands.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
-import type { MergeStep, MergeSubmission } from './MergeTypes.js';
+import type { MergeAdvancing, MergeStep, MergeSubmission, PullRequestCommand } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
 import { getStackMergeEnd } from './stack/getStackMergeEnd.js';
 import { moveStackMergeEnd } from './stack/moveStackMergeEnd.js';
@@ -152,7 +152,7 @@ const stackChecks = computed(() => {
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
 const sending = shallowRef(false);
-const advancing = shallowRef<MergeStep | null>(null);
+const advancing = shallowRef<MergeAdvancing | null>(null);
 /** GitHub said at once the merge sent merged: it was merged already (PM30). */
 const alreadyMerged = shallowRef(false);
 const now = useNow(TICK_MS, () => pr.value !== null);
@@ -224,12 +224,12 @@ async function merge(submission: MergeSubmission) {
 }
 
 /**
- * A step towards the merge (merging D12): the conflicts leave for GitHub's editor; marking it ready and updating its
- * branch are edits like any other — a refusal is reported as a failed edit — after which the panel reads the pull
- * request again, and merging comes back when GitHub says so (PM20, PM21). The step is no news of the last merge: what
- * the session knew of it stops speaking (`forget`).
+ * A step towards the merge (merging D12): the conflicts leave for GitHub's editor; marking it ready is an edit like any
+ * other — a refusal is reported as a failed edit — after which the panel reads the pull request again, and merging comes
+ * back when GitHub says so (PM21). The step is no news of the last merge: what the session knew of it stops speaking
+ * (`forget`).
  */
-async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
+async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge' | 'updateBranch'>) {
   const item = getStepTarget(step);
   if (!item) {
     return;
@@ -240,22 +240,31 @@ async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
     return;
   }
 
-  if (step === 'revert') {
-    await revert(item);
-    return;
-  }
-
   await advance({ item, step, request: toStepRequest(step) });
 }
 
-/** "Revert…" (PM26): the panel has said all it can of the merge, and leaves for the toast leading to the new one. */
-async function revert(item: PullRequestItem) {
+/**
+ * An ordinary command from the panel (merging D16): the path of every screen's, with the panel's read and its busy state,
+ * and updating waited for only while this opening still shows the pull request (PM20). Reverted (PM26), the panel has said
+ * all it can of the merge, and leaves for the toast leading to the new one.
+ */
+async function runCommand(command: PullRequestCommand) {
+  const item = pr.value;
+  if (!item) {
+    return;
+  }
+
   const opening = store.opening;
-  advancing.value = 'revert';
-  const reverted = await pullRequestCommands.run(item, { kind: 'revert' });
+  advancing.value = command.kind;
+  const done = await pullRequestCommands.run(item, command, {
+    read: () => (item.id === pr.value?.id ? read.refresh() : merger.readOptions(item.id)),
+    goingOn: () => store.opening === opening && pr.value?.id === item.id,
+    recordOf: recordOf.value?.id,
+  });
+  // Opened anew meanwhile: that panel is not this one's to answer.
   if (store.opening === opening) {
     advancing.value = null;
-    if (reverted) {
+    if (done && command.kind === 'revert') {
       store.close();
     }
   }
@@ -272,24 +281,14 @@ async function enableAutoMerge(submission: MergeSubmission) {
   }
 }
 
-function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConflicts' | 'revert'>): EditRequest {
+function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConflicts' | 'updateBranch'>): EditRequest {
   switch (step) {
     case 'markReady':
       return { kind: 'draft', draft: false };
-    case 'updateBranch':
-      return { kind: 'updateBranch', method: 'MERGE' };
-    case 'updateBranchByRebase':
-      return { kind: 'updateBranch', method: 'REBASE' };
-    case 'deleteBranch':
-      return { kind: 'deleteBranch' };
-    case 'restoreBranch':
-      return { kind: 'restoreBranch' };
     case 'disableAutoMerge':
       return { kind: 'disableAutoMerge' };
     case 'jumpQueue':
       return { kind: 'jumpQueue' };
-    case 'dequeue':
-      return { kind: 'dequeue' };
     default:
       return assertNever(step);
   }
@@ -297,29 +296,11 @@ function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConf
 
 async function advance({ item, step, request }: AdvanceParams) {
   const opening = store.opening;
-  const head = item.headRefOid;
   advancing.value = step;
   store.forget(item.id, ...(recordOf.value ? [recordOf.value.id] : []));
-  const stackId = store.stack?.id;
-  const size = description.value?.size;
-  const outcome = await editor.edit([item.id], request);
+  await editor.edit([item.id], request);
   // A stack's draft further up is not the one the panel's read follows, and its row is what lets the rest go.
   await (item.id === pr.value?.id ? read.refresh() : merger.readOptions(item.id));
-  // GitHub takes a stack out whole, through its first one: only the stack read again says the others left (D11).
-  if (step === 'dequeue' && stackId !== undefined && size !== undefined) {
-    await merger.readStack(stackId, size);
-  }
-
-  if ((step === 'updateBranch' || step === 'updateBranchByRebase') && outcome.failed.length === 0) {
-    // The panel stays updating until the head moved, or it is opened anew: merging the old head would be refused.
-    await merger.readUntilNewHead({
-      itemId: item.id,
-      head,
-      read: () => read.refresh(),
-      goingOn: () => store.opening === opening && pr.value?.id === item.id,
-    });
-  }
-
   // Opened anew meanwhile: that panel is not this one's to answer.
   if (store.opening === opening) {
     advancing.value = null;
@@ -365,11 +346,12 @@ function moveLine(direction: 'earlier' | 'later') {
     :now="now"
     :stack="stackView"
     :viewer-login="auth.viewer?.login ?? null"
-    :commands="getPullRequestCommands(pr, editor.getPermissions(pr))"
+    :commands="getPullRequestCommands({ pr, permissions: editor.getPermissions(pr), items: items.all })"
     @merge="merge"
     @bypass="merge"
     @move="moveLine"
     @step="takeStep"
+    @command="runCommand"
     @enable-auto-merge="enableAutoMerge"
     @visit="browser.openInNewTab"
   />

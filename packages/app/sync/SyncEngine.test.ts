@@ -943,7 +943,6 @@ function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragme
         mergeStateStatus: 'BLOCKED',
         headRefOid: 'head-oid',
         headRef: { id: 'REF_1' },
-        headRepository: { id: 'R_1' },
         isCrossRepository: false,
         viewerCanDeleteHeadRef: false,
         isMergeQueueEnabled: false,

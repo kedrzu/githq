@@ -374,4 +374,4 @@ deleteBranch:
 restoreBranch:
   en: Restore branch
 revert:
-  en: Revert…
+  en: Revert

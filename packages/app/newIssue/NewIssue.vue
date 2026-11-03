@@ -330,12 +330,13 @@ function describeRejection(reason: EditFailureReason, repository: string) {
       return t(l.rejectedOrganizationRestricted, { organization: reason.organization });
     case 'missing':
       return t(l.rejectedMissing, { repository });
-    // `rulesNotConfirmed`, `notReached` and `notActions` are a pull request's alone: a new issue never meets them.
+    // `rulesNotConfirmed`, `notReached`, `notActions` and `nothingFailed` are a pull request's alone: a new issue never meets them.
     case 'notAllowed':
     case 'dropped':
     case 'rulesNotConfirmed':
     case 'notReached':
     case 'notActions':
+    case 'nothingFailed':
       return t(l.rejectedNotAllowed, { repository });
     default:
       return assertNever(reason);

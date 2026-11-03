@@ -5,18 +5,13 @@ import {
     CalendarRange,
     CircleCheckBig,
     CircleDashed,
-    GitBranch,
     GitMerge,
     GitPullRequest,
-    GitPullRequestArrow,
     GitPullRequestDraft,
-    ListX,
     Milestone,
-    RefreshCw,
     Shapes,
     SignalHigh,
     Tag,
-    Undo2,
     UserCheck,
     UserPlus,
 } from 'lucide-vue-next';
@@ -30,18 +25,21 @@ import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
-import type { MergeCheck, PullRequestCommand } from '@/merge/MergeTypes.js';
+import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { ItemDetailProject, ProjectField, ProjectFieldValue } from '@/store/ItemDetailTypes.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
-import type { Command, CommandOption, CommandSection } from './CommandTypes.js';
+import type { Command, CommandOption } from './CommandTypes.js';
 import * as l from './useEditCommands.loc.js';
 import { useProjectFieldOptions } from './useProjectFieldOptions.js';
+import type { PullRequestCommandSource } from './usePullRequestCommands.js';
+import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from './usePullRequestCommands.js';
 
 /**
- * The keys of the edits of an opened item and of the selection (M3, E1, E4) — the only place they are written:
- * the actions run by them, and the item view, the selection's toolbar and the item menus draw them from here.
+ * The keys of the edits of an opened item and of the selection (M3, E1, E4) — the only place they are written, but for
+ * a pull request's ordinary commands, which come with their actions: the actions run by them, and the item view, the
+ * selection's toolbar and the item menus draw them from here.
  */
 export const EDIT_KEYS = {
     assignees: 'A',
@@ -55,12 +53,7 @@ export const EDIT_KEYS = {
     reviewers: 'Shift+R',
     comment: 'R',
     merge: 'Shift+M',
-    updateBranch: 'U',
-    updateBranchByRebase: 'Shift+U',
-    rerunChecks: 'Shift+E',
-    branch: 'Shift+D',
-    revert: 'Shift+Z',
-    dequeue: 'Shift+Q',
+    ...PULL_REQUEST_COMMAND_KEYS,
 } as const;
 
 /** An edit with an action of its own here. */
@@ -122,21 +115,7 @@ export interface EditCommandsParams {
     readonly viewerCanEnableAutoMerge?: boolean | null;
     /** Its ordinary commands (merging D16); without them they are not offered here. */
     readonly pullRequestCommands?: PullRequestCommandSource | null;
-    /** The one pull request's checks, once its merge options are read: `⇧E` names the first that failed (PM39). */
-    readonly checks?: readonly MergeCheck[] | null;
-}
-
-/** What {@link usePullRequestCommands} builds from: `MergeContext` where one is provided. */
-export interface PullRequestCommandSource {
-    getCommands(itemId: string): readonly PullRequestCommand[];
-    run(itemId: string, command: PullRequestCommand): void;
-}
-
-/** What {@link usePullRequestCommands} builds the actions of. */
-export interface PullRequestCommandsParams {
-    readonly section: CommandSection;
-    readonly pr: PullRequestItem;
-    readonly source: PullRequestCommandSource;
+    /** The one pull request's checks, once its merge options are read: which `⇧E` re-runs (PM39). */
     readonly checks?: readonly MergeCheck[] | null;
 }
 
@@ -480,82 +459,6 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
                 return assertNever(state);
         }
     }
-}
-
-/**
- * The ordinary commands of one pull request as actions (merging D16, PM39), only those that apply: for the opened item,
- * the menus and a list's selected row alike, each running on the pull request named.
- */
-export function usePullRequestCommands(): (params: PullRequestCommandsParams) => Command[] {
-    const t = useTranslate();
-
-    return ({ section, pr, source, checks }) =>
-        source.getCommands(pr.id).map(command => {
-            const run = () => source.run(pr.id, command);
-            switch (command.kind) {
-                case 'updateBranch':
-                    return command.method === 'MERGE'
-                        ? {
-                              id: `${section}.updateBranch`,
-                              title: t(l.updateBranch),
-                              section,
-                              key: EDIT_KEYS.updateBranch,
-                              icon: GitPullRequestArrow,
-                              detail: t(l.byMerge),
-                              run,
-                          }
-                        : {
-                              id: `${section}.updateBranchByRebase`,
-                              title: t(l.updateBranchByRebase),
-                              section,
-                              key: EDIT_KEYS.updateBranchByRebase,
-                              icon: GitPullRequestArrow,
-                              run,
-                          };
-                case 'rerunFailedChecks':
-                    return {
-                        id: `${section}.rerunChecks`,
-                        title: t(l.rerunChecks),
-                        section,
-                        key: EDIT_KEYS.rerunChecks,
-                        icon: RefreshCw,
-                        detail: checks?.find(check => check.state === 'failing')?.name,
-                        run,
-                    };
-                case 'deleteBranch':
-                case 'restoreBranch':
-                    return {
-                        id: `${section}.branch`,
-                        title: command.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch),
-                        section,
-                        key: EDIT_KEYS.branch,
-                        icon: GitBranch,
-                        detail: pr.headRefName,
-                        run,
-                    };
-                case 'revert':
-                    return {
-                        id: `${section}.revert`,
-                        title: t(l.revert),
-                        section,
-                        key: EDIT_KEYS.revert,
-                        icon: Undo2,
-                        detail: t(l.revertDetail),
-                        run,
-                    };
-                case 'dequeue':
-                    return {
-                        id: `${section}.dequeue`,
-                        title: t(l.takeOutOfQueue),
-                        section,
-                        key: EDIT_KEYS.dequeue,
-                        icon: ListX,
-                        run,
-                    };
-                default:
-                    return assertNever(command);
-            }
-        });
 }
 
 /** An action toggling values of several (assignees, labels). */

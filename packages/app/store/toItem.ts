@@ -78,7 +78,6 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
         mergeStateStatus: node.mergeStateStatus,
         headRefOid: node.headRefOid,
         headRefId: node.headRef?.id ?? null,
-        headRepositoryId: node.headRepository?.id ?? null,
         isCrossRepository: node.isCrossRepository,
         viewerCanDeleteHeadRef: node.viewerCanDeleteHeadRef,
         checks: node.statusCheckRollup ? toChecks(node.statusCheckRollup) : null,

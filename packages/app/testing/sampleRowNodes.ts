@@ -76,7 +76,6 @@ export function samplePullRequestNode(id: string, params: SampleRowNodeParams): 
         stackEntry: null,
         baseRefOid: 'base-oid',
         headRef: { id: 'REF_1' },
-        headRepository: { id: 'R_1' },
         isCrossRepository: false,
         viewerCanDeleteHeadRef: false,
         isMergeQueueEnabled: false,

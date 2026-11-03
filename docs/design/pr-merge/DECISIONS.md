@@ -322,6 +322,13 @@ the text, as it loses the state.
 
 **Why.** [D10](#d10) keeps them out of the panel's job, and the brief asks for a place at the right moment.
 
+**Revert sends at once, with no confirmation** (owner, 2026-11-03): it only opens a new pull request, and a second one
+while the first is open is refused (live, 2026-11-03). So it reads "Revert", not "Revert…".
+
+**A branch restored on github.com may draw as gone for a while** (owner, 2026-11-03): a restored branch keeps its node id
+(live, 2026-11-03), so a read can't tell it from one older than this session's delete, whose confirmed layer draws it gone
+until it ends (about 5 minutes). Accepted: a restore from githq draws over that layer at once.
+
 > **Checked 2026-11-01:** none of these keys is bound in `packages/app` (`EDIT_KEYS` and the commands' `key` and `kbd`
 > values). `Shift+E`, `Shift+D`, `Shift+Z`, `Shift+Q`, `Shift+U` and `U` are free.
 

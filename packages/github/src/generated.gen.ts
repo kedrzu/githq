@@ -834,7 +834,7 @@ export type ItemDetailQuery = {
                   } | null> | null;
               };
               commits: { totalCount: number };
-              headRepository: { nameWithOwner: string; id: string } | null;
+              headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contextPage: {
@@ -1346,7 +1346,7 @@ export type ItemDetailsQuery = {
                   } | null> | null;
               };
               commits: { totalCount: number };
-              headRepository: { nameWithOwner: string; id: string } | null;
+              headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contextPage: {
@@ -1698,7 +1698,6 @@ export type ItemsByIdsQuery = {
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
               headRef: { id: string } | null;
-              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -2113,7 +2112,6 @@ export type ProjectFullQuery = {
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
                                 headRef: { id: string } | null;
-                                headRepository: { id: string } | null;
                                 mergeQueueEntry: {
                                     position: number;
                                     state: MergeQueueEntryState;
@@ -2378,7 +2376,6 @@ export type ProjectItemsQuery = {
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
                                 headRef: { id: string } | null;
-                                headRepository: { id: string } | null;
                                 mergeQueueEntry: {
                                     position: number;
                                     state: MergeQueueEntryState;
@@ -2704,7 +2701,6 @@ export type PullRequestMergeOptionsQuery = {
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
               headRef: { id: string } | null;
-              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -2829,7 +2825,6 @@ export type PullRequestStacksQuery = {
                           stack: { id: string; number: number; size: number } | null;
                           stackEntry: { position: number } | null;
                           headRef: { id: string } | null;
-                          headRepository: { id: string } | null;
                           mergeQueueEntry: {
                               position: number;
                               state: MergeQueueEntryState;
@@ -2918,7 +2913,6 @@ export type PullRequestStatusesQuery = {
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
               headRef: { id: string } | null;
-              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -3317,7 +3311,6 @@ export type RepositoryPullRequestsQuery = {
                 stack: { id: string; number: number; size: number } | null;
                 stackEntry: { position: number } | null;
                 headRef: { id: string } | null;
-                headRepository: { id: string } | null;
                 mergeQueueEntry: {
                     position: number;
                     state: MergeQueueEntryState;
@@ -4373,7 +4366,6 @@ export type ProjectItemPageFieldsFragment = {
                   stack: { id: string; number: number; size: number } | null;
                   stackEntry: { position: number } | null;
                   headRef: { id: string } | null;
-                  headRepository: { id: string } | null;
                   mergeQueueEntry: {
                       position: number;
                       state: MergeQueueEntryState;
@@ -4612,7 +4604,6 @@ export type ProjectItemRowFieldsFragment = {
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
               headRef: { id: string } | null;
-              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -4892,7 +4883,7 @@ export type PullRequestDetailFieldsFragment = {
         } | null> | null;
     };
     commits: { totalCount: number };
-    headRepository: { nameWithOwner: string; id: string } | null;
+    headRepository: { nameWithOwner: string } | null;
     statusCheckRollup: {
         state: StatusState;
         contextPage: {
@@ -5169,7 +5160,6 @@ export type PullRequestFieldsFragment = {
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
     headRef: { id: string } | null;
-    headRepository: { id: string } | null;
     mergeQueueEntry: {
         position: number;
         state: MergeQueueEntryState;
@@ -5242,7 +5232,6 @@ export type PullRequestStatusFieldsFragment = {
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
     headRef: { id: string } | null;
-    headRepository: { id: string } | null;
     mergeQueueEntry: {
         position: number;
         state: MergeQueueEntryState;
@@ -5534,7 +5523,6 @@ export type AddDraftIssueMutation = {
                       stack: { id: string; number: number; size: number } | null;
                       stackEntry: { position: number } | null;
                       headRef: { id: string } | null;
-                      headRepository: { id: string } | null;
                       mergeQueueEntry: {
                           position: number;
                           state: MergeQueueEntryState;
@@ -6003,7 +5991,6 @@ export type DisablePullRequestAutoMergeMutation = {
             stack: { id: string; number: number; size: number } | null;
             stackEntry: { position: number } | null;
             headRef: { id: string } | null;
-            headRepository: { id: string } | null;
             mergeQueueEntry: {
                 position: number;
                 state: MergeQueueEntryState;
@@ -6089,7 +6076,6 @@ export type EnablePullRequestAutoMergeMutation = {
             stack: { id: string; number: number; size: number } | null;
             stackEntry: { position: number } | null;
             headRef: { id: string } | null;
-            headRepository: { id: string } | null;
             mergeQueueEntry: {
                 position: number;
                 state: MergeQueueEntryState;
@@ -7403,9 +7389,6 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -7567,9 +7550,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -7904,9 +7884,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -8224,9 +8201,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -8680,9 +8654,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -9388,9 +9359,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -9874,9 +9842,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -10102,9 +10067,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -10638,9 +10600,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -10966,9 +10925,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -11265,9 +11221,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -11442,9 +11395,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -11534,9 +11484,6 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -12087,9 +12034,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository
@@ -12660,9 +12604,6 @@ fragment PullRequestStatusFields on PullRequest {
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -13146,9 +13087,6 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
   headRef {
     id
   }
-  headRepository {
-    id
-  }
   isCrossRepository
   viewerCanDeleteHeadRef
   isMergeQueueEnabled
@@ -13240,9 +13178,6 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
   headRefOid
   baseRefOid
   headRef {
-    id
-  }
-  headRepository {
     id
   }
   isCrossRepository

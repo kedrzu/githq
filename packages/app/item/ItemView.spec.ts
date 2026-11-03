@@ -25,6 +25,8 @@ const {
     PullRequestAutoMergeOn,
     PullRequestInQueue,
     PullRequestOptionalFailing,
+    PullRequestRerunNamesActions,
+    PullRequestRerunOutsideActions,
     PullRequestQueueReady,
     PullRequestReady,
     StackOfTenInModal,
@@ -387,6 +389,21 @@ test("PM38: with the merge options read, ⇧M's entry weighs only the required c
     await expect.element(page.getByRole('button', { name: 'Update branch' })).toBeVisible();
     await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
     await expect.element(page.getByRole('menuitem', { name: /^Update branch/ })).toBeVisible();
+});
+
+test('PM39: ⇧E is not offered where no failed check runs on GitHub Actions', async () => {
+    await PullRequestRerunOutsideActions.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menu')).toBeVisible();
+    await expect.element(page.getByRole('menuitem', { name: /^Re-run failed checks/ })).not.toBeInTheDocument();
+});
+
+test('PM39: ⇧E names a failed check it re-runs, not one from outside GitHub Actions', async () => {
+    await PullRequestRerunNamesActions.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}.{/ControlOrMeta}');
+    await expect.element(page.getByRole('menuitem', { name: /^Re-run failed checks/ })).toHaveTextContent('docs');
 });
 
 test('K1b: without write access there is no "Merge…" — no button, no key, no menu entry — and one line says so', async () => {

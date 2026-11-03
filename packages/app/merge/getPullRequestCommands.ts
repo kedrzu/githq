@@ -1,20 +1,30 @@
 import type { EditPermissions } from '@/edits/getEditPermissions.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import type { PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
 import type { PullRequestCommand } from './MergeTypes.js';
+
+/** What {@link getPullRequestCommands} decides from. */
+export interface GetPullRequestCommandsParams {
+    readonly pr: PullRequestItem;
+    readonly permissions: EditPermissions;
+    /** The local copy: which of a stack's pull requests is its first open one. */
+    readonly items: readonly Item[];
+}
 
 /**
  * The ordinary commands that apply to the pull request now (merging D16), in the order the palette lists them: one that
  * can't take a command isn't offered it. Updating is for a branch behind, without conflicts, not being merged or in the
- * queue; in a stack only for its first (a later one behind needs GitHub's "Rebase stack"). Failed checks by the row's
- * counts: the edit reads which of them re-run.
+ * queue; in a stack only for its first open one (a later one behind needs GitHub's "Rebase stack"), told from the copy:
+ * GitHub doesn't renumber the positions as members land. Failed checks by the row's counts: the edit reads which of them
+ * re-run.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getPullRequestCommands(pr: PullRequestItem, permissions: EditPermissions): PullRequestCommand[] {
+export function getPullRequestCommands(params: GetPullRequestCommandsParams): PullRequestCommand[] {
+    const { pr, permissions, items } = params;
     const commands: PullRequestCommand[] = [];
-    if (permissions.updateBranch && canUpdateBranch(pr)) {
+    if (permissions.updateBranch && canUpdateBranch(pr, items)) {
         commands.push({ kind: 'updateBranch', method: 'MERGE' }, { kind: 'updateBranch', method: 'REBASE' });
     }
 
@@ -41,13 +51,26 @@ export function getPullRequestCommands(pr: PullRequestItem, permissions: EditPer
     return commands;
 }
 
-function canUpdateBranch(pr: PullRequestItem) {
+function canUpdateBranch(pr: PullRequestItem, items: readonly Item[]) {
     return (
         isOpenPullRequest(pr) &&
         pr.merging === undefined &&
         !pr.mergeQueueEntry &&
         pr.mergeable !== 'CONFLICTING' &&
         (pr.mergeStateStatus === 'BEHIND' || pr.behindBase) &&
-        (pr.stack === null || pr.stack.position === 1)
+        !hasOpenMemberBefore(pr, items)
+    );
+}
+
+function hasOpenMemberBefore({ stack }: PullRequestItem, items: readonly Item[]) {
+    return (
+        stack !== null &&
+        items.some(
+            item =>
+                item.kind === 'pullRequest' &&
+                item.stack?.id === stack.id &&
+                item.stack.position < stack.position &&
+                isOpenPullRequest(item),
+        )
     );
 }

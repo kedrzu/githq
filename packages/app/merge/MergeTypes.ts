@@ -170,18 +170,11 @@ export type MergeAnswer =
     | { readonly kind: 'refused'; readonly reason: EditFailureReason };
 
 /**
- * A step the merge panel takes when it doesn't merge itself — its way forward (merging D12), adding to a queue being a
- * merge: mark the draft ready for review, bring the base branch in, resolve the conflicts in GitHub's editor, turn
- * auto-merge on or off. Off to the side, each with a key of its own: jump the queue, take it out of the queue (PM14, PM15).
+ * A step towards the merge when the panel doesn't merge itself — its way forward (merging D12), adding to a queue being
+ * a merge: mark the draft ready for review, bring the base branch in, resolve the conflicts in GitHub's editor, turn
+ * auto-merge on or off. Off to the side, with a key of its own: jump the queue (PM14).
  */
-export type MergeStep =
-    | Exclude<PullRequestWayForward, 'enqueue' | 'merge'>
-    | 'dequeue'
-    | 'jumpQueue'
-    | 'updateBranchByRebase'
-    | 'deleteBranch'
-    | 'restoreBranch'
-    | 'revert';
+export type MergeStep = Exclude<PullRequestWayForward, 'enqueue' | 'merge'> | 'jumpQueue';
 
 /**
  * An ordinary command of one pull request (merging D10, D16): not the merge panel's job, offered from the opened item, a
@@ -194,6 +187,9 @@ export type PullRequestCommand =
     | { readonly kind: 'restoreBranch' }
     | { readonly kind: 'revert' }
     | { readonly kind: 'dequeue' };
+
+/** What the merge panel has on its way: a step towards the merge, or an ordinary command, by rebase or not alike. */
+export type MergeAdvancing = MergeStep | PullRequestCommand['kind'];
 
 /** The new pull request a revert opened. */
 export interface RevertedPullRequest {

@@ -464,7 +464,7 @@ test('SP54, PM15: a stack in the queue offers taking it out, on ⇧Q and its but
 
     await expect.element(page.getByRole('button', { name: /Take out of queue/ })).toBeVisible();
     await userEvent.keyboard('{Shift>}Q{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: dequeue');
 });
 
 test("SP54, PM16: GitHub says it won't merge — it reads as a single pull request's, no reason made up, and can leave", async () => {
@@ -476,7 +476,7 @@ test("SP54, PM16: GitHub says it won't merge — it reads as a single pull reque
     await expect.element(member(1213)).toHaveTextContent('3rd · waiting for checks');
     await expect.element(panel()).not.toHaveTextContent('Checks failed');
     await userEvent.keyboard('{Shift>}Q{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: dequeue');
 });
 
 test('SP54: the first gone through the queue, it reads merged and the group is the next one in', async () => {

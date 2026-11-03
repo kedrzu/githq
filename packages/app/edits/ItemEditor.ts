@@ -429,6 +429,7 @@ function needsMetadata(request: EditRequest) {
         case 'milestone':
         case 'issueType':
         case 'requestReviewers':
+        case 'restoreBranch': // It names the repository by its node id.
             return true;
         case 'close':
         case 'reopen':
@@ -443,7 +444,6 @@ function needsMetadata(request: EditRequest) {
         case 'jumpQueue':
         case 'dequeue':
         case 'deleteBranch':
-        case 'restoreBranch':
         case 'rerunFailedChecks':
             return false;
         default:

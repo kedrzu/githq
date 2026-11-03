@@ -251,6 +251,63 @@ export const PullRequestBehindUpdates: Story = {
     play: () => expectButtonRuns(/^Update branch/u, { kind: 'updateBranch', method: 'MERGE' }),
 };
 
+/**
+ * PM38: behind with a required check failed, a pull request can read so (live, 2026-11-03): it updates all the same, by
+ * its own key, with "Merge…" still there.
+ */
+export const PullRequestBehindRequiredFailed: Story = {
+    ...PullRequestBehindUpdates,
+    args: {
+        ...PullRequestReady.args,
+        item: {
+            ...F3_PULL_REQUEST,
+            mergeStateStatus: 'BEHIND',
+            checks: { state: 'FAILURE', passing: 7, failing: 1, pending: 0 },
+        },
+        mergeChecks: F3_PULL_REQUEST_DETAIL.checks.map(check => ({
+            ...check,
+            ...(check.name === 'Vercel' ? { state: 'failing' as const } : {}),
+            isRequired: true,
+            appSlug: 'github-actions',
+            workflowRunId: 1,
+        })),
+    },
+    play: async () => {
+        await expect(await within(document.body).findByRole('button', { name: /^Merge…/u })).toBeVisible();
+        await expectButtonRuns(/^Update branch/u, { kind: 'updateBranch', method: 'MERGE' });
+    },
+};
+
+/** PM39: its checks read, `⇧E` is offered only where a failed one runs on Actions, and names that one. */
+const FAILED_OUTSIDE_ACTIONS = F3_PULL_REQUEST_DETAIL.checks.map(check => ({
+    ...check,
+    ...(check.name === 'Vercel' || check.name === 'docs' ? { state: 'failing' as const } : {}),
+    isRequired: false,
+    appSlug: null,
+    workflowRunId: null,
+}));
+
+/** PM39: every failed check from outside Actions: `⇧E` isn't offered. */
+export const PullRequestRerunOutsideActions: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: { ...F3_PULL_REQUEST, checks: { state: 'FAILURE', passing: 7, failing: 2, pending: 0 } },
+        mergeChecks: FAILED_OUTSIDE_ACTIONS,
+    },
+    decorators: [withCommands([{ kind: 'rerunFailedChecks' }])],
+};
+
+/** PM39: a failed check from outside Actions and one on it: `⇧E` names the one it re-runs. */
+export const PullRequestRerunNamesActions: Story = {
+    ...PullRequestRerunOutsideActions,
+    args: {
+        ...PullRequestRerunOutsideActions.args,
+        mergeChecks: FAILED_OUTSIDE_ACTIONS.map(check =>
+            check.name === 'docs' ? { ...check, appSlug: 'github-actions', workflowRunId: 1 } : check,
+        ),
+    },
+};
+
 /** PM26, PM38: merged — "Delete branch" in place of "Merge…". */
 export const PullRequestMergedDeletes: Story = {
     args: {

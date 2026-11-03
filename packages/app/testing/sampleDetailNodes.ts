@@ -88,7 +88,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
         commits: { totalCount: 1 },
-        headRepository: { id: 'R_1', nameWithOwner: 'acme/web' },
+        headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },
         projectItems: { nodes: [] },
     };

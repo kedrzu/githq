@@ -220,7 +220,7 @@ export const ConfirmedWithFollowUps: Story = {
     play: async () => {
         followUpsRan.length = 0;
         const body = within(document.body);
-        await expect(await body.findByRole('button', { name: /Revert…/u })).toBeVisible();
+        await expect(await body.findByRole('button', { name: /Revert/u })).toBeVisible();
         await userEvent.keyboard('{Alt>}d{/Alt}');
         await expect(followUpsRan).toEqual([{ itemId: PR.id, command: { kind: 'deleteBranch' } }]);
         await expect(body.queryByText('fitloop/api#477 merged into main')).toBeNull();

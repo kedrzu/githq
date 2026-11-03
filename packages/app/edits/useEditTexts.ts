@@ -351,6 +351,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonNotReached);
             case 'notActions':
                 return t(l.reasonNotActions);
+            case 'nothingFailed':
+                return t(l.reasonNothingFailed);
             default:
                 return assertNever(failure);
         }
@@ -375,6 +377,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.shortRulesNotConfirmed);
             case 'notActions':
                 return t(l.shortNotActions);
+            case 'nothingFailed':
+                return t(l.shortNothingFailed);
             default:
                 return assertNever(failure);
         }

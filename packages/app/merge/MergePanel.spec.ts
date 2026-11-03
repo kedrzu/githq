@@ -45,6 +45,7 @@ const {
     QueueReady,
     QueueUnmergeable,
     Behind,
+    BehindRequiredFailed,
     BeingMerged,
     BeingRead,
     BeingReadNoMessage,
@@ -518,12 +519,12 @@ test('PM20, D12: behind and up to date required — ⌘↵ updates the branch, n
     await expect.element(panel()).toHaveTextContent('Retry Stripe webhook delivery on 5xx (#477)');
 
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
     await expect.element(panel()).toHaveTextContent('Updating the branch');
     await expect.element(page.getByRole('button', { name: /^Update branch/u })).toHaveAttribute('aria-busy', 'true');
     // Pressed again while it is on its way, nothing more is asked.
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
 
     document.querySelector<HTMLElement>('[tid="stepped"]')?.click();
     await expect.element(panel()).toHaveTextContent('Ready to merge');
@@ -670,7 +671,7 @@ test('PM15: in the queue — where, its state and who added it; no merge offered
     const out = page.getByRole('button', { name: /Take out of queue/ });
     await expect.element(out).toHaveAttribute('aria-keyshortcuts', 'Shift+Q');
     await userEvent.keyboard('{Shift>}Q{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: dequeue');
 });
 
 test("PM16: each of GitHub's queue states on one line of the verdict, with no estimate when GitHub gives none", async () => {
@@ -740,7 +741,7 @@ test('PM12a: behind is what it skips; ⌘↵ stays updating the branch', async (
 
     await expect.element(panel()).toHaveTextContent('Skips being up to date with main');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
 });
 
 test('PM12a: blocked for what nothing read names — it says GitHub holds it, and invents no reason', async () => {
@@ -937,14 +938,33 @@ test('PM20: `U` updates the branch by a merge as ⌘↵ does, and `⇧U` beside 
 
     await expect.element(page.getByRole('button', { name: /^Update by rebase/u })).toBeVisible();
     await userEvent.keyboard('{Shift>}u{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranchByRebase');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch REBASE');
+});
+
+test('PM20: updating by `⇧U`, the primary is the busy "Update branch", as by `U`', async () => {
+    await Behind.run();
+
+    await userEvent.keyboard('{Shift>}u{/Shift}');
+    await expect.element(panel()).toHaveTextContent('Updating the branch');
+    await expect.element(page.getByRole('button', { name: /^Update branch/u })).toHaveAttribute('aria-busy', 'true');
+});
+
+test('PM20: behind with a required check failed, `U` and `⇧U` still update, and ⌘↵ stays off', async () => {
+    await BehindRequiredFailed.run();
+
+    await expect.element(panel()).toHaveTextContent('BranchBehind main');
+    await expect.element(page.getByRole('button', { name: /^Update by rebase/u })).toBeVisible();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+    await userEvent.keyboard('u');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
 });
 
 test('PM20: `U` is the step of updating, too', async () => {
     await Behind.run();
 
     await userEvent.keyboard('u');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
 });
 
 test('PM40: while it updates, "Update by rebase" is gone', async () => {
@@ -959,15 +979,15 @@ test('PM26: merged, its branch is still there — `⇧D` deletes it, and `⇧Z` 
     await expect.element(panel()).toHaveTextContent('still there');
     await expect.element(page.getByRole('button', { name: /^Delete branch/u })).toBeVisible();
     await userEvent.keyboard('{Shift>}d{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: deleteBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: deleteBranch');
 });
 
-test('PM26: `⇧Z` is "Revert…"', async () => {
+test('PM26: `⇧Z` is "Revert"', async () => {
     await Merged.run();
 
-    await expect.element(page.getByRole('button', { name: /^Revert…/u })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Revert/u })).toBeVisible();
     await userEvent.keyboard('{Shift>}z{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: revert');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: revert');
 });
 
 test('PM26b: deleted by the repository, it says so, and the same key restores it', async () => {
@@ -975,14 +995,14 @@ test('PM26b: deleted by the repository, it says so, and the same key restores it
 
     await expect.element(panel()).toHaveTextContent('deleted by the repository');
     await userEvent.keyboard('{Shift>}d{/Shift}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: restoreBranch');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: restoreBranch');
 });
 
 test('merged, with nothing it may take, it offers nothing destructive: a key does nothing', async () => {
     await MergedNothingToTake.run();
 
     await expect.element(page.getByRole('button', { name: /^Restore branch/u })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: /^Revert…/u })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Revert/u })).not.toBeInTheDocument();
     await userEvent.keyboard('{Shift>}z{/Shift}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
