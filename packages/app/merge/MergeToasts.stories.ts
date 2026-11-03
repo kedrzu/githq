@@ -3,6 +3,7 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
 import Toaster from '@/components/Toaster.vue';
@@ -163,7 +164,20 @@ export const Refused: Story = { decorators: [withMerges([REFUSED], [])] };
 export const OrganizationRestricted: Story = { decorators: [withMerges([RESTRICTED], [])] };
 
 /** PM34: a merge GitHub confirmed after the user moved on — quiet, and gone by itself. */
-export const Confirmed: Story = { decorators: [withMerges([], [CONFIRMED])] };
+export const Confirmed: Story = {
+    decorators: [withMerges([], [CONFIRMED])],
+    // Here rather than in a spec: it is gone by itself, sooner than a whole story's run may take.
+    play: async () => {
+        await expect(await within(document.body).findByText('fitloop/api#477 merged into main')).toBeVisible();
+    },
+};
 
 /** SS4: a stack's merge GitHub confirmed after the user moved on: how many landed, and where. */
-export const ConfirmedStack: Story = { decorators: [withMerges([], [CONFIRMED_STACK])] };
+export const ConfirmedStack: Story = {
+    decorators: [withMerges([], [CONFIRMED_STACK])],
+    play: async () => {
+        const body = within(document.body);
+        await expect(await body.findByText('fitloop/api · 3 pull requests merged into main')).toBeVisible();
+        await expect(body.queryByText('fitloop/api#477')).toBeNull();
+    },
+};
