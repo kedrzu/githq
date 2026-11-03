@@ -59,6 +59,8 @@ allGreenText:
   en:
     one: Every workflow that counts passes in the tracked repository. Nothing to fix, so go break something new. Failures on refs that don't count wait in the repository's Workflows tab.
     many: Every workflow that counts passes in all {count} tracked repositories. Nothing to fix, so go break something new. Failures on refs that don't count wait in each repository's Workflows tab.
+allGreenTextPartly:
+  en: Every workflow that counts passes in {read} of {tracked} tracked repositories; GitHub shows nothing of the others. Nothing to fix, so go break something new. Failures on refs that don't count wait in each repository's Workflows tab.
 allGreenDetail:
   en: '{read}/{tracked} repositories · 0 broken · read {age} ago'
 nothingTrackedTitle:

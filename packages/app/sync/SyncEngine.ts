@@ -142,7 +142,8 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   when the user tracks more;
  * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
  *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
- *   and at once when a screen showing them opens ({@link pollWorkflowsNow}).
+ *   and at once when a screen showing them opens ({@link pollWorkflowsNow}). What a screen has on screen of a
+ *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef}).
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
@@ -252,6 +253,8 @@ export const SyncEngine = defineService({
             readonly account: Account;
             readonly status: Readonly<Record<SyncLoop, SyncLoopStatus>>;
         } | null = null;
+        /** The repositories whose runs on any ref this tab's screens have on screen, with how many screens. */
+        const anyRefWatchers = new Map<string, number>();
 
         watch(
             () =>
@@ -269,6 +272,16 @@ export const SyncEngine = defineService({
             work => {
                 if (session && work) {
                     void run(session, 'download');
+                }
+            },
+        );
+
+        // Another tab has a repository's runs on any ref on screen: as when this tab's screen opens.
+        watch(
+            () => tabs.otherAnyRefRepositories,
+            (next, previous) => {
+                if (session && next.some(nameWithOwner => !previous.includes(nameWithOwner))) {
+                    void run(session, 'workflows');
                 }
             },
         );
@@ -309,7 +322,9 @@ export const SyncEngine = defineService({
             getRepositoryFreshness,
             getProjectFreshness,
             getWorkflowsFreshness,
+            getRepositoryWorkflowsFreshness,
             pollWorkflowsNow,
+            watchAnyRef,
         };
 
         /**
@@ -352,6 +367,26 @@ export const SyncEngine = defineService({
         }
 
         /**
+         * How fresh a tracked repository's Workflows tab is (actions W3c, W3e): `reading` during the first read of its
+         * runs, unless GitHub stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read
+         * are on screen — there is no telling since when, as the loop goes on without it —; else as its poll goes.
+         * Reactive.
+         */
+        function getRepositoryWorkflowsFreshness(nameWithOwner: string): Freshness {
+            const stored = workflows.get(nameWithOwner);
+            if (stored?.unavailable != null) {
+                return stored.workflows.length > 0
+                    ? { kind: 'stale', since: null, reason: 'workflowsUnavailable' }
+                    : getWorkflowsFreshness();
+            }
+
+            const progress = workflows.getReadProgress(nameWithOwner);
+            return progress && notice.value === null && !statusRef.value.workflows.failing
+                ? { kind: 'reading', read: progress.read, total: progress.total }
+                : getWorkflowsFreshness();
+        }
+
+        /**
          * Polls the workflows now — a screen showing them opened (actions D2) — unless a poll of them is running. In a
          * tab that does not sync, the syncing tab is asked to.
          */
@@ -361,6 +396,35 @@ export const SyncEngine = defineService({
             } else if (followed) {
                 tabs.publish({ kind: 'pollWorkflows' });
             }
+        }
+
+        /**
+         * Has every poll read the repository's workflows' recent runs on any ref (actions D2, D7), which a screen has on
+         * screen though they may count nowhere, until the function returned is called. A state, not a request: asked at
+         * once when it can be, by the first poll of a session otherwise, by the running poll when one runs, and again
+         * by the next one after one failed. The other tabs hear of it with how this tab is (`TabChannel`), so the tab
+         * that syncs reads it too, and a tab closing lets it go.
+         */
+        function watchAnyRef(nameWithOwner: string) {
+            anyRefWatchers.set(nameWithOwner, (anyRefWatchers.get(nameWithOwner) ?? 0) + 1);
+            tabs.setAnyRefRepositories([...anyRefWatchers.keys()]);
+            pollWorkflowsNow();
+
+            return () => {
+                const left = (anyRefWatchers.get(nameWithOwner) ?? 0) - 1;
+                if (left > 0) {
+                    anyRefWatchers.set(nameWithOwner, left);
+                } else {
+                    anyRefWatchers.delete(nameWithOwner);
+                }
+
+                tabs.setAnyRefRepositories([...anyRefWatchers.keys()]);
+            };
+        }
+
+        /** The repositories whose runs on any ref some tab of the account has on screen. */
+        function getAnyRefRepositories(): ReadonlySet<string> {
+            return new Set([...anyRefWatchers.keys(), ...tabs.otherAnyRefRepositories]);
         }
 
         function getLoopFreshness(
@@ -480,6 +544,11 @@ export const SyncEngine = defineService({
         function isDue(loop: SyncLoop) {
             if (loop === 'download') {
                 return trackingSync.hasDownloadWork();
+            }
+
+            // A screen waits for runs the tab syncing until now may not have read.
+            if (loop === 'workflows' && getAnyRefRepositories().size > 0) {
+                return true;
             }
 
             const { lastAttemptAt } = items.getSyncState(loop);
@@ -655,7 +724,7 @@ export const SyncEngine = defineService({
                     await trackingSync.pollProjects(toContext(current));
                     return { incomplete: false };
                 case 'workflows':
-                    await workflowSync.poll(toContext(current));
+                    await workflowSync.poll(toContext(current), getAnyRefRepositories);
                     return { incomplete: false };
                 case 'download': {
                     // "My work" first: it is what the user waits for, and small (G6).

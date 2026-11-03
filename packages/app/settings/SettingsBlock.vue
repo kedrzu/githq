@@ -1,5 +1,7 @@
 <!-- A section of a repository's or a project's settings (`Settings / Section`, T16, T17): under a rule, its name and what it changes on the left, its controls on the right. Sections stack, so a new setting is one more of these. -->
 <script lang="ts" setup>
+import { useId } from 'vue';
+
 defineProps<{
   title: string;
   /** What the section changes. */
@@ -10,12 +12,23 @@ defineSlots<{
   /** The section's controls. */
   default(): unknown;
 }>();
+
+// Named by its title: a region the keys and assistive technology can find.
+const titleId = useId();
 </script>
 
 <template>
-  <section :class="css.settingsBlock">
+  <section
+    :class="css.settingsBlock"
+    :aria-labelledby="titleId"
+  >
     <div :class="css.settingsBlock_about">
-      <h2 :class="css.settingsBlock_title">{{ title }}</h2>
+      <h2
+        :id="titleId"
+        :class="css.settingsBlock_title"
+      >
+        {{ title }}
+      </h2>
       <p :class="css.settingsBlock_description">{{ description }}</p>
     </div>
     <div :class="css.settingsBlock_content">

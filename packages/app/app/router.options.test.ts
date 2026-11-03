@@ -85,7 +85,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme', 'github'],
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
-    ['/acme/web/actions', 'github'],
+    ['/acme/web/actions', 'repository'],
     // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
     ['/acme/web/commits/main', 'github'],
     ['/acme/web/commit/0123abc', 'github'],

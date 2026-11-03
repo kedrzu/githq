@@ -1,8 +1,10 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { matchText } from '@/testing/matchText.js';
+import { sampleWorkflowState } from '@/testing/sampleWorkflows.js';
 
 import * as stories from './WorkflowRow.stories.js';
 
@@ -13,6 +15,7 @@ const {
     Cancelled,
     CrossRepository,
     Disabled,
+    FailingOnNoRef,
     FewerRuns,
     NoRuns,
     Passing,
@@ -39,6 +42,45 @@ test('the row is a button reached by Tab, named by the workflow, described by ho
     expect(open).toHaveBeenCalledTimes(2);
 });
 
+test('a run under a minute old reads "just now", never "now ago"', async () => {
+    const workflow = sampleWorkflowState({
+        id: 1,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'success', ago: '30h' },
+            { conclusion: 'failure', ago: '14m' },
+        ],
+    });
+    const failedAt = assertValue(workflow.breakStartedAt);
+
+    await BrokenNew.run({ args: { ...BrokenNew.args, workflow, now: failedAt + 10_000 } });
+
+    await expect.element(page.getByText('failed just now')).toBeVisible();
+    await expect.element(page.getByText('Broke just now')).toBeVisible();
+});
+
+test('a re-run of a passed run after a red one reads as it stands: passed, not the red one before it', async () => {
+    const workflow = sampleWorkflowState({
+        id: 1,
+        name: 'Deploy',
+        runs: [
+            { conclusion: 'failure', ago: '2h' },
+            { conclusion: null, ago: '1h', beforeRerun: 'success' },
+        ],
+    });
+
+    await Passing.run({ args: { ...Passing.args, workflow } });
+
+    await expect.element(page.getByText(/^Passing/u)).toBeVisible();
+    await expect.element(page.getByText('passed 1h ago')).toBeVisible();
+    await expect.element(page.getByText('failed 2h ago')).not.toBeInTheDocument();
+});
+
+test('a failure on no named ref says so in words, with no ref', async () => {
+    await FailingOnNoRef.run();
+    await expect.element(page.getByText('Failing without alerts')).toBeVisible();
+});
+
 test('a generated workflow says "by GitHub" in its name', async () => {
     await ByGitHub.run();
     await expect.element(page.getByRole('button', { name: matchText('Dependabot Updates by GitHub') })).toBeVisible();
@@ -50,7 +92,7 @@ test.each([
     [
         'broken longer than the runs known, a run going',
         RunningAfterFailures,
-        'Broken for 4+ days · #204 running 2m',
+        'Broken for 4+ days · #209 running 2m',
         'failed 23h ago',
     ],
     ['broken for weeks', ByGitHub, 'Broken for 3+ weeks', /^failed\sOct\s(30|31)$/],

@@ -275,6 +275,7 @@ test('tracked items stay when they leave my work; untracking drops them unless s
     expect(items.get('I_mine')).toBeDefined();
 });
 
+// Walks a long pause through every loop's timers, which takes about 9 s.
 test('a used-up allowance pauses the download until it resets; signing out stops it, and nothing late is written', async () => {
     const world = sampleWorld();
     const { session, tracking, items, auth } = await setup(world);
@@ -301,7 +302,7 @@ test('a used-up allowance pauses the download until it resets; signing out stops
     // The answer on its way when the user signed out was dropped, and nothing was asked after.
     expect(session.github.requests.length).toBe(before);
     expect(items.all).toEqual([]);
-});
+}, 20_000);
 
 test('the download and a poll running side by side keep each other’s progress', async () => {
     const world = sampleWorld();

@@ -1,4 +1,4 @@
-<!-- The menu of a repository — its context menu in the sidebar, and what its view's title opens (R1): under its name, going to its view or to its issues or pull requests; a new issue in it; its page on GitHub, copying the link to it and its settings; no longer tracking it. -->
+<!-- The menu of a repository — its context menu in the sidebar, and what its view's title opens (R1): under its name, going to its view, to its issues or pull requests, or to its workflows while tracked; a new issue in it; its page on GitHub, copying the link to it and its settings; no longer tracking it. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -17,7 +17,7 @@ const repositoryCommands = useRepositoryCommands();
 const sections = computed(() => {
   const commands = repositoryCommands(props.nameWithOwner);
   return [
-    [commands.open, commands.issues, commands.pullRequests],
+    [commands.open, commands.issues, commands.pullRequests, commands.workflows],
     [commands.newIssue],
     [commands.openOnGitHub, commands.copyLink, commands.settings],
     [commands.untrack],

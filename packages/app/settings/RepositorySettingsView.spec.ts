@@ -1,10 +1,33 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './RepositorySettingsView.stories.js';
 
-const { Synced, Public, VisibilityNotKnown, Downloading, Refused, Hidden } = composeStories(stories);
+const {
+    Synced,
+    Public,
+    VisibilityNotKnown,
+    Downloading,
+    Refused,
+    Hidden,
+    WithPattern,
+    MatchingNothing,
+    AlertsOff,
+    NotRead,
+} = composeStories(stories);
+
+const like = (pattern: string) => new RegExp(pattern.replaceAll(' ', '\\s'), 'u');
+const alerts = () => page.getByRole('region', { name: 'Workflow alerts' });
+const defaultRow = () => alerts().element().querySelector('[data-alert-key="default"]');
+const patternRow = (pattern: string) => alerts().element().querySelector(`[data-alert-key="pattern:${pattern}"]`);
+const others = () => page.getByRole('region', { name: 'Other branches and tags with recent runs, no alerts' });
+const patternField = () => page.getByRole('textbox', { name: 'Branch or tag pattern' });
+
+// As wide as Settings in a window: the section's controls sit beside its description.
+beforeEach(async () => {
+    await page.viewport(1280, 900);
+});
 
 test('the head names the repository, its visibility and that it is tracked, with Esc to go back', async () => {
     await Synced.run();
@@ -90,4 +113,219 @@ test('how it stands, as a row in Repositories says it', async () => {
 
     await Hidden.run();
     await expect.element(page.getByText(/Not\sshown\sto\sgithq/u)).toBeVisible();
+});
+
+test('Workflow alerts on the default: the default branch as GitHub names it, the workflows that run on it, its broken count; the other refs with recent runs, at most three', async () => {
+    await Synced.run();
+
+    await expect.element(page.getByRole('heading', { name: 'Workflow alerts', level: 2 })).toBeVisible();
+    await expect
+        .element(alerts())
+        .toHaveTextContent(like('marks fitloop/webapp broken: a red marker in the sidebar and one more in the total'));
+    await expect.element(page.getByRole('switch', { name: 'Default branch' })).toHaveAttribute('aria-checked', 'true');
+    expect(defaultRow()?.textContent).toMatch(
+        like(
+            '^Default branch\\s*main\\s*as GitHub reports it\\s*Deploy, Probe, Test, and Dependabot Updates run on it\\s*1 broken$',
+        ),
+    );
+    await expect
+        .element(others())
+        .toHaveTextContent(
+            like(
+                'staging\\s*Nightly e2e failed 5h ago\\s*v0.1.0-rc.3\\s*Release failed 6h ago\\s*v2-experiment\\s*Deploy passed 1d ago$',
+            ),
+        );
+    await expect.element(patternField()).toBeVisible();
+    expect(patternField().element().getAttribute('placeholder')).toMatch(
+        like('^Add a branch or tag pattern, such as release/\\* or v\\*$'),
+    );
+    await expect.element(page.getByText('Matches: branches and tags githq has seen runs on')).toBeVisible();
+});
+
+test('W7: a pattern shows its matches, branches first, "+n" for the rest, what runs on them, an amber flag for a branch among tags, and its broken count', async () => {
+    await WithPattern.run();
+
+    expect(patternRow('v*')?.textContent).toMatch(
+        like(
+            '^v\\*\\s*v2-experiment\\s*v0.1.0-rc.3\\s*v0.1.0-rc.2\\s*\\+1\\s*1 branch, 3 tags · Deploy and Release run on them\\s*· v2-experiment is a branch.*1 broken$',
+        ),
+    );
+    // What v* counts is no longer among the refs without alerts.
+    await expect.element(others()).toHaveTextContent(like('staging.*chore/deploy-workflow\\s*Deploy passed 2d ago$'));
+});
+
+test('W8: a pattern matching nothing yet says so, with no count', async () => {
+    await MatchingNothing.run();
+
+    expect(patternRow('release/*')?.textContent).toMatch(
+        like('^release/\\*\\s*No ref githq has seen a run on matches this yet. It counts from the first run on one.$'),
+    );
+});
+
+test('W9: the default branch off and no patterns: dimmed, "· off", "No alerts from …", and main among the refs without alerts', async () => {
+    await AlertsOff.run();
+
+    await expect.element(page.getByRole('switch', { name: 'Default branch' })).toHaveAttribute('aria-checked', 'false');
+    expect(defaultRow()?.textContent).toMatch(
+        like(
+            '^Default branch\\s*main\\s*as GitHub reports it · off\\s*Failures on main raise no alert. Deploy, Probe, Test, and Dependabot Updates run on it.$',
+        ),
+    );
+    await expect.element(page.getByText('No alerts from fitloop/webapp')).toBeVisible();
+    await expect.element(others()).toHaveTextContent(like('^.*main\\s*Deploy failed 2h ago'));
+});
+
+test('W10: not read yet: no matches and no counts, not zeros, and a notice saying so', async () => {
+    await NotRead.run();
+
+    expect(defaultRow()?.textContent).toMatch(like("^Default branch\\s*Its runs haven't been read yet.$"));
+    expect(patternRow('v*')?.textContent).toMatch(like('^v\\*\\s*Matches show once githq has read the runs.$'));
+    await expect.element(page.getByText(/githq\shasn't\sread\sthis\srepository's\sruns\syet/u)).toBeVisible();
+    expect(alerts().element().textContent).not.toMatch(/\d+\sbroken/u);
+    await expect.element(others()).not.toBeInTheDocument();
+});
+
+test('the keys: J/K move, Space switches the default branch, ⌫ removes a pattern at once; a click on the switch switches it too', async () => {
+    const onWorkflowSettings = vi.fn();
+    await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });
+
+    await userEvent.keyboard('j');
+    expect(defaultRow()?.getAttribute('aria-current')).toBe('true');
+    await expect.element(page.getByText(/Space\s?Switch/u)).toBeVisible();
+    await userEvent.keyboard(' ');
+    expect(onWorkflowSettings).toHaveBeenLastCalledWith({ defaultBranch: false, refs: ['v*'] });
+
+    await userEvent.keyboard('j');
+    expect(patternRow('v*')?.getAttribute('aria-current')).toBe('true');
+    await expect.element(page.getByText(/Edit\s*.*Remove/u)).toBeVisible();
+    await userEvent.keyboard('{Backspace}');
+    expect(onWorkflowSettings).toHaveBeenLastCalledWith({ defaultBranch: true, refs: [] });
+
+    await userEvent.click(page.getByRole('switch', { name: 'Default branch' }));
+    expect(onWorkflowSettings).toHaveBeenLastCalledWith({ defaultBranch: false, refs: ['v*'] });
+    expect(onWorkflowSettings).toHaveBeenCalledTimes(3);
+});
+
+test('W11: A opens the add field; the preview follows every key and says what turns broken; Enter adds, Esc throws it away', async () => {
+    const onWorkflowSettings = vi.fn();
+    await Synced.run({ args: { ...Synced.args, onWorkflowSettings } });
+
+    await userEvent.keyboard('a');
+    await expect.element(patternField()).toHaveFocus();
+    // Nothing typed: Enter does nothing.
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('v');
+    await expect.element(alerts()).toHaveTextContent(like('No ref githq has seen a run on matches this yet'));
+    await userEvent.keyboard('*');
+    await expect
+        .element(alerts())
+        .toHaveTextContent(
+            like('Would alert on\\s*v2-experiment\\s*v0.1.0-rc.3\\s*v0.1.0-rc.2\\s*v0.1.0-rc.1\\s*1 branch, 3 tags'),
+        );
+    await expect.element(page.getByText('Release turns broken: it failed on v0.1.0-rc.3 6h ago')).toBeVisible();
+    expect(onWorkflowSettings).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Enter}');
+    expect(onWorkflowSettings).toHaveBeenCalledExactlyOnceWith({ defaultBranch: true, refs: ['v*'] });
+    await expect.element(patternField()).toHaveValue('');
+    await expect.element(patternField()).not.toHaveFocus();
+
+    // Esc throws away what is typed; it never leaves the page.
+    const onBack = vi.fn();
+    await Synced.run({ args: { ...Synced.args, onWorkflowSettings, onBack } });
+    await userEvent.click(patternField());
+    await userEvent.keyboard('release/*{Escape}');
+    await expect.element(patternField()).toHaveValue('');
+    expect(onBack).not.toHaveBeenCalled();
+    expect(onWorkflowSettings).toHaveBeenCalledOnce();
+});
+
+test('after a click on the switch, J/K take the keys back: Enter edits the selected pattern', async () => {
+    const onWorkflowSettings = vi.fn();
+    await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });
+
+    await userEvent.click(page.getByRole('switch', { name: 'Default branch' }));
+    expect(onWorkflowSettings).toHaveBeenCalledOnce();
+    await userEvent.keyboard('jj');
+    expect(patternRow('v*')?.getAttribute('aria-current')).toBe('true');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onWorkflowSettings).toHaveBeenCalledOnce();
+    await expect.element(patternField().first()).toHaveFocus();
+    await expect.element(patternField().first()).toHaveValue('v*');
+});
+
+test('W13: arrived on the add field by its address, Esc on it empty goes back; once typed in, Esc only clears it', async () => {
+    const onBack = vi.fn();
+    await Synced.run({ args: { ...Synced.args, openedOnAddField: true, onBack } });
+    await userEvent.click(patternField());
+    await userEvent.keyboard('{Escape}');
+    expect(onBack).toHaveBeenCalledOnce();
+
+    const onBackLater = vi.fn();
+    await Synced.run({ args: { ...Synced.args, openedOnAddField: true, onBack: onBackLater } });
+    await userEvent.click(patternField());
+    await userEvent.keyboard('v{Escape}');
+    await expect.element(patternField()).toHaveValue('');
+    expect(onBackLater).not.toHaveBeenCalled();
+
+    // Then it is an add field like any other.
+    await userEvent.keyboard('a{Escape}');
+    expect(onBackLater).not.toHaveBeenCalled();
+});
+
+test('the list’s key hints leave while a field has the keys, and come back with them', async () => {
+    await WithPattern.run();
+    const listHints = () => page.getByText(/Edit\s*.*Remove/u);
+
+    await userEvent.keyboard('jj');
+    await expect.element(listHints()).toBeVisible();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(patternField().first()).toHaveFocus();
+    await expect.element(listHints()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(listHints()).toBeVisible();
+
+    await userEvent.keyboard('a');
+    await expect.element(patternField().last()).toHaveFocus();
+    await expect.element(listHints()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(listHints()).toBeVisible();
+});
+
+test('W11: a pattern already in the list says so, and Enter adds nothing', async () => {
+    const onWorkflowSettings = vi.fn();
+    await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });
+
+    await userEvent.click(patternField());
+    await userEvent.keyboard('v*');
+    await expect.element(page.getByText('Already in the list')).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    expect(onWorkflowSettings).not.toHaveBeenCalled();
+});
+
+test('W12: Enter edits a pattern in place, with the same preview naming what stops counting; Enter saves, Esc puts it back', async () => {
+    const onWorkflowSettings = vi.fn();
+    await WithPattern.run({ args: { ...WithPattern.args, onWorkflowSettings } });
+
+    await userEvent.keyboard('jj{Enter}');
+    const editor = page.getByRole('textbox', { name: 'Branch or tag pattern' }).first();
+    await expect.element(editor).toHaveFocus();
+    await expect.element(editor).toHaveValue('v*');
+    await userEvent.keyboard('{Escape}');
+    expect(patternRow('v*')).not.toBeNull();
+    expect(onWorkflowSettings).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('.*.*');
+    await expect
+        .element(alerts())
+        .toHaveTextContent(
+            like('Would alert on\\s*v0.1.0-rc.3\\s*v0.1.0-rc.2\\s*v0.1.0-rc.1\\s*3 tags · Release runs on them'),
+        );
+    await expect.element(page.getByText("Release stays broken, so the counters don't change")).toBeVisible();
+    await expect.element(page.getByText('No longer counted: the branch v2-experiment')).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+    expect(onWorkflowSettings).toHaveBeenCalledExactlyOnceWith({ defaultBranch: true, refs: ['v*.*.*'] });
 });

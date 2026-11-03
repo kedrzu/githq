@@ -1,4 +1,4 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, are tabs beside the title on `1`, `2` and `3`, the first two with their count of open items while tracked. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
 import Translate from '@nzyme/vue-i18n/Translate.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -44,6 +44,7 @@ import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
+import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 
@@ -99,6 +100,8 @@ const props = withDefaults(
     modified?: boolean;
     /** Whether the user may move the item from one group into another (set that milestone, label…). */
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
+    /** The Workflows tab's count: its broken workflows; `unknown` shows a dash, `null` none. */
+    workflowCount?: number | 'unknown' | null;
     /** The sections as tabs beside the title, or in a column of the repository's own (git-client D14). */
     layout?: RepositoryLayout;
   }>(),
@@ -111,6 +114,7 @@ const props = withDefaults(
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
+    workflowCount: null,
     layout: 'tabs',
   },
 );
@@ -144,6 +148,10 @@ defineSlots<{
   selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
+  /** The Workflows tab's body, under the toolbar. */
+  workflows?(): unknown;
+  /** The Workflows tab's key hints, at the toolbar's end. */
+  workflowsHints?(): unknown;
   /**
    * The Commits section's body, the commit graph; `refListInColumn` says its branches and tags render in the column,
    * in the element of `COMMIT_REF_LIST_TARGET_ID`, rather than beside it.
@@ -156,7 +164,12 @@ const choices = useItemListChoices();
 
 const STATE_LABELS = { open: l.stateOpen, closed: l.stateClosed, all: l.stateAll } as const;
 /** Each section's key. */
-const SECTION_KEYS: Readonly<Record<RepositorySection, string>> = { issues: '1', pullRequests: '2', commits: '3' };
+const SECTION_KEYS: Readonly<Record<RepositorySection, string>> = {
+  issues: '1',
+  pullRequests: '2',
+  commits: '3',
+  workflows: '4',
+};
 /** What each item section says of its items. */
 const SECTION_TEXTS = {
   issues: {
@@ -177,12 +190,16 @@ const SECTION_TEXTS = {
   },
 } as const;
 
+// An untracked repository's workflows are not read (actions D4): it has no Workflows section.
+const sections = computed(() =>
+  props.tracked ? REPOSITORY_SECTIONS : REPOSITORY_SECTIONS.filter(value => value !== 'workflows'),
+);
 const sectionOptions = computed((): SegmentedTabsOption<RepositorySection>[] =>
-  REPOSITORY_SECTIONS.map(value => ({
+  sections.value.map(value => ({
     value,
     label: t(l[value]),
     keyshortcuts: SECTION_KEYS[value],
-    count: props.tracked && isItemSection(value) ? props.openCounts[value] : undefined,
+    count: getSectionCount(value),
   })),
 );
 /** The item section shown; `null` on Commits. */
@@ -239,6 +256,17 @@ const others = computed(() => {
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
+const workflowsUrl = computed(() => getGitHubUrl(getRepositoryPath(props.nameWithOwner, 'workflows')));
+const columnGitHubUrl = computed(() => {
+  switch (section.value) {
+    case 'commits':
+      return commitsUrl.value;
+    case 'workflows':
+      return workflowsUrl.value;
+    default:
+      return githubUrl.value;
+  }
+});
 const inColumn = computed(() => props.layout === 'column');
 // A column coming mounts after the pane is updated, and the graph's list must find its place there once told to go.
 const refListInColumn = ref(inColumn.value);
@@ -251,7 +279,7 @@ watch(
 );
 
 useCommands(() =>
-  REPOSITORY_SECTIONS.map(candidate => ({
+  sections.value.map(candidate => ({
     id: `repository.section.${candidate}`,
     title: t(l[candidate]),
     section: 'view',
@@ -262,6 +290,14 @@ useCommands(() =>
     },
   })),
 );
+
+function getSectionCount(value: RepositorySection) {
+  if (value === 'workflows') {
+    return props.workflowCount === 'unknown' ? '–' : (props.workflowCount ?? undefined);
+  }
+
+  return props.tracked && isItemSection(value) ? props.openCounts[value] : undefined;
+}
 </script>
 
 <template>
@@ -274,7 +310,7 @@ useCommands(() =>
           :is-private="isPrivate"
           :tracked="tracked"
           :sections="sectionOptions"
-          :github-url="itemSection === null ? commitsUrl : githubUrl"
+          :github-url="columnGitHubUrl"
           :projects="itemSection !== null && tracked ? projects : []"
           :without-project="withoutProject"
           :projects-label="t(sectionTexts.liveIn)"
@@ -295,14 +331,51 @@ useCommands(() =>
       <div :class="css.repositoryView_pane">
         <!-- In the column, the section's name alone, where the section has no tools of its own to put beside it. -->
         <header
-          v-if="inColumn && (itemSection === null || !list || !tracked)"
+          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || !tracked)"
           :class="css.repositoryView_header"
           v-bind="WINDOW_DRAG_REGION"
         >
           <ListTitle :title="t(l[section])" />
         </header>
+        <template v-if="section === 'workflows'">
+          <ListToolbar
+            v-model:options="options"
+            :title="inColumn ? t(l.workflows) : nameWithOwner"
+            :groupings="groupings"
+            :sorts="choices.sorts.value"
+            :properties="choices.properties.value"
+            :filters="[stateOption]"
+            :modified="modified"
+            bare
+            @reset="emit('reset')"
+          >
+            <template
+              v-if="$slots.menu && !inColumn"
+              #titleMenu
+            >
+              <slot name="menu" />
+            </template>
+            <template
+              v-if="!inColumn"
+              #title
+            >
+              <RepositoryMeta :is-private="isPrivate" />
+            </template>
+            <SegmentedTabs
+              v-if="!inColumn"
+              v-model="section"
+              :class="css.repositoryView_sections"
+              :label="t(l.sections)"
+              :options="sectionOptions"
+            />
+            <template #end>
+              <slot name="workflowsHints" />
+            </template>
+          </ListToolbar>
+          <slot name="workflows" />
+        </template>
         <!-- Commits (git-client D10, D11): none of the list's tools apply, and tracked or not it shows in full. -->
-        <template v-if="itemSection === null || !list">
+        <template v-else-if="itemSection === null || !list">
           <header
             v-if="!inColumn"
             :class="css.repositoryView_header"

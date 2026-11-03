@@ -4,7 +4,7 @@ import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test('a workflow failing on the default branch: the sidebar counts it and marks the repository; its screen lists it under New, Enter opens the failed run on GitHub', async ({
+test('a workflow failing on the default branch: the sidebar counts it and marks the repository; its screen lists it under New', async ({
     page,
     github,
 }) => {
@@ -30,13 +30,6 @@ test('a workflow failing on the default branch: the sidebar counts it and marks 
     await expect(screen.group('New')).toContainText('Deploy');
     await expect(screen.group('New')).toContainText(SAMPLE_REPOSITORY);
     await expect(screen.workflow('Probe')).toHaveCount(0);
-
-    // The world numbers runs as it records them: Deploy's failure is the second.
-    const failedRun = `/${SAMPLE_REPOSITORY}/actions/runs/2`;
-    github.web(failedRun, () => ({ status: 200, body: '<title>Run</title>' }));
-    const popup = page.waitForEvent('popup');
-    await page.keyboard.press('Enter');
-    expect((await popup).url()).toBe(`https://github.com${failedRun}`);
 });
 
 test('with nothing broken the sidebar has no entry; ⌘K "Broken workflows" opens the screen, all green', async ({

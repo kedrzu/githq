@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 import { escapeRegExp } from '../utils/escapeRegExp.js';
@@ -67,6 +68,13 @@ export class FirstSignInHarness {
     /** "Open My work" on the first download (G6). */
     get openMyWorkButton(): Locator {
         return this.root.getByRole('button', { name: 'Open My work' });
+    }
+
+    /** Tracks what is chosen, waits until all of it is downloaded, and opens My work. */
+    async trackAndOpenMyWork(): Promise<void> {
+        await this.trackButton.click();
+        await expect(this.root).toContainText('Everything is here.');
+        await this.openMyWorkButton.click();
     }
 
     /** "Request approval on GitHub" of an organisation hiding its private data (G5). */
