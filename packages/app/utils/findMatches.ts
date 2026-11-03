@@ -16,8 +16,11 @@ const MATCHER_OPTIONS = {
     intraChars: "[\\p{L}\\d']",
     intraContr: "'\\p{L}{1,2}\\b",
 };
-const MATCHER = new uFuzzy({ ...MATCHER_OPTIONS, intraMode: 1 });
-const EXACT_MATCHER = new uFuzzy({ ...MATCHER_OPTIONS, intraMode: 0 });
+/** `IntraMode.SingleError`: uFuzzy's types declare a `const enum`, which does not exist at runtime, so its value can't be imported. */
+const INTRA_MODE_SINGLE_ERROR = 1 as unknown as uFuzzy.IntraMode;
+const MATCHER = new uFuzzy({ ...MATCHER_OPTIONS, intraMode: INTRA_MODE_SINGLE_ERROR });
+// The default `intraMode`: no typos within a word.
+const EXACT_MATCHER = new uFuzzy(MATCHER_OPTIONS);
 
 /** Rows and their texts ready for `findMatches()`; prepare once per list, not per keystroke. */
 export interface PreparedMatchTexts<T> {
