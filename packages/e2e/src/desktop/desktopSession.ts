@@ -47,9 +47,7 @@ export async function signInOnDesktop({
     native.approveDeviceSignIn(SAMPLE_TOKEN);
     const firstSignIn = new FirstSignInHarness(page);
     if (track) {
-        await firstSignIn.trackButton.click();
-        await expect(firstSignIn.root).toContainText('Everything is here.');
-        await firstSignIn.openMyWorkButton.click();
+        await firstSignIn.trackAndOpenMyWork();
     } else {
         await firstSignIn.continueButton.click();
     }
