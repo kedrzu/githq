@@ -369,7 +369,7 @@ export const AuthStore = defineService({
             return btoa(String.fromCodePoint(...bytes))
                 .replaceAll('+', '-')
                 .replaceAll('/', '_')
-                .replace(/=+$/, '');
+                .replace(/[=]+$/, '');
         }
     },
 });
