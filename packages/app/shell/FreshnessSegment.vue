@@ -68,6 +68,8 @@ const look = computed((): SegmentLook => {
         tone: 'muted',
         text: t(l.readingRuns, { read: freshness.read, total: freshness.total }),
       };
+    case 'readingLog':
+      return { icon: LoaderCircle, tone: 'muted', text: t(l.readingLog, { job: freshness.job }) };
     case 'answered':
       return {
         icon: Cloud,

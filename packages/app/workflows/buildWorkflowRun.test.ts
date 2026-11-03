@@ -23,7 +23,9 @@ const RUN: GitHubWorkflowRunDetail = {
     workflowName: 'Deploy',
     headCommitMessage: null,
     actorLogin: null,
+    runAttempt: null,
 };
+const NOW = Date.parse('2026-11-02T12:00:00Z');
 
 test('failed jobs come first, then those not finished, the others in GitHub’s order; the head counts them', () => {
     const { jobs, counts } = build({
@@ -115,26 +117,42 @@ test('a job’s and a step’s mark: running, waiting, then by the conclusion', 
 test('a log is read only for a job that finished and ran', () => {
     const readLog = mock(() => ({ status: 'gone' }) as const);
 
-    expect(getWorkflowLogPane(null, readLog).kind).toBe('loading');
-    expect(getWorkflowLogPane(job(1, 'build', null), readLog).kind).toBe('running');
-    expect(getWorkflowLogPane(job(1, 'build', null, 'queued'), readLog).kind).toBe('running');
-    expect(getWorkflowLogPane(job(1, 'build', 'skipped'), readLog).kind).toBe('skipped');
+    expect(getWorkflowLogPane(null, readLog, NOW).kind).toBe('loading');
+    expect(getWorkflowLogPane(job(1, 'build', null), readLog, NOW).kind).toBe('running');
+    expect(getWorkflowLogPane(job(1, 'build', null, 'queued'), readLog, NOW).kind).toBe('running');
+    expect(getWorkflowLogPane(job(1, 'build', 'skipped'), readLog, NOW).kind).toBe('skipped');
     expect(readLog).not.toHaveBeenCalled();
 
-    expect(getWorkflowLogPane(job(1, 'build', 'failure'), readLog).kind).toBe('gone');
+    expect(getWorkflowLogPane(job(1, 'build', 'failure'), readLog, NOW).kind).toBe('gone');
     expect(readLog).toHaveBeenCalledTimes(1);
 });
 
 test('a finished job’s pane follows its log’s read', () => {
     const build1 = job(1, 'build', 'failure');
-    expect(getWorkflowLogPane(build1, () => ({ status: 'loading' })).kind).toBe('loading');
-    expect(getWorkflowLogPane(build1, () => ({ status: 'failed', httpStatus: 502 }))).toEqual({
+    expect(getWorkflowLogPane(build1, () => ({ status: 'loading' }), NOW).kind).toBe('loading');
+    expect(getWorkflowLogPane(build1, () => ({ status: 'failed', httpStatus: 502 }), NOW)).toEqual({
         kind: 'failed',
         job: build1,
         httpStatus: 502,
     });
-    const log = { lines: [], errors: [], steps: [], hasErrorMarker: false };
-    expect(getWorkflowLogPane(build1, () => ({ status: 'ready', log }))).toEqual({ kind: 'ready', job: build1, log });
+    const log = { lines: [], errors: [], steps: [], characters: 0, hasErrorMarker: false };
+    expect(getWorkflowLogPane(build1, () => ({ status: 'ready', log }), NOW)).toEqual({
+        kind: 'ready',
+        job: build1,
+        log,
+    });
+});
+
+test('GitHub having no log for a job finished under 5 minutes ago means not yet: the page asks again; after that, gone', () => {
+    const finished = (minutes: number) => ({
+        ...job(1, 'build', 'failure'),
+        completedAt: new Date(NOW - minutes * 60_000).toISOString(),
+    });
+    const readLog = () => ({ status: 'gone' }) as const;
+
+    expect(getWorkflowLogPane(finished(0), readLog, NOW)).toMatchObject({ kind: 'loading', notThereYet: true });
+    expect(getWorkflowLogPane(finished(4.9), readLog, NOW)).toMatchObject({ kind: 'loading', notThereYet: true });
+    expect(getWorkflowLogPane(finished(5), readLog, NOW).kind).toBe('gone');
 });
 
 function build(params: Partial<BuildWorkflowRunParams>) {

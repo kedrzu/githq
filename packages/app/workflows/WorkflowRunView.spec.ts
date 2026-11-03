@@ -23,6 +23,7 @@ const {
     RunFailed,
     RunGone,
     Running,
+    SecondAttempt,
 } = composeStories(stories);
 
 const jobs = () => page.getByTestId('workflow-job').elements();
@@ -56,6 +57,14 @@ test('W4a: the summary says what the run is, at once', async () => {
     await expect.element(summary).toHaveTextContent('4f1c9e2');
     await expect.element(summary).toHaveTextContent('Move design tokens into the ui package');
     await expect.element(summary).toHaveTextContent(/14m ago · took 3m 12s/u);
+});
+
+test('W4j: past the first attempt the summary says which', async () => {
+    await SecondAttempt.run();
+    await expect.element(page.getByTestId('workflow-run-summary')).toHaveTextContent('· attempt 2');
+
+    await Failed.run();
+    await expect.element(page.getByTestId('workflow-run-summary')).not.toHaveTextContent('attempt');
 });
 
 test('the log’s lines show as text, never as markup', async () => {

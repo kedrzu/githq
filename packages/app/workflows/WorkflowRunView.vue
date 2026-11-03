@@ -1,4 +1,4 @@
-<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the run on GitHub, also in ⌘K. No key or command for re-running yet. -->
+<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the run on GitHub, also in ⌘K. The log's own keys are `WorkflowJobLog`'s. No key or command for re-running yet. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -16,6 +16,7 @@ import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 
 import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
+import type { LogLineAddress } from './utils/logLineHash.js';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRunJobs from './WorkflowRunJobs.vue';
 import WorkflowRunLogPane from './WorkflowRunLogPane.vue';
@@ -30,6 +31,8 @@ const props = defineProps<{
   model: WorkflowRunModel;
   /** The selected job's log, or what stands in for it. */
   logPane: WorkflowLogPane;
+  /** The log line the address names (`…/job/1#step:2:3`); `null` with none. */
+  lineAddress: LogLineAddress | null;
   /** The ref the run is on; `null` when GitHub names none. */
   gitRef: WorkflowRowRef | null;
   /** Where the run's workflow file is, as last read; `null` when not known. */
@@ -277,6 +280,9 @@ function getInvalidFileMessage(): RunMessage {
       />
       <WorkflowRunLogPane
         :pane="logPane"
+        :name-with-owner="nameWithOwner"
+        :run-id="runId"
+        :line-address="lineAddress"
         :run-created-at="model.run?.createdAt ?? null"
         :now="now"
         @retry="emit('retry')"

@@ -57,13 +57,19 @@ export type WorkflowLogPane =
     | { readonly kind: 'running'; readonly job: GitHubWorkflowJob }
     /** It never ran, so it has no log. */
     | { readonly kind: 'skipped'; readonly job: GitHubWorkflowJob }
-    /** On its way; `null` while no job is known yet (W4e). */
-    | { readonly kind: 'loading'; readonly job: GitHubWorkflowJob | null }
+    /**
+     * On its way; `null` while no job is known yet (W4e). `notThereYet`: GitHub says it has no log, but the job has only
+     * just finished, and its log takes a moment to land: the page asks again.
+     */
+    | { readonly kind: 'loading'; readonly job: GitHubWorkflowJob | null; readonly notThereYet?: boolean }
     /** Past GitHub's retention (W4g). */
     | { readonly kind: 'gone'; readonly job: GitHubWorkflowJob }
     /** This log failed to read; the rest of the page goes on (W4i). */
     | { readonly kind: 'failed'; readonly job: GitHubWorkflowJob; readonly httpStatus: number | null }
     | { readonly kind: 'ready'; readonly job: GitHubWorkflowJob; readonly log: ParsedJobLog };
+
+/** How long after a job finishes GitHub saying it has no log means "not yet", not "no longer". */
+const LOG_LANDING_MS = 5 * 60_000;
 
 const MARK_RANK: Readonly<Record<WorkflowJobMark, number>> = {
     failed: 0,
@@ -128,10 +134,12 @@ export function getJobMark(job: Pick<GitHubWorkflowJob, 'status' | 'conclusion'>
  * would read as gone.
  *
  * @param readLog Starts the read the first time it is asked.
+ * @param now Epoch ms "just finished" is counted from.
  */
 export function getWorkflowLogPane(
     job: GitHubWorkflowJob | null,
     readLog: (job: GitHubWorkflowJob) => WorkflowLogState,
+    now: number,
 ): WorkflowLogPane {
     if (!job) {
         return { kind: 'loading', job };
@@ -144,23 +152,27 @@ export function getWorkflowLogPane(
         case 'skipped':
             return { kind: 'skipped', job };
         default:
-            return getReadPane(job, readLog(job));
+            return getReadPane(job, readLog(job), now);
     }
 }
 
-function getReadPane(job: GitHubWorkflowJob, state: WorkflowLogState): WorkflowLogPane {
+function getReadPane(job: GitHubWorkflowJob, state: WorkflowLogState, now: number): WorkflowLogPane {
     switch (state.status) {
         case 'loading':
             return { kind: 'loading', job };
         case 'ready':
             return { kind: 'ready', job, log: state.log };
         case 'gone':
-            return { kind: 'gone', job };
+            return isJustFinished(job, now) ? { kind: 'loading', job, notThereYet: true } : { kind: 'gone', job };
         case 'failed':
             return { kind: 'failed', job, httpStatus: state.httpStatus };
         default:
             return assertNever(state);
     }
+}
+
+function isJustFinished(job: GitHubWorkflowJob, now: number) {
+    return job.completedAt !== null && now - Date.parse(job.completedAt) < LOG_LANDING_MS;
 }
 
 function getBody(runState: WorkflowRunState, jobsState: WorkflowJobsState): WorkflowRunBody {

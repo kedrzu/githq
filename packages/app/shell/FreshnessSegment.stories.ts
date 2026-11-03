@@ -35,6 +35,9 @@ export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 /** A repository's workflows listed, the first read of their runs under way (actions W3c). */
 export const ReadingRuns: Story = { args: { freshness: { kind: 'reading', read: 2, total: 6 } } };
 
+/** A run's page is waiting for a log (actions W4e). */
+export const ReadingLog: Story = { args: { freshness: { kind: 'readingLog', job: 'build' } } };
+
 /** Offline: amber, as of the last success. */
 export const Offline: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'offline' } } };
 

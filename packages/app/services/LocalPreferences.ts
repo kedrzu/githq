@@ -11,11 +11,13 @@ import { Browser } from './Browser.js';
 
 const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
+const LOG_WRAP_KEY = 'githq.logWrap';
+const LOG_TIMES_KEY = 'githq.logTimes';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed and the widths the user dragged the panels to. The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to and how job logs show. The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -45,6 +47,20 @@ export const LocalPreferences = defineService({
             serialize: String,
             deserialize: raw => raw === 'true',
         });
+        const logWrap = storageRef<boolean>({
+            key: LOG_WRAP_KEY,
+            storage,
+            default: () => false,
+            serialize: String,
+            deserialize: raw => raw === 'true',
+        });
+        const logTimes = storageRef<boolean>({
+            key: LOG_TIMES_KEY,
+            storage,
+            default: () => false,
+            serialize: String,
+            deserialize: raw => raw === 'true',
+        });
         const panelWidths = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -59,6 +75,14 @@ export const LocalPreferences = defineService({
                 sidebarCollapsed.reload();
             }
 
+            if (key === null || key === LOG_WRAP_KEY) {
+                logWrap.reload();
+            }
+
+            if (key === null || key === LOG_TIMES_KEY) {
+                logTimes.reload();
+            }
+
             for (const [panel, width] of panelWidths) {
                 if (key === null || key === PANEL_WIDTH_KEY_PREFIX + panel) {
                     width.reload();
@@ -71,6 +95,10 @@ export const LocalPreferences = defineService({
             itemArrangement,
             /** Whether the sidebar is collapsed to its icons. */
             sidebarCollapsed,
+            /** Whether a job's log wraps its long lines (actions W4d); off, so that lines stay scannable. */
+            logWrap,
+            /** Whether a job's log shows each line's own time (actions W4d). */
+            logTimes,
             getPanelWidth,
         };
 

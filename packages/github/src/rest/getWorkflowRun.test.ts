@@ -23,6 +23,7 @@ const RUN = {
     updated_at: '2026-11-02T19:18:45Z',
     head_commit: { id: 'af427d1', message: 'fix(web): grow the track pickers\n\nThe dialogs.' },
     actor: { login: 'kedrzu', id: 1 },
+    run_attempt: 3,
 };
 
 const PARAMS = { nameWithOwner: 'kedrzu/githq', runId: 41_507_834_451 };
@@ -46,6 +47,7 @@ test('reads the run with what its summary needs, and sends the held ETag', async
             headSha: 'af427d1b0fb8f9fc00e6ee5d05578fbc19f1e2c0',
             headCommitMessage: 'fix(web): grow the track pickers\n\nThe dialogs.',
             actorLogin: 'kedrzu',
+            runAttempt: 3,
         },
     });
     const [input, init] = requests[0] ?? [];
@@ -54,10 +56,12 @@ test('reads the run with what its summary needs, and sends the held ETag', async
 });
 
 test('a run without a name, commit or actor still reads, those told as unknown', async () => {
-    const rest = restAnswering([Response.json({ ...RUN, name: null, head_commit: null, actor: undefined })]);
+    const rest = restAnswering([
+        Response.json({ ...RUN, name: null, head_commit: null, actor: undefined, run_attempt: undefined }),
+    ]);
 
     expect(await getWorkflowRun(rest, PARAMS)).toMatchObject({
-        run: { workflowName: null, headCommitMessage: null, actorLogin: null },
+        run: { workflowName: null, headCommitMessage: null, actorLogin: null, runAttempt: null },
     });
 });
 

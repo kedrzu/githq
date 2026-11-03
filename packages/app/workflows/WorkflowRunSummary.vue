@@ -1,4 +1,4 @@
-<!-- What a run is (actions `Workflow / Run summary`): its state, the ref it ran on, what started it, its commit, when and how long it took — or, while it goes, since when and whether its workflow stays broken. All of it from the local copy at once; the commit's whole title once the run itself is read. Placeholders only while nothing at all is known of the run. -->
+<!-- What a run is (actions `Workflow / Run summary`): its state, the ref it ran on, what started it, its commit, when and how long it took, and which attempt past the first — or, while it goes, since when and whether its workflow stays broken. All of it from the local copy at once; the commit's whole title once the run itself is read. Placeholders only while nothing at all is known of the run. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -72,6 +72,11 @@ const when = computed(() => {
   const tail = description.value?.tail;
   return tail?.kind === 'duration' ? t(l.tookWhen, { when: dated, duration: formatDuration(tail.ms) }) : dated;
 });
+/** " · attempt 2"; nothing on the first. */
+const attempt = computed(() => {
+  const runAttempt = props.run?.runAttempt;
+  return runAttempt != null && runAttempt > 1 ? t(l.attempt, { attempt: runAttempt }) : '';
+});
 </script>
 
 <template>
@@ -96,7 +101,7 @@ const when = computed(() => {
         <span :class="css.workflowRunSummary_sha">{{ run.headSha.slice(0, SHORT_SHA) }}</span>
         <span :class="css.workflowRunSummary_title">{{ commitTitle }}</span>
       </span>
-      <span :class="css.workflowRunSummary_when">{{ when }}</span>
+      <span :class="css.workflowRunSummary_when">{{ when }}{{ attempt }}</span>
     </template>
     <span
       v-else

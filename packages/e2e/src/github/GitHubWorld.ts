@@ -620,6 +620,32 @@ export class GitHubWorld {
         return answered.map(job => job.id);
     }
 
+    /**
+     * A log with lines in the job's steps, by step number: each at the second its step started, and a step's first line
+     * the `##[group]Run` of its name for a run step, which is what tells a step from the one before it in that second.
+     */
+    jobLogBySteps(
+        nameWithOwner: string,
+        runId: number,
+        jobId: number,
+        byStep: Readonly<Record<number, readonly string[]>>,
+    ): void {
+        const job = this.getRepository(nameWithOwner)
+            .jobs.get(runId)
+            ?.find(candidate => candidate.id === jobId);
+        if (!job) {
+            throw new Error(`No job ${jobId} in run ${runId}`);
+        }
+
+        const lines = job.steps.flatMap(step => {
+            const texts = byStep[step.number] ?? [];
+            return (step.name.startsWith('Run ') ? [`##[group]${step.name}`, ...texts] : texts).map(
+                text => `${step.startedAt} ${text}`,
+            );
+        });
+        this.jobLog(nameWithOwner, jobId, lines.join('\n'));
+    }
+
     /** What the job's log answers: its text, plain as GitHub keeps it, or an error status (410 past retention, 502). */
     jobLog(nameWithOwner: string, jobId: number, log: GitHubActionsLog): void {
         this.getRepository(nameWithOwner).logs.set(jobId, log);

@@ -1,10 +1,18 @@
 reading:
   en: Reading…
-lines:
+logSize:
   plural: count
   en:
-    one: '{count} line'
-    many: '{count} lines'
+    one: '{shown} line · {kilobytes} KB'
+    many: '{shown} lines · {kilobytes} KB'
+line:
+  en: Line
+step:
+  en: Step
+error:
+  en: Error
+fold:
+  en: Fold
 stillRunning:
   en: still running
 logDeleted:

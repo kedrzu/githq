@@ -46,6 +46,7 @@ import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
+import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
 defineSlots<{
@@ -69,6 +70,7 @@ const preferences = useService(LocalPreferences);
 const navigation = useService(ItemNavigation);
 const settingsSync = useService(SettingsSync);
 const workflows = useService(WorkflowStore);
+const workflowRuns = useService(WorkflowRunStore);
 const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 
@@ -126,7 +128,10 @@ const screenFreshness = computed((): Freshness => {
 
   const { owner, name, number } = route.params;
   if (isWorkflowRunRoute(route)) {
-    return sync.getRepositoryWorkflowsFreshness(getRouteNameWithOwner(route));
+    const job = workflowRuns.readingLogOf.value;
+    return job === null
+      ? sync.getRepositoryWorkflowsFreshness(getRouteNameWithOwner(route))
+      : { kind: 'readingLog', job };
   }
 
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {

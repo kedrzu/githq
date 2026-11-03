@@ -8,16 +8,24 @@ import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
 
 import { getJobMark } from './buildWorkflowRun.js';
 import type { WorkflowLogPane } from './buildWorkflowRun.js';
+import type { LogLineAddress } from './utils/logLineHash.js';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowJobLog from './WorkflowJobLog.vue';
+import WorkflowLogToolbar from './WorkflowLogToolbar.vue';
 import * as l from './WorkflowRunLogPane.loc.js';
 
 const props = defineProps<{
   pane: WorkflowLogPane;
+  /** `owner/name`. */
+  nameWithOwner: string;
+  runId: number;
+  /** The log line the address names; `null` with none. */
+  lineAddress: LogLineAddress | null;
   /** When the run was created (ISO); `null` while it is not known. */
   runCreatedAt: string | null;
   /** Epoch ms the ages are counted to. */
@@ -45,6 +53,7 @@ const DAY = 24 * 60 * 60_000;
 /** What GitHub keeps logs for by default (actions D3); a repository can set otherwise, and githq can't see it. */
 const RETENTION_DAYS = 90;
 const PLACEHOLDER_LINES = [62, 48, 71, 35, 55, 80, 44, 66, 30, 58, 74, 40];
+const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 
 const t = useTranslate();
 
@@ -54,7 +63,11 @@ const size = computed(() => {
     case 'loading':
       return t(l.reading);
     case 'ready':
-      return t(l.lines, { count: pane.log.lines.length });
+      return t(l.logSize, {
+        count: pane.log.lines.length,
+        shown: NUMBER_FORMAT.format(pane.log.lines.length),
+        kilobytes: NUMBER_FORMAT.format(Math.round(pane.log.characters / 1000)),
+      });
     case 'running':
       return t(l.stillRunning);
     case 'gone':
@@ -145,26 +158,23 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
     :class="css.workflowRunLogPane"
     :aria-label="pane.job?.name"
   >
-    <div :class="css.workflowRunLogPane_toolbar">
-      <span
-        v-if="pane.job"
-        :class="css.workflowRunLogPane_job"
-        >{{ pane.job.name }}</span
-      >
-      <span
-        :class="css.workflowRunLogPane_size"
-        tid="workflow-log-size"
-        >{{ size }}</span
-      >
-    </div>
     <WorkflowJobLog
       v-if="pane.kind === 'ready'"
       :key="pane.job.id"
       :job="pane.job"
       :log="pane.log"
+      :name-with-owner="nameWithOwner"
+      :run-id="runId"
+      :size="size"
+      :address="lineAddress"
+    />
+    <WorkflowLogToolbar
+      v-else
+      :job="pane.job?.name ?? null"
+      :size="size"
     />
     <div
-      v-else-if="pane.kind === 'loading'"
+      v-if="pane.kind === 'loading'"
       :class="css.workflowRunLogPane_placeholders"
       aria-hidden="true"
       tid="workflow-log-placeholder"
@@ -223,11 +233,33 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
         <Kbd keys="Enter" />
         {{ t(l.tryAgain) }}
       </span>
+      <template v-if="pane.kind === 'ready'">
+        <span :class="css.workflowRunLogPane_hint">
+          <Kbd keys="J" />
+          <Kbd keys="K" />
+          {{ t(l.line) }}
+        </span>
+        <span :class="css.workflowRunLogPane_hint">
+          <Kbd keys="Shift+J" />
+          <Kbd keys="Shift+K" />
+          {{ t(l.step) }}
+        </span>
+      </template>
       <span :class="css.workflowRunLogPane_hint">
         <Kbd keys="Alt+J" />
         <Kbd keys="Alt+K" />
         {{ t(l.job) }}
       </span>
+      <template v-if="pane.kind === 'ready'">
+        <span :class="css.workflowRunLogPane_hint">
+          <Kbd keys="E" />
+          {{ t(l.error) }}
+        </span>
+        <span :class="css.workflowRunLogPane_hint">
+          <Kbd keys="Space" />
+          {{ t(l.fold) }}
+        </span>
+      </template>
       <span :class="css.workflowRunLogPane_hint">
         <Kbd keys="O" />
         {{ t(l.gitHub) }}
@@ -248,30 +280,6 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-}
-
-.workflowRunLogPane_toolbar {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: 36px;
-  padding: 0 $spacing-12 0 $spacing-14;
-  font-size: $font-size-xs;
-  border-bottom: 1px solid $color-border;
-}
-
-.workflowRunLogPane_job {
-  overflow: hidden;
-  font-family: $font-family-mono;
-  color: $color-fg;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workflowRunLogPane_size {
-  flex: none;
-  color: $color-fg-dim;
 }
 
 .workflowRunLogPane_placeholders {

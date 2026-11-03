@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j). The job the address names is selected, else the first failed; selecting one replaces the address. Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
+<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. An address with `#step:N:L` puts the log's cursor on that line. The job the address names is selected, else the first failed; selecting one replaces the address. Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -18,6 +18,7 @@ import {
 
 import { buildWorkflowRun, getWorkflowLogPane } from './buildWorkflowRun.js';
 import { getRefKind } from './utils/getRefKind.js';
+import { parseLogLineHash } from './utils/logLineHash.js';
 import { WorkflowRunStore } from './WorkflowRunStore.js';
 import WorkflowRunView from './WorkflowRunView.vue';
 import { WorkflowStore } from './WorkflowStore.js';
@@ -54,10 +55,14 @@ const model = computed(() =>
 );
 // Only with the columns shown: a run GitHub no longer shows reads no log.
 const logPane = computed(() =>
-  getWorkflowLogPane(model.value.body.kind === 'jobs' ? model.value.selectedJob : null, job =>
-    store.getLog(nameWithOwner, job.id, job.steps),
+  getWorkflowLogPane(
+    model.value.body.kind === 'jobs' ? model.value.selectedJob : null,
+    job => store.getLog(nameWithOwner, job.id, job.steps),
+    now.value,
   ),
 );
+const logNotThereYet = computed(() => logPane.value.kind === 'loading' && logPane.value.notThereYet === true);
+const lineAddress = computed(() => (route.name === 'workflow-run-job' ? parseLogLineHash(route.hash) : null));
 const stored = computed(() => workflows.get(nameWithOwner));
 const gitRef = computed((): WorkflowRowRef | null => {
   const name = model.value.run?.headBranch ?? null;
@@ -81,22 +86,38 @@ const stillBroken = computed(() => {
 let cancelRefresh: (() => void) | null = null;
 
 watch(
-  () => model.value.going,
-  going => {
+  () => model.value.going || logNotThereYet.value,
+  asking => {
     cancelRefresh?.();
     cancelRefresh = null;
-    if (going) {
+    if (asking) {
       scheduleRefresh();
     }
   },
   { immediate: true },
 );
-onScopeDispose(() => cancelRefresh?.());
+// The status bar says which log is being read.
+watch(
+  logPane,
+  pane => {
+    store.readingLogOf.value = pane.kind === 'loading' && pane.job ? pane.job.name : null;
+  },
+  { immediate: true },
+);
+onScopeDispose(() => {
+  cancelRefresh?.();
+  store.readingLogOf.value = null;
+});
 onMounted(() => store.refresh(nameWithOwner, runId));
 
 function scheduleRefresh() {
   cancelRefresh = clock.schedule(() => {
     store.refresh(nameWithOwner, runId);
+    const pane = logPane.value;
+    if (logNotThereYet.value && pane.job) {
+      store.retry(nameWithOwner, pane.job.id, pane.job.steps);
+    }
+
     scheduleRefresh();
   }, REFRESH_MS);
 }
@@ -133,6 +154,7 @@ function close() {
     :run-id="runId"
     :model="model"
     :log-pane="logPane"
+    :line-address="lineAddress"
     :git-ref="gitRef"
     :workflow-path="workflowPath"
     :still-broken="stillBroken"

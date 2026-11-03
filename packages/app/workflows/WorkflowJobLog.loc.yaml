@@ -1,0 +1,44 @@
+errorPosition:
+  en: 'Error {position} of {total}'
+noErrorMarker:
+  en: No error marker
+wrap:
+  en: Wrap
+times:
+  en: Times
+errorPrefix:
+  en: 'Error:'
+warningPrefix:
+  en: 'Warning:'
+moreCharacters:
+  en: '… {count} more characters'
+logEnd:
+  en: The log ends here. The job failed without an error marker, for example because its runner died.
+nextLine:
+  en: Next line
+previousLine:
+  en: Previous line
+nextStep:
+  en: Next step
+previousStep:
+  en: Previous step
+nextError:
+  en: Next error
+previousError:
+  en: Previous error
+fold:
+  en: Fold or open the step
+top:
+  en: Top of the log
+end:
+  en: End of the log
+halfPageDown:
+  en: Half a page down
+halfPageUp:
+  en: Half a page up
+wrapLines:
+  en: Wrap lines
+showTimes:
+  en: Show each line's time
+copyLineLink:
+  en: Copy a link to the line

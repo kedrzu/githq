@@ -34,6 +34,8 @@ export interface ParsedJobLog {
     readonly errors: readonly number[];
     /** In the order given. */
     readonly steps: readonly JobLogStep[];
+    /** How long the log's text is, which the viewer tells as its size. */
+    readonly characters: number;
     /** `false`: GitHub marked no error, so nothing tells where in the log the failure is (actions D3). */
     readonly hasErrorMarker: boolean;
 }
@@ -171,6 +173,7 @@ export function parseJobLog(text: string, steps: readonly GitHubWorkflowStep[]):
             firstLine: firstLines.get(step.number) ?? null,
             lastLine: lastLines.get(step.number) ?? null,
         })),
+        characters: text.length,
         hasErrorMarker: errors.length > 0,
     };
 }

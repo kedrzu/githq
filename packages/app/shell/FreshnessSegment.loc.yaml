@@ -2,6 +2,8 @@ upToDate:
   en: Up to date
 checking:
   en: Checking…
+readingLog:
+  en: 'Reading the log of {job}…'
 readingRuns:
   en: Reading runs · {read} of {total} workflows
 asOf:

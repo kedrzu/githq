@@ -1,0 +1,8 @@
+lineRange:
+  en: 'lines {first}–{last}'
+oneLine:
+  en: 'line {line}'
+noLines:
+  en: no lines
+skipped:
+  en: skipped

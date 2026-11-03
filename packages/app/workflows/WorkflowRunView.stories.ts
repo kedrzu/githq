@@ -12,6 +12,7 @@ import type { WorkflowLogState } from './WorkflowRunStore.js';
 import WorkflowRunView from './WorkflowRunView.vue';
 
 const MINUTE = 60_000;
+const STEP_MS = 10_000;
 const DAY = 24 * 60 * MINUTE;
 
 const RUN: GitHubWorkflowRunDetail = {
@@ -31,6 +32,7 @@ const RUN: GitHubWorkflowRunDetail = {
     workflowName: 'Deploy',
     headCommitMessage: 'Move design tokens into the ui package\n\nAnd the rest.',
     actorLogin: 'mlaine',
+    runAttempt: 1,
 };
 
 const BUILD_STEPS = [
@@ -51,15 +53,18 @@ const JOBS = [
 const RUNNING_RUN: GitHubWorkflowRunDetail = { ...RUN, status: 'in_progress', conclusion: null };
 
 const LOG_TEXT = [
-    '2026-11-02T11:46:01.0000000Z ##[group]Run bun run build',
-    '2026-11-02T11:46:02.0000000Z <b>building</b> the bundle',
-    '2026-11-02T11:48:00.0000000Z ##[error]Process completed with exit code 1.',
+    `${stepStart(1)} Runner image`,
+    `${stepStart(2)} Fetching`,
+    `${stepStart(3)} ##[group]Run bun run build`,
+    `${stepStart(3)} <b>building</b> the bundle`,
+    `${stepStart(3)} ##[error]Process completed with exit code 1.`,
 ].join('\n');
 
 const meta = {
     component: WorkflowRunView,
     args: {
         ...viewOf({}, () => ({ status: 'ready', log: parseJobLog(LOG_TEXT, BUILD_STEPS) })),
+        lineAddress: null,
         onSelectJob: fn(),
         onRetry: fn(),
         onOpenOnGitHub: fn(),
@@ -72,12 +77,12 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** W4a: failed first; the failed job selected, its steps shown, its log in the pane's plain list for now. */
+/** W4a: failed first; the failed job selected, its steps shown, its log in the pane, opened at its error. */
 export const Failed: Story = {};
 
 /** The address names another job: it is selected, with its steps. */
 export const OtherJob: Story = {
-    args: viewOf({ jobId: 104 }, () => ({ status: 'ready', log: parseJobLog(LOG_TEXT, BUILD_STEPS) })),
+    args: viewOf({ jobId: 104 }, () => ({ status: 'ready', log: parseJobLog(LOG_TEXT, JOBS[3]?.steps ?? []) })),
 };
 
 /** W4e: what is known is there; the jobs and the log wait in place. */
@@ -142,6 +147,14 @@ export const Running: Story = {
     },
 };
 
+/** A run tried again: the summary says which attempt. */
+export const SecondAttempt: Story = {
+    args: viewOf({ run: { run: { ...RUN, runAttempt: 2 }, status: 'ready', httpStatus: null } }, () => ({
+        status: 'ready',
+        log: parseJobLog(LOG_TEXT, BUILD_STEPS),
+    })),
+};
+
 /** A run that passed: its first job selected, no error. */
 export const Passed: Story = {
     args: viewOf(
@@ -193,12 +206,21 @@ function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => Workflow
         nameWithOwner: 'fitloop/webapp',
         runId: RUN.id,
         model,
-        logPane: getWorkflowLogPane(model.body.kind === 'jobs' ? model.selectedJob : null, readLog),
+        logPane: getWorkflowLogPane(
+            model.body.kind === 'jobs' ? model.selectedJob : null,
+            readLog,
+            SAMPLE_WORKFLOWS_NOW,
+        ),
         gitRef: { name: 'main', kind: 'branch' } as const,
         workflowPath: null,
         stillBroken: false,
         now: SAMPLE_WORKFLOWS_NOW,
     };
+}
+
+/** When step `number` started: they run one after the other, so a log's lines tell which they belong to. */
+function stepStart(number: number) {
+    return ago(14 * MINUTE - number * STEP_MS);
 }
 
 function ago(ms: number) {
@@ -230,7 +252,7 @@ function step(number: number, name: string, conclusion: string | null): GitHubWo
         number,
         status: conclusion === null ? 'in_progress' : 'completed',
         conclusion,
-        startedAt: ago(14 * MINUTE),
-        completedAt: conclusion === null ? null : ago(14 * MINUTE - 3000),
+        startedAt: stepStart(number),
+        completedAt: conclusion === null ? null : ago(14 * MINUTE - number * STEP_MS - 3000),
     };
 }

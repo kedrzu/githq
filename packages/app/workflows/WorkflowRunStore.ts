@@ -130,7 +130,15 @@ export const WorkflowRunStore = defineService({
                 : null;
         });
 
-        return { getRun, getJobs, refresh, getLog, retry };
+        return {
+            /** The name of the job whose log the page shown is waiting for, as the status bar says it (W4e). */
+            readingLogOf: shallowRef<string | null>(null),
+            getRun,
+            getJobs,
+            refresh,
+            getLog,
+            retry,
+        };
 
         /** The run as the sync stored it, at once, then as read. Reactive. */
         function getRun(nameWithOwner: string, runId: number): WorkflowRunState {
@@ -342,7 +350,7 @@ function findStoredRun(stored: RepositoryWorkflows | undefined, runId: number): 
     for (const { workflow, runs } of stored?.workflows ?? []) {
         const run = runs.find(candidate => candidate.id === runId);
         if (run) {
-            return { ...run, workflowName: workflow.name, headCommitMessage: null, actorLogin: null };
+            return { ...run, workflowName: workflow.name, headCommitMessage: null, actorLogin: null, runAttempt: null };
         }
     }
 
