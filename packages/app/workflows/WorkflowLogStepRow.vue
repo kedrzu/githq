@@ -1,9 +1,11 @@
-<!-- A step's head in the log viewer (actions W4a): whether it is folded and how it went, its name, the lines it holds and how long it took. Pressing it folds or opens the step; a step with no lines has nothing to fold. The same in the document and stuck to the top of the view. -->
+<!-- A step's head in the log viewer (actions W4a): whether it is folded and how it went, its name, the lines it holds, a search's matches in it and how long it took. Pressing it folds or opens the step; a step with no lines has nothing to fold. The same in the document and stuck to the top of the view. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, ChevronDown, ChevronRight, CircleSlash, CircleX } from 'lucide-vue-next';
 import { computed } from 'vue';
+
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
 import type { LogSection } from './buildLogDocument.js';
 import { formatTimeTaken } from './utils/formatTimeTaken.js';
@@ -16,12 +18,16 @@ const props = defineProps<{
   range: { readonly first: number; readonly last: number } | null;
   /** The cursor's line is folded under it. */
   cursor?: boolean;
+  /** A search's matches in it, folded or not; none when there is no count to tell. */
+  matchCount?: number;
 }>();
 
 const emit = defineEmits<{
   /** Folded or opened. */
   toggle: [];
 }>();
+
+const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 
 const t = useTranslate();
 
@@ -80,6 +86,12 @@ const taken = computed(() => {
     }}</span>
     <span :class="css.workflowLogStepRow_meta">{{ meta }}</span>
     <span :class="css.workflowLogStepRow_spacer" />
+    <span
+      v-if="matchCount"
+      :class="css.workflowLogStepRow_matches"
+      tid="workflow-log-step-matches"
+      >{{ t(l.matches, { count: matchCount, shown: NUMBER_FORMAT.format(matchCount) }) }}</span
+    >
     <span
       v-if="taken"
       :class="css.workflowLogStepRow_time"
@@ -145,6 +157,13 @@ const taken = computed(() => {
 
 .workflowLogStepRow_spacer {
   flex: 1;
+}
+
+.workflowLogStepRow_matches {
+  flex: none;
+  font-family: $font-family-mono;
+  font-size: $font-size-3xs;
+  color: $color-accent;
 }
 
 .workflowLogStepRow_time {

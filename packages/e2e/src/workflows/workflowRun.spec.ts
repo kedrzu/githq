@@ -606,3 +606,100 @@ test('under `actions/` of a tracked repository everything but a run and its job 
         await expect(page).toHaveURL(`https://github.com${address}`);
     }
 });
+
+test('searching a job’s log: from memory, folded steps included, next and only the matches; another job keeps the query; Esc returns, a second goes back', async ({
+    page,
+    github,
+}) => {
+    const { world, runId, path } = createFailedRun();
+    const [buildId, lintId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD, LINT]);
+    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId ?? 0, {
+        1: ['installing <b>resolve</b> first'],
+        2: [
+            ...Array.from({ length: 30 }, (_, index) => `building ${index}`),
+            'could not resolve the module',
+            '##[error]Process completed with exit code 1.',
+        ],
+    });
+    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, lintId ?? 0, { 1: ['nothing to resolve here'] });
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.cursorLine).toContainText('Process completed');
+    const before = await screen.cursorLine.textContent();
+    await expect(screen.logStep('Set up job')).toHaveAttribute('aria-expanded', 'false');
+    const calls = github.restCalls.length;
+
+    await page.keyboard.press('/');
+    await expect(screen.searchField).toBeFocused();
+    await page.keyboard.type('resolve');
+    await expect(screen.searchPosition).toHaveText('1 of 2');
+    await expect(screen.jobMatches).toContainText('2');
+    await expect(screen.stepMatches).toHaveCount(2);
+    // The cursor was past both: the first from there wraps around, into the folded step.
+    await expect(screen.logStep('Set up job')).toHaveAttribute('aria-expanded', 'true');
+    await expect(screen.cursorLine).toContainText('<b>resolve</b>');
+    await expect(screen.cursorLine.locator('mark')).toHaveText('resolve');
+    await page.keyboard.press('Enter');
+    await expect(screen.searchPosition).toHaveText('2 of 2');
+    await expect(screen.cursorLine).toContainText('could not resolve');
+    expect(github.restCalls.length).toBe(calls);
+
+    // Only the matches: the numbers kept, gaps counted.
+    await page.keyboard.press('Tab');
+    await expect(screen.searchPosition).toHaveText('2 lines');
+    await expect(screen.logGaps.first()).toBeVisible();
+    await expect(screen.logLines).toHaveCount(2);
+    await page.keyboard.press('Tab');
+    await expect(screen.searchPosition).toHaveText('2 of 2');
+    await expect(screen.logGaps).toHaveCount(0);
+
+    // Another job: the query kept, that job searched, no read of this one's log again.
+    await page.keyboard.press('Alt+j');
+    await expect(screen.job('lint')).toHaveAttribute('aria-current', 'true');
+    await expect(screen.searchField).toHaveValue('resolve');
+    await expect(screen.searchPosition).toHaveText('1 of 1');
+    await expect(screen.jobMatches).toContainText('1');
+    await page.keyboard.press('Alt+k');
+    await expect(screen.job('build')).toHaveAttribute('aria-current', 'true');
+    await expect(screen.searchPosition).toHaveText('1 of 2');
+
+    // Esc: closed, and where the log opened; again: back.
+    await page.keyboard.press('Escape');
+    await expect(screen.search).toHaveCount(0);
+    await expect(screen.cursorLine).toHaveText(before ?? '');
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+
+    // The query didn't stay for the next time the page opens.
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(path);
+    await expect(screen.cursorLine).toContainText('Process completed');
+    await expect(screen.search).toHaveCount(0);
+});
+
+test('⌘F opens the log’s search in place of the browser’s; / and N type in the field', async ({ page, github }) => {
+    const { world, runId, path } = createFailedRun();
+    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, RUN_LOG);
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.cursorLine).toContainText('Process completed');
+
+    await page.keyboard.press('?');
+    await expect(page.getByRole('dialog')).toContainText("Search this job's whole log");
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.keyboard.press('ControlOrMeta+f');
+    await expect(screen.searchField).toBeFocused();
+    await page.keyboard.type('<b>/n');
+    await expect(screen.searchField).toHaveValue('<b>/n');
+    await expect(screen.searchPosition).toHaveText('No matches');
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.type('<b>');
+    await expect(screen.searchPosition).toHaveText('1 of 1');
+    await expect(screen.cursorLine.locator('mark')).toHaveText('<b>');
+    await expect(screen.cursorLine.locator('b')).toHaveCount(0);
+});

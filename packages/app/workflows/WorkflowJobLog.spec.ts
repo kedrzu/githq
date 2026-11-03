@@ -8,14 +8,17 @@ import * as stories from './WorkflowJobLog.stories.js';
 const {
     Failed,
     FoldedAbove,
-    Highlighted,
     Hostile,
     Huge,
     InvisibleCharacters,
     LongLines,
     NoMarker,
+    OnlyMatches,
     Passed,
     Polled,
+    SearchLiterally,
+    SearchPastTheCut,
+    Searching,
     SeveralErrors,
     TallAtTheEnd,
 } = composeStories(stories);
@@ -493,16 +496,6 @@ test('a job that passed opens at its top with every step folded, the cursor on t
     expect(cursorText()).toBe('Prepare');
 });
 
-test('ranges to highlight mark their text', async () => {
-    await Highlighted.run();
-    await settled();
-
-    expect(log().querySelector('mark')?.textContent).toBe('error');
-    expect(lines().find(line => line.querySelector('mark'))?.lastElementChild?.textContent).toBe(
-        'error: script "build" exited',
-    );
-});
-
 test('the list is labelled, and takes the keyboard to scroll', async () => {
     await Failed.run();
 
@@ -715,4 +708,345 @@ test('moving onto a line taller than the view starts at its top, not its far end
     const top = cursorLine()?.getBoundingClientRect().top ?? 0;
     expect(top).toBeGreaterThanOrEqual(log().getBoundingClientRect().top);
     expect(top).toBeLessThan(log().getBoundingClientRect().bottom);
+});
+
+const field = () => page.getByTestId('workflow-log-search-field');
+const position = () => page.getByTestId('workflow-log-search-position');
+const marks = () => [...log().querySelectorAll('mark')];
+const currentMark = () => log().querySelector('[data-current-match]');
+const gaps = () => page.getByTestId('workflow-log-gap').elements();
+
+async function search(text: string) {
+    await userEvent.keyboard('/');
+    await settled();
+    await userEvent.keyboard(text);
+    await expect.poll(() => page.getByTestId('workflow-log-search-position').query()).not.toBeNull();
+    await settled();
+}
+
+test('W4b: / opens the bar in the toolbar’s place, the field taking the keys; W and T stay on outside it', async () => {
+    await Failed.run();
+    await settled();
+    await expect.element(page.getByTestId('workflow-log-open-search')).toBeVisible();
+
+    await userEvent.keyboard('/');
+    await settled();
+    await expect.element(field()).toHaveFocus();
+    await expect.element(page.getByTestId('workflow-log-wrap')).not.toBeVisible();
+    await expect.element(page.getByTestId('workflow-log-search')).toBeVisible();
+
+    // Typed: no screen key runs, not even the ones that are letters here.
+    const before = cursorText();
+    await userEvent.keyboard('jkwtgn');
+    await expect.element(field()).toHaveValue('jkwtgn');
+    expect(localStorage.getItem('githq.logWrap')).toBeNull();
+    expect(cursorText()).toBe(before);
+
+    // Outside the field the keys are the screen's.
+    log().focus();
+    await userEvent.keyboard('w');
+    expect(localStorage.getItem('githq.logWrap')).toBe('true');
+    await userEvent.keyboard('t');
+    expect(localStorage.getItem('githq.logTimes')).toBe('true');
+});
+
+test('W4b: ⌘F opens the bar, and is left alone in another field and under a layer', async () => {
+    await Failed.run();
+    await settled();
+    const press = () =>
+        new KeyboardEvent('keydown', {
+            key: 'f',
+            metaKey: /mac/iu.test(navigator.platform),
+            ctrlKey: !/mac/iu.test(navigator.platform),
+            bubbles: true,
+            cancelable: true,
+        });
+
+    const other = document.createElement('input');
+    document.body.append(other);
+    const inField = press();
+    other.dispatchEvent(inField);
+    expect(inField.defaultPrevented).toBe(false);
+    other.remove();
+
+    const layer = document.createElement('div');
+    layer.setAttribute('data-layer', '');
+    document.body.append(layer);
+    const underLayer = press();
+    log().dispatchEvent(underLayer);
+    expect(underLayer.defaultPrevented).toBe(false);
+    layer.remove();
+    await expect.element(page.getByTestId('workflow-log-search')).not.toBeInTheDocument();
+
+    const free = press();
+    log().dispatchEvent(free);
+    expect(free.defaultPrevented).toBe(true);
+    await settled();
+    await expect.element(field()).toHaveFocus();
+});
+
+test('W4b: the whole job is searched, folded steps included: counts on their heads, matches on the map, n of m', async () => {
+    await Failed.run();
+    await settled();
+
+    await search('prepare');
+
+    await expect.element(position()).toHaveTextContent('1 of 1');
+    await expect.element(page.getByTestId('workflow-log-search-where')).toHaveTextContent('in 1 step');
+    // Landed in the folded step: open, the cursor there, in view.
+    expect(isExpanded('Set up job')).toBe('true');
+    expect(cursorText()).toBe('Prepare');
+    expect(inView(cursorLine())).toBe(true);
+    expect(currentMark()?.textContent).toBe('Prepare');
+    expect(headOf('Set up job')?.textContent).toContain('1 match');
+    expect(page.getByTestId('workflow-log-map-match').elements()).toHaveLength(1);
+});
+
+test('W4b: Enter or N next, ⇧N previous, wrapping around; ⇧Enter in the field', async () => {
+    await Searching.run();
+    await settled();
+    await settled();
+    // The cursor opened at the error, past every match: the first from there wraps around.
+    await expect.element(position()).toHaveTextContent('1 of 6');
+    expect(inView(cursorLine())).toBe(true);
+
+    log().focus();
+    await userEvent.keyboard('n');
+    await expect.element(position()).toHaveTextContent('2 of 6');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(position()).toHaveTextContent('3 of 6');
+    await userEvent.keyboard('{Shift>}n{/Shift}');
+    await expect.element(position()).toHaveTextContent('2 of 6');
+    await userEvent.keyboard('{Shift>}n{/Shift}{Shift>}n{/Shift}');
+    await expect.element(position()).toHaveTextContent('6 of 6');
+    await settled();
+    expect(inView(cursorLine())).toBe(true);
+    await userEvent.keyboard('n');
+    await expect.element(position()).toHaveTextContent('1 of 6');
+
+    await userEvent.keyboard('/');
+    await settled();
+    await expect.element(field()).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(position()).toHaveTextContent('2 of 6');
+    await expect.element(field()).toHaveFocus();
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect.element(position()).toHaveTextContent('1 of 6');
+});
+
+test('smart case: lower case finds any case, a capital only itself', async () => {
+    await Failed.run();
+    await settled();
+
+    await search('error');
+    await expect.element(position()).toHaveTextContent(/of 2$/u);
+
+    await userEvent.fill(field(), 'ERROR');
+    await expect.element(position()).toHaveTextContent('1 of 1');
+    await expect.poll(() => currentMark()?.textContent).toBe('ERROR');
+});
+
+test('the query is plain text: a pattern’s characters and markup are searched for as they are, and highlight as text', async () => {
+    await SearchLiterally.run();
+    await settled();
+
+    for (const [query, count] of [
+        ['.*(', 1],
+        ['a{1000}', 1],
+    ] as const) {
+        await userEvent.keyboard('/');
+        await settled();
+        await userEvent.fill(field(), query);
+        await expect.element(position()).toHaveTextContent(`1 of ${count}`);
+        expect(currentMark()?.textContent).toBe(query);
+        await userEvent.keyboard('{Escape}');
+        await settled();
+    }
+
+    await userEvent.keyboard('/');
+    await settled();
+    await userEvent.fill(field(), '<b>');
+    await expect.element(position()).toHaveTextContent('1 of 1');
+    expect(currentMark()?.textContent).toBe('<b>');
+    expect(log().querySelector('b')).toBeNull();
+    expect(cursorText()).toBe('a <b>bold</b> claim');
+});
+
+test('a match past where a line is cut shows the line whole, the match in view', async () => {
+    await SearchPastTheCut.run();
+    await settled();
+
+    await search('needle');
+
+    await expect.poll(() => currentMark()?.textContent).toBe('needle');
+    await settled();
+    await settled();
+    const box = currentMark()?.getBoundingClientRect();
+    const view = log().getBoundingClientRect();
+    expect(box?.top).toBeGreaterThanOrEqual(view.top);
+    expect(box?.bottom).toBeLessThanOrEqual(view.bottom);
+});
+
+test('a line of a million characters searched for one of them: the marks are capped and the bar says there are more', async () => {
+    await SearchPastTheCut.run();
+    await settled();
+
+    await search('q');
+
+    await expect.element(position()).toHaveTextContent('1 of 1,000+');
+    expect(marks().length).toBeLessThanOrEqual(1000);
+});
+
+test('W4c: Tab shows only the matching lines, by step, numbers kept, gaps counted; steps with none left out', async () => {
+    await Searching.run();
+    await settled();
+    await settled();
+
+    log().focus();
+    await userEvent.keyboard('{Tab}');
+    await settled();
+
+    await expect.element(position()).toHaveTextContent('6 lines');
+    await expect.element(page.getByTestId('workflow-log-search-where')).toHaveTextContent('in 2 steps');
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'true');
+    log().scrollTop = 0;
+    await settled();
+    expect(heads().map(head => head.textContent)).toEqual([
+        expect.stringContaining('Checkout'),
+        expect.stringContaining('Run bun run build'),
+    ]);
+    expect(lines().every(line => line.querySelector('mark'))).toBe(true);
+    // The numbers are the log's: past the first step's two lines and the 31 of the install before its first match.
+    expect(lines()[0]?.firstElementChild?.textContent).toBe('34');
+    expect(gaps()[0]?.textContent).toContain('31 lines');
+
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'false');
+    await expect.element(position()).toHaveTextContent(/ of 6$/u);
+    expect(page.getByTestId('workflow-log-gap').query()).toBeNull();
+});
+
+test('W4c: Tab from the field gives the keys to the rows; J/K stop at a gap, and Space opens it in place', async () => {
+    await Searching.run();
+    await settled();
+    await settled();
+
+    await userEvent.keyboard('/');
+    await settled();
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    expect(document.activeElement).toBe(log());
+    await expect.element(position()).toHaveTextContent('6 lines');
+
+    const first = cursorNumber();
+    await userEvent.keyboard('k');
+    await settled();
+    expect(log().querySelector('[tid="workflow-log-gap"][aria-current="true"]')?.textContent).toContain('31 lines');
+    await userEvent.keyboard(' ');
+    await settled();
+
+    // In place: the gap's first line takes the cursor, and the match stays where it was, under its lines.
+    expect(gaps().some(gap => gap.textContent?.includes('31 lines'))).toBe(false);
+    expect(cursorText()).toBe('bun install v1.3');
+    expect(Number(first)).toBe(34);
+    expect(lines().map(line => line.firstElementChild?.textContent)).toContain('3');
+    expect(isExpanded('Checkout')).toBe('true');
+});
+
+test('W4c: Enter on a line returns to the full log there, its neighbours around it, and Esc stays there', async () => {
+    await OnlyMatches.run();
+    await settled();
+    await settled();
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'true');
+
+    log().focus();
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    await settled();
+
+    await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'false');
+    const chosen = cursorText();
+    expect(chosen).toContain('resolve');
+    expect(inView(cursorLine())).toBe(true);
+    expect(page.getByTestId('workflow-log-gap').query()).toBeNull();
+    expect(lines().some(line => !line.querySelector('mark'))).toBe(true);
+
+    await userEvent.keyboard('{Escape}');
+    await settled();
+    await expect.element(page.getByTestId('workflow-log-search')).not.toBeInTheDocument();
+    expect(cursorText()).toBe(chosen);
+    expect(inView(cursorLine())).toBe(true);
+    expect(marks()).toEqual([]);
+});
+
+test('Esc closes the search and returns to where the view was: cursor, scroll, folds; the keys back on the log', async () => {
+    await Failed.run();
+    await settled();
+    await userEvent.keyboard('kk');
+    await settled();
+    const cursorBefore = cursorText();
+    const scrollBefore = log().scrollTop;
+
+    await search('prepare');
+    expect(cursorText()).toBe('Prepare');
+    await expect.element(field()).toHaveFocus();
+
+    await userEvent.keyboard('{Escape}');
+    await settled();
+    await settled();
+
+    await expect.element(page.getByTestId('workflow-log-search')).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('workflow-log-wrap')).toBeVisible();
+    expect(document.activeElement).toBe(log());
+    expect(cursorText()).toBe(cursorBefore);
+    expect(log().scrollTop).toBe(scrollBefore);
+    log().scrollTop = 0;
+    await settled();
+    expect(isExpanded('Set up job')).toBe('false');
+});
+
+test('100,000 lines: typing goes straight in the field, the DOM stays small, and all the matches are found', async () => {
+    await Huge.run();
+    await settled();
+
+    await userEvent.keyboard('/');
+    await settled();
+    await userEvent.keyboard('line 99');
+    await expect.element(field()).toHaveValue('line 99');
+
+    await expect.element(position()).toHaveTextContent(/ of 1,111$/u);
+    await settled();
+    expect(rowCount()).toBeLessThan(DOM_ROW_CAP);
+
+    await userEvent.keyboard('{Tab}');
+    await settled();
+    await expect.element(position()).toHaveTextContent('1,111 lines');
+    expect(rowCount()).toBeLessThan(DOM_ROW_CAP);
+});
+
+test('a very long list of matches draws no more on the map than it has pixels for', async () => {
+    await Huge.run();
+    await settled();
+
+    await search('line');
+
+    await expect.element(position()).toHaveTextContent(/ of 99,990$/u);
+    const { height } = page.getByTestId('workflow-log-map').element().getBoundingClientRect();
+    expect(page.getByTestId('workflow-log-map-match').elements().length).toBeLessThanOrEqual(height / 2 + 1);
+});
+
+test('the query holds through a poll: the view stays on its match', async () => {
+    await Polled.run();
+    await settled();
+    await search('line 2500 of');
+    await expect.element(position()).toHaveTextContent('1 of 1');
+    const landed = cursorText();
+
+    log().focus();
+    await userEvent.click(page.getByTestId('workflow-log-poll'));
+    await settled();
+
+    expect(cursorText()).toBe(landed);
+    await expect.element(position()).toHaveTextContent('1 of 1');
 });

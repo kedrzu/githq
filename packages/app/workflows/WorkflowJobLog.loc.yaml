@@ -36,3 +36,22 @@ halfPageUp:
   en: Half a page up
 copyLineLink:
   en: Copy a link to the line
+search:
+  en: Search this job's whole log
+searchPlaceholder:
+  en: Search log
+nextMatch:
+  en: Next match
+previousMatch:
+  en: Previous match
+onlyMatches:
+  en: 'In search: only the matching lines'
+showInFullLog:
+  en: Show in the full log
+closeSearch:
+  en: Close search
+skippedLines:
+  plural: count
+  en:
+    one: '{shown} line'
+    many: '{shown} lines'

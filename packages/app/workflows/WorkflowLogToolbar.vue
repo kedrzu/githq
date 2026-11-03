@@ -14,6 +14,8 @@ defineProps<{
   job: string | null;
   /** "2,086 lines · 176 KB", or what stands in for it. */
   size: string;
+  /** The search bar stands in its place, its keys staying on. Not `v-show`, which applies after the render: the log's scroll would be set against a view of the wrong height. */
+  hidden?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -68,7 +70,7 @@ function giveKeysBack(event: MouseEvent) {
 </script>
 
 <template>
-  <div :class="css.workflowLogToolbar">
+  <div :class="[css.workflowLogToolbar, hidden && css.workflowLogToolbar_hidden]">
     <span
       v-if="job !== null"
       :class="css.workflowLogToolbar_job"
@@ -122,6 +124,10 @@ function giveKeysBack(event: MouseEvent) {
   padding: 0 $spacing-12 0 $spacing-14;
   font-size: $font-size-xs;
   border-bottom: 1px solid $color-border;
+}
+
+.workflowLogToolbar_hidden {
+  display: none;
 }
 
 .workflowLogToolbar_job {

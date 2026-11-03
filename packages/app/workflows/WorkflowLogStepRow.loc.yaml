@@ -6,3 +6,8 @@ noLines:
   en: no lines
 skipped:
   en: skipped
+matches:
+  plural: count
+  en:
+    one: '{shown} match'
+    many: '{shown} matches'

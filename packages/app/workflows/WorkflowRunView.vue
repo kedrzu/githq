@@ -1,11 +1,11 @@
-<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s. No key or command for re-running yet. -->
+<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s, Esc among them while a search is open; the search belongs to this page, not to one job's log: selecting another job keeps the query and searches that job, and its matches count in the jobs' column. No key or command for re-running yet. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleDot, FileX, Ghost, Github, Hourglass, PackageOpen, RotateCw, Unplug, X } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
-import { computed, onMounted, useTemplateRef } from 'vue';
+import { computed, onMounted, ref, shallowRef, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -16,6 +16,7 @@ import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 
 import type { WorkflowLogPane, WorkflowRunModel } from './buildWorkflowRun.js';
 import { describeWorkflowRun } from './utils/describeWorkflowRun.js';
+import type { LogMatches } from './utils/findLogMatches.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRunJobs from './WorkflowRunJobs.vue';
@@ -67,6 +68,9 @@ interface RunMessage {
 
 const t = useTranslate();
 const root = useTemplateRef('root');
+/** What the log is searched for; `null` with the search closed. */
+const logQuery = ref<string | null>(null);
+const logMatches = shallowRef<LogMatches | null>(null);
 
 const title = computed(() => {
   const { run } = props.model;
@@ -184,6 +188,8 @@ useCommands(() => [
     section: 'view',
     key: 'Escape',
     menu: false,
+    // With a log showing, the search closes first.
+    when: () => logQuery.value === null || props.logPane.kind !== 'ready',
     run: () => emit('close'),
   },
 ]);
@@ -284,9 +290,12 @@ function getInvalidFileMessage(): RunMessage {
         :selected-id="model.selectedJob?.id ?? null"
         :loading="model.body.kind === 'loading'"
         :now="now"
+        :matches="logMatches"
         @select="selectJob"
       />
       <WorkflowRunLogPane
+        v-model:query="logQuery"
+        v-model:matches="logMatches"
         :pane="logPane"
         :name-with-owner="nameWithOwner"
         :run-id="runId"

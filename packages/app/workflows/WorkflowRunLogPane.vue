@@ -1,10 +1,10 @@
-<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
+<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker, a search's own while one is open (W4b, W4c). In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran, skipped or cancelled before it started, with its conclusion. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleSlash, Ghost, Github, Hourglass, RotateCw, Unplug } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -13,6 +13,7 @@ import { formatDuration } from '@/utils/formatDuration.js';
 import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import type { WorkflowLogPane } from './buildWorkflowRun.js';
+import type { LogMatches } from './utils/findLogMatches.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
@@ -33,12 +34,23 @@ const props = defineProps<{
   now: number;
 }>();
 
+/** What is searched for in the log; `null` with the search closed. It outlives one job's log, as the pane does. */
+const query = defineModel<string | null>('query', { default: null });
+/** What the search found in the log showing. */
+const matches = defineModel<LogMatches | null>('matches', { default: null });
+
 const emit = defineEmits<{
   /** The way to GitHub was pressed. */
   openOnGitHub: [];
   /** "Try again" was pressed. */
   retry: [];
 }>();
+
+/** A hint along the bottom: the keys, and what they do. */
+interface KeyHint {
+  readonly keys: readonly string[];
+  readonly label: string;
+}
 
 /** What stands in for the log. */
 interface LogMessage {
@@ -56,6 +68,9 @@ const PLACEHOLDER_LINES = [62, 48, 71, 35, 55, 80, 44, 66, 30, 58, 74, 40];
 const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 
 const t = useTranslate();
+
+/** Another job's log shows in full, its matches yet to be looked at. */
+const onlyMatches = ref(false);
 
 const size = computed(() => {
   const { pane } = props;
@@ -105,6 +120,57 @@ const message = computed((): LogMessage | null => {
       return assertNever(pane);
   }
 });
+
+const hints = computed((): readonly KeyHint[] => {
+  const { pane } = props;
+  const job = { keys: ['Alt+J', 'Alt+K'], label: t(l.job) };
+  const gitHub = { keys: ['O'], label: t(l.gitHub) };
+  if (pane.kind !== 'ready') {
+    return pane.kind === 'failed' ? [{ keys: ['Enter'], label: t(l.tryAgain) }, job, gitHub] : [job, gitHub];
+  }
+
+  const step = { keys: ['Shift+J', 'Shift+K'], label: t(l.step) };
+  const errors = pane.log.errors.length > 0 ? [{ keys: ['E'], label: t(l.error) }] : [];
+  if (query.value === null) {
+    return [
+      { keys: ['J', 'K'], label: t(l.line) },
+      step,
+      job,
+      ...errors,
+      { keys: ['/'], label: t(l.search) },
+      { keys: ['Space'], label: t(l.fold) },
+      gitHub,
+    ];
+  }
+
+  if (onlyMatches.value && (matches.value?.lines.length ?? 0) > 0) {
+    return [
+      { keys: ['J', 'K'], label: t(l.match) },
+      { keys: ['Enter'], label: t(l.showInFullLog) },
+      { keys: ['Space'], label: t(l.openGap) },
+      job,
+      gitHub,
+    ];
+  }
+
+  return [
+    { keys: ['N'], label: t(l.nextMatch) },
+    { keys: ['Shift+N'], label: t(l.previousMatch) },
+    ...errors,
+    step,
+    job,
+    { keys: ['Y'], label: t(l.copyLineLink) },
+    gitHub,
+  ];
+});
+
+// Before the render that brings the other job's log.
+watch(
+  () => props.pane.job?.id,
+  () => {
+    onlyMatches.value = false;
+  },
+);
 
 function getConclusion({ job }: Extract<WorkflowLogPane, { kind: 'neverRan' }>) {
   return job.conclusion ?? job.status;
@@ -165,12 +231,15 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
     <WorkflowJobLog
       v-if="pane.kind === 'ready'"
       :key="pane.job.id"
+      v-model:query="query"
+      v-model:only-matches="onlyMatches"
       :job="pane.job"
       :log="pane.log"
       :name-with-owner="nameWithOwner"
       :run-id="runId"
       :size="size"
       :address="lineAddress"
+      @matches="matches = $event"
     />
     <WorkflowLogToolbar
       v-else
@@ -233,45 +302,16 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       tid="workflow-log-keys"
     >
       <span
-        v-if="pane.kind === 'failed'"
+        v-for="hint in hints"
+        :key="hint.label"
         :class="css.workflowRunLogPane_hint"
       >
-        <Kbd keys="Enter" />
-        {{ t(l.tryAgain) }}
-      </span>
-      <template v-if="pane.kind === 'ready'">
-        <span :class="css.workflowRunLogPane_hint">
-          <Kbd keys="J" />
-          <Kbd keys="K" />
-          {{ t(l.line) }}
-        </span>
-        <span :class="css.workflowRunLogPane_hint">
-          <Kbd keys="Shift+J" />
-          <Kbd keys="Shift+K" />
-          {{ t(l.step) }}
-        </span>
-      </template>
-      <span :class="css.workflowRunLogPane_hint">
-        <Kbd keys="Alt+J" />
-        <Kbd keys="Alt+K" />
-        {{ t(l.job) }}
-      </span>
-      <template v-if="pane.kind === 'ready'">
-        <span
-          v-if="pane.log.errors.length > 0"
-          :class="css.workflowRunLogPane_hint"
-        >
-          <Kbd keys="E" />
-          {{ t(l.error) }}
-        </span>
-        <span :class="css.workflowRunLogPane_hint">
-          <Kbd keys="Space" />
-          {{ t(l.fold) }}
-        </span>
-      </template>
-      <span :class="css.workflowRunLogPane_hint">
-        <Kbd keys="O" />
-        {{ t(l.gitHub) }}
+        <Kbd
+          v-for="key in hint.keys"
+          :key="key"
+          :keys="key"
+        />
+        {{ hint.label }}
       </span>
       <span :class="css.workflowRunLogPane_spacer" />
       <span :class="css.workflowRunLogPane_hint">

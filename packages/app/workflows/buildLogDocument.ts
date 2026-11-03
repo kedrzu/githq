@@ -1,6 +1,8 @@
 import type { GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { findMatchFrom } from './utils/findLogMatches.js';
+import type { LogMatches } from './utils/findLogMatches.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import type { JobLogLine, ParsedJobLog } from './utils/parseJobLog.js';
@@ -14,6 +16,8 @@ export type LogDocumentRow =
           readonly index: number;
           readonly line: JobLogLine;
       }
+    /** Lines left out between a search's matches (W4c), as indexes into the log's `lines`, both included. */
+    | { readonly kind: 'gap'; readonly first: number; readonly last: number }
     /** The note under the last row of a failed job with no error marker (W4h). */
     | { readonly kind: 'end' };
 
@@ -24,7 +28,7 @@ export interface LogSection {
     /** Indexes into the log's `lines`, both included; `null` for a step with no lines, as a skipped one. */
     readonly lines: { readonly first: number; readonly last: number } | null;
     readonly folded: boolean;
-    /** The row of its head; `null` with no head. */
+    /** The row of its head; `null` with no head, or left out for having no match (W4c). */
     readonly headRow: number | null;
     /** The first row that belongs to it. */
     readonly firstRow: number;
@@ -34,7 +38,10 @@ export interface LogSection {
 export interface LogDocument {
     readonly rows: readonly LogDocumentRow[];
     readonly sections: readonly LogSection[];
-    /** The row each line shows in, by its index: the head of its step while that is folded. */
+    /**
+     * The row each line shows in, by its index: the head of its step while that is folded, its gap while left out; past
+     * a step left out for having no match, the row after where it would be.
+     */
     readonly lineRows: Int32Array;
 }
 
@@ -46,6 +53,15 @@ export interface BuildLogDocumentParams {
     readonly folded: ReadonlySet<number>;
     /** The job failed with no error marker: the end of the log says why it stops there (W4h). */
     readonly endNote: boolean;
+    /** Only the lines with a match, the rest as gaps and steps with none left out (W4c). */
+    readonly only?: LogDocumentOnly | null;
+}
+
+/** What shows of a log that shows only a search's matches. */
+export interface LogDocumentOnly {
+    readonly matches: LogMatches;
+    /** The gaps opened in place, by the index of their first line. */
+    readonly openedGaps: ReadonlySet<number>;
 }
 
 /** Where a log opens, and how. */
@@ -109,7 +125,7 @@ export interface LogLineStretch {
  * @__NO_SIDE_EFFECTS__
  */
 export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
-    const { log, steps, folded, endNote } = params;
+    const { log, steps, folded, endNote, only } = params;
     const positions = new Map(log.steps.map(step => [step.number, step]));
     const lineRows = new Int32Array(log.lines.length);
     const rows: LogDocumentRow[] = [];
@@ -125,7 +141,7 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
             headRow: null,
             firstRow: 0,
         });
-        addLines(0, leading - 1);
+        addSectionLines(0, leading - 1);
     }
 
     for (const step of steps) {
@@ -133,6 +149,16 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
         const first = position?.firstLine != null ? findLineIndex(log.lines, position.firstLine) : -1;
         const last = position?.lastLine != null ? findLineIndex(log.lines, position.lastLine) : -1;
         const lines = first === -1 || last === -1 ? null : { first, last };
+        if (only && !hasMatch(lines)) {
+            // Still a section: the map divides steps whatever shows.
+            sections.push({ step, lines, folded: false, headRow: null, firstRow: rows.length });
+            if (lines) {
+                lineRows.fill(rows.length, lines.first, lines.last + 1);
+            }
+
+            continue;
+        }
+
         const isFolded = lines !== null && folded.has(step.number);
         const headRow = rows.length;
         const section: LogSection = { step, lines, folded: isFolded, headRow, firstRow: headRow };
@@ -142,7 +168,7 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
         if (lines && isFolded) {
             lineRows.fill(headRow, lines.first, lines.last + 1);
         } else if (lines) {
-            addLines(lines.first, lines.last);
+            addSectionLines(lines.first, lines.last);
         }
     }
 
@@ -150,7 +176,55 @@ export function buildLogDocument(params: BuildLogDocumentParams): LogDocument {
         rows.push({ kind: 'end' });
     }
 
-    return { rows, sections, lineRows };
+    // Steps left out at the end point past the last row.
+    const lastRow = Math.max(0, rows.length - 1);
+    return { rows, sections, lineRows: only ? lineRows.map(row => Math.min(row, lastRow)) : lineRows };
+
+    function hasMatch(lines: { readonly first: number; readonly last: number } | null) {
+        const first = lines && only ? findMatchFrom(only.matches, lines.first) : null;
+        return lines !== null && first !== null && (only?.matches.lines[first] ?? Infinity) <= lines.last;
+    }
+
+    function addSectionLines(first: number, last: number) {
+        if (!only) {
+            addLines(first, last);
+            return;
+        }
+
+        const { matches, openedGaps } = only;
+        let at = first;
+        let position = findMatchFrom(matches, first);
+        while (position !== null && position < matches.lines.length) {
+            const index = matches.lines[position] ?? 0;
+            if (index > last) {
+                break;
+            }
+
+            // A line's further matches.
+            if (index >= at) {
+                addGap(at, index - 1, openedGaps);
+                addLines(index, index);
+                at = index + 1;
+            }
+
+            position++;
+        }
+
+        addGap(at, last, openedGaps);
+    }
+
+    function addGap(first: number, last: number, openedGaps: ReadonlySet<number>) {
+        if (first > last) {
+            return;
+        }
+
+        if (openedGaps.has(first)) {
+            addLines(first, last);
+        } else {
+            lineRows.fill(rows.length, first, last + 1);
+            rows.push({ kind: 'gap', first, last });
+        }
+    }
 
     function addLines(first: number, last: number) {
         for (let index = first; index <= last; index++) {
@@ -233,6 +307,13 @@ export function getRowLines(params: GetRowLinesParams): LogLineStretch {
             const { from } = getRowLines({ log, document, row: row + 1 });
             return { from, to: from };
         }
+        case 'gap': {
+            const first = log.lines[entry.first];
+            const last = log.lines[entry.last];
+            return first && last
+                ? { from: first.number - 1, to: last.number }
+                : getRowLines({ log, document, row: row + 1 });
+        }
         case 'end':
             return getRowLines({ log, document, row: row + 1 });
         default:
@@ -289,7 +370,9 @@ export function getAdjacentLine(params: GetAdjacentLineParams) {
  */
 export function getAdjacentStepLine(params: GetAdjacentStepLineParams) {
     const { document, index, by } = params;
-    const steps = document.sections.filter(section => section.step !== null && section.lines !== null);
+    const steps = document.sections.filter(
+        section => section.step !== null && section.lines !== null && section.headRow !== null,
+    );
     const at = steps.findIndex(({ lines }) => lines !== null && lines.first <= index && index <= lines.last);
     // Before the first step: its next is the first, and it has no previous.
     const next = steps[at === -1 ? (by > 0 ? 0 : -1) : at + by];

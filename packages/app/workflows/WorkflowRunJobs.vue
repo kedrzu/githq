@@ -1,4 +1,4 @@
-<!-- The Jobs column of a run's page (actions W4a, `Workflow / Jobs`): how many jobs stand how, then the jobs — failed first — each with its state and how long it took, or its status. The selected job shows its steps, each with its state and time; a failed step and a running one stand out. Placeholder rows while the jobs are on their way (W4e). A click selects a job; the keys are the page's (⌥J/⌥K). -->
+<!-- The Jobs column of a run's page (actions W4a, `Workflow / Jobs`): how many jobs stand how, then the jobs — failed first — each with its state and how long it took, or its status. The selected job shows its steps, each with its state and time; a failed step and a running one stand out. While a search of the selected job's log finds anything, its matches show on the job and, in place of the time, on the steps that have them; other jobs' logs aren't read for it (actions D12). Placeholder rows while the jobs are on their way (W4e). A click selects a job; the keys are the page's (⌥J/⌥K). -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -6,10 +6,12 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleCheck, CircleDashed, CircleSlash, CircleX, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
 
 import type { WorkflowJobCounts } from './buildWorkflowRun.js';
 import { formatTimeTaken } from './utils/formatTimeTaken.js';
+import type { LogMatches } from './utils/findLogMatches.js';
 import { getJobMark } from './utils/getJobMark.js';
 import type { WorkflowJobMark } from './utils/getJobMark.js';
 import * as l from './WorkflowRunJobs.loc.js';
@@ -23,6 +25,8 @@ const props = defineProps<{
   loading: boolean;
   /** Epoch ms what is running is counted to. */
   now: number;
+  /** What a search found in the selected job's log; `null` with no search. */
+  matches: LogMatches | null;
 }>();
 
 const emit = defineEmits<{
@@ -31,6 +35,7 @@ const emit = defineEmits<{
 }>();
 
 const PLACEHOLDER_ROWS = 6;
+const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 
 const JOB_ICONS = {
   failed: CircleX,
@@ -145,6 +150,13 @@ function describeStepTime(step: GitHubWorkflowStep) {
             :class="[css.workflowRunJobs_jobName, getJobMark(job) === 'skipped' && css.workflowRunJobs_jobName_quiet]"
             >{{ job.name }}</span
           >
+          <span
+            v-if="job.id === selectedId && matches && matches.lines.length > 0"
+            :class="css.workflowRunJobs_matches"
+            tid="workflow-job-matches"
+            >{{ NUMBER_FORMAT.format(matches.lines.length)
+            }}<span :class="css.workflowRunJobs_hidden"> {{ t(l.matches) }}</span></span
+          >
           <span :class="css.workflowRunJobs_jobTime">{{ describeJobTime(job) }}</span>
         </button>
         <ul
@@ -181,7 +193,18 @@ function describeStepTime(step: GitHubWorkflowStep) {
               ]"
               >{{ step.name }}</span
             >
-            <span :class="css.workflowRunJobs_stepTime">{{ describeStepTime(step) }}</span>
+            <span
+              v-if="matches?.steps.has(step.number)"
+              :class="css.workflowRunJobs_matches"
+              tid="workflow-step-matches"
+              >{{ NUMBER_FORMAT.format(matches.steps.get(step.number) ?? 0)
+              }}<span :class="css.workflowRunJobs_hidden"> {{ t(l.matches) }}</span></span
+            >
+            <span
+              v-else
+              :class="css.workflowRunJobs_stepTime"
+              >{{ describeStepTime(step) }}</span
+            >
           </li>
         </ul>
       </li>
@@ -363,6 +386,13 @@ $jobs-width: 268px;
 
 .workflowRunJobs_stepName_quiet {
   color: $color-fg-dim;
+}
+
+.workflowRunJobs_matches {
+  flex: none;
+  font-family: $font-family-mono;
+  font-size: $font-size-3xs;
+  color: $color-accent;
 }
 
 .workflowRunJobs_stepTime {

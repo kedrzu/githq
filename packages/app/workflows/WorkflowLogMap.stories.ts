@@ -36,6 +36,16 @@ export const ManyErrors: Story = {
     args: { errors: Array.from({ length: 2000 }, (_, index) => index) },
 };
 
+/** W4b: a search's matches, above the steps and under the errors. */
+export const Matches: Story = {
+    args: { matches: [100, 150, 604, 606, 612, 640, 700, 1100, 2040] },
+};
+
+/** Tens of thousands of matches: those falling on the same pixels draw one. */
+export const ManyMatches: Story = {
+    args: { matches: Array.from({ length: 50_000 }, (_, index) => (index * 2086) / 50_000) },
+};
+
 /** A log shorter than the view takes the lines' own height, not the map's whole: `total` counts the view's lines. */
 export const ShorterThanView: Story = {
     args: { total: 28, viewTop: 0, viewHeight: 8, steps: [2, 5], errors: [6], cursor: 6 },

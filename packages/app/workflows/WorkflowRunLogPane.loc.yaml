@@ -67,3 +67,17 @@ neverRanText:
   en: "It never started, so there's no log to read."
 neverRanDetail:
   en: 'conclusion: {conclusion}'
+search:
+  en: Search
+match:
+  en: Match
+nextMatch:
+  en: Next match
+previousMatch:
+  en: Previous
+copyLineLink:
+  en: Copy link to line
+showInFullLog:
+  en: Show in the full log
+openGap:
+  en: Open gap

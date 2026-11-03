@@ -108,6 +108,36 @@ export class WorkflowRunScreenHarness {
         return this.root.getByTestId('workflow-log-times');
     }
 
+    /** The search bar, in the toolbar's place while a search is open. */
+    get search(): Locator {
+        return this.root.getByTestId('workflow-log-search');
+    }
+
+    /** The search bar's field. */
+    get searchField(): Locator {
+        return this.root.getByTestId('workflow-log-search-field');
+    }
+
+    /** "3 of 12", or among only the matches "12 lines". */
+    get searchPosition(): Locator {
+        return this.root.getByTestId('workflow-log-search-position');
+    }
+
+    /** A search's count on the selected job. */
+    get jobMatches(): Locator {
+        return this.root.getByTestId('workflow-job-matches');
+    }
+
+    /** A search's counts on the selected job's steps. */
+    get stepMatches(): Locator {
+        return this.root.getByTestId('workflow-step-matches');
+    }
+
+    /** The rows standing for lines left out among only a search's matches. */
+    get logGaps(): Locator {
+        return this.log.getByTestId('workflow-log-gap');
+    }
+
     /** The way to GitHub offered by what stands in for the log or for the columns. */
     get openOnGitHubButton(): Locator {
         return this.root.getByRole('button', { name: /Open on GitHub/u });

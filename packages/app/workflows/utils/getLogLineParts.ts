@@ -2,6 +2,8 @@
 export interface LogTextRange {
     readonly start: number;
     readonly end: number;
+    /** A search's current match, among the others. */
+    readonly current?: boolean;
 }
 
 /** What of a log line is put on the screen. */
@@ -16,6 +18,8 @@ export interface LogLineParts {
 export interface LogLinePart {
     readonly text: string;
     readonly highlighted: boolean;
+    /** It is in a search's current match. */
+    readonly current?: boolean;
     /** A bidi or invisible character, by its code point: what to show for it. The part is that one character. */
     readonly control?: string;
 }
@@ -88,7 +92,7 @@ export function getLogLineParts(text: string, options: GetLogLinePartsOptions = 
                 const rangeStart = Math.max(range.start, start);
                 pushParts(parts, text.slice(at, rangeStart), false);
                 at = Math.min(range.end, end);
-                pushParts(parts, text.slice(rangeStart, at), true);
+                pushParts(parts, text.slice(rangeStart, at), true, range.current);
             }
         }
 
@@ -96,7 +100,7 @@ export function getLogLineParts(text: string, options: GetLogLinePartsOptions = 
         return parts;
     }
 
-    function pushParts(parts: LogLinePart[], run: string, highlighted: boolean) {
+    function pushParts(parts: LogLinePart[], run: string, highlighted: boolean, current?: boolean) {
         let at = 0;
         for (const { index, 0: control } of run.matchAll(CONTROLS)) {
             if (controlParts === MAX_CONTROL_PARTS) {
@@ -105,12 +109,13 @@ export function getLogLineParts(text: string, options: GetLogLinePartsOptions = 
 
             controlParts++;
             if (index > at) {
-                parts.push({ text: run.slice(at, index), highlighted });
+                parts.push({ text: run.slice(at, index), highlighted, current });
             }
 
             parts.push({
                 text: control,
                 highlighted,
+                current,
                 control: `U+${control.codePointAt(0)?.toString(16).toUpperCase()}`,
             });
             at = index + control.length;
@@ -121,6 +126,7 @@ export function getLogLineParts(text: string, options: GetLogLinePartsOptions = 
             parts.push({
                 text: controlParts === MAX_CONTROL_PARTS ? rest.replaceAll(CONTROLS, OVER_THE_LIMIT) : rest,
                 highlighted,
+                current,
             });
         }
     }

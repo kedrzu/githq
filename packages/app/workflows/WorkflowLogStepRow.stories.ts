@@ -53,6 +53,11 @@ export const LongName: Story = {
     args: rowOf(step(`Run ${'bun run build --filter=packages/app '.repeat(6)}`, 'success'), LINES, true),
 };
 
+/** W4b: a search's matches, folded or not. */
+export const WithMatches: Story = {
+    args: { ...rowOf(step('Run bun run build', 'success'), LINES, true), matchCount: 10 },
+};
+
 function rowOf(
     stepOfRow: GitHubWorkflowStep | null,
     range: { readonly first: number; readonly last: number } | null,

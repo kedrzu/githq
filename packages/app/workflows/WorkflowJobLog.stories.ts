@@ -177,12 +177,72 @@ export const Polled: Story = {
     }),
 };
 
-/** A search's seam: ranges of a line highlighted. */
-export const Highlighted: Story = {
-    args: {
-        ...viewOf(STEPS, sections({ 3: ['error: script "build" exited', '##[error]exit code 1'] })),
-        highlights: new Map([[1, [{ start: 0, end: 5 }]]]),
-    },
+/** A build whose cause is far above its marker, and steps folded around it, for a search to go through. */
+const RESOLVE_LOG = sections({
+    1: ['Runner image 2.1', 'Prepare'],
+    2: [
+        'bun install v1.3',
+        ...Array.from({ length: 30 }, (_, index) => `installing package ${index}`),
+        'warn: resolved 412 packages, 2 peer dependencies not installed',
+        ...Array.from({ length: 12 }, (_, index) => `linking package ${index}`),
+        'warn: incorrect peer dependency: could not resolve "vue@^3.4" for @fitloop/ui',
+        'Done',
+    ],
+    3: [
+        '##[group]Run bun run build',
+        'bun run build',
+        '##[endgroup]',
+        ...Array.from({ length: 20 }, (_, index) => `  ✓ ${index} modules transformed`),
+        '[vite]: Rollup failed to resolve import "@fitloop/ui/tokens" from "/home/runner/work/webapp/app/assets/theme.ts".',
+        'This is most likely unintended because it can break your application at runtime.',
+        '    at resolveId (node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:44812:17)',
+        '    at ModuleLoader.resolveId (node_modules/rollup/dist/es/shared/node-entry.js:21398:15)',
+        ...Array.from({ length: 7 }, (_, index) => `  retrying ${index}`),
+        '    at ModuleLoader.handleInvalidResolvedId (node_modules/rollup/dist/es/shared/node-entry.js:21547:24)',
+        '##[error]Process completed with exit code 1.',
+    ],
+    5: ['Clean'],
+});
+
+/** W4b: the search bar in the toolbar's place, the counts on the steps, the matches on the map. */
+export const Searching: Story = {
+    args: { ...viewOf(STEPS, RESOLVE_LOG), query: 'resolve' },
+};
+
+/** W4c: only the matching lines, by step, with what was skipped between them. */
+export const OnlyMatches: Story = {
+    args: { ...viewOf(STEPS, RESOLVE_LOG), query: 'resolve', onlyMatches: true },
+};
+
+/** A match past where a long line is cut, and another line of nothing but the same letter. */
+export const SearchPastTheCut: Story = {
+    args: viewOf(
+        STEPS,
+        sections({
+            3: [
+                'short line',
+                `${'a'.repeat(20_000)}needle${'b'.repeat(20)}`,
+                'q'.repeat(1_000_000),
+                '##[error]Process completed with exit code 1.',
+            ],
+        }),
+    ),
+};
+
+/** A query that is markup, and a pattern's characters, in the log as plain text. */
+export const SearchLiterally: Story = {
+    args: viewOf(
+        STEPS,
+        sections({
+            3: [
+                'a <b>bold</b> claim',
+                'greedy .*( here',
+                'a{1000} counted',
+                'aaaa',
+                '##[error]Process completed with exit code 1.',
+            ],
+        }),
+    ),
 };
 
 /** 100,000 lines, every 10,000th an error. Built as it renders and held out of the arguments, which Storybook copies. */

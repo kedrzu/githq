@@ -275,3 +275,21 @@ test('the toolbar’s GitHub link opens the selected job in a new tab, the run w
         'https://github.com/fitloop/webapp/actions/runs/4821',
     );
 });
+
+test('W4b: the search counts on the job and its steps; another job keeps the query and is searched; a second Esc goes back', async () => {
+    const close = vi.fn();
+    await Failed.run({ args: { ...Failed.args, onClose: close } });
+    await userEvent.keyboard('/');
+    await expect.element(page.getByTestId('workflow-log-search-field')).toHaveFocus();
+    await userEvent.keyboard('bundle');
+    await expect.element(page.getByTestId('workflow-job-matches')).toHaveTextContent('1');
+    expect(page.getByTestId('workflow-step-matches').elements().length).toBeGreaterThan(0);
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByTestId('workflow-log-search')).not.toBeInTheDocument();
+    expect(close).not.toHaveBeenCalled();
+    await expect.element(page.getByTestId('workflow-job-matches')).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    expect(close).toHaveBeenCalledOnce();
+});

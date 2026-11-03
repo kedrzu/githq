@@ -1,19 +1,32 @@
-<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. -->
+<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. Search (W4b, W4c): / or ⌘F opens the bar in the toolbar's place, ⌘F because the browser's own find can't see lines not drawn. It searches the whole job in memory, folded steps included (`findLogMatches`), a moment after the typing stops; landing on a match opens its step, shows its line past the cut if that is where it is, and brings it into view. Enter or N next, ⇧N previous, wrapping around. Tab shows only the matching lines (`buildLogDocument`'s `only`): Space opens a gap in place, Enter returns to the full log at the line. Esc closes and returns to where the view was, unless Enter from only the matches chose a line. The parent keeps the query as the job changes. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { CircleAlert } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, triggerRef, useTemplateRef, watch } from 'vue';
+import { CircleAlert, Search } from 'lucide-vue-next';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+  triggerRef,
+  useTemplateRef,
+  watch,
+} from 'vue';
 
+import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { getGitHubUrl, getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
+import { isEditableTarget } from '@/utils/isEditableTarget.js';
+import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import {
@@ -31,14 +44,17 @@ import {
 import type { LogDocumentRow, LogSection } from './buildLogDocument.js';
 import { useLogWindow } from './useLogWindow.js';
 import type { LogRevealMode } from './useLogWindow.js';
+import { findLogMatches, findMatchFrom, getMatchRanges } from './utils/findLogMatches.js';
+import type { LogMatches } from './utils/findLogMatches.js';
 import { getJobMark } from './utils/getJobMark.js';
 import { getLogLineParts, MAX_SHOWN_CHARACTERS } from './utils/getLogLineParts.js';
-import type { LogLineParts, LogTextRange } from './utils/getLogLineParts.js';
+import type { LogLineParts } from './utils/getLogLineParts.js';
 import { formatLogLineHash } from './utils/logLineHash.js';
 import type { LogLineAddress } from './utils/logLineHash.js';
 import type { JobLogLine, ParsedJobLog } from './utils/parseJobLog.js';
 import * as l from './WorkflowJobLog.loc.js';
 import WorkflowLogMap from './WorkflowLogMap.vue';
+import WorkflowLogSearch from './WorkflowLogSearch.vue';
 import WorkflowLogStepRow from './WorkflowLogStepRow.vue';
 import WorkflowLogToolbar from './WorkflowLogToolbar.vue';
 
@@ -53,9 +69,17 @@ const props = defineProps<{
   size: string;
   /** The line the address names: the cursor goes there, now and whenever it changes. */
   address: LogLineAddress | null;
-  /** What to highlight in a line's text, by the line's `number`, sorted and apart. */
-  highlights?: ReadonlyMap<number, readonly LogTextRange[]>;
 }>();
+
+const emit = defineEmits<{
+  /** What the search found in this log, as it changes; `null` with no search, or as the log goes. */
+  matches: [matches: LogMatches | null];
+}>();
+
+/** What is searched for; `null` with the search closed. Kept by the parent, as it outlives one job's log. */
+const query = defineModel<string | null>('query', { default: null });
+/** Only the lines with a match show (W4c), while there are any. */
+const onlyMatches = defineModel<boolean>('onlyMatches', { default: false });
 
 /** A row as it is put on the screen. */
 type ShownRow =
@@ -71,10 +95,24 @@ type ShownRow =
       /** It shows whole, past the cut: wrapped, whatever the others do. */
       readonly whole: boolean;
     }
+  | { readonly kind: 'gap'; readonly row: number; readonly first: number; readonly count: number }
   | { readonly kind: 'end'; readonly row: number };
+
+/** Where the view was as the search opened, to go back to as it closes. */
+interface LogPlace {
+  readonly cursor: number | null;
+  readonly folded: ReadonlySet<number>;
+  readonly wholeLines: ReadonlySet<number>;
+  /** The row on top of the view, and how far into it: scroll offsets drift as wrapped lines get measured. */
+  readonly row: number;
+  readonly offset: number;
+}
 
 const LINE_HEIGHT = 18;
 const STEP_HEIGHT = 26;
+const GAP_HEIGHT = 22;
+/** How long the typing stops for before a search runs: a pass over 100,000 lines is too much for every key. */
+const SEARCH_DELAY_MS = 100;
 const END_HEIGHT = 42;
 /** The gutter: the line's number and the gap after it. */
 const NUMBER_WIDTH = 66;
@@ -84,6 +122,7 @@ const TEXT_END_PADDING = 12;
 /** JetBrains Mono at 12px, until it is measured. */
 const DEFAULT_CHARACTER_WIDTH = 7.2;
 const MONO_FONT = '12px "JetBrains Mono", ui-monospace, monospace';
+const NUMBER_FORMAT = new Intl.NumberFormat(APP_LANGUAGE);
 const TIME_FORMAT = new Intl.DateTimeFormat(APP_LANGUAGE, {
   hour: '2-digit',
   minute: '2-digit',
@@ -95,6 +134,7 @@ const t = useTranslate();
 const preferences = useService(LocalPreferences);
 const scroller = useTemplateRef<HTMLElement>('scroller');
 const list = useTemplateRef<HTMLElement>('list');
+const searchBar = useTemplateRef('searchBar');
 
 const wrap = preferences.logWrap;
 const showTimes = preferences.logTimes;
@@ -115,9 +155,26 @@ const characterWidth = ref(DEFAULT_CHARACTER_WIDTH);
 const pinnedRow = ref<number | null>(null);
 /** The lines shown past the cut, by index. */
 const wholeLines = shallowRef(new Set<number>());
+/** The query the matches are of: the one typed, a moment later. */
+const searched = ref(query.value || null);
+/** The match landed on, by its position in the matches. */
+const currentMatch = ref<number | null>(null);
+/** The steps folded among only the matches, apart from those of the full log, to which it returns. */
+const onlyFolded = shallowRef<ReadonlySet<number>>(new Set());
+const openedGaps = shallowRef<ReadonlySet<number>>(new Set());
 
+const matches = computed(() => (searched.value === null ? null : findLogMatches(props.log, searched.value)));
+const matchTotal = computed(() => matches.value?.lines.length ?? 0);
+const showsOnlyMatches = computed(() => onlyMatches.value && matchTotal.value > 0);
+const shownFolded = computed(() => (showsOnlyMatches.value ? onlyFolded.value : folded.value));
 const logDocument = computed(() =>
-  buildLogDocument({ log: props.log, steps: props.job.steps, folded: folded.value, endNote: noMarker.value }),
+  buildLogDocument({
+    log: props.log,
+    steps: props.job.steps,
+    folded: shownFolded.value,
+    endNote: noMarker.value && !showsOnlyMatches.value,
+    only: showsOnlyMatches.value && matches.value ? { matches: matches.value, openedGaps: openedGaps.value } : null,
+  }),
 );
 const gutterWidth = computed(() => NUMBER_WIDTH + (showTimes.value ? TIME_WIDTH : 0));
 const textWidth = computed(() => view.viewportWidth - gutterWidth.value - TEXT_END_PADDING);
@@ -134,6 +191,9 @@ const heights = computed(() => {
 });
 const view = useLogWindow({ element: scroller, heights, pinnedRow, coveredTop: STEP_HEIGHT });
 let selecting = false;
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+/** `null` once Enter from only the matches chose a line, which closing the search stays at. */
+let placeBeforeSearch: LogPlace | null = null;
 
 /** What the widest line needs without wrapping: rows stay this wide, so the sideways scroll stands still. */
 const contentWidth = computed(() => {
@@ -194,12 +254,84 @@ const mapSteps = computed(() =>
   }),
 );
 const mapErrors = computed(() => props.log.errors.map(number => number - 1));
+// A line's further matches fall on the same place.
+const mapMatches = computed(() => {
+  const places: number[] = [];
+  let previous = -1;
+  for (const index of matches.value?.lines ?? []) {
+    const line = props.log.lines[index];
+    if (index !== previous && line) {
+      places.push(line.number - 1);
+    }
+
+    previous = index;
+  }
+
+  return places;
+});
 const mapCursor = computed(() => {
   const line = cursor.value === null ? null : props.log.lines[cursor.value];
   return line ? line.number - 1 : null;
 });
 
 useCommands(() => [
+  {
+    id: 'workflowLog.search',
+    title: t(l.search),
+    section: 'view',
+    key: '/',
+    // ⌘F is `onKeydown`'s: one command runs by one key.
+    otherKeys: ['Mod+F'],
+    menu: false,
+    run: () => void openSearch(),
+  },
+  {
+    id: 'workflowLog.nextMatch',
+    title: t(l.nextMatch),
+    section: 'view',
+    key: 'N',
+    menu: false,
+    when: () => matchTotal.value > 0,
+    run: () => moveByMatch(1),
+  },
+  {
+    id: 'workflowLog.previousMatch',
+    title: t(l.previousMatch),
+    section: 'view',
+    key: 'Shift+N',
+    menu: false,
+    when: () => matchTotal.value > 0,
+    run: () => moveByMatch(-1),
+  },
+  // Not from a button, which Enter presses.
+  {
+    id: 'workflowLog.matchEnter',
+    title: showsOnlyMatches.value ? t(l.showInFullLog) : t(l.nextMatch),
+    section: 'view',
+    key: 'Enter',
+    menu: false,
+    when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
+    run: () => (showsOnlyMatches.value ? showInFullLog() : moveByMatch(1)),
+  },
+  // Not from a button, which Tab leaves for the next thing.
+  {
+    id: 'workflowLog.onlyMatches',
+    title: t(l.onlyMatches),
+    section: 'view',
+    key: 'Tab',
+    menu: false,
+    when: () => matchTotal.value > 0 && !isActivatableTarget(window.document.activeElement),
+    run: toggleOnlyMatches,
+  },
+  {
+    id: 'workflowLog.closeSearch',
+    title: t(l.closeSearch),
+    section: 'view',
+    key: 'Escape',
+    menu: false,
+    when: () => query.value !== null,
+    run: closeSearch,
+  },
   {
     id: 'workflowLog.nextLine',
     title: t(l.nextLine),
@@ -306,7 +438,7 @@ useCommands(() => [
     section: 'view',
     key: 'Enter',
     menu: false,
-    when: () => cursorLineCut.value && !isActivatableTarget(window.document.activeElement),
+    when: () => cursorLineCut.value && matchTotal.value === 0 && !isActivatableTarget(window.document.activeElement),
     run: () => {
       if (cursor.value !== null) {
         showWholeLine(cursor.value);
@@ -325,9 +457,10 @@ useCommands(() => [
 
 // The rows moved: what was kept for a selection is another row now. Not on the document, which each 200 on the jobs'
 // poll builds anew with every row where it was.
-watch(folded, () => {
+watch([shownFolded, showsOnlyMatches, openedGaps], () => {
   pinnedRow.value = null;
 });
+watch(matches, found => emit('matches', found), { immediate: true });
 watch(
   () => props.address,
   address => {
@@ -368,9 +501,19 @@ onMounted(() => {
     view.reveal(logDocument.value.rows.length - 1, 'nearest');
   }
 
+  // Another job's log, with the search open: it is searched as it comes.
+  if (query.value !== null) {
+    placeBeforeSearch = getPlace();
+    landOnFirstMatch();
+  }
+
   window.document.addEventListener('selectionchange', onSelectionChange);
 });
-onBeforeUnmount(() => window.document.removeEventListener('selectionchange', onSelectionChange));
+onBeforeUnmount(() => {
+  clearTimeout(searchTimer);
+  emit('matches', null);
+  window.document.removeEventListener('selectionchange', onSelectionChange);
+});
 
 function forgetMeasured() {
   measured.value = new Map();
@@ -380,6 +523,8 @@ function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap
   switch (entry.kind) {
     case 'step':
       return STEP_HEIGHT;
+    case 'gap':
+      return GAP_HEIGHT;
     case 'end':
       return END_HEIGHT;
     case 'line': {
@@ -405,6 +550,8 @@ function toShownRow(entry: LogDocumentRow, row: number): ShownRow {
   switch (entry.kind) {
     case 'step':
       return { kind: 'step', row, section: entry.section };
+    case 'gap':
+      return { kind: 'gap', row, first: entry.first, count: entry.last - entry.first + 1 };
     case 'end':
       return { kind: 'end', row };
     case 'line': {
@@ -417,7 +564,10 @@ function toShownRow(entry: LogDocumentRow, row: number): ShownRow {
         line,
         prefix: getLinePrefix(line),
         time: showTimes.value && line.time !== null ? TIME_FORMAT.format(line.time) : null,
-        text: getLogLineParts(line.text, { ranges: props.highlights?.get(line.number), whole }),
+        text: getLogLineParts(line.text, {
+          ranges: matches.value ? getMatchRanges(matches.value, index, currentMatch.value) : undefined,
+          whole,
+        }),
         whole,
       };
     }
@@ -447,6 +597,10 @@ function getRange(section: LogSection) {
   return first && last ? { first: first.number, last: last.number } : null;
 }
 
+function getStepMatchCount(section: LogSection) {
+  return section.step ? matches.value?.steps.get(section.step.number) : undefined;
+}
+
 function moveCursor(index: number | null, mode: LogRevealMode) {
   const line = index === null ? null : props.log.lines[index];
   if (index === null || !line) {
@@ -454,10 +608,10 @@ function moveCursor(index: number | null, mode: LogRevealMode) {
   }
 
   cursor.value = index;
-  if (line.stepNumber !== null && folded.value.has(line.stepNumber)) {
-    const next = new Set(folded.value);
+  if (line.stepNumber !== null && shownFolded.value.has(line.stepNumber)) {
+    const next = new Set(shownFolded.value);
     next.delete(line.stepNumber);
-    folded.value = next;
+    setFolded(next);
   }
 
   const row = logDocument.value.lineRows[index];
@@ -466,8 +620,24 @@ function moveCursor(index: number | null, mode: LogRevealMode) {
   }
 }
 
+function setFolded(next: ReadonlySet<number>) {
+  if (showsOnlyMatches.value) {
+    onlyFolded.value = next;
+  } else {
+    folded.value = next;
+  }
+}
+
 function moveByLine(by: 1 | -1) {
-  if (cursor.value !== null) {
+  if (cursor.value === null) {
+    return;
+  }
+
+  // Among only the matches a key goes row by row: a gap is one stop, whatever it holds.
+  if (showsOnlyMatches.value) {
+    moveCursor(cursorRow.value === null ? null : findLineFrom(cursorRow.value + by, by), 'nearest');
+    followCursorToMatch();
+  } else {
     moveCursor(getAdjacentLine({ document: logDocument.value, index: cursor.value, by }), 'nearest');
   }
 }
@@ -499,12 +669,15 @@ function moveByHalfPage(by: 1 | -1) {
   const distance = (view.viewportHeight / 2) * by;
   const row = view.getRowAt(view.getRowTop(cursorRow.value) + distance);
   const top = view.scrollTop + distance;
-  moveCursor(findLineFrom(row, by), 'nearest');
+  moveCursor(findLineFrom(row, by) ?? (by > 0 ? props.log.lines.length - 1 : 0), 'nearest');
   view.scrollTo(top);
   revealCursor();
 }
 
-/** The line a row stands for, the way the cursor is going: past a head to its step's line, or past one with none. */
+/**
+ * The line a row stands for, the way the cursor is going: past a head to its step's line, or past one with none; `null`
+ * off either end.
+ */
 function findLineFrom(start: number, by: 1 | -1) {
   const { rows } = logDocument.value;
   for (let row = start; row >= 0 && row < rows.length; row += by) {
@@ -513,15 +686,25 @@ function findLineFrom(start: number, by: 1 | -1) {
       return entry.index;
     }
 
+    if (entry?.kind === 'gap') {
+      return by > 0 ? entry.first : entry.last;
+    }
+
     if (entry?.kind === 'step' && entry.section.folded && entry.section.lines) {
       return by > 0 ? entry.section.lines.first : entry.section.lines.last;
     }
   }
 
-  return by > 0 ? props.log.lines.length - 1 : 0;
+  return null;
 }
 
 function foldCursorStep() {
+  const entry = cursorRow.value === null ? null : logDocument.value.rows[cursorRow.value];
+  if (entry?.kind === 'gap') {
+    openGap(entry.first);
+    return;
+  }
+
   const section = cursor.value === null ? null : getLineSection(logDocument.value, cursor.value);
   if (section?.step) {
     toggleSection(section);
@@ -535,12 +718,19 @@ function toggleSection(section: LogSection) {
     return;
   }
 
-  const next = new Set(folded.value);
+  const next = new Set(shownFolded.value);
   if (!next.delete(number)) {
     next.add(number);
   }
 
-  folded.value = next;
+  setFolded(next);
+}
+
+/** A gap opens where it is, what is above it staying; the cursor is on its first line then. */
+function openGap(first: number) {
+  openedGaps.value = new Set(openedGaps.value).add(first);
+  cursor.value = first;
+  view.scrollTo(view.scrollTop);
 }
 
 /** A head pressed, in the document or stuck on top: the keys stay the log's, and a fold from above shows its head. */
@@ -609,12 +799,182 @@ function getMapPlace(y: number) {
 
 /** A click on the map: the line there takes the cursor, its step opening, in the middle of the view. */
 function moveToMapped(place: number) {
-  const index = findLineAt(props.log, place);
+  moveToMiddle(findLineAt(props.log, place));
+}
+
+/** The line takes the cursor, its step opening, with its neighbours around it. */
+function moveToMiddle(index: number | null) {
   moveCursor(index, 'nearest');
   const row = index === null ? undefined : logDocument.value.lineRows[index];
   if (row !== undefined) {
     view.scrollTo(view.getRowTop(row) - view.viewportHeight / 2);
   }
+}
+
+async function openSearch() {
+  if (query.value === null) {
+    placeBeforeSearch = getPlace();
+    query.value = '';
+  }
+
+  await nextTick();
+  searchBar.value?.focus();
+}
+
+function typeQuery(text: string) {
+  query.value = text;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyQuery, SEARCH_DELAY_MS);
+}
+
+/** Whether what is typed has been searched for yet: a key pressed right after typing means what is typed. */
+function isQueryApplied() {
+  return (query.value || null) === searched.value;
+}
+
+function applyQuery() {
+  clearTimeout(searchTimer);
+  searched.value = query.value || null;
+  currentMatch.value = null;
+  openedGaps.value = new Set();
+  onlyFolded.value = new Set();
+  landOnFirstMatch();
+}
+
+/** The first match from where the search began, so typing on narrows from there and doesn't wander down the log. */
+function landOnFirstMatch() {
+  const found = matches.value;
+  if (found && found.lines.length > 0) {
+    landOnMatch(findMatchFrom(found, placeBeforeSearch?.cursor ?? cursor.value ?? 0) ?? 0);
+  } else {
+    revealCursor();
+  }
+}
+
+function moveByMatch(by: 1 | -1) {
+  if (!isQueryApplied()) {
+    applyQuery();
+    return;
+  }
+
+  const found = matches.value;
+  const total = matchTotal.value;
+  if (!found || total === 0 || cursor.value === null) {
+    return;
+  }
+
+  // The cursor may have left the match: the next one is then the next from where the cursor is.
+  const at = currentMatch.value;
+  const from = findMatchFrom(found, cursor.value) ?? total;
+  const target = at !== null && found.lines[at] === cursor.value ? at + by : by > 0 ? from : from - 1;
+  landOnMatch((target + total) % total);
+}
+
+function landOnMatch(position: number) {
+  const found = matches.value;
+  const index = found?.lines[position];
+  const start = found?.starts[position];
+  if (!found || index === undefined || start === undefined) {
+    return;
+  }
+
+  currentMatch.value = position;
+  if (start + found.length >= MAX_SHOWN_CHARACTERS && !wholeLines.value.has(index)) {
+    showWholeLine(index);
+  }
+
+  moveCursor(index, 'context');
+  void nextTick(showCurrentMatch);
+}
+
+/** A match can lie far along its line, off to the side or, in a whole line, screens below its start. */
+function showCurrentMatch() {
+  const mark = list.value?.querySelector('[data-current-match]');
+  const shown = scroller.value?.getBoundingClientRect();
+  if (!mark || !shown) {
+    return;
+  }
+
+  const box = mark.getBoundingClientRect();
+  const fitsDown = box.top >= shown.top + STEP_HEIGHT && box.bottom <= shown.bottom;
+  const fitsAcross = box.left >= shown.left + gutterWidth.value && box.right <= shown.right;
+  if (!fitsDown || !fitsAcross) {
+    mark.scrollIntoView({ block: fitsDown ? 'nearest' : 'center', inline: fitsAcross ? 'nearest' : 'center' });
+  }
+}
+
+function followCursorToMatch() {
+  const found = matches.value;
+  const position = found && cursor.value !== null ? findMatchFrom(found, cursor.value) : null;
+  if (position !== null && found?.lines[position] === cursor.value) {
+    currentMatch.value = position;
+  }
+}
+
+function toggleOnlyMatches() {
+  if (!isQueryApplied()) {
+    applyQuery();
+  }
+
+  if (showsOnlyMatches.value) {
+    onlyMatches.value = false;
+    moveCursor(cursor.value, 'context');
+    return;
+  }
+
+  if (matchTotal.value > 0) {
+    onlyFolded.value = new Set();
+    onlyMatches.value = true;
+    const position = currentMatch.value;
+    moveCursor(position === null ? cursor.value : (matches.value?.lines[position] ?? null), 'context');
+    focusLog();
+  }
+}
+
+/** Enter among only the matches: the line in the full log, where closing the search leaves it too. */
+function showInFullLog() {
+  const index = cursor.value;
+  onlyMatches.value = false;
+  placeBeforeSearch = null;
+  moveToMiddle(index);
+  followCursorToMatch();
+  focusLog();
+}
+
+function closeSearch() {
+  clearTimeout(searchTimer);
+  const place = placeBeforeSearch;
+  placeBeforeSearch = null;
+  query.value = null;
+  searched.value = null;
+  currentMatch.value = null;
+  onlyMatches.value = false;
+  openedGaps.value = new Set();
+  if (place) {
+    returnTo(place);
+  } else {
+    revealCursor();
+  }
+
+  focusLog();
+}
+
+function getPlace(): LogPlace {
+  const row = view.firstVisible;
+  return {
+    cursor: cursor.value,
+    folded: folded.value,
+    wholeLines: wholeLines.value,
+    row,
+    offset: view.scrollTop - view.getRowTop(row),
+  };
+}
+
+function returnTo(place: LogPlace) {
+  cursor.value = place.cursor;
+  folded.value = place.folded;
+  wholeLines.value = new Set(place.wholeLines);
+  view.scrollTo(view.getRowTop(place.row) + place.offset);
 }
 
 /** A line clicked takes the cursor, unless the click ended a selection. */
@@ -642,6 +1002,17 @@ function onSelectionChange() {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (
+    matchesCommandKey(event, 'Mod+F') &&
+    !event.defaultPrevented &&
+    !isEditableTarget(event.target) &&
+    !isScreenCovered()
+  ) {
+    event.preventDefault();
+    void openSearch();
+    return;
+  }
+
   if (!isScreenKey(event) || event.shiftKey) {
     return;
   }
@@ -696,7 +1067,23 @@ function measureCharacterWidth() {
 
 <template>
   <div :class="css.workflowJobLog">
+    <WorkflowLogSearch
+      v-if="query !== null"
+      ref="searchBar"
+      :query="query"
+      :matches="matches"
+      :position="currentMatch"
+      :line-total="log.lines.length"
+      :only-matches="showsOnlyMatches"
+      @update:query="typeQuery"
+      @next="moveByMatch(1)"
+      @previous="moveByMatch(-1)"
+      @toggle-only="toggleOnlyMatches"
+      @close="closeSearch"
+    />
+    <!-- Hidden and not gone: W and T stay on while the search is open. -->
     <WorkflowLogToolbar
+      :hidden="query !== null"
       :job="job.name"
       :size="size"
       @pressed="focusLog"
@@ -715,6 +1102,21 @@ function measureCharacterWidth() {
         {{ t(l.errorPosition, { position: errorPosition, total: log.errors.length }) }}
         <Kbd keys="E" />
       </span>
+      <button
+        type="button"
+        :class="css.workflowJobLog_search"
+        aria-keyshortcuts="/"
+        tid="workflow-log-open-search"
+        @click="openSearch"
+      >
+        <Search
+          :class="css.workflowJobLog_searchIcon"
+          aria-hidden="true"
+        />
+        {{ t(l.searchPlaceholder) }}
+        <span :class="css.workflowJobLog_searchSpacer" />
+        <Kbd keys="/" />
+      </button>
     </WorkflowLogToolbar>
     <div :class="css.workflowJobLog_body">
       <div :class="css.workflowJobLog_main">
@@ -748,6 +1150,7 @@ function measureCharacterWidth() {
                   :section="shown.section"
                   :range="getRange(shown.section)"
                   :cursor="shown.section.folded && shown.section.step?.number === cursorStepNumber"
+                  :match-count="getStepMatchCount(shown.section)"
                   @toggle="pressHead(shown.section)"
                 />
               </li>
@@ -789,12 +1192,18 @@ function measureCharacterWidth() {
                       :key="position"
                       ><span
                         v-if="part.control"
-                        :class="[css.workflowJobLog_control, part.highlighted && css.workflowJobLog_highlight]"
+                        :class="[
+                          css.workflowJobLog_control,
+                          part.highlighted && css.workflowJobLog_highlight,
+                          part.current && css.workflowJobLog_highlight_current,
+                        ]"
                         :data-control="part.control"
+                        :data-current-match="part.current ? '' : undefined"
                         >{{ part.text }}</span
                       ><mark
                         v-else-if="part.highlighted"
-                        :class="css.workflowJobLog_highlight"
+                        :class="[css.workflowJobLog_highlight, part.current && css.workflowJobLog_highlight_current]"
+                        :data-current-match="part.current ? '' : undefined"
                         >{{ part.text }}</mark
                       ><template v-else>{{ part.text }}</template></template
                     ></span
@@ -811,11 +1220,38 @@ function measureCharacterWidth() {
                   >
                     {{ t(l.moreCharacters, { count: shown.text.hidden }) }}
                     <Kbd
-                      v-if="shown.row === cursorRow"
+                      v-if="shown.row === cursorRow && matchTotal === 0"
                       keys="Enter"
                       size="sm"
                     /></button
                 ></span>
+              </li>
+              <li
+                v-else-if="shown.kind === 'gap'"
+                :class="css.workflowJobLog_gap"
+                :style="{ width: `${view.viewportWidth}px` }"
+                :aria-current="shown.row === cursorRow ? 'true' : undefined"
+                tid="workflow-log-gap"
+              >
+                <button
+                  type="button"
+                  :class="[
+                    css.workflowJobLog_gapButton,
+                    shown.row === cursorRow && css.workflowJobLog_gapButton_cursor,
+                  ]"
+                  aria-keyshortcuts="Space"
+                  @click="
+                    openGap(shown.first);
+                    focusLog();
+                  "
+                >
+                  <span
+                    :class="css.workflowJobLog_gapDots"
+                    aria-hidden="true"
+                    >⋯</span
+                  >
+                  {{ t(l.skippedLines, { count: shown.count, shown: NUMBER_FORMAT.format(shown.count) }) }}
+                </button>
               </li>
               <li
                 v-else
@@ -844,6 +1280,7 @@ function measureCharacterWidth() {
           <WorkflowLogStepRow
             :section="stickySection"
             :range="getRange(stickySection)"
+            :match-count="getStepMatchCount(stickySection)"
             @toggle="stickySection && pressHead(stickySection)"
           />
         </div>
@@ -855,6 +1292,7 @@ function measureCharacterWidth() {
         :height="view.viewportHeight"
         :steps="mapSteps"
         :errors="mapErrors"
+        :matches="mapMatches"
         :cursor="mapCursor"
         @move="moveToMapped"
       />
@@ -1042,7 +1480,83 @@ function measureCharacterWidth() {
 
 .workflowJobLog_highlight {
   color: $color-fg;
-  background: rgba($color-amber, 0.3);
+  background: rgba($color-accent, 0.25);
+  border-radius: 2px;
+}
+
+.workflowJobLog_highlight_current {
+  color: $color-bg;
+  background: $color-accent;
+}
+
+.workflowJobLog_search {
+  @include focus-ring;
+
+  display: flex;
+  flex: none;
+  gap: $spacing-7;
+  align-items: center;
+  box-sizing: border-box;
+  width: 220px;
+  padding: 3px $spacing-6 3px $spacing-8;
+  font: inherit;
+  color: $color-fg-dim;
+  cursor: text;
+  background: $color-bg;
+  border: 1px solid $color-border-2;
+  border-radius: $radius-md;
+}
+
+.workflowJobLog_searchIcon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+}
+
+.workflowJobLog_searchSpacer {
+  flex: 1;
+}
+
+// Held at the left of the view as the lines scroll sideways.
+.workflowJobLog_gap {
+  position: sticky;
+  left: 0;
+  height: 22px;
+}
+
+.workflowJobLog_gapButton {
+  @include focus-ring;
+
+  display: flex;
+  gap: $spacing-14;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font-family: $font-family-sans;
+  font-size: 11.5px;
+  color: $color-fg-dim;
+  text-align: left;
+  cursor: pointer;
+  background: $color-bg;
+  border: 0;
+
+  &:hover {
+    color: $color-fg-2;
+  }
+}
+
+.workflowJobLog_gapButton_cursor {
+  color: $color-fg-2;
+  background: $color-sel;
+  box-shadow: inset 2px 0 0 $color-accent;
+}
+
+.workflowJobLog_gapDots {
+  flex: none;
+  width: 52px;
+  font-family: $font-family-mono;
+  text-align: right;
 }
 
 // Held at the edge of the view: the end of a line cut lies thousands of pixels off to the side, or below, if wrapped.

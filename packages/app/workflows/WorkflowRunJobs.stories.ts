@@ -32,6 +32,7 @@ const meta = {
         selectedId: 103,
         loading: false,
         now: SAMPLE_WORKFLOWS_NOW,
+        matches: null,
         onSelect: fn(),
     },
     decorators: [() => ({ template: '<div style="display: flex; height: 500px"><story /></div>' })],
@@ -43,6 +44,23 @@ type Story = StoryObj<typeof meta>;
 
 /** W4a: failed first, the failed job selected, its steps shown with the failed one standing out. */
 export const Failed: Story = {};
+
+/** W4b: a search's matches on the selected job and, in place of their time, on its steps. */
+export const Searching: Story = {
+    args: {
+        matches: {
+            length: 7,
+            lines: Array.from({ length: 12 }, (_, index) => index),
+            starts: Array.from({ length: 12 }, () => 0),
+            lineCount: 12,
+            capped: false,
+            steps: new Map([
+                [2, 2],
+                [3, 10],
+            ]),
+        },
+    },
+};
 
 /** W4e: placeholder rows while the jobs are on their way. */
 export const Loading: Story = {

@@ -15,6 +15,7 @@ import {
     getRowSection,
 } from './buildLogDocument.js';
 import type { LogDocument } from './buildLogDocument.js';
+import { findLogMatches } from './utils/findLogMatches.js';
 import { parseJobLog } from './utils/parseJobLog.js';
 
 const STEPS = [
@@ -220,6 +221,94 @@ test('E/⇧E go to the next or previous error, none past the ends; the toolbar c
     expect(getErrorPosition(LOG, second)).toBe(2);
 });
 
+test('W4c: only the matches: lines by step, gaps between them, the steps with none left out', () => {
+    const matches = findLogMatches(LOG, 'g');
+
+    const built = buildLogDocument({
+        log: LOG,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: true,
+        only: { matches, openedGaps: new Set() },
+    });
+
+    // Line "g" in step 4; "f" before it, "h" and "i" after it.
+    expect(describe(built)).toEqual(['step 4', 'gap 5-5', 'g', 'gap 7-8', 'end']);
+});
+
+test('W4c: a gap holds the row of each of its lines, opens in place, and tells the map what it stands for', () => {
+    const matches = findLogMatches(LOG, 'g');
+    const closed = buildLogDocument({
+        log: LOG,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: false,
+        only: { matches, openedGaps: new Set() },
+    });
+    const opened = buildLogDocument({
+        log: LOG,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: false,
+        only: { matches, openedGaps: new Set([7]) },
+    });
+
+    expect(closed.lineRows[7]).toBe(3);
+    expect(closed.lineRows[8]).toBe(3);
+    expect(getRowLines({ log: LOG, document: closed, row: 3 })).toEqual({
+        from: (LOG.lines[7]?.number ?? 0) - 1,
+        to: LOG.lines[8]?.number ?? 0,
+    });
+    expect(describe(opened)).toEqual(['step 4', 'gap 5-5', 'g', 'h', 'i']);
+});
+
+test('W4c: a step folded among the matches stays a head; every step stays a section, for the map', () => {
+    const matches = findLogMatches(LOG, 'g');
+    const built = buildLogDocument({
+        log: LOG,
+        steps: STEPS,
+        folded: new Set([4]),
+        endNote: false,
+        only: { matches, openedGaps: new Set() },
+    });
+
+    expect(describe(built)).toEqual(['step 4 folded']);
+    expect(built.sections.map(section => section.step?.number)).toEqual(STEPS.map(entry => entry.number));
+    // A line of a step left out points at a row that exists.
+    expect(built.lineRows[0]).toBe(0);
+    expect(built.lineRows.at(-1)).toBe(0);
+});
+
+test('W4c: moving by step passes over the steps left out', () => {
+    const lines = [line(1, 'hit'), line(2, 'none'), line(4, 'hit')].join('\n');
+    const log = parseJobLog(lines, STEPS);
+    const built = buildLogDocument({
+        log,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: false,
+        only: { matches: findLogMatches(log, 'hit'), openedGaps: new Set() },
+    });
+
+    expect(getAdjacentStepLine({ document: built, index: 0, by: 1 })).toBe(2);
+});
+
+test('W4c: 100,000 matching lines build one row each, well within the timeout a quadratic path would run past', () => {
+    const count = 100_000;
+    const big = parseJobLog(Array.from({ length: count }, () => line(4, 'hit')).join('\n'), STEPS);
+    const matches = findLogMatches(big, 'hit');
+
+    const built = buildLogDocument({
+        log: big,
+        steps: STEPS,
+        folded: new Set(),
+        endNote: false,
+        only: { matches, openedGaps: new Set() },
+    });
+
+    expect(built.rows).toHaveLength(count + 1);
+});
+
 function document(folded: ReadonlySet<number>) {
     return buildLogDocument({ log: LOG, steps: STEPS, folded, endNote: false });
 }
@@ -231,6 +320,8 @@ function describe(built: LogDocument) {
                 return `step ${row.section.step?.number}${row.section.folded ? ' folded' : ''}`;
             case 'line':
                 return row.line.text;
+            case 'gap':
+                return `gap ${row.first}-${row.last}`;
             default:
                 return 'end';
         }
