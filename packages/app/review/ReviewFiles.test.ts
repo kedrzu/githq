@@ -671,6 +671,50 @@ test('a refresh that fails keeps the list shown and warns; nothing kept, the fai
     expect(second.model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
 });
 
+test('GitHub answering NOT_FOUND hides the kept code and its list, and opening again asks anew', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('a'));
+
+    github.refuseNext('PullRequestReviewFiles', 'NOT_FOUND');
+    const second = open(login, github);
+    await waitUntil(() => second.model.list.kind === 'gone', { timeoutMs: 2000 });
+
+    expect(second.model.files).toEqual([]);
+    expect(second.model.getState('a.ts')).toEqual({ kind: 'waiting' });
+
+    second.files.open(REFERENCE);
+    await waitUntil(() => second.model.list.kind === 'ready' && second.model.files.length === 1, { timeoutMs: 2000 });
+
+    github.refuseNext('PullRequestReviewFiles', 'NOT_FOUND');
+    second.files.open(REFERENCE);
+    await waitUntil(() => second.model.list.kind === 'gone', { timeoutMs: 2000 });
+    github.failNext('PullRequestReviewFiles');
+    const third = open(login, github);
+    await waitUntil(() => third.model.list.kind === 'failed', { timeoutMs: 2000 });
+    expect(third.model.files).toEqual([]);
+});
+
+test('GitHub answering FORBIDDEN, as for an organisation restricting apps, keeps what is kept showing', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const login = uniqueLogin();
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('a'));
+
+    github.refuseNext('PullRequestReviewFiles', 'FORBIDDEN');
+    const second = open(login, github);
+
+    await waitUntil(() => second.session.logs.some(log => log.level === 'warn'), { timeoutMs: 2000 });
+    expect(second.model.list).toEqual({ kind: 'ready' });
+    await settled(second.model);
+    expect(second.model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+});
+
 test('signing out with every kind of answer on its way: the kept list, oids and merge base stay off the disk', async () => {
     const github = createGitHub();
     github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
@@ -731,6 +775,7 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     const blobs = new Map<string, TestBlob>();
     const truncated = new Map<string, string>();
     const failing = new Set<string>();
+    const refusing = new Map<string, string>();
     let failedExpression: string | null = null;
     let rateLimited: string | null = null;
     const viewed = new Map<string, ReviewFile['viewed']>();
@@ -746,6 +791,7 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
             failedExpression = expression;
         },
         failNext: (operation: string) => failing.add(operation),
+        refuseNext: (operation: string, type: string) => refusing.set(operation, type),
         rateLimit: (operation: string | null) => {
             rateLimited = operation;
         },
@@ -789,6 +835,12 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
         if (failing.delete(request.operation)) {
             return undefined;
+        }
+
+        const refusal = refusing.get(request.operation);
+        if (refusal !== undefined) {
+            refusing.delete(request.operation);
+            return { data: { repository: null }, errors: [{ type: refusal, message: `${refusal} by GitHub` }] };
         }
 
         if (rateLimited === request.operation) {

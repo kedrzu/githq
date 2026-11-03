@@ -60,7 +60,9 @@ export type ReviewFileListState =
     | { readonly kind: 'loading' }
     | { readonly kind: 'ready' }
     /** Opening the pull request again ({@link ReviewFiles.open}) tries it again. */
-    | { readonly kind: 'failed'; readonly error: Error };
+    | { readonly kind: 'failed'; readonly error: Error }
+    /** GitHub says it doesn't exist, to this user at least: what was kept of it is not shown. Opening it again asks anew. */
+    | { readonly kind: 'gone' };
 
 /** A pull request's files for its review, and their contents as they arrive. Reactive, except for its methods. */
 export interface PullRequestFiles {
@@ -341,6 +343,7 @@ export const ReviewFiles = defineService({
                 const list = listRef.value;
                 switch (list.kind) {
                     case 'failed':
+                    case 'gone':
                         void load();
                         break;
                     case 'ready':
@@ -394,12 +397,28 @@ export const ReviewFiles = defineService({
                         return;
                     }
 
-                    if (runRef.value) {
+                    if (isPullRequestGone(error)) {
+                        forget();
+                    } else if (runRef.value) {
                         logger.warn("Could not read a pull request's list of files", { error });
                     } else {
                         listRef.value = { kind: 'failed', error: toError(error) };
                     }
                 }
+            }
+
+            /**
+             * GitHub says the pull request isn't there, which is also how it answers someone who lost access to a private
+             * repository: its kept code stops showing, as an item's kept copy goes. The contents stay on disk until sign-out,
+             * for a blob may belong to other pull requests (D19).
+             */
+            function forget() {
+                runRef.value = null;
+                filesRef.value = [];
+                listCompleteRef.value = false;
+                listRef.value = { kind: 'gone' };
+                versionRef.value++;
+                keepOnDisk(() => blobs.deleteFileList(login, listKey));
             }
 
             async function readPages(): Promise<void> {
@@ -447,7 +466,8 @@ export const ReviewFiles = defineService({
                 });
                 const page = answered?.pullRequest;
                 if (!page) {
-                    throw new Error(`GitHub has no pull request ${nameWithOwner}#${reference.number}`);
+                    const message = `GitHub has no pull request ${nameWithOwner}#${reference.number}`;
+                    throw new GitHubApiError({ status: 200, message, errors: [{ type: 'NOT_FOUND', message }] });
                 }
 
                 return page;
@@ -1145,4 +1165,8 @@ function readBlobSide(expression: string | null, answers: ReadonlyMap<string, Re
 
 function toError(error: unknown) {
     return error instanceof Error ? error : new Error(String(error));
+}
+
+function isPullRequestGone(error: unknown) {
+    return error instanceof GitHubApiError && error.errors.some(entry => entry.type === 'NOT_FOUND');
 }

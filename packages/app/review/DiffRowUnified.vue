@@ -87,6 +87,7 @@ const text = computed(() => {
 .diffRowUnified_code {
   min-width: 0;
   font-family: $font-family-mono;
+  font-variant-ligatures: none;
   font-size: $font-size-xs;
   line-height: 20px;
   tab-size: 4;

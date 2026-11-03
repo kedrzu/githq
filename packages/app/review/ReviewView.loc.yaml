@@ -8,6 +8,10 @@ reading:
   en: Reading the files of {reference}
 listFailed:
   en: Couldn't read this pull request's files
+gone:
+  en: GitHub doesn't show this pull request
+goneDetail:
+  en: It may have been deleted, or you may have lost access to its repository. Its code read earlier stays in this browser until you sign out.
 tryAgain:
   en: Try again
 openOnGitHub:

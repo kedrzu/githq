@@ -32,6 +32,9 @@ export const ListFailed: Story = {
     render: () => renderView({ kind: 'failed', error: new Error('GitHub answered 502') }),
 };
 
+/** GitHub says the pull request isn't there, perhaps as access was lost: the code kept of it stays hidden. */
+export const Gone: Story = { render: () => renderView({ kind: 'gone' }) };
+
 /** A pull request with no changes. */
 export const NoChanges: Story = { render: () => renderView({ kind: 'ready' }) };
 

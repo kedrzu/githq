@@ -232,10 +232,10 @@ function readAgain() {
           :class="css.reviewView_state"
         >
           <EmptyState
-            v-if="files?.list.kind === 'failed'"
+            v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
             :icon="CircleAlert"
-            :title="t(l.listFailed)"
-            :detail="files.list.error.message"
+            :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
+            :detail="files.list.kind === 'gone' ? t(l.goneDetail) : files.list.error.message"
           >
             <template #action>
               <div :class="css.reviewView_actions">

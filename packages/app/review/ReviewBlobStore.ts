@@ -50,6 +50,7 @@ export interface ReviewBlobStoreShape {
     writeMergeBase(login: string, key: string, oid: string): Promise<void>;
     readFileList(login: string, key: string): Promise<ReviewKeptFileList | undefined>;
     writeFileList(login: string, key: string, list: ReviewKeptFileList): Promise<void>;
+    deleteFileList(login: string, key: string): Promise<void>;
 }
 
 interface ReviewBlobDatabase extends DBSchema {
@@ -84,6 +85,7 @@ export const ReviewBlobStore = defineService({
             writeMergeBase,
             readFileList,
             writeFileList,
+            deleteFileList,
         };
 
         async function read(login: string, oids: readonly string[]) {
@@ -145,6 +147,11 @@ export const ReviewBlobStore = defineService({
         async function writeFileList(login: string, key: string, list: ReviewKeptFileList) {
             const db = await getOpen(login);
             await db.put('fileLists', list, key);
+        }
+
+        async function deleteFileList(login: string, key: string) {
+            const db = await getOpen(login);
+            await db.delete('fileLists', key);
         }
     },
 });
