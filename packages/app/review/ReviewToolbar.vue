@@ -1,7 +1,16 @@
-<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), comments in collapsed files among them (D13), the file list's toggle beside them (D26, D31), and github.com. -->
+<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), comments in collapsed files and the two columns among them (D13, D26), the columns' toggles beside them (D31), and github.com. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowLeft, ChevronDown, Columns2, Github, GitPullRequest, PanelLeft, Rows2 } from 'lucide-vue-next';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Columns2,
+  Github,
+  GitPullRequest,
+  PanelLeft,
+  PanelRight,
+  Rows2,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -33,6 +42,7 @@ const emit = defineEmits<{
 const layout = defineModel<DiffLayout>('layout', { required: true });
 const hideWhitespace = defineModel<boolean>('hideWhitespace', { required: true });
 const fileListHidden = defineModel<boolean>('fileListHidden', { required: true });
+const conversationShown = defineModel<boolean>('conversationShown', { required: true });
 const threadsInCollapsed = defineModel<boolean>('threadsInCollapsed', { required: true });
 
 const t = useTranslate();
@@ -134,16 +144,37 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
             />
           </span>
         </label>
+        <label :class="css.reviewToolbar_switch">
+          {{ t(l.conversation) }}
+          <span :class="css.reviewToolbar_switchEnd">
+            <Kbd keys="Alt+Mod+B" />
+            <Switch
+              v-model="conversationShown"
+              :label="t(l.conversation)"
+            />
+          </span>
+        </label>
         <p :class="css.reviewToolbar_note">{{ t(l.keptNote) }}</p>
       </div>
     </Popover>
-    <ReviewToggle
-      :icon="PanelLeft"
-      :label="t(l.fileList)"
-      :pressed="fileListShown"
-      kbd="Mod+B"
-      @click="fileListShown = !fileListShown"
-    />
+    <div :class="css.reviewToolbar_panels">
+      <ReviewToggle
+        :icon="PanelLeft"
+        :label="t(l.fileList)"
+        :pressed="fileListShown"
+        kbd="Mod+B"
+        panel
+        @click="fileListShown = !fileListShown"
+      />
+      <ReviewToggle
+        :icon="PanelRight"
+        :label="t(l.conversation)"
+        :pressed="conversationShown"
+        kbd="Alt+Mod+B"
+        panel
+        @click="conversationShown = !conversationShown"
+      />
+    </div>
     <IconButton
       :icon="Github"
       :label="t(l.openOnGitHub)"
@@ -276,6 +307,15 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   display: flex;
   gap: $spacing-8;
   align-items: center;
+}
+
+.reviewToolbar_panels {
+  display: flex;
+  flex: none;
+  gap: $spacing-2;
+  padding: $spacing-2;
+  border: 1px solid $color-border;
+  border-radius: 6px;
 }
 
 .reviewToolbar_note {

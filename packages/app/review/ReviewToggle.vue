@@ -1,4 +1,4 @@
-<!-- A switch of the review shown as a glyph (`Review / Toggle`): hide viewed, regular expression, the file list. An outline, lit while on; `quiet` has no outline until then, inside a field. -->
+<!-- A switch of the review shown as a glyph (`Review / Toggle`): hide viewed, regular expression. An outline, lit while on; `quiet` has no outline until then, inside a field; `panel` is one of the toolbar's two column toggles (`Panels`), a filled square while on. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -12,12 +12,13 @@ defineProps<{
   /** Its key, shown in the tooltip. */
   kbd?: string;
   quiet?: boolean;
+  panel?: boolean;
 }>();
 </script>
 
 <template>
   <IconButton
-    :class="[css.reviewToggle, quiet && css.reviewToggle_quiet]"
+    :class="panel ? css.reviewToggle_panel : [css.reviewToggle, quiet && css.reviewToggle_quiet]"
     :icon="icon"
     :label="label"
     :kbd="kbd"
@@ -41,5 +42,16 @@ defineProps<{
   width: 20px;
   height: 20px;
   border-color: transparent;
+}
+.reviewToggle_panel {
+  width: 24px;
+  height: 20px;
+  color: $color-fg-3;
+  border-radius: 4px;
+
+  &[aria-pressed='true'] {
+    color: $color-fg;
+    background: $color-bg-3;
+  }
 }
 </style>

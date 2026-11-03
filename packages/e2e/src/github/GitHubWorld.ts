@@ -125,6 +125,24 @@ export interface GitHubWorldPlacement {
     readonly archived?: boolean;
 }
 
+/** A comment on an item of the world ({@link GitHubWorld.comment}). */
+export interface GitHubWorldCommentParams {
+    readonly author: string;
+    readonly body: string;
+    readonly minutesAgo: number;
+}
+
+/** A submitted review of a pull request of the world ({@link GitHubWorld.review}). */
+export interface GitHubWorldReviewParams {
+    /** Its node id, which a thread's first comment names to be the review's. */
+    readonly id: string;
+    readonly author: string;
+    readonly state: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED';
+    /** Its text as GitHub renders it (`bodyHTML`); none by default. */
+    readonly bodyHtml?: string;
+    readonly minutesAgo: number;
+}
+
 /** An issue of the world; assigned to the viewer when "assigned" finds it. */
 export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
     /** Its issue type; none by default. */
@@ -478,6 +496,7 @@ interface WorldPullRequest {
     readonly failingChecks: number;
     readonly conflicts: boolean;
     reviewRequests: string[];
+    readonly reviews: GitHubWorldReviewParams[];
     readonly closes: readonly string[];
     behindBase: boolean;
     readonly mergeabilityUnknown: boolean;
@@ -849,6 +868,22 @@ export class GitHubWorld {
     /** Adds an open pull request; returns its node id. */
     pullRequest(params: GitHubWorldPullRequestParams): string {
         return this.createPullRequest(params, null).item.id;
+    }
+
+    /** Adds a comment to an item, its newest: call them oldest first. */
+    comment(id: string, params: GitHubWorldCommentParams): void {
+        const item = this.get(id);
+        item.comments.push({
+            id: `IC_${id}_${item.comments.length + 1}`,
+            author: params.author,
+            body: params.body,
+            createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+        });
+    }
+
+    /** Adds a submitted review to a pull request, its newest: call them oldest first. */
+    review(id: string, params: GitHubWorldReviewParams): void {
+        this.get(id).pullRequest?.reviews.push(params);
     }
 
     /** Adds a stack of open pull requests; returns their node ids, bottom first. */
@@ -2428,6 +2463,7 @@ export class GitHubWorld {
             failingChecks: params.failingChecks ?? 0,
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
+            reviews: [],
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             mergeabilityUnknown: params.mergeabilityUnknown ?? false,
@@ -2605,6 +2641,16 @@ export class GitHubWorld {
                 contextPage: { totalCount: 0, nodes: [] },
             },
             latestReviews: { nodes: [] },
+            reviews: {
+                nodes: item.pullRequest.reviews.map(review => ({
+                    id: review.id,
+                    url: `${toUrl(item)}#pullrequestreview-${review.id}`,
+                    author: createUser(review.author),
+                    state: review.state,
+                    bodyHTML: review.bodyHtml ?? '',
+                    submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
+                })),
+            },
             reviewRequests: {
                 nodes: item.pullRequest.reviewRequests.map(login => ({ requestedReviewer: createUser(login) })),
             },

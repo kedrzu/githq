@@ -31,6 +31,8 @@ export interface SampleReviewThread {
     readonly diffHunk?: string;
     /** `bodyHTML` of each comment. */
     readonly comments: readonly string[];
+    /** The review its first comment came in; none by default. */
+    readonly reviewId?: string;
 }
 
 export interface AnswerReviewParams {
@@ -252,6 +254,7 @@ function toThreadNode(thread: SampleReviewThread) {
                 diffHunk: thread.diffHunk ?? '',
                 outdated: thread.isOutdated ?? false,
                 originalCommit: { oid: 'a91d03b00000', abbreviatedOid: 'a91d03b' },
+                pullRequestReview: index === 0 && thread.reviewId !== undefined ? { id: thread.reviewId } : null,
             })),
         },
     };

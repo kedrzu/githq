@@ -7,11 +7,13 @@ export class ReviewScreenHarness {
     readonly page: Page;
     readonly fileList: Locator;
     readonly diff: Locator;
+    readonly conversation: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.fileList = page.getByRole('region', { name: 'Files' });
         this.diff = page.getByRole('region', { name: 'Changes' });
+        this.conversation = page.getByRole('region', { name: 'Conversation' });
     }
 
     /** The pull request's title in the toolbar. */
@@ -108,6 +110,11 @@ export class ReviewScreenHarness {
     /** The file list's toggle in the toolbar. */
     get fileListToggle(): Locator {
         return this.page.getByRole('button', { name: 'File list', exact: true });
+    }
+
+    /** The conversation's toggle in the toolbar. */
+    get conversationToggle(): Locator {
+        return this.page.getByRole('button', { name: 'Conversation', exact: true });
     }
 
     /** The thread holding that text, in the diff. */

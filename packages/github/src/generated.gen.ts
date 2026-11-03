@@ -918,6 +918,22 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              reviews: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      state: PullRequestReviewState;
+                      bodyHTML: string;
+                      submittedAt: string | null;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              } | null;
               reviewRequests: {
                   nodes: Array<{
                       requestedReviewer:
@@ -1420,6 +1436,22 @@ export type ItemDetailsQuery = {
               latestReviews: {
                   nodes: Array<{
                       state: PullRequestReviewState;
+                      submittedAt: string | null;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              } | null;
+              reviews: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      state: PullRequestReviewState;
+                      bodyHTML: string;
                       submittedAt: string | null;
                       author:
                           | { login: string; avatarUrl: string }
@@ -2858,6 +2890,7 @@ export type PullRequestReviewThreadsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             originalCommit: { oid: string; abbreviatedOid: string } | null;
+                            pullRequestReview: { id: string } | null;
                         } | null> | null;
                     };
                 } | null> | null;
@@ -3532,6 +3565,7 @@ export type ReviewThreadCommentsQuery = {
                           | { login: string; avatarUrl: string }
                           | null;
                       originalCommit: { oid: string; abbreviatedOid: string } | null;
+                      pullRequestReview: { id: string } | null;
                   } | null> | null;
               };
           }
@@ -5076,6 +5110,22 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    reviews: {
+        nodes: Array<{
+            id: string;
+            url: string;
+            state: PullRequestReviewState;
+            bodyHTML: string;
+            submittedAt: string | null;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+        } | null> | null;
+    } | null;
     reviewRequests: {
         nodes: Array<{
             requestedReviewer:
@@ -5450,6 +5500,7 @@ export type ReviewThreadCommentFieldsFragment = {
         | { login: string; avatarUrl: string }
         | null;
     originalCommit: { oid: string; abbreviatedOid: string } | null;
+    pullRequestReview: { id: string } | null;
 };
 
 export type TrackingProjectFieldsFragment = {
@@ -8548,6 +8599,19 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
       submittedAt
     }
   }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    nodes {
+      id
+      url
+      author {
+        login
+        avatarUrl
+      }
+      state
+      bodyHTML
+      submittedAt
+    }
+  }
   reviewRequests(first: 10) {
     nodes {
       requestedReviewer {
@@ -8939,6 +9003,9 @@ export const ReviewThreadCommentFieldsFragmentDoc = new TypedDocumentString(
   originalCommit {
     oid
     abbreviatedOid
+  }
+  pullRequestReview {
+    id
   }
 }
     `,
@@ -9457,6 +9524,19 @@ fragment PullRequestDetailFields on PullRequest {
       submittedAt
     }
   }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    nodes {
+      id
+      url
+      author {
+        login
+        avatarUrl
+      }
+      state
+      bodyHTML
+      submittedAt
+    }
+  }
   reviewRequests(first: 10) {
     nodes {
       requestedReviewer {
@@ -9937,6 +10017,19 @@ fragment PullRequestDetailFields on PullRequest {
         avatarUrl
       }
       state
+      submittedAt
+    }
+  }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    nodes {
+      id
+      url
+      author {
+        login
+        avatarUrl
+      }
+      state
+      bodyHTML
       submittedAt
     }
   }
@@ -11541,6 +11634,9 @@ export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
     oid
     abbreviatedOid
   }
+  pullRequestReview {
+    id
+  }
 }`);
 export const PullRequestStacksDocument = new TypedDocumentString(`
     query PullRequestStacks($ids: [ID!]!, $first: Int!) {
@@ -12403,6 +12499,9 @@ export const ReviewThreadCommentsDocument = new TypedDocumentString(`
   originalCommit {
     oid
     abbreviatedOid
+  }
+  pullRequestReview {
+    id
   }
 }`);
 export const TrackingCandidatesDocument = new TypedDocumentString(`

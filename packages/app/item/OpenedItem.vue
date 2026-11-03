@@ -2,7 +2,6 @@
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { SearchX } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
@@ -45,7 +44,6 @@ const props = defineProps<{
 const TICK_MS = 30_000;
 
 const t = useTranslate();
-const logger = useLogger();
 const details = useService(ItemDetailStore);
 const items = useService(ItemStore);
 const navigation = useService(ItemNavigation);
@@ -271,25 +269,6 @@ function focusModal(event: Event) {
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
-
-async function loadAllComments() {
-  const { id } = opened;
-  if (id === null) {
-    return;
-  }
-
-  try {
-    // 100 at a time, until none are left — or the detail was read again meanwhile and the cursor did not move.
-    let cursor = details.get(id)?.comments.olderCursor ?? null;
-    while (cursor !== null) {
-      await details.loadOlderComments(id);
-      const next = details.get(id)?.comments.olderCursor ?? null;
-      cursor = next === cursor ? null : next;
-    }
-  } catch (error) {
-    logger.warn('Older comments could not be read', { id, error });
-  }
-}
 </script>
 
 <template>
@@ -315,7 +294,7 @@ async function loadAllComments() {
       :position="position"
       :closes="closes"
       :now="now"
-      :load-all-comments="loadAllComments"
+      :load-all-comments="opened.loadAllComments"
       :editing="editing"
       :stack="stack"
       :neighbours="neighbours"
@@ -361,7 +340,7 @@ async function loadAllComments() {
     :position="position"
     :closes="closes"
     :now="now"
-    :load-all-comments="loadAllComments"
+    :load-all-comments="opened.loadAllComments"
     :editing="editing"
     :stack="stack"
     :neighbours="neighbours"

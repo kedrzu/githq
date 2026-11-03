@@ -14,4 +14,7 @@ fragment ReviewThreadCommentFields on PullRequestReviewComment {
         oid
         abbreviatedOid
     }
+    pullRequestReview {
+        id
+    }
 }

@@ -35,6 +35,18 @@ describe('on a Mac', () => {
         expect(matchesCommandKey(press({ key: 'å', code: 'KeyA', altKey: true, metaKey: true }), 'Alt+A')).toBe(false);
         expect(matchesCommandKey(press({ key: 'a', code: 'KeyA', altKey: true }), 'A')).toBe(false);
     });
+
+    test('⌥⌘B is told from ⌘B, whatever ⌥ makes of the letter ("∫", on a Polish layout something else)', () => {
+        apple = true;
+        expect(matchesCommandKey(press({ key: '∫', code: 'KeyB', altKey: true, metaKey: true }), 'Alt+Mod+B')).toBe(
+            true,
+        );
+        expect(matchesCommandKey(press({ key: 'b', code: 'KeyB', altKey: true, metaKey: true }), 'Alt+Mod+B')).toBe(
+            true,
+        );
+        expect(matchesCommandKey(press({ key: 'b', code: 'KeyB', metaKey: true }), 'Alt+Mod+B')).toBe(false);
+        expect(matchesCommandKey(press({ key: '∫', code: 'KeyB', altKey: true, metaKey: true }), 'Mod+B')).toBe(false);
+    });
 });
 
 describe('elsewhere', () => {

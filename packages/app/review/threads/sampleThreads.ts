@@ -27,6 +27,7 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
                 diffHunk: '@@ -46,2 +46,2 @@\n one\n+two',
                 outdated: false,
                 originalCommit: { oid: 'a91d03b0', abbreviatedOid: 'a91d03b' },
+                pullRequestReview: { id: 'PRR_1' },
             },
             {
                 id: 'C_2',
@@ -37,6 +38,7 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
                 diffHunk: '@@ -46,2 +46,2 @@\n one\n+two',
                 outdated: false,
                 originalCommit: { oid: 'a91d03b0', abbreviatedOid: 'a91d03b' },
+                pullRequestReview: { id: 'PRR_1' },
             },
         ],
         ...overrides,

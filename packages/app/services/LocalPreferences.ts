@@ -17,12 +17,13 @@ const PANEL_SHARE_KEY_PREFIX = 'githq.panelShare.';
 const REVIEW_LAYOUT_KEY = 'githq.reviewLayout';
 const REVIEW_HIDE_WHITESPACE_KEY = 'githq.reviewHideWhitespace';
 const REVIEW_FILE_LIST_HIDDEN_KEY = 'githq.reviewFileListHidden';
+const REVIEW_CONVERSATION_SHOWN_KEY = 'githq.reviewConversationShown';
 const REVIEW_THREADS_IN_COLLAPSED_KEY = 'githq.reviewThreadsInCollapsed';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
  * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or
- * as a share of what holds them, how a code review shows a diff, whether its file list shows and whether collapsed files show their threads (D4, D13, D14, D26: for every
+ * as a share of what holds them, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D14, D26: for every
  * pull request). The one place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -73,6 +74,13 @@ export const LocalPreferences = defineService({
             serialize: String,
             deserialize: raw => raw === 'true',
         });
+        const reviewConversationShown = storageRef<boolean>({
+            key: REVIEW_CONVERSATION_SHOWN_KEY,
+            storage,
+            default: () => false,
+            serialize: String,
+            deserialize: raw => raw === 'true',
+        });
         const reviewThreadsInCollapsed = storageRef<boolean>({
             key: REVIEW_THREADS_IN_COLLAPSED_KEY,
             storage,
@@ -106,6 +114,10 @@ export const LocalPreferences = defineService({
                 reviewFileListHidden.reload();
             }
 
+            if (key === null || key === REVIEW_CONVERSATION_SHOWN_KEY) {
+                reviewConversationShown.reload();
+            }
+
             if (key === null || key === REVIEW_THREADS_IN_COLLAPSED_KEY) {
                 reviewThreadsInCollapsed.reload();
             }
@@ -128,6 +140,8 @@ export const LocalPreferences = defineService({
             reviewHideWhitespace,
             /** Whether a code review's diff has the whole width, in every one (⌘B, D26). */
             reviewFileListHidden,
+            /** Whether a code review shows the pull request's conversation beside the diff, in every one (⌥⌘B, D5, D26). */
+            reviewConversationShown,
             /** Whether a collapsed file in a code review shows its threads under its header, in every one (D13). */
             reviewThreadsInCollapsed,
             getPanelWidth,

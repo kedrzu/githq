@@ -52,6 +52,7 @@ function threadWith(overrides: Partial<ReviewThread> & { readonly diffHunk?: str
                 diffHunk,
                 outdated: thread.isOutdated ?? false,
                 originalCommit: { oid: 'a91d03b00', abbreviatedOid: 'a91d03b' },
+                pullRequestReview: null,
             },
         ],
         ...thread,

@@ -109,6 +109,16 @@ export const LostViewed: Story = {
         ),
 };
 
+/** CR5: the conversation on, its toggle lit; with the diff beside it and the detail still being read. */
+export const ConversationOn: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'ready', before: 'one\ntwo\nthree\n', after: 'one\nTWO\nthree\n' } },
+            { conversationShown: true },
+        ),
+};
+
 /** The allowance ran out before the list could be read: it comes by itself. */
 export const ListPaused: Story = {
     render: () => renderView({ kind: 'paused', until: new Date('2026-10-30T14:32:00').getTime() }),
@@ -121,6 +131,7 @@ interface RenderOptions {
     readonly collapsed?: Readonly<Record<string, ReviewFileCollapse>>;
     readonly lostViewed?: ReadonlySet<string>;
     readonly threads?: readonly ReviewThread[];
+    readonly conversationShown?: boolean;
 }
 
 /** The view over a real session, whose GitHub answers nothing, reading what is given. */
@@ -133,7 +144,12 @@ function renderView(
         setup() {
             const container = createContainer();
             container.set(LanguageContext, () => APP_LANGUAGE);
-            container.set(Browser, createSignedInBrowser());
+            const browser = createSignedInBrowser();
+            if (options.conversationShown) {
+                browser.localStorage.setItem('githq.reviewConversationShown', 'true');
+            }
+
+            container.set(Browser, browser);
             setIndexedDbPersistence(container);
             const files = createFiles(list, states, options);
             container.set(ReviewFiles, { open: () => files });

@@ -21,6 +21,7 @@ import type {
     ItemDetailProject,
     ItemDetailReview,
     ItemDetailReviewRequest,
+    ItemReviewSummary,
     ItemReaction,
     LinkedIssue,
     LinkedIssues,
@@ -129,6 +130,18 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], context => context && toItemCheck(context)),
         checkCount: node.statusCheckRollup?.contextPage.totalCount ?? 0,
         reviews,
+        reviewSummaries: mapNotNull(node.reviews?.nodes ?? [], (review): ItemReviewSummary | null =>
+            review?.submittedAt && review.state !== 'PENDING'
+                ? {
+                      id: review.id,
+                      url: review.url,
+                      author: review.author ? { login: review.author.login, avatarUrl: review.author.avatarUrl } : null,
+                      state: review.state,
+                      bodyHtml: review.bodyHTML,
+                      submittedAt: review.submittedAt,
+                  }
+                : null,
+        ),
         reviewRequests: toDetailReviewRequests(node.reviewRequests),
     };
 }

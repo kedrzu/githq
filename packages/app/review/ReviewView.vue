@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, each landing held in place (D7, D32). ⌘B hides the file list (D26). GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, each landing held in place (D7, D32). ⌘B hides the file list and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -21,6 +21,7 @@ import {
   ListFilter,
   MessageSquare,
   PanelLeft,
+  PanelRight,
   Pause,
   UnfoldVertical,
 } from 'lucide-vue-next';
@@ -31,6 +32,7 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
+import Kbd from '@/components/Kbd.vue';
 import { formatItemReference, getItemPagePath } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
@@ -51,6 +53,8 @@ import {
   getReviewThreadKey,
 } from './buildReviewRows.js';
 import type { ReviewDistanceRow, ReviewGapRow, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
+import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
+import ReviewConversation from './conversation/ReviewConversation.vue';
 import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import ReviewFileList from './ReviewFileList.vue';
@@ -93,6 +97,7 @@ const diffColumn = useTemplateRef<HTMLElement>('diffColumn');
 const layout = preferences.reviewLayout;
 const hideWhitespace = preferences.reviewHideWhitespace;
 const fileListHidden = preferences.reviewFileListHidden;
+const conversationShown = preferences.reviewConversationShown;
 const threadsInCollapsed = preferences.reviewThreadsInCollapsed;
 const selected = shallowRef<ReadonlySet<string>>(new Set());
 /** The thread N and ⇧N are at. Its row may be scrolled out of the list, and it is still the one. */
@@ -137,6 +142,7 @@ const openThreads = computed(() => {
 
   return counts;
 });
+const reviewThreads = computed(() => getReviewOwnThreads(placements.value));
 const groups = computed(() => {
   const current = filter.value;
   const gone = current.kind === 'on' ? goneFiles.value.filter(file => current.matches(file.path)) : goneFiles.value;
@@ -186,6 +192,7 @@ const currentFile = computed(() => {
   return file && !file.gone ? file : null;
 });
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
+const detail = computed(() => (opened.detail?.kind === 'pullRequest' ? opened.detail : null));
 const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
 /** The threads N and ⇧N walk, in diff order: all but resolved ones folded to their line. */
 const walkedThreads = computed(() =>
@@ -307,6 +314,17 @@ watch(fileListHidden, hidden => {
   if (hidden) {
     selected.value = new Set();
     returnKeysToDiff();
+  }
+});
+
+// Closed from inside itself, its button or its text having the focus: the keys go back to the diff.
+watch(conversationShown, shown => {
+  if (!shown) {
+    void nextTick(() => {
+      if (document.activeElement === document.body) {
+        list.value?.focus();
+      }
+    });
   }
 });
 
@@ -451,6 +469,16 @@ useCommands(() => [
     },
   },
   {
+    id: 'review.toggleConversation',
+    title: conversationShown.value ? t(l.hideConversation) : t(l.showConversation),
+    section: 'view',
+    key: 'Alt+Mod+B',
+    icon: PanelRight,
+    run: () => {
+      conversationShown.value = !conversationShown.value;
+    },
+  },
+  {
     id: 'review.toggleCollapsed',
     title: isCurrentCollapsed() ? t(l.expandFile) : t(l.collapseFile),
     section: 'view',
@@ -511,6 +539,39 @@ function jumpToFileThreads(path: string) {
   } else {
     selectFile(path);
   }
+}
+
+/**
+ * A review's "2 threads in files": the first of them in the diff's order, landing as N does, one that is resolved opened
+ * for it was asked for. A filter or hidden viewed files holding it back give way; in a file collapsed with its comments
+ * hidden, its header is as near as it gets.
+ */
+async function jumpToReviewThreads(reviewId: string) {
+  const own = reviewThreads.value.get(reviewId);
+  if (!own) {
+    return;
+  }
+
+  if (!findFirstThreadRow(own.ids)) {
+    filterPattern.value = '';
+    hideViewed.value = false;
+    await nextTick();
+  }
+
+  const row = findFirstThreadRow(own.ids);
+  if (row) {
+    if (row.placement.thread.isResolved) {
+      files.value?.setThreadOpen(row.placement.thread.id, true);
+    }
+
+    jumpToThread(row);
+  } else if (own.paths[0] !== undefined) {
+    selectFile(own.paths[0]);
+  }
+}
+
+function findFirstThreadRow(ids: ReadonlySet<string>) {
+  return rows.value.find((row): row is ReviewThreadRow => row.kind === 'thread' && ids.has(row.placement.thread.id));
 }
 
 function isThreadOpen(id: string) {
@@ -673,6 +734,7 @@ function readAgain() {
       v-model:layout="layout"
       v-model:hide-whitespace="hideWhitespace"
       v-model:file-list-hidden="fileListHidden"
+      v-model:conversation-shown="conversationShown"
       v-model:threads-in-collapsed="threadsInCollapsed"
       :reference="reference"
       :item="opened.item"
@@ -833,14 +895,24 @@ function readAgain() {
             "
           >
             <template #action>
-              <Button
-                size="sm"
-                :link="githubUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ t(l.openOnGitHub) }}
-              </Button>
+              <div :class="css.reviewView_actions">
+                <Button
+                  v-if="!conversationShown"
+                  size="sm"
+                  @click="conversationShown = true"
+                >
+                  {{ t(l.conversation) }}
+                  <Kbd keys="Alt+Mod+B" />
+                </Button>
+                <Button
+                  size="sm"
+                  :link="githubUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ t(l.openOnGitHub) }}
+                </Button>
+              </div>
             </template>
           </EmptyState>
           <EmptyState
@@ -849,6 +921,19 @@ function readAgain() {
             :title="t(l.reading, { reference: formatItemReference(reference) })"
           />
         </div>
+      </div>
+      <div
+        v-if="conversationShown"
+        :class="css.reviewView_conversation"
+      >
+        <ReviewConversation
+          :item="opened.item"
+          :detail="detail"
+          :review-threads="reviewThreads"
+          :load-older="opened.loadAllComments"
+          @close="conversationShown = false"
+          @jump-to-threads="jumpToReviewThreads"
+        />
       </div>
     </div>
   </div>
@@ -881,6 +966,13 @@ function readAgain() {
   flex: 1;
   min-width: 0;
   min-height: 0;
+}
+
+.reviewView_conversation {
+  flex: none;
+  width: $review-conversation-width;
+  min-height: 0;
+  border-left: 1px solid $color-border;
 }
 
 .reviewView_state {

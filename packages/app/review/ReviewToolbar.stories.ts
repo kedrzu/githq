@@ -17,6 +17,7 @@ const meta = {
         hideWhitespace: false,
         threadsInCollapsed: true,
         fileListHidden: false,
+        conversationShown: false,
         onBack: fn(),
     },
 } satisfies Meta<typeof ReviewToolbar>;
@@ -45,8 +46,12 @@ export const ViewOptionsOpen: Story = {
         const panel = await within(canvasElement.ownerDocument.body).findByRole('dialog');
         await expect(within(panel).getByRole('switch', { name: 'Hide whitespace changes' })).toBeVisible();
         await expect(within(panel).getByRole('switch', { name: 'File list' })).toBeChecked();
+        await expect(within(panel).getByRole('switch', { name: 'Conversation' })).not.toBeChecked();
     },
 };
+
+/** CR5: both columns on, each toggle a filled square. */
+export const ColumnsOn: Story = { args: { conversationShown: true } };
 
 /** Opened at an address, before the pull request's row is known: it says no state it doesn't know. */
 export const NotKnownYet: Story = {

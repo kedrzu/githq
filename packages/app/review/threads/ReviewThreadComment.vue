@@ -1,4 +1,4 @@
-<!-- A comment of a review thread (`Review / Comment`): the avatar, who, how long ago, a link to it on GitHub, and its body as GitHub rendered and sanitized it. -->
+<!-- A comment of a review thread or of the conversation beside the diff (`Review / Comment`): the avatar, who, how long ago, a link to it on GitHub, and its body as GitHub rendered and sanitized it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -12,7 +12,7 @@ import * as l from './ReviewThreadComment.loc.js';
 import type { ReviewThreadComment } from './ReviewThread.js';
 
 const props = defineProps<{
-  comment: ReviewThreadComment;
+  comment: Pick<ReviewThreadComment, 'author' | 'bodyHTML' | 'createdAt' | 'url'>;
 }>();
 
 /** How often "12m" moves on. */

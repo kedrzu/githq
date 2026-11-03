@@ -1971,6 +1971,7 @@ function threadOn(path: string, id: string, bodies: readonly string[] = ['<p>Why
             diffHunk: '@@ -1 +1 @@\n+const a = 1;',
             outdated: false,
             originalCommit: { oid: 'c0ffee00', abbreviatedOid: 'c0ffee0' },
+            pullRequestReview: null,
         })),
     };
 }

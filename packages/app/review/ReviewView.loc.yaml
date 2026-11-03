@@ -64,3 +64,9 @@ nextThread:
   en: Next thread
 previousThread:
   en: Previous thread
+conversation:
+  en: Conversation
+showConversation:
+  en: Show the conversation
+hideConversation:
+  en: Hide the conversation

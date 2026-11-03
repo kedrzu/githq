@@ -57,6 +57,8 @@ export interface PullRequestDetail extends ItemDetailBase {
     readonly checkCount: number;
     /** Each reviewer's latest review. */
     readonly reviews: readonly ItemDetailReview[];
+    /** The newest submitted reviews (GitHub's last 100), every one of each reviewer, oldest first. */
+    readonly reviewSummaries: readonly ItemReviewSummary[];
     readonly reviewRequests: readonly ItemDetailReviewRequest[];
 }
 
@@ -135,6 +137,18 @@ export interface ItemDetailReview {
     readonly author: ItemUser | null;
     readonly state: PullRequestReviewState;
     readonly submittedAt: string | null;
+}
+
+/** A submitted review as a pull request's conversation shows it. */
+export interface ItemReviewSummary {
+    readonly id: string;
+    readonly url: string;
+    /** `null` for a deleted account. */
+    readonly author: ItemUser | null;
+    readonly state: Exclude<PullRequestReviewState, 'PENDING'>;
+    /** GitHub's own rendering, sanitized by GitHub; empty for a review with no text. */
+    readonly bodyHtml: string;
+    readonly submittedAt: string;
 }
 
 /** A review asked of a user (with their avatar) or of a team. */

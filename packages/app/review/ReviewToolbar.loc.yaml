@@ -22,6 +22,8 @@ openOnGitHub:
   en: Open on GitHub
 fileList:
   en: File list
+conversation:
+  en: Conversation
 openPullRequest:
   en: Open pull request
 draftPullRequest:

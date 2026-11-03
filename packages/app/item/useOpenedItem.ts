@@ -1,3 +1,4 @@
+import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
@@ -33,6 +34,8 @@ export interface OpenedItemViewModel {
     readonly failed: boolean;
     /** Asks for its id again, after {@link failed}. */
     tryAgain(): void;
+    /** Reads the comments not read yet; resolves once all are in, or GitHub stopped giving them, which is logged. */
+    loadAllComments(): Promise<void>;
 }
 
 /**
@@ -45,6 +48,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
     const details = useService(ItemDetailStore);
     const items = useService(ItemStore);
     const navigation = useService(ItemNavigation);
+    const logger = useLogger();
 
     const reference = makeRef(options.reference);
     const found = computed(() => resolver.peek(reference.value));
@@ -92,5 +96,25 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         missing: computed(() => found.value === null),
         failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),
         tryAgain: () => void resolver.resolve(reference.value),
+        loadAllComments,
     });
+
+    async function loadAllComments() {
+        const current = id.value;
+        if (current === null) {
+            return;
+        }
+
+        try {
+            // 100 at a time, until none are left — or the detail was read again meanwhile and the cursor did not move.
+            let cursor = details.get(current)?.comments.olderCursor ?? null;
+            while (cursor !== null) {
+                await details.loadOlderComments(current);
+                const next = details.get(current)?.comments.olderCursor ?? null;
+                cursor = next === cursor ? null : next;
+            }
+        } catch (error) {
+            logger.warn('Older comments could not be read', { id: current, error });
+        }
+    }
 }

@@ -1,0 +1,22 @@
+ghost:
+  en: ghost
+openOnGitHub:
+  en: 'Open on GitHub, {age}'
+APPROVED:
+  en: Approved
+CHANGES_REQUESTED:
+  en: Changes requested
+COMMENTED:
+  en: Commented
+DISMISSED:
+  en: Dismissed
+threadsInFiles:
+  plural: count
+  en:
+    one: 1 thread in files
+    many: '{count} threads in files'
+threadsInFilesResolved:
+  plural: count
+  en:
+    one: 1 thread in files, resolved
+    many: '{count} threads in files, resolved'
