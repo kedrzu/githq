@@ -693,6 +693,17 @@ test('SP54: a stack seen in the queue is remembered per stack until its next mer
     expect(panel.getQueued('S_1')).toEqual([]);
 });
 
+test('SP54: a stack the panel took out itself is forgotten, for that stack alone: it never reads as thrown out', async () => {
+    const { panel } = await setup();
+    panel.noteQueued('S_1', ['PR_0', 'PR_1']);
+    panel.noteQueued('S_2', ['PR_5']);
+
+    panel.forgetQueued('S_1');
+
+    expect(panel.getQueued('S_1')).toEqual([]);
+    expect(panel.getQueued('S_2')).toEqual(['PR_5']);
+});
+
 test('SP54: enqueued and read with its entry, the stack is noted as being there', async () => {
     const { panel, session, answers } = await setup();
     answers.put = ENQUEUED;

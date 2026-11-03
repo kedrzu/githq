@@ -147,6 +147,6 @@ chain: SP38. "No answer in time" and "reloaded" stay as PM29, PM30 and PM36, wit
 
 Still open, not settled by the screens:
 
-- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so);
-  whether a stack in a queue has one position (SP53, SP54). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
+- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so).
+  A stack in a queue has no one position: each member has its own ([D11](../DECISIONS.md#d11)). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
 - **The merge brief's "Being merged" row (PM37)** is unchanged: a stack needed only the entry's own sentence.

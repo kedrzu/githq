@@ -1,9 +1,6 @@
+# What it holds after this is read apart: its answer can still say the old state (live, 2026-11-03).
 mutation DequeuePullRequest($id: ID!) {
     dequeuePullRequest(input: { id: $id }) {
-        mergeQueueEntry {
-            pullRequest {
-                ...PullRequestStatusFields
-            }
-        }
+        clientMutationId
     }
 }

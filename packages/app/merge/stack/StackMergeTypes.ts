@@ -51,12 +51,13 @@ export interface StackMerge {
 }
 
 /**
- * A stack in a merge queue, as one group sharing one position; or out of it: the first the queue took back — GitHub
- * says it won't merge, or it has no entry any more and is still open — the later ones leaving with it (SP54). GitHub's
- * entry doesn't say why, so neither does the panel.
+ * A stack in a merge queue, each member with an entry and a position of its own (live, 2026-11-03): the group's place is
+ * its first one's, and each row says its own; or out of it: the first the queue took back — GitHub says it won't merge,
+ * or it has no entry any more and is still open, and this session didn't take it out itself — the later ones leaving
+ * with it (SP54). GitHub's entry doesn't say why, so neither does the panel.
  */
 export type StackMergeQueue =
-    | { readonly kind: 'in'; readonly entry: PullRequestQueueEntry }
+    | { readonly kind: 'in' }
     | {
           readonly kind: 'out';
           readonly thrownOut: PullRequestItem;

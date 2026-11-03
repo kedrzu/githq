@@ -224,7 +224,10 @@ and the copy already know the members ([D7](#d7)). Merging up to a pull request 
 >
 > **Checked 2026-11-03 (live, stack #44 of #41, #42 on a queue branch):** `merge-async` with `sha` only on the top answers `enqueued`, and each
 > member gets its own entry and position (1 and 2), not one shared. `dequeuePullRequest` on the top is refused ("No merge queue found for
-> branch"), on the first it takes the whole stack out. Under a ruleset with no bypass list `viewerCanMergeAsAdmin` is false.
+> branch"), on the first it takes the whole stack out. Under a ruleset with no bypass list `viewerCanMergeAsAdmin` is false. So the
+> panel (SP54) gives the group's place as the first one's and each row its own, and "Take out of queue" (`⇧Q`) goes to the first one
+> queued, whichever member asked. Its answer can still say the old state, so githq reads the members again; taken out from the panel,
+> a stack doesn't read as thrown out, as one taken out elsewhere still does: nothing tells that apart from the queue dropping it.
 
 **Rejected.**
 

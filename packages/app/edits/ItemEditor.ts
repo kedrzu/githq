@@ -12,7 +12,7 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
@@ -110,6 +110,7 @@ export const ItemEditor = defineService({
                     metadata: metadata.metadata,
                     viewer: { login: viewer.login, avatarUrl: viewer.avatarUrl },
                     now: new Date(clock.now()).toISOString(),
+                    stackMembers: getStackMembers(item),
                 });
                 const allowed = isAllowed(getPermissions(item), itemRequest, places);
                 for (const made of madeEdits) {
@@ -148,6 +149,20 @@ export const ItemEditor = defineService({
          * becomes that of the created issue's place — so it is never sent with the temporary id. `null` for an item
          * not in memory, or an issue GitHub did not create (that failure is reported with the creation).
          */
+        /** The stack's pull requests the copy holds, the item as shown among them; `undefined` outside a stack. */
+        function getStackMembers(item: Item): PullRequestItem[] | undefined {
+            if (item.kind !== 'pullRequest' || !item.stack) {
+                return undefined;
+            }
+
+            const stackId = item.stack.id;
+            const others = items.all.filter(
+                (other): other is PullRequestItem =>
+                    other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
+            );
+            return [...others, item];
+        }
+
         async function resolveItem(id: string, request: EditRequest): Promise<ResolvedItem | null> {
             const item = details.getItem(id);
             if (!item || !isPendingItem(item)) {

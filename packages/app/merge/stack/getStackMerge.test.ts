@@ -25,7 +25,7 @@ test('the range starts at the first open member, merged ones before it listed bu
     expect(numbers(getStackMerge({ description, end: 1 }).going)).toEqual([2]);
 });
 
-test('SP54: in a queue the first one’s entry is the group’s; none noted and none held, it is no queue’s business', () => {
+test('SP54: in a queue when the first one holds an entry; none noted and none held, it is no queue’s business', () => {
     const entry = {
         position: 2,
         state: 'QUEUED',
@@ -37,9 +37,11 @@ test('SP54: in a queue the first one’s entry is the group’s; none noted and 
 
     expect(getStackMerge({ description: stackOf([{}, {}]), end: null }).queue).toBeNull();
     expect(
-        getStackMerge({ description: stackOf([{ mergeQueueEntry: entry }, { mergeQueueEntry: entry }]), end: null })
-            .queue,
-    ).toEqual({ kind: 'in', entry });
+        getStackMerge({
+            description: stackOf([{ mergeQueueEntry: entry }, { mergeQueueEntry: { ...entry, position: 3 } }]),
+            end: null,
+        }).queue,
+    ).toEqual({ kind: 'in' });
 });
 
 test('SP54: thrown out: GitHub says UNMERGEABLE, or the entry is gone and it is still open — the first such, later ones with it', () => {

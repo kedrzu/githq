@@ -448,17 +448,33 @@ test('SP53: with exactly one going still no method to choose, no text — and no
     await expect.element(primary('Add to queue')).toBeVisible();
 });
 
-test('SP54: in the queue the group shares one position; no primary, nothing to bypass, ⌘↵ does nothing', async () => {
+test("SP54: in the queue the verdict gives the first one's place and each row its own; no primary, nothing to bypass, ⌘↵ does nothing", async () => {
     await InQueue.run();
 
-    await expect.element(panel()).toHaveTextContent('In the queue');
-    await expect.element(panel()).toHaveTextContent('2nd · waiting for checks');
-    for (const number of [1212, 1213, 1214]) {
-        await expect.element(member(number)).toHaveTextContent('2nd · waiting for checks');
-    }
+    await expect.element(panel()).toHaveTextContent('In the queue2nd · waiting for checks');
+    await expect.element(member(1212)).toHaveTextContent('2nd · waiting for checks');
+    await expect.element(member(1213)).toHaveTextContent('3rd · waiting for checks');
+    await expect.element(member(1214)).toHaveTextContent('4th · waiting for checks');
 
     await expect.element(panel()).not.toHaveTextContent('past these requirements');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});
+
+test('SP54, PM15: a stack in the queue offers taking it out, on ⇧Q and its button', async () => {
+    await InQueue.run();
+
+    await expect.element(page.getByRole('button', { name: /Take out of queue/ })).toBeVisible();
+    await userEvent.keyboard('{Shift>}Q{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: dequeue');
+});
+
+test('SP54: thrown out, there is nothing to take out: ⇧Q does nothing', async () => {
+    await ThrownOutUnmergeable.run();
+
+    await expect.element(panel()).toHaveTextContent('Out of the queue');
+    await expect.element(page.getByRole('button', { name: /Take out of queue/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}Q{/Shift}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 

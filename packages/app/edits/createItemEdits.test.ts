@@ -2,7 +2,7 @@
 // IndexedDB for bun; a browser has its own. Every test uses its own login, so their databases never meet.
 import 'fake-indexeddb/auto';
 
-import { expect, test } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import type { UpdatePullRequestBranchMutation } from '@githq/github/generated.gen.js';
 
@@ -139,9 +139,9 @@ test('PM14: jumping asks for it by jump: true with the head the user saw, and re
     expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1, jump: true } });
 });
 
-test('PM15: taking it out of the queue reads out of it at once and stays', async () => {
-    const { editor, items, session } = await setupMerge({
-        dequeuePullRequest: { mergeQueueEntry: { pullRequest: sampleStatus({ mergeQueueEntry: null }) } },
+test('PM15: taking it out of the queue reads out of it at once, and stays as GitHub holds it read again — its answer may still say the old state', async () => {
+    const { editor, items, session } = await setupMerge({ dequeuePullRequest: { clientMutationId: null } }, null, {
+        nodes: [sampleStatus({ mergeQueueEntry: null })],
     });
     items.upsertMany([{ ...samplePullRequest('PR_1'), mergeQueueEntry: toEntry() }]);
 
@@ -149,22 +149,74 @@ test('PM15: taking it out of the queue reads out of it at once and stays', async
 
     expect(outcome.failed).toEqual([]);
     expect(requests(session, 'DequeuePullRequest')).toEqual([{ id: 'PR_1' }]);
+    expect(requests(session, 'PullRequestStatuses')).toEqual([{ ids: ['PR_1'] }]);
     expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: null });
 });
 
-test('PM15: GitHub answering the dequeue with no pull request is read again', async () => {
-    const { editor, items, session } = await setupMerge(
-        { dequeuePullRequest: { mergeQueueEntry: { pullRequest: null } } },
-        null,
-        { nodes: [sampleStatus({ mergeQueueEntry: null })] },
-    );
+test('PM15: not read again, it is left to the next sync, with no failure', async () => {
+    const { editor, items } = await setupMerge({ dequeuePullRequest: { clientMutationId: null } });
     items.upsertMany([{ ...samplePullRequest('PR_1'), mergeQueueEntry: toEntry() }]);
 
     const outcome = await editor.edit(['PR_1'], { kind: 'dequeue' });
 
     expect(outcome.failed).toEqual([]);
-    expect(session.github.requests.some(request => request.operation === 'PullRequestStatuses')).toBe(true);
-    expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: null });
+});
+
+test('PM15: read again still in the queue, it is a failed edit', async () => {
+    const { editor, items } = await setupMerge({ dequeuePullRequest: { clientMutationId: null } }, null, {
+        nodes: [sampleStatus({ mergeQueueEntry: { ...QUEUE_ENTRY, enqueuer: { login: 'mlaine' } } })],
+    });
+    items.upsertMany([{ ...samplePullRequest('PR_1'), mergeQueueEntry: toEntry() }]);
+
+    const outcome = await editor.edit(['PR_1'], { kind: 'dequeue' });
+
+    expect(outcome.failed.map(({ reason }) => reason)).toEqual([{ kind: 'dropped' }]);
+    expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1 } });
+});
+
+describe('a stack in the queue', () => {
+    /** #0 merged, #1 first queued, #2 the top: as the copy holds it, in the copy's order. */
+    function queuedStack() {
+        const stack = { id: 'S_1', number: 1, size: 3 };
+        return [
+            {
+                ...samplePullRequest('PR_2'),
+                stack: { ...stack, position: 3 },
+                mergeQueueEntry: { ...toEntry(), position: 2 },
+            },
+            { ...samplePullRequest('PR_1'), stack: { ...stack, position: 2 }, mergeQueueEntry: toEntry() },
+            { ...samplePullRequest('PR_0'), stack: { ...stack, position: 1 }, state: 'MERGED', merged: true } as const,
+        ];
+    }
+
+    test('SP54: from any member it goes once, to the first queued; every member reads what GitHub holds', async () => {
+        const { editor, items, session } = await setupMerge({ dequeuePullRequest: { clientMutationId: null } }, null, {
+            nodes: [
+                sampleStatus({ id: 'PR_1', mergeQueueEntry: null }),
+                sampleStatus({ id: 'PR_2', mergeQueueEntry: null }),
+            ],
+        });
+        items.upsertMany(queuedStack());
+
+        const outcome = await editor.edit(['PR_2'], { kind: 'dequeue' });
+
+        expect(outcome.failed).toEqual([]);
+        expect(requests(session, 'DequeuePullRequest')).toEqual([{ id: 'PR_1' }]);
+        expect(requests(session, 'PullRequestStatuses')).toEqual([{ ids: ['PR_1', 'PR_2'] }]);
+        expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: null });
+        expect(items.get('PR_2')).toMatchObject({ mergeQueueEntry: null });
+    });
+
+    test('SP54: refused, it is one failure, of the first queued, and every member is back in the queue', async () => {
+        const { editor, items } = await setupMerge({ dequeuePullRequest: null }, 'No merge queue found');
+        items.upsertMany(queuedStack());
+
+        const outcome = await editor.edit(['PR_2'], { kind: 'dequeue' });
+
+        expect(outcome.failed.map(({ edit }) => edit.itemId)).toEqual(['PR_1']);
+        expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1 } });
+        expect(items.get('PR_2')).toMatchObject({ mergeQueueEntry: { position: 2 } });
+    });
 });
 
 function toEntry(): PullRequestQueueEntry {

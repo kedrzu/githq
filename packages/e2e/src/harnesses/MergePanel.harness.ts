@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /** A line of the merge panel's landing, by its label. */
-export type MergePanelLineName = 'Commit' | 'Method';
+export type MergePanelLineName = 'Commit' | 'Email' | 'Method';
 
 /**
  * Playwright harness for the merge panel (`MergePanel.vue`, `⇧M`), the dialog "Merge owner/name#N" — or "Merge the
@@ -53,6 +53,21 @@ export class MergePanelHarness {
      */
     get primary(): Locator {
         return this.root.locator('footer').locator('a, button').last();
+    }
+
+    /** "Take out of queue" (`⇧Q`), while it is in a merge queue. */
+    get takeOutButton(): Locator {
+        return this.root.getByRole('button', { name: /Take out of queue/ });
+    }
+
+    /** "Jump the queue" (`⇧⌘↵`), while adding to a merge queue is the way forward. */
+    get jumpButton(): Locator {
+        return this.root.getByRole('button', { name: /Jump the queue/ });
+    }
+
+    /** "Bypass rules and merge" (`⌥⌘↵`), where the viewer may merge past what isn't met. */
+    get bypassButton(): Locator {
+        return this.root.getByRole('button', { name: /Bypass rules and merge/ });
     }
 
     /** Why GitHub refused the merge at once. */

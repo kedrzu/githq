@@ -110,6 +110,7 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                     getSent: () => null,
                     getQueued: () => [],
                     noteQueued: () => undefined,
+                    forgetQueued: () => undefined,
                     noteHeadCommit: () => undefined,
                     forget: () => undefined,
                     dismissConfirmation: id =>

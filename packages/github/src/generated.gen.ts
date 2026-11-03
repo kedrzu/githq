@@ -5756,84 +5756,7 @@ export type DequeuePullRequestMutationVariables = Exact<{
     id: string;
 }>;
 
-export type DequeuePullRequestMutation = {
-    dequeuePullRequest: {
-        mergeQueueEntry: {
-            pullRequest: {
-                __typename: 'PullRequest';
-                id: string;
-                updatedAt: string;
-                state: PullRequestState;
-                isDraft: boolean;
-                merged: boolean;
-                reviewDecision: PullRequestReviewDecision | null;
-                mergeable: MergeableState;
-                mergeStateStatus: MergeStateStatus;
-                headRefOid: string;
-                baseRefOid: string;
-                isMergeQueueEnabled: boolean;
-                stack: { id: string; number: number; size: number } | null;
-                stackEntry: { position: number } | null;
-                mergeQueueEntry: {
-                    position: number;
-                    state: MergeQueueEntryState;
-                    estimatedTimeToMerge: number | null;
-                    enqueuedAt: string;
-                    jump: boolean;
-                    enqueuer:
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string };
-                } | null;
-                autoMergeRequest: {
-                    mergeMethod: PullRequestMergeMethod;
-                    enabledAt: string | null;
-                    commitHeadline: string | null;
-                    enabledBy:
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | null;
-                } | null;
-                baseRef: {
-                    target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
-                } | null;
-                statusCheckRollup: {
-                    state: StatusState;
-                    contexts: {
-                        checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
-                        statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
-                    };
-                } | null;
-                reviewRequests: {
-                    nodes: Array<{
-                        requestedReviewer:
-                            | { slug: string; name: string }
-                            | { login: string }
-                            | Record<PropertyKey, never>
-                            | null;
-                    } | null> | null;
-                } | null;
-                latestOpinionatedReviews: {
-                    nodes: Array<{
-                        state: PullRequestReviewState;
-                        author:
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | null;
-                    } | null> | null;
-                } | null;
-            } | null;
-        } | null;
-    } | null;
-};
+export type DequeuePullRequestMutation = { dequeuePullRequest: { clientMutationId: string | null } | null };
 
 export type DisablePullRequestAutoMergeMutationVariables = Exact<{
     pullRequestId: string;
@@ -12740,92 +12663,10 @@ fragment ItemRepositoryFields on Repository {
 export const DequeuePullRequestDocument = new TypedDocumentString(`
     mutation DequeuePullRequest($id: ID!) {
   dequeuePullRequest(input: {id: $id}) {
-    mergeQueueEntry {
-      pullRequest {
-        ...PullRequestStatusFields
-      }
-    }
+    clientMutationId
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
-  __typename
-  id
-  updatedAt
-  state
-  isDraft
-  merged
-  reviewDecision
-  mergeable
-  mergeStateStatus
-  stack {
-    id
-    number
-    size
-  }
-  stackEntry {
-    position
-  }
-  headRefOid
-  baseRefOid
-  isMergeQueueEnabled
-  mergeQueueEntry {
-    position
-    state
-    estimatedTimeToMerge
-    enqueuedAt
-    enqueuer {
-      login
-    }
-    jump
-  }
-  autoMergeRequest {
-    mergeMethod
-    enabledAt
-    enabledBy {
-      login
-    }
-    commitHeadline
-  }
-  baseRef {
-    target {
-      oid
-    }
-  }
-  statusCheckRollup {
-    state
-    contexts {
-      checkRunCountsByState {
-        state
-        count
-      }
-      statusContextCountsByState {
-        state
-        count
-      }
-    }
-  }
-  reviewRequests(first: 10) {
-    nodes {
-      requestedReviewer {
-        ... on User {
-          login
-        }
-        ... on Team {
-          slug
-          name
-        }
-      }
-    }
-  }
-  latestOpinionatedReviews(first: 10) {
-    nodes {
-      author {
-        login
-      }
-      state
-    }
-  }
-}`);
+    `);
 export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
     mutation DisablePullRequestAutoMerge($pullRequestId: ID!) {
   disablePullRequestAutoMerge(input: {pullRequestId: $pullRequestId}) {

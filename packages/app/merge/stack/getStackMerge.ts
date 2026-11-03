@@ -58,8 +58,7 @@ export function getStackMerge(params: GetStackMergeParams): StackMerge {
             return { kind: 'out', thrownOut, left, stillThere };
         }
 
-        const entry = open[0]?.mergeQueueEntry;
-        return entry ? { kind: 'in', entry } : null;
+        return open[0]?.mergeQueueEntry ? { kind: 'in' } : null;
     }
 
     function getEndIndex(): number {

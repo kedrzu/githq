@@ -506,9 +506,12 @@ const SEARCH_ENTRY: PullRequestQueueEntry = {
     jump: false,
 };
 
-/** {@link SEARCH} in the queue, as one group sharing one position. */
-function searchInQueue(entry: Partial<PullRequestQueueEntry> = {}): PullRequestItem[] {
-    return SEARCH.map(member => ({ ...member, mergeQueueEntry: { ...SEARCH_ENTRY, ...entry } }));
+/** {@link SEARCH} in the queue: each with an entry and a position of its own, as on GitHub (live, 2026-11-03). */
+function searchInQueue(): PullRequestItem[] {
+    return SEARCH.map((member, index) => ({
+        ...member,
+        mergeQueueEntry: { ...SEARCH_ENTRY, position: SEARCH_ENTRY.position + index },
+    }));
 }
 
 /** SP53: all three enter as one group; no method to choose, no text, no jump. */
@@ -520,7 +523,7 @@ export const QueueSome: Story = { args: { members: SEARCH, openedOn: 1213 } };
 /** SP53, exactly one going: still no method to choose and no text. */
 export const QueueOneGoing: Story = { args: { members: SEARCH, openedOn: 1212, viewerEmail: 'm.laine@fitloop.dev' } };
 
-/** SP54: in the queue, one position for the group; nothing left to do here. */
+/** SP54: in the queue, the group's place is its first one's and each row says its own; all that is left is to leave. */
 export const InQueue: Story = { args: { members: searchInQueue(), admin: true } };
 
 /** SP54: GitHub says the first won't merge: thrown out, the later ones with it; nothing to add again until they are out. */

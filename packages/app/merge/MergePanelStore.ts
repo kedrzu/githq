@@ -166,6 +166,7 @@ export const MergePanelStore = defineService({
             getSent,
             getQueued,
             noteQueued,
+            forgetQueued,
             noteHeadCommit,
             forget,
             dismissConfirmation,
@@ -221,8 +222,8 @@ export const MergePanelStore = defineService({
         }
 
         /**
-         * The stack's pull requests this session saw in a merge queue, since the last merge sent from its panel: one
-         * still open and no longer there was thrown out (SP54). Reactive.
+         * The stack's pull requests this session saw in a merge queue, since the last merge sent from its panel or the
+         * last time it took the stack out: one still open and no longer there was thrown out (SP54). Reactive.
          */
         function getQueued(stackId: string): readonly string[] {
             return queuedRef.value.get(stackId) ?? [];
@@ -233,6 +234,14 @@ export const MergePanelStore = defineService({
             const added = itemIds.filter(itemId => !known.includes(itemId));
             if (added.length > 0) {
                 queuedRef.value = new Map(queuedRef.value).set(stackId, [...known, ...added]);
+            }
+        }
+
+        function forgetQueued(stackId: string) {
+            if (queuedRef.value.has(stackId)) {
+                const queued = new Map(queuedRef.value);
+                queued.delete(stackId);
+                queuedRef.value = queued;
             }
         }
 
@@ -305,10 +314,8 @@ export const MergePanelStore = defineService({
             // The next merge of it ends what is known of the last, a stack's that took it included.
             const last = findRecordHolder(item.id);
             forget(item.id, ...(going ?? []), ...(last === null ? [] : [last]));
-            if (item.stack && queuedRef.value.has(item.stack.id)) {
-                const queued = new Map(queuedRef.value);
-                queued.delete(item.stack.id);
-                queuedRef.value = queued;
+            if (item.stack) {
+                forgetQueued(item.stack.id);
             }
 
             const answer = await merger.merge({

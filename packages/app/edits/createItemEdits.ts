@@ -1,5 +1,9 @@
 import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
-import type { PullRequestBranchUpdateMethod, PullRequestStatusFieldsFragment } from '@githq/github/generated.gen.js';
+import type {
+    PullRequestBranchUpdateMethod,
+    PullRequestStatusesQuery,
+    PullRequestStatusFieldsFragment,
+} from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { describeProjectFieldValue } from '@/projects/describeProjectFieldValue.js';
@@ -44,6 +48,11 @@ export interface CreateItemEditsParams {
     readonly viewer: ItemUser;
     /** ISO time: when a comment is shown to have been written. */
     readonly now: string;
+    /**
+     * For a pull request in a stack, the stack's pull requests the copy holds, itself included: leaving a merge queue
+     * goes through the first of them there.
+     */
+    readonly stackMembers?: readonly PullRequestItem[];
 }
 
 /** Leaves the item as it is: an edit that will not be sent shows nothing. */
@@ -127,7 +136,7 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 ? [createJumpQueueEdit(item)]
                 : [];
         case 'dequeue':
-            return item.kind === 'pullRequest' && item.mergeQueueEntry ? [createDequeueEdit(item)] : [];
+            return item.kind === 'pullRequest' ? createDequeueEdits(params.stackMembers ?? [item]) : [];
         default:
             return assertNever(request);
     }
@@ -655,34 +664,61 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
 }
 
 /**
- * Takes it out of the merge queue. Gone from the queue, GitHub's answer may name no pull request: it is read again, and
- * left to the next sync when that could not be read.
+ * Takes it out of the merge queue, with the rest of its stack. GitHub refuses this on a stack's later member and on the
+ * first one takes every entry out at once (live, 2026-11-03), so it is sent once, to the first one queued, with an edit
+ * of each one queued to draw it out. GitHub's answer can still hold the old state (same check): what it holds is read
+ * again, and left to the next sync when that could not be read. A refusal is one failure, the first one's; the others'
+ * layers go without a word.
  */
-function createDequeueEdit(item: PullRequestItem): Edit {
-    return {
-        ...base(item, { kind: 'dequeued' }),
+function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
+    const queued = stackMembers
+        .filter(member => member.mergeQueueEntry)
+        .toSorted((a, b) => (a.stack?.position ?? 0) - (b.stack?.position ?? 0));
+    const [first] = queued;
+    if (!first) {
+        return [];
+    }
+
+    let leaving: Promise<PullRequestStatusesQuery['nodes']> | undefined;
+
+    return queued.map((member): Edit => ({
+        ...base(member, { kind: 'dequeued' }),
         optimistic: {
             item: current => (current.kind === 'pullRequest' ? { ...current, mergeQueueEntry: null } : current),
         },
         send: async ({ sdk }) => {
-            const { dequeuePullRequest } = await sdk.DequeuePullRequest({ id: item.id });
-            const answer = dequeuePullRequest?.mergeQueueEntry?.pullRequest ?? (await readStatus(sdk, item.id));
-            if (!answer) {
+            leaving ??= leave(sdk, first.id);
+            let nodes;
+            try {
+                nodes = await leaving;
+            } catch (error) {
+                if (member === first) {
+                    throw error;
+                }
+
                 return { kind: 'unknown' };
             }
 
-            return answer.mergeQueueEntry ? dropped() : confirmedStatus(answer);
-        },
-    };
-}
+            const node = nodes.find(read => isPresent(read) && read.id === member.id) ?? null;
+            if (!isPresent(node)) {
+                return { kind: 'unknown' };
+            }
 
-/** The status of a pull request as GitHub holds it now; `null` when that could not be read. */
-async function readStatus(sdk: GitHubSdk, id: string): Promise<PullRequestStatusFieldsFragment | null> {
-    try {
-        const node = (await sdk.PullRequestStatuses({ ids: [id] })).nodes[0] ?? null;
-        return isPresent(node) ? node : null;
-    } catch {
-        return null;
+            if (node.mergeQueueEntry) {
+                return member === first ? dropped() : { kind: 'unknown' };
+            }
+
+            return confirmedStatus(node);
+        },
+    }));
+
+    async function leave(sdk: GitHubSdk, id: string): Promise<PullRequestStatusesQuery['nodes']> {
+        await sdk.DequeuePullRequest({ id: id });
+        try {
+            return (await sdk.PullRequestStatuses({ ids: queued.map(member => member.id) })).nodes;
+        } catch {
+            return [];
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`; a stack leaves whole, through its first queued one, and never reads as thrown out for it) — read the pull request again once done. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -179,9 +179,13 @@ watch(
     }
   },
 );
-// Seen in a merge queue: once a member has no entry and is still open, it was thrown out (SP54).
+// Seen in a merge queue: once a member has no entry and is still open, it was thrown out (SP54) — unless this panel took
+// it out, so nothing is noted while it does: what is still there when that ends, refused, is noted then.
 watch(
-  () => stackMembers.value.filter(member => member.mergeQueueEntry).map(member => member.id),
+  () =>
+    advancing.value === 'dequeue'
+      ? []
+      : stackMembers.value.filter(member => member.mergeQueueEntry).map(member => member.id),
   ids => {
     const stack = store.stack;
     if (stack) {
@@ -246,6 +250,10 @@ async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
   if (step === 'resolveConflicts') {
     browser.openInNewTab(getConflictEditorUrl(item));
     return;
+  }
+
+  if (step === 'dequeue' && store.stack) {
+    store.forgetQueued(store.stack.id);
   }
 
   await advance(item, step, toStepRequest(step));

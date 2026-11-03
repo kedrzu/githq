@@ -298,11 +298,15 @@ const queueStack = computed(() => Boolean(props.stack) && props.pr.isMergeQueueE
 const noCommitText = computed(() => several.value || queueStack.value);
 /** Where it stands in a queue, or thrown out of it (SP54). */
 const stackQueue = computed(() => props.stack?.merge.queue ?? null);
+/** The footer has its Close button and nothing else: the stack says it doesn't know how its merge ended (SP60). */
+const stackFooterBare = computed(() => stackSays.value?.verdict.kind === 'unknown');
 /**
- * The footer has its Close button and nothing else: the stack says it doesn't know how its merge ended (SP60), or it
- * is in the queue, where nothing is left to do here.
+ * In the queue, the one thing left to do here is to leave it (PM15). A stack leaves whole, whichever one the editor
+ * sends it to (stacked PRs D11, SP54).
  */
-const stackFooterBare = computed(() => stackSays.value?.verdict.kind === 'unknown' || stackQueue.value?.kind === 'in');
+const canTakeOut = computed(
+  () => queueEntry.value !== null || (stackQueue.value?.kind === 'in' && verdict.value.kind !== 'merging'),
+);
 const stackRows = computed(() =>
   props.stack ? getStackMergeRows({ merge: props.stack.merge, outcomeUnknown: stackOutcomeUnknown.value }) : [],
 );
@@ -812,6 +816,13 @@ watch(
     }
   },
 );
+
+// Auto-merge went on while the text was being edited: GitHub holds it now, and the field no longer says anything (PM11).
+watch(textFixed, fixed => {
+  if (fixed) {
+    editing.value = false;
+  }
+});
 
 watch(proposal, text => {
   if (text && editWhenRead.value) {
@@ -1503,7 +1514,7 @@ function onKeydown(event: KeyboardEvent) {
   } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
     event.preventDefault();
     emit('step', 'markReady');
-  } else if (queueEntry.value && matchesCommandKey(event, 'Shift+Q')) {
+  } else if (canTakeOut.value && matchesCommandKey(event, 'Shift+Q')) {
     event.preventDefault();
     takeOutOfQueue();
   } else if (commitEmails.value && matchesCommandKey(event, 'Y')) {
@@ -1997,7 +2008,7 @@ function onOpenFocus(event: Event) {
           ><Kbd keys="Escape" /> {{ t(l.hintLeaveField) }}</span
         >
         <span
-          v-else-if="!stackFooterBare && (end || queueEntry || verdict.kind === 'merged')"
+          v-else-if="!stackFooterBare && (end || canTakeOut || verdict.kind === 'merged')"
           :class="css.mergePanel_hint"
           aria-hidden="true"
           ><Kbd keys="Escape" /> {{ t(l.hintClose) }}</span
@@ -2038,16 +2049,8 @@ function onOpenFocus(event: Event) {
           >
         </template>
         <span :class="css.mergePanel_spacer" />
-        <template v-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
-          <Button
-            kbd="Escape"
-            aria-keyshortcuts="Escape"
-            @click="open = false"
-            >{{ t(l.hintClose) }}</Button
-          >
-        </template>
-        <!-- In the queue it is on its way, with no primary: leaving shows here, when it matters (PM15). -->
-        <template v-else-if="queueEntry">
+        <!-- In the queue it is on its way, with no primary: leaving shows here, when it matters (PM15, SP54). -->
+        <template v-if="canTakeOut">
           <Button
             v-if="allowed"
             kbd="Shift+Q"
@@ -2055,6 +2058,14 @@ function onOpenFocus(event: Event) {
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
             >{{ t(l.takeOutOfQueue) }}</Button
+          >
+        </template>
+        <template v-else-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
+          <Button
+            kbd="Escape"
+            aria-keyshortcuts="Escape"
+            @click="open = false"
+            >{{ t(l.hintClose) }}</Button
           >
         </template>
         <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'merged' && verdict.kind !== 'unknown'">
