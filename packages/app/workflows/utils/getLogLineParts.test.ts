@@ -115,6 +115,33 @@ test('bidi and invisible characters become parts of their own, named, the text u
     }
 });
 
+test.each([
+    ['soft hyphen', '\u00AD', 'U+AD'],
+    ['Arabic letter mark', '\u061C', 'U+61C'],
+    ['Mongolian vowel separator', '\u180E', 'U+180E'],
+    ['function application', '\u2061', 'U+2061'],
+    ['invisible plus', '\u2064', 'U+2064'],
+    ['language tag', '\u{E0001}', 'U+E0001'],
+    ['first tag character', '\u{E0020}', 'U+E0020'],
+    ['last tag character', '\u{E007F}', 'U+E007F'],
+])('%s shows as what it is', (_, control, code) => {
+    expect(partsOf(getLogLineParts(`a${control}b`))).toEqual([
+        { text: 'a', highlighted: false },
+        { text: control, highlighted: false, control: code },
+        { text: 'b', highlighted: false },
+    ]);
+});
+
+test('variation selectors stay in the text: a chip at every ⚠️ would be noise', () => {
+    expect(partsOf(getLogLineParts('\u26A0\uFE0F'))).toEqual([{ text: '\u26A0\uFE0F', highlighted: false }]);
+});
+
+test('the character next to a range of them is left alone', () => {
+    for (const text of ['\u2065', '\u{E0002}', '\u{E0080}']) {
+        expect(partsOf(getLogLineParts(text))).toEqual([{ text, highlighted: false }]);
+    }
+});
+
 test('a highlight over a bidi control stays a highlight on both of its sides', () => {
     expect(partsOf(getLogLineParts('a\u202Eb', { ranges: [{ start: 0, end: 3 }] }))).toEqual([
         { text: 'a', highlighted: true },

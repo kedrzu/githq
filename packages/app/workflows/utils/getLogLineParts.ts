@@ -48,8 +48,12 @@ export const WHOLE_LINE_CHUNK = 100_000;
 const MAX_CONTROL_PARTS = 100;
 const OVER_THE_LIMIT = '�';
 
-/** Text direction controls, and characters of no width: a line can look other than it copies. */
-const CONTROLS = /[​-‏‪-‮⁠⁦-⁩﻿]/gu;
+/**
+ * Text direction controls, and characters of no width: a line can look other than it copies. Not the variation selectors
+ * (U+FE00-FE0F): a chip at every emoji that has one would be noise.
+ */
+const CONTROLS =
+    /[\u00AD\u061C\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF\u{E0001}\u{E0020}-\u{E007F}]/gu;
 
 /**
  * A log line's text cut to what is shown and split at the ranges to highlight and at its bidi and invisible characters,
