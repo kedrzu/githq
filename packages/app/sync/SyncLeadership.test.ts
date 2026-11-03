@@ -5,11 +5,17 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
 
+import { openDB } from 'idb';
+
 import { AuthStore } from '@/auth/AuthStore.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
-import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
+import {
+    createIndexedDbPersistence,
+    getLocalDatabaseName,
+    LOCAL_DATABASE_VERSION,
+} from '@/store/IndexedDbPersistence.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -113,6 +119,43 @@ test('when the syncing tab closes, the other takes over from the shared copy: no
     await advance([second], 30_000);
     expect(second.items.get('I_mine')?.title).toBe('Renamed');
     expect(second.sync.myWorkFreshness.kind).toBe('fresh');
+});
+
+test('a tab of a githq that keeps its copy another way, left open across a deploy, does not hold back a tab of this one', async () => {
+    const world = sampleWorld();
+    const browser = createTestTabs();
+    const login = uniqueLogin();
+    // The lock's name before it carried the layout. Held for as long as that tab stays open, and that tab says
+    // nothing on this version's channel.
+    browser.open().requestLock(`githq-sync-${login}`, () => {});
+
+    const tab = openTab(world, browser, login);
+    await advance([tab], 0);
+
+    expect(count(tab, 'GET /search/issues')).toBe(4);
+    expect(tab.sync.myWorkFreshness.kind).toBe('fresh');
+});
+
+test('told of a newer githq, the syncing tab stops and gives the lock up for good; waiting in line, a tab leaves it', async () => {
+    const world = sampleWorld();
+    const browser = createTestTabs();
+    const login = uniqueLogin();
+    const first = openTab(world, browser, login);
+    const second = openTab(world, browser, login);
+    await advance([first, second], 0);
+    expect(count(first, 'GET /search/issues')).toBe(4);
+
+    const newer = await openDB(getLocalDatabaseName(login), LOCAL_DATABASE_VERSION + 1);
+    newer.close();
+    await advance([first, second], 60_000);
+    expect(count(first, 'GET /search/issues')).toBe(4);
+    expect(polls(second)).toEqual([]);
+
+    // Not even when the browser lets it run again: the lock is the newer githq's to have.
+    first.session.tab.lifecycle('freeze');
+    first.session.tab.lifecycle('resume');
+    await advance([first, second], 60_000);
+    expect(count(first, 'GET /search/issues')).toBe(4);
 });
 
 test('a frozen syncing tab gives the lock up to the other; resumed, it waits in line', async () => {

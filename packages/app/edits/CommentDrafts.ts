@@ -26,7 +26,15 @@ export const CommentDrafts = defineService({
             { flush: 'sync' },
         );
 
-        return { get, set, restore };
+        return {
+            /** Whether any comment is typed and not posted; reactive. */
+            get hasAny() {
+                return draftsRef.value.size > 0;
+            },
+            get,
+            set,
+            restore,
+        };
 
         /** The item's draft; empty without one. Reactive. */
         function get(itemId: string): string {
