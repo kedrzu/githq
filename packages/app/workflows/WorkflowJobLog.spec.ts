@@ -5,7 +5,19 @@ import { page, userEvent } from 'vitest/browser';
 import { MAX_SHOWN_CHARACTERS } from './utils/getLogLineParts.js';
 import * as stories from './WorkflowJobLog.stories.js';
 
-const { Failed, Highlighted, Hostile, Huge, LongLines, NoMarker, Passed, SeveralErrors } = composeStories(stories);
+const {
+    Failed,
+    Highlighted,
+    Hostile,
+    Huge,
+    InvisibleCharacters,
+    LongLines,
+    NoMarker,
+    Passed,
+    Polled,
+    SeveralErrors,
+    TallAtTheEnd,
+} = composeStories(stories);
 
 /** A 100,000-line log may still only ever have what is in view: 500 / 18 rows and a little overscan. */
 const DOM_ROW_CAP = 70;
@@ -444,4 +456,211 @@ test('the list is labelled, and takes the keyboard to scroll', async () => {
 
     await expect.element(page.getByRole('list', { name: 'build' })).toBeInTheDocument();
     expect(log().getAttribute('tabindex')).toBe('0');
+});
+
+test('⇧G reaches the end even where wrapped lines come out taller than estimated', async () => {
+    await TallAtTheEnd.run();
+    await settled();
+    await userEvent.keyboard('g');
+    await settled();
+    await userEvent.keyboard('w');
+    await settled();
+    await settled();
+
+    await userEvent.keyboard('{Shift>}g{/Shift}');
+    await settled();
+    await settled();
+    await settled();
+
+    expect(cursorText()).toContain('the very end');
+    expect(inView(cursorLine())).toBe(true);
+    expect(Math.ceil(log().scrollTop + log().clientHeight)).toBeGreaterThanOrEqual(log().scrollHeight);
+});
+
+test('a 200 on the jobs’ poll keeps a selection’s start in the DOM: the rows did not move', async () => {
+    await Polled.run();
+    await settled();
+    const first = lines()[10];
+    if (!first?.lastElementChild) {
+        throw new Error('The line should be in view');
+    }
+
+    first.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    window.getSelection()?.selectAllChildren(first.lastElementChild);
+    first.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    await settled();
+    log().scrollTop += 18 * 500;
+    await settled();
+    expect(first.isConnected).toBe(true);
+
+    page.getByTestId('workflow-log-poll')
+        .element()
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settled();
+    await settled();
+    expect(first.isConnected).toBe(true);
+    window.getSelection()?.removeAllRanges();
+});
+
+test('“… N more characters” opens the rest of its line by a click, wrapped, in view and within a moment', async () => {
+    await Hostile.run();
+    await settled();
+    const long = () => lines().find(line => line.textContent?.startsWith('xxx') || line.textContent?.includes('xxxx'));
+    const more = page.getByTestId('workflow-log-more');
+    await expect.element(more).toHaveTextContent('990000 more characters');
+    const before = long()?.getBoundingClientRect().height;
+    expect(before).toBe(18);
+    // Held in view, not 72,000 pixels off to the side.
+    expect(more.element().getBoundingClientRect().right).toBeLessThanOrEqual(log().getBoundingClientRect().right);
+
+    const started = performance.now();
+    more.element().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settled();
+    await settled();
+
+    expect(long()?.lastElementChild?.textContent?.replaceAll(/\s/gu, '').length).toBe(1_000_000);
+    await expect.element(more).not.toBeInTheDocument();
+    expect(long()?.getBoundingClientRect().height).toBeGreaterThan(1000);
+    expect(performance.now() - started).toBeLessThan(2000);
+    // Wrapped within the view: nothing runs off to the side, whichever way the rest of the log lies.
+    const box = long()?.lastElementChild?.getBoundingClientRect();
+    expect(box?.width).toBeLessThanOrEqual(log().clientWidth);
+    // Its neighbours moved by what it really measures.
+    const rows = lines();
+    const index = rows.indexOf(long() ?? rows[0] ?? document.body);
+    expect(rows[index + 1]?.getBoundingClientRect().top).toBeCloseTo(
+        rows[index]?.getBoundingClientRect().bottom ?? 0,
+        0,
+    );
+});
+
+test('Enter opens the rest of the line under the cursor, and only with something to open', async () => {
+    await Hostile.run();
+    await settled();
+    const whole = () => lines().find(line => (line.textContent?.length ?? 0) > 500_000);
+
+    // On the error: its line is whole.
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    expect(whole()).toBeUndefined();
+
+    await userEvent.keyboard('k');
+    await settled();
+    expect(cursorLine()?.querySelector('button')?.textContent).toContain('990000 more characters');
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    await settled();
+    expect(whole()).toBe(cursorLine() ?? undefined);
+    // The view stays at the line's start, not its far end.
+    expect(cursorLine()?.getBoundingClientRect().top).toBeLessThan(log().getBoundingClientRect().bottom);
+    expect(cursorLine()?.getBoundingClientRect().bottom).toBeGreaterThan(log().getBoundingClientRect().top);
+    expect(log().scrollTop).toBeLessThan(cursorLine()?.getBoundingClientRect().height ?? 0);
+});
+
+test('the opened line stays open and measured through W, in a log of its own', async () => {
+    await Hostile.run();
+    await settled();
+    await userEvent.keyboard('k');
+    await settled();
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    await settled();
+    const height = cursorLine()?.getBoundingClientRect().height ?? 0;
+    expect(height).toBeGreaterThan(1000);
+
+    await userEvent.keyboard('w');
+    await settled();
+    await settled();
+    expect(cursorLine()?.getBoundingClientRect().height).toBeGreaterThan(1000);
+    await userEvent.keyboard('w');
+    await settled();
+    await settled();
+    expect(cursorLine()?.getBoundingClientRect().height).toBeCloseTo(height, 0);
+});
+
+test('bidi and invisible characters show as what they are, change nothing around them, and copy as they were', async () => {
+    await InvisibleCharacters.run();
+    await settled();
+    const line = lines().find(row => row.textContent?.includes('safe'));
+    const body = line?.lastElementChild;
+    if (!body) {
+        throw new Error('The line should be in view');
+    }
+
+    const control = body.querySelector('[data-control]');
+    expect(control?.getAttribute('data-control')).toBe('U+202E');
+    expect(getComputedStyle(control ?? body, '::before').content).toContain('U+202E');
+
+    // "evil" reads left to right: the override reaches no further than its own placeholder.
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+    let text = walker.nextNode();
+    while (text && text.textContent !== 'evil') {
+        text = walker.nextNode();
+    }
+
+    if (!text) {
+        throw new Error('The text after the control should be there');
+    }
+
+    const edge = (index: number) => {
+        const range = document.createRange();
+        range.setStart(text, index);
+        range.setEnd(text, index + 1);
+        return range.getBoundingClientRect().left;
+    };
+    expect(edge(0)).toBeLessThan(edge(3));
+
+    window.getSelection()?.selectAllChildren(body);
+    expect(window.getSelection()?.toString()).toBe('safe‮evil');
+    window.getSelection()?.removeAllRanges();
+
+    const zero = lines().find(row => row.textContent?.includes('zero'));
+    expect(zero?.querySelector('[data-control]')?.getAttribute('data-control')).toBe('U+200B');
+});
+
+test('keyboard focus on the log shows a ring inside it; a click on a line draws none', async () => {
+    await Failed.run();
+    await settled();
+
+    for (let tabs = 0; tabs < 10 && document.activeElement !== log(); tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(document.activeElement).toBe(log());
+    expect(log().matches(':focus-visible')).toBe(true);
+    // Over the log, its sticky rows included: an outline of its own would be painted under them.
+    const holder = log().parentElement ?? log();
+    expect(getComputedStyle(holder, '::after').boxShadow).toContain('inset');
+    expect(getComputedStyle(holder, '::after').zIndex).toBe('2');
+
+    log().blur();
+    const line = lines().find(row => row.textContent?.includes('exited with code 1'));
+    if (!line) {
+        throw new Error('The line should be in view');
+    }
+
+    await userEvent.click(line, { position: IN_THE_TEST_FRAME });
+    expect(document.activeElement).toBe(log());
+    expect(log().matches(':focus-visible')).toBe(false);
+    expect(getComputedStyle(holder, '::after').boxShadow).toBe('none');
+});
+
+test('moving onto a line taller than the view starts at its top, not its far end', async () => {
+    await Hostile.run();
+    await settled();
+    await userEvent.keyboard('k');
+    await settled();
+    await userEvent.keyboard('{Enter}');
+    await settled();
+    await settled();
+
+    await userEvent.keyboard('g');
+    await settled();
+    await userEvent.keyboard('jjj');
+    await settled();
+    await settled();
+    expect(cursorLine()?.getBoundingClientRect().height).toBeGreaterThan(1000);
+    const top = cursorLine()?.getBoundingClientRect().top ?? 0;
+    expect(top).toBeGreaterThanOrEqual(log().getBoundingClientRect().top);
+    expect(top).toBeLessThan(log().getBoundingClientRect().bottom);
 });

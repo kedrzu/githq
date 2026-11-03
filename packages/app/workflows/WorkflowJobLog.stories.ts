@@ -1,6 +1,8 @@
 import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { h } from 'vue';
+import { h, shallowRef } from 'vue';
+
+import Button from '@/components/Button.vue';
 
 import { parseJobLog } from './utils/parseJobLog.js';
 import WorkflowJobLog from './WorkflowJobLog.vue';
@@ -110,6 +112,58 @@ export const LongLines: Story = {
             ).concat('##[error]Process completed with exit code 1.'),
         }),
     ),
+};
+
+/** Lines that wrap much taller than their length says, words filling each screen line only half way; the error last. */
+export const TallAtTheEnd: Story = {
+    args: viewOf(
+        [step(3, 'Run bun run build', 'failure')],
+        sections({
+            3: [
+                ...Array.from({ length: 120 }, (_, index) => `${index} ${`${'word'.repeat(15)} `.repeat(10)}`),
+                '##[error]the very end',
+            ],
+        }),
+    ),
+};
+
+/** Characters that change how a line looks, or don't show at all. */
+export const InvisibleCharacters: Story = {
+    args: viewOf(
+        STEPS,
+        sections({
+            3: ['safe\u202Eevil', 'zero\u200Bwidth', '##[error]Process completed with exit code 1.'],
+        }),
+    ),
+};
+
+/** A long log whose job is asked for again: the same job, as a new object, as a 200 on the jobs' poll brings it. */
+export const Polled: Story = {
+    render: () => ({
+        setup: () => {
+            const view = viewOf(
+                STEPS,
+                sections({
+                    1: ['Prepare'],
+                    3: Array.from({ length: 5000 }, (_, index) => `line ${index} of the log`),
+                }),
+            );
+            const job = shallowRef(view.job);
+            return () => [
+                h(
+                    Button,
+                    {
+                        variant: 'secondary',
+                        size: 'sm',
+                        tid: 'workflow-log-poll',
+                        onClick: () => (job.value = { ...job.value, steps: [...job.value.steps] }),
+                    },
+                    () => 'Poll',
+                ),
+                h(WorkflowJobLog, { ...view, job: job.value }),
+            ];
+        },
+    }),
 };
 
 /** A search's seam: ranges of a line highlighted. */

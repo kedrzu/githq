@@ -2,16 +2,14 @@ errorPosition:
   en: 'Error {position} of {total}'
 noErrorMarker:
   en: No error marker
-wrap:
-  en: Wrap
-times:
-  en: Times
 errorPrefix:
   en: 'Error:'
 warningPrefix:
   en: 'Warning:'
 moreCharacters:
   en: '… {count} more characters'
+showWholeLine:
+  en: Show the whole line
 logEnd:
   en: The log ends here. The job failed without an error marker, for example because its runner died.
 nextLine:
@@ -36,9 +34,5 @@ halfPageDown:
   en: Half a page down
 halfPageUp:
   en: Half a page up
-wrapLines:
-  en: Wrap lines
-showTimes:
-  en: Show each line's time
 copyLineLink:
   en: Copy a link to the line

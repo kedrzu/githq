@@ -68,6 +68,11 @@ export class WorkflowRunScreenHarness {
         return this.log.getByTestId('workflow-log-text');
     }
 
+    /** "… N more characters" at the end of the lines cut short. */
+    get logMore(): Locator {
+        return this.log.getByTestId('workflow-log-more');
+    }
+
     /** The line the cursor is on, while it isn't folded away. */
     get cursorLine(): Locator {
         return this.logLines.and(this.root.locator('[aria-current="true"]'));

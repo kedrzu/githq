@@ -1,4 +1,4 @@
-<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted, shown as text only, and a very long line is cut. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, W wrap, T times, Y a link to the line, in GitHub's form. A selection with the mouse stays, its start kept in the DOM while the view moves. -->
+<!-- A job's log, the document the run's page is read in (actions W4a, W4d, W4h). It opens with the cursor on the failed step's first error and the lines above it in view, or at the end with no error marker. Passed steps are folded but part of the document; moving the cursor into one opens it. Only the rows in view are in the DOM, so a log of 100,000 lines stays smooth (`useLogWindow`); a wrapped line's height is estimated, then measured once it shows. Log text is untrusted: shown as text only, its bidi and invisible characters as what they are, each isolated from the text around it, in the DOM as they were so that they copy; and a very long line is cut, "… N more characters" opening the rest of it, wrapped, whichever way the others go. Keys: J/K line (and the arrows), ⇧J/⇧K step, E/⇧E error, Space fold, G/⇧G top/end, D/U half a page, Enter the rest of a line cut, Y a link to the line, in GitHub's form; W and T are `WorkflowLogToolbar`'s. A selection with the mouse stays, its start kept in the DOM while the view moves. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -66,6 +66,8 @@ type ShownRow =
       readonly prefix: string;
       readonly time: string | null;
       readonly text: LogLineParts;
+      /** It shows whole, past the cut: wrapped, whatever the others do. */
+      readonly whole: boolean;
     }
   | { readonly kind: 'end'; readonly row: number };
 
@@ -109,17 +111,18 @@ const folded = shallowRef(opening.folded);
 const measured = shallowRef(new Map<number, number>());
 const characterWidth = ref(DEFAULT_CHARACTER_WIDTH);
 const pinnedRow = ref<number | null>(null);
+/** The lines shown past the cut, by index. */
+const wholeLines = shallowRef(new Set<number>());
 
 const logDocument = computed(() =>
   buildLogDocument({ log: props.log, steps: props.job.steps, folded: folded.value, endNote: noMarker.value }),
 );
-const textWidth = computed(
-  () => view.viewportWidth - NUMBER_WIDTH - (showTimes.value ? TIME_WIDTH : 0) - TEXT_END_PADDING,
-);
+const gutterWidth = computed(() => NUMBER_WIDTH + (showTimes.value ? TIME_WIDTH : 0));
+const textWidth = computed(() => view.viewportWidth - gutterWidth.value - TEXT_END_PADDING);
 const heights = computed(() => {
   const { rows } = logDocument.value;
   const known = measured.value;
-  const perLine = wrap.value ? Math.max(1, Math.floor(textWidth.value / characterWidth.value)) : null;
+  const perLine = Math.max(1, Math.floor(textWidth.value / characterWidth.value));
   const result = new Float64Array(rows.length);
   for (const [row, entry] of rows.entries()) {
     result[row] = getRowHeight(entry, perLine, known);
@@ -137,8 +140,7 @@ const contentWidth = computed(() => {
     longest = Math.max(longest, Math.min(line.text.length, MAX_SHOWN_CHARACTERS));
   }
 
-  const gutter = NUMBER_WIDTH + (showTimes.value ? TIME_WIDTH : 0);
-  return gutter + Math.ceil(longest * characterWidth.value) + TEXT_END_PADDING;
+  return gutterWidth.value + Math.ceil(longest * characterWidth.value) + TEXT_END_PADDING;
 });
 const shownRows = computed(() => {
   const { rows } = logDocument.value;
@@ -153,6 +155,12 @@ const shownRows = computed(() => {
   return shown;
 });
 const cursorRow = computed(() => (cursor.value === null ? null : (logDocument.value.lineRows[cursor.value] ?? null)));
+const cursorLineCut = computed(() => {
+  const index = cursor.value;
+  return (
+    index !== null && (props.log.lines[index]?.text.length ?? 0) > MAX_SHOWN_CHARACTERS && !wholeLines.value.has(index)
+  );
+});
 const cursorStepNumber = computed(() => (cursor.value === null ? null : props.log.lines[cursor.value]?.stepNumber));
 const errorPosition = computed(() => (cursor.value === null ? 1 : getErrorPosition(props.log, cursor.value)));
 
@@ -258,6 +266,7 @@ useCommands(() => [
     run: () => {
       moveCursor(props.log.lines.length - 1, 'nearest');
       view.scrollTo(view.totalHeight);
+      revealCursor();
     },
   },
   {
@@ -276,19 +285,19 @@ useCommands(() => [
     menu: false,
     run: () => moveByHalfPage(-1),
   },
+  // Not from a button, which Enter presses.
   {
-    id: 'workflowLog.wrap',
-    title: t(l.wrapLines),
+    id: 'workflowLog.wholeLine',
+    title: t(l.showWholeLine),
     section: 'view',
-    key: 'W',
-    run: toggleWrap,
-  },
-  {
-    id: 'workflowLog.times',
-    title: t(l.showTimes),
-    section: 'view',
-    key: 'T',
-    run: toggleTimes,
+    key: 'Enter',
+    menu: false,
+    when: () => cursorLineCut.value && !isActivatableTarget(window.document.activeElement),
+    run: () => {
+      if (cursor.value !== null) {
+        showWholeLine(cursor.value);
+      }
+    },
   },
   {
     id: 'workflowLog.copyLineLink',
@@ -300,8 +309,9 @@ useCommands(() => [
   },
 ]);
 
-// The rows moved: what was kept for a selection is another row now.
-watch(logDocument, () => {
+// The rows moved: what was kept for a selection is another row now. Not on the document, which each 200 on the jobs'
+// poll builds anew with every row where it was.
+watch(folded, () => {
   pinnedRow.value = null;
 });
 watch(
@@ -321,10 +331,12 @@ watch(
 // What shows is laid out by now; a wrapped line says how high it really is.
 watch([shownRows, wrap, () => view.viewportWidth], measureRows, { flush: 'post' });
 // Within the change, so that `keepInPlace` around it sees the heights before and after.
+watch(() => view.viewportWidth, forgetMeasured, { flush: 'sync' });
 watch(
-  [wrap, showTimes, () => view.viewportWidth],
+  [wrap, showTimes],
   () => {
-    measured.value = new Map();
+    forgetMeasured();
+    revealCursor();
   },
   { flush: 'sync' },
 );
@@ -346,14 +358,19 @@ onMounted(() => {
 });
 onBeforeUnmount(() => window.document.removeEventListener('selectionchange', onSelectionChange));
 
-function getRowHeight(entry: LogDocumentRow, perLine: number | null, known: ReadonlyMap<number, number>) {
+function forgetMeasured() {
+  measured.value = new Map();
+}
+
+function getRowHeight(entry: LogDocumentRow, perLine: number, known: ReadonlyMap<number, number>) {
   switch (entry.kind) {
     case 'step':
       return STEP_HEIGHT;
     case 'end':
       return END_HEIGHT;
     case 'line': {
-      if (perLine === null) {
+      const whole = wholeLines.value.has(entry.index);
+      if (!wrap.value && !whole) {
         return LINE_HEIGHT;
       }
 
@@ -362,7 +379,7 @@ function getRowHeight(entry: LogDocumentRow, perLine: number | null, known: Read
         return height;
       }
 
-      const characters = Math.min(entry.line.text.length, MAX_SHOWN_CHARACTERS);
+      const characters = whole ? entry.line.text.length : Math.min(entry.line.text.length, MAX_SHOWN_CHARACTERS);
       return Math.max(1, Math.ceil(characters / perLine)) * LINE_HEIGHT;
     }
     default:
@@ -378,6 +395,7 @@ function toShownRow(entry: LogDocumentRow, row: number): ShownRow {
       return { kind: 'end', row };
     case 'line': {
       const { line, index } = entry;
+      const whole = wholeLines.value.has(index);
       return {
         kind: 'line',
         row,
@@ -385,7 +403,8 @@ function toShownRow(entry: LogDocumentRow, row: number): ShownRow {
         line,
         prefix: getLinePrefix(line),
         time: showTimes.value && line.time !== null ? TIME_FORMAT.format(line.time) : null,
-        text: getLogLineParts(line.text, props.highlights?.get(line.number)),
+        text: getLogLineParts(line.text, { ranges: props.highlights?.get(line.number), whole }),
+        whole,
       };
     }
     default:
@@ -517,14 +536,20 @@ function pressHead(section: LogSection) {
   }
 }
 
-function toggleWrap() {
-  wrap.value = !wrap.value;
-  revealCursor();
-}
+/**
+ * Shows a line past the cut, the view staying where it is. What is to bring a search's hit past the cut into the open
+ * calls this too.
+ */
+function showWholeLine(index: number) {
+  measured.value.delete(index);
+  wholeLines.value = new Set(wholeLines.value).add(index);
+  // It is laid out from the view's left edge now.
+  if (!wrap.value) {
+    scroller.value?.scrollTo({ left: 0 });
+  }
 
-function toggleTimes() {
-  showTimes.value = !showTimes.value;
-  revealCursor();
+  // A row this tall has no "nearest" place: what was brought into view last would be taken to the line's far end.
+  view.scrollTo(view.scrollTop);
 }
 
 function revealCursor() {
@@ -533,7 +558,7 @@ function revealCursor() {
   }
 }
 
-/** A toolbar's button pressed gives the keys back: Space folds rather than pressing it again. */
+/** A button pressed gives the keys back: Space folds rather than pressing it again. */
 function focusLog() {
   scroller.value?.focus({ preventScroll: true });
 }
@@ -606,7 +631,7 @@ function onKeydown(event: KeyboardEvent) {
 
 function measureRows() {
   const rowElements = list.value?.children;
-  if (!wrap.value || !rowElements) {
+  if (!rowElements) {
     return;
   }
 
@@ -615,7 +640,7 @@ function measureRows() {
   let changed = false;
   for (const [position, shown] of shownRows.value.entries()) {
     const element = rowElements[position];
-    if (shown.kind === 'line' && element instanceof HTMLElement) {
+    if (shown.kind === 'line' && (wrap.value || shown.whole) && element instanceof HTMLElement) {
       const height = element.offsetHeight;
       if (height > 0 && height !== rows[shown.row]) {
         known.set(shown.index, height);
@@ -645,6 +670,7 @@ function measureCharacterWidth() {
     <WorkflowLogToolbar
       :job="job.name"
       :size="size"
+      @pressed="focusLog"
     >
       <span
         v-if="noMarker"
@@ -660,34 +686,6 @@ function measureCharacterWidth() {
         {{ t(l.errorPosition, { position: errorPosition, total: log.errors.length }) }}
         <Kbd keys="E" />
       </span>
-      <button
-        type="button"
-        :class="[css.workflowJobLog_toggle, wrap && css.workflowJobLog_toggle_on]"
-        :aria-pressed="wrap"
-        aria-keyshortcuts="W"
-        tid="workflow-log-wrap"
-        @click="
-          toggleWrap();
-          focusLog();
-        "
-      >
-        {{ t(l.wrap) }}
-        <Kbd keys="W" />
-      </button>
-      <button
-        type="button"
-        :class="[css.workflowJobLog_toggle, showTimes && css.workflowJobLog_toggle_on]"
-        :aria-pressed="showTimes"
-        aria-keyshortcuts="T"
-        tid="workflow-log-times"
-        @click="
-          toggleTimes();
-          focusLog();
-        "
-      >
-        {{ t(l.times) }}
-        <Kbd keys="T" />
-      </button>
     </WorkflowLogToolbar>
     <div :class="css.workflowJobLog_body">
       <div :class="css.workflowJobLog_main">
@@ -730,6 +728,7 @@ function measureCharacterWidth() {
                   css.workflowJobLog_line,
                   css[`workflowJobLog_line_${shown.line.kind}`],
                   shown.row === cursorRow && css.workflowJobLog_line_cursor,
+                  shown.whole && css.workflowJobLog_line_whole,
                 ]"
                 :style="wrap ? undefined : { width: `${contentWidth}px` }"
                 :aria-current="shown.row === cursorRow ? 'true' : undefined"
@@ -746,23 +745,48 @@ function measureCharacterWidth() {
                   >
                 </span>
                 <span
-                  :class="css.workflowJobLog_text"
+                  :class="[css.workflowJobLog_text, shown.whole && css.workflowJobLog_text_whole]"
+                  :style="
+                    shown.whole ? { width: `${textWidth + TEXT_END_PADDING}px`, left: `${gutterWidth}px` } : undefined
+                  "
                   tid="workflow-log-text"
                   >{{ shown.prefix
-                  }}<template
-                    v-for="(part, position) in shown.text.parts"
-                    :key="position"
-                    ><mark
-                      v-if="part.highlighted"
-                      :class="css.workflowJobLog_highlight"
-                      >{{ part.text }}</mark
-                    ><template v-else>{{ part.text }}</template></template
-                  ><span
+                  }}<span
+                    v-for="(chunk, chunkIndex) in shown.text.chunks"
+                    :key="chunkIndex"
+                    :class="shown.text.chunks.length > 1 && css.workflowJobLog_chunk"
+                    ><template
+                      v-for="(part, position) in chunk"
+                      :key="position"
+                      ><span
+                        v-if="part.control"
+                        :class="[css.workflowJobLog_control, part.highlighted && css.workflowJobLog_highlight]"
+                        :data-control="part.control"
+                        >{{ part.text }}</span
+                      ><mark
+                        v-else-if="part.highlighted"
+                        :class="css.workflowJobLog_highlight"
+                        >{{ part.text }}</mark
+                      ><template v-else>{{ part.text }}</template></template
+                    ></span
+                  ><button
                     v-if="shown.text.hidden > 0"
+                    type="button"
                     :class="css.workflowJobLog_cut"
-                    >{{ t(l.moreCharacters, { count: shown.text.hidden }) }}</span
-                  ></span
-                >
+                    aria-keyshortcuts="Enter"
+                    tid="workflow-log-more"
+                    @click="
+                      showWholeLine(shown.index);
+                      focusLog();
+                    "
+                  >
+                    {{ t(l.moreCharacters, { count: shown.text.hidden }) }}
+                    <Kbd
+                      v-if="shown.row === cursorRow"
+                      keys="Enter"
+                      size="sm"
+                    /></button
+                ></span>
               </li>
               <li
                 v-else
@@ -830,23 +854,6 @@ function measureCharacterWidth() {
   color: $color-fg-2;
 }
 
-.workflowJobLog_toggle {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-6;
-  align-items: center;
-  padding: 0;
-  font: inherit;
-  color: $color-fg-dim;
-  cursor: pointer;
-  background: none;
-  border: 0;
-}
-
-.workflowJobLog_toggle_on {
-  color: $color-fg;
-}
-
 .workflowJobLog_body {
   display: flex;
   flex: 1;
@@ -864,6 +871,17 @@ function measureCharacterWidth() {
   height: 100%;
   overflow: auto;
   outline: none;
+}
+
+// The focus ring of the scroller, over it: Chromium paints its own outline under the sticky rows and heads, and clips
+// one outside it here. A click on a line, which focuses it too, is not `:focus-visible`.
+.workflowJobLog_main:has(> .workflowJobLog_scroller:focus-visible)::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: '';
+  box-shadow: inset 0 0 0 2px $color-focus;
 }
 
 .workflowJobLog_list {
@@ -891,6 +909,11 @@ function measureCharacterWidth() {
 }
 
 .workflowJobLog_list_wrapped .workflowJobLog_line {
+  height: auto;
+  min-height: 18px;
+}
+
+.workflowJobLog_line_whole {
   height: auto;
   min-height: 18px;
 }
@@ -974,13 +997,61 @@ function measureCharacterWidth() {
   white-space: pre-wrap;
 }
 
+// Held still by the sides of the view while the other lines scroll sideways; its size is set from what the view has.
+.workflowJobLog_text_whole {
+  position: sticky;
+  flex: none;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.workflowJobLog_chunk {
+  display: block;
+}
+
 .workflowJobLog_highlight {
   color: $color-fg;
   background: rgba($color-amber, 0.3);
 }
 
+// Held at the edge of the view: the end of a line cut lies thousands of pixels off to the side, or below, if wrapped.
 .workflowJobLog_cut {
+  @include focus-ring;
+
+  position: sticky;
+  right: 0;
+  bottom: 0;
+  display: inline-flex;
+  gap: $spacing-6;
+  align-items: center;
+  height: 18px;
+  padding: 0 $spacing-6;
+  font: inherit;
   color: $color-fg-dim;
+  vertical-align: top;
+  cursor: pointer;
+  user-select: none;
+  background: $color-bg-2;
+  border: 0;
+
+  &:hover {
+    color: $color-fg-2;
+  }
+}
+
+// `isolate`: what the character does to the direction of text ends at the end of this element, which it is alone in.
+.workflowJobLog_control {
+  padding-inline: 2px;
+  font-size: $font-size-2xs;
+  color: $color-fg-dim;
+  background: $color-bg-3;
+  border-radius: $radius-sm;
+  unicode-bidi: isolate;
+
+  &::before {
+    content: attr(data-control);
+  }
 }
 
 .workflowJobLog_end {

@@ -1,4 +1,5 @@
 import { expect, test } from '../fixtures.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
@@ -67,34 +68,67 @@ test('a failed run at its address: what is known, failed jobs first with the fai
     await expect(screen.logTexts).toHaveText(['all fine']);
 });
 
-test('with no history Esc goes to the repository’s Workflows tab; O and ⌘K open the run on GitHub in a new tab, the page staying', async ({
+test('with no history Esc goes to the repository’s Workflows tab; O and ⌘K open the selected job on GitHub in a new tab, the page staying', async ({
     page,
     github,
 }) => {
     const { world, runId, path } = createFailedRun();
-    world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    const jobPath = `${path}/job/${buildId}`;
     await openTrackedWork(page, github, world);
     await page.goto(path);
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.job('build')).toBeVisible();
 
-    github.web(path, () => ({ status: 200, body: '<title>Run</title>' }));
+    github.web(jobPath, () => ({ status: 200, body: '<title>Job</title>' }));
     const popup = page.waitForEvent('popup');
     await page.keyboard.press('o');
     const opened = await popup;
-    expect(opened.url()).toBe(`https://github.com${path}`);
+    expect(opened.url()).toBe(`https://github.com${jobPath}`);
     await opened.close();
 
     const fromMenu = page.waitForEvent('popup');
     await new CommandMenuHarness(page).run('Open on GitHub');
     const openedFromMenu = await fromMenu;
-    expect(openedFromMenu.url()).toBe(`https://github.com${path}`);
+    expect(openedFromMenu.url()).toBe(`https://github.com${jobPath}`);
     await openedFromMenu.close();
     await expect(page).toHaveURL(path);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(new RepositoryScreenHarness(page).workflow('Deploy')).toBeVisible();
+});
+
+test('the way to GitHub in what stands in for the log goes to the job', async ({ page, github }) => {
+    const { world, runId, path } = createFailedRun(null);
+    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: null, steps: [] }]);
+    const jobPath = `${path}/job/${buildId}`;
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.message('build is still running')).toBeVisible();
+
+    github.web(jobPath, () => ({ status: 200, body: '<title>Job</title>' }));
+    const watching = page.waitForEvent('popup');
+    await screen.root.getByRole('button', { name: /Watch on GitHub/u }).click();
+    const watched = await watching;
+    expect(watched.url()).toBe(`https://github.com${jobPath}`);
+    await watched.close();
+});
+
+test('with no job to select, O opens the run on GitHub', async ({ page, github }) => {
+    const { world, path } = createFailedRun();
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.message('Failed before the first job')).toBeVisible();
+
+    github.web(path, () => ({ status: 200, body: '<title>Run</title>' }));
+    const seeing = page.waitForEvent('popup');
+    await page.keyboard.press('o');
+    const seen = await seeing;
+    expect(seen.url()).toBe(`https://github.com${path}`);
+    await seen.close();
 });
 
 test('a tick of the strip is a link to the run in githq, and Esc comes back', async ({ page, github }) => {
@@ -179,6 +213,7 @@ test('W4i: one job’s log failing leaves the rest working, with GitHub’s stat
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.message("The log of build didn't load")).toBeVisible();
     await expect(screen.root).toContainText(`GET …/jobs/${buildId}/logs → 502`);
+    await expect(new AppShellHarness(page).statusBar).toContainText("The log of build didn't load");
 
     await page.keyboard.press('Alt+j');
     await expect(screen.logTexts).toHaveText(['all fine']);
@@ -205,6 +240,7 @@ test('W4j: a running job reads no log; its log opens by itself once it finishes,
     const screen = new WorkflowRunScreenHarness(page);
     await expect(screen.message('build is still running')).toBeVisible();
     await expect(screen.summary).toContainText('Running');
+    await expect(new AppShellHarness(page).statusBar).toContainText(/Status checked \d+s ago/u);
     expect(github.restCalls.filter(call => call.url.pathname === logPath)).toHaveLength(0);
 
     // Still running at the next ask.
@@ -398,6 +434,55 @@ test('a just-finished job’s log GitHub has no answer for yet is not called gon
     await page.clock.fastForward('00:31');
     await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
     await expect(page.getByText('Reading the log of build…')).toHaveCount(0);
+});
+
+test('a log GitHub had no answer for just after its job ended is asked for again on coming back to it', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world } = createSampleTrackedWork();
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Deploy', runs: [] });
+    const runId = world.workflowRun(SAMPLE_REPOSITORY, 'Deploy', { conclusion: 'failure', minutesAgo: 1 });
+    const [buildId = 0, lintId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD, LINT]);
+    world.jobLog(SAMPLE_REPOSITORY, buildId, 404);
+    world.jobLog(SAMPLE_REPOSITORY, lintId, '2026-11-02T11:46:01.0000000Z all fine');
+    await openTrackedWork(page, github, world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/actions/runs/${runId}`);
+
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.logPlaceholder).toBeVisible();
+
+    // Away past the minutes a log takes to land: it lands meanwhile, with nothing asking for it.
+    await page.keyboard.press('Alt+j');
+    await expect(screen.logTexts).toHaveText(['all fine']);
+    await page.clock.fastForward('06:00');
+    world.jobLog(SAMPLE_REPOSITORY, buildId, RUN_LOG);
+
+    await page.keyboard.press('Alt+k');
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+    await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
+});
+
+test('“… N more characters” opens the rest of the line by click and by Enter', async ({ page, github }) => {
+    const { world, runId, path } = createFailedRun();
+    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
+    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, {
+        2: [`${'x'.repeat(20_000)}THE END`, `${'y'.repeat(20_000)}THE LAST`, '##[error]exit code 1'],
+    });
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+
+    const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'THE END' })).toHaveCount(0);
+    await screen.logMore.first().dispatchEvent('click');
+    await expect(screen.logLines.filter({ hasText: 'THE END' })).toHaveCount(1);
+
+    // The click took the cursor to that line.
+    await page.keyboard.press('j');
+    await expect(screen.cursorLine).toContainText('yyyy');
+    await page.keyboard.press('Enter');
+    await expect(screen.logLines.filter({ hasText: 'THE LAST' })).toHaveCount(1);
 });
 
 test('a run GitHub won’t show says so, with a way to GitHub', async ({ page, github }) => {

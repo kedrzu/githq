@@ -168,21 +168,21 @@ export function useLogWindow(options: UseLogWindowOptions): LogWindowViewModel {
         const bottom = getRowTop(row + 1);
         const isAbove = top < scrollTop.value + coveredTop.value && scrollTop.value > 0;
         const isBelow = bottom > scrollTop.value + viewportHeight.value;
+        // A row taller than the view shows from its top, or stays as it is if it fills the view already.
+        const atTop = top - coveredTop.value;
         switch (mode) {
             case 'top':
                 moveTo(top);
                 break;
             case 'context':
-                if (isAbove || isBelow) {
-                    moveTo(bottom - viewportHeight.value * CONTEXT_POSITION);
+                if (isAbove !== isBelow) {
+                    moveTo(Math.min(atTop, bottom - viewportHeight.value * CONTEXT_POSITION));
                 }
 
                 break;
             case 'nearest':
-                if (isAbove) {
-                    moveTo(top - coveredTop.value);
-                } else if (isBelow) {
-                    moveTo(bottom - viewportHeight.value);
+                if (isAbove !== isBelow) {
+                    moveTo(isAbove ? atTop : Math.min(atTop, bottom - viewportHeight.value));
                 }
 
                 break;
