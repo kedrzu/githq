@@ -432,7 +432,7 @@ test('SP53: all enter as one group — set by the queue, no text; ⌘↵ sends t
 test('SP53: the line moved, those going enter and the rest stay open', async () => {
     await QueueSome.run();
 
-    await expect.element(panel()).toHaveTextContent('2 enter as one group · 1 stay open');
+    await expect.element(panel()).toHaveTextContent('2 enter as one group · 1 stays open');
     await expect.element(primary('Add 2 of 3 to the queue')).toBeVisible();
 });
 

@@ -11,6 +11,7 @@ import type {
     ItemDetailReviewRequest,
     ProjectFieldValue,
 } from '@/store/ItemDetailTypes.js';
+import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import type {
     Item,
@@ -49,12 +50,6 @@ export interface CreateItemEditsParams {
  * into the stores.
  */
 export const UNCHANGED: ItemOverlayLayer = { item: item => item };
-
-/**
- * How long a pull request taken out of the merge queue is drawn out of it: GitHub can still read the old state just
- * after (live, 2026-11-03), and nothing tells such a read from what it holds next.
- */
-const DEQUEUED_HOLD_MS = 30_000;
 
 /**
  * The edits a request makes of one item — one per label, user or field, each sent as one mutation and confirmed
@@ -119,18 +114,18 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 ? [createDraftEdit(params, request.draft)]
                 : [];
         case 'updateBranch':
-            return item.kind === 'pullRequest' && item.state === 'OPEN'
+            return item.kind === 'pullRequest' && isOpenPullRequest(item)
                 ? [createUpdateBranchEdit(item, request.method)]
                 : [];
         case 'enableAutoMerge':
             // Never for a stacked pull request: GitHub refuses it (live, 2026-11-02).
-            return item.kind === 'pullRequest' && item.state === 'OPEN' && !item.autoMerge && !item.stack
+            return item.kind === 'pullRequest' && isOpenPullRequest(item) && !item.autoMerge && !item.stack
                 ? [createEnableAutoMergeEdit({ item, request, viewer: params.viewer, now: params.now })]
                 : [];
         case 'disableAutoMerge':
             return item.kind === 'pullRequest' && item.autoMerge ? [createDisableAutoMergeEdit(item)] : [];
         case 'jumpQueue':
-            return item.kind === 'pullRequest' && item.state === 'OPEN' && !item.mergeQueueEntry
+            return item.kind === 'pullRequest' && isOpenPullRequest(item) && !item.mergeQueueEntry
                 ? [createJumpQueueEdit(item)]
                 : [];
         case 'dequeue':
@@ -660,7 +655,6 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
             const { enqueuePullRequest } = await sdk.EnqueuePullRequest({
                 pullRequestId: item.id,
                 expectedHeadOid: item.headRefOid,
-                jump: true,
             });
             return enqueuePullRequest?.mergeQueueEntry ? { kind: 'confirmed', layer: UNCHANGED } : { kind: 'unknown' };
         },
@@ -671,7 +665,8 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
  * Takes it out of the merge queue; on a stack's first one, the whole stack: GitHub refuses this on a later one (live,
  * 2026-11-03), so whoever asks names the first, and reads the others again. GitHub accepting it is all it says, and a
  * read just after can still hold the entry (same check), so no read can refuse it: it is drawn out only of the queue and
- * only for a moment, the reads then saying what GitHub holds; another entry, added since, shows through.
+ * for as long as a confirmed edit is drawn, the reads then saying what GitHub holds; another entry, added since, shows
+ * through.
  */
 function createDequeueEdit(item: PullRequestItem): Edit {
     return {
@@ -687,7 +682,6 @@ function createDequeueEdit(item: PullRequestItem): Edit {
                         stored.kind === 'pullRequest' &&
                         stored.mergeQueueEntry !== null &&
                         stored.mergeQueueEntry.enqueuedAt !== item.mergeQueueEntry?.enqueuedAt,
-                    heldFor: DEQUEUED_HOLD_MS,
                 },
             };
         },

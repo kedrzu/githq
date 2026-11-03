@@ -31,6 +31,33 @@ test('D12, PM12a: ⌥⌘↵ merges past what isn’t met and says so; ⌘↵ nev
     await expect.poll(() => sample.world.stateOf(sample.first).merged).toBe(true);
 });
 
+test('D12: a head moved with the panel open is read again, and the bypass then names it', async ({ page, github }) => {
+    // Time runs as usual, and the minute to the next poll of the statuses can be skipped.
+    await page.clock.install();
+    const sample = createSampleMergeableWork({
+        repository: { viewerCanMergeAsAdmin: true },
+        first: { reviewDecision: 'REVIEW_REQUIRED' },
+    });
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST_TITLE);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.bypassButton).toBeVisible();
+    const reads = getOperationCalls(github, 'PullRequestMergeOptions').length;
+
+    const head = sample.world.push(sample.first, 'dkim', 'Handle a 502');
+    await page.clock.fastForward('01:00');
+
+    await expect.poll(() => getOperationCalls(github, 'PullRequestMergeOptions').length).toBeGreaterThan(reads);
+    await expect(panel.bypassButton).toBeVisible();
+    await page.keyboard.press('Alt+ControlOrMeta+Enter');
+
+    await expect
+        .poll(() => getMergeRequests(github))
+        .toEqual([{ merge_method: 'merge', sha: head, bypass_rules: true }]);
+});
+
 test('PM12a: not offered without `viewerCanMergeAsAdmin`, and ⌥⌘↵ asks for nothing', async ({ page, github }) => {
     const sample = createSampleMergeableWork({ first: { reviewDecision: 'REVIEW_REQUIRED' } });
     const { myWork } = await openMyWork(page, github, sample.world);

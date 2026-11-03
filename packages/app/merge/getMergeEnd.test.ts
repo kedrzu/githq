@@ -38,6 +38,14 @@ test('PM25: refused with the head where the merge named it and the method allowe
     expect(getMergeEnd(REFUSED, PR, null)).toEqual({ kind: 'refused', sent: SENT, reason: REASON });
 });
 
+test('TC3: a merge that named no method, as a queue has its own, is never refused for one', () => {
+    const rules = { ...OPTIONS, allowedMergeMethods: ['SQUASH' as const] };
+    const sent = { ...SENT, withoutMethod: true };
+
+    expect(getMergeEnd({ ...REFUSED, sent }, PR, rules)).toEqual({ kind: 'refused', sent, reason: REASON });
+    expect(getMergeEnd(REFUSED, PR, rules)).toEqual({ kind: 'methodNotAllowed', sent: SENT });
+});
+
 test('PM27: refused with the head moved since — a new commit first, whatever GitHub said; its author when the read brought it', () => {
     const moved = { ...PR, headRefOid: 'new-head' };
     const rules = { ...OPTIONS, allowedMergeMethods: ['SQUASH' as const] };

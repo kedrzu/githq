@@ -130,6 +130,10 @@ reasonRulesNotConfirmed:
   en: GitHub doesn't confirm the rules are met
 reasonRulesNotConfirmedDetail:
   en: Something changed since this opened.
+reasonNotReached:
+  en: GitHub couldn't be reached
+reasonNotReachedDetail:
+  en: Nothing was sent, so this can't still merge. Try again when you're back online.
 organizationRestricted:
   en: "{organization} hasn't approved githq"
 organizationRestrictedDetail:
@@ -197,9 +201,15 @@ stackLandWithLanded:
 stackLastOne:
   en: The last one open
 stackOnlyOne:
-  en: 'Only #{number} · {rest} stay open'
+  plural: rest
+  en:
+    one: 'Only #{number} · {rest} stays open'
+    many: 'Only #{number} · {rest} stay open'
 stackSomeLand:
-  en: '{count} land · {rest} stay open'
+  plural: rest
+  en:
+    one: '{count} land · {rest} stays open'
+    many: '{count} land · {rest} stay open'
 stackCanLand:
   en: '{count} of {open} can land'
 stackNotReadyYet:
@@ -305,7 +315,10 @@ stackAllEnter:
 stackEnterWithLanded:
   en: '{count} enter as one group · {landed} landed before'
 stackSomeEnter:
-  en: '{count} enter as one group · {rest} stay open'
+  plural: rest
+  en:
+    one: '{count} enter as one group · {rest} stays open'
+    many: '{count} enter as one group · {rest} stay open'
 addAllToQueue:
   en: Add all {count} to the queue
 addCountToQueue:

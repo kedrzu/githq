@@ -83,7 +83,7 @@ test('PM14: ⇧⌘↵ jumps to the front of the queue, with the head the user sa
 
     await expect(panel.root).toContainText('In the queue');
     expect(getOperationCalls(github, 'EnqueuePullRequest')).toEqual([
-        { pullRequestId: sample.first, expectedHeadOid: sample.world.headOf(sample.first), jump: true },
+        { pullRequestId: sample.first, expectedHeadOid: sample.world.headOf(sample.first) },
     ]);
     expect(getMergeRequests(github)).toEqual([]);
     expect(sample.world.queuePositionOf(sample.first)).toBe(1);

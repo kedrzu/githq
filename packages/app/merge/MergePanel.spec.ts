@@ -18,8 +18,10 @@ const {
     AdminReady,
     BypassAlone,
     BypassBehind,
+    BypassBehindSending,
     BypassBesideAutoMerge,
     BypassBlockedUnnamed,
+    BypassHeadMoved,
     BypassOnQueueBranch,
     BypassRebase,
     BypassRefused,
@@ -53,6 +55,7 @@ const {
     MethodNotAllowed,
     NoAnswer,
     NotAllowed,
+    NotReached,
     NothingToOffer,
     OptionalFailed,
     OrganizationRestricted,
@@ -390,6 +393,18 @@ test('PM29: sent and no answer came back — the outcome is not known, never "no
     await expect.element(panel()).not.toHaveTextContent('Nothing was merged');
     await expect.element(panel()).not.toHaveTextContent('GitHub refused the merge');
     expect(page.getByRole('button', { name: /merge|try again/iu }).elements()).toEqual([]);
+});
+
+test('D12: GitHub out of reach before anything was sent: says so, not that the outcome isn’t known, and ⌘↵ tries again', async () => {
+    await NotReached.run();
+
+    await expect.element(panel()).toHaveTextContent('Not sentNothing was merged');
+    await expect.element(panel()).toHaveTextContent("GitHub couldn't be reached");
+    await expect.element(panel()).not.toHaveTextContent('Outcome not known');
+    await expect.element(page.getByRole('button', { name: /^Try again/u })).toBeVisible();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('"method":"SQUASH"');
 });
 
 test('PM30: sent for a pull request merged already — GitHub says merged at once, and the panel stays and says so, not how this merge landed', async () => {
@@ -744,6 +759,46 @@ test('PM32a: sent, its own button is busy and nothing is said of the primary; a 
         .element(page.getByRole('button', { name: /^Bypass rules and merge/u }))
         .toHaveAttribute('aria-busy', 'true');
     await expect.element(page.getByRole('button', { name: "Can't merge yet", exact: true })).toBeDisabled();
+});
+
+test('PM12a: on a red outline, with no red ground, hovered or not (D12)', async () => {
+    await BypassAlone.run();
+
+    const button = page.getByRole('button', { name: /^Bypass rules and merge/u });
+    await expect.element(button).toBeVisible();
+    expect(getComputedStyle(button.element()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    await userEvent.hover(button);
+    expect(getComputedStyle(button.element()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+});
+
+test('D12: the head moved with the panel open: no bypass of a commit nobody saw until it is read, and ⌥⌘↵ sends nothing meanwhile', async () => {
+    await BypassHeadMoved.run();
+    const button = page.getByRole('button', { name: /^Bypass rules and merge/u });
+    await expect.element(button).toBeVisible();
+
+    document.querySelector<HTMLElement>('[tid="stepped"]')?.click();
+
+    await expect.element(panel()).not.toHaveTextContent('You may merge past these requirements');
+    expect(button.elements()).toEqual([]);
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+
+    document.querySelector<HTMLElement>('[tid="readAgain"]')?.click();
+
+    await expect.element(button).toBeVisible();
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Bypass: ');
+});
+
+test('PM12a, PM20: while a bypass is sent, ⌘↵ and the button don’t take the step', async () => {
+    await BypassBehindSending.run();
+
+    await userEvent.keyboard('{Alt>}{ControlOrMeta>}{Enter}{/ControlOrMeta}{/Alt}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Bypass: ');
+
+    await expect.element(page.getByRole('button', { name: /^Update branch/u })).toBeDisabled();
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Bypass: ');
 });
 
 test('PM25: refused, GitHub’s words show, the line stays and ⌘↵ still doesn’t bypass', async () => {

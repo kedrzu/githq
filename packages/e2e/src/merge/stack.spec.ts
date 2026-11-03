@@ -138,7 +138,7 @@ test('D18: ↑ moves the line to the second of three — one merge of the second
     await page.keyboard.press('ArrowUp');
     await expect(panel.root.getByTestId('stack-line')).toContainText('Stops here');
     await expect(panel.stackMember(103)).toContainText('Stays open');
-    await expect(panel.root).toContainText('2 land · 1 stay open');
+    await expect(panel.root).toContainText('2 land · 1 stays open');
     await expect(panel.primary).toHaveText('Squash and merge 2 of 3');
     await expect(panel.line('Commit')).toHaveCount(0);
 

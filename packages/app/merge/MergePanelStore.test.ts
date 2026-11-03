@@ -141,6 +141,47 @@ test('PM29: sent with no answer at all — it may have reached GitHub, so it is 
     expect(queue.failures).toEqual([]);
 });
 
+test('D12: the read before a chosen email’s merge failing is recorded as not sent, never as not known: nothing can still land', async () => {
+    const { panel, session } = await setup();
+    const submission: MergeSubmission = { request: { method: 'SQUASH', authorEmail: 'other@acme.dev' }, edited: null };
+
+    session.github.holdIf = request =>
+        request.operation === 'PullRequestMergeGuard' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+    panel.open('PR_1');
+    const answering = panel.merge({ item: samplePullRequest('PR_1'), submission });
+    await session.clock.advance(0);
+    await answering;
+
+    expect(panel.getRecord('PR_1')).toMatchObject({ kind: 'refused', reason: { kind: 'notReached' } });
+    expect(panel.unanswered).toEqual([]);
+});
+
+test('a merge on a queue’s branch is recorded as naming no method, a stack’s by its first one; past the rules it names one', async () => {
+    const { panel, session, answers } = await setup();
+    const submission: MergeSubmission = { request: { method: 'SQUASH' }, edited: null };
+    const queued = { ...samplePullRequest('PR_1'), isMergeQueueEnabled: true };
+
+    answers.put = REFUSED;
+    panel.open('PR_1');
+    const refused = panel.merge({ item: queued, submission });
+    await session.clock.advance(0);
+    await refused;
+    expect(panel.getRecord('PR_1')?.sent.withoutMethod).toBe(true);
+
+    const bypass: MergeSubmission = { request: { method: 'SQUASH', bypassRules: true }, edited: null };
+    const past = panel.merge({ item: queued, submission: bypass });
+    await session.clock.advance(0);
+    await past;
+    expect(panel.getRecord('PR_1')?.sent.withoutMethod).toBeUndefined();
+
+    const first = { ...STACK_FIRST, isMergeQueueEnabled: true };
+    const stack = { id: 'S_1', size: 2, going: [first, STACK_TOP] };
+    const stacked = panel.merge({ item: STACK_TOP, submission, stack });
+    await session.clock.advance(0);
+    await stacked;
+    expect(panel.getSent('PR_1')?.withoutMethod).toBe(true);
+});
+
 test('PM29, D15: no answer at all after the panel closed is grey too — no failed edit, no toast of a refusal', async () => {
     const { panel, queue, session } = await setup();
 
@@ -701,6 +742,12 @@ async function setup() {
                     return { data: { node: samplePullRequestDetailNode('PR_1', '2026-10-20T10:00:00Z') } };
                 case 'PullRequestStacks':
                     return answers.stacks;
+                case 'PullRequestMergeGuard':
+                    return {
+                        data: {
+                            node: { mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', viewerCanMergeAsAdmin: false },
+                        },
+                    };
                 case 'MergePullRequest':
                     return answers.merged;
                 default:

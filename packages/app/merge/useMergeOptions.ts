@@ -25,7 +25,7 @@ export interface MergeOptionsViewModel {
     readonly reading: boolean;
     /**
      * Reads them again, the old ones staying until the new ones arrive (a step the panel took changed them):
-     * resolves once read, or once another read took its place.
+     * resolves once the latest read is in, as what it brings can start another (`readAgainOn`).
      */
     refresh(): Promise<void>;
 }
@@ -40,6 +40,7 @@ export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsVi
     const read = shallowRef<MergeOptions | null>(null);
     const reading = ref(false);
     let latest = 0;
+    let latestRead = Promise.resolve();
 
     watch(
         [itemId, () => toValue(options.readAgainOn)],
@@ -56,7 +57,12 @@ export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsVi
 
     return reactive<MergeOptionsViewModel>({ options: read, reading, refresh: () => load(itemId.value) });
 
-    async function load(id: string | null) {
+    function load(id: string | null) {
+        latestRead = readOptions(id);
+        return latestRead;
+    }
+
+    async function readOptions(id: string | null) {
         const attempt = ++latest;
         reading.value = id !== null;
         if (id === null) {
@@ -68,6 +74,8 @@ export function useMergeOptions(options: UseMergeOptionsOptions): MergeOptionsVi
         if (attempt === latest) {
             read.value = answer;
             reading.value = false;
+        } else {
+            await latestRead;
         }
     }
 }

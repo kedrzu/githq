@@ -122,7 +122,8 @@ const recordOf = computed(() => {
   const item = holder === null ? undefined : details.getItem(holder);
   return item?.kind === 'pullRequest' ? item : top;
 });
-const read = useMergeOptions({ itemId: () => pr.value?.id ?? null });
+// A new head reads them again: what they say of the merge is of the commit it would name.
+const read = useMergeOptions({ itemId: () => pr.value?.id ?? null, readAgainOn: () => pr.value?.headRefOid });
 /** The panel's full list of the checks is open. */
 const checksOpen = shallowRef(false);
 /** Whose checks the panel shows with two or more going (D11); `null` otherwise. */
@@ -357,7 +358,6 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :advancing="advancing"
     :now="now"
     :stack="stackView"
-    :emails="settings"
     :viewer-login="auth.viewer?.login ?? null"
     @merge="merge"
     @bypass="merge"

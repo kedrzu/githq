@@ -23,6 +23,8 @@ const SQUASH_FIRST: MergeSettings = {
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
     autoMergeAllowed: false,
+    viewerDefaultCommitEmail: null,
+    viewerPossibleCommitEmails: [],
 };
 
 /** What {@link CALENDAR}'s first one was last sent with, alone. */
@@ -123,7 +125,7 @@ const Harness = defineComponent({
                       autoMergeBody: null,
                       mergeQueueMethod: first.isMergeQueueEnabled ? 'SQUASH' : null,
                       checks: [],
-                      headCommit: null,
+                      headCommit: props.admin ? { oid: first.headRefOid, headline: first.title, author: null } : null,
                   }
                 : null;
         });
@@ -172,7 +174,13 @@ const Harness = defineComponent({
                         open: open.value,
                         'onUpdate:open': (value: boolean) => (open.value = value),
                         pr: first,
-                        settings: props.settings,
+                        settings: props.viewerEmail
+                            ? {
+                                  ...props.settings,
+                                  viewerDefaultCommitEmail: props.viewerEmail,
+                                  viewerPossibleCommitEmails: [props.viewerEmail, 'other@fitloop.dev'],
+                              }
+                            : props.settings,
                         options: options.value,
                         reading: !arrived.value,
                         allowed: true,
@@ -203,12 +211,6 @@ const Harness = defineComponent({
                             sent.value = `Step: ${step}`;
                             advancing.value = step;
                         },
-                        emails: props.viewerEmail
-                            ? {
-                                  viewerDefaultCommitEmail: props.viewerEmail,
-                                  viewerPossibleCommitEmails: [props.viewerEmail, 'other@fitloop.dev'],
-                              }
-                            : null,
                         viewerLogin: first.author?.login ?? null,
                         onVisit: (url: string) => (sent.value = `Visit: ${url}`),
                         onBypass: (submission: MergeSubmission) => {

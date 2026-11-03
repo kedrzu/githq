@@ -557,6 +557,7 @@ test.each([
     ['a required check failed or is pending, or a review is missing', 'MERGEABLE', 'BLOCKED'],
     ['the branch is behind', 'MERGEABLE', 'BEHIND'],
     ['GitHub is still working it out', 'UNKNOWN', 'UNKNOWN'],
+    ['GitHub says a state added since', 'MERGEABLE', 'SOME_NEW_STATE'],
 ])(
     'D12: a chosen email is never sent for someone who may bypass when %s: GitHub would merge past the rules unasked',
     async (_case, mergeable, mergeStateStatus) => {
@@ -598,6 +599,26 @@ test.each([
 
     expect(await answering).toEqual({ kind: 'accepted' });
     expect(session.operations()).toContain('MergePullRequest');
+});
+
+test('D12: the read before a chosen email’s merge failing sends nothing, so it says so and nothing can still land', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    session.github.holdIf = request =>
+        request.operation === 'PullRequestMergeGuard' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+
+    const answering = merger.merge({
+        item: open(),
+        request: { method: 'SQUASH', authorEmail: 'other@acme.dev' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({ kind: 'refused', reason: { kind: 'notReached' } });
+    expect(session.operations()).not.toContain('MergePullRequest');
+    expect(rest.puts()).toEqual([]);
+    expect(items.get('PR_1')).not.toHaveProperty('merging');
+    expect(queue.failures).toEqual([]);
 });
 
 test("D5: GitHub's error on a chosen email is the refusal the panel shows, in GitHub's words; nothing reads merged", async () => {

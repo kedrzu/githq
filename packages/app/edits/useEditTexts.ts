@@ -325,6 +325,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonRefused, { message: failure.message.replace(/\.$/u, '') });
             case 'rulesNotConfirmed':
                 return t(l.reasonRulesNotConfirmed);
+            case 'notReached':
+                return t(l.reasonNotReached);
             default:
                 return assertNever(failure);
         }
@@ -339,6 +341,7 @@ export function useEditTexts(): EditTexts {
             case 'missing':
                 return t(l.shortMissing);
             case 'offline':
+            case 'notReached':
                 return t(l.shortOffline);
             case 'organizationRestricted':
                 return t(l.shortOrganizationRestricted, { organization: failure.organization });

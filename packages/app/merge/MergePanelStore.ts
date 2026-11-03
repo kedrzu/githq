@@ -21,6 +21,7 @@ import type {
     SentMerge,
 } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
+import { sendsMergeMethod } from './sendsMergeMethod.js';
 
 /** The loops of the regular sync that read pull requests again: a round of one says how a merge ended (D3). */
 const READING_LOOPS: readonly SyncLoop[] = ['myWork', 'pullRequestStatuses', 'repositories'];
@@ -281,7 +282,12 @@ export const MergePanelStore = defineService({
             const opening = openingRef.value;
             const account = accounts.current;
             const going = stack?.going.map(pr => pr.id);
-            const sent: SentMerge = { ...submission, head: item.headRefOid, ...(going ? { going } : {}) };
+            const sent: SentMerge = {
+                ...submission,
+                head: item.headRefOid,
+                ...(going ? { going } : {}),
+                ...(sendsMergeMethod(stack?.going[0] ?? item, submission.request) ? {} : { withoutMethod: true }),
+            };
             // The next merge of it ends what is known of the last, a stack's that took it included.
             const last = findRecordHolder(item.id);
             forget(item.id, ...(going ?? []), ...(last === null ? [] : [last]));

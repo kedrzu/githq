@@ -120,7 +120,7 @@ test('PM11: turning auto-merge off reads off at once and stays', async () => {
     expect(items.get('PR_1')).toMatchObject({ autoMerge: null });
 });
 
-test('PM14: jumping asks for it by jump: true with the head the user saw, and draws nothing: a read says the place', async () => {
+test('PM14: jumping names the head the user saw, and draws nothing: a read says the place', async () => {
     const { editor, items, session } = await setupMerge({
         enqueuePullRequest: { mergeQueueEntry: { position: 1 } },
     });
@@ -128,9 +128,7 @@ test('PM14: jumping asks for it by jump: true with the head the user saw, and dr
     const outcome = await editor.edit(['PR_1'], { kind: 'jumpQueue' });
 
     expect(outcome.failed).toEqual([]);
-    expect(requests(session, 'EnqueuePullRequest')).toEqual([
-        { pullRequestId: 'PR_1', expectedHeadOid: 'seen-head', jump: true },
-    ]);
+    expect(requests(session, 'EnqueuePullRequest')).toEqual([{ pullRequestId: 'PR_1', expectedHeadOid: 'seen-head' }]);
     expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: null });
     expectFreshStatusShows(items, { mergeQueueEntry: toEntry() });
 });
@@ -177,7 +175,7 @@ describe('out of the queue', () => {
         return { ...merge, outcome };
     }
 
-    test('PM15: a read still holding the entry is no failure: it shows out of the queue for a moment, then as GitHub says', async () => {
+    test('PM15: a read still holding the entry is no failure: it shows out of the queue as long as a confirmed edit is drawn, then as GitHub says', async () => {
         const { items, session, outcome } = await takenOut();
 
         expect(outcome.failed).toEqual([]);
@@ -186,7 +184,7 @@ describe('out of the queue', () => {
             { mergeStateStatus: 'UNSTABLE', mergeQueueEntry: toEntry() },
             { mergeQueueEntry: null },
         );
-        await session.clock.advance(30_000);
+        await session.clock.advance(5 * 60_000);
 
         expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1 } });
     });

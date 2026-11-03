@@ -15,9 +15,11 @@ import { getItemReference } from '@/item/itemRoutes.js';
 import type { ClockShape } from '@/services/Clock.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import type { Item, PullRequestItem, PullRequestMergedAs } from '@/store/ItemTypes.js';
+import { mergesWithinRules } from '@/store/mergesWithinRules.js';
 import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
+import { sendsMergeMethod } from './sendsMergeMethod.js';
 
 /** `mergePullRequest` merged it: it answers at once, unlike `merge-async`, with the commit it made. */
 interface MergedWithEmail {
@@ -30,9 +32,6 @@ interface NotSentWithEmail {
     readonly status: 'notSent';
     readonly reason: EditFailureReason;
 }
-
-/** The states GitHub merges in without anyone bypassing a rule: `UNSTABLE` only has checks that aren't required failing. */
-const MERGES_WITHIN_RULES: ReadonlySet<string> = new Set(['CLEAN', 'HAS_HOOKS', 'UNSTABLE']);
 
 /** What {@link createMergeEdits} makes the merge of. */
 export interface CreateMergeEditsParams {
@@ -170,7 +169,7 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
 function createMergeEdit(params: CreateMergeEditsParams): Edit {
     const { item, members = [], request, clock, onAnswer, onLateEnd, readQueued, shown } = params;
     const target = getItemReference(item);
-    const onQueueBranch = (members[0] ?? item).isMergeQueueEnabled;
+    const first = members[0] ?? item;
 
     return {
         itemId: item.id,
@@ -229,10 +228,11 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
     };
 
     function toAsyncMergeParams(): RequestAsyncMergeParams {
-        const bypassRules = request.bypassRules === true;
-        if (onQueueBranch && !bypassRules) {
+        if (!sendsMergeMethod(first, request)) {
             return { ...target, sha: item.headRefOid };
         }
+
+        const bypassRules = request.bypassRules === true;
 
         return {
             ...target,
@@ -241,7 +241,7 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
             ...(request.title === undefined ? {} : { commitTitle: request.title }),
             ...(request.body === undefined ? {} : { commitMessage: request.body }),
             ...(bypassRules ? { bypassRules } : {}),
-            ...(bypassRules && onQueueBranch ? { mergeAction: 'direct_merge' as const } : {}),
+            ...(bypassRules && first.isMergeQueueEnabled ? { mergeAction: 'direct_merge' as const } : {}),
         };
     }
 
@@ -250,11 +250,13 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         try {
             guard = (await sdk.PullRequestMergeGuard({ id: item.id })).node;
         } catch (error) {
-            return { status: 'notSent', reason: toEditFailureReason(error) };
+            const reason = toEditFailureReason(error);
+            // Nothing went yet, so unlike a merge unanswered this one can't land.
+            return { status: 'notSent', reason: reason.kind === 'offline' ? { kind: 'notReached' } : reason };
         }
 
         if (guard && 'viewerCanMergeAsAdmin' in guard && guard.viewerCanMergeAsAdmin) {
-            if (guard.mergeable !== 'MERGEABLE' || !MERGES_WITHIN_RULES.has(guard.mergeStateStatus)) {
+            if (guard.mergeable !== 'MERGEABLE' || !mergesWithinRules(guard.mergeStateStatus)) {
                 return { status: 'notSent', reason: { kind: 'rulesNotConfirmed' } };
             }
         }

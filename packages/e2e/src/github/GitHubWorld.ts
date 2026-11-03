@@ -1767,9 +1767,10 @@ export class GitHubWorld {
 
                 return variables.expectedHeadOid === toHeadRefOid(item) ? null : HEAD_MOVED;
             },
-            apply: (item, variables) => {
+            // The one way here to ask for the queue, and it always jumps it (`EnqueuePullRequest.gql`).
+            apply: item => {
                 if (item.pullRequest) {
-                    this.addToQueue([{ item, pullRequest: item.pullRequest }], variables.jump === true);
+                    this.addToQueue([{ item, pullRequest: item.pullRequest }], true);
                 }
             },
             keepsUpdatedAt: true,
@@ -1816,11 +1817,7 @@ export class GitHubWorld {
                     });
                 }
             },
-            answer: item => ({
-                mergePullRequest: {
-                    pullRequest: { ...this.toPullRequestAnswer(item), mergeCommit: { oid: MERGE_COMMIT_OID } },
-                },
-            }),
+            answer: () => ({ mergePullRequest: { pullRequest: { mergeCommit: { oid: MERGE_COMMIT_OID } } } }),
             refused: { mergePullRequest: null },
         });
         this.mutation(github, 'ConvertToDraft', {

@@ -115,6 +115,11 @@ export type EditFailureReason =
      * and it doesn't confirm they are met (merging D12).
      */
     | { readonly kind: 'rulesNotConfirmed' }
+    /**
+     * Never sent: GitHub could not be reached for what a chosen email's merge reads first (merging D12). Unlike `offline`,
+     * where the request may have got there, nothing can land.
+     */
+    | { readonly kind: 'notReached' }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 

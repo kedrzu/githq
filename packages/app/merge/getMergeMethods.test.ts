@@ -5,6 +5,8 @@ import type { MergeMethods, MergeRules, MergeSettings } from './getMergeMethods.
 import { getMergeMethods } from './getMergeMethods.js';
 
 const ALL: MergeSettings = {
+    viewerDefaultCommitEmail: null,
+    viewerPossibleCommitEmails: [],
     mergeCommitAllowed: true,
     squashMergeAllowed: true,
     rebaseMergeAllowed: true,

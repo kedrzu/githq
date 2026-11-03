@@ -114,6 +114,8 @@ shortMissing:
   en: no longer exists
 reasonRulesNotConfirmed:
   en: GitHub doesn't confirm the rules are met any more, so nothing was merged. Open it to see why.
+reasonNotReached:
+  en: GitHub couldn't be reached, so nothing was sent. Open it to try again.
 shortRulesNotConfirmed:
   en: rules not met
 shortOffline:

@@ -6,10 +6,16 @@ import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { allowsMergeMethod } from './allowsMergeMethod.js';
 import type { MergeOptions } from './MergeTypes.js';
 
-/** The repository's settings {@link getMergeMethods} starts from. */
+/** The repository's settings the merge panel starts from: {@link getMergeMethods}, and the addresses to commit with. */
 export type MergeSettings = Pick<
     RepositoryMetadata,
-    'mergeCommitAllowed' | 'squashMergeAllowed' | 'rebaseMergeAllowed' | 'viewerDefaultMergeMethod' | 'autoMergeAllowed'
+    | 'mergeCommitAllowed'
+    | 'squashMergeAllowed'
+    | 'rebaseMergeAllowed'
+    | 'viewerDefaultMergeMethod'
+    | 'autoMergeAllowed'
+    | 'viewerDefaultCommitEmail'
+    | 'viewerPossibleCommitEmails'
 >;
 
 /** The base branch's rules {@link getMergeMethods} narrows the settings by, as the merge panel's read brings them. */

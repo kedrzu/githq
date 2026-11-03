@@ -1,4 +1,4 @@
-<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). Past what isn't met, for a viewer GitHub says may: a line of its own above the footer lists it, and `⌥⌘↵` alone merges — never `⌘↵` (D12, PM12a) — in a stack only its first open pull request (SP55). A commit email to choose, where GitHub offers one, is a line of its own: `Y` moves to the next (PM6). A stack on a merge queue's branch reads ready for the queue, with no method or text to choose, and enters as one group (SP53); in the queue each one says its own position, the verdict the first one's, and it leaves whole; with no entry it is a stack like any (SP54). -->
+<!-- The merge panel (PM1a–PM32a, merging D6, D7, D11–D13): its own surface over any screen, 640 wide and centred, that answers "can I merge this now, and how will it land?". The verdict, the checks (`MergeChecks`), the method — only those the repository and the base branch allow, `1 2 3` — and the commit text GitHub proposes for it: a title and three lines, `E` to edit (Esc leaves the field keeping the edit, a second Esc closes). The read arriving moves nothing but the commit row (PM8): until then the methods are the repository's settings' (the read may narrow them, PM9), the checks' chevron and `C` are in place but inactive; only the commit's message, which may be empty, waits — a loader beside its title, then the message opening below it (`Reveal`) if there is one. What holds the merge besides the checks — reviews, conflicts, a branch behind — or is not known yet shows in a line above them. `⌘↵` is always the way forward of the state, from the verdict the opened item's standing shares (D12, PM38): it merges at once, before the panel's read arrives too, and while GitHub is still working out whether it merges (PM22): unedited text is then GitHub's default, and only edited text is ever sent. A draft is marked ready first (PM21); a branch behind one that must be up to date is updated (PM20), the panel saying so until GitHub answered and the panel read it again; conflicts leave for GitHub's editor (PM19); with no way forward the primary is off and says why (PM13). When the read takes the chosen method away, the panel moves to the default and says so once. While the merge is sent it stays as it was, its primary busy, until GitHub answers. Being merged, it says so and offers nothing to repeat; merged, how it landed and nothing to do (PM26); refused, it stays with the text and GitHub's reason in its own words, and ⌘↵ tries again (PM25, PM31) — with no answer at all, that the outcome is not known; GitHub out of reach before anything was sent, that nothing was, and ⌘↵ tries again. What the session knows of the last merge that did not end merged (`MergeRecord`) decides the rest: a head that moved since says nothing merged and names the new commit (`D`), the primary going by its state (PM27); a method the rules, read late, don't allow leaves the panel on one they do, the edit kept as its text (PM28); no answer in time is grey, neither merged nor failed, with no second merge and GitHub a key away (`O`, PM29). Opened again with such a record, it starts on the method and the edited text that merge was sent with (D15). Open for a stack with two or more going, `C` shows one member's checks, saying whose: the one holding the rest, else the first open one (`StackMergeView.checks`). The keys are the panel's only while it is open: nothing reaches the screen below (`data-layer`, `data-no-commands`, focus kept inside). Not met, where auto-merge may wait for it, `⌘↵` turns it on with the method and text chosen now (PM10); on, it says who and how, the text fixed, and `⌘↵` turns it off (PM11). On a merge queue's branch the method and the text are the queue's, `⌘↵` adds it to the queue as a merge and `⇧⌘↵` jumps it (PM14); in the queue it says where, with no primary and `⇧Q` to take it out (PM15, PM16). Past what isn't met, for a viewer GitHub says may: a line of its own above the footer lists it, as read for the head it would name, and `⌥⌘↵` alone merges — never `⌘↵` (D12, PM12a) — in a stack only its first open pull request (SP55). A commit email to choose, where GitHub offers one, is a line of its own: `Y` moves to the next (PM6). A stack on a merge queue's branch reads ready for the queue, with no method or text to choose, and enters as one group (SP53); in the queue each one says its own position, the verdict the first one's, and it leaves whole; with no entry it is a stack like any (SP54). -->
 <script lang="ts" setup>
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -69,7 +69,6 @@ import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { getAttentionChecks } from './getAttentionChecks.js';
 import { getBypassSkips } from './getBypassSkips.js';
 import { getCommitEmails } from './getCommitEmails.js';
-import type { ViewerCommitEmails } from './getCommitEmails.js';
 import { getMergeEnd } from './getMergeEnd.js';
 import { getMergeEndLook } from './getMergeEndLook.js';
 import { getMergeMethods } from './getMergeMethods.js';
@@ -96,7 +95,7 @@ import { useMergeQueueTexts } from './useMergeQueueTexts.js';
 
 const props = defineProps<{
   pr: PullRequestItem;
-  /** The repository's merge settings; `null` until its metadata is known. */
+  /** The repository's merge settings and the viewer's commit addresses; `null` until its metadata is known. */
   settings: MergeSettings | null;
   /** The panel's read (rulesets, proposed texts, checks); `null` until it arrives, or when it could not be read. */
   options: MergeOptions | null;
@@ -141,8 +140,6 @@ const props = defineProps<{
    * range. None outside a stack. While a merge is sent, as the stack was before it: none being merged yet (PM32a).
    */
   stack?: StackMergeView | null;
-  /** The addresses GitHub says the viewer may commit a merge with; `null` until the repository's metadata is known. */
-  emails?: ViewerCommitEmails | null;
   /** Who is signed in: a squash takes an email only from the pull request's author (D4). */
   viewerLogin?: string | null;
 }>();
@@ -447,13 +444,18 @@ const bypassSkips = computed((): readonly string[] => {
     ...(other ? [t(l.bypassSkipsOther)] : []),
   ];
 });
-/** The line and `⌥⌘↵` are there (PM12a): GitHub says the viewer may, and something it lists isn't met. */
-const canBypass = computed(() => bypassSkips.value.length > 0 && method.value !== null);
+/**
+ * The line and `⌥⌘↵` are there (PM12a): GitHub says the viewer may, and something it lists isn't met — as read for the
+ * head the merge would name: a commit nobody saw isn't merged past rules listed for the one before.
+ */
+const canBypass = computed(
+  () => bypassSkips.value.length > 0 && method.value !== null && props.options?.headCommit?.oid === props.pr.headRefOid,
+);
 /** With a stack of several open, it speaks of the first alone (SP55). */
 const bypassOfFirst = computed(() => (props.stack?.merge.open.length ?? 0) > 1);
 const bypassLines = computed(() => {
   const list = new Intl.ListFormat(APP_LANGUAGE).format(bypassSkips.value);
-  const email = props.emails?.viewerDefaultCommitEmail;
+  const email = props.settings?.viewerDefaultCommitEmail;
   return {
     title: bypassOfFirst.value ? t(l.bypassTitleOf, { number: props.pr.number }) : t(l.bypassTitle),
     skips: bypassOfFirst.value ? t(l.bypassSkipsFirst, { list }) : t(l.bypassSkips, { list }),
@@ -466,7 +468,7 @@ const bypassLines = computed(() => {
 /** The addresses to choose the commit email from, while merging is the way forward (PM6); `null` with no choice. */
 const commitEmails = computed(() =>
   mergesNow.value && standing.forward === 'merge'
-    ? getCommitEmails({ emails: props.emails, method: method.value, pr: props.pr, viewerLogin: props.viewerLogin })
+    ? getCommitEmails({ settings: props.settings, method: method.value, pr: props.pr, viewerLogin: props.viewerLogin })
     : null,
 );
 /** The address the merge commits with, as the line shows it: the one chosen, while it is still offered. */
@@ -844,7 +846,7 @@ function endVerdict(): PanelVerdict | null {
   switch (record.kind) {
     case 'refused': {
       // Never sent, so not GitHub's refusal (D12, PM43).
-      if (record.reason.kind === 'rulesNotConfirmed') {
+      if (record.reason.kind === 'rulesNotConfirmed' || record.reason.kind === 'notReached') {
         return { kind: 'refused', ...look, text: t(l.notSent), aside: t(l.nothingMerged) };
       }
 
@@ -1191,6 +1193,14 @@ function refusalBand(reason: EditFailureReason): Band {
         text: t(l.reasonRulesNotConfirmedDetail),
         link: null,
       };
+    case 'notReached':
+      return {
+        tone: 'danger',
+        icon: MessageSquareWarning,
+        title: t(l.reasonNotReached),
+        text: t(l.reasonNotReachedDetail),
+        link: null,
+      };
     // G5: GitHub lets githq read the organisation's public repositories, and refuses every change there.
     case 'organizationRestricted':
       return {
@@ -1350,7 +1360,7 @@ function goForward() {
   const next = step.value;
   if (next === null) {
     send();
-  } else if (props.allowed && props.advancing === null) {
+  } else if (props.allowed && props.advancing === null && !props.sending) {
     if (next !== 'enableAutoMerge') {
       emit('step', next);
     } else if (method.value !== null) {
@@ -1960,6 +1970,7 @@ function onOpenFocus(event: Event) {
           <span v-if="bypassLines.commits">{{ bypassLines.commits }}</span>
         </div>
         <Button
+          :class="css.mergePanel_bypassButton"
           variant="danger"
           kbd="Alt+Mod+Enter"
           :aria-keyshortcuts="formatAriaKeyShortcuts('Alt+Mod+Enter')"
@@ -2097,6 +2108,7 @@ function onOpenFocus(event: Event) {
             kbd="Mod+Enter"
             :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="advancing !== null"
+            :disabled="sending"
             @click="goForward()"
             >{{ stepButton.label }}</Button
           >
@@ -2473,7 +2485,7 @@ function onOpenFocus(event: Event) {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: $spacing-2;
   min-width: 0;
   font-size: $font-size-xs;
   line-height: 17px;
@@ -2482,6 +2494,14 @@ function onOpenFocus(event: Event) {
 
 .mergePanel_bypassTitle {
   color: $color-fg-2;
+}
+
+// A red outline and red words, no red ground, hovered or not (D12): nested to outrank the button's own `danger`.
+.mergePanel_bypass .mergePanel_bypassButton {
+  &,
+  &:hover {
+    background: transparent;
+  }
 }
 
 .mergePanel_footer {

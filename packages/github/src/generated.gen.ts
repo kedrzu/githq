@@ -5917,7 +5917,6 @@ export type EnablePullRequestAutoMergeMutation = {
 export type EnqueuePullRequestMutationVariables = Exact<{
     pullRequestId: string;
     expectedHeadOid: string;
-    jump?: boolean | null | undefined;
 }>;
 
 export type EnqueuePullRequestMutation = {
@@ -5950,78 +5949,7 @@ export type MergePullRequestMutationVariables = Exact<{
 }>;
 
 export type MergePullRequestMutation = {
-    mergePullRequest: {
-        pullRequest: {
-            __typename: 'PullRequest';
-            id: string;
-            updatedAt: string;
-            state: PullRequestState;
-            isDraft: boolean;
-            merged: boolean;
-            reviewDecision: PullRequestReviewDecision | null;
-            mergeable: MergeableState;
-            mergeStateStatus: MergeStateStatus;
-            headRefOid: string;
-            baseRefOid: string;
-            isMergeQueueEnabled: boolean;
-            mergeCommit: { oid: string } | null;
-            stack: { id: string; number: number; size: number } | null;
-            stackEntry: { position: number } | null;
-            mergeQueueEntry: {
-                position: number;
-                state: MergeQueueEntryState;
-                estimatedTimeToMerge: number | null;
-                enqueuedAt: string;
-                enqueuer:
-                    | { login: string }
-                    | { login: string }
-                    | { login: string }
-                    | { login: string }
-                    | { login: string };
-            } | null;
-            autoMergeRequest: {
-                mergeMethod: PullRequestMergeMethod;
-                enabledAt: string | null;
-                commitHeadline: string | null;
-                enabledBy:
-                    | { login: string }
-                    | { login: string }
-                    | { login: string }
-                    | { login: string }
-                    | { login: string }
-                    | null;
-            } | null;
-            baseRef: { target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null } | null;
-            statusCheckRollup: {
-                state: StatusState;
-                contexts: {
-                    checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
-                    statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
-                };
-            } | null;
-            reviewRequests: {
-                nodes: Array<{
-                    requestedReviewer:
-                        | { slug: string; name: string }
-                        | { login: string }
-                        | Record<PropertyKey, never>
-                        | null;
-                } | null> | null;
-            } | null;
-            latestOpinionatedReviews: {
-                nodes: Array<{
-                    state: PullRequestReviewState;
-                    author:
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | null;
-                } | null> | null;
-            } | null;
-        } | null;
-    } | null;
+    mergePullRequest: { pullRequest: { mergeCommit: { oid: string } | null } | null } | null;
 };
 
 export type RemoveAssigneesMutationVariables = Exact<{
@@ -12755,9 +12683,9 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
   }
 }`);
 export const EnqueuePullRequestDocument = new TypedDocumentString(`
-    mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $jump: Boolean) {
+    mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!) {
   enqueuePullRequest(
-    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: $jump}
+    input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: true}
   ) {
     mergeQueueEntry {
       position
@@ -12786,91 +12714,13 @@ export const MergePullRequestDocument = new TypedDocumentString(`
     input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, authorEmail: $authorEmail}
   ) {
     pullRequest {
-      ...PullRequestStatusFields
       mergeCommit {
         oid
       }
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
-  __typename
-  id
-  updatedAt
-  state
-  isDraft
-  merged
-  reviewDecision
-  mergeable
-  mergeStateStatus
-  stack {
-    id
-    number
-    size
-  }
-  stackEntry {
-    position
-  }
-  headRefOid
-  baseRefOid
-  isMergeQueueEnabled
-  mergeQueueEntry {
-    position
-    state
-    estimatedTimeToMerge
-    enqueuedAt
-    enqueuer {
-      login
-    }
-  }
-  autoMergeRequest {
-    mergeMethod
-    enabledAt
-    enabledBy {
-      login
-    }
-    commitHeadline
-  }
-  baseRef {
-    target {
-      oid
-    }
-  }
-  statusCheckRollup {
-    state
-    contexts {
-      checkRunCountsByState {
-        state
-        count
-      }
-      statusContextCountsByState {
-        state
-        count
-      }
-    }
-  }
-  reviewRequests(first: 10) {
-    nodes {
-      requestedReviewer {
-        ... on User {
-          login
-        }
-        ... on Team {
-          slug
-          name
-        }
-      }
-    }
-  }
-  latestOpinionatedReviews(first: 10) {
-    nodes {
-      author {
-        login
-      }
-      state
-    }
-  }
-}`);
+    `);
 export const RemoveAssigneesDocument = new TypedDocumentString(`
     mutation RemoveAssignees($assignableId: ID!, $assigneeIds: [ID!]!) {
   removeAssigneesFromAssignable(

@@ -1,14 +1,13 @@
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
-import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
-/** The addresses GitHub says the viewer may commit a merge with. */
-export type ViewerCommitEmails = Pick<RepositoryMetadata, 'viewerDefaultCommitEmail' | 'viewerPossibleCommitEmails'>;
+import type { MergeSettings } from './getMergeMethods.js';
 
 /** What {@link getCommitEmails} decides from. */
 export interface GetCommitEmailsParams {
-    readonly emails: ViewerCommitEmails | null | undefined;
+    /** The addresses GitHub says the viewer may commit a merge with; `null` until the repository's metadata is known. */
+    readonly settings: Pick<MergeSettings, 'viewerDefaultCommitEmail' | 'viewerPossibleCommitEmails'> | null;
     readonly method: PullRequestMergeMethod | null;
     readonly pr: Pick<PullRequestItem, 'author' | 'isMergeQueueEnabled' | 'stack'>;
     readonly viewerLogin: string | null | undefined;
@@ -23,8 +22,8 @@ export interface GetCommitEmailsParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function getCommitEmails(params: GetCommitEmailsParams): readonly string[] | null {
-    const { emails, method, pr, viewerLogin } = params;
-    const start = emails?.viewerDefaultCommitEmail;
+    const { settings, method, pr, viewerLogin } = params;
+    const start = settings?.viewerDefaultCommitEmail;
     if (!start || method === null || method === 'REBASE' || pr.isMergeQueueEnabled || pr.stack) {
         return null;
     }
@@ -33,6 +32,6 @@ export function getCommitEmails(params: GetCommitEmailsParams): readonly string[
         return null;
     }
 
-    const others = (emails?.viewerPossibleCommitEmails ?? []).filter(email => email !== start);
+    const others = (settings?.viewerPossibleCommitEmails ?? []).filter(email => email !== start);
     return others.length > 0 ? [start, ...others] : null;
 }

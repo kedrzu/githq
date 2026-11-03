@@ -1,4 +1,3 @@
-import type { MergeStateStatus } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -28,6 +27,7 @@ import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import { Clock } from '@/services/Clock.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestStanding } from '@/store/getPullRequestStanding.js';
+import { mergesWithinRules } from '@/store/mergesWithinRules.js';
 import { isMergeabilityUnknown } from '@/store/isMergeabilityUnknown.js';
 import type { PullRequestAutoMerge, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 import { capitalize } from '@/utils/capitalize.js';
@@ -388,7 +388,7 @@ export function usePullRequestVerdicts(): (params: PullRequestVerdictParams) => 
  */
 function isMergeable(pr: PullRequestItem, now: PullRequestStanding, counts: MergeCheckCounts | null) {
     if (counts) {
-        return counts.requiredFailing + counts.requiredPending === 0 && isReadyState(pr.mergeStateStatus);
+        return counts.requiredFailing + counts.requiredPending === 0 && mergesWithinRules(pr.mergeStateStatus);
     }
 
     const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
@@ -406,22 +406,4 @@ function held(verdict: PullRequestVerdict): Standing {
 /** Parts said one after another, as one sentence: "Changes requested · a required check failed". */
 function sentence(parts: readonly string[]) {
     return capitalize(parts.join(' · '));
-}
-
-/** What GitHub's status says when it would merge now: requirements met (an optional check may still fail). */
-function isReadyState(status: MergeStateStatus) {
-    switch (status) {
-        case 'CLEAN':
-        case 'HAS_HOOKS':
-        case 'UNSTABLE':
-            return true;
-        case 'BEHIND':
-        case 'BLOCKED':
-        case 'DIRTY':
-        case 'DRAFT':
-        case 'UNKNOWN':
-            return false;
-        default:
-            return assertNever(status);
-    }
 }

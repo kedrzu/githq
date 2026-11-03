@@ -9,7 +9,7 @@ import type { MergeEnd, MergeOptions, MergeRecord } from './MergeTypes.js';
  * panel, the opened item, the rows and the status bar: nothing once the pull request reads merged, closed or being
  * merged again, or GitHub holds it in a merge queue or under auto-merge, which is what it is now. A refusal is told apart by the pull request as it is, not by GitHub's words, which are not documented
  * (PM27, PM28): the head moved since the merge named it — naming the commit at it when `options`, or the record, read
- * it — else a method the base branch's rules — when `options` were read — don't allow, else GitHub's reason. No answer stays not known: the merge may still land on the head it named.
+ * it — else a method it named that the base branch's rules — when `options` were read — don't allow, else GitHub's reason. No answer stays not known: the merge may still land on the head it named.
  *
  * @util
  * @__NO_SIDE_EFFECTS__
@@ -35,7 +35,7 @@ export function getMergeEnd(
         return { kind: 'headMoved', sent, head: pr.headRefOid, commit };
     }
 
-    if (options && !allowsMergeMethod(options, sent.request.method)) {
+    if (options && !sent.withoutMethod && !allowsMergeMethod(options, sent.request.method)) {
         return { kind: 'methodNotAllowed', sent };
     }
 

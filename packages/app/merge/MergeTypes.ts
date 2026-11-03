@@ -86,6 +86,8 @@ export interface SentMerge extends MergeSubmission {
     readonly head: string;
     /** A stack's merge of two or more: every pull request going, first to last, the top last (stacked PRs D11). */
     readonly going?: readonly string[];
+    /** It named no method, as a merge queue has its own: no refusal of it is about one (`sendsMergeMethod`). */
+    readonly withoutMethod?: boolean;
 }
 
 /**

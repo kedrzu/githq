@@ -19,7 +19,6 @@ mutation MergePullRequest(
         }
     ) {
         pullRequest {
-            ...PullRequestStatusFields
             mergeCommit {
                 oid
             }

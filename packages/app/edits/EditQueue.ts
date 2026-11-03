@@ -320,7 +320,7 @@ export const EditQueue = defineService({
             const cancel = clock.schedule(() => {
                 current.timers.delete(cancel);
                 overlay.remove(itemId, layer);
-            }, layer.heldFor ?? CONFIRMED_LAYER_MS);
+            }, CONFIRMED_LAYER_MS);
             current.timers.add(cancel);
         }
 

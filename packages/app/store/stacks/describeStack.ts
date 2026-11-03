@@ -4,6 +4,7 @@ import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
 import type { Item, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
+import { mergesWithinRules } from '@/store/mergesWithinRules.js';
 
 import { findStackHolder } from './findStackHolder.js';
 import type { PullRequestStack } from './groupStacks.js';
@@ -372,12 +373,5 @@ function canMerge(pr: PullRequestItem): boolean {
         return false;
     }
 
-    switch (pr.mergeStateStatus) {
-        case 'CLEAN':
-        case 'HAS_HOOKS':
-        case 'UNSTABLE':
-            return true;
-        default:
-            return false;
-    }
+    return mergesWithinRules(pr.mergeStateStatus);
 }
