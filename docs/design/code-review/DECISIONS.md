@@ -323,8 +323,19 @@ commit it to the branch itself.
 blob SHA, which never changes. How that store is cleaned up is for later. Fetching ahead for pull requests waiting on
 your review is an option for later.** (2026-11-02, owner; keeping by SHA agent's proposal, on disk owner's choice)
 
-**Why.** A pull request read once reopens at once, also after a restart (owner chose this over memory only).
-Accepted: the store grows until a clean-up exists.
+Beside the contents, the same database per login keeps what they are found by: each pull request's file list, the
+blob ids of `<commit>:<path>` and the merge bases. It is deleted on sign-out. When GitHub answers `NOT_FOUND` for a pull
+request, which is also its answer to someone who lost access, its kept list goes and its code stops showing; the contents
+stay on disk until sign-out, since a blob may belong to other pull requests. `FORBIDDEN` and a failure to reach GitHub
+keep what is shown. (2026-11-03, owner, after a real pull request of 238 files took 2.9 s to reopen with contents alone)
+
+**Why.** A pull request read once reopens at once, also after a restart (owner chose this over memory only). Issues kept
+in the local copy go on `NOT_FOUND` by the same rule. Accepted: the store grows until a clean-up exists.
+
+> **Checked 2026-11-03:** `Blob.text` truncates near 512 KB (`deps/openssl/openssl/CHANGES.md` in nodejs/node: 928,861 bytes,
+> 511,676 characters, `isTruncated`), so larger blobs come from REST `git/blobs`. A query of many `object(...)` costs 1
+> point. GraphQL has no merge base; `compare/{base}...{head}?per_page=1&page=2` returns it without the files, a fork's head
+> included (kedrzu/githq#80, microsoft/vscode#345559).
 
 **Rejected.**
 
@@ -341,8 +352,16 @@ and dropped frames while scrolling. WebAssembly only where the JavaScript is sho
 virtualized per line, not per file.** (2026-11-02, owner: "we optimise for speed"; the worker candidate is the
 agent's)
 
+The diff runs on the main thread (2026-11-03, owner). Lines absent from the other side are dropped before it, which keeps
+it minimal. Measuring a worker comes back with syntax highlighting.
+
 **Why.** github.com stutters on large pull requests (owner). Copying a file's text to a worker is cheap next to
 diffing and highlighting it; one GitHub client keeps the token, rate-limit handling and caching in one place.
+
+> **Checked 2026-11-03:** kedrzu/githq#80, 250 files, production-like build, headless Chromium: list 0.6 s, first code 3.1 s
+> cold and 0.03 s reopened, diffs 43 ms in all and at most 13 ms a file, scrolling p95 18.8 ms. Worst cases under bun: 25,000
+> rewritten lines 3.3 s, 7 ms with the lines dropped; the same lines reordered still 2.5 s, which only a worker would help.
+> Generated files of that shape collapse ([D8](#d8)).
 
 **Rejected.**
 
@@ -497,7 +516,7 @@ like no change.
 **Keys of the review: D opens it from an opened pull request (the merge section's "Review files" moves from ⇧O,
 which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `}` select, Space collapses a file, /
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
-submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
+submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
 
@@ -538,3 +557,10 @@ missing files with the time they'll come, while edits still go through.** (2026-
 
 Open: the size past which a file is "too large to diff here" (CR67 says 1 MB) is a placeholder; D8 left the threshold
 unset. GitHub's wording in the failure screens (CR67, CR76) is a placeholder for its real messages.
+
+## D36
+
+**Code in a diff shows without ligatures: `=>` and `===` are the characters in the file.** (2026-11-03, owner, on the
+agent's recommendation)
+
+**Why.** A review reads what is in the file; the mockups' JetBrains Mono ligatures draw something that isn't.

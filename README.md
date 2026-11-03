@@ -58,13 +58,15 @@ issues. The design and every decision behind it, with the evidence, are in
 
 githq is a GitHub OAuth App. It asks for three scopes and needs all of them:
 
-- `repo` — read and edit issues and pull requests, private ones included. GitHub has no narrower scope for
-  that, so the consent screen reads as full repository access; githq touches only issues, pull requests and
-  projects.
+- `repo` — read and edit issues and pull requests and read the code they change, private ones included. GitHub
+  has no narrower scope for that, so the consent screen reads as full repository access; githq touches only issues,
+  pull requests and the code they change, and projects.
 - `project` — read and edit GitHub Projects.
 - `read:org` — list your organizations, to filter by owner and to tell which one hides its private data.
 
 Your token stays in your browser's `localStorage`, and your data goes from the browser to `api.github.com`.
+When you review a pull request, the contents of the files it changes stay in your browser until you sign out, so
+that it reopens at once.
 The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
 Cloudflare's own request logs still record that a request happened. The app has no analytics. You can revoke
 access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
@@ -117,8 +119,9 @@ restart when it's ready.
   sign in at every launch.
 
 **Uninstalling:** on macOS, move githq from Applications to the Bin. On Windows, use Settings → Apps → Installed
-apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`). Signing out first removes the token from your keychain. Otherwise, delete the
-`dev.githq.desktop` entry from it yourself.
+apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`). Signing out first removes the token from your keychain and the copy githq keeps on your disk, including
+the contents of files from pull requests you reviewed. Otherwise, delete the `dev.githq.desktop` entry from the keychain
+yourself, and the copy stays in the app's data folder until you delete it.
 
 ## Code signing policy
 
@@ -144,7 +147,7 @@ Members of these roles use multi-factor authentication on GitHub and on any sign
 
 **Privacy.** The desktop app talks only to GitHub, and never to githq's own servers or anyone else's:
 
-- `api.github.com`, for your issues, pull requests and projects, and for any change you make, on your behalf
+- `api.github.com`, for your issues, pull requests, the code they change and projects, and for any change you make, on your behalf
   with your token;
 - `github.com`, to sign in with a device code, and to check for and download updates from this repository's
   GitHub Releases;

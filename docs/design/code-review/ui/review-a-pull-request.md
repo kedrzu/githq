@@ -207,8 +207,6 @@ range with a suggestion CR73, reply and resolve CR74, submitting CR75, submittin
 
 Still open, not settled by the screens:
 
-- **The keys** D (open the review), N ⇧N (threads), C (comment), ⇧S (submit) and ⌘G (suggestion) are the agent's
-  (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
 - **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
 - **Wording left as it was:** lists still say "Your draft review · 3 comments unsent" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72). The owner has reworded the toolbar and named the sidebar entry "Draft reviews".
