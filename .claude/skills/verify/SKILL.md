@@ -31,7 +31,7 @@ a green codebase.
 |TypeScript (packages)|`bun run build`|always (incremental)|
 |TypeScript (app, incl. `.vue`, stories, specs)|`bun run typecheck`|anything under `packages/app`|
 |Lint|`bun run lint:check`|always (whole repo, fast)|
-|Format|`bunx oxfmt --disable-nested-config <changed files>` and `bunx nzyme format-markdown <changed .md>`|always|
+|Format|`bunx oxfmt --disable-nested-config <changed files>`; Markdown is formatted by ESLint: `bunx eslint --fix <changed .md>`|always|
 |Unit / integration tests|`TZ=UTC bun test --timeout 10000 --path-ignore-patterns='**/dist/**' ./<changed package or test file>` — always with `./`: a bare `packages/x` is a name filter that scans the whole tree|a `*.test.ts` or the code it covers changed|
 |Component tests|`bun --cwd packages/app test:stories -- <changed component dir or file>`|a component, its story or spec changed|
 |E2E|`bun run e2e <spec files, relative to packages/e2e>`; one test by title: `bun run e2e -g "<title>"`|a screen or flow an e2e spec drives changed, or the harness or the GitHub mock|
@@ -48,15 +48,16 @@ through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts`
 Once, when all work is believed complete. Every step, in order, nothing skipped; zero errors each.
 
 A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` files
-and `githq.pen`, nothing can break but the format, so step 5 alone is the full protocol. The step still counts:
-unformatted design docs reaching `main` have failed the deploy's Format step and blocked every deploy after them.
+and `githq.pen`, nothing can break but the format, so `bunx eslint --fix .` (Markdown is formatted by ESLint) alone is
+the full protocol. It still counts: unformatted design docs reaching `main` fail the deploy's Lint step and block every
+deploy after them.
 
 |#|Step|Command|Must|
 |-|-|-|-|
 |1|Codegen|`bun run codegen`|regenerates `*.loc.ts`, the GraphQL `generated.gen.ts` and tsconfigs cleanly; `git status` shows no unexpected diff in generated files|
 |2|TypeScript|`bun run build`|zero errors|
 |3|App typecheck|`bun nx run-many -t typecheck --exclude='@nzyme/*' --skip-nx-cache`|zero errors|
-|4|Lint|`bun run lint`|zero errors (applies fixes)|
+|4|Lint|`bun run lint`|zero errors (applies fixes, Markdown formatting included)|
 |5|Format|`bun run format`, then `bun run format:check`|applied, check clean|
 |6|Tests|`bun run tests`|zero failures|
 |7|Component tests|`bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache`|zero failures (stories + specs + a11y)|
