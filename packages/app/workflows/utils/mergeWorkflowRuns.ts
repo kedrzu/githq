@@ -24,7 +24,8 @@ export interface MergeWorkflowRunsParams {
  * the latest {@link WORKFLOW_RUNS_KEPT} plus each group's latest run with a verdict, so neither a row of cancelled runs
  * nor a busy ref elsewhere can cut off the failure that keeps a group broken (actions D1). What lies between goes: a
  * break whose start is cut off with it says so ("3h+"), and no group's state changes. A run re-run keeps its id, so its
- * new copy says nothing of how it ended: what the kept copy concluded goes along until it finishes again (actions W4j).
+ * new copy says nothing of how it ended: what the kept copy concluded goes along until the run has a verdict of its own (actions W4j): a cancelled re-run changes
+ * nothing.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
@@ -45,7 +46,7 @@ export function mergeWorkflowRuns(params: MergeWorkflowRunsParams): GitHubWorkfl
 }
 
 function withConclusionBeforeRerun(run: GitHubWorkflowRun, kept: GitHubWorkflowRun | undefined): GitHubWorkflowRun {
-    if (!kept || run.status === 'completed') {
+    if (!kept || (run.status === 'completed' && getRunVerdict(run) !== null)) {
         return run;
     }
 

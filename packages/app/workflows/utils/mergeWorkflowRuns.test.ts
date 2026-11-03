@@ -3,6 +3,7 @@ import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { expect, test } from 'bun:test';
 
 import type { WorkflowRefGroup } from '../WorkflowTypes.js';
+import { getStandingVerdict } from './getStandingVerdict.js';
 import { mergeWorkflowRuns, WORKFLOW_RUNS_KEPT } from './mergeWorkflowRuns.js';
 
 const MAIN: WorkflowRefGroup = { kind: 'defaultBranch', branch: 'main' };
@@ -100,6 +101,38 @@ test('W4j: a run re-run keeps what it concluded until it finishes again, its str
     const finished = mergeWorkflowRuns({ stored: stillGoing, read: [run(1, 'success', 1)], groups: COUNTED });
     expect(finished[0]).toMatchObject({ conclusion: 'success' });
     expect(finished[0]?.conclusionBeforeRerun).toBeUndefined();
+});
+
+test('W4j: a re-run cancelled changes nothing: what the run concluded before stands, through later reads too', () => {
+    const passedBefore = run(1, 'success', 1);
+    const failed = run(2, 'failure', 2);
+    const rerunning = mergeWorkflowRuns({
+        stored: [failed, passedBefore],
+        read: [run(2, null, 2, { status: 'in_progress' })],
+        groups: COUNTED,
+    });
+
+    const cancelled = mergeWorkflowRuns({ stored: rerunning, read: [run(2, 'cancelled', 2)], groups: COUNTED });
+    expect(cancelled[0]).toMatchObject({ conclusion: 'cancelled', conclusionBeforeRerun: 'failure' });
+    expect(cancelled[0] && getStandingVerdict(cancelled[0])).toBe('failed');
+
+    const readAgain = mergeWorkflowRuns({ stored: cancelled, read: [run(2, 'cancelled', 2)], groups: COUNTED });
+    expect(readAgain[0] && getStandingVerdict(readAgain[0])).toBe('failed');
+
+    const rerunAndPassed = mergeWorkflowRuns({ stored: readAgain, read: [run(2, 'success', 2)], groups: COUNTED });
+    expect(rerunAndPassed[0]?.conclusionBeforeRerun).toBeUndefined();
+    expect(rerunAndPassed[0] && getStandingVerdict(rerunAndPassed[0])).toBe('passed');
+});
+
+test('a run cancelled with nothing before it has nothing to remember', () => {
+    const merged = mergeWorkflowRuns({
+        stored: [run(1, null, 1, { status: 'in_progress' })],
+        read: [run(1, 'cancelled', 1)],
+        groups: COUNTED,
+    });
+
+    expect(merged[0]?.conclusionBeforeRerun).toBeUndefined();
+    expect(merged[0] && getStandingVerdict(merged[0])).toBeNull();
 });
 
 function run(id: number, conclusion: string | null, hour: number, overrides: Partial<GitHubWorkflowRun> = {}) {
