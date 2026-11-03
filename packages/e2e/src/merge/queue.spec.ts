@@ -44,7 +44,7 @@ test('PM14: ⌘↵ on a queue branch adds it with the head commit alone, never j
     await page.keyboard.press('Shift+M');
     await expect(panel.root).toContainText('Ready for the queue');
     await expect(panel.line('Method')).toContainText('Squash');
-    await expect(panel.primary).toHaveText('Add to queue');
+    await expect(panel.primary).toHaveAccessibleName('Add to queue');
     await page.keyboard.press('ControlOrMeta+Enter');
 
     await expect(panel.root).toBeHidden();
@@ -103,7 +103,7 @@ test('PM16: while it waits, a status poll moves its place: the queue moves no up
     await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Add to queue');
+    await expect(panel.primary).toHaveAccessibleName('Add to queue');
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     const row = myWork.row(FIRST_TITLE);
@@ -130,7 +130,7 @@ test('PM15: ⇧Q takes it out of the queue: the row stops saying so and it can b
     await expect(panel.takeOutButton).toBeVisible();
     await page.keyboard.press('Shift+Q');
 
-    await expect(panel.primary).toHaveText('Add to queue');
+    await expect(panel.primary).toHaveAccessibleName('Add to queue');
     expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: sample.first }]);
     expect(sample.world.queuePositionOf(sample.first)).toBeNull();
     await page.keyboard.press('Escape');
@@ -148,7 +148,7 @@ test('SP53, SP54: ⌘↵ on a stack sends the head commit alone to its top; each
     await selectRow(myWork, STACK);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await page.keyboard.press('ControlOrMeta+Enter');
 
     await expect(panel.root).toBeHidden();
@@ -179,7 +179,7 @@ test('SP54: taken out from the panel, a stack goes through its first one, whole,
     const panel = new MergePanelHarness(page);
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     await expect.poll(() => world.queuePositionOf(top)).toBe(2);
@@ -190,7 +190,7 @@ test('SP54: taken out from the panel, a stack goes through its first one, whole,
     const readsBefore = getOperationCalls(github, 'PullRequestStacks').length;
     await page.keyboard.press('Shift+Q');
 
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await expect(panel.stackMembers).not.toHaveText([/1st/, /2nd/]);
     expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: first }]);
     expect(getOperationCalls(github, 'PullRequestStacks').length).toBeGreaterThan(readsBefore);
@@ -202,7 +202,7 @@ test('SP54: taken out from the panel, a stack goes through its first one, whole,
     await expect(panel.root).toBeHidden();
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     await expect.poll(() => world.queuePositionOf(first)).toBe(1);
@@ -219,7 +219,7 @@ test('SP54: a stack whose entries went elsewhere reads as any stack, whyever the
     const panel = new MergePanelHarness(page);
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     await expect.poll(() => world.queuePositionOf(top)).toBe(2);
@@ -234,7 +234,7 @@ test('SP54: a stack whose entries went elsewhere reads as any stack, whyever the
     await selectRow(myWork, STACK);
     await page.keyboard.press('Shift+M');
 
-    await expect(panel.primary).toHaveText('Add all 2 to the queue');
+    await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await expect(panel.takeOutButton).toBeHidden();
     expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([]);
     await page.keyboard.press('ControlOrMeta+Enter');
