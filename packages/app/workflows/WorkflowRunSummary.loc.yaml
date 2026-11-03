@@ -15,5 +15,5 @@ daysAgo:
   en:
     one: '{when} · {count} day ago'
     many: '{when} · {count} days ago'
-attempt:
-  en: ' · attempt {attempt}'
+eventAttempt:
+  en: '{event} · attempt {attempt}'

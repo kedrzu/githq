@@ -1,4 +1,4 @@
-<!-- What a run is (actions `Workflow / Run summary`): its state, the ref it ran on, what started it, its commit, when and how long it took, and which attempt past the first — or, while it goes, since when and whether its workflow stays broken. All of it from the local copy at once; the commit's whole title once the run itself is read. Placeholders only while nothing at all is known of the run. -->
+<!-- What a run is (actions `Workflow / Run summary`): its state, the ref it ran on, what started it and which attempt past the first, its commit, and when and how long it took — or, while it goes, since when and whether its workflow stays broken. All of it from the local copy at once; the commit's whole title once the run itself is read. Placeholders only while nothing at all is known of the run. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -72,10 +72,16 @@ const when = computed(() => {
   const tail = description.value?.tail;
   return tail?.kind === 'duration' ? t(l.tookWhen, { when: dated, duration: formatDuration(tail.ms) }) : dated;
 });
-/** " · attempt 2"; nothing on the first. */
-const attempt = computed(() => {
-  const runAttempt = props.run?.runAttempt;
-  return runAttempt != null && runAttempt > 1 ? t(l.attempt, { attempt: runAttempt }) : '';
+/** "push · attempt 2"; only the event on the first. */
+const event = computed(() => {
+  const { run } = props;
+  if (!run) {
+    return '';
+  }
+
+  return run.runAttempt != null && run.runAttempt > 1
+    ? t(l.eventAttempt, { event: run.event, attempt: run.runAttempt })
+    : run.event;
 });
 </script>
 
@@ -96,12 +102,12 @@ const attempt = computed(() => {
         :name="gitRef.name"
         :kind="gitRef.kind"
       />
-      <span :class="css.workflowRunSummary_event">{{ run.event }}</span>
+      <span :class="css.workflowRunSummary_event">{{ event }}</span>
       <span :class="css.workflowRunSummary_commit">
         <span :class="css.workflowRunSummary_sha">{{ run.headSha.slice(0, SHORT_SHA) }}</span>
         <span :class="css.workflowRunSummary_title">{{ commitTitle }}</span>
       </span>
-      <span :class="css.workflowRunSummary_when">{{ when }}{{ attempt }}</span>
+      <span :class="css.workflowRunSummary_when">{{ when }}</span>
     </template>
     <span
       v-else

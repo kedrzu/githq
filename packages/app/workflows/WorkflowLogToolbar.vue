@@ -1,5 +1,14 @@
-<!-- The log pane's head (actions W4a): the job and how far its log is, then whatever the log viewer puts at its end. -->
+<!-- The log pane's head (actions W4a): the job and how far its log is, whatever the log viewer puts next to them, and the toggles of how a log shows, in every state of the pane as they stay on for the next log (W4e, W4g, W4i, W4j): W wraps, T shows times. -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+
+import { useCommands } from '@/commands/useCommands.js';
+import Kbd from '@/components/Kbd.vue';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
+
+import * as l from './WorkflowLogToolbar.loc.js';
+
 defineProps<{
   /** The job's name; `null` while none is known. */
   job: string | null;
@@ -7,10 +16,55 @@ defineProps<{
   size: string;
 }>();
 
+const emit = defineEmits<{
+  /** A toggle was pressed, and has given up the focus. */
+  pressed: [];
+}>();
+
 defineSlots<{
-  /** At the end of the head. */
+  /** Before the toggles. */
   default?(): unknown;
 }>();
+
+const t = useTranslate();
+const preferences = useService(LocalPreferences);
+
+const wrap = preferences.logWrap;
+const showTimes = preferences.logTimes;
+
+useCommands(() => [
+  {
+    id: 'workflowLog.wrap',
+    title: t(l.wrapLines),
+    section: 'view',
+    key: 'W',
+    run: toggleWrap,
+  },
+  {
+    id: 'workflowLog.times',
+    title: t(l.showTimes),
+    section: 'view',
+    key: 'T',
+    run: toggleTimes,
+  },
+]);
+
+function toggleWrap() {
+  wrap.value = !wrap.value;
+}
+
+function toggleTimes() {
+  showTimes.value = !showTimes.value;
+}
+
+/** A button pressed gives the keys back: Enter and Space do what they do on the page rather than pressing it again. */
+function giveKeysBack(event: MouseEvent) {
+  if (event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.blur();
+  }
+
+  emit('pressed');
+}
 </script>
 
 <template>
@@ -27,6 +81,34 @@ defineSlots<{
     >
     <span :class="css.workflowLogToolbar_spacer" />
     <slot />
+    <button
+      type="button"
+      :class="[css.workflowLogToolbar_toggle, wrap && css.workflowLogToolbar_toggle_on]"
+      :aria-pressed="wrap"
+      aria-keyshortcuts="W"
+      tid="workflow-log-wrap"
+      @click="
+        toggleWrap();
+        giveKeysBack($event);
+      "
+    >
+      {{ t(l.wrap) }}
+      <Kbd keys="W" />
+    </button>
+    <button
+      type="button"
+      :class="[css.workflowLogToolbar_toggle, showTimes && css.workflowLogToolbar_toggle_on]"
+      :aria-pressed="showTimes"
+      aria-keyshortcuts="T"
+      tid="workflow-log-times"
+      @click="
+        toggleTimes();
+        giveKeysBack($event);
+      "
+    >
+      {{ t(l.times) }}
+      <Kbd keys="T" />
+    </button>
   </div>
 </template>
 
@@ -57,5 +139,22 @@ defineSlots<{
 
 .workflowLogToolbar_spacer {
   flex: 1;
+}
+
+.workflowLogToolbar_toggle {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-6;
+  align-items: center;
+  padding: 0;
+  font: inherit;
+  color: $color-fg-dim;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+.workflowLogToolbar_toggle_on {
+  color: $color-fg;
 }
 </style>

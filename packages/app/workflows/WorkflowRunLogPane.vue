@@ -1,4 +1,4 @@
-<!-- A run's log pane (actions W4a): the job and how far its log is on top, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran. A failure stays in here: the jobs and every other job's log keep working. -->
+<!-- A run's log pane (actions W4a): the job, how far its log is and the toggles of how it shows on top, whatever the log's state, the job's log (`WorkflowJobLog`) — or what stands in for it — and the key hints along the bottom, those that lead somewhere: none past retention, none for errors with no error marker. In its place: placeholder lines while it is read (W4e); the job still running, its log landing here by itself once it finishes (W4j); past GitHub's retention, with the failed step named (W4g); a read that failed, with GitHub's real answer and Enter to try again (W4i); a job that never ran. A failure stays in here: the jobs and every other job's log keep working. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -223,8 +223,10 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       </WorkflowEmptyState>
     </div>
     <div
+      v-if="pane.kind !== 'gone'"
       :class="css.workflowRunLogPane_keys"
       aria-hidden="true"
+      tid="workflow-log-keys"
     >
       <span
         v-if="pane.kind === 'failed'"
@@ -251,7 +253,10 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
         {{ t(l.job) }}
       </span>
       <template v-if="pane.kind === 'ready'">
-        <span :class="css.workflowRunLogPane_hint">
+        <span
+          v-if="pane.log.hasErrorMarker"
+          :class="css.workflowRunLogPane_hint"
+        >
           <Kbd keys="E" />
           {{ t(l.error) }}
         </span>

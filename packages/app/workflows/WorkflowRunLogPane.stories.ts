@@ -49,6 +49,20 @@ type Story = StoryObj<typeof meta>;
 /** W4a: the job's log, with the keys it answers to along the bottom. */
 export const Ready: Story = {};
 
+/** W4h: no error marker: the keys say nothing of errors. */
+export const ReadyNoMarker: Story = {
+    args: {
+        pane: {
+            kind: 'ready',
+            job: BUILD_JOB,
+            log: parseJobLog(
+                [`${stepStart(1)} Runner image`, `${stepStart(2)} building the bundle`].join('\n'),
+                BUILD_STEPS,
+            ),
+        },
+    },
+};
+
 /** W4e: no job known yet: placeholder lines. */
 export const LoadingNoJob: Story = { args: { pane: { kind: 'loading', job: null } } };
 
