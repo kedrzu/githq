@@ -21,4 +21,7 @@ skippedTime:
 stepFailed:
   en: 'Failed step:'
 matches:
-  en: matches
+  plural: count
+  en:
+    one: match
+    many: matches

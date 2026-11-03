@@ -155,7 +155,9 @@ function describeStepTime(step: GitHubWorkflowStep) {
             :class="css.workflowRunJobs_matches"
             tid="workflow-job-matches"
             >{{ NUMBER_FORMAT.format(matches.lines.length)
-            }}<span :class="css.workflowRunJobs_hidden"> {{ t(l.matches) }}</span></span
+            }}<span :class="css.workflowRunJobs_hidden"
+              >{{ ' ' }}{{ t(l.matches, { count: matches.lines.length }) }}</span
+            ></span
           >
           <span :class="css.workflowRunJobs_jobTime">{{ describeJobTime(job) }}</span>
         </button>
@@ -198,7 +200,9 @@ function describeStepTime(step: GitHubWorkflowStep) {
               :class="css.workflowRunJobs_matches"
               tid="workflow-step-matches"
               >{{ NUMBER_FORMAT.format(matches.steps.get(step.number) ?? 0)
-              }}<span :class="css.workflowRunJobs_hidden"> {{ t(l.matches) }}</span></span
+              }}<span :class="css.workflowRunJobs_hidden"
+                >{{ ' ' }}{{ t(l.matches, { count: matches.steps.get(step.number) ?? 0 }) }}</span
+              ></span
             >
             <span
               v-else

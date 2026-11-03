@@ -62,6 +62,20 @@ export const Searching: Story = {
     },
 };
 
+/** One match, on the job and on its step: a screen reader says "1 match". */
+export const OneMatch: Story = {
+    args: {
+        matches: {
+            length: 7,
+            lines: [0],
+            starts: [0],
+            lineCount: 1,
+            capped: false,
+            steps: new Map([[2, 1]]),
+        },
+    },
+};
+
 /** W4e: placeholder rows while the jobs are on their way. */
 export const Loading: Story = {
     args: { jobs: [], counts: countsOf({}), selectedId: null, loading: true },
