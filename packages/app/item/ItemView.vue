@@ -11,10 +11,7 @@ import {
   CircleCheckBig,
   CircleDot,
   CircleSlash,
-  GitMerge,
-  GitPullRequest,
   GitPullRequestClosed,
-  GitPullRequestDraft,
   ChevronDown,
   FileDiff,
   GitBranch,
@@ -60,6 +57,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
+import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
@@ -120,6 +118,13 @@ const emit = defineEmits<{
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
 }>();
+
+const PULL_REQUEST_STATE_TEXTS = {
+  open: l.open,
+  draft: l.draft,
+  done: l.merged,
+  closed: l.closedUnmerged,
+};
 
 const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
   panel: PanelRight,
@@ -210,17 +215,8 @@ const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string
     }
   }
 
-  if (item.merged) {
-    return { icon: GitMerge, tone: 'done', text: t(l.merged) };
-  }
-
-  if (item.state !== 'OPEN') {
-    return { icon: GitPullRequestClosed, tone: 'closed', text: t(l.closedUnmerged) };
-  }
-
-  return item.isDraft
-    ? { icon: GitPullRequestDraft, tone: 'draft', text: t(l.draft) }
-    : { icon: GitPullRequest, tone: 'open', text: t(l.open) };
+  const { icon, tone } = getPullRequestStateLook(item);
+  return { icon, tone, text: t(PULL_REQUEST_STATE_TEXTS[tone]) };
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);

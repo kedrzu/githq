@@ -1,0 +1,8 @@
+open:
+  en: Open pull request
+draft:
+  en: Draft pull request
+merged:
+  en: Merged pull request
+closed:
+  en: Closed pull request

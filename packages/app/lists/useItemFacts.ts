@@ -8,9 +8,6 @@ import {
     CircleSlash,
     CircleX,
     Eye,
-    GitMerge,
-    GitPullRequest,
-    GitPullRequestClosed,
     GitPullRequestDraft,
     Hourglass,
     Loader,
@@ -23,6 +20,7 @@ import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
@@ -154,17 +152,8 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
                 : { icon: CircleSlash, label: t(l.notPlannedIssue), tone: 'draft' };
         }
 
-        if (listed.merged) {
-            return { icon: GitMerge, label: t(l.mergedPullRequest), tone: 'done' };
-        }
-
-        if (listed.state !== 'OPEN') {
-            return { icon: GitPullRequestClosed, label: t(l.closedPullRequest), tone: 'closed' };
-        }
-
-        return listed.isDraft
-            ? { icon: GitPullRequestDraft, label: t(l.draftPullRequest), tone: 'draft' }
-            : { icon: GitPullRequest, label: t(l.openPullRequest), tone: 'open' };
+        const { icon, tone, label } = getPullRequestStateLook(listed);
+        return { icon, tone, label: t(label) };
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {

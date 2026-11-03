@@ -1,17 +1,7 @@
 <!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), and github.com. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import {
-  ArrowLeft,
-  ChevronDown,
-  Columns2,
-  Github,
-  GitMerge,
-  GitPullRequest,
-  GitPullRequestClosed,
-  GitPullRequestDraft,
-  Rows2,
-} from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Columns2, Github, GitPullRequest, Rows2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -22,6 +12,7 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import Switch from '@/components/Switch.vue';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { getPullRequestStateLook } from '@/utils/getPullRequestStateLook.js';
 
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import * as l from './ReviewToolbar.loc.js';
@@ -44,19 +35,13 @@ const t = useTranslate();
 
 const state = computed(() => {
   const { item } = props;
+  // Before its row is known it looks open, and says only what it is.
   if (item?.kind !== 'pullRequest') {
-    return { icon: GitPullRequest, tone: 'open' };
+    return { icon: GitPullRequest, tone: 'open', label: t(l.pullRequest) };
   }
 
-  if (item.merged) {
-    return { icon: GitMerge, tone: 'merged' };
-  }
-
-  if (item.state !== 'OPEN') {
-    return { icon: GitPullRequestClosed, tone: 'closed' };
-  }
-
-  return item.isDraft ? { icon: GitPullRequestDraft, tone: 'draft' } : { icon: GitPullRequest, tone: 'open' };
+  const { icon, tone, label } = getPullRequestStateLook(item);
+  return { icon, tone, label: t(label) };
 });
 const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   { value: 'split', label: t(l.split), icon: Columns2 },
@@ -74,7 +59,8 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
     <component
       :is="state.icon"
       :class="[css.reviewToolbar_state, css[`reviewToolbar_state_${state.tone}`]]"
-      aria-hidden="true"
+      role="img"
+      :aria-label="state.label"
     />
     <span :class="css.reviewToolbar_repository">{{ reference.owner }}/{{ reference.name }}</span>
     <span :class="css.reviewToolbar_number">#{{ reference.number }}</span>
@@ -155,7 +141,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   color: $color-green;
 }
 
-.reviewToolbar_state_merged {
+.reviewToolbar_state_done {
   color: $color-purple;
 }
 

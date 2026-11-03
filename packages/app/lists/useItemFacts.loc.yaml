@@ -4,14 +4,6 @@ closedIssue:
   en: Closed issue
 notPlannedIssue:
   en: Closed issue, not planned
-openPullRequest:
-  en: Open pull request
-draftPullRequest:
-  en: Draft pull request
-mergedPullRequest:
-  en: Merged pull request
-closedPullRequest:
-  en: Closed pull request
 checksFailing:
   plural: count
   en:

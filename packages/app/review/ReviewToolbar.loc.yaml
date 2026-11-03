@@ -1,5 +1,7 @@
 back:
   en: Back
+pullRequest:
+  en: Pull request
 review:
   en: Review
 viewOptions:
