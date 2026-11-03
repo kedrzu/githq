@@ -42,6 +42,7 @@
         "@nzyme/vue-i18n": "workspace:*",
         "@nzyme/vue-ioc": "workspace:*",
         "@nzyme/vue-utils": "workspace:*",
+        "fast-myers-diff": "3.2.0",
         "idb": "8.0.4",
         "lucide-vue-next": "1.0.0",
         "nuxt": "4.4.8",

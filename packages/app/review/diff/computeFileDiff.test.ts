@@ -1,0 +1,127 @@
+/// <reference types="bun" />
+import { expect, test } from 'bun:test';
+
+import { createSeededRandom } from '@/testing/createSeededRandom.js';
+
+import { computeFileDiff } from './computeFileDiff.js';
+
+const exact = { ignoreWhitespace: false };
+const ignoring = { ignoreWhitespace: true };
+
+test('a final line without a newline is kept; a trailing newline makes no extra line, and blank lines stay', () => {
+    expect(computeFileDiff('a\nb', null, exact).before).toEqual(['a', 'b']);
+    expect(computeFileDiff('a\nb\n', null, exact).before).toEqual(['a', 'b']);
+    expect(computeFileDiff('\n', null, exact).before).toEqual(['']);
+    expect(computeFileDiff('a\n\n', null, exact).before).toEqual(['a', '']);
+});
+
+test('the change blocks are the changed ranges in both versions', () => {
+    const diff = computeFileDiff('a\nb\nc\nd\ne\nf\n', 'a\nB\nc\nd\nf\nnew\n', exact);
+
+    expect(diff.after).toEqual(['a', 'B', 'c', 'd', 'f', 'new']);
+    expect(diff.blocks).toEqual([
+        { beforeStart: 1, beforeEnd: 2, afterStart: 1, afterEnd: 2 },
+        { beforeStart: 4, beforeEnd: 5, afterStart: 4, afterEnd: 4 },
+        { beforeStart: 6, beforeEnd: 6, afterStart: 5, afterEnd: 6 },
+    ]);
+});
+
+test('with whitespace hidden, a line differing only in whitespace is no change and keeps its real text', () => {
+    const before = 'if (a) {\n  call( b );\n}\n';
+    const after = 'if (a) {\n\tcall(b);\n}\n';
+
+    expect(computeFileDiff(before, after, exact).blocks).toHaveLength(1);
+
+    const diff = computeFileDiff(before, after, ignoring);
+    expect(diff.blocks).toEqual([]);
+    expect(diff.before[1]).toBe('  call( b );');
+    expect(diff.after[1]).toBe('\tcall(b);');
+});
+
+test('with whitespace hidden, a real change next to a whitespace change is still a change', () => {
+    const diff = computeFileDiff('  one\ntwo\nthree\n', 'one\nTWO\nthree\n', ignoring);
+
+    expect(diff.blocks).toEqual([{ beforeStart: 1, beforeEnd: 2, afterStart: 1, afterEnd: 2 }]);
+});
+
+test('an added file is all added, a deleted file all deleted', () => {
+    expect(computeFileDiff(null, 'a\nb', exact)).toEqual({
+        before: [],
+        after: ['a', 'b'],
+        blocks: [{ beforeStart: 0, beforeEnd: 0, afterStart: 0, afterEnd: 2 }],
+    });
+    expect(computeFileDiff('a\nb\n', null, exact)).toEqual({
+        before: ['a', 'b'],
+        after: [],
+        blocks: [{ beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 0 }],
+    });
+});
+
+test('empty files have no lines and no change', () => {
+    for (const [before, after] of [
+        [null, null],
+        ['', ''],
+        ['', null],
+        [null, ''],
+    ] as const) {
+        expect(computeFileDiff(before, after, exact)).toEqual({ before: [], after: [], blocks: [] });
+    }
+});
+
+test('an added final newline is no change', () => {
+    expect(computeFileDiff('a\nb', 'a\nb\n', exact).blocks).toEqual([]);
+});
+
+test('CRLF on both sides is no change and shows in no line', () => {
+    const diff = computeFileDiff('a\r\nb\r\n', 'a\r\nb\r\n', exact);
+
+    expect(diff).toEqual({ before: ['a', 'b'], after: ['a', 'b'], blocks: [] });
+});
+
+test('CRLF on both sides diffs the lines that changed', () => {
+    const diff = computeFileDiff('a\r\nb\r\nc\r\n', 'a\r\nB\r\nc\r\n', exact);
+
+    expect(diff.after).toEqual(['a', 'B', 'c']);
+    expect(diff.blocks).toEqual([{ beforeStart: 1, beforeEnd: 2, afterStart: 1, afterEnd: 2 }]);
+});
+
+test('line endings converted to LF are a change of every line, unless whitespace is hidden', () => {
+    expect(computeFileDiff('a\r\nb\r\n', 'a\nb\n', exact).blocks).toEqual([
+        { beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 2 },
+    ]);
+    expect(computeFileDiff('a\r\nb\r\n', 'a\nb\n', ignoring).blocks).toEqual([]);
+});
+
+test('on random files, the lines between the blocks correspond, and the blocks never touch', () => {
+    const random = createSeededRandom(1);
+    for (let round = 0; round < 500; round++) {
+        const options = { ignoreWhitespace: round % 2 === 0 };
+        const before = randomLines(random);
+        const after = randomLines(random);
+        const diff = computeFileDiff(before.join('\n'), after.join('\n'), options);
+        const compared = (line: string) => (options.ignoreWhitespace ? line.replace(/\s/g, '') : line);
+
+        let beforeAt = 0;
+        let afterAt = 0;
+        for (const [index, block] of diff.blocks.entries()) {
+            expect(diff.before.slice(beforeAt, block.beforeStart).map(compared)).toEqual(
+                diff.after.slice(afterAt, block.afterStart).map(compared),
+            );
+            // Touching blocks would break the pairing of deleted and added lines in a split row.
+            expect(index === 0 || block.beforeStart > beforeAt).toBe(true);
+            beforeAt = block.beforeEnd;
+            afterAt = block.afterEnd;
+        }
+
+        expect(diff.before.slice(beforeAt).map(compared)).toEqual(diff.after.slice(afterAt).map(compared));
+    }
+});
+
+/** Lines that often repeat and differ only in whitespace, none blank, so that joining them gives back exactly these lines. */
+function randomLines(random: () => number): string[] {
+    const variants = ['a', ' a', 'a ', 'b', '\tb', 'c d', 'cd'];
+    return Array.from(
+        { length: Math.floor(random() * 30) },
+        () => variants[Math.floor(random() * variants.length)] ?? 'a',
+    );
+}
