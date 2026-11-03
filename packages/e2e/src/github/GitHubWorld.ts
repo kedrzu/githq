@@ -32,7 +32,12 @@ import { escapeHtml } from '../utils/escapeHtml.js';
 import { etagOf } from '../utils/etagOf.js';
 
 import { answerRepositoryActions } from './answerRepositoryActions.js';
-import type { GitHubActionsRun, GitHubActionsWorkflow } from './answerRepositoryActions.js';
+import type {
+    GitHubActionsJob,
+    GitHubActionsLog,
+    GitHubActionsRun,
+    GitHubActionsWorkflow,
+} from './answerRepositoryActions.js';
 import { GitHubPartialAnswer } from './GitHubMock.js';
 import type { GitHubGraphQLAnswer, GitHubMock, GitHubOperationData, GitHubSearchHit } from './GitHubMock.js';
 
@@ -207,6 +212,22 @@ export interface GitHubWorldRunParams {
     readonly event?: string;
 }
 
+/** A job of a run ({@link GitHubWorld.runJobs}). */
+export interface GitHubWorldJobParams {
+    readonly name: string;
+    /** `success`, `failure`, …; `null` while it runs. */
+    readonly conclusion: string | null;
+    /** Its steps, numbered in order and a second apart; a job without any by default. */
+    readonly steps?: readonly GitHubWorldStepParams[];
+}
+
+/** A step of a job ({@link GitHubWorldJobParams}). */
+export interface GitHubWorldStepParams {
+    readonly name: string;
+    /** `success`, `failure`, `skipped`, …; `null` while it runs. */
+    readonly conclusion: string | null;
+}
+
 /** An organisation the viewer belongs to ({@link GitHubWorld.organization}). */
 export interface GitHubWorldOrganizationParams {
     /**
@@ -314,6 +335,8 @@ interface WorldRepository {
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
     tags: string[];
+    jobs: Map<number, readonly GitHubActionsJob[]>;
+    logs: Map<number, GitHubActionsLog>;
 }
 
 interface WorldProject {
@@ -501,6 +524,7 @@ export class GitHubWorld {
     private readonly received: GitHubWorldEdit[] = [];
     private heldEdits: Promise<void> | null = null;
     private nextWorkflowId = 1;
+    private nextJobId = 1;
     private nextRunId = 1;
     /** The mock it answers for, once installed: a repository or project added later is answered too. */
     private github: GitHubMock | null = null;
@@ -546,16 +570,17 @@ export class GitHubWorld {
         return workflow.id;
     }
 
-    /** A run of the repository's workflow `name`, as GitHub records one between two polls. */
-    workflowRun(nameWithOwner: string, name: string, run: GitHubWorldRunParams): void {
+    /** A run of the repository's workflow `name`, as GitHub records one between two polls. Returns the run's id. */
+    workflowRun(nameWithOwner: string, name: string, run: GitHubWorldRunParams): number {
         const repository = this.getRepository(nameWithOwner);
         const workflow = repository.workflows.find(candidate => candidate.name === name);
         if (!workflow) {
             throw new Error(`No workflow ${name} in ${nameWithOwner}`);
         }
 
+        const id = this.nextRunId++;
         repository.runs.push({
-            id: this.nextRunId++,
+            id,
             workflowId: workflow.id,
             headBranch: run.branch ?? repository.defaultBranch,
             event: run.event ?? 'push',
@@ -563,6 +588,49 @@ export class GitHubWorld {
             conclusion: run.conclusion,
             createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
         });
+        return id;
+    }
+
+    /**
+     * Gives a run of the repository these jobs, in place of those it had; a run without any answers an empty list.
+     * Returns the jobs' ids, for {@link jobLog}.
+     */
+    runJobs(nameWithOwner: string, runId: number, jobs: readonly GitHubWorldJobParams[]): readonly number[] {
+        const repository = this.getRepository(nameWithOwner);
+        const run = repository.runs.find(candidate => candidate.id === runId);
+        if (!run) {
+            throw new Error(`No run ${runId} in ${nameWithOwner}`);
+        }
+
+        const started = Date.parse(run.createdAt);
+        const answered = jobs.map(job => this.toActionsJob(job, started));
+        repository.jobs.set(runId, answered);
+        return answered.map(job => job.id);
+    }
+
+    /** What the job's log answers: its text, plain as GitHub keeps it, or an error status (410 past retention, 502). */
+    jobLog(nameWithOwner: string, jobId: number, log: GitHubActionsLog): void {
+        this.getRepository(nameWithOwner).logs.set(jobId, log);
+    }
+
+    private toActionsJob(job: GitHubWorldJobParams, started: number): GitHubActionsJob {
+        const steps = job.steps ?? [];
+        return {
+            id: this.nextJobId++,
+            name: job.name,
+            status: job.conclusion === null ? 'in_progress' : 'completed',
+            conclusion: job.conclusion,
+            startedAt: toWholeSecond(started),
+            completedAt: job.conclusion === null ? null : toWholeSecond(started + steps.length * 1000),
+            steps: steps.map((step, index) => ({
+                name: step.name,
+                number: index + 1,
+                status: step.conclusion === null ? 'in_progress' : 'completed',
+                conclusion: step.conclusion,
+                startedAt: toWholeSecond(started + index * 1000),
+                completedAt: step.conclusion === null ? null : toWholeSecond(started + (index + 1) * 1000),
+            })),
+        };
     }
 
     /** Gives the repository a tag, so a run on a ref of that name is on the tag. */
@@ -1740,6 +1808,8 @@ export class GitHubWorld {
                 workflows: [],
                 runs: [],
                 tags: [],
+                jobs: new Map(),
+                logs: new Map(),
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {
@@ -2288,4 +2358,9 @@ function toHeadRefName(item: WorldItem) {
 
 function slug(text: string) {
     return text.replace(/[^\w]/g, '_');
+}
+
+/** The moment as GitHub writes a job's and a step's times: ISO at a whole second. */
+function toWholeSecond(time: number) {
+    return new Date(time).toISOString().replace(/\.\d+Z$/, 'Z');
 }

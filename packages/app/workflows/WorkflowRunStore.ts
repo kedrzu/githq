@@ -1,0 +1,354 @@
+import { GitHubApiError } from '@githq/github/GitHubApiError.js';
+import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
+import { getWorkflowRun } from '@githq/github/rest/getWorkflowRun.js';
+import type { GitHubWorkflowRunDetail } from '@githq/github/rest/getWorkflowRun.js';
+import { listRunJobs } from '@githq/github/rest/listRunJobs.js';
+import type { GitHubWorkflowJob, GitHubWorkflowStep } from '@githq/github/rest/listRunJobs.js';
+import { readJobLog } from '@githq/github/rest/readJobLog.js';
+import type { Resolved } from '@nzyme/ioc/Injectable.js';
+import { defineService } from '@nzyme/ioc/Service.js';
+import { Logger } from '@nzyme/logging/Logger.js';
+import { shallowRef } from 'vue';
+import type { ShallowRef } from 'vue';
+
+import { AccountSession } from '@/auth/AccountSession.js';
+import type { Account } from '@/auth/AccountSession.js';
+import { Clock } from '@/services/Clock.js';
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
+import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
+import { getAllowancePause } from '@/sync/getAllowancePause.js';
+
+import { parseJobLog } from './utils/parseJobLog.js';
+import type { ParsedJobLog } from './utils/parseJobLog.js';
+import { WorkflowStore } from './WorkflowStore.js';
+import type { RepositoryWorkflows } from './WorkflowTypes.js';
+
+/** How many logs stay in memory: reading one costs little, keeping many costs a lot (actions D12). */
+const KEPT_LOGS = 5;
+
+/**
+ * How reading from GitHub went. `gone`: GitHub no longer has it, past its retention or never there; `failed`: it was
+ * not read, asking again may help.
+ */
+export type WorkflowReadStatus = 'loading' | 'ready' | 'gone' | 'failed';
+
+/** A run: what is known of it at once, and how reading it went. */
+export interface WorkflowRunState {
+    /** As read; until then as the sync stored it, without what only the run's own answer says; `null` with neither. */
+    readonly run: GitHubWorkflowRunDetail | null;
+    readonly status: WorkflowReadStatus;
+    /** The status GitHub refused with, when `failed`; `null` for no answer, or nothing asked with the allowance used up. */
+    readonly httpStatus: number | null;
+}
+
+/** A run's jobs and how reading them went. */
+export interface WorkflowJobsState {
+    readonly jobs: readonly GitHubWorkflowJob[];
+    readonly status: WorkflowReadStatus;
+    /** The status GitHub refused with, when `failed`; `null` for no answer, or nothing asked with the allowance used up. */
+    readonly httpStatus: number | null;
+}
+
+/** A job's log and how reading it went. */
+export type WorkflowLogState =
+    | { readonly status: 'loading' }
+    | { readonly status: 'ready'; readonly log: ParsedJobLog }
+    | { readonly status: 'gone' }
+    | {
+          readonly status: 'failed';
+          /** The status GitHub refused with; `null` for no answer, or nothing asked with the allowance used up. */
+          readonly httpStatus: number | null;
+      };
+
+/** What a run's or its jobs' conditional read says. */
+type ConditionalAnswer<T> = { status: 304 } | { status: 200; etag: string | undefined; value: T } | { status: 'gone' };
+
+/** What is known of a run or its jobs, and how to ask whether it changed. */
+interface ConditionalRead<T> {
+    readonly state: ShallowRef<{
+        readonly value: T | null;
+        readonly status: WorkflowReadStatus;
+        readonly httpStatus: number | null;
+    }>;
+    etag: string | undefined;
+    reading: boolean;
+    readonly load: (etag: string | undefined) => Promise<ConditionalAnswer<T>>;
+}
+
+/** The signed-in user and all that was read for them, dropped with them. */
+interface RunSession {
+    readonly account: Account;
+    readonly rest: GitHubRestRequester;
+    readonly runs: Map<string, ConditionalRead<GitHubWorkflowRunDetail>>;
+    readonly jobs: Map<string, ConditionalRead<readonly GitHubWorkflowJob[]>>;
+    /** The least recently asked first. */
+    readonly logs: Map<string, ShallowRef<WorkflowLogState>>;
+}
+
+/** Which job's log. */
+interface LogParams {
+    readonly current: RunSession;
+    readonly state: ShallowRef<WorkflowLogState>;
+    readonly nameWithOwner: string;
+    readonly jobId: number;
+    readonly steps: readonly GitHubWorkflowStep[];
+}
+
+const LOADING: WorkflowLogState = { status: 'loading' };
+
+/**
+ * A run, its jobs and its jobs' logs, read from GitHub when a failure is opened (actions D3, D12) and only then, nothing
+ * asked while the core allowance is used up. Held in memory for the signed-in user only, never on disk: a few logs at a
+ * time, the least recently asked dropping out.
+ *
+ * Each `get…` starts the read the first time it is asked, so it may be called from a `computed`: what it writes is its
+ * own new state, which nothing watches yet.
+ */
+export type WorkflowRunStore = Resolved<typeof WorkflowRunStore>;
+export const WorkflowRunStore = defineService({
+    name: 'WorkflowRunStore',
+    deps: {
+        accounts: AccountSession,
+        workflows: WorkflowStore,
+        createRest: GitHubRestFactory,
+        rateLimits: GitHubRateLimitStore,
+        clock: Clock,
+        logger: Logger,
+    },
+    setup({ accounts, workflows, createRest, rateLimits, clock, logger }) {
+        const sessionRef = shallowRef<RunSession | null>(null);
+
+        accounts.onChange(account => {
+            sessionRef.value = account
+                ? {
+                      account,
+                      rest: createRest(() => account.token),
+                      runs: new Map(),
+                      jobs: new Map(),
+                      logs: new Map(),
+                  }
+                : null;
+        });
+
+        return { getRun, getJobs, refresh, getLog, retry };
+
+        /** The run as the sync stored it, at once, then as read. Reactive. */
+        function getRun(nameWithOwner: string, runId: number): WorkflowRunState {
+            const stored = findStoredRun(workflows.get(nameWithOwner), runId);
+            const current = sessionRef.value;
+            if (!current) {
+                return { run: stored, status: 'loading', httpStatus: null };
+            }
+
+            const { value, status, httpStatus } = openRun(current, nameWithOwner, runId).state.value;
+            return { run: value ?? stored, status, httpStatus };
+        }
+
+        /** The run's jobs, none until read. Reactive. */
+        function getJobs(nameWithOwner: string, runId: number): WorkflowJobsState {
+            const current = sessionRef.value;
+            if (!current) {
+                return { jobs: [], status: 'loading', httpStatus: null };
+            }
+
+            const { value, status, httpStatus } = openJobs(current, nameWithOwner, runId).state.value;
+            return { jobs: value ?? [], status, httpStatus };
+        }
+
+        /**
+         * Asks whether the run and its jobs changed, for a run still going or one that failed to read: 304s are free,
+         * and what is known stays meanwhile, and if the asking fails.
+         */
+        function refresh(nameWithOwner: string, runId: number) {
+            const current = sessionRef.value;
+            if (current) {
+                ask(current, openRun(current, nameWithOwner, runId));
+                ask(current, openJobs(current, nameWithOwner, runId));
+            }
+        }
+
+        /** The job's log, read and parsed the first time it is asked. Reactive. */
+        function getLog(nameWithOwner: string, jobId: number, steps: readonly GitHubWorkflowStep[]): WorkflowLogState {
+            const current = sessionRef.value;
+            if (!current) {
+                return LOADING;
+            }
+
+            const key = getKey(nameWithOwner, jobId);
+            const known = current.logs.get(key);
+            if (known) {
+                current.logs.delete(key);
+                current.logs.set(key, known);
+                return known.value;
+            }
+
+            const state = shallowRef(LOADING);
+            current.logs.set(key, state);
+            for (const oldest of current.logs.keys()) {
+                if (current.logs.size <= KEPT_LOGS) {
+                    break;
+                }
+
+                current.logs.delete(oldest);
+            }
+
+            askLog({ current, state, nameWithOwner, jobId, steps });
+            return state.value;
+        }
+
+        /** Reads the job's log again, whatever came of the last read; nothing while one is being read. */
+        function retry(nameWithOwner: string, jobId: number, steps: readonly GitHubWorkflowStep[]) {
+            const current = sessionRef.value;
+            const state = current?.logs.get(getKey(nameWithOwner, jobId));
+            if (!current || !state) {
+                getLog(nameWithOwner, jobId, steps);
+            } else if (state.value.status !== 'loading') {
+                askLog({ current, state, nameWithOwner, jobId, steps });
+            }
+        }
+
+        function openRun(current: RunSession, nameWithOwner: string, runId: number) {
+            return open(current, current.runs, getKey(nameWithOwner, runId), async etag => {
+                const answer = await getWorkflowRun(current.rest, { nameWithOwner, runId, etag });
+                return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.run } : answer;
+            });
+        }
+
+        function openJobs(current: RunSession, nameWithOwner: string, runId: number) {
+            return open(current, current.jobs, getKey(nameWithOwner, runId), async etag => {
+                const answer = await listRunJobs(current.rest, { nameWithOwner, runId, etag });
+                return answer.status === 200 ? { status: 200, etag: answer.etag, value: answer.jobs } : answer;
+            });
+        }
+
+        function open<T>(
+            current: RunSession,
+            reads: Map<string, ConditionalRead<T>>,
+            key: string,
+            load: ConditionalRead<T>['load'],
+        ) {
+            const known = reads.get(key);
+            if (known) {
+                return known;
+            }
+
+            const read: ConditionalRead<T> = {
+                state: shallowRef({ value: null, status: 'loading', httpStatus: null }),
+                etag: undefined,
+                reading: false,
+                load,
+            };
+            reads.set(key, read);
+            ask(current, read);
+            return read;
+        }
+
+        function ask<T>(current: RunSession, read: ConditionalRead<T>) {
+            if (read.reading) {
+                return;
+            }
+
+            if (getAllowancePause(rateLimits.get('core'), clock.now())) {
+                putNotRead(read, null);
+                return;
+            }
+
+            read.reading = true;
+            const { value, status } = read.state.value;
+            if (value === null && status !== 'loading') {
+                read.state.value = { value, status: 'loading', httpStatus: null };
+            }
+
+            void readConditional(current, read);
+        }
+
+        async function readConditional<T>(current: RunSession, read: ConditionalRead<T>) {
+            try {
+                const answer = await read.load(read.etag);
+                if (!isCurrent(current)) {
+                    return;
+                }
+
+                switch (answer.status) {
+                    case 304:
+                        read.state.value = { ...read.state.value, status: 'ready', httpStatus: null };
+                        break;
+                    case 200:
+                        read.etag = answer.etag;
+                        read.state.value = { value: answer.value, status: 'ready', httpStatus: null };
+                        break;
+                    case 'gone':
+                        read.etag = undefined;
+                        read.state.value = { ...read.state.value, status: 'gone', httpStatus: null };
+                        break;
+                }
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('Could not read a workflow run', { error });
+                    putNotRead(read, getHttpStatus(error));
+                }
+            } finally {
+                read.reading = false;
+            }
+        }
+
+        function askLog(params: LogParams) {
+            const { state } = params;
+            if (getAllowancePause(rateLimits.get('core'), clock.now())) {
+                state.value = { status: 'failed', httpStatus: null };
+                return;
+            }
+
+            state.value = LOADING;
+            void readLog(params);
+        }
+
+        async function readLog({ current, state, nameWithOwner, jobId, steps }: LogParams) {
+            try {
+                const answer = await readJobLog(current.rest, { nameWithOwner, jobId });
+                if (isCurrent(current)) {
+                    state.value =
+                        answer.status === 200
+                            ? { status: 'ready', log: parseJobLog(answer.text, steps) }
+                            : { status: 'gone' };
+                }
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('Could not read a job’s log', { error });
+                    state.value = { status: 'failed', httpStatus: getHttpStatus(error) };
+                }
+            }
+        }
+
+        function isCurrent(current: RunSession) {
+            return sessionRef.value === current && accounts.isCurrent(current.account);
+        }
+    },
+});
+
+/** A read that did not happen: what is known stays as it was; with nothing known, it says so. */
+function putNotRead<T>(read: ConditionalRead<T>, httpStatus: number | null) {
+    const { value, status } = read.state.value;
+    if (value === null || status !== 'ready') {
+        read.state.value = { value, status: 'failed', httpStatus };
+    }
+}
+
+function getHttpStatus(error: unknown) {
+    return error instanceof GitHubApiError ? error.status : null;
+}
+
+function findStoredRun(stored: RepositoryWorkflows | undefined, runId: number): GitHubWorkflowRunDetail | null {
+    for (const { workflow, runs } of stored?.workflows ?? []) {
+        const run = runs.find(candidate => candidate.id === runId);
+        if (run) {
+            return { ...run, workflowName: workflow.name, headCommitMessage: null, actorLogin: null };
+        }
+    }
+
+    return null;
+}
+
+function getKey(nameWithOwner: string, id: number) {
+    return JSON.stringify([nameWithOwner, id]);
+}
