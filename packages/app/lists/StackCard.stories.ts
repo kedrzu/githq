@@ -79,3 +79,17 @@ function sampleShare(members: readonly PullRequestItem[], count: number): ListSt
     const pullRequests = members.slice(0, count);
     return { ...whole, pullRequests, share: describeStackShare(whole.description, pullRequests) };
 }
+
+/** The stack's summed size sits beside its state; "Size" off in Display hides it. */
+export const Size: Story = {
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText(/^\+\d/)).toBeVisible();
+    },
+};
+
+export const SizeOff: Story = {
+    args: { properties: ITEM_PROPERTIES.filter(property => property !== 'size') },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).queryByText(/^\+\d/)).toBeNull();
+    },
+};

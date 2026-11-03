@@ -8,9 +8,11 @@ import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import type { Item } from '@/store/ItemTypes.js';
 
+import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
+import PullRequestSize from './PullRequestSize.vue';
 import StackState from './StackState.vue';
 import { useStackFacts } from './useStackFacts.js';
 
@@ -119,37 +121,25 @@ const nameWithOwner = computed(() => {
           :current="openedId"
           :state="stackFacts.state"
         />
-        <span
+        <PullRequestSize
           v-if="shown.has('size')"
-          :class="css.stackRow_size"
-          >{{ stackFacts.size }}</span
-        >
-        <span
+          :additions="stackFacts.size.additions"
+          :deletions="stackFacts.size.deletions"
+        />
+        <ItemField
           v-if="stackFacts.projectField && shown.has('projectField')"
           :class="css.stackRow_field"
+          :icon="SquareKanban"
+          :value="stackFacts.projectField.value"
+          :more="stackFacts.projectField.more"
           :title="stackFacts.projectField.title"
-        >
-          <SquareKanban
-            :class="css.stackRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ stackFacts.projectField.value }}
-          <span
-            v-if="stackFacts.projectField.more"
-            :class="css.stackRow_more"
-            >{{ stackFacts.projectField.more }}</span
-          >
-        </span>
-        <span
+        />
+        <ItemField
           v-if="stackFacts.milestone && shown.has('milestone')"
           :class="css.stackRow_field"
-        >
-          <Milestone
-            :class="css.stackRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ stackFacts.milestone }}
-        </span>
+          :icon="Milestone"
+          :value="stackFacts.milestone"
+        />
         <slot name="fields" />
         <template v-if="shown.has('labels')">
           <LabelPill
@@ -247,7 +237,6 @@ const nameWithOwner = computed(() => {
 
 .stackRow_count,
 .stackRow_repository,
-.stackRow_size,
 .stackRow_more {
   flex: none;
   font-family: $font-family-mono;
@@ -260,16 +249,6 @@ const nameWithOwner = computed(() => {
 }
 
 .stackRow_field {
-  display: inline-flex;
   flex: none;
-  gap: $spacing-5;
-  align-items: center;
-  color: $color-fg-2;
-}
-
-.stackRow_fieldIcon {
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
 }
 </style>

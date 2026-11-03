@@ -11,8 +11,11 @@ import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 
 import type { ItemProperty } from './ItemProperty.js';
+import ItemField from './ItemField.vue';
 import * as l from './ItemRow.loc.js';
+import ItemStatus from './ItemStatus.vue';
 import type { ListStack } from './ListTypes.js';
+import PullRequestSize from './PullRequestSize.vue';
 import StackMarker from './StackMarker.vue';
 import StackSummary from './StackSummary.vue';
 import { useItemFacts } from './useItemFacts.js';
@@ -126,17 +129,11 @@ const shown = computed(() => new Set(props.properties));
           :viewer-login="viewerLogin"
           :opened-id="openedId"
         />
-        <span
+        <ItemStatus
           v-if="facts.status && shown.has('status')"
-          :class="[css.itemRow_status, css[`itemRow_status_${facts.status.tone}`]]"
-        >
-          <component
-            :is="facts.status.icon"
-            :class="css.itemRow_statusIcon"
-            aria-hidden="true"
-          />
-          <span :class="css.itemRow_statusText">{{ facts.status.text }}</span>
-        </span>
+          :class="css.itemRow_shared"
+          :status="facts.status"
+        />
         <!-- Opening it is not selecting the row. -->
         <Button
           v-if="facts.status?.openOnGitHub && shown.has('status')"
@@ -151,37 +148,25 @@ const shown = computed(() => new Set(props.properties));
         >
           {{ t(l.openOnGitHub) }}
         </Button>
-        <span
+        <PullRequestSize
           v-if="facts.size && shown.has('size')"
-          :class="css.itemRow_size"
-          >{{ facts.size }}</span
-        >
-        <span
+          :additions="facts.size.additions"
+          :deletions="facts.size.deletions"
+        />
+        <ItemField
           v-if="facts.projectField && shown.has('projectField')"
-          :class="css.itemRow_field"
+          :class="css.itemRow_shared"
+          :icon="SquareKanban"
+          :value="facts.projectField.value"
+          :more="facts.projectField.more"
           :title="facts.projectField.title"
-        >
-          <SquareKanban
-            :class="css.itemRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ facts.projectField.value }}
-          <span
-            v-if="facts.projectField.more"
-            :class="css.itemRow_fieldMore"
-            >{{ facts.projectField.more }}</span
-          >
-        </span>
-        <span
+        />
+        <ItemField
           v-if="item.milestone && shown.has('milestone')"
-          :class="css.itemRow_field"
-        >
-          <Milestone
-            :class="css.itemRow_fieldIcon"
-            aria-hidden="true"
-          />
-          {{ item.milestone.title }}
-        </span>
+          :class="css.itemRow_shared"
+          :icon="Milestone"
+          :value="item.milestone.title"
+        />
         <slot name="fields" />
         <LabelPill
           v-for="label in shown.has('labels') ? item.labels : []"
@@ -315,8 +300,7 @@ const shown = computed(() => new Set(props.properties));
   color: $color-fg-dim;
 }
 
-.itemRow_reference,
-.itemRow_size {
+.itemRow_reference {
   flex: none;
   font-family: $font-family-mono;
   color: $color-fg-dim;
@@ -327,63 +311,12 @@ const shown = computed(() => new Set(props.properties));
   flex: none;
 }
 
-.itemRow_status {
-  display: inline-flex;
+.itemRow_shared {
   flex: none;
-  gap: $spacing-5;
-  align-items: center;
-}
-
-.itemRow_statusText {
-  display: inline-block;
-
-  &::first-letter {
-    text-transform: uppercase;
-  }
-}
-
-.itemRow_status_danger {
-  color: $color-red;
-}
-
-.itemRow_status_warning {
-  color: $color-amber;
-}
-
-.itemRow_status_success {
-  color: $color-green;
-}
-
-.itemRow_status_muted {
-  color: $color-fg-2;
-}
-
-.itemRow_status_dim {
-  color: $color-fg-dim;
 }
 
 .itemRow_statusIcon {
   width: 12.5px;
   height: 12.5px;
-}
-
-.itemRow_field {
-  display: inline-flex;
-  flex: none;
-  gap: $spacing-5;
-  align-items: center;
-  color: $color-fg-2;
-}
-
-.itemRow_fieldIcon {
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.itemRow_fieldMore {
-  font-family: $font-family-mono;
-  font-size: 11px;
-  color: $color-fg-dim;
 }
 </style>

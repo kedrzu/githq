@@ -35,8 +35,6 @@ draft:
   en: draft
 waitingForReview:
   en: waiting for review
-size:
-  en: '+{additions} −{deletions}'
 projectField:
   en: '{project}: {value}'
 moreProjects:

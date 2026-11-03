@@ -80,7 +80,7 @@ const NO_VIEW_OPTIONS: ProjectViewOptions = {
 /** The options kept for "All items" (K9: `?all`), beside the saved views'. */
 const ALL_ITEMS_LIST = 'all';
 /** What the rows of a project not tracked show: it has no saved view or row field of its own to say (J4). */
-const UNTRACKED_PROPERTIES: readonly ItemProperty[] = ['status', 'labels', 'people', 'updated'];
+const UNTRACKED_PROPERTIES: readonly ItemProperty[] = ['status', 'size', 'labels', 'people', 'updated'];
 
 const auth = useService(AuthStore);
 const tracking = useService(TrackingStore);

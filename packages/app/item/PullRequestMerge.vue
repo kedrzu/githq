@@ -20,6 +20,7 @@ import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import PullRequestSize from '@/lists/PullRequestSize.vue';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -285,8 +286,10 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
         >{{ pr.baseRefName }}</span
       >
       <span :class="css.pullRequestMerge_spacer" />
-      <span :class="css.pullRequestMerge_added">+{{ numbers.format(pr.additions) }}</span>
-      <span :class="css.pullRequestMerge_removed">−{{ numbers.format(pr.deletions) }}</span>
+      <PullRequestSize
+        :additions="pr.additions"
+        :deletions="pr.deletions"
+      />
       <span :class="css.pullRequestMerge_files">{{ t(l.files, { count: pr.changedFiles }) }}</span>
     </p>
     <div :class="css.pullRequestMerge_actions">
@@ -490,14 +493,6 @@ function authorsOf(state: 'APPROVED' | 'CHANGES_REQUESTED') {
 
 .pullRequestMerge_spacer {
   flex: 1;
-}
-
-.pullRequestMerge_added {
-  color: $color-green;
-}
-
-.pullRequestMerge_removed {
-  color: $color-red;
 }
 
 .pullRequestMerge_files {
