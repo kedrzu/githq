@@ -68,7 +68,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { BROKEN_WORKFLOWS_PATH, REPOSITORY_TAB_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH, REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
@@ -110,11 +110,11 @@ const projects = computed(() => props.tracked?.projects ?? []);
 const repositories = computed(() => props.tracked?.repositories ?? []);
 const nothingTracked = computed(() => projects.value.length === 0 && repositories.value.length === 0);
 
-/** A repository's row is the current page on its view whichever list of it the address names (`/owner/name/issues`). */
+/** A repository's row is the current page on its view whichever section of it the address names (`/owner/name/issues`). */
 function isCurrentRepository(repository: SidebarTrackedEntry) {
   return (
     route.path === repository.to ||
-    Object.values(REPOSITORY_TAB_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
+    Object.values(REPOSITORY_SECTION_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
   );
 }
 
@@ -533,44 +533,19 @@ function getProjectMark(title: string) {
 }
 
 .sidebar_item {
-  @include focus-ring;
-
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  width: 100%;
-  padding: 5px $spacing-8;
-  font-size: $font-size-md;
-  line-height: 18px;
-  color: $color-fg-2;
-  text-decoration: none;
-  border-radius: $radius-md;
-}
-
-.sidebar_item:hover {
-  color: $color-fg;
-  background: $color-bg-3;
+  @include nav-row;
 }
 
 .sidebar_itemLabel {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include nav-row-label;
 }
 
 .sidebar_count {
-  flex: none;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
+  @include nav-row-count;
 }
 
 .sidebar_item_active {
-  font-weight: $font-weight-medium;
-  color: $color-fg;
-  background: $color-bg-3;
+  @include nav-row-current;
 }
 
 .sidebar_count_new {

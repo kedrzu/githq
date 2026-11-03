@@ -7,10 +7,12 @@ import { expect, test } from 'bun:test';
 import type {
     RepositoryLabelsQuery,
     RepositoryMetadataQuery,
+    RepositoryOpenCountsQuery,
     ViewerProjectsQuery,
 } from '@githq/github/generated.gen.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -19,7 +21,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 
 import { RepositoryPersistence } from './RepositoryPersistence.js';
 import { RepositoryStore } from './RepositoryStore.js';
-import type { RepositoryMetadata, ViewerProject } from './RepositoryTypes.js';
+import type { RepositoryMetadata, RepositoryOpenCounts, ViewerProject } from './RepositoryTypes.js';
 
 test("a repository's metadata is read once, used for 10 minutes — after a reload too — and read again after", async () => {
     const login = uniqueLogin();
@@ -108,6 +110,57 @@ test('an answer arriving after the user signed out is dropped', async () => {
     expect(repositories.get('acme/web')).toBeUndefined();
 });
 
+test("an untracked repository's open counts are its own, read once, used for 10 minutes — after a reload too — and read again after", async () => {
+    const login = uniqueLogin();
+    const before = setup(login);
+
+    const nuxt = await before.repositories.ensureOpenCounts('nuxt/nuxt');
+    await before.repositories.ensureOpenCounts('nuxt/nuxt');
+    const vite = await before.repositories.ensureOpenCounts('vitejs/vite');
+
+    const expected: RepositoryOpenCounts = {
+        nameWithOwner: 'nuxt/nuxt',
+        issues: 893,
+        pullRequests: 41,
+        fetchedAt: before.session.clock.now(),
+    };
+    expect(nuxt).toEqual(expected);
+    expect(vite).toMatchObject({ nameWithOwner: 'vitejs/vite', issues: 640, pullRequests: 58 });
+    expect(before.repositories.getOpenCounts('nuxt/nuxt')).toEqual(expected);
+    expect(before.operations()).toEqual(['RepositoryOpenCounts', 'RepositoryOpenCounts']);
+    await before.session.clock.advance(0);
+
+    const after = setup(login);
+    await after.session.clock.advance(5 * 60_000);
+    expect(await after.repositories.ensureOpenCounts('nuxt/nuxt')).toEqual(expected);
+    expect(after.repositories.getOpenCounts('nuxt/nuxt')).toEqual(expected);
+    expect(after.operations()).toEqual([]);
+
+    await after.session.clock.advance(6 * 60_000);
+    expect((await after.repositories.ensureOpenCounts('nuxt/nuxt'))?.fetchedAt).toBe(after.session.clock.now());
+    expect(after.operations()).toEqual(['RepositoryOpenCounts']);
+});
+
+test('a repository GitHub does not show the user, or a read that fails, leaves its open counts unknown', async () => {
+    const { repositories } = setup(uniqueLogin());
+
+    expect(await repositories.ensureOpenCounts('acme/hidden')).toBeNull();
+    expect(await repositories.ensureOpenCounts('acme/broken')).toBeNull();
+    expect(repositories.getOpenCounts('acme/hidden')).toBeUndefined();
+    expect(repositories.getOpenCounts('acme/broken')).toBeUndefined();
+});
+
+test('no open counts are asked once the GraphQL allowance is spent', async () => {
+    const { repositories, session, operations } = setup(uniqueLogin());
+    // The stored user's check spends the last point.
+    session.github.graphqlRemaining = 0;
+    await session.clock.advance(0);
+    expect(session.container.resolve(GitHubRateLimitStore).remaining('graphql')).toBe(0);
+
+    expect(await repositories.ensureOpenCounts('nuxt/nuxt')).toBeNull();
+    expect(operations()).toEqual([]);
+});
+
 function setup(login: string) {
     const session = createTestSession({ login, answer });
     const persistence = createIndexedDbPersistence();
@@ -129,6 +182,23 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
     switch (request.operation) {
         case 'RepositoryMetadata':
             return { data: repositoryMetadata(request.variables.name) };
+        case 'RepositoryOpenCounts': {
+            const counts: Record<string, { issues: number; pullRequests: number }> = {
+                nuxt: { issues: 893, pullRequests: 41 },
+                vite: { issues: 640, pullRequests: 58 },
+            };
+            const known = counts[String(request.variables.name)];
+            if (request.variables.name === 'broken') {
+                return undefined;
+            }
+
+            const data: RepositoryOpenCountsQuery = {
+                repository: known
+                    ? { issues: { totalCount: known.issues }, pullRequests: { totalCount: known.pullRequests } }
+                    : null,
+            };
+            return { data };
+        }
         case 'RepositoryLabels': {
             const data: RepositoryLabelsQuery = {
                 repository: {

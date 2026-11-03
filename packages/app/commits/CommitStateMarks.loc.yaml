@@ -1,0 +1,8 @@
+checksPassing:
+  en: Checks passing
+checksFailing:
+  en: Checks failing
+checksRunning:
+  en: Checks running
+notKnownYet:
+  en: Pull request and checks not known yet

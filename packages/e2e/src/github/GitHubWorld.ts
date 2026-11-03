@@ -1,4 +1,8 @@
 import type {
+    CommitDetailQuery,
+    CommitFieldsFragment,
+    CommitHistoriesQuery,
+    CommitStatesQuery,
     DraftIssueFieldsFragment,
     IssueCommentFieldsFragment,
     IssueDetailFieldsFragment,
@@ -20,7 +24,9 @@ import type {
     PullRequestDetailFieldsFragment,
     PullRequestFieldsFragment,
     PullRequestReviewDecision,
+    PullRequestState,
     RepositoryPermission,
+    StatusState,
     TrackingProjectFieldsFragment,
     TrackingRepositoryFieldsFragment,
     TrackingRepositoryPageFieldsFragment,
@@ -168,6 +174,33 @@ export interface GitHubWorldRepositoryParams {
     readonly templates?: GitHubWorldTemplates;
     /** What GitHub calls its default branch; `main` by default. */
     readonly defaultBranch?: string;
+}
+
+/** A commit of a repository's history (git-client D8), and what GitHub tells of it apart: its pull request and CI. */
+export interface GitHubWorldCommitParams {
+    /** Its id, any unique string; its node id is `C_<oid>`. */
+    readonly oid: string;
+    readonly headline: string;
+    /** Its message below the headline; none by default. */
+    readonly body?: string;
+    /** Its author's login. */
+    readonly author: string;
+    readonly minutesAgo: number;
+    /** Oids of its parents, the first the branch it was made on; none for a root commit. */
+    readonly parents?: readonly string[];
+    /** The pull request it came from; none by default. */
+    readonly pullRequest?: { readonly number: number; readonly state: PullRequestState; readonly title: string };
+    /** Its checks' rollup; none by default. */
+    readonly ci?: StatusState;
+}
+
+/** A repository's history: its commits, and the branches and tags pointing at them, by name. */
+export interface GitHubWorldHistoryParams {
+    readonly commits: readonly GitHubWorldCommitParams[];
+    /** Branch name → the oid it points at; the repository's default branch among them. */
+    readonly branches: Readonly<Record<string, string>>;
+    /** Tag name → the oid it points at. */
+    readonly tags?: Readonly<Record<string, string>>;
 }
 
 /** What a repository of the world asks a new issue to start from. */
@@ -334,9 +367,18 @@ interface WorldRepository {
     defaultBranch: string;
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
-    tags: string[];
+    /** The names of the tags a run may be on, as its REST answers them. */
+    tagNames: string[];
     jobs: Map<number, readonly GitHubActionsJob[]>;
     logs: Map<number, GitHubActionsLog>;
+    /** Its commits by oid; none for an empty repository. */
+    commits: ReadonlyMap<string, WorldCommit>;
+    branches: Readonly<Record<string, string>>;
+    tags: Readonly<Record<string, string>>;
+}
+
+interface WorldCommit extends GitHubWorldCommitParams {
+    readonly committedDate: string;
 }
 
 interface WorldProject {
@@ -496,7 +538,7 @@ const PROJECT_FIRST_PAGE = 100;
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
  * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail` and `MoreComments` by node id (the check list and the reviews left out); `ItemByNumber`;
- * `RepositoryMetadata`; `ViewerProjects` (every project of the world is the viewer's).
+ * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
  * their organisations' — one hiding its private data left out with an error), a lookup by name, a tracked
@@ -673,7 +715,20 @@ export class GitHubWorld {
 
     /** Gives the repository a tag, so a run on a ref of that name is on the tag. */
     tag(nameWithOwner: string, name: string): void {
-        this.getRepository(nameWithOwner).tags.push(name);
+        this.getRepository(nameWithOwner).tagNames.push(name);
+    }
+
+    /** Gives the repository its history (git-client D9): its commits, branches and tags, replacing any before. */
+    history(nameWithOwner: string, params: GitHubWorldHistoryParams): void {
+        const repository = this.getRepository(nameWithOwner);
+        repository.commits = new Map(
+            params.commits.map(commit => [
+                commit.oid,
+                { ...commit, committedDate: new Date(Date.now() - commit.minutesAgo * 60_000).toISOString() },
+            ]),
+        );
+        repository.branches = params.branches;
+        repository.tags = params.tags ?? {};
     }
 
     /** The issue of `repository` titled `title`, as GitHub has it now; `undefined` when there is none. */
@@ -923,6 +978,98 @@ export class GitHubWorld {
                     issueTypes: null,
                 },
             };
+        });
+        github.graphql('RepositoryOpenCounts', ({ variables }) => {
+            const open = this.readRepositoryItems(variables)?.filter(item => item.state === 'OPEN');
+            return {
+                repository: open
+                    ? {
+                          issues: { totalCount: open.filter(item => !item.pullRequest).length },
+                          pullRequests: { totalCount: open.filter(item => item.pullRequest).length },
+                      }
+                    : null,
+            };
+        });
+        github.graphql('RepositoryCommitRefs', ({ variables }) => {
+            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            if (!repository) {
+                return { repository: null };
+            }
+
+            const toRefs = (refs: Readonly<Record<string, string>>) => {
+                const nodes = Object.entries(refs).flatMap(([name, oid]) => {
+                    const commit = repository.commits.get(oid);
+                    return commit ? [{ name, target: toCommitTarget(commit) }] : [];
+                });
+                return { pageInfo: LAST_PAGE, nodes };
+            };
+            const tipOid = repository.branches[repository.defaultBranch];
+            const tip = tipOid === undefined ? undefined : repository.commits.get(tipOid);
+            return {
+                repository: {
+                    defaultBranchRef: tip
+                        ? {
+                              name: repository.defaultBranch,
+                              target: {
+                                  ...toCommitTarget(tip),
+                                  ...(variables.withHistory === true
+                                      ? { history: toHistory(repository, tip, 100) }
+                                      : {}),
+                              },
+                          }
+                        : null,
+                    ...(variables.withBranches === true ? { branches: toRefs(repository.branches) } : {}),
+                    ...(variables.withTags === true ? { tags: toRefs(repository.tags) } : {}),
+                },
+            };
+        });
+        github.graphql('CommitHistories', ({ variables }) => {
+            const first = typeof variables.first === 'number' ? variables.first : 100;
+            const nodes: CommitHistoriesQuery['nodes'] = readIds(variables).map(id => {
+                const found = this.findCommit(id);
+                return found ? { history: toHistory(found.repository, found.commit, first) } : null;
+            });
+            return { nodes };
+        });
+        github.graphql('CommitDetail', ({ variables }) => {
+            const found = this.findCommit(String(variables.id));
+            const node: CommitDetailQuery['node'] = found
+                ? {
+                      ...toCommitFields(found.commit),
+                      message: found.commit.body
+                          ? `${found.commit.headline}\n\n${found.commit.body}`
+                          : found.commit.headline,
+                  }
+                : null;
+            return { node };
+        });
+        github.graphql('CommitStates', ({ variables }) => {
+            const nodes: CommitStatesQuery['nodes'] = readIds(variables).map(id => {
+                const found = this.findCommit(id);
+                if (!found) {
+                    return null;
+                }
+
+                const { repository, commit } = found;
+
+                const pullRequest = commit.pullRequest;
+                return {
+                    id,
+                    associatedPullRequests: {
+                        nodes: pullRequest
+                            ? [
+                                  {
+                                      ...pullRequest,
+                                      url: `https://github.com/${repository.nameWithOwner}/pull/${pullRequest.number}`,
+                                      isDraft: false,
+                                  },
+                              ]
+                            : [],
+                    },
+                    statusCheckRollup: commit.ci ? { state: commit.ci } : null,
+                };
+            });
+            return { nodes };
         });
         github.graphql('RepositoryIssueTemplates', ({ variables }) => {
             const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
@@ -1238,7 +1385,7 @@ export class GitHubWorld {
      * and its GitHub Actions ({@link answerRepositoryActions}): no workflows until a test gives it some.
      */
     private answerRepositoryPoll(github: GitHubMock, repository: WorldRepository) {
-        answerRepositoryActions(github, repository.nameWithOwner, () => repository);
+        answerRepositoryActions(github, repository.nameWithOwner, () => ({ ...repository, tags: repository.tagNames }));
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
             const json = [...this.items.values()]
@@ -1829,6 +1976,18 @@ export class GitHubWorld {
         return item;
     }
 
+    /** The commit whose node id is `id`, and its repository. */
+    private findCommit(id: string): { repository: WorldRepository; commit: WorldCommit } | undefined {
+        for (const repository of this.repositories.values()) {
+            const commit = repository.commits.get(id.replace(/^C_/, ''));
+            if (commit) {
+                return { repository, commit };
+            }
+        }
+
+        return undefined;
+    }
+
     private getRepository(nameWithOwner: string): WorldRepository {
         let repository = this.repositories.get(nameWithOwner);
         if (!repository) {
@@ -1845,9 +2004,12 @@ export class GitHubWorld {
                 defaultBranch: 'main',
                 workflows: [],
                 runs: [],
-                tags: [],
+                tagNames: [],
                 jobs: new Map(),
                 logs: new Map(),
+                commits: new Map(),
+                branches: {},
+                tags: {},
             };
             this.repositories.set(nameWithOwner, repository);
             if (this.github) {
@@ -2074,6 +2236,44 @@ export class GitHubWorld {
 
         return item;
     }
+}
+
+/** A ref's target as `CommitRefTargetFields` gives it. */
+function toCommitTarget(commit: WorldCommit) {
+    return { id: `C_${commit.oid}`, oid: commit.oid, committedDate: commit.committedDate };
+}
+
+/** `history(first:)` from `tip`: it and its ancestors, newest first, as GitHub pages them. */
+function toHistory(repository: WorldRepository, tip: WorldCommit, first: number) {
+    const reachable = new Map<string, WorldCommit>();
+    const queue = [tip];
+    for (let commit = queue.pop(); commit; commit = queue.pop()) {
+        if (reachable.has(commit.oid)) {
+            continue;
+        }
+
+        reachable.set(commit.oid, commit);
+        for (const parent of commit.parents ?? []) {
+            const found = repository.commits.get(parent);
+            if (found) {
+                queue.push(found);
+            }
+        }
+    }
+
+    const ordered = [...reachable.values()].toSorted((a, b) => b.committedDate.localeCompare(a.committedDate));
+    return { nodes: ordered.slice(0, first).map(commit => toCommitFields(commit)) };
+}
+
+function toCommitFields(commit: WorldCommit): CommitFieldsFragment {
+    return {
+        id: `C_${commit.oid}`,
+        oid: commit.oid,
+        messageHeadline: commit.headline,
+        committedDate: commit.committedDate,
+        author: { name: commit.author, user: createUser(commit.author) },
+        parents: { nodes: (commit.parents ?? []).map(oid => ({ id: `C_${oid}`, oid })) },
+    };
 }
 
 /** Adds `content` to the end of the project; returns its project item. */

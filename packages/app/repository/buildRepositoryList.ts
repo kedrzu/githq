@@ -1,5 +1,5 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { CircleDot, GitPullRequest, Milestone } from 'lucide-vue-next';
+import { Milestone } from 'lucide-vue-next';
 
 import { getItemComparator } from '@/lists/getItemComparator.js';
 import type { ListGrouping } from '@/lists/groupEntries.js';
@@ -17,23 +17,11 @@ export type RepositoryState = 'all' | 'closed' | 'open';
 /** The states in the order the filter menu lists them. */
 export const REPOSITORY_STATES: readonly RepositoryState[] = ['open', 'closed', 'all'];
 
-/** Which kinds of a repository's items are listed: both, issues or pull requests. */
-export type RepositoryKind = 'all' | 'issues' | 'pullRequests';
-
-/** The kinds in the order the tabs show them. */
-export const REPOSITORY_KINDS: readonly RepositoryKind[] = ['all', 'issues', 'pullRequests'];
-
-/** A tab of a repository's view: a kind of its items, or its workflows (actions D6), which are never among them. */
-export type RepositoryTab = RepositoryKind | 'workflows';
-
-/** The tabs in the order the view shows them: the workflows after the kinds of items. */
-export const REPOSITORY_TABS: readonly RepositoryTab[] = [...REPOSITORY_KINDS, 'workflows'];
-
 /** A repository's list as its view shows it. */
 export interface RepositoryList {
     readonly groups: readonly ListGroup<Item>[];
-    /** How many items each kind tab holds, in the chosen state. */
-    readonly counts: Readonly<Record<RepositoryKind, number>>;
+    /** How many items are listed, each once whichever groups it is under. */
+    readonly count: number;
 }
 
 /** What the groups are called — the caller's translations. */
@@ -44,8 +32,6 @@ export interface RepositoryListTexts {
     readonly noLabel: string;
     readonly unassigned: string;
     readonly noType: string;
-    readonly issues: string;
-    readonly pullRequests: string;
     /** A milestone's header detail: how far it is and when it is due ("7 of 11 closed · due Nov 15"). */
     milestoneDetail(progress: MilestoneProgress): string;
 }
@@ -62,31 +48,28 @@ export interface BuildRepositoryListParams {
     /** Every item of the repository in the local copy, open and closed. */
     readonly items: readonly Item[];
     readonly state: RepositoryState;
-    readonly kind: RepositoryKind;
+    /** Which of its items are listed: its issues or its pull requests, each a section of its own (D14). */
+    readonly kind: Item['kind'];
     readonly grouping: RepositoryGrouping;
     readonly sort: ItemSort;
     readonly texts: RepositoryListTexts;
 }
 
 /**
- * A repository's issues and pull requests (J1, J2) in the chosen state and kind, grouped by one of GitHub's own
+ * A repository's issues or its pull requests (J1, J2) in the chosen state, grouped by one of GitHub's own
  * properties and ordered within each group. Milestones come by due date, the soonest first, each with its
  * progress; labels, assignees and issue types by name; an item with two labels or assignees is under both. The
  * group of items without the value comes last. Items can be moved between milestones, labels, assignees and
- * issue types (an edit), not between issues and pull requests.
+ * issue types (an edit).
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function buildRepositoryList(params: BuildRepositoryListParams): RepositoryList {
     const { items, state, kind, grouping, sort, texts } = params;
 
-    const inState = items.filter(item => matchesState(item, state));
-    const counts = {
-        all: inState.length,
-        issues: inState.filter(item => item.kind === 'issue').length,
-        pullRequests: inState.filter(item => item.kind === 'pullRequest').length,
-    };
-    const listed = inState.filter(item => matchesKind(item, kind)).toSorted(getItemComparator(sort));
+    const listed = items
+        .filter(item => item.kind === kind && matchesState(item, state))
+        .toSorted(getItemComparator(sort));
 
     return {
         groups: groupEntries({
@@ -94,7 +77,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
             getId: item => item.id,
             grouping: getGrouping(grouping, items, texts),
         }),
-        counts,
+        count: listed.length,
     };
 }
 
@@ -139,16 +122,6 @@ function getGrouping(
                         : [],
                 none: { key: NO_VALUE, label: texts.noType },
                 movable: true,
-            };
-        case 'kind':
-            return {
-                fixed: [
-                    { key: 'issue', label: texts.issues, marker: { kind: 'icon', icon: CircleDot } },
-                    { key: 'pullRequest', label: texts.pullRequests, marker: { kind: 'icon', icon: GitPullRequest } },
-                ],
-                values: item => [{ key: item.kind, label: '' }],
-                none: { key: NO_VALUE, label: '' },
-                movable: false,
             };
         default:
             return assertNever(grouping);
@@ -217,18 +190,5 @@ function matchesState(item: Item, state: RepositoryState) {
             return true;
         default:
             return assertNever(state);
-    }
-}
-
-function matchesKind(item: Item, kind: RepositoryKind) {
-    switch (kind) {
-        case 'all':
-            return true;
-        case 'issues':
-            return item.kind === 'issue';
-        case 'pullRequests':
-            return item.kind === 'pullRequest';
-        default:
-            return assertNever(kind);
     }
 }

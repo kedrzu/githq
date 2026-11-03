@@ -18,8 +18,16 @@ export interface SettingsDocument {
     readonly version: 1;
     readonly repositories: readonly SettingsRepository[];
     readonly projects: readonly SettingsProject[];
+    /**
+     * How a repository's sections are laid out (git-client D14), as written in the file: a newer build's value is kept
+     * until the user changes it, so read it with {@link readRepositoryLayout}.
+     */
+    readonly repositoryLayout?: unknown;
     readonly [field: string]: unknown;
 }
+
+/** How a repository's sections are laid out: tabs beside its name, or a column of its own (git-client D14). */
+export type RepositoryLayout = 'tabs' | 'column';
 
 /** A repository of {@link SettingsDocument}, named by `nameWithOwner`. */
 export interface SettingsRepository extends TrackedRepository {
@@ -120,7 +128,7 @@ export function parseSettings(text: string): ParsedSettings {
  * @__NO_SIDE_EFFECTS__
  */
 export function serializeSettings(document: SettingsDocument): string {
-    const { version, repositories, projects, ...rest } = document;
+    const { version, repositories, projects, repositoryLayout, ...rest } = document;
     const ordered: SettingsDocument = {
         version,
         repositories: repositories.map(({ nameWithOwner, id, tracking, ...unknown }) => ({
@@ -138,6 +146,7 @@ export function serializeSettings(document: SettingsDocument): string {
             tracking,
             ...unknown,
         })),
+        repositoryLayout,
         ...rest,
     };
     return `${JSON.stringify(ordered, null, 2)}\n`;
@@ -212,6 +221,14 @@ export function writeWorkflowSettings(params: WriteWorkflowSettingsParams): Sett
         ...document,
         repositories: document.repositories.map(entry => (entry === repository ? { ...entry, workflows } : entry)),
     };
+}
+
+/**
+ * The layout the document chooses; absent or not known to this build (a newer one's), tabs.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readRepositoryLayout(document: SettingsDocument): RepositoryLayout {
+    return document.repositoryLayout === 'column' ? 'column' : 'tabs';
 }
 
 function hasDuplicates(keys: readonly string[]) {

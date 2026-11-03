@@ -1,10 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a repository's view (`RepositoryView.vue`, on `/owner/name` and its lists
- * `/owner/name/issues` and `/owner/name/pulls`, and its Workflows tab on `/owner/name/actions`): the title opening its
- * menu, the tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups —
- * named sections, or a board's columns — and their rows; untracked, the lines saying what githq has of it (J3).
+ * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues`,
+ * `/owner/name/pulls` and `/owner/name/actions`, and `/owner/name` opening one): the title opening its menu, the section
+ * tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups — named regions, or a board's
+ * columns — and their rows; untracked, the lines saying what githq has of it (J3). In the column layout the same
+ * sections and title are in the column.
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -31,9 +32,16 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('region');
     }
 
-    /** The tab `name`, a toggle button pressed while it is the one shown; its count follows the name. */
-    kind(name: 'All' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
-        return this.root.getByRole('group', { name: 'Kinds' }).getByRole('button', { name: new RegExp(`^${name}\\b`) });
+    /** The section tab `name`, a toggle button pressed while it is shown; tracked, its count of open items follows. */
+    section(name: 'Commits' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
+        return this.root
+            .getByRole('group', { name: 'Sections' })
+            .getByRole('button', { name: new RegExp(`^${name}\\b`) });
+    }
+
+    /** The pane's title in the column layout: the section's name. */
+    sectionTitle(name: 'Commits' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
+        return this.root.getByRole('heading', { name, level: 1 });
     }
 
     /** The grouping menu's button ("Group: Milestone"). */

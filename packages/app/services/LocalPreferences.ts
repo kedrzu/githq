@@ -14,10 +14,11 @@ const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
 const LOG_WRAP_KEY = 'githq.logWrap';
 const LOG_TIMES_KEY = 'githq.logTimes';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
+const PANEL_SHARE_KEY_PREFIX = 'githq.panelShare.';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to and how job logs show. The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, and how job logs show. The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -61,10 +62,10 @@ export const LocalPreferences = defineService({
             serialize: String,
             deserialize: raw => raw === 'true',
         });
-        const panelWidths = new Map<string, StorageRef<number | null>>();
+        const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
-        const panelWidthsScope = effectScope(true);
+        const panelSizesScope = effectScope(true);
 
         browser.onLocalStorageChange(key => {
             if (key === null || key === ITEM_ARRANGEMENT_KEY) {
@@ -83,9 +84,9 @@ export const LocalPreferences = defineService({
                 logTimes.reload();
             }
 
-            for (const [panel, width] of panelWidths) {
-                if (key === null || key === PANEL_WIDTH_KEY_PREFIX + panel) {
-                    width.reload();
+            for (const [panelKey, size] of panelSizes) {
+                if (key === null || key === panelKey) {
+                    size.reload();
                 }
             }
         });
@@ -100,6 +101,7 @@ export const LocalPreferences = defineService({
             /** Whether a job's log shows each line's own time (actions W4d). */
             logTimes,
             getPanelWidth,
+            getPanelShare,
         };
 
         /**
@@ -107,25 +109,33 @@ export const LocalPreferences = defineService({
          * kept. The same ref for every caller of one panel; its range is the caller's to keep.
          */
         function getPanelWidth(panel: string) {
-            let width = panelWidths.get(panel);
-            if (!width) {
-                const created = panelWidthsScope.run(() =>
-                    storageRef<number | null>({
-                        key: PANEL_WIDTH_KEY_PREFIX + panel,
-                        storage,
-                        serialize: String,
-                        deserialize: parseWidth,
-                    }),
+            return getPanelSize(PANEL_WIDTH_KEY_PREFIX + panel, parseWidth);
+        }
+
+        /**
+         * The share (above 0, up to 1) of what holds it that the user dragged the panel `panel` to
+         * (`githq.panelShare.<panel>`), for a width that scales with the window; `null` while none is kept. The same
+         * ref for every caller of one panel; fitting it to what can be drawn is the caller's.
+         */
+        function getPanelShare(panel: string) {
+            return getPanelSize(PANEL_SHARE_KEY_PREFIX + panel, parseShare);
+        }
+
+        function getPanelSize(key: string, deserialize: (raw: string) => number | null) {
+            let size = panelSizes.get(key);
+            if (!size) {
+                const created = panelSizesScope.run(() =>
+                    storageRef<number | null>({ key, storage, serialize: String, deserialize }),
                 );
                 if (!created) {
                     throw new Error('The panel widths are no longer kept');
                 }
 
-                width = created;
-                panelWidths.set(panel, width);
+                size = created;
+                panelSizes.set(key, size);
             }
 
-            return width;
+            return size;
         }
     },
 });
@@ -133,4 +143,9 @@ export const LocalPreferences = defineService({
 function parseWidth(raw: string) {
     const width = Number(raw);
     return Number.isFinite(width) ? width : null;
+}
+
+function parseShare(raw: string) {
+    const share = Number(raw);
+    return share > 0 && share <= 1 ? share : null;
 }

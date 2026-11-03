@@ -2,16 +2,8 @@ private:
   en: private
 public:
   en: public
-openCount:
-  plural: count
-  en:
-    zero: nothing open
-    one: 1 open
-    many: '{count} open'
-kinds:
-  en: Kinds
-all:
-  en: All
+sections:
+  en: Sections
 issues:
   en: Issues
 pullRequests:
@@ -36,8 +28,6 @@ groupLabelDetail:
   en: one column per label
 groupIssueType:
   en: Issue type
-groupKind:
-  en: Issue or pull request
 fromGitHub:
   en: From GitHub
 allItems:
@@ -57,8 +47,10 @@ milestoneProgress:
     many: '{closed} of {total} closed'
 milestoneDue:
   en: '{progress} · due {date}'
-liveIn:
-  en: Its items live in
+issuesLiveIn:
+  en: Its issues live in
+pullRequestsLiveIn:
+  en: Its pull requests live in
 inNoProject:
   plural: count
   en:
@@ -66,8 +58,10 @@ inNoProject:
     many: '{count} in no project'
 nothingTitle:
   en: Nothing here
-nothingDetail:
-  en: No issue or pull request of this repository matches. Try another state or kind.
+nothingIssues:
+  en: No issue of this repository matches. Try another state.
+nothingPullRequests:
+  en: No pull request of this repository matches. Try another state.
 onlyWhatConcerns:
   en: 'githq only has what concerns you in {name}: {what}.'
 issueCount:
@@ -80,11 +74,37 @@ pullRequestCount:
   en:
     one: 1 pull request
     many: '{count} pull requests'
-issuesAndPullRequests:
-  en: '{issues} and {pullRequests}'
-othersOnGitHub:
-  en: Its other open issues and pull requests are on GitHub. Search and ⌘K only find what's here.
-allOnGitHub:
-  en: Its open issues and pull requests are on GitHub. Search and ⌘K only find what's here.
+noIssueConcerns:
+  en: No issue in {name} concerns you.
+noPullRequestConcerns:
+  en: No pull request in {name} concerns you.
+onlyConcernsYou:
+  en: githq has only the issues and pull requests of {name} that concern you; {others}. Track it in {settings} to have them all here.
+otherOpenIssues:
+  plural: count
+  en:
+    zero: none of its other issues is open on GitHub
+    one: its one other open issue is on GitHub
+    many: its other {count} open issues are on GitHub
+otherOpenIssuesUncounted:
+  en: its other open issues are on GitHub
+otherOpenPullRequests:
+  plural: count
+  en:
+    zero: none of its other pull requests is open on GitHub
+    one: its one other open pull request is on GitHub
+    many: its other {count} open pull requests are on GitHub
+otherOpenPullRequestsUncounted:
+  en: its other open pull requests are on GitHub
+settings:
+  en: Settings
+commits:
+  en: Commits
+openOnGitHub:
+  en: Open on GitHub
+commitsNeedNoTracking:
+  en: "Its commits don't need tracking: 3 opens them in full."
+branchesAndTags:
+  en: Branches and tags
 workflows:
   en: Workflows

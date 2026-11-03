@@ -16,6 +16,8 @@ $color-bg-2: #131519;
 $color-bg-3: #1a1d22;
 // The selected row of a list.
 $color-sel: #1c2030;
+// Every other row of the commit graph: a very faint stripe carrying the eye from a dot far left to its row.
+$color-row-stripe: rgb(255 255 255 / 2%);
 // Lines between surfaces and around boxes.
 $color-border: #22262d;
 // Stronger outlines: keyboard hints, a notice.
@@ -38,6 +40,9 @@ $color-fg-3: #646b75;
 // Dim text: counts, section headers, the status bar, footers, details. The closest step up from
 // `$color-fg-3` that passes AA (4.5:1) on every surface it sits on, up to `$color-sel` (a selected row).
 $color-fg-dim: #838992;
+// The lines of a commit graph; the default branch's stands out from the rest.
+$color-graph-line: #4a505a;
+$color-graph-line-main: #7a818c;
 // Text on the light button ("Sign in with GitHub") and on the accent.
 $color-on-light: #0e1013;
 
@@ -69,6 +74,7 @@ $font-family-sans: 'Inter', system-ui, sans-serif;
 $font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 $font-family-brand: 'Geist', $font-family-sans;
 
+$font-size-3xs: 11px;
 $font-size-2xs: 11.5px;
 $font-size-xs: 12px;
 $font-size-sm: 12.5px;
@@ -98,13 +104,17 @@ $spacing-6: 6px;
 // Above and below the content of a list's row.
 $spacing-7: 7px;
 $spacing-8: 8px;
+// Between an icon and its label in a navigation row.
+$spacing-9: 9px;
 $spacing-10: 10px;
 $spacing-12: 12px;
-// Around and between what a settings card's footer holds.
+// Around and between what a settings card's footer holds; the inset of a repository's column, lining its head up with
+// its rows' icons.
 $spacing-14: 14px;
 $spacing-16: 16px;
+$spacing-20: 20px;
 $spacing-24: 24px;
-// Around a screen's empty state.
+// Around a screen's empty state; above and below a screen of Settings.
 $spacing-32: 32px;
 $spacing-48: 48px;
 $spacing-96: 96px;
@@ -113,6 +123,9 @@ $radius-sm: 4px;
 $radius-md: 6px;
 $radius-lg: 8px;
 $radius-xl: 10px;
+
+// A box floating over the page: a menu, a popover, a list opened over the graph.
+$shadow-popover: 0 8px 24px rgb(0 0 0 / 40%);
 
 // Widths of the surfaces; the status bar's segments follow them. The sidebar and the item panel are resized by the
 // user: these are the widths until they are (`AppShell` keeps the current ones in `--sidebar-width` and
@@ -123,6 +136,8 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
+// The column a screen of Settings keeps its content in.
+$settings-column-width: 680px;
 // The row at the top of the window that holds macOS's window controls in the desktop app (`shell/windowControls.ts`).
 $window-controls-height: 36px;
 
@@ -260,6 +275,76 @@ $landing-reveal-stagger: 80ms;
     height: 6px;
     background: $color-red;
     border-radius: 50%;
+}
+
+// The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.
+@mixin list-header {
+    display: flex;
+    flex: none;
+    gap: $spacing-10;
+    align-items: center;
+    height: $list-header-height;
+    padding: 0 $spacing-16;
+    border-bottom: 1px solid $color-border;
+}
+
+// A row of navigation, in the sidebar or a repository's column: an icon, its label, a dim count. Its parts are the
+// mixins after it.
+@mixin nav-row {
+    @include focus-ring;
+
+    display: flex;
+    gap: $spacing-9;
+    align-items: center;
+    width: 100%;
+    padding: $spacing-5 $spacing-8;
+    font-size: $font-size-md;
+    line-height: 18px;
+    color: $color-fg-2;
+    text-decoration: none;
+    border-radius: $radius-md;
+
+    &:hover {
+        color: $color-fg;
+        background: $color-bg-3;
+    }
+}
+
+@mixin nav-row-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@mixin nav-row-count {
+    flex: none;
+    font-family: $font-family-mono;
+    font-size: $font-size-2xs;
+    color: $color-fg-dim;
+}
+
+// The row of what is shown; after the row itself, so hovering it changes nothing.
+@mixin nav-row-current {
+    font-weight: $font-weight-medium;
+    color: $color-fg;
+    background: $color-bg-3;
+}
+
+// A screen of Settings, scrolling under its header, and the column its content keeps to.
+@mixin settings-screen {
+    flex: 1;
+    min-height: 0;
+    padding: $spacing-32 $spacing-20;
+    overflow-y: auto;
+}
+
+@mixin settings-screen-column {
+    display: flex;
+    flex-direction: column;
+    max-width: $settings-column-width;
+    margin: 0 auto;
 }
 
 // Text for screen readers only: out of sight, still in the accessibility tree.

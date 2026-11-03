@@ -159,7 +159,7 @@ test('a release failing on a tag lights nothing by default; P from its row and "
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(repository.alertsBar).toContainText('Nothing. Failures here never mark this repository broken.');
     await expect(repository.group('No alerts')).toContainText('Release');
-    await expect(repository.kind('Workflows')).toHaveText(/^Workflows$/u);
+    await expect(repository.section('Workflows')).toHaveText(/^Workflows$/u);
     await expect(shell.workflowMarker(SAMPLE_REPOSITORY)).toHaveCount(0);
     await expect(shell.brokenWorkflows).toHaveCount(0);
 });

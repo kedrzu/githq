@@ -1,7 +1,7 @@
-<!-- The screen of a repository or project not tracked (J3, J4): what concerns the user, the only part of it githq has, then three quiet lines saying so and pointing to Settings, the only place tracking starts (D15). -->
+<!-- The screen of a repository or project not tracked (J3, J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). `headerless` where the caller's screen has already said all the header would (a repository's column, git-client D14). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, EyeOff } from 'lucide-vue-next';
+import { ArrowUpRight } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -15,6 +15,7 @@ import ListView from '@/lists/ListView.vue';
 import StackRow from '@/lists/StackRow.vue';
 import type { Item } from '@/store/ItemTypes.js';
 
+import NotTrackedChip from './NotTrackedChip.vue';
 import * as l from './UntrackedView.loc.js';
 
 const props = withDefaults(
@@ -29,10 +30,6 @@ const props = withDefaults(
     rows: readonly ListRow<Item>[];
     /** The first line: what githq has of it. */
     summary: string;
-    /** The second line: where the rest is. */
-    others: string;
-    /** The Settings section with the name searched. */
-    settingsTo: string;
     properties: readonly ItemProperty[];
     /** The signed-in user. */
     viewerLogin: string;
@@ -42,6 +39,8 @@ const props = withDefaults(
     openedId?: string | null;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
+    /** Without its header: the caller's screen holds the name, the chip and the way to GitHub. */
+    headerless?: boolean;
   }>(),
   {
     meta: '',
@@ -65,20 +64,22 @@ defineSlots<{
   controls?(): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
+  /** The lines after the summary: where the rest is, and a link to Settings to track it. */
+  others(): unknown;
 }>();
 
 const t = useTranslate();
 
-const groups = computed((): ListGroup<Item>[] =>
-  props.rows.length > 0
-    ? [{ key: 'concerns', label: t(l.concernsYou), arrived: true, droppable: false, rows: props.rows }]
-    : [],
-);
+// Shown with its count even when empty (CH37): the lines under it say why.
+const groups = computed((): ListGroup<Item>[] => [
+  { key: 'concerns', label: t(l.concernsYou), arrived: true, droppable: false, quietWhenEmpty: true, rows: props.rows },
+]);
 </script>
 
 <template>
   <div :class="css.untrackedView">
     <header
+      v-if="!headerless"
       :class="css.untrackedView_header"
       v-bind="WINDOW_DRAG_REGION"
     >
@@ -93,13 +94,7 @@ const groups = computed((): ListGroup<Item>[] =>
         :class="css.untrackedView_meta"
         >{{ meta }}</span
       >
-      <span :class="css.untrackedView_badge">
-        <EyeOff
-          :class="css.untrackedView_badgeIcon"
-          aria-hidden="true"
-        />
-        {{ t(l.notTracked) }}
-      </span>
+      <NotTrackedChip />
       <slot name="controls" />
       <span :class="css.untrackedView_spacer" />
       <Button
@@ -171,16 +166,7 @@ const groups = computed((): ListGroup<Item>[] =>
         :aria-label="t(l.notTracking, { name })"
       >
         <p :class="css.untrackedView_summary">{{ summary }}</p>
-        <p>{{ others }}</p>
-        <p :class="css.untrackedView_pointer">
-          {{ t(l.youCanTrackIt) }}
-          <Button
-            variant="link"
-            :link="settingsTo"
-          >
-            {{ t(l.settings) }}
-          </Button>
-        </p>
+        <slot name="others" />
       </section>
     </div>
   </div>
@@ -196,13 +182,7 @@ const groups = computed((): ListGroup<Item>[] =>
 }
 
 .untrackedView_header {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-16;
-  border-bottom: 1px solid $color-border;
+  @include list-header;
 }
 
 .untrackedView_headerIcon {
@@ -222,24 +202,6 @@ const groups = computed((): ListGroup<Item>[] =>
   font-size: $font-size-sm;
   color: $color-fg-dim;
   white-space: nowrap;
-}
-
-.untrackedView_badge {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  padding: 1px 8px;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  white-space: nowrap;
-  border: 1px solid $color-border-2;
-  border-radius: 10px;
-}
-
-.untrackedView_badgeIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
 }
 
 .untrackedView_spacer {
@@ -268,7 +230,7 @@ const groups = computed((): ListGroup<Item>[] =>
 }
 
 // Over the `link` button's own colour: the one way on from here, as J3 draws it.
-.untrackedView_pointer a {
+.untrackedView_rest a {
   color: $color-accent;
 }
 </style>

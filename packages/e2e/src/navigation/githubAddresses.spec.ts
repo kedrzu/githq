@@ -76,17 +76,18 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     const repository = new RepositoryScreenHarness(page);
     await page.goto('/acme/web/pulls');
     await expect(repository.notTracked('acme/web')).toBeVisible();
-    await expect(repository.kind('Pull requests')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.section('Pull requests')).toHaveAttribute('aria-pressed', 'true');
     await expect(repository.rows('Concerns you')).toHaveText([/Redirect once after sign-in/, /Move the sidebar/]);
     await expect(page).toHaveURL('/acme/web/pulls');
 
     await page.goto('/acme/web/issues');
-    await expect(repository.kind('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
     await expect(repository.rows('Concerns you')).toHaveText([/Sign-in loops/, /Document the keyboard shortcuts/]);
     await expect(page).toHaveURL('/acme/web/issues');
 
     await page.goto('/my/assigned');
-    await expect(repository.notTracked('my/assigned')).toBeVisible();
+    // GitHub shows no such repository: the lines say how many others there are without a number.
+    await expect(repository.notTracked('my/assigned')).toContainText('its other open issues are on GitHub.');
     await expect(page).toHaveURL('/my/assigned');
 
     // Only a tracked repository has a Workflows tab (actions D4): an untracked one's is GitHub's page.
@@ -112,20 +113,21 @@ test("a tracked repository and its lists, a project and its saved view, the acco
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     const repository = new RepositoryScreenHarness(page);
 
+    // The repository's own address shows its first section, the first time, and stays as typed.
     await page.goto(`/${SAMPLE_REPOSITORY}`);
-    await expect(repository.kind('All')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.row('Fix the crash on start')).toBeVisible();
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
     await expect(repository.row('Add a dark theme')).toBeVisible();
+    await expect(repository.row('Fix the crash on start')).toHaveCount(0);
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}`);
 
     await page.goto(`/${SAMPLE_REPOSITORY}/issues`);
-    await expect(repository.kind('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
     await expect(repository.row('Add a dark theme')).toBeVisible();
     await expect(repository.row('Fix the crash on start')).toHaveCount(0);
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
 
     await page.goto(`/${SAMPLE_REPOSITORY}/pulls`);
-    await expect(repository.kind('Pull requests')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.section('Pull requests')).toHaveAttribute('aria-pressed', 'true');
     await expect(repository.row('Fix the crash on start')).toBeVisible();
     await expect(repository.row('Add a dark theme')).toHaveCount(0);
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
@@ -176,14 +178,14 @@ test("an item in GitHub's project-pane format opens over the list in the arrange
     // Opened from a repository's list, the address says so in the same format, the list's own query kept.
     await page.evaluate(([key, value]) => localStorage.setItem(key, value), [ITEM_ARRANGEMENT_KEY, 'panel'] as const);
     const repository = new RepositoryScreenHarness(page);
-    await page.goto('/acme/web?x=1');
+    await page.goto('/acme/web/pulls?x=1');
     await repository.row(PULL_REQUEST).click();
     await expect(item.title).toHaveText(PULL_REQUEST);
     await expect(item.modal).toBeHidden();
-    await expect(page).toHaveURL('/acme/web?x=1&pane=issue&issue=acme%7Cweb%7C15');
+    await expect(page).toHaveURL('/acme/web/pulls?x=1&pane=issue&issue=acme%7Cweb%7C15');
 });
 
-test('switching the kind of a repository with an item opened changes its address, keeping the query, the item and the view options', async ({
+test("switching a repository's section with an item opened changes its address, keeping the query and the item; each section keeps its own view options", async ({
     page,
     github,
 }) => {
@@ -194,23 +196,23 @@ test('switching the kind of a repository with an item opened changes its address
     // Wide enough that the layout toggle stays on the toolbar beside the item's panel, not in Display.
     await page.setViewportSize({ width: 1920, height: 1080 });
 
-    await page.goto(`/${SAMPLE_REPOSITORY}?${pane}`);
+    await page.goto(`/${SAMPLE_REPOSITORY}/pulls?${pane}`);
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(repository.selectedRow).toContainText('Fix the crash on start');
     await repository.layout('Board').click();
     await expect(repository.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 
-    await repository.kind('Pull requests').click();
+    await repository.section('Issues').click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues?${pane}`);
+    await expect(repository.row('Add a dark theme')).toBeVisible();
+    await expect(item.title).toHaveText('Fix the crash on start');
+    await expect(repository.layout('List')).toHaveAttribute('aria-pressed', 'true');
+
+    await repository.section('Pull requests').click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls?${pane}`);
-    await expect(repository.row('Add a dark theme')).toHaveCount(0);
     await expect(item.title).toHaveText('Fix the crash on start');
     await expect(repository.selectedRow).toContainText('Fix the crash on start');
     await expect(repository.layout('Board')).toHaveAttribute('aria-pressed', 'true');
-
-    await repository.kind('All').click();
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}?${pane}`);
-    await expect(repository.row('Add a dark theme')).toBeVisible();
-    await expect(repository.selectedRow).toContainText('Fix the crash on start');
 });
 
 test('signing in for the first time from a link with GitHub\'s "return_to" chooses what to track, then returns there', async ({

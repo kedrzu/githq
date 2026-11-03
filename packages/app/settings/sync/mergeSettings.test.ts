@@ -112,6 +112,27 @@ test('fields this build does not know merge key by key like the known ones, and 
     });
 });
 
+test.each([
+    ['only here', { local: 'column' }, 'column'],
+    ['changed only here', { local: 'column', remote: 'tabs', base: 'tabs' }, 'column'],
+    ['changed only in the file', { local: 'tabs', remote: 'column', base: 'tabs' }, 'column'],
+    ['changed on both', { local: 'tabs', remote: 'column', base: 'next' }, 'column'],
+    ['a newer build’s, unchanged', { local: 'next', remote: 'next', base: 'next' }, 'next'],
+    ['a newer build’s, new in the file', { local: 'tabs', remote: 'next', base: 'tabs' }, 'next'],
+    ['a newer build’s, on this device', { local: 'next' }, 'next'],
+])('the repository layout merges key by key: %s', (_, versions, merged) => {
+    const layouts: Readonly<Record<string, string | undefined>> = versions;
+    const local = withLayout(layouts.local);
+    const remote = withLayout(layouts.remote);
+    const base = withLayout(layouts.base);
+
+    expect(mergeSettings({ local, remote, base }).repositoryLayout).toBe(merged);
+});
+
+function withLayout(repositoryLayout: string | undefined): SettingsDocument {
+    return repositoryLayout === undefined ? documentOf([], []) : { ...documentOf([], []), repositoryLayout };
+}
+
 function documentOf(repositories: SettingsRepository[], projects: SettingsProject[]): SettingsDocument {
     return { version: 1, repositories, projects };
 }

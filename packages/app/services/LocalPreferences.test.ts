@@ -59,6 +59,22 @@ test('a change is kept under the same keys, as the plain strings githq always ke
     expect(preferences.getPanelWidth('itemSide.modal')).toBe(preferences.getPanelWidth('itemSide.modal'));
 });
 
+test("a panel's share is kept beside its width, and only a share of something is read back", async () => {
+    const session = createTestSession({ login: 'octocat', answer: () => undefined });
+    const storage = session.container.resolve(Browser).localStorage;
+    const preferences = session.container.resolve(LocalPreferences);
+
+    preferences.getPanelShare('commitGraph').value = 0.25;
+    await nextTick();
+    expect(storage.getItem('githq.panelShare.commitGraph')).toBe('0.25');
+    expect(storage.getItem('githq.panelWidth.commitGraph')).toBeNull();
+
+    for (const raw of ['wide', '0', '-0.1', '1.5', 'Infinity']) {
+        session.fromAnotherTab({ 'githq.panelShare.commitGraph': raw });
+        expect(preferences.getPanelShare('commitGraph').value).toBeNull();
+    }
+});
+
 test("a panel's width first asked for by a component is still kept once that component is gone", async () => {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const storage = session.container.resolve(Browser).localStorage;

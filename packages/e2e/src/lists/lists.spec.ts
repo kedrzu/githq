@@ -48,9 +48,12 @@ test('J3: an untracked repository shows what concerns the user; Settings opens w
 
     await page.goto('/acme/web');
     await expect(repository.notTracked('acme/web')).toContainText(
-        'githq only has what concerns you in acme/web: 2 issues and 2 pull requests.',
+        'githq only has what concerns you in acme/web: 2 issues.',
     );
-    await expect(repository.group('Concerns you').getByRole('listitem')).toHaveCount(4);
+    await expect(repository.notTracked('acme/web')).toContainText(
+        'githq has only the issues and pull requests of acme/web that concern you; none of its other issues is open on GitHub.',
+    );
+    await expect(repository.group('Concerns you').getByRole('listitem')).toHaveCount(2);
     await expect(repository.groupingButton).toHaveCount(0);
 
     answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });

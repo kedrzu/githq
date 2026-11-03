@@ -1,5 +1,5 @@
 import type { ProjectOwnerKind } from '@/projects/ProjectTypes.js';
-import type { RepositoryTab } from '@/repository/buildRepositoryList.js';
+import type { RepositorySection } from '@/repository/RepositorySection.js';
 
 /** The first download (G6), after choosing what to track, under GitHub's reserved `/settings`. */
 export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
@@ -11,12 +11,12 @@ export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
 
 /**
- * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`), its lists of
- * issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`) and its workflows (`/owner/name/actions`,
- * actions D6), all in one route. The workflows' address of a repository not tracked is handed off to GitHub
- * (`middleware/auth.global.ts`, actions D4).
+ * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`, which opens
+ * the section it was left on), its lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`),
+ * its commits (`/owner/name/commits`) and its workflows (`/owner/name/actions`, actions D6), all in one route. The
+ * workflows' address of a repository not tracked is handed off to GitHub (`middleware/auth.global.ts`, actions D4).
  */
-export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls|actions)?';
+export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls|commits|actions)?';
 
 /**
  * The route path of a workflow's run of a tracked repository (actions W4a), at GitHub's address of it. Everything else
@@ -34,15 +34,13 @@ export const WORKFLOW_RUN_JOB_PATH = `${WORKFLOW_RUN_PATH}/job/:job(\\d+)`;
  */
 export const REPOSITORY_SETTINGS_PATH = '/:owner/:name/settings';
 
-/**
- * The last segment of a repository's address showing one of its tabs, as on GitHub: one kind of its items
- * (`/owner/name/pulls`), or its workflows (`/owner/name/actions`).
- */
-export const REPOSITORY_TAB_SEGMENTS = {
+/** The last segment of a repository's address naming one of its sections, as on GitHub (`/owner/name/pulls`). */
+export const REPOSITORY_SECTION_SEGMENTS = {
     issues: 'issues',
     pullRequests: 'pulls',
+    commits: 'commits',
     workflows: 'actions',
-} as const satisfies Record<Exclude<RepositoryTab, 'all'>, string>;
+} as const satisfies Record<RepositorySection, string>;
 
 /**
  * The places on a tracked repository's settings page an address can point to, by their element's id: the page
@@ -141,13 +139,13 @@ export interface ProjectAddress {
 }
 
 /**
- * The address of a repository's view, as on GitHub (`/owner/name`), or of one of its tabs: its list of one kind of
- * its items (`/owner/name/issues`, `/owner/name/pulls`) or its workflows (`/owner/name/actions`).
+ * The address of a repository's view, as on GitHub (`/owner/name`, opening the section it was left on), or of one of
+ * its sections (`/owner/name/issues`, `/owner/name/pulls`, `/owner/name/commits`, `/owner/name/actions`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryPath(nameWithOwner: string, tab: RepositoryTab = 'all') {
-    return tab === 'all' ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_TAB_SEGMENTS[tab]}`;
+export function getRepositoryPath(nameWithOwner: string, section?: RepositorySection) {
+    return section === undefined ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_SECTION_SEGMENTS[section]}`;
 }
 
 /** Which run's address, and of which of its jobs. */
@@ -196,21 +194,23 @@ export function isWorkflowRunRoute(route: IsWorkflowRunRouteParams) {
 }
 
 /**
- * The tab a repository's address shows, from its last segment (the route's `kind`): all its items when it names
- * none.
+ * The section a repository's address names, from its last segment (the route's `section`): `null` when it names
+ * none (`/owner/name`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositoryTab(segment: unknown): RepositoryTab {
+export function getRepositorySection(segment: unknown): RepositorySection | null {
     switch (segment) {
-        case REPOSITORY_TAB_SEGMENTS.issues:
+        case REPOSITORY_SECTION_SEGMENTS.issues:
             return 'issues';
-        case REPOSITORY_TAB_SEGMENTS.pullRequests:
+        case REPOSITORY_SECTION_SEGMENTS.pullRequests:
             return 'pullRequests';
-        case REPOSITORY_TAB_SEGMENTS.workflows:
+        case REPOSITORY_SECTION_SEGMENTS.commits:
+            return 'commits';
+        case REPOSITORY_SECTION_SEGMENTS.workflows:
             return 'workflows';
         default:
-            return 'all';
+            return null;
     }
 }
 

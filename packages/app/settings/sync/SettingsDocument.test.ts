@@ -4,11 +4,12 @@ import { expect, test } from 'bun:test';
 import {
     DEFAULT_WORKFLOW_SETTINGS,
     parseSettings,
+    readRepositoryLayout,
     readWorkflowSettings,
     serializeSettings,
     writeWorkflowSettings,
 } from './SettingsDocument.js';
-import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
+import type { RepositoryLayout, SettingsDocument, SettingsRepository } from './SettingsDocument.js';
 
 const DOCUMENT: SettingsDocument = {
     version: 1,
@@ -183,4 +184,35 @@ test('writing the workflows setting replaces the value whole, keeps fields a new
     expect(
         writeWorkflowSettings({ document: newer, nameWithOwner: 'kedrzu/githq', settings })?.repositories[0]?.workflows,
     ).toEqual({ muted: ['CLA'], defaultBranch: true, refs: ['v*', 'release/*'] });
+});
+
+test('a file without a repository layout reads as tabs, gaining no field, and writes back the same', () => {
+    const text = serializeSettings(DOCUMENT);
+    const parsed = parseSettings(text);
+
+    expect(parsed).toEqual({ kind: 'ok', document: DOCUMENT });
+    expect(text).not.toContain('repositoryLayout');
+    expect(readRepositoryLayout(DOCUMENT)).toBe('tabs');
+});
+
+test.each<[unknown, RepositoryLayout]>([
+    ['column', 'column'],
+    ['tabs', 'tabs'],
+    ['a newer build’s layout', 'tabs'],
+    [7, 'tabs'],
+    [null, 'tabs'],
+])('a file with the layout %j is readable, reads as %s and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, repositoryLayout: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readRepositoryLayout(parsed.document)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, repositoryLayout: written });
+});
+
+test('the layout sits after the lists and before the fields this build does not know, however it was built', () => {
+    const text = serializeSettings({ views: [], repositoryLayout: 'column', ...DOCUMENT });
+
+    expect(Object.keys(JSON.parse(text))).toEqual(['version', 'repositories', 'projects', 'repositoryLayout', 'views']);
 });

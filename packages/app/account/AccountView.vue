@@ -323,11 +323,9 @@ function isApproved(organization: AccountOrganization) {
 }
 
 .accountView_column {
-  display: flex;
-  flex-direction: column;
+  @include settings-screen-column;
+
   gap: 28px;
-  max-width: 680px;
-  margin: 0 auto;
 }
 
 .accountView_who {

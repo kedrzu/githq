@@ -37,6 +37,8 @@ export const ReadingRuns: Story = { args: { freshness: { kind: 'reading', read: 
 
 /** A run's page is waiting for a log (actions W4e). */
 export const ReadingLog: Story = { args: { freshness: { kind: 'readingLog', job: 'build' } } };
+/** A first open's other branches arriving (git-client D19). */
+export const FillingIn: Story = { args: { freshness: { kind: 'filling', done: 3, total: 7 } } };
 
 /** Offline: amber, as of the last success. */
 export const Offline: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'offline' } } };

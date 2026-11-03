@@ -36,9 +36,9 @@ export interface RepositoryCommands {
 }
 
 /**
- * The actions of a repository (`owner/name`): going to its view, one kind of its items or its workflows (only while
- * it is tracked, actions D4), a new issue in it, its page on GitHub and the link to it, its settings (T16) and no
- * longer tracking it (both only while it is tracked). The sidebar's menu of a
+ * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests,
+ * and its workflows only while it is tracked, actions D4), a new issue in it, its page on GitHub and the link to it, its
+ * settings (T16) and no longer tracking it (both only while it is tracked). The sidebar's menu of a
  * repository offers them all; the repository's view offers its page on GitHub in the command menu.
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {

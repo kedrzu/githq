@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 import { TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import { getItemPagePath } from '@/item/itemRoutes.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { REPOSITORY_SECTIONS } from '@/repository/RepositorySection.js';
 import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
@@ -14,8 +15,8 @@ import {
     getGitHubUrl,
     getProjectPath,
     getProjectSettingsPath,
-    getRepositoryTab,
     getRepositoryPath,
+    getRepositorySection,
     getRepositorySettingsPath,
     getWorkflowRunPath,
     GITHUB_RESERVED_SEGMENTS,
@@ -40,6 +41,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web', 'repository'],
     ['/acme/web/issues', 'repository'],
     ['/acme/web/pulls', 'repository'],
+    ['/acme/web/commits', 'repository'],
     ['/my-org/web.js', 'repository'],
     ['/my_org/web-app.v2/pulls', 'repository'],
     // An old githq address is repository-shaped, as on github.com.
@@ -56,7 +58,9 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/orgs/acme/projects/3/settings', 'project-org-settings'],
     ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
     ['/settings', 'settings'],
+    ['/settings?tab=display', 'settings'],
     ['/settings?tab=sync', 'settings'],
+    ['/settings?tab=account', 'settings'],
     // The broken workflows of every tracked repository, under GitHub's reserved `/dashboard`.
     ['/dashboard/workflows', 'workflows'],
     ['/dashboard', 'github-dashboard'],
@@ -96,6 +100,9 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web/actions/runs', 'github'],
     ['/acme/web/actions/workflows/ci.yml', 'github'],
     ['/orgs/web/actions/runs/123', 'github-orgs'],
+    // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
+    ['/acme/web/commits/main', 'github'],
+    ['/acme/web/commit/0123abc', 'github'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],
@@ -163,6 +170,8 @@ test("Settings' section is its `?tab=`; none, an unknown or an old one is the fi
     }
 
     expect(getSettingsPath('repositories')).toBe('/settings');
+    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'sync', 'account']);
+    expect(getSettingsPath('display')).toBe('/settings?tab=display');
     expect(readSettingsSection(undefined)).toBe('repositories');
     expect(readSettingsSection('unknown')).toBe('repositories');
     expect(readSettingsSection(['account'])).toBe('repositories');
@@ -199,18 +208,21 @@ test('the repository page is one instance for the repository and its lists', () 
     expect(keyOf('/acme/web/issues')).toBe('acme/web');
     expect(keyOf('/acme/web/pulls')).toBe('acme/web');
     expect(keyOf('/acme/web/actions')).toBe('acme/web');
+    expect(keyOf('/acme/web/commits')).toBe('acme/web');
     expect(keyOf('/acme/api')).toBe('acme/api');
 });
 
-test("a repository's lists are GitHub's addresses of them, and the address names the kind it lists", () => {
+test("a repository's sections are GitHub's addresses of its lists and its commits, and the address names the section", () => {
     expect(getRepositoryPath('acme/web')).toBe('/acme/web');
-    expect(getRepositoryPath('acme/web', 'all')).toBe('/acme/web');
     expect(getRepositoryPath('acme/web', 'issues')).toBe('/acme/web/issues');
     expect(getRepositoryPath('acme/web', 'pullRequests')).toBe('/acme/web/pulls');
+    expect(getRepositoryPath('acme/web', 'commits')).toBe('/acme/web/commits');
     expect(getRepositoryPath('acme/web', 'workflows')).toBe('/acme/web/actions');
-    for (const tab of ['all', 'issues', 'pullRequests', 'workflows'] as const) {
-        expect(getRepositoryTab(router.resolve(getRepositoryPath('acme/web', tab)).params.kind), tab).toBe(tab);
+    for (const section of REPOSITORY_SECTIONS) {
+        const resolved = router.resolve(getRepositoryPath('acme/web', section));
+        expect(getRepositorySection(resolved.params.section), section).toBe(section);
     }
+    expect(getRepositorySection(router.resolve(getRepositoryPath('acme/web')).params.section)).toBeNull();
 });
 
 test("every address githq makes is GitHub's: under a parameter or a GitHub-reserved first segment", () => {
@@ -234,6 +246,7 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositoryPath('acme/web', 'issues'), 'repository'],
         [getRepositoryPath('acme/web', 'pullRequests'), 'repository'],
         [getRepositoryPath('acme/web', 'workflows'), 'repository'],
+        [getRepositoryPath('acme/web', 'commits'), 'repository'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 12 }), 'item-issue'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],

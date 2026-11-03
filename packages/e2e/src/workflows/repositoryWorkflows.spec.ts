@@ -47,8 +47,8 @@ test("a repository's Workflows tab lists every workflow — runs on any ref read
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
 
     const repository = new RepositoryScreenHarness(page);
-    await expect(repository.kind('Workflows')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.kind('Workflows')).toHaveText(/^Workflows\s*1$/u);
+    await expect(repository.section('Workflows')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.section('Workflows')).toHaveText(/^Workflows\s*1$/u);
     await expect(repository.alertsBar).toContainText(/Alerts on\s*main/u);
     await expect(repository.group('Broken')).toContainText('Deploy');
     await expect(repository.group('Pull requests only')).toContainText('CLA');
@@ -56,11 +56,11 @@ test("a repository's Workflows tab lists every workflow — runs on any ref read
     await expect(repository.group('Passing')).toContainText('Probe');
     await expect(repository.group('Disabled')).toContainText('Backup');
     // Workflows never appear among the repository's items (actions D6).
-    await repository.kind('All').click();
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}`);
+    await repository.section('Issues').click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
     await expect(repository.workflow('Deploy')).toHaveCount(0);
 
-    await repository.kind('Workflows').click();
+    await repository.section('Workflows').click();
     // The tab takes the keys as it opens, on its first row.
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('Enter');
@@ -199,8 +199,8 @@ test('a repository with no workflows says so, with no count on its tab', async (
     await shell.tracked(SAMPLE_REPOSITORY).click();
 
     const repository = new RepositoryScreenHarness(page);
-    await repository.kind('Workflows').click();
+    await repository.section('Workflows').click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
     await expect(page.getByRole('heading', { name: 'No workflows here, yet' })).toBeVisible();
-    await expect(repository.kind('Workflows')).toHaveText(/^Workflows$/u);
+    await expect(repository.section('Workflows')).toHaveText(/^Workflows$/u);
 });

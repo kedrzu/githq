@@ -78,6 +78,12 @@ const look = computed((): SegmentLook => {
         tone: 'dim',
         text: t(l.statusChecked, { age: formatCheckedAge(freshness.checkedAt, now.value) }),
       };
+    case 'filling':
+      return {
+        icon: LoaderCircle,
+        tone: 'muted',
+        text: t(l.filling, { done: freshness.done, total: freshness.total }),
+      };
     case 'answered':
       return {
         icon: Cloud,

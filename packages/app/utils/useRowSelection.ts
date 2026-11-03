@@ -7,16 +7,12 @@ import { followSelection } from './followSelection.js';
 import { isActivatableTarget } from './isActivatableTarget.js';
 import { isScreenKey } from './isScreenKey.js';
 
-/** A list of rows the screen's keys select in. */
-export interface UseRowSelectionOptions<T> {
+/** What every list of rows says, however its selected row is brought into sight. */
+interface RowSelectionListOptions<T> {
     /** The rows, in the order the keys move through them. */
     readonly rows: MaybeRefOrGetter<readonly T[]>;
     /** What tells the rows apart, kept while the list changes under the selection. */
     getKey(row: T): string;
-    /** The element holding the rows, scrolled so the selected one stays in sight. */
-    readonly root: MaybeRefOrGetter<HTMLElement | null>;
-    /** The attribute every row's element carries its key in (`data-workflow-key`). */
-    readonly keyAttribute: string;
     /** Whether the first row is the selected one until the user moves; otherwise nothing is selected until then. */
     readonly selectFirst?: boolean;
     /**
@@ -26,7 +22,29 @@ export interface UseRowSelectionOptions<T> {
     readonly chosenKey?: Ref<string | null>;
     /** Enter on the selected row. */
     open(row: T): void;
+    /** Whether the keys are the list's now; always when not given. Something opened over it may take them. */
+    readonly enabled?: MaybeRefOrGetter<boolean>;
 }
+
+/** A list with every row in the page: the selected one is found by its key and scrolled into sight. */
+export interface UseRowSelectionDrawnOptions<T> extends RowSelectionListOptions<T> {
+    /** The element holding the rows, scrolled so the selected one stays in sight. */
+    readonly root: MaybeRefOrGetter<HTMLElement | null>;
+    /** The attribute every row's element carries its key in (`data-workflow-key`). */
+    readonly keyAttribute: string;
+    readonly reveal?: undefined;
+}
+
+/** A virtual list, whose next row may not be drawn yet: only the list itself can bring it into sight. */
+export interface UseRowSelectionVirtualOptions<T> extends RowSelectionListOptions<T> {
+    /** Brings the row the keys moved to into sight. */
+    reveal(key: string): void;
+    readonly root?: undefined;
+    readonly keyAttribute?: undefined;
+}
+
+/** A list of rows the screen's keys select in. */
+export type UseRowSelectionOptions<T> = UseRowSelectionDrawnOptions<T> | UseRowSelectionVirtualOptions<T>;
 
 /** The selection of a list the keys move through. */
 export interface RowSelectionViewModel<T> {
@@ -38,12 +56,14 @@ export interface RowSelectionViewModel<T> {
     select(key: string): void;
     /** Scrolls the selected row into sight. */
     reveal(): void;
+    /** Moves the selection by a row and brings it into sight, as the keys do (a button doing what they do). */
+    step(by: 1 | -1): void;
 }
 
 /**
  * The selection of a screen's list of rows: J/K and ↓/↑ move it — from nothing selected, either way to the first
- * row — and scroll the selected row into sight, Enter opens the selected row (not from a button or a link, which do
- * what they say; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
+ * row — and bring the selected row into sight, Enter opens the selected row (not from a button or a link, which do
+ * what they say, nor with Shift, a screen's own; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
  * screen has them ({@link isScreenKey}).
  * @util
  */
@@ -69,7 +89,7 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
     });
 
     onWindowEvent('keydown', event => {
-        if (!isScreenKey(event)) {
+        if (!isScreenKey(event) || toValue(options.enabled) === false) {
             return;
         }
 
@@ -85,14 +105,14 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
                 step(-1);
                 return;
             case 'Enter':
-                if (selectedRow.value !== null && !isActivatableTarget(event.target)) {
+                if (!event.shiftKey && selectedRow.value !== null && !isActivatableTarget(event.target)) {
                     event.preventDefault();
                     options.open(selectedRow.value);
                 }
         }
     });
 
-    return reactive<RowSelectionViewModel<T>>({ selectedKey, selectedRow, select, reveal });
+    return reactive<RowSelectionViewModel<T>>({ selectedKey, selectedRow, select, reveal, step });
 
     function select(key: string) {
         chosenKey.value = key;
@@ -112,13 +132,24 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
             toValue(options.root)?.focus({ preventScroll: true });
         }
 
-        void nextTick(reveal);
+        if (options.reveal) {
+            options.reveal(next);
+        } else {
+            void nextTick(reveal);
+        }
     }
 
     function reveal() {
-        if (selectedKey.value !== null) {
+        const key = selectedKey.value;
+        if (key === null) {
+            return;
+        }
+
+        if (options.reveal) {
+            options.reveal(key);
+        } else {
             toValue(options.root)
-                ?.querySelector(`[${options.keyAttribute}="${CSS.escape(selectedKey.value)}"]`)
+                ?.querySelector(`[${options.keyAttribute}="${CSS.escape(key)}"]`)
                 ?.scrollIntoView({ block: 'nearest' });
         }
     }

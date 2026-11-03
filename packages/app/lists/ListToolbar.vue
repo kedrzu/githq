@@ -3,7 +3,6 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowDownUp,
-  ChevronDown,
   Columns3,
   LayoutGrid,
   List,
@@ -17,10 +16,10 @@ import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
-import Menu from '@/components/Menu.vue';
 import Popover from '@/components/Popover.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
+import ListTitle from './ListTitle.vue';
 import * as l from './ListToolbar.loc.js';
 import ListToolbarControl from './ListToolbarControl.vue';
 import type { ListToolbarOption } from './ListToolbarControl.vue';
@@ -262,28 +261,14 @@ function change(changes: Partial<ListViewOptions>) {
     :class="css.listToolbar"
     v-bind="WINDOW_DRAG_REGION"
   >
-    <h1 :class="css.listToolbar_title">
-      <Menu
+    <ListTitle :title="title">
+      <template
         v-if="$slots.titleMenu"
-        align="start"
+        #menu
       >
-        <template #trigger>
-          <button
-            type="button"
-            :class="css.listToolbar_titleButton"
-            :aria-label="t(l.titleMenuLabel, { title })"
-          >
-            {{ title }}
-            <ChevronDown
-              :class="css.listToolbar_titleChevron"
-              aria-hidden="true"
-            />
-          </button>
-        </template>
         <slot name="titleMenu" />
-      </Menu>
-      <template v-else>{{ title }}</template>
-    </h1>
+      </template>
+    </ListTitle>
     <slot name="title" />
     <slot />
     <div
@@ -363,48 +348,9 @@ function change(changes: Partial<ListViewOptions>) {
 
 <style lang="scss" module="css">
 .listToolbar {
+  @include list-header;
+
   position: relative;
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-16;
-  border-bottom: 1px solid $color-border;
-}
-
-.listToolbar_title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  white-space: nowrap;
-}
-
-/* As the opened item's reference opens its menu (M1). */
-.listToolbar_titleButton {
-  display: flex;
-  gap: $spacing-6;
-  align-items: center;
-  height: 26px;
-  padding: 0 $spacing-6;
-  margin-left: -$spacing-6;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: $radius-md;
-
-  &:hover,
-  &[data-state='open'] {
-    background: $color-bg-3;
-  }
-}
-
-.listToolbar_titleChevron {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-dim;
 }
 
 /* Takes the room the rest leaves, whatever its options need: `fit` keeps in it only those that fit. */
