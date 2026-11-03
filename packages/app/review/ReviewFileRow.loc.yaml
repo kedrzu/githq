@@ -18,3 +18,10 @@ generated:
   en: generated
 large:
   en: large
+notInDiff:
+  en: not in the diff
+openThreads:
+  plural: count
+  en:
+    one: 1 open thread
+    many: '{count} open threads'

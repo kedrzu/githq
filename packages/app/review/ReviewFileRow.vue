@@ -1,7 +1,7 @@
-<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner until it is here, a red mark when it failed, an amber pause while it waits for GitHub's allowance, a tag for what has no diff, with a binary file's sizes in place of its lines. A file GitHub took the viewed mark off since the last visit is tagged (D35). While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
+<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner until it is here, a red mark when it failed, an amber pause while it waits for GitHub's allowance, a tag for what has no diff, with a binary file's sizes in place of its lines. Its open threads in amber (D27), a click on them jumping to the first. A file gone from the diff has a struck name, says so and has only its threads and file-x (D30). A file GitHub took the viewed mark off since the last visit is tagged (D35). While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, Eye, LoaderCircle, Pause } from 'lucide-vue-next';
+import { CircleAlert, Eye, FileX, LoaderCircle, MessageSquare, Pause } from 'lucide-vue-next';
 
 import PullRequestSize from '@/lists/PullRequestSize.vue';
 
@@ -29,13 +29,26 @@ defineProps<{
   showFolder?: boolean;
   /** GitHub took its viewed mark off since the last visit. */
   changedSince?: boolean;
+  /** How many of its threads are unresolved. */
+  openThreads?: number;
 }>();
 
 const emit = defineEmits<{
   select: [event: MouseEvent];
+  /** A click on its open threads. */
+  selectThreads: [];
 }>();
 
 const t = useTranslate();
+
+// A span, not a button of its own: a button holds no other. The keys have N.
+function onClick(event: MouseEvent) {
+  if (event.target instanceof Element && event.target.closest('[data-threads]')) {
+    emit('selectThreads');
+  } else {
+    emit('select', event);
+  }
+}
 </script>
 
 <template>
@@ -51,12 +64,20 @@ const t = useTranslate();
     :tabindex="current ? 0 : -1"
     :aria-current="current ? 'true' : undefined"
     :aria-pressed="selected ? 'true' : undefined"
-    @click="emit('select', $event)"
+    @click="onClick"
   >
-    <ReviewChange :change="file.changeType" />
-    <span :class="[css.reviewFileRow_name, (file.viewed === 'VIEWED' || collapsed) && css.reviewFileRow_name_dim]">{{
-      getFileName(file.path)
-    }}</span>
+    <ReviewChange
+      v-if="!file.gone"
+      :change="file.changeType"
+    />
+    <span
+      :class="[
+        css.reviewFileRow_name,
+        (file.viewed === 'VIEWED' || collapsed) && css.reviewFileRow_name_dim,
+        file.gone && css.reviewFileRow_name_gone,
+      ]"
+      >{{ getFileName(file.path) }}</span
+    >
     <Eye
       v-if="file.viewed === 'VIEWED'"
       :class="css.reviewFileRow_viewed"
@@ -79,7 +100,12 @@ const t = useTranslate();
       >{{ t(l[collapseReason]) }}</span
     >
     <span
-      v-if="state.kind === 'binary'"
+      v-if="file.gone"
+      :class="css.reviewFileRow_tag"
+      >{{ t(l.notInDiff) }}</span
+    >
+    <span
+      v-else-if="state.kind === 'binary'"
       :class="css.reviewFileRow_tag"
       >{{ t(l.binary) }}</span
     >
@@ -90,7 +116,25 @@ const t = useTranslate();
     >
     <span :class="css.reviewFileRow_spacer" />
     <span
-      v-if="state.kind === 'binary'"
+      v-if="openThreads"
+      :class="css.reviewFileRow_threads"
+      :title="t(l.openThreads, { count: openThreads })"
+      :aria-label="t(l.openThreads, { count: openThreads })"
+      role="img"
+      data-threads
+    >
+      <MessageSquare
+        :class="css.reviewFileRow_threadsIcon"
+        aria-hidden="true"
+      />{{ openThreads }}
+    </span>
+    <FileX
+      v-if="file.gone"
+      :class="[css.reviewFileRow_status, css.reviewFileRow_status_gone]"
+      aria-hidden="true"
+    />
+    <span
+      v-else-if="state.kind === 'binary'"
       :class="css.reviewFileRow_size"
       >{{ formatFileSizes(state) }}</span
     >
@@ -101,7 +145,7 @@ const t = useTranslate();
       :deletions="file.deletions"
     />
     <LoaderCircle
-      v-if="state.kind === 'loading' || (state.kind === 'waiting' && !collapsed)"
+      v-if="!file.gone && (state.kind === 'loading' || (state.kind === 'waiting' && !collapsed))"
       :class="[css.reviewFileRow_status, css.reviewFileRow_status_loading]"
       role="img"
       :aria-label="t(l.loading)"
@@ -172,6 +216,11 @@ const t = useTranslate();
   color: $color-fg-2;
 }
 
+.reviewFileRow_name_gone {
+  color: $color-fg-2;
+  text-decoration: line-through;
+}
+
 .reviewFileRow_folder {
   overflow: hidden;
   font-size: $font-size-2xs;
@@ -206,6 +255,21 @@ const t = useTranslate();
   flex: 1;
 }
 
+.reviewFileRow_threads {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+  align-items: center;
+  font-family: $font-family-mono;
+  font-size: 10.5px;
+  color: $color-amber;
+}
+
+.reviewFileRow_threadsIcon {
+  width: 11px;
+  height: 11px;
+}
+
 .reviewFileRow_size {
   flex: none;
   font-family: $font-family-mono;
@@ -221,6 +285,10 @@ const t = useTranslate();
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+}
+
+.reviewFileRow_status_gone {
+  color: $color-fg-3;
 }
 
 .reviewFileRow_status_failed {

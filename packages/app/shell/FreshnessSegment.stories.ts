@@ -35,6 +35,17 @@ export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 
+/** On a thread of a review: which of them it is, and the keys that walk them (CR15). */
+export const ThreadPosition: Story = {
+    args: { freshness: { kind: 'threadPosition', position: 2, total: 7, open: 5 } },
+};
+
+/** GitHub didn't give a review's threads: the files stay usable, and it says so. */
+export const ThreadsUnread: Story = { args: { freshness: { kind: 'threadsUnread' } } };
+
+/** A review's threads wait for the allowance. */
+export const ThreadsPaused: Story = { args: { freshness: { kind: 'threadsPaused', until: AT_14_06 } } };
+
 /** A first open's other branches arriving (git-client D19). */
 export const FillingIn: Story = { args: { freshness: { kind: 'filling', done: 3, total: 7 } } };
 

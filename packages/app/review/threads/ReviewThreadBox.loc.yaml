@@ -1,0 +1,13 @@
+threadBy:
+  en: Thread by {who}
+ghost:
+  en: ghost
+outdated:
+  en: Outdated
+resolved:
+  en: Resolved
+comments:
+  plural: count
+  en:
+    one: 1 comment
+    many: '{count} comments'

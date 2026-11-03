@@ -70,6 +70,26 @@ export const Files: Story = {};
 /** Nothing arrived yet. */
 export const Empty: Story = { args: { groups: [], files: [], currentPath: null, changedFiles: null } };
 
+/** CR2, CR14: open threads in amber, a click on them landing on the first; a file gone from the diff says so. */
+export const Threads: Story = {
+    args: {
+        groups: groupReviewFiles([
+            ...FILES,
+            { ...file('src/sync/retry-policy.ts', 0, 0, { changeType: 'DELETED' }), gone: true },
+        ]),
+        openThreads: new Map([
+            ['docs/sync.md', 2],
+            ['src/sync/retry-policy.ts', 1],
+        ]),
+        onSelectThreads: fn(),
+    },
+    play: async ({ args, canvas }) => {
+        await expect(canvas.getByText('not in the diff')).toBeInTheDocument();
+        await userEvent.click(canvas.getByRole('img', { name: '2 open threads' }));
+        await expect(args.onSelectThreads).toHaveBeenCalledWith('docs/sync.md');
+    },
+};
+
 /** CR21: viewed files hidden: the eye lit, the count still of all of them. */
 export const HidingViewed: Story = {
     args: { groups: groupReviewFiles(FILES.filter(({ viewed }) => viewed !== 'VIEWED')), hideViewed: true },

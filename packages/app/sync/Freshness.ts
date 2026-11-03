@@ -17,6 +17,10 @@
  * - `filesPaused`: `waiting` of a review's files wait for the API allowance, until `until`;
  * - `filesCapped`: GitHub lists only the first `listed` of a pull request's `total` changed files;
  * - `filesUnread`: GitHub didn't give a pull request's list of files;
+ * - `threadsUnread`: GitHub didn't give a pull request's review threads;
+ * - `threadsPaused`: a pull request's review threads wait for the API allowance, until `until`;
+ * - `threadPosition`: a review's thread is focused, `position` of `total` that `N` walks, `open` of them unresolved: not how
+ *   fresh it is, but what the segment says then (CR15);
  * - `filesSelected`: files of a review are selected together: not how fresh it is, but what the segment says then (CR23).
  *
  * The user's own edits on the way, or one GitHub rejected, are said over it in the segment (`FreshnessSegment`).
@@ -40,6 +44,9 @@ export type Freshness =
     | { readonly kind: 'filesPaused'; readonly waiting: number; readonly until: number }
     | { readonly kind: 'filesCapped'; readonly listed: number; readonly total: number }
     | { readonly kind: 'filesUnread' }
+    | { readonly kind: 'threadsUnread' }
+    | { readonly kind: 'threadsPaused'; readonly until: number }
+    | { readonly kind: 'threadPosition'; readonly position: number; readonly total: number; readonly open: number }
     | { readonly kind: 'filesSelected' };
 
 /** What a surface's freshness is told from: its poll and the browser now. */

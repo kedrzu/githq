@@ -139,18 +139,7 @@ export function buildDiffRows(diff: FileDiff, options: BuildDiffRowsOptions): Di
 
     function pushContext(beforeStart: number, afterStart: number, count: number) {
         for (let offset = 0; offset < count; offset++) {
-            const oldLine = beforeStart + offset + 1;
-            const newLine = afterStart + offset + 1;
-            switch (layout) {
-                case 'split':
-                    rows.push(createSplitRow({ line: oldLine, kind: 'context' }, { line: newLine, kind: 'context' }));
-                    break;
-                case 'unified':
-                    rows.push(createUnifiedRow(oldLine, newLine, ' '));
-                    break;
-                default:
-                    assertNever(layout);
-            }
+            rows.push(createDiffContextRow(layout, beforeStart + offset + 1, afterStart + offset + 1));
         }
     }
 
@@ -227,6 +216,36 @@ export function getDiffLineRowKey(diff: FileDiff, { side, line }: DiffLine, layo
     return onBefore
         ? getLineRowKey(line, line - beforeEnd + afterEnd)
         : getLineRowKey(line - afterEnd + beforeEnd, line);
+}
+
+/**
+ * The row of a line both versions hold, as {@link buildDiffRows} builds it, for one drawn away from them.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function createDiffContextRow(
+    layout: DiffLayout,
+    oldLine: number,
+    newLine: number,
+): DiffSplitRow | DiffUnifiedRow {
+    return layout === 'split'
+        ? createSplitRow({ line: oldLine, kind: 'context' }, { line: newLine, kind: 'context' })
+        : createUnifiedRow(oldLine, newLine, ' ');
+}
+
+/**
+ * The rows of one line changed in whitespace alone, whose two versions are to show: one across in split, two in unified.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function createDiffChangedRows(
+    layout: DiffLayout,
+    oldLine: number,
+    newLine: number,
+): (DiffSplitRow | DiffUnifiedRow)[] {
+    return layout === 'split'
+        ? [createSplitRow({ line: oldLine, kind: 'deleted' }, { line: newLine, kind: 'added' })]
+        : [createUnifiedRow(oldLine, null, '-'), createUnifiedRow(null, newLine, '+')];
 }
 
 function createSplitRow(left: DiffCell | null, right: DiffCell | null): DiffSplitRow {

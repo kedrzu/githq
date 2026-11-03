@@ -60,3 +60,7 @@ hideFileList:
   en: Hide the file list
 showFileList:
   en: Show the file list
+nextThread:
+  en: Next thread
+previousThread:
+  en: Previous thread

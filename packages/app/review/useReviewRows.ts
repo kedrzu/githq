@@ -12,7 +12,7 @@ import type { FileDiff } from './diff/computeFileDiff.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import { createFileSyntax } from './syntax/createFileSyntax.js';
 import type { FileVersions } from './syntax/createFileSyntax.js';
-import { listGoneEntries, placeThreads } from './threads/placeThreads.js';
+import { groupThreadsByFile, listGoneEntries, placeThreads } from './threads/placeThreads.js';
 import type { ThreadFileView, ThreadPlacement } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 
@@ -25,13 +25,15 @@ export interface UseReviewRowsOptions {
     hideWhitespace: MaybeRefOrGetter<boolean>;
     /** The file in view: computing goes outward from it. */
     currentPath: MaybeRefOrGetter<string | null>;
+    /** Whether a collapsed file shows its threads under its header (D13). */
+    threadsInCollapsed: MaybeRefOrGetter<boolean>;
 }
 
 /** Where the review threads show, as a new object whenever that changes. */
 export interface ReviewThreadPlacements {
     /**
      * Every thread of every file listed, shown or not, and of the files not listed once the list stops growing, by the path
-     * the thread names. In a file with no diff yet they are `inCollapsed`, until it has one.
+     * of the file they belong to (`groupThreadsByFile`). In a file with no diff yet they are `inCollapsed`, until it has one.
      */
     readonly byFile: ReadonlyMap<string, readonly ThreadPlacement[]>;
     /** The paths of `byFile` that are an entry of their own (D12). */
@@ -51,6 +53,7 @@ type LinesContent = Extract<ReviewFileContent, { kind: 'lines' }>;
 interface BuiltLines {
     readonly expanded: readonly DiffLineRange[];
     readonly expansionReset: boolean;
+    readonly threads: readonly ThreadPlacement[] | undefined;
     readonly content: LinesContent;
 }
 
@@ -69,6 +72,7 @@ const REBUILD_EVERY_MS = 32;
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
 const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
 const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
+const GONE: ReviewFileContent = { kind: 'gone' };
 const COLLAPSED_VIEW: ThreadFileView = { kind: 'collapsed' };
 const GONE_VIEW: ThreadFileView = { kind: 'gone' };
 
@@ -99,7 +103,9 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     let builtFiles: readonly ReviewFile[] = [];
     let builtAt = Number.NEGATIVE_INFINITY;
     let cancelTurn: (() => void) | null = null;
-    let threadsByFile: { from: readonly ReviewThread[]; byFile: Map<string, ReviewThread[]> } | null = null;
+    let builtPlacements = threadPlacements.value;
+    let builtThreadsInCollapsed = toValue(options.threadsInCollapsed);
+    let threadsByFile = new Map<string, readonly ReviewThread[]>();
 
     watch(
         [
@@ -110,6 +116,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             () => toValue(options.files)?.files,
             () => toValue(options.files)?.listComplete,
             () => toValue(options.files)?.listFailing,
+            () => toValue(options.threadsInCollapsed),
         ],
         () => {
             rebuild();
@@ -141,6 +148,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         // Most new versions only say a file went from waiting to loading.
         if (
             files === builtFiles &&
+            threadPlacements.value === builtPlacements &&
+            toValue(options.threadsInCollapsed) === builtThreadsInCollapsed &&
             next.length === builtFrom.length &&
             next.every((c, i) => c === builtFrom[i]) &&
             reasons.every((reason, i) => reason === builtReasons[i])
@@ -149,13 +158,25 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         }
 
         builtFiles = files;
+        builtPlacements = threadPlacements.value;
+        builtThreadsInCollapsed = toValue(options.threadsInCollapsed);
         builtFrom = next;
         builtReasons = reasons;
         builtAt = clock.now();
-        rows.value = buildReviewRows({ files, getContent, getCollapseReason });
+        rows.value = buildReviewRows({
+            files,
+            getContent,
+            getCollapseReason,
+            getThreads: file => threadPlacements.value.byFile.get(file.path),
+            threadsInCollapsed: builtThreadsInCollapsed,
+        });
     }
 
     function getContent(file: ReviewFile): ReviewFileContent {
+        if (file.gone) {
+            return GONE;
+        }
+
         const state = getState(file);
         // Only ever a file that may yet turn out generated, or an open one: it says why it isn't here, which flips nothing.
         if (state?.kind === 'paused') {
@@ -209,8 +230,9 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
 
         const expanded = toValue(options.files)?.getExpandedLines(file.path) ?? [];
         const expansionReset = toValue(options.files)?.isExpansionReset(file.path) ?? false;
+        const threads = threadPlacements.value.byFile.get(file.path);
         const built = byLayout[layout];
-        if (built?.expanded === expanded && built.expansionReset === expansionReset) {
+        if (built?.expanded === expanded && built.expansionReset === expansionReset && built.threads === threads) {
             return built.content;
         }
 
@@ -223,9 +245,10 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
                 layout,
                 expanded,
                 expansionReset,
+                threads,
             }),
         };
-        byLayout[layout] = { expanded, expansionReset, content };
+        byLayout[layout] = { expanded, expansionReset, threads, content };
         return content;
     }
 
@@ -236,24 +259,11 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             return;
         }
 
-        if (threadsByFile?.from !== threads) {
-            const byPath = new Map<string, ReviewThread[]>();
-            for (const thread of threads) {
-                const fileThreads = byPath.get(thread.path);
-                if (fileThreads) {
-                    fileThreads.push(thread);
-                } else {
-                    byPath.set(thread.path, [thread]);
-                }
-            }
-
-            threadsByFile = { from: threads, byFile: byPath };
-        }
-
+        threadsByFile = regroupThreads(threads, files?.files ?? []);
         const listed = new Set(files?.files.map(file => file.path));
         const listEnded = files != null && (files.listComplete || files.listFailing || files.pausedUntil !== null);
         const byFile = new Map<string, readonly ThreadPlacement[]>();
-        for (const [path, fileThreads] of threadsByFile.byFile) {
+        for (const [path, fileThreads] of threadsByFile) {
             // Not gone yet, while a later page may yet list it.
             if (listed.has(path) || listEnded) {
                 byFile.set(path, placeFileThreads(path, fileThreads, listed.has(path)));
@@ -264,6 +274,18 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         if (byFile.size !== published.size || [...byFile].some(([path, placed]) => published.get(path) !== placed)) {
             threadPlacements.value = { byFile, goneEntries: listGoneEntries(byFile) };
         }
+    }
+
+    /** The same array for a file whose threads stayed the same: what was placed on it is kept by that. */
+    function regroupThreads(threads: readonly ReviewThread[], listed: readonly ReviewFile[]) {
+        const regrouped = new Map<string, readonly ReviewThread[]>();
+        for (const [path, fileThreads] of groupThreadsByFile(threads, listed)) {
+            const held = threadsByFile.get(path);
+            const same = held?.length === fileThreads.length && fileThreads.every((t, i) => t === held[i]);
+            regrouped.set(path, same ? held : fileThreads);
+        }
+
+        return regrouped;
     }
 
     function placeFileThreads(path: string, threads: readonly ReviewThread[], listed: boolean) {

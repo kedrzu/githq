@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). Each says its open threads, a click on them landing on the first. A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -43,10 +43,14 @@ const props = defineProps<{
   selected: ReadonlySet<string>;
   /** The files GitHub took the viewed mark off since the last visit (D35). */
   lostViewed?: ReadonlySet<string>;
+  /** How many of a file's threads are unresolved, by its path. */
+  openThreads?: ReadonlyMap<string, number>;
 }>();
 
 const emit = defineEmits<{
   select: [path: string];
+  /** A click on a file's open threads. */
+  selectThreads: [path: string];
   /** ⇧click. */
   selectRange: [path: string];
   /** ⌘/Ctrl+click. */
@@ -226,7 +230,9 @@ function onFilterKeydown(event: KeyboardEvent) {
                 :selected="selected.has(file.path)"
                 :show-folder="flat"
                 :changed-since="lostViewed?.has(file.path)"
+                :open-threads="openThreads?.get(file.path)"
                 @select="onRowClick(file.path, $event)"
+                @select-threads="emit('selectThreads', file.path)"
               />
             </li>
           </ul>

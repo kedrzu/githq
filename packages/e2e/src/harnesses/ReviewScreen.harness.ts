@@ -110,6 +110,31 @@ export class ReviewScreenHarness {
         return this.page.getByRole('button', { name: 'File list', exact: true });
     }
 
+    /** The thread holding that text, in the diff. */
+    thread(text: string): Locator {
+        return this.diff.getByRole('group', { name: /^Thread/ }).filter({ hasText: text });
+    }
+
+    /** The thread N and ⇧N are at. */
+    get focusedThread(): Locator {
+        return this.diff.locator('[role="group"][aria-current="true"]');
+    }
+
+    /** How far below the top of the diff the thread is. */
+    async threadOffset(text: string): Promise<number> {
+        const [thread, diff] = await Promise.all([this.thread(text).boundingBox(), this.diff.boundingBox()]);
+        if (!thread || !diff) {
+            throw new Error(`The thread "${text}" is not on screen`);
+        }
+
+        return thread.y - diff.y;
+    }
+
+    /** The mark on a file's row in the list saying how many of its threads are open. */
+    openThreadsMark(name: string, count: number): Locator {
+        return this.fileRow(name).getByRole('img', { name: count === 1 ? '1 open thread' : `${count} open threads` });
+    }
+
     /** A gap's button of that name, in the diff. */
     gapButton(name: 'Show 20' | 'Show all'): Locator {
         return this.diff.getByRole('button', { name, exact: true });

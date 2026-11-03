@@ -58,6 +58,8 @@ export interface ReviewFile {
     readonly deletions: number;
     /** `DISMISSED`: viewed once, changed since. */
     readonly viewed: FileViewedState;
+    /** Not in the diff: an entry only for its threads (D12), which GitHub doesn't list and nothing can be done to. */
+    readonly gone?: boolean;
 }
 
 /** How large a file's two sides are in bytes; `null` for the side it doesn't exist on, or whose size GitHub doesn't give. */
@@ -174,6 +176,9 @@ export interface PullRequestFiles {
     /** Whether viewed files leave the list and the diff (D9). */
     readonly hideViewed: boolean;
     setHideViewed(hide: boolean): void;
+    /** Whether a resolved thread shows whole rather than as one line: for as long as the model. */
+    isThreadOpen(id: string): boolean;
+    setThreadOpen(id: string, opened: boolean): void;
     /** What the file list's filter holds (D11): for this pull request, for as long as the model. */
     readonly filter: FileFilterInput;
     setFilter(filter: FileFilterInput): void;
@@ -421,6 +426,7 @@ export const ReviewFiles = defineService({
             const lostViewedRef = shallowRef<ReadonlySet<string>>(new Set());
             const lostViewedNoticeRef = shallowRef(false);
             const hideViewedRef = shallowRef(false);
+            const openThreadsRef = shallowRef<ReadonlySet<string>>(new Set());
             const threadsRef = shallowRef<readonly ReviewThread[]>([]);
             const threadsStateRef = shallowRef<ReviewThreadsState>(LOADING);
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
@@ -519,6 +525,19 @@ export const ReviewFiles = defineService({
                     },
                     setHideViewed(hide) {
                         hideViewedRef.value = hide;
+                    },
+                    isThreadOpen(id) {
+                        return openThreadsRef.value.has(id);
+                    },
+                    setThreadOpen(id, opened) {
+                        const next = new Set(openThreadsRef.value);
+                        if (opened) {
+                            next.add(id);
+                        } else {
+                            next.delete(id);
+                        }
+
+                        openThreadsRef.value = next;
                     },
                     get filter() {
                         return filterRef.value;

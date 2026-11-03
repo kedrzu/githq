@@ -97,6 +97,11 @@ const vMeasured: ObjectDirective<HTMLElement, string> = {
     }
   },
   beforeUnmount(element) {
+    // A row scrolled out takes its focus with it: the keys stay with the list instead of falling to the page.
+    if (element.contains(document.activeElement)) {
+      focus();
+    }
+
     rowsToObserve.delete(element);
     observer.unobserve(element);
   },

@@ -15,6 +15,7 @@ const meta = {
         githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files',
         layout: 'split',
         hideWhitespace: false,
+        threadsInCollapsed: true,
         fileListHidden: false,
         onBack: fn(),
     },

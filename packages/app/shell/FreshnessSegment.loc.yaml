@@ -49,3 +49,9 @@ filesUnread:
   en: GitHub didn't give the list of this pull request's files
 filesSelected:
   en: x select · \{ \} extend · V mark viewed · Esc clear
+threadsUnread:
+  en: GitHub didn't give this pull request's review threads
+threadsPaused:
+  en: API allowance used up · review threads wait until {time}
+threadPosition:
+  en: Thread {position} of {total}, {open} open · N next · ⇧N previous

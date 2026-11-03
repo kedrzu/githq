@@ -18,11 +18,27 @@ export interface SampleReviewFile {
     readonly byteSize?: number;
 }
 
+/** A review thread as {@link answerReview} answers it; left out, what most threads are. */
+export interface SampleReviewThread {
+    readonly id: string;
+    readonly path: string;
+    readonly line?: number | null;
+    readonly diffSide?: 'LEFT' | 'RIGHT';
+    readonly isOutdated?: boolean;
+    readonly isResolved?: boolean;
+    readonly subjectType?: 'LINE' | 'FILE';
+    /** Empty on a `FILE` thread. */
+    readonly diffHunk?: string;
+    /** `bodyHTML` of each comment. */
+    readonly comments: readonly string[];
+}
+
 export interface AnswerReviewParams {
     /** `owner/name`. */
     readonly repository: string;
     readonly number: number;
     readonly files: readonly SampleReviewFile[];
+    readonly threads?: readonly SampleReviewThread[];
 }
 
 /** What a test can do to the review answered. */
@@ -50,7 +66,7 @@ const BASE_OID = 'base0000';
 const MERGE_BASE_OID = 'fork0000';
 
 /**
- * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), no review threads, the merge base (the compare request),
+ * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), its review threads, the merge base (the compare request),
  * where renamed files came from, and the blobs (`ReviewBlobOids`, `ReviewBlobTexts`), an oid being made of its commit and
  * path. A file's failure is on its text alone, the query's other objects answered.
  */
@@ -101,7 +117,12 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     });
     github.graphql('PullRequestReviewThreads', () => ({
         repository: {
-            pullRequest: { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] } },
+            pullRequest: {
+                reviewThreads: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: (params.threads ?? []).map(toThreadNode),
+                },
+            },
         },
     }));
     github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${HEAD_OID}`, () => ({
@@ -202,6 +223,36 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
                 held.delete(path);
                 release();
             };
+        },
+    };
+}
+
+function toThreadNode(thread: SampleReviewThread) {
+    const line = thread.line ?? null;
+    return {
+        id: thread.id,
+        path: thread.path,
+        line,
+        startLine: null,
+        originalLine: line,
+        originalStartLine: null,
+        diffSide: thread.diffSide ?? 'RIGHT',
+        startDiffSide: null,
+        isOutdated: thread.isOutdated ?? false,
+        isResolved: thread.isResolved ?? false,
+        subjectType: thread.subjectType ?? 'LINE',
+        comments: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: thread.comments.map((bodyHTML, index) => ({
+                id: `${thread.id}_${index}`,
+                author: { login: 'sofiab', avatarUrl: '' },
+                bodyHTML,
+                createdAt: '2026-01-01T00:00:00Z',
+                url: `https://github.com/acme/web/pull/15#discussion_${thread.id}_${index}`,
+                diffHunk: thread.diffHunk ?? '',
+                outdated: thread.isOutdated ?? false,
+                originalCommit: { oid: 'a91d03b00000', abbreviatedOid: 'a91d03b' },
+            })),
         },
     };
 }

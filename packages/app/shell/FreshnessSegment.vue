@@ -1,4 +1,4 @@
-<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), and with files selected the keys that act on them (CR23). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
+<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), or the review threads it didn't give, or they waiting for the allowance, and with files selected the keys that act on them (CR23); on a thread, which of them it is and the keys that walk them (CR15). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -10,6 +10,7 @@ import {
   Cloud,
   History,
   LoaderCircle,
+  MessageSquare,
   MousePointerClick,
   Pause,
   RefreshCw,
@@ -118,6 +119,24 @@ const look = computed((): SegmentLook => {
       };
     case 'filesUnread':
       return { icon: TriangleAlert, tone: 'warning', text: t(l.filesUnread) };
+    case 'threadsUnread':
+      return { icon: TriangleAlert, tone: 'warning', text: t(l.threadsUnread) };
+    case 'threadsPaused':
+      return {
+        icon: Pause,
+        tone: 'warning',
+        text: t(l.threadsPaused, { time: formatTime(freshness.until) }),
+      };
+    case 'threadPosition':
+      return {
+        icon: MessageSquare,
+        tone: 'dim',
+        text: t(l.threadPosition, {
+          position: numbers.format(freshness.position),
+          total: numbers.format(freshness.total),
+          open: numbers.format(freshness.open),
+        }),
+      };
     case 'filesSelected':
       return { icon: MousePointerClick, tone: 'dim', text: t(l.filesSelected) };
     case 'stale':

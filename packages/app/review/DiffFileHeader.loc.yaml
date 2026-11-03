@@ -14,3 +14,11 @@ generated:
   en: generated · .gitattributes
 large:
   en: large
+notInDiff:
+  en: No longer in this pull request's diff
+threadsOpen:
+  en: '{count} open'
+threadsOutdated:
+  en: '{count} outdated'
+threadsResolved:
+  en: '{count} resolved'

@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -15,12 +15,14 @@ import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight } from './buildReviewRows.js';
-import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
+import type { ReviewDistanceRow as DistanceRow, ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
 import type { ReviewFileSizes } from './ReviewFiles.js';
+import ReviewDistanceRow from './threads/ReviewDistanceRow.vue';
+import ReviewThreadRow from './threads/ReviewThreadRow.vue';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
@@ -31,11 +33,18 @@ const props = defineProps<{
   githubUrl: string;
   /** GitHub took the file's viewed mark off since the last visit (D35). */
   changedSince?: boolean;
+  /** A resolved thread on this row shows whole. */
+  threadOpen?: boolean;
+  /** The thread on this row is the one N and ⇧N are at. */
+  threadFocused?: boolean;
 }>();
 
 const emit = defineEmits<{
   /** Shows that many lines of the gap. */
   expand: [gap: ReviewGapRow, count: number];
+  /** "Expand to here" of a thread's mark (D29). */
+  expandToThread: [mark: DistanceRow];
+  toggleThread: [threadId: string];
   retry: [path: string];
   toggleCollapsed: [path: string];
   toggleViewed: [path: string];
@@ -101,6 +110,8 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       :collapsed="row.collapsed"
       :collapse-reason="row.collapseReason"
       :changed-since="changedSince"
+      :threads-under="row.threadsUnder"
+      :threads="row.threads"
       @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
       @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
@@ -126,6 +137,18 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :syntax="row.syntax"
         />
       </template>
+      <ReviewThreadRow
+        v-else-if="row.kind === 'thread'"
+        :row="row"
+        :open="threadOpen"
+        :focused="threadFocused"
+        @toggle="emit('toggleThread', row.placement.thread.id)"
+      />
+      <ReviewDistanceRow
+        v-else-if="row.kind === 'distance'"
+        :placement="row.placement"
+        @expand="emit('expandToThread', row)"
+      />
       <div
         v-else-if="row.kind === 'gap'"
         :class="css.reviewDiffRow_gap"

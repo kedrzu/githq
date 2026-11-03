@@ -4,6 +4,7 @@ import { CONTEXT_LINES } from '../buildReviewRows.js';
 import { buildDiffRows, getDiffLineRowKey } from '../diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffLineSide } from '../diff/buildDiffRows.js';
 import type { DiffRange, FileDiff } from '../diff/computeFileDiff.js';
+import type { ReviewFile } from '../ReviewFiles.js';
 import type { ReviewThread } from './ReviewThread.js';
 
 /** What a file shows, which decides where its threads go. */
@@ -113,6 +114,39 @@ export function listGoneEntries(placements: ReadonlyMap<string, readonly ThreadP
     return [...placements]
         .filter(([, placed]) => placed.some(({ kind, thread }) => kind === 'gone' && !thread.isResolved))
         .map(([path]) => path);
+}
+
+/**
+ * Each file's threads, by the path of the file they belong to: the one they name, or what a file listed there was renamed
+ * to in the pull request, for a thread on `X` belongs on `Y` once `X` became `Y`. A path nothing lists keeps its threads,
+ * for {@link placeThreads} to call them gone.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function groupThreadsByFile(
+    threads: readonly ReviewThread[],
+    files: readonly ReviewFile[],
+): Map<string, ReviewThread[]> {
+    const listed = new Set(files.map(file => file.path));
+    const renamedTo = new Map<string, string>();
+    for (const { path, previousPath, changeType } of files) {
+        if (changeType === 'RENAMED' && previousPath !== null && !listed.has(previousPath)) {
+            renamedTo.set(previousPath, path);
+        }
+    }
+
+    const byFile = new Map<string, ReviewThread[]>();
+    for (const thread of threads) {
+        const path = renamedTo.get(thread.path) ?? thread.path;
+        const fileThreads = byFile.get(path);
+        if (fileThreads) {
+            fileThreads.push(thread);
+        } else {
+            byFile.set(path, [thread]);
+        }
+    }
+
+    return byFile;
 }
 
 function placeInDiff(

@@ -8,7 +8,9 @@ import { addDiffLineRange, buildDiffRows } from '../diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffLineSide, DiffRow } from '../diff/buildDiffRows.js';
 import { computeFileDiff } from '../diff/computeFileDiff.js';
 import type { FileDiff } from '../diff/computeFileDiff.js';
-import { listGoneEntries, placeThreads } from './placeThreads.js';
+import type { ReviewFile } from '../ReviewFiles.js';
+import { countThreads } from './countThreads.js';
+import { groupThreadsByFile, listGoneEntries, placeThreads } from './placeThreads.js';
 import type { ThreadFileView, ThreadOnHiddenLine, ThreadOnLine, ThreadPlacement } from './placeThreads.js';
 import type { ReviewThread } from './ReviewThread.js';
 
@@ -303,3 +305,55 @@ function lineOf(row: DiffRow, side: DiffLineSide) {
 
     return side === 'before' ? row.oldLine : row.newLine;
 }
+
+describe('groupThreadsByFile', () => {
+    const renamed = (path: string, previousPath: string): ReviewFile => ({
+        path,
+        previousPath,
+        changeType: 'RENAMED',
+        additions: 1,
+        deletions: 1,
+        viewed: 'UNVIEWED',
+    });
+
+    test('a thread on the old path of a file renamed goes to its new path, in the order given', () => {
+        const first = threadWith({ id: 'first', path: 'old.ts' });
+        const second = threadWith({ id: 'second', path: 'new.ts' });
+
+        expect(groupThreadsByFile([first, second], [renamed('new.ts', 'old.ts')])).toEqual(
+            new Map([['new.ts', [first, second]]]),
+        );
+    });
+
+    test('a path listed itself keeps its threads, and one nothing lists stays, to be gone', () => {
+        const onOld = threadWith({ id: 'old', path: 'old.ts' });
+        const away = threadWith({ id: 'away', path: 'away.ts' });
+        const old: ReviewFile = { ...renamed('old.ts', 'older.ts'), changeType: 'MODIFIED', previousPath: null };
+
+        const grouped = groupThreadsByFile([onOld, away], [renamed('new.ts', 'old.ts'), old]);
+
+        expect(grouped).toEqual(
+            new Map([
+                ['old.ts', [onOld]],
+                ['away.ts', [away]],
+            ]),
+        );
+    });
+
+    test('a thread on what was copied stays on it: the copy is another file', () => {
+        const thread = threadWith({ path: 'a.ts' });
+        const copy: ReviewFile = { ...renamed('b.ts', 'a.ts'), changeType: 'COPIED' };
+
+        expect([...groupThreadsByFile([thread], [copy]).keys()]).toEqual(['a.ts']);
+    });
+});
+
+test('countThreads tells resolved first, then unresolved by whether they are outdated', () => {
+    const placements = placeThreads({ kind: 'collapsed' }, [
+        threadWith({ id: '1' }),
+        threadWith({ id: '2', isOutdated: true }),
+        threadWith({ id: '3', isOutdated: true, isResolved: true }),
+    ]);
+
+    expect(countThreads(placements)).toEqual({ open: 1, outdated: 1, resolved: 1 });
+});

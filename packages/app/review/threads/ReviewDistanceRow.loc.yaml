@@ -1,0 +1,17 @@
+further:
+  plural: count
+  en:
+    one: 1 line further {way}
+    many: '{formatted} lines further {way}'
+down:
+  en: down
+up:
+  en: up
+why:
+  en: shown for its thread; nothing between is expanded
+whitespaceLine:
+  en: Line {line}, a hidden whitespace change
+whitespaceWhy:
+  en: shown for its thread
+expandToHere:
+  en: Expand to here

@@ -211,6 +211,45 @@ export const Paused: Story = {
     },
 };
 
+/** CR2: a header counts its threads. */
+export const WithThreads: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: FILE,
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: false,
+                threads: { open: 1, outdated: 1, resolved: 1 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('1 open · 1 outdated · 1 resolved')).toBeInTheDocument();
+    },
+};
+
+/** CR14: a file gone from the diff has a struck name and says so, with neither Viewed nor a chevron. */
+export const GoneHeader: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: file('src/sync/retry-policy.ts', 0, 0, { gone: true, changeType: 'DELETED' }),
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: true,
+                threads: { open: 1, outdated: 0, resolved: 0 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText("No longer in this pull request's diff")).toBeInTheDocument();
+        await expect(canvas.queryByRole('button', { name: /Viewed/u })).not.toBeInTheDocument();
+    },
+};
+
 /** A new file with nothing in it. */
 export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
 

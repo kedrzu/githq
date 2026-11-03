@@ -66,6 +66,28 @@ test('a file the list holds but the view filters out still has its threads place
     view.stop();
 });
 
+test('rows follow the placements: threads under a collapsed header, on their line once the file is open, and nothing rebuilt when nothing moved', async () => {
+    const view = open([fileRow('a.ts')], [threadOn('a.ts', 10)]);
+    const kinds = () => view.rows.value.map(row => row.kind);
+
+    expect(kinds()).toEqual(['header', 'thread', 'placeholder', 'end', 'tail']);
+
+    view.setState('a.ts', { kind: 'ready', before: BEFORE, after: AFTER });
+    await view.settle();
+    const opened = view.rows.value;
+    const thread = opened.findIndex(row => row.kind === 'thread');
+    expect(opened[thread - 1]).toMatchObject({ kind: 'line', line: { right: { line: 10 } } });
+
+    view.bump();
+    await view.settle();
+    expect(view.rows.value).toBe(opened);
+
+    view.setCollapse('a.ts', 'viewed');
+    await view.settle();
+    expect(kinds()).toEqual(['header', 'thread', 'end', 'tail']);
+    view.stop();
+});
+
 interface OpenOptions {
     readonly listComplete?: boolean;
     readonly ordered?: readonly ReviewFile[];
@@ -87,7 +109,16 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
     app.provide(injectionKey, container);
     const scope = effectScope();
     const reviewRows = app.runWithContext(() =>
-        scope.run(() => useReviewRows({ files, ordered, layout: 'split', hideWhitespace: false, currentPath: null })),
+        scope.run(() =>
+            useReviewRows({
+                files,
+                ordered,
+                layout: 'split',
+                hideWhitespace: false,
+                currentPath: null,
+                threadsInCollapsed: true,
+            }),
+        ),
     );
     if (!reviewRows) {
         throw new Error('The scope is active');
@@ -95,6 +126,7 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
 
     return {
         placements: reviewRows.threadPlacements,
+        rows: reviewRows.rows,
         stop: () => scope.stop(),
         bump: () => version.value++,
         setState(path: string, state: ReviewFileState) {
@@ -152,6 +184,8 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
             setViewed: () => {},
             hideViewed: false,
             setHideViewed: () => {},
+            isThreadOpen: () => false,
+            setThreadOpen: () => {},
             filter: { pattern: '', regex: false },
             setFilter: () => {},
             getExpandedLines: () => NO_LINES,

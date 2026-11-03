@@ -17,11 +17,12 @@ export type ReviewFreshnessFiles = Pick<
     | 'listFailing'
     | 'pausedUntil'
     | 'progress'
+    | 'threadsState'
 >;
 
 /**
  * What the status bar says of a review (CR60–CR68): the allowance holding its files back first, then them arriving, then
- * what GitHub won't list, and only then that it is up to date.
+ * what GitHub won't list or the threads it didn't give, and only then that it is up to date.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -53,6 +54,14 @@ export function getReviewFreshness(files: ReviewFreshnessFiles): Freshness {
 
     if (files.listFailing) {
         return { kind: 'filesUnread' };
+    }
+
+    if (files.threadsState.kind === 'failed') {
+        return { kind: 'threadsUnread' };
+    }
+
+    if (files.threadsState.kind === 'paused') {
+        return { kind: 'threadsPaused', until: files.threadsState.until };
     }
 
     if (listComplete && changedFiles !== null && changedFiles > files.files.length) {

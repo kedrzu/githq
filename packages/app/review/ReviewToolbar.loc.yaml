@@ -30,3 +30,5 @@ donePullRequest:
   en: Merged pull request
 closedPullRequest:
   en: Closed pull request
+commentsInCollapsed:
+  en: Comments in collapsed files

@@ -1,7 +1,7 @@
-<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its size, if it has lines to count, and its viewed mark (`V`). A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
+<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its threads (CR2), its size, if it has lines to count, and its viewed mark (`V`). One gone from the diff (D30) has only a file-x, a struck name that says so, and its threads. A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronDown, ChevronRight, Square, SquareCheckBig } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, FileX, MessageSquare, Square, SquareCheckBig } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -13,6 +13,7 @@ import { getFileFolder } from './utils/getFileFolder.js';
 import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
+import type { ThreadCounts } from './threads/countThreads.js';
 
 const props = defineProps<{
   file: ReviewFile;
@@ -22,6 +23,9 @@ const props = defineProps<{
   collapseReason: ReviewFileCollapseReason | null;
   /** GitHub took its viewed mark off since the last visit. */
   changedSince?: boolean;
+  /** Its threads under it: it closes the block only without them. */
+  threadsUnder?: boolean;
+  threads?: ThreadCounts | null;
 }>();
 
 const emit = defineEmits<{
@@ -33,10 +37,23 @@ const t = useTranslate();
 
 const folder = computed(() => getFileFolder(props.file.path));
 const viewed = computed(() => props.file.viewed === 'VIEWED');
+const threadsText = computed(() => {
+  const { threads } = props;
+  if (!threads) {
+    return null;
+  }
+
+  const said = [
+    threads.open > 0 && t(l.threadsOpen, { count: threads.open }),
+    threads.outdated > 0 && t(l.threadsOutdated, { count: threads.outdated }),
+    threads.resolved > 0 && t(l.threadsResolved, { count: threads.resolved }),
+  ];
+  return said.filter(Boolean).join(' · ');
+});
 
 function onClick(event: MouseEvent) {
   // The buttons say for themselves.
-  if (!(event.target instanceof Element && event.target.closest('button'))) {
+  if (!props.file.gone && !(event.target instanceof Element && event.target.closest('button'))) {
     emit('toggleCollapsed');
   }
 }
@@ -44,26 +61,49 @@ function onClick(event: MouseEvent) {
 
 <template>
   <div
-    :class="[css.diffFileHeader, collapsed && css.diffFileHeader_collapsed]"
+    :class="[
+      css.diffFileHeader,
+      collapsed && !threadsUnder && css.diffFileHeader_collapsed,
+      file.gone && css.diffFileHeader_gone,
+    ]"
     @click="onClick"
   >
+    <FileX
+      v-if="file.gone"
+      :class="css.diffFileHeader_goneIcon"
+      aria-hidden="true"
+    />
     <IconButton
+      v-if="!file.gone"
       :icon="collapsed ? ChevronRight : ChevronDown"
       :label="collapsed ? t(l.expand) : t(l.collapse)"
       kbd="Space"
       aria-keyshortcuts="Space"
       @click="emit('toggleCollapsed')"
     />
-    <ReviewChange :change="file.changeType" />
+    <ReviewChange
+      v-if="!file.gone"
+      :change="file.changeType"
+    />
     <h3 :class="css.diffFileHeader_path">
       <span
         v-if="folder !== null"
         :class="css.diffFileHeader_folder"
         >{{ folder }}/</span
-      ><span :class="[css.diffFileHeader_name, viewed && css.diffFileHeader_name_viewed]">{{
-        getFileName(file.path)
-      }}</span>
+      ><span
+        :class="[
+          css.diffFileHeader_name,
+          viewed && css.diffFileHeader_name_viewed,
+          file.gone && css.diffFileHeader_name_gone,
+        ]"
+        >{{ getFileName(file.path) }}</span
+      >
     </h3>
+    <span
+      v-if="file.gone"
+      :class="css.diffFileHeader_from"
+      >{{ t(l.notInDiff) }}</span
+    >
     <span
       v-if="file.previousPath !== null"
       :class="css.diffFileHeader_from"
@@ -80,6 +120,15 @@ function onClick(event: MouseEvent) {
       >{{ t(l.changedSince) }}</span
     >
     <span :class="css.diffFileHeader_spacer" />
+    <span
+      v-if="threadsText"
+      :class="css.diffFileHeader_threads"
+    >
+      <MessageSquare
+        :class="css.diffFileHeader_threadsIcon"
+        aria-hidden="true"
+      />{{ threadsText }}
+    </span>
     <PullRequestSize
       v-if="file.additions + file.deletions > 0"
       :class="css.diffFileHeader_size"
@@ -87,6 +136,7 @@ function onClick(event: MouseEvent) {
       :deletions="file.deletions"
     />
     <Button
+      v-if="!file.gone"
       :class="[css.diffFileHeader_viewed, viewed && css.diffFileHeader_viewed_on]"
       variant="outline"
       size="sm"
@@ -118,6 +168,17 @@ function onClick(event: MouseEvent) {
   border-radius: $radius-lg;
 }
 
+.diffFileHeader_gone {
+  cursor: default;
+}
+
+.diffFileHeader_goneIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-fg-3;
+}
+
 .diffFileHeader_path {
   min-width: 0;
   margin: 0;
@@ -139,6 +200,11 @@ function onClick(event: MouseEvent) {
 
 .diffFileHeader_name_viewed {
   color: $color-fg-2;
+}
+
+.diffFileHeader_name_gone {
+  color: $color-fg-2;
+  text-decoration: line-through;
 }
 
 .diffFileHeader_why {
@@ -167,6 +233,21 @@ function onClick(event: MouseEvent) {
 
 .diffFileHeader_spacer {
   flex: 1;
+}
+
+.diffFileHeader_threads {
+  display: inline-flex;
+  flex: none;
+  gap: $spacing-4;
+  align-items: center;
+  font-size: 11.5px;
+  color: $color-amber;
+  white-space: nowrap;
+}
+
+.diffFileHeader_threadsIcon {
+  width: 12px;
+  height: 12px;
 }
 
 .diffFileHeader_size {

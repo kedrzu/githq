@@ -17,6 +17,8 @@ import type {
     ReviewFileListState,
     ReviewFileState,
 } from './ReviewFiles.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
+import { sampleThread } from './threads/sampleThreads.js';
 import ReviewView from './ReviewView.vue';
 
 const REFERENCE = { owner: 'fitloop', name: 'webapp', number: 1202 };
@@ -66,6 +68,24 @@ export const AllViewed: Story = {
         ),
 };
 
+/** CR63, D15: viewed files hidden, but one with an open thread stays, as its header with the thread and its code; a file gone from the diff has an entry of its own. */
+export const ViewedWithOpenThread: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'waiting' }, 'src/sync/other.ts': { kind: 'waiting' } },
+            {
+                viewed: 'VIEWED',
+                hideViewed: true,
+                collapsed: { 'src/sync/queue.ts': 'viewed', 'src/sync/other.ts': 'viewed' },
+                threads: [
+                    sampleThread({ id: 'T_1', path: 'src/sync/queue.ts' }),
+                    sampleThread({ id: 'T_2', path: 'src/sync/retry-policy.ts' }),
+                ],
+            },
+        ),
+};
+
 /** CR12: a lock file as a header saying why, its row tagged, and the file after it open. */
 export const Collapsed: Story = {
     render: () =>
@@ -100,6 +120,7 @@ interface RenderOptions {
     readonly hideViewed?: boolean;
     readonly collapsed?: Readonly<Record<string, ReviewFileCollapse>>;
     readonly lostViewed?: ReadonlySet<string>;
+    readonly threads?: readonly ReviewThread[];
 }
 
 /** The view over a real session, whose GitHub answers nothing, reading what is given. */
@@ -125,7 +146,7 @@ function renderView(
 function createFiles(
     list: ReviewFileListState,
     states: Readonly<Record<string, ReviewFileState>>,
-    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {}, lostViewed = new Set() }: RenderOptions,
+    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {}, lostViewed = new Set(), threads = [] }: RenderOptions,
 ): PullRequestFiles {
     const files = Object.keys(states).map((path): ReviewFile => ({
         path,
@@ -139,7 +160,7 @@ function createFiles(
     return {
         list,
         files,
-        threads: [],
+        threads,
         threadsState: { kind: 'ready' },
         listComplete: list.kind === 'ready',
         id: 'PR_1202',
@@ -168,6 +189,8 @@ function createFiles(
         setViewed: () => {},
         hideViewed,
         setHideViewed: () => {},
+        isThreadOpen: () => false,
+        setThreadOpen: () => {},
         filter: { pattern: '', regex: false },
         setFilter: () => {},
         getExpandedLines: () => [],

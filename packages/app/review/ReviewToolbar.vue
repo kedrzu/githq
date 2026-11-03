@@ -1,4 +1,4 @@
-<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), the file list's toggle beside them (D26, D31), and github.com. -->
+<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), comments in collapsed files among them (D13), the file list's toggle beside them (D26, D31), and github.com. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowLeft, ChevronDown, Columns2, Github, GitPullRequest, PanelLeft, Rows2 } from 'lucide-vue-next';
@@ -33,6 +33,7 @@ const emit = defineEmits<{
 const layout = defineModel<DiffLayout>('layout', { required: true });
 const hideWhitespace = defineModel<boolean>('hideWhitespace', { required: true });
 const fileListHidden = defineModel<boolean>('fileListHidden', { required: true });
+const threadsInCollapsed = defineModel<boolean>('threadsInCollapsed', { required: true });
 
 const t = useTranslate();
 
@@ -114,6 +115,13 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
           <Switch
             v-model="hideWhitespace"
             :label="t(l.hideWhitespace)"
+          />
+        </label>
+        <label :class="css.reviewToolbar_switch">
+          {{ t(l.commentsInCollapsed) }}
+          <Switch
+            v-model="threadsInCollapsed"
+            :label="t(l.commentsInCollapsed)"
           />
         </label>
         <label :class="css.reviewToolbar_switch">

@@ -1,11 +1,14 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
-import { buildDiffRows } from './diff/buildDiffRows.js';
+import { buildDiffRows, createDiffChangedRows, createDiffContextRow } from './diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
 import { findEnclosing } from './diff/findEnclosing.js';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileSizes } from './ReviewFiles.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
+import { countThreads } from './threads/countThreads.js';
+import type { ThreadCounts } from './threads/countThreads.js';
+import type { ThreadOnHiddenLine, ThreadOnLine, ThreadPlacement } from './threads/placeThreads.js';
 
 /** How many unchanged lines show around a change. */
 export const CONTEXT_LINES = 3;
@@ -17,6 +20,14 @@ const PLACEHOLDER_MIN_LINES = 3;
 const LINE_HEIGHT = 20;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
+/** A comment of two lines, and what stands between comments. */
+const COMMENT_HEIGHT = 56;
+/** A thread's padding and edges, and the room around it. */
+const THREAD_FRAME_HEIGHT = 42;
+/** A resolved thread's line and the room around it. */
+const THREAD_LINE_HEIGHT = 48;
+/** The label and the lines of the code a thread shows in a box. */
+const THREAD_CODE_HEIGHT = 110;
 
 /** The pinned head of a file's block (D24). */
 export interface ReviewHeaderRow {
@@ -27,6 +38,10 @@ export interface ReviewHeaderRow {
     readonly collapsed: boolean;
     /** Why it starts collapsed, also once opened. */
     readonly collapseReason: ReviewFileCollapseReason | null;
+    /** Rows follow it although it is collapsed: its threads, so it has no bottom edge of its own. */
+    readonly threadsUnder: boolean;
+    /** `null` for a file without threads. */
+    readonly threads: ThreadCounts | null;
 }
 
 /** A line of a file's diff, with the diff its text is read from. */
@@ -95,6 +110,22 @@ export interface ReviewPausedRow {
     readonly others: number | null;
 }
 
+/** A thread, under its line or under its file's header. Stays under one key wherever the thread goes (D7). */
+export interface ReviewThreadRow {
+    readonly kind: 'thread';
+    readonly key: string;
+    readonly placement: ThreadPlacement;
+    /** Under a line of the diff: on which half in split, or in unified (D24). `null` when it has the file's width. */
+    readonly inline: 'left' | 'right' | 'unified' | null;
+}
+
+/** The mark above code shown out of place for its thread (D29). */
+export interface ReviewDistanceRow {
+    readonly kind: 'distance';
+    readonly key: string;
+    readonly placement: ThreadOnHiddenLine;
+}
+
 /** The bottom edge of a file's block, and the space under it. */
 export interface ReviewEndRow {
     readonly kind: 'end';
@@ -111,6 +142,7 @@ export interface ReviewTailRow {
 
 /** A row of the review's flat list. Its key begins with its file's path ({@link getReviewRowPath}). */
 export type ReviewRow =
+    | ReviewDistanceRow
     | ReviewEndRow
     | ReviewFailedRow
     | ReviewGapRow
@@ -119,12 +151,15 @@ export type ReviewRow =
     | ReviewNoticeRow
     | ReviewPausedRow
     | ReviewPlaceholderRow
-    | ReviewTailRow;
+    | ReviewTailRow
+    | ReviewThreadRow;
 
 /** What shows under a file's header. */
 export type ReviewFileContent =
     | { readonly kind: 'placeholder'; readonly first?: boolean }
     | { readonly kind: 'collapsed' }
+    /** Gone from the diff (D12): nothing but its threads. */
+    | { readonly kind: 'gone' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
     | { readonly kind: 'failed'; readonly error: Error }
@@ -137,6 +172,10 @@ export interface BuildReviewRowsParams {
     readonly getContent: (file: ReviewFile) => ReviewFileContent;
     /** `null` for each if not given. */
     readonly getCollapseReason?: (file: ReviewFile) => ReviewFileCollapseReason | null;
+    /** A file's threads, wherever they show; lines of the file already hold theirs ({@link BuildFileLineRowsParams.threads}). */
+    readonly getThreads?: (file: ReviewFile) => readonly ThreadPlacement[] | undefined;
+    /** Whether a collapsed file shows its threads under its header (D13); `true` if not given. */
+    readonly threadsInCollapsed?: boolean;
 }
 
 /**
@@ -144,7 +183,13 @@ export interface BuildReviewRowsParams {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildReviewRows({ files, getContent, getCollapseReason }: BuildReviewRowsParams): ReviewRow[] {
+export function buildReviewRows({
+    files,
+    getContent,
+    getCollapseReason,
+    getThreads,
+    threadsInCollapsed = true,
+}: BuildReviewRowsParams): ReviewRow[] {
     const rows: ReviewRow[] = [];
     const contents = files.map(getContent);
     const paused = contents.filter(content => content.kind === 'paused').length;
@@ -154,9 +199,25 @@ export function buildReviewRows({ files, getContent, getCollapseReason }: BuildR
         const { path } = file;
         const collapsed = content.kind === 'collapsed';
         const collapseReason = getCollapseReason?.(file) ?? null;
-        rows.push({ kind: 'header', key: getReviewHeaderKey(path), file, collapsed, collapseReason });
+        const placements = getThreads?.(file) ?? [];
+        // In a file with no text here, as lines hold theirs.
+        const under =
+            content.kind === 'lines' || (collapsed && !threadsInCollapsed)
+                ? []
+                : placements.map((placement): ReviewThreadRow => createThreadRow(path, placement, null));
+        rows.push({
+            kind: 'header',
+            key: getReviewHeaderKey(path),
+            file,
+            collapsed,
+            collapseReason,
+            threadsUnder: under.length > 0,
+            threads: placements.length > 0 ? countThreads(placements) : null,
+        });
+        rows.push(...under);
         switch (content.kind) {
             case 'collapsed':
+            case 'gone':
                 break;
             case 'placeholder':
                 rows.push({
@@ -210,7 +271,12 @@ export function buildReviewRows({ files, getContent, getCollapseReason }: BuildR
         }
 
         // Its own key: the height and the place held of an open file's end are not this one's.
-        rows.push({ kind: 'end', key: path + KEY_SEPARATOR + (collapsed ? 'collapsedEnd' : 'end'), collapsed });
+        const headerAlone = collapsed && under.length === 0;
+        rows.push({
+            kind: 'end',
+            key: path + KEY_SEPARATOR + (headerAlone ? 'collapsedEnd' : 'end'),
+            collapsed: headerAlone,
+        });
     }
 
     const last = files.at(-1);
@@ -230,6 +296,8 @@ export interface BuildFileLineRowsParams {
     readonly expanded?: readonly DiffLineRange[];
     /** A push reset the context expanded in the file: its first gap says so. */
     readonly expansionReset?: boolean;
+    /** The file's threads as placed on this diff: their rows go in where they belong. */
+    readonly threads?: readonly ThreadPlacement[];
 }
 
 /**
@@ -245,9 +313,10 @@ export function buildFileLineRows({
     layout,
     expanded,
     expansionReset = false,
+    threads = [],
 }: BuildFileLineRowsParams): ReviewRow[] {
     let resetToSay = expansionReset;
-    return buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
+    const rows = buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
             return { kind: 'line', key, line: row, diff, syntax: syntax ?? null };
@@ -269,6 +338,133 @@ export function buildFileLineRows({
             expansionReset: saysReset,
         };
     });
+
+    return threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows;
+}
+
+interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'diff' | 'syntax' | 'layout'> {
+    readonly rows: readonly ReviewRow[];
+    readonly threads: readonly ThreadPlacement[];
+}
+
+/**
+ * The rows with the threads in: those that found no line first (D30), those on a line right after it, and those on hidden
+ * lines with their code by their gap, the nearer a change above it before the gap and the nearer one below it after, which
+ * keeps them in the order of the lines.
+ */
+function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertThreadRowsParams) {
+    const result: ReviewRow[] = [];
+    const underRows = new Map<string, ThreadOnLine[]>();
+    const inGaps = new Map<number, ThreadOnHiddenLine[]>();
+    for (const placement of threads) {
+        switch (placement.kind) {
+            case 'onLine':
+                addTo(underRows, placement.rowKeys[layout], placement);
+                break;
+            case 'hiddenLine':
+                addTo(inGaps, placement.gap.afterStart, placement);
+                break;
+            default:
+                result.push(createThreadRow(path, placement, null));
+        }
+    }
+
+    for (const row of rows) {
+        if (row.kind === 'gap') {
+            const inGap = (inGaps.get(row.range.afterStart) ?? []).toSorted(
+                (a, b) => getGapOffset(a, a.line) - getGapOffset(b, b.line),
+            );
+            pushPieces(inGap.filter(placement => placement.direction === 'down'));
+            result.push(row);
+            pushPieces(inGap.filter(placement => placement.direction === 'up'));
+        } else {
+            result.push(row);
+            if (row.kind === 'line') {
+                for (const placement of underRows.get(row.line.key) ?? []) {
+                    result.push(createThreadRow(path, placement, getInlineSide(placement.side, layout)));
+                }
+            }
+        }
+    }
+
+    return result;
+
+    /** Each with its mark and its code, or under the last one's code when that reaches its line. */
+    function pushPieces(placements: readonly ThreadOnHiddenLine[]) {
+        let shownUpTo = -1;
+        for (const placement of placements) {
+            const last = getGapOffset(placement, placement.line);
+            const first = Math.max(getGapOffset(placement, placement.firstLine), shownUpTo + 1);
+            if (first === getGapOffset(placement, placement.firstLine)) {
+                result.push({
+                    kind: 'distance',
+                    key: path + KEY_SEPARATOR + 'distance' + KEY_SEPARATOR + placement.thread.id,
+                    placement,
+                });
+            }
+
+            for (let offset = first; offset <= last; offset++) {
+                pushCode(placement, offset);
+            }
+
+            shownUpTo = Math.max(shownUpTo, last);
+            result.push(createThreadRow(path, placement, getInlineSide(placement.side, layout)));
+        }
+    }
+
+    function pushCode(placement: ThreadOnHiddenLine, offset: number) {
+        const { gap, thread, whitespaceChange, line } = placement;
+        const oldLine = gap.beforeStart + offset + 1;
+        const newLine = gap.afterStart + offset + 1;
+        const lines =
+            whitespaceChange && offset === getGapOffset(placement, line)
+                ? createDiffChangedRows(layout, oldLine, newLine)
+                : [createDiffContextRow(layout, oldLine, newLine)];
+        for (const shown of lines) {
+            result.push({
+                kind: 'line',
+                key:
+                    path +
+                    KEY_SEPARATOR +
+                    'threadCode' +
+                    KEY_SEPARATOR +
+                    thread.id +
+                    KEY_SEPARATOR +
+                    shown.key +
+                    KEY_SEPARATOR +
+                    layout,
+                line: shown,
+                diff,
+                syntax: syntax ?? null,
+            });
+        }
+    }
+}
+
+function addTo<K, V>(map: Map<K, V[]>, key: K, value: V) {
+    const values = map.get(key);
+    if (values) {
+        values.push(value);
+    } else {
+        map.set(key, [value]);
+    }
+}
+
+function createThreadRow(path: string, placement: ThreadPlacement, inline: ReviewThreadRow['inline']): ReviewThreadRow {
+    return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline };
+}
+
+function getInlineSide(side: ThreadOnLine['side'], layout: DiffLayout): ReviewThreadRow['inline'] {
+    if (layout === 'unified') {
+        return 'unified';
+    }
+
+    return side === 'before' ? 'left' : 'right';
+}
+
+/** How far into its gap a line of a thread's side is, the same on both sides of the gap. */
+function getGapOffset({ gap, side }: ThreadOnHiddenLine, line: number) {
+    return line - 1 - (side === 'before' ? gap.beforeStart : gap.afterStart);
 }
 
 /**
@@ -282,6 +478,28 @@ export function getGapLinesToShow(gap: ReviewGapRow, count: number): DiffLineRan
     return gap.atFileEnd
         ? { start: afterStart, end: Math.min(afterStart + count, afterEnd) }
         : { start: Math.max(afterEnd - count, afterStart), end: afterEnd };
+}
+
+/**
+ * The lines "Expand to here" brings out of a gap (D29): those between the row nearest a thread and the thread.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getDistanceLinesToShow({ placement }: ReviewDistanceRow): DiffLineRange {
+    const { gap, line, direction } = placement;
+    const offset = getGapOffset(placement, line);
+    return direction === 'down'
+        ? { start: gap.afterStart, end: gap.afterStart + offset + 1 }
+        : { start: gap.afterStart + offset, end: gap.afterEnd };
+}
+
+/**
+ * The key of a thread's row: the same wherever the thread shows, in whichever layout, so that a jump's landing on it holds.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewThreadKey(path: string, threadId: string) {
+    return path + KEY_SEPARATOR + 'thread' + KEY_SEPARATOR + threadId;
 }
 
 /**
@@ -316,6 +534,10 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
             return LINE_HEIGHT;
         case 'gap':
             return 28;
+        case 'distance':
+            return 26;
+        case 'thread':
+            return estimateThreadHeight(row);
         case 'placeholder':
             return getPlaceholderHeight(row.file) + (row.first ? FETCHING_FIRST_HEIGHT : 0);
         case 'notice':
@@ -329,6 +551,16 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         default:
             return assertNever(row);
     }
+}
+
+function estimateThreadHeight({ placement }: ReviewThreadRow) {
+    const { thread } = placement;
+    if (thread.isResolved) {
+        return THREAD_LINE_HEIGHT;
+    }
+
+    const hasCode = 'diffHunk' in placement && placement.diffHunk !== '';
+    return THREAD_FRAME_HEIGHT + thread.comments.length * COMMENT_HEIGHT + (hasCode ? THREAD_CODE_HEIGHT : 0);
 }
 
 /**
@@ -395,7 +627,8 @@ export function findReplacementRow({
         held?.kind === 'placeholder' ||
         held?.kind === 'paused' ||
         held?.kind === 'end' ||
-        next[start + 1]?.kind === 'end'
+        next[start + 1]?.kind === 'end' ||
+        (header.kind === 'header' && header.collapsed)
     ) {
         return { row: header, offset: 0 };
     }
@@ -473,6 +706,8 @@ function getRowPlace(row: ReviewRow): RowPlace | null {
         }
         case 'gap':
             return { side: 'after', line: row.firstLine };
+        case 'distance':
+            return { side: row.placement.side, line: row.placement.firstLine };
         default:
             return null;
     }
