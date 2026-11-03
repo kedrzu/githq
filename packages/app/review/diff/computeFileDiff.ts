@@ -1,6 +1,10 @@
 import { diff } from 'fast-myers-diff';
 
-export interface ComputeFileDiffOptions {
+export interface ComputeFileDiffParams {
+    /** The file's content before, `null` where it does not exist. */
+    readonly before: string | null;
+    /** The file's content after, `null` where it does not exist. */
+    readonly after: string | null;
     /** Compare lines with all whitespace removed (D4); they still display their real text. */
     readonly ignoreWhitespace: boolean;
 }
@@ -28,18 +32,14 @@ export interface FileDiff {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function computeFileDiff(
-    before: string | null,
-    after: string | null,
-    options: ComputeFileDiffOptions,
-): FileDiff {
+export function computeFileDiff({ before, after, ignoreWhitespace }: ComputeFileDiffParams): FileDiff {
     const beforeLines = splitLines(before);
     const afterLines = splitLines(after);
 
     // Comparing integers instead of strings is what keeps a large file's diff fast. `diff` trims the common prefix and suffix itself.
     const ids = new Map<string, number>();
-    const beforeIds = internLines(beforeLines, ids, options);
-    const afterIds = internLines(afterLines, ids, options);
+    const beforeIds = internLines(beforeLines);
+    const afterIds = internLines(afterLines);
 
     const blocks: DiffRange[] = [];
     for (const [beforeStart, beforeEnd, afterStart, afterEnd] of diff(beforeIds, afterIds)) {
@@ -47,6 +47,22 @@ export function computeFileDiff(
     }
 
     return { before: beforeLines.map(stripCarriageReturn), after: afterLines.map(stripCarriageReturn), blocks };
+
+    function internLines(lines: readonly string[]): Int32Array {
+        const lineIds = new Int32Array(lines.length);
+        for (const [index, line] of lines.entries()) {
+            const content = ignoreWhitespace ? line.replace(/\s+/g, '') : line;
+            let id = ids.get(content);
+            if (id === undefined) {
+                id = ids.size;
+                ids.set(content, id);
+            }
+
+            lineIds[index] = id;
+        }
+
+        return lineIds;
+    }
 }
 
 function splitLines(text: string | null): string[] {
@@ -60,22 +76,6 @@ function splitLines(text: string | null): string[] {
     }
 
     return lines;
-}
-
-function internLines(lines: readonly string[], ids: Map<string, number>, options: ComputeFileDiffOptions): Int32Array {
-    const lineIds = new Int32Array(lines.length);
-    for (const [index, line] of lines.entries()) {
-        const content = options.ignoreWhitespace ? line.replace(/\s+/g, '') : line;
-        let id = ids.get(content);
-        if (id === undefined) {
-            id = ids.size;
-            ids.set(content, id);
-        }
-
-        lineIds[index] = id;
-    }
-
-    return lineIds;
 }
 
 function stripCarriageReturn(line: string): string {

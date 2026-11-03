@@ -1,6 +1,7 @@
 /**
  * A repeatable `Math.random` for tests on random data: a failure has to reproduce.
  *
+ * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function createSeededRandom(seed: number): () => number {

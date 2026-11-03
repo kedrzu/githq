@@ -34,9 +34,10 @@ export interface ReviewGapRow {
     readonly kind: 'gap';
     readonly key: string;
     readonly hidden: number;
-    /** The first and last hidden line of the newer version, 1-based. */
+    /** The first hidden line of the newer version, 1-based. */
     readonly firstLine: number;
-    readonly lastLine: number;
+    /** The first hidden line of the older version, 1-based. */
+    readonly firstOlderLine: number;
 }
 
 /** A file not read or not computed yet: quiet bars about as tall as its diff (D35). */
@@ -146,13 +147,19 @@ export function buildReviewRows({ files, getContent }: BuildReviewRowsParams): R
     return rows;
 }
 
+export interface BuildFileLineRowsParams {
+    readonly path: string;
+    readonly diff: FileDiff;
+    readonly layout: DiffLayout;
+}
+
 /**
  * The rows of a file's diff in a layout. Their keys are unique across files and layouts: the heights an
  * {@link AnchoredList} remembers by key belong to one layout.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildFileLineRows(path: string, diff: FileDiff, layout: DiffLayout): ReviewRow[] {
+export function buildFileLineRows({ path, diff, layout }: BuildFileLineRowsParams): ReviewRow[] {
     return buildDiffRows(diff, { layout, context: CONTEXT_LINES }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         return row.kind === 'gap'
@@ -161,7 +168,7 @@ export function buildFileLineRows(path: string, diff: FileDiff, layout: DiffLayo
                   key,
                   hidden: row.hidden,
                   firstLine: row.range.afterStart + 1,
-                  lastLine: row.range.afterEnd,
+                  firstOlderLine: row.range.beforeStart + 1,
               }
             : { kind: 'line', key, line: row, diff };
     });
@@ -227,19 +234,23 @@ export function getPlaceholderHeight(file: ReviewFile): number {
     return lines * LINE_HEIGHT;
 }
 
+export interface FindReplacementRowParams {
+    /** The row held. */
+    readonly key: string;
+    readonly previous: readonly ReviewRow[];
+    readonly next: readonly ReviewRow[];
+}
+
 /**
  * The row to hold in place when the one held is gone from the new rows, because the layout or the whitespace setting
- * changed or the file arrived: the same line, or the first after it, of the same file; for anything else the top of
- * what its file now shows; for the room under what was the last file, what now follows that file, which is at the same
- * place. `null` when the row is still there, or its file is gone: the list's own rule then applies.
+ * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
+ * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
+ * the last file, what now follows that file, which is at the same place. `null` when the row is still there, or its
+ * file is gone: the list's own rule then applies.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function findReplacementRow(
-    key: string,
-    previous: readonly ReviewRow[],
-    next: readonly ReviewRow[],
-): ReviewRow | null {
+export function findReplacementRow({ key, previous, next }: FindReplacementRowParams): ReviewRow | null {
     if (next.some(row => row.key === key)) {
         return null;
     }
@@ -261,18 +272,24 @@ export function findReplacementRow(
         return first;
     }
 
+    let nearest = first;
     for (let index = start + 1; index < next.length; index++) {
         const row = next[index];
         if (!row || row.kind === 'header') {
             break;
         }
 
-        if (row.kind !== 'end' && reachesPlace(row, place)) {
-            return row;
+        const line = getRowFirstLine(row, place.side);
+        if (line !== null && line > place.line) {
+            break;
+        }
+
+        if (line !== null) {
+            nearest = row;
         }
     }
 
-    return first;
+    return nearest;
 }
 
 interface RowPlace {
@@ -295,16 +312,15 @@ function getRowPlace(row: ReviewRow): RowPlace | null {
     }
 }
 
-function reachesPlace(row: ReviewRow, { side, line }: RowPlace) {
+/** Where a row starts on a side, the lines of a gap counted from its first; `null` for a row with no line there. */
+function getRowFirstLine(row: ReviewRow, side: RowPlace['side']) {
     switch (row.kind) {
-        case 'line': {
-            const number = getLineNumber(row.line, side);
-            return number !== null && number >= line;
-        }
+        case 'line':
+            return getLineNumber(row.line, side);
         case 'gap':
-            return side === 'after' && row.lastLine >= line;
+            return side === 'after' ? row.firstLine : row.firstOlderLine;
         default:
-            return false;
+            return null;
     }
 }
 

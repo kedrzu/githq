@@ -113,7 +113,7 @@ watch(currentPath, path => {
 // counterpart takes its place at the same distance from the top once they are in.
 watch(rows, (next, previous) => {
   const anchor = list.value?.anchor;
-  const replacement = anchor ? findReplacementRow(anchor.key, previous, next) : null;
+  const replacement = anchor ? findReplacementRow({ key: anchor.key, previous, next }) : null;
   if (anchor && replacement) {
     void nextTick(() => list.value?.jumpTo(replacement.key, anchor.offset));
   }

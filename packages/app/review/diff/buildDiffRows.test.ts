@@ -27,7 +27,7 @@ describe.each(layouts)('every line once, in %s', layout => {
             const before = randomLines(random);
             const after = randomLines(random);
             const options = { ignoreWhitespace: round % 2 === 0 };
-            const diff = computeFileDiff(before.join('\n'), after.join('\n'), options);
+            const diff = computeFileDiff({ before: before.join('\n'), after: after.join('\n'), ...options });
             const rows = buildDiffRows(diff, { layout, context: round % 5 });
             const sides = readSides(rows, diff);
 
@@ -45,7 +45,7 @@ describe.each(layouts)('every line once, in %s', layout => {
         ['CRLF', 'a\r\nb\r\nc\r\n', 'a\r\nB\r\nc\r\n'],
     ] as const) {
         test(`on ${name}`, () => {
-            const diff = computeFileDiff(before, after, exact);
+            const diff = computeFileDiff({ before, after, ...exact });
             const sides = readSides(buildDiffRows(diff, { layout, context: 3 }), diff);
 
             expect(sides.before).toEqual(diff.before.map((text, index) => ({ line: index + 1, text })));
@@ -55,7 +55,7 @@ describe.each(layouts)('every line once, in %s', layout => {
 });
 
 test('split: deleted and added lines pair up top to bottom, the shorter side empty', () => {
-    const diff = computeFileDiff('a\nold 1\nold 2\nold 3\nz\n', 'a\nnew 1\nz\n', exact);
+    const diff = computeFileDiff({ before: 'a\nold 1\nold 2\nold 3\nz\n', after: 'a\nnew 1\nz\n', ...exact });
 
     expect(buildDiffRows(diff, { layout: 'split', context: 3 })).toEqual([
         splitRow('1:1', { line: 1, kind: 'context' }, { line: 1, kind: 'context' }),
@@ -67,7 +67,7 @@ test('split: deleted and added lines pair up top to bottom, the shorter side emp
 });
 
 test('split: more added than deleted leaves the left side empty', () => {
-    const diff = computeFileDiff('old\n', 'new 1\nnew 2\n', exact);
+    const diff = computeFileDiff({ before: 'old\n', after: 'new 1\nnew 2\n', ...exact });
 
     expect(buildDiffRows(diff, { layout: 'split', context: 3 })).toEqual([
         splitRow('1:1', { line: 1, kind: 'deleted' }, { line: 1, kind: 'added' }),
@@ -76,7 +76,7 @@ test('split: more added than deleted leaves the left side empty', () => {
 });
 
 test('unified: deleted lines come before added ones, each with its own number', () => {
-    const diff = computeFileDiff('a\nold 1\nold 2\nz\n', 'a\nnew 1\nnew 2\nnew 3\nz\n', exact);
+    const diff = computeFileDiff({ before: 'a\nold 1\nold 2\nz\n', after: 'a\nnew 1\nnew 2\nnew 3\nz\n', ...exact });
 
     expect(buildDiffRows(diff, { layout: 'unified', context: 3 })).toEqual([
         unifiedRow('1:1', 1, 1, ' '),
@@ -95,7 +95,10 @@ test.each(layouts)(
         // Lines 10 and 25 change: context reaches 7..13 and 22..28 of 40.
         const lines = numbered(40);
         const changed = lines.map(line => (line === 'line 10' || line === 'line 25' ? `${line}!` : line));
-        const rows = buildDiffRows(computeFileDiff(file(lines), file(changed), exact), { layout, context: 3 });
+        const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
+            layout,
+            context: 3,
+        });
 
         expect(rows.filter(row => row.kind === 'gap')).toEqual([
             {
@@ -124,10 +127,13 @@ test.each(layouts)(
 
 test("a gap keeps each version's own line numbers when the lines above it shifted", () => {
     const lines = numbered(20);
-    const rows = buildDiffRows(computeFileDiff(file(lines), file(['new 1', 'new 2', ...lines]), exact), {
-        layout: 'unified',
-        context: 3,
-    });
+    const rows = buildDiffRows(
+        computeFileDiff({ before: file(lines), after: file(['new 1', 'new 2', ...lines]), ...exact }),
+        {
+            layout: 'unified',
+            context: 3,
+        },
+    );
 
     expect(rows.filter(row => row.kind === 'gap')).toEqual([
         {
@@ -142,7 +148,10 @@ test("a gap keeps each version's own line numbers when the lines above it shifte
 test('no gap where nothing is hidden: unchanged lines that fit the context of their two changes', () => {
     const lines = numbered(8);
     const changed = lines.map(line => (line === 'line 1' || line === 'line 8' ? `${line}!` : line));
-    const rows = buildDiffRows(computeFileDiff(file(lines), file(changed), exact), { layout: 'split', context: 3 });
+    const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
+        layout: 'split',
+        context: 3,
+    });
 
     expect(rows.some(row => row.kind === 'gap')).toBe(false);
     expect(rows).toHaveLength(8);
@@ -151,7 +160,10 @@ test('no gap where nothing is hidden: unchanged lines that fit the context of th
 test('a gap as soon as one line more than the context of two changes lies between them', () => {
     const lines = numbered(9);
     const changed = lines.map(line => (line === 'line 1' || line === 'line 9' ? `${line}!` : line));
-    const rows = buildDiffRows(computeFileDiff(file(lines), file(changed), exact), { layout: 'split', context: 3 });
+    const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
+        layout: 'split',
+        context: 3,
+    });
 
     expect(rows.filter(row => row.kind === 'gap').map(row => row.key)).toEqual(['gap:5:5']);
 });
@@ -159,7 +171,7 @@ test('a gap as soon as one line more than the context of two changes lies betwee
 test('context is a parameter', () => {
     const lines = numbered(21);
     const changed = lines.map(line => (line === 'line 11' ? 'changed' : line));
-    const diff = computeFileDiff(file(lines), file(changed), exact);
+    const diff = computeFileDiff({ before: file(lines), after: file(changed), ...exact });
 
     expect(buildDiffRows(diff, { layout: 'unified', context: 0 }).map(row => row.key)).toEqual([
         'gap:1:1',
@@ -178,25 +190,25 @@ test('context is a parameter', () => {
 });
 
 test.each(layouts)('%s: a file with no change is one gap, an empty one no rows at all', layout => {
-    const unchanged = computeFileDiff('a\nb\n', 'a\nb\n', exact);
+    const unchanged = computeFileDiff({ before: 'a\nb\n', after: 'a\nb\n', ...exact });
 
     expect(buildDiffRows(unchanged, { layout, context: 3 })).toEqual([
         { kind: 'gap', key: 'gap:1:1', hidden: 2, range: { beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 2 } },
     ]);
-    expect(buildDiffRows(computeFileDiff(null, null, exact), { layout, context: 3 })).toEqual([]);
+    expect(buildDiffRows(computeFileDiff({ before: null, after: null, ...exact }), { layout, context: 3 })).toEqual([]);
 });
 
 test('an added file has nothing on the left, a deleted one nothing on the right', () => {
-    expect(buildDiffRows(computeFileDiff(null, 'a\n', exact), { layout: 'split', context: 3 })).toEqual([
-        splitRow('-:1', null, { line: 1, kind: 'added' }),
-    ]);
-    expect(buildDiffRows(computeFileDiff('a\n', null, exact), { layout: 'unified', context: 3 })).toEqual([
-        unifiedRow('1:-', 1, null, '-'),
-    ]);
+    expect(
+        buildDiffRows(computeFileDiff({ before: null, after: 'a\n', ...exact }), { layout: 'split', context: 3 }),
+    ).toEqual([splitRow('-:1', null, { line: 1, kind: 'added' })]);
+    expect(
+        buildDiffRows(computeFileDiff({ before: 'a\n', after: null, ...exact }), { layout: 'unified', context: 3 }),
+    ).toEqual([unifiedRow('1:-', 1, null, '-')]);
 });
 
 test('with whitespace hidden, a whitespace-only line is context beside a real change', () => {
-    const diff = computeFileDiff('  one\ntwo\n', 'one\nTWO\n', { ignoreWhitespace: true });
+    const diff = computeFileDiff({ before: '  one\ntwo\n', after: 'one\nTWO\n', ignoreWhitespace: true });
 
     expect(buildDiffRows(diff, { layout: 'split', context: 3 })).toEqual([
         splitRow('1:1', { line: 1, kind: 'context' }, { line: 1, kind: 'context' }),
@@ -212,7 +224,7 @@ test('with whitespace hidden, a whitespace-only line is context beside a real ch
 test('a line keeps its key when the context around it changes', () => {
     const lines = numbered(30);
     const changed = lines.map(line => (line === 'line 15' ? 'changed' : line));
-    const diff = computeFileDiff(file(lines), file(changed), exact);
+    const diff = computeFileDiff({ before: file(lines), after: file(changed), ...exact });
 
     const narrow = buildDiffRows(diff, { layout: 'split', context: 1 }).filter(row => row.kind === 'line');
     const wide = new Set(buildDiffRows(diff, { layout: 'split', context: 5 }).map(row => row.key));

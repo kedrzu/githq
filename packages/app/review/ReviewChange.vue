@@ -25,7 +25,7 @@ function getLetter(change: PatchStatus) {
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
-import * as l from './Review.loc.js';
+import * as l from './ReviewChange.loc.js';
 
 defineProps<{
   change: PatchStatus;

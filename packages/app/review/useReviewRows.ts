@@ -122,7 +122,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
             contents.set(diff, byLayout);
         }
 
-        byLayout[layout] ??= { kind: 'lines', rows: buildFileLineRows(file.path, diff, layout) };
+        byLayout[layout] ??= { kind: 'lines', rows: buildFileLineRows({ path: file.path, diff, layout }) };
         return byLayout[layout];
     }
 
@@ -160,7 +160,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
 
         const ignoreWhitespace = toValue(options.hideWhitespace);
         const start = performance.now();
-        const diff = computeFileDiff(state.before, state.after, { ignoreWhitespace });
+        const diff = computeFileDiff({ before: state.before, after: state.after, ignoreWhitespace });
         getDiffs().set(state, diff);
         performance.measure(`review:diff ${file.path}`, { start, end: performance.now() });
     }

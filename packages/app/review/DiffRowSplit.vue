@@ -82,7 +82,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
 .diffRowSplit_code {
   min-width: 0;
   font-family: $font-family-mono;
-  font-size: 12px;
+  font-size: $font-size-xs;
   line-height: 20px;
   tab-size: 4;
   overflow-wrap: anywhere;

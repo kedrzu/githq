@@ -16,6 +16,8 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import { createSingleRunner } from '@nzyme/utils/createSingleRunner.js';
+import type { SingleRunnerState } from '@nzyme/utils/createSingleRunner.js';
 import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
@@ -110,6 +112,12 @@ interface FileSides {
     readonly after: BlobSide | null;
 }
 
+/** What to ask GitHub of each side: `null` for the side the file doesn't exist on. */
+interface FileExpressions {
+    readonly before: string | null;
+    readonly after: string | null;
+}
+
 interface BlobSide {
     readonly oid: string;
     readonly byteSize: number;
@@ -121,8 +129,6 @@ interface FileEntry {
     sides: FileSides | null;
     /** Its oids are being read. */
     resolving: boolean;
-    /** It failed and the user asked again: what the disk says of it is what they are asking past. */
-    retried: boolean;
 }
 
 /** What one list of files at one head is being read into. Replaced whole when the pull request moves. */
@@ -145,7 +151,7 @@ interface FileRun {
     running: number;
     /** Where renamed and copied files came from, once read: until then those wait, in the queue. */
     renames: ReadonlyMap<string, string> | null;
-    readingRenames: boolean;
+    readonly renamesReader: SingleRunnerState<void>;
     /** Whether the merge base was asked for ahead of the first query needing it. */
     mergeBaseAsked: boolean;
     /** GitHub refused for the rate: files listed from now on fail with it, until a retry. */
@@ -248,9 +254,10 @@ export const ReviewFiles = defineService({
             const versionRef = shallowRef(0);
 
             let dropped = false;
-            let readingList = false;
             let cancelUpdate: (() => void) | null = null;
             let jumpedTo: string | null = null;
+
+            const listReader = createSingleRunner({ handler: readList });
 
             void load();
 
@@ -318,10 +325,9 @@ export const ReviewFiles = defineService({
                 if (run && entry && run.states.get(path)?.kind === 'failed') {
                     setState(run, path, WAITING);
                     run.queue.unshift(entry);
-                    entry.retried = true;
                     run.refusal = null;
                     if (isHeldForRenames(run, entry)) {
-                        void readRenames(run);
+                        void run.renamesReader.execute();
                     }
 
                     // Its texts may have arrived since it failed.
@@ -337,7 +343,7 @@ export const ReviewFiles = defineService({
                         void load();
                         break;
                     case 'ready':
-                        void readList();
+                        void listReader.execute();
                         break;
                     case 'loading':
                         break;
@@ -375,16 +381,11 @@ export const ReviewFiles = defineService({
                     listCompleteRef.value = true;
                 }
 
-                await readList();
+                await listReader.execute();
             }
 
             /** Reads the list from GitHub into what is shown; with something to show, failing only leaves that as it is. */
             async function readList() {
-                if (readingList) {
-                    return;
-                }
-
-                readingList = true;
                 try {
                     await readPages();
                 } catch (error) {
@@ -397,8 +398,6 @@ export const ReviewFiles = defineService({
                     } else {
                         listRef.value = { kind: 'failed', error: toError(error) };
                     }
-                } finally {
-                    readingList = false;
                 }
             }
 
@@ -491,7 +490,7 @@ export const ReviewFiles = defineService({
                     fetching: new Set(),
                     running: 0,
                     renames: null,
-                    readingRenames: false,
+                    renamesReader: createSingleRunner({ handler: () => readRenames(run) }),
                     mergeBaseAsked: false,
                     refusal: null,
                 };
@@ -522,7 +521,6 @@ export const ReviewFiles = defineService({
                         file: { ...file, previousPath },
                         sides: null,
                         resolving: false,
-                        retried: false,
                     };
                     run.entries.set(file.path, added);
                     run.queue.push(added);
@@ -540,7 +538,7 @@ export const ReviewFiles = defineService({
                 }
 
                 if (run.queue.some(entry => isHeldForRenames(run, entry))) {
-                    void readRenames(run);
+                    void run.renamesReader.execute();
                 }
 
                 if (!run.mergeBaseAsked && files.some(file => getExistingSides(file.changeType).before)) {
@@ -612,11 +610,6 @@ export const ReviewFiles = defineService({
              * all; failing fails only those, and retrying one of them reads it again.
              */
             async function readRenames(run: FileRun) {
-                if (run.readingRenames) {
-                    return;
-                }
-
-                run.readingRenames = true;
                 try {
                     const renames = await listPullRequestRenames(current.rest, {
                         nameWithOwner,
@@ -645,8 +638,6 @@ export const ReviewFiles = defineService({
                             toError(error),
                         );
                     }
-                } finally {
-                    run.readingRenames = false;
                 }
             }
 
@@ -738,7 +729,10 @@ export const ReviewFiles = defineService({
                 let failure: Error | null = null;
                 try {
                     const needsBase = entries.some(entry => getExistingSides(entry.file.changeType).before);
-                    const mergeBase = needsBase ? await readMergeBase(run.baseRefOid, run.headRefOid) : null;
+                    // A failure is an answer: only the files with a before side end with it.
+                    const mergeBase = needsBase
+                        ? await readMergeBase(run.baseRefOid, run.headRefOid).catch(toError)
+                        : null;
                     ended = await readSides(run, entries, mergeBase);
                     if (isLive(run)) {
                         const known = entries.flatMap(entry => getBlobs(entry.sides));
@@ -805,14 +799,19 @@ export const ReviewFiles = defineService({
              * Reads each file's blobs, what the disk doesn't know from GitHub, and sets {@link FileEntry.sides} of those
              * that go on to their text; returns what ended the others.
              */
-            async function readSides(run: FileRun, entries: readonly FileEntry[], mergeBase: string | null) {
-                const expressions = new Map<FileEntry, { before: string | null; after: string | null }>();
+            async function readSides(run: FileRun, entries: readonly FileEntry[], mergeBase: string | Error | null) {
+                const expressions = new Map<FileEntry, FileExpressions>();
                 const ended = new Map<FileEntry, ReviewFileState>();
                 for (const entry of entries) {
                     const { file } = entry;
                     const { before, after } = getExistingSides(file.changeType);
                     const previous =
                         file.changeType === 'RENAMED' || file.changeType === 'COPIED' ? file.previousPath : file.path;
+                    if (before && mergeBase instanceof Error) {
+                        ended.set(entry, { kind: 'failed', error: mergeBase });
+                        continue;
+                    }
+
                     if (before && previous === null) {
                         ended.set(entry, {
                             kind: 'failed',
@@ -822,7 +821,7 @@ export const ReviewFiles = defineService({
                     }
 
                     expressions.set(entry, {
-                        before: before && mergeBase !== null ? `${mergeBase}:${previous}` : null,
+                        before: before && typeof mergeBase === 'string' ? `${mergeBase}:${previous}` : null,
                         after: after ? `${run.headRefOid}:${file.path}` : null,
                     });
                 }
@@ -832,29 +831,29 @@ export const ReviewFiles = defineService({
                     return ended;
                 }
 
-                const answers = await readKeptAnswers(
-                    [...expressions].flatMap(([entry, { before, after }]) =>
-                        entry.retried ? [] : [before, after].filter(expression => expression !== null),
-                    ),
-                );
+                const asked = [...expressions.values()]
+                    .flatMap(({ before, after }) => [before, after])
+                    .filter(expression => expression !== null);
+                const answers = await readKeptAnswers(asked);
                 if (!isLive(run)) {
                     return ended;
                 }
 
-                const unknown = [...expressions.values()]
-                    .flatMap(({ before, after }) => [before, after])
-                    .filter(expression => expression !== null)
-                    .filter(expression => !answers.has(expression));
+                const unknown = asked.filter(expression => !answers.has(expression));
                 if (unknown.length > 0) {
-                    const answered = await readReviewBlobOids(current.requester, repository, unknown);
+                    const answered = await readReviewBlobOids({
+                        requester: current.requester,
+                        repository,
+                        expressions: unknown,
+                    });
                     keepAnswers(answered);
                     for (const [expression, answer] of answered) {
                         answers.set(expression, answer);
                     }
                 }
 
-                for (const [entry, { before, after }] of expressions) {
-                    const outcome = readOutcome(before, after, answers);
+                for (const [entry, sides] of expressions) {
+                    const outcome = readOutcome(sides, answers);
                     if ('kind' in outcome) {
                         ended.set(entry, outcome);
                     } else {
@@ -939,7 +938,7 @@ export const ReviewFiles = defineService({
                 const binary = new Set<string>();
                 const failed = new Map<string, Error>();
                 try {
-                    const answers = await readReviewBlobTexts(current.requester, repository, oids);
+                    const answers = await readReviewBlobTexts({ requester: current.requester, repository, oids });
                     await Promise.all(
                         [...answers].map(async ([oid, answer]) => {
                             switch (answer.kind) {
@@ -1107,15 +1106,21 @@ function readReadyState(run: FileRun, sides: FileSides): ReviewFileState | null 
 
 /** What the answers about a file's two sides mean: its blobs to read, or the state it ends in. */
 function readOutcome(
-    before: string | null,
-    after: string | null,
+    { before, after }: FileExpressions,
     answers: ReadonlyMap<string, ReviewBlobOidAnswer>,
 ): FileSides | ReviewFileState {
-    const asked = [before, after].filter(expression => expression !== null);
-    const found = asked.map(expression => answers.get(expression));
+    const found = [before, after].filter(expression => expression !== null).map(expression => answers.get(expression));
 
-    // A side that can't be shown settles it, whatever the other says. `notBlob`: a submodule, whose pointer has no text.
-    if (found.some(answer => answer?.kind === 'notBlob' || (answer?.kind === 'blob' && answer.isBinary))) {
+    // A side that can't be shown settles it, whatever the other says. GitHub listed the file at these commits, so a side
+    // answering nothing is a submodule, which is how GitHub answers a gitlink: a pointer with no text, like a directory.
+    if (
+        found.some(
+            answer =>
+                answer?.kind === 'missing' ||
+                answer?.kind === 'notBlob' ||
+                (answer?.kind === 'blob' && answer.isBinary),
+        )
+    ) {
         return { kind: 'binary' };
     }
 
@@ -1123,13 +1128,9 @@ function readOutcome(
         return { kind: 'tooLarge' };
     }
 
-    for (const [index, answer] of found.entries()) {
+    for (const answer of found) {
         if (answer?.kind === 'failed') {
             return { kind: 'failed', error: answer.error };
-        }
-
-        if (answer?.kind !== 'blob') {
-            return { kind: 'failed', error: new Error(`GitHub has nothing at ${asked[index]}`) };
         }
     }
 

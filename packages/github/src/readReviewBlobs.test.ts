@@ -12,7 +12,7 @@ test('a path travels only as a variable, whatever it holds', async () => {
     const path = 'head:src/"quoted" $e1 \\ {}\n.ts';
     const github = answering({ data: { repository: { b0: { oid: 'abc', byteSize: 3, isBinary: false } } } });
 
-    await readReviewBlobOids(github.requester, REPOSITORY, [path]);
+    await readReviewBlobOids({ requester: github.requester, repository: REPOSITORY, expressions: [path] });
 
     const [sent] = github.bodies;
     expect(sent?.variables).toEqual({ owner: 'kedrzu', name: 'githq', e0: path });
@@ -21,25 +21,32 @@ test('a path travels only as a variable, whatever it holds', async () => {
     expect(sent?.query).toContain('b0: object(expression: $e0) { ... on Blob { oid byteSize isBinary } }');
 });
 
-test('oids: a blob, nothing, something else and a failed one are told apart', async () => {
+test('oids: a blob, nothing, a directory and a failed one are told apart; a submodule answers like nothing', async () => {
     const github = answering({
         data: {
             repository: {
                 b0: { oid: 'abc', byteSize: 3, isBinary: null },
                 b1: null,
+                // As GitHub answers: a tree matches no fragment, and a gitlink is `null`, like a path with nothing.
                 b2: {},
                 b3: null,
+                b4: null,
             },
         },
         errors: [{ type: 'SERVICE_UNAVAILABLE', message: 'Try later', path: ['repository', 'b3'] }],
     });
 
-    const answers = await readReviewBlobOids(github.requester, REPOSITORY, ['h:a', 'h:b', 'h:c', 'h:d']);
+    const answers = await readReviewBlobOids({
+        requester: github.requester,
+        repository: REPOSITORY,
+        expressions: ['h:a', 'h:b', 'h:c', 'h:d', 'h:e'],
+    });
 
     const expected: Partial<Record<string, ReviewBlobOidAnswer>> = {
         'h:a': { kind: 'blob', oid: 'abc', byteSize: 3, isBinary: false },
         'h:b': { kind: 'missing' },
         'h:c': { kind: 'notBlob' },
+        'h:e': { kind: 'missing' },
     };
     for (const [expression, answer] of Object.entries(expected)) {
         expect(answers.get(expression)).toEqual(answer);
@@ -65,7 +72,11 @@ test('texts: a truncated blob gives no text at all; binary and failed ones are t
         },
     });
 
-    const answers = await readReviewBlobTexts(github.requester, REPOSITORY, ['a', 'b', 'c', 'd', 'e', 'f']);
+    const answers = await readReviewBlobTexts({
+        requester: github.requester,
+        repository: REPOSITORY,
+        oids: ['a', 'b', 'c', 'd', 'e', 'f'],
+    });
 
     const expected: Partial<Record<string, ReviewBlobTextAnswer>> = {
         a: { kind: 'text', text: 'whole' },
@@ -89,7 +100,9 @@ test('a repository GitHub would not give fails the whole query', async () => {
         errors: [{ type: 'NOT_FOUND', message: 'Could not resolve', path: ['repository'] }],
     });
 
-    await expect(readReviewBlobOids(github.requester, REPOSITORY, ['h:a'])).rejects.toMatchObject({
+    await expect(
+        readReviewBlobOids({ requester: github.requester, repository: REPOSITORY, expressions: ['h:a'] }),
+    ).rejects.toMatchObject({
         name: 'GitHubApiError',
         errors: [{ type: 'NOT_FOUND', message: 'Could not resolve', path: ['repository'] }],
     });

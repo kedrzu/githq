@@ -32,7 +32,7 @@ import { replayQueue } from './queue'`,
         'private pending = new PendingStore(db)',
         `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has' })`,
     );
-const DIFF = computeFileDiff(BEFORE, AFTER, { ignoreWhitespace: false });
+const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 
 const FILE = file('src/sync/engine.ts', 6, 3);
 
@@ -84,7 +84,7 @@ export const Binary: Story = { render: () => renderRows(fileRows(FILE, { kind: '
 export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
 
 function lines(layout: DiffLayout) {
-    return buildFileLineRows(FILE.path, DIFF, layout);
+    return buildFileLineRows({ path: FILE.path, diff: DIFF, layout });
 }
 
 /** The rows the diff would draw for the file, without the room left under the last one. */

@@ -20,9 +20,9 @@ export type ReviewBlobOidAnswer =
           /** `true` only when GitHub is sure: `Blob.isBinary` is `null` when it can't tell. */
           readonly isBinary: boolean;
       }
-    /** Nothing at that path. */
+    /** Nothing GitHub will name at that path: there is nothing there, or a submodule, which it answers the same for. */
     | { readonly kind: 'missing' }
-    /** Something else at that path: a submodule's commit. */
+    /** Something else at that path: a directory. */
     | { readonly kind: 'notBlob' }
     /** GitHub could not answer this one; the rest of the answer stands. */
     | { readonly kind: 'failed'; readonly error: GitHubApiError };
@@ -36,16 +36,29 @@ export type ReviewBlobTextAnswer =
     /** GitHub could not answer this one; the rest of the answer stands. */
     | { readonly kind: 'failed'; readonly error: GitHubApiError };
 
+/** Where blobs are read from, with which requester. */
+interface ReviewBlobSource {
+    readonly requester: Requester<GitHubGraphQLCallOptions>;
+    readonly repository: ReviewBlobRepository;
+}
+
+export interface ReadReviewBlobOidsParams extends ReviewBlobSource {
+    readonly expressions: readonly string[];
+}
+
+export interface ReadReviewBlobTextsParams extends ReviewBlobSource {
+    readonly oids: readonly string[];
+}
+
 /**
  * Resolves many `<commit oid>:<path>` expressions in one query (`ReviewBlobOids`), which costs one point. Answers by
  * expression. Rejects only when the query fails as a whole.
  */
-export async function readReviewBlobOids(
-    requester: Requester<GitHubGraphQLCallOptions>,
-    repository: ReviewBlobRepository,
-    expressions: readonly string[],
-): Promise<Map<string, ReviewBlobOidAnswer>> {
-    const objects = await readAliasedObjects(requester, repository, {
+export async function readReviewBlobOids({
+    expressions,
+    ...source
+}: ReadReviewBlobOidsParams): Promise<Map<string, ReviewBlobOidAnswer>> {
+    const objects = await readAliasedObjects(source, {
         operation: 'ReviewBlobOids',
         argument: 'expression',
         variablePrefix: 'e',
@@ -63,12 +76,11 @@ export async function readReviewBlobOids(
 }
 
 /** Reads many blobs by oid in one query (`ReviewBlobTexts`). Answers by oid. Rejects only when the query fails as a whole. */
-export async function readReviewBlobTexts(
-    requester: Requester<GitHubGraphQLCallOptions>,
-    repository: ReviewBlobRepository,
-    oids: readonly string[],
-): Promise<Map<string, ReviewBlobTextAnswer>> {
-    const objects = await readAliasedObjects(requester, repository, {
+export async function readReviewBlobTexts({
+    oids,
+    ...source
+}: ReadReviewBlobTextsParams): Promise<Map<string, ReviewBlobTextAnswer>> {
+    const objects = await readAliasedObjects(source, {
         operation: 'ReviewBlobTexts',
         argument: 'oid',
         variablePrefix: 'o',
@@ -146,8 +158,7 @@ interface AliasedObject {
 }
 
 async function readAliasedObjects(
-    requester: Requester<GitHubGraphQLCallOptions>,
-    repository: ReviewBlobRepository,
+    { requester, repository }: ReviewBlobSource,
     query: AliasedQuery,
 ): Promise<Map<string, AliasedObject>> {
     const variables: Record<string, string> = { owner: repository.owner, name: repository.name };

@@ -9,14 +9,14 @@ const exact = { ignoreWhitespace: false };
 const ignoring = { ignoreWhitespace: true };
 
 test('a final line without a newline is kept; a trailing newline makes no extra line, and blank lines stay', () => {
-    expect(computeFileDiff('a\nb', null, exact).before).toEqual(['a', 'b']);
-    expect(computeFileDiff('a\nb\n', null, exact).before).toEqual(['a', 'b']);
-    expect(computeFileDiff('\n', null, exact).before).toEqual(['']);
-    expect(computeFileDiff('a\n\n', null, exact).before).toEqual(['a', '']);
+    expect(computeFileDiff({ before: 'a\nb', after: null, ...exact }).before).toEqual(['a', 'b']);
+    expect(computeFileDiff({ before: 'a\nb\n', after: null, ...exact }).before).toEqual(['a', 'b']);
+    expect(computeFileDiff({ before: '\n', after: null, ...exact }).before).toEqual(['']);
+    expect(computeFileDiff({ before: 'a\n\n', after: null, ...exact }).before).toEqual(['a', '']);
 });
 
 test('the change blocks are the changed ranges in both versions', () => {
-    const diff = computeFileDiff('a\nb\nc\nd\ne\nf\n', 'a\nB\nc\nd\nf\nnew\n', exact);
+    const diff = computeFileDiff({ before: 'a\nb\nc\nd\ne\nf\n', after: 'a\nB\nc\nd\nf\nnew\n', ...exact });
 
     expect(diff.after).toEqual(['a', 'B', 'c', 'd', 'f', 'new']);
     expect(diff.blocks).toEqual([
@@ -30,27 +30,27 @@ test('with whitespace hidden, a line differing only in whitespace is no change a
     const before = 'if (a) {\n  call( b );\n}\n';
     const after = 'if (a) {\n\tcall(b);\n}\n';
 
-    expect(computeFileDiff(before, after, exact).blocks).toHaveLength(1);
+    expect(computeFileDiff({ before, after, ...exact }).blocks).toHaveLength(1);
 
-    const diff = computeFileDiff(before, after, ignoring);
+    const diff = computeFileDiff({ before, after, ...ignoring });
     expect(diff.blocks).toEqual([]);
     expect(diff.before[1]).toBe('  call( b );');
     expect(diff.after[1]).toBe('\tcall(b);');
 });
 
 test('with whitespace hidden, a real change next to a whitespace change is still a change', () => {
-    const diff = computeFileDiff('  one\ntwo\nthree\n', 'one\nTWO\nthree\n', ignoring);
+    const diff = computeFileDiff({ before: '  one\ntwo\nthree\n', after: 'one\nTWO\nthree\n', ...ignoring });
 
     expect(diff.blocks).toEqual([{ beforeStart: 1, beforeEnd: 2, afterStart: 1, afterEnd: 2 }]);
 });
 
 test('an added file is all added, a deleted file all deleted', () => {
-    expect(computeFileDiff(null, 'a\nb', exact)).toEqual({
+    expect(computeFileDiff({ before: null, after: 'a\nb', ...exact })).toEqual({
         before: [],
         after: ['a', 'b'],
         blocks: [{ beforeStart: 0, beforeEnd: 0, afterStart: 0, afterEnd: 2 }],
     });
-    expect(computeFileDiff('a\nb\n', null, exact)).toEqual({
+    expect(computeFileDiff({ before: 'a\nb\n', after: null, ...exact })).toEqual({
         before: ['a', 'b'],
         after: [],
         blocks: [{ beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 0 }],
@@ -64,32 +64,32 @@ test('empty files have no lines and no change', () => {
         ['', null],
         [null, ''],
     ] as const) {
-        expect(computeFileDiff(before, after, exact)).toEqual({ before: [], after: [], blocks: [] });
+        expect(computeFileDiff({ before, after, ...exact })).toEqual({ before: [], after: [], blocks: [] });
     }
 });
 
 test('an added final newline is no change', () => {
-    expect(computeFileDiff('a\nb', 'a\nb\n', exact).blocks).toEqual([]);
+    expect(computeFileDiff({ before: 'a\nb', after: 'a\nb\n', ...exact }).blocks).toEqual([]);
 });
 
 test('CRLF on both sides is no change and shows in no line', () => {
-    const diff = computeFileDiff('a\r\nb\r\n', 'a\r\nb\r\n', exact);
+    const diff = computeFileDiff({ before: 'a\r\nb\r\n', after: 'a\r\nb\r\n', ...exact });
 
     expect(diff).toEqual({ before: ['a', 'b'], after: ['a', 'b'], blocks: [] });
 });
 
 test('CRLF on both sides diffs the lines that changed', () => {
-    const diff = computeFileDiff('a\r\nb\r\nc\r\n', 'a\r\nB\r\nc\r\n', exact);
+    const diff = computeFileDiff({ before: 'a\r\nb\r\nc\r\n', after: 'a\r\nB\r\nc\r\n', ...exact });
 
     expect(diff.after).toEqual(['a', 'B', 'c']);
     expect(diff.blocks).toEqual([{ beforeStart: 1, beforeEnd: 2, afterStart: 1, afterEnd: 2 }]);
 });
 
 test('line endings converted to LF are a change of every line, unless whitespace is hidden', () => {
-    expect(computeFileDiff('a\r\nb\r\n', 'a\nb\n', exact).blocks).toEqual([
+    expect(computeFileDiff({ before: 'a\r\nb\r\n', after: 'a\nb\n', ...exact }).blocks).toEqual([
         { beforeStart: 0, beforeEnd: 2, afterStart: 0, afterEnd: 2 },
     ]);
-    expect(computeFileDiff('a\r\nb\r\n', 'a\nb\n', ignoring).blocks).toEqual([]);
+    expect(computeFileDiff({ before: 'a\r\nb\r\n', after: 'a\nb\n', ...ignoring }).blocks).toEqual([]);
 });
 
 test('on random files, the lines between the blocks correspond, and the blocks never touch', () => {
@@ -98,7 +98,7 @@ test('on random files, the lines between the blocks correspond, and the blocks n
         const options = { ignoreWhitespace: round % 2 === 0 };
         const before = randomLines(random);
         const after = randomLines(random);
-        const diff = computeFileDiff(before.join('\n'), after.join('\n'), options);
+        const diff = computeFileDiff({ before: before.join('\n'), after: after.join('\n'), ...options });
         const compared = (line: string) => (options.ignoreWhitespace ? line.replace(/\s/g, '') : line);
 
         let beforeAt = 0;

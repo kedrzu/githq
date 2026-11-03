@@ -9,7 +9,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, Eye, LoaderCircle } from 'lucide-vue-next';
 
-import { getFileName } from './groupReviewFiles.js';
+import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile, ReviewFileState } from './ReviewFiles.js';
 import * as l from './ReviewFileRow.loc.js';

@@ -1,4 +1,5 @@
 import type { ReviewFile } from './ReviewFiles.js';
+import { getFileFolder } from './utils/getFileFolder.js';
 
 /** A folder's files, as the review's file list shows them. */
 export interface ReviewFileGroup {
@@ -29,25 +30,6 @@ export function groupReviewFiles(files: readonly ReviewFile[]): ReviewFileGroup[
     return [...byFolder]
         .map(([folder, grouped]): ReviewFileGroup => ({ folder, files: grouped }))
         .toSorted((a, b) => compareFolders(a.folder, b.folder));
-}
-
-/**
- * The folder part of a path, `null` at the root.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getFileFolder(path: string): string | null {
-    const slash = path.lastIndexOf('/');
-    return slash === -1 ? null : path.slice(0, slash);
-}
-
-/**
- * The last part of a path.
- *
- * @__NO_SIDE_EFFECTS__
- */
-export function getFileName(path: string): string {
-    return path.slice(path.lastIndexOf('/') + 1);
 }
 
 /** By segment, so that `e2e/fixtures` follows `e2e` even with `e2e-tools` around. By code unit, as git sorts. */

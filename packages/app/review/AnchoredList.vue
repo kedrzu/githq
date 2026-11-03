@@ -2,10 +2,9 @@
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
-/** The slot's props: a row and where it is in `rows`. */
+/** The slot's props. */
 export interface AnchoredListSlotProps<T> {
   row: T;
-  index: number;
 }
 
 /** What a template ref to the list gives. */
@@ -31,11 +30,13 @@ const SCROLL_EPSILON = 0.01;
  * only if the row itself changed: a position is the wrapper's in the list's own render. The slot is a plain prop because
  * a `<slot>` inside `v-for` compiles to dynamic slots, which update the child every time.
  */
-function AnchoredListCell<T>(props: AnchoredListSlotProps<T> & { render: AnchoredListCellRender<T> }) {
-  return props.render({ row: props.row, index: props.index });
+function AnchoredListCell<T>(props: AnchoredListCellProps<T>) {
+  return props.render({ row: props.row });
 }
 
-type AnchoredListCellRender<T> = (slotProps: AnchoredListSlotProps<T>) => VNodeChild;
+interface AnchoredListCellProps<T> extends AnchoredListSlotProps<T> {
+  render: (slotProps: AnchoredListSlotProps<T>) => VNodeChild;
+}
 </script>
 
 <script lang="ts" setup generic="T extends AnchoredListRow">
@@ -60,9 +61,8 @@ const props = withDefaults(
     isPinned?: (row: T) => boolean;
     /** What the list is, for screen readers. */
     label: string;
-    role?: string;
   }>(),
-  { isPinned: () => false, role: 'region' },
+  { isPinned: () => false },
 );
 
 const slots = defineSlots<{
@@ -237,7 +237,7 @@ function showWindow(layoutChanged: boolean) {
   <div
     ref="scroller"
     :class="[css.anchoredList, focusedQuietly && css.anchoredList_quiet]"
-    :role="role"
+    role="region"
     :aria-label="label"
     tabindex="0"
     @blur="focusedQuietly = false"
@@ -256,7 +256,6 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="pinnedRow.row"
-          :index="pinnedRow.index"
           :render="slots.default"
         />
       </div>
@@ -274,7 +273,6 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="placed.row"
-          :index="placed.index"
           :render="slots.default"
         />
       </div>

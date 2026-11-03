@@ -11,7 +11,8 @@ import { ChevronDown } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import * as l from './DiffFileHeader.loc.js';
-import { getFileFolder, getFileName } from './groupReviewFiles.js';
+import { getFileFolder } from './utils/getFileFolder.js';
+import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile } from './ReviewFiles.js';
 

@@ -136,6 +136,24 @@ test('a query or merge base GitHub fails on fails only its files; each comes bac
     expect(other.model.getState('changed.ts')).toEqual({ kind: 'ready', before: 'a', after: 'b' });
 });
 
+test('a merge base GitHub fails on fails only the files with a before side; the added ones of the same query go on', async () => {
+    const github = createGitHub();
+    github.file({ path: 'added.ts', changeType: 'ADDED', after: 'added' });
+    github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.failNext(`GET /repos/acme/web/compare/${BASE_TIP}...${HEAD}`);
+    const { model } = open(uniqueLogin(), github);
+
+    await settled(model);
+
+    expect(model.getState('added.ts')).toEqual({ kind: 'ready', before: null, after: 'added' });
+    expect(model.getState('changed.ts').kind).toBe('failed');
+
+    model.retry('changed.ts');
+    await settled(model);
+
+    expect(model.getState('changed.ts')).toEqual({ kind: 'ready', before: 'a', after: 'b' });
+});
+
 test('a rename GitHub does not name a source for fails alone instead of reading the wrong path', async () => {
     const github = createGitHub();
     github.file({ path: 'moved.ts', changeType: 'RENAMED', before: 'was', after: 'is' });
@@ -653,28 +671,6 @@ test('a refresh that fails keeps the list shown and warns; nothing kept, the fai
     expect(second.model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
 });
 
-test('nothing at an expression stays known for its commit; retrying the file that makes fail asks GitHub past it', async () => {
-    const github = createGitHub();
-    github.file({ path: 'gone.ts', changeType: 'ADDED' });
-    const login = uniqueLogin();
-    const first = open(login, github);
-    await settled(first.model);
-    expect(first.model.getState('gone.ts').kind).toBe('failed');
-    await waitUntilAllKept(login, [`${HEAD}:gone.ts`], null);
-
-    const second = open(login, github);
-    await settled(second.model);
-
-    expect(second.model.getState('gone.ts').kind).toBe('failed');
-    expect(second.session.operations()).not.toContain('ReviewBlobOids');
-
-    github.blobAt(`${HEAD}:gone.ts`, { text: 'there after all' });
-    second.model.retry('gone.ts');
-    await settled(second.model);
-
-    expect(second.model.getState('gone.ts')).toEqual({ kind: 'ready', before: null, after: 'there after all' });
-});
-
 test('signing out with every kind of answer on its way: the kept list, oids and merge base stay off the disk', async () => {
     const github = createGitHub();
     github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
@@ -715,7 +711,7 @@ interface TestFile {
     readonly binary?: boolean;
     /** The head side's size, when it should not be its text's. */
     readonly byteSize?: number;
-    /** A commit at both sides, as a submodule has. */
+    /** A commit at both sides, as a submodule has: GitHub answers it like nothing at that path. */
     readonly submodule?: boolean;
 }
 
@@ -731,7 +727,7 @@ interface TestBlob {
 /** A fake GitHub over one pull request: a page holds at most `pageSize` files, 2 unless told, to show page after page. */
 function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     const files: TestFile[] = [];
-    const objects = new Map<string, TestBlob | 'submodule'>();
+    const objects = new Map<string, TestBlob>();
     const blobs = new Map<string, TestBlob>();
     const truncated = new Map<string, string>();
     const failing = new Set<string>();
@@ -768,8 +764,6 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     function file(testFile: TestFile) {
         files.push(testFile);
         if (testFile.submodule) {
-            objects.set(`${HEAD}:${testFile.path}`, 'submodule');
-            objects.set(`${MERGE_BASE}:${testFile.path}`, 'submodule');
             return;
         }
 
@@ -847,8 +841,6 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
             if (expression === failedExpression) {
                 repository[alias] = null;
                 failures.push({ type: 'SERVICE_UNAVAILABLE', message: 'Try later', path: ['repository', alias] });
-            } else if (object === 'submodule') {
-                repository[alias] = {};
             } else {
                 repository[alias] = object
                     ? { oid: oidOf(object.text), byteSize: sizeOf(object), isBinary: object.isBinary ?? false }
@@ -970,16 +962,16 @@ async function waitUntilKept(login: string, oid: string) {
  * Waits until a reload would find what the first read kept: the list, the merge base, the expressions and a blob, all
  * written behind.
  */
-async function waitUntilAllKept(login: string, expressions: readonly string[], oid: string | null) {
+async function waitUntilAllKept(login: string, expressions: readonly string[], oid: string) {
     const store = ReviewBlobStore.create();
     const keys = expressions.map(expression => `acme/web:${expression}`);
     await waitUntil(
         async () => {
             const resolutions = await store.readResolutions(login, keys);
-            const blobs = oid === null ? null : await store.read(login, [oid]);
+            const blobs = await store.read(login, [oid]);
             return (
                 resolutions.size === keys.length &&
-                (blobs === null || blobs.size === 1) &&
+                blobs.size === 1 &&
                 (await store.readFileList(login, LIST_KEY)) !== undefined
             );
         },
