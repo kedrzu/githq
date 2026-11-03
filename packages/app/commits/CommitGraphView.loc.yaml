@@ -1,0 +1,18 @@
+commitsOf:
+  en: Commits of {name}
+loading:
+  en: Loading commits…
+loadingMore:
+  en: Loading older commits…
+beginning:
+  en: The beginning of {name}'s history
+unavailable:
+  en: GitHub can't be asked for the commits right now. They appear here once it can.
+emptyTitle:
+  en: No commits yet
+emptyDetail:
+  en: '{name} is empty on GitHub. Commits appear here after the first push.'
+next:
+  en: Next commit
+previous:
+  en: Previous commit

@@ -1,5 +1,3 @@
-notTracked:
-  en: not tracked
 notTracking:
   en: You're not tracking {name}
 openOnGitHub:

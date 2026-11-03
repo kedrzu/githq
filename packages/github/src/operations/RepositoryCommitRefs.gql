@@ -1,0 +1,52 @@
+# A repository's branches and tags, read when its commit graph opens to tell which refs moved (git-client D9). The
+# first request asks for the first page of both lists, and on a first open for the default branch's first 100 commits
+# too (`$withHistory`); a later page asks for its own list alone, passing its cursor, so a list read to its end is not
+# asked for again.
+query RepositoryCommitRefs(
+    $owner: String!
+    $name: String!
+    $withHistory: Boolean!
+    $withBranches: Boolean!
+    $withTags: Boolean!
+    $branchesAfter: String
+    $tagsAfter: String
+) {
+    repository(owner: $owner, name: $name) {
+        defaultBranchRef {
+            name
+            target {
+                ... on Commit {
+                    ...CommitRefTargetFields
+                    history(first: 100) @include(if: $withHistory) {
+                        nodes {
+                            ...CommitFields
+                        }
+                    }
+                }
+            }
+        }
+        branches: refs(refPrefix: "refs/heads/", first: 100, after: $branchesAfter) @include(if: $withBranches) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...CommitRefFields
+            }
+        }
+        tags: refs(
+            refPrefix: "refs/tags/"
+            first: 100
+            after: $tagsAfter
+            orderBy: { field: TAG_COMMIT_DATE, direction: DESC }
+        ) @include(if: $withTags) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                ...CommitRefFields
+            }
+        }
+    }
+}

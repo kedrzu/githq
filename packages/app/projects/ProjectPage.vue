@@ -663,12 +663,9 @@ function setRowField(fieldId: string | null) {
 }
 
 .projectPage_header {
-  display: flex;
-  flex: none;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-16;
-  border-bottom: 1px solid $color-border;
+  @include list-header;
+
+  gap: 0;
 }
 
 .projectPage_title {

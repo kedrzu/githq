@@ -16,6 +16,8 @@ $color-bg-2: #131519;
 $color-bg-3: #1a1d22;
 // The selected row of a list.
 $color-sel: #1c2030;
+// Every other row of the commit graph: a very faint stripe carrying the eye from a dot far left to its row.
+$color-row-stripe: rgb(255 255 255 / 2%);
 // Lines between surfaces and around boxes.
 $color-border: #22262d;
 // Stronger outlines: keyboard hints, a notice.
@@ -69,6 +71,7 @@ $font-family-sans: 'Inter', system-ui, sans-serif;
 $font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 $font-family-brand: 'Geist', $font-family-sans;
 
+$font-size-3xs: 11px;
 $font-size-2xs: 11.5px;
 $font-size-xs: 12px;
 $font-size-sm: 12.5px;
@@ -101,6 +104,7 @@ $spacing-8: 8px;
 $spacing-10: 10px;
 $spacing-12: 12px;
 $spacing-16: 16px;
+$spacing-20: 20px;
 $spacing-24: 24px;
 
 $radius-sm: 4px;
@@ -219,6 +223,17 @@ $landing-reveal-stagger: 80ms;
         outline: 2px solid $color-focus;
         outline-offset: 1px;
     }
+}
+
+// The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.
+@mixin list-header {
+    display: flex;
+    flex: none;
+    gap: $spacing-10;
+    align-items: center;
+    height: $list-header-height;
+    padding: 0 $spacing-16;
+    border-bottom: 1px solid $color-border;
 }
 
 // Text for screen readers only: out of sight, still in the accessibility tree.

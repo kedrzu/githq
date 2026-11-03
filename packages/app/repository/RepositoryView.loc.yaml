@@ -98,3 +98,9 @@ otherOpenPullRequestsUncounted:
   en: its other open pull requests are on GitHub
 settings:
   en: Settings
+commits:
+  en: Commits
+openOnGitHub:
+  en: Open on GitHub
+commitsNeedNoTracking:
+  en: "Its commits don't need tracking: 3 opens them in full."

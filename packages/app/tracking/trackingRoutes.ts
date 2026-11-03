@@ -6,10 +6,10 @@ export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 
 /**
  * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`, which opens
- * the section it was left on) and its lists of issues and of pull requests (`/owner/name/issues`,
- * `/owner/name/pulls`), all in one route.
+ * the section it was left on), its lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`)
+ * and its commits (`/owner/name/commits`), all in one route.
  */
-export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls)?';
+export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls|commits)?';
 
 /**
  * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
@@ -21,6 +21,7 @@ export const REPOSITORY_SETTINGS_PATH = '/:owner/:name/settings';
 export const REPOSITORY_SECTION_SEGMENTS = {
     issues: 'issues',
     pullRequests: 'pulls',
+    commits: 'commits',
 } as const satisfies Record<RepositorySection, string>;
 
 /** The origin every address githq does not show is handed off to; fixed here, never taken from an address. */
@@ -94,7 +95,7 @@ export interface ProjectAddress {
 
 /**
  * The address of a repository's view, as on GitHub (`/owner/name`, opening the section it was left on), or of one of
- * its sections (`/owner/name/issues`, `/owner/name/pulls`).
+ * its sections (`/owner/name/issues`, `/owner/name/pulls`, `/owner/name/commits`).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -123,6 +124,8 @@ export function getRepositorySection(segment: unknown): RepositorySection | null
             return 'issues';
         case REPOSITORY_SECTION_SEGMENTS.pullRequests:
             return 'pullRequests';
+        case REPOSITORY_SECTION_SEGMENTS.commits:
+            return 'commits';
         default:
             return null;
     }

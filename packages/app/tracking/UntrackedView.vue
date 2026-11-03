@@ -1,7 +1,7 @@
 <!-- The screen of a repository or project not tracked (J3, J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, EyeOff } from 'lucide-vue-next';
+import { ArrowUpRight } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -15,6 +15,7 @@ import ListView from '@/lists/ListView.vue';
 import StackRow from '@/lists/StackRow.vue';
 import type { Item } from '@/store/ItemTypes.js';
 
+import NotTrackedChip from './NotTrackedChip.vue';
 import * as l from './UntrackedView.loc.js';
 
 const props = withDefaults(
@@ -90,13 +91,7 @@ const groups = computed((): ListGroup<Item>[] => [
         :class="css.untrackedView_meta"
         >{{ meta }}</span
       >
-      <span :class="css.untrackedView_badge">
-        <EyeOff
-          :class="css.untrackedView_badgeIcon"
-          aria-hidden="true"
-        />
-        {{ t(l.notTracked) }}
-      </span>
+      <NotTrackedChip />
       <slot name="controls" />
       <span :class="css.untrackedView_spacer" />
       <Button
@@ -184,13 +179,7 @@ const groups = computed((): ListGroup<Item>[] => [
 }
 
 .untrackedView_header {
-  display: flex;
-  flex: none;
-  gap: $spacing-10;
-  align-items: center;
-  height: $list-header-height;
-  padding: 0 $spacing-16;
-  border-bottom: 1px solid $color-border;
+  @include list-header;
 }
 
 .untrackedView_headerIcon {
@@ -210,24 +199,6 @@ const groups = computed((): ListGroup<Item>[] => [
   font-size: $font-size-sm;
   color: $color-fg-dim;
   white-space: nowrap;
-}
-
-.untrackedView_badge {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  padding: 1px 8px;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  white-space: nowrap;
-  border: 1px solid $color-border-2;
-  border-radius: 10px;
-}
-
-.untrackedView_badgeIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
 }
 
 .untrackedView_spacer {

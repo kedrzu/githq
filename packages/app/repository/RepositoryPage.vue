@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues` and `/owner/name/pulls`: a repository's view (J1–J3) at GitHub's addresses of its lists, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1–J3) at GitHub's addresses of its lists and its history, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useCommands } from '@/commands/useCommands.js';
+import CommitGraphView from '@/commits/CommitGraphView.vue';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { foldStacks } from '@/lists/foldStacks.js';
@@ -35,8 +36,8 @@ import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
 import RepositoryView from './RepositoryView.vue';
 import * as l from './RepositoryView.loc.js';
-import { getSectionItemKind } from './RepositorySection.js';
-import type { RepositorySection } from './RepositorySection.js';
+import { getSectionItemKind, isItemSection } from './RepositorySection.js';
+import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import { useRepositoryCommands } from './useRepositoryCommands.js';
 import { LastRepositoryTab } from './LastRepositoryTab.js';
@@ -55,7 +56,7 @@ const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
 
 /** Each section's state, kept while the page is. */
-const states = ref<Record<RepositorySection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
+const states = ref<Record<RepositoryItemSection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
 
 const owner = computed(() => (typeof route.params.owner === 'string' ? route.params.owner : ''));
 const name = computed(() => (typeof route.params.name === 'string' ? route.params.name : ''));
@@ -69,15 +70,18 @@ const addressSection = computed(() => getRepositorySection(route.params.section)
  * over the list) — the same page stays, with its selection.
  */
 const section = computed({
-  get: () => addressSection.value ?? tabs.get(repositoryName) ?? 'issues',
+  get: () => tabs.getShown(repositoryName, addressSection.value),
   set: (value: RepositorySection) => {
     void router.replace({ path: getRepositoryPath(nameWithOwner.value, value), query: route.query, hash: route.hash });
   },
 });
+/** The item section whose state and view options the page holds: the one shown; on Commits, which lists none, Issues. */
+const listSection = computed((): RepositoryItemSection => (isItemSection(section.value) ? section.value : 'issues'));
+const itemsShown = computed(() => isItemSection(section.value));
 const state = computed({
-  get: () => states.value[section.value],
+  get: () => states.value[listSection.value],
   set: (value: RepositoryState) => {
-    states.value = { ...states.value, [section.value]: value };
+    states.value = { ...states.value, [listSection.value]: value };
   },
 });
 
@@ -94,9 +98,13 @@ watch(
 );
 
 const view = useListViewOptions({
-  list: () => `repository:${nameWithOwner.value}:${section.value}`,
+  list: () => `repository:${nameWithOwner.value}:${listSection.value}`,
   defaults: REPOSITORY_VIEW_DEFAULTS,
-  choices: () => ({ groupings: REPOSITORY_GROUPINGS[section.value], sorts: ITEM_SORTS, properties: ITEM_PROPERTIES }),
+  choices: () => ({
+    groupings: REPOSITORY_GROUPINGS[listSection.value],
+    sorts: ITEM_SORTS,
+    properties: ITEM_PROPERTIES,
+  }),
 });
 const tracked = computed(() => tracking.isTracked({ kind: 'repository', nameWithOwner: nameWithOwner.value }));
 // D12: each row's projects as my work shows them — the tracked ones first, with their row field.
@@ -121,7 +129,7 @@ const repositoryList = computed(() =>
     items: repositoryItems.value,
     // Not tracked, the copy holds what concerns the user — open items of my work; nothing else is offered.
     state: tracked.value ? state.value : 'open',
-    kind: getSectionItemKind(section.value),
+    kind: getSectionItemKind(listSection.value),
     grouping: tracked.value ? view.options.grouping : 'none',
     sort: view.options.sort,
     texts: texts.value,
@@ -141,7 +149,7 @@ const shownList = computed(() => {
   };
 });
 /** How many open items each section holds, for its tab. */
-const openCounts = computed((): Record<RepositorySection, number> => {
+const openCounts = computed((): Record<RepositoryItemSection, number> => {
   const open = repositoryItems.value.filter(item => item.state === 'OPEN');
   return {
     issues: open.filter(item => item.kind === 'issue').length,
@@ -151,7 +159,7 @@ const openCounts = computed((): Record<RepositorySection, number> => {
 /** Known not to be tracked once the user's choice is read: only then are GitHub's counts of its open items asked. */
 const untracked = computed(() => tracking.loaded && !tracked.value);
 /** Not tracked: how many open items each section holds on GitHub, as last read; `null` while not known. */
-const gitHubOpenCounts = computed((): Record<RepositorySection, number> | null => {
+const gitHubOpenCounts = computed((): Record<RepositoryItemSection, number> | null => {
   const counts = untracked.value ? repositories.getOpenCounts(nameWithOwner.value) : undefined;
   return counts ? { issues: counts.issues, pullRequests: counts.pullRequests } : null;
 });
@@ -190,10 +198,15 @@ const projectLinks = computed(() => {
 useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
 
 // What the user may set here (labels, milestones, people) is read with the repository's permission; not tracked,
-// GitHub's counts of its open items, for the lines saying how many githq does not have.
+// GitHub's counts of its open items, for the lines saying how many githq does not have. Neither on Commits, which asks
+// GitHub only through its graph's store.
 watch(
-  [nameWithOwner, tracked, untracked],
-  ([repository, isTracked, isUntracked]) => {
+  [nameWithOwner, tracked, untracked, itemsShown],
+  ([repository, isTracked, isUntracked, listed]) => {
+    if (!listed) {
+      return;
+    }
+
     if (isTracked) {
       void repositories.ensure(repository);
     } else if (isUntracked) {
@@ -272,11 +285,11 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :name-with-owner="nameWithOwner"
     :is-private="isPrivate"
     :tracked="tracked"
-    :list="shownList"
+    :list="itemsShown ? shownList : null"
     :open-counts="openCounts"
     :git-hub-open-counts="gitHubOpenCounts"
-    :projects="projectLinks.links"
-    :without-project="projectLinks.withoutProject"
+    :projects="itemsShown ? projectLinks.links : []"
+    :without-project="itemsShown ? projectLinks.withoutProject : 0"
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
@@ -303,6 +316,9 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
         :ids="menu.ids"
         @open="menu.open"
       />
+    </template>
+    <template #commits>
+      <CommitGraphView :name-with-owner="nameWithOwner" />
     </template>
   </RepositoryView>
 </template>

@@ -40,6 +40,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web', 'repository'],
     ['/acme/web/issues', 'repository'],
     ['/acme/web/pulls', 'repository'],
+    ['/acme/web/commits', 'repository'],
     ['/my-org/web.js', 'repository'],
     ['/my_org/web-app.v2/pulls', 'repository'],
     // An old githq address is repository-shaped, as on github.com.
@@ -83,6 +84,9 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
     ['/acme/web/actions', 'github'],
+    // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
+    ['/acme/web/commits/main', 'github'],
+    ['/acme/web/commit/0123abc', 'github'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],
@@ -169,13 +173,15 @@ test('the repository page is one instance for the repository and its lists', () 
     expect(keyOf('/acme/web')).toBe('acme/web');
     expect(keyOf('/acme/web/issues')).toBe('acme/web');
     expect(keyOf('/acme/web/pulls')).toBe('acme/web');
+    expect(keyOf('/acme/web/commits')).toBe('acme/web');
     expect(keyOf('/acme/api')).toBe('acme/api');
 });
 
-test("a repository's sections are GitHub's addresses of its lists, and the address names the section", () => {
+test("a repository's sections are GitHub's addresses of its lists and its commits, and the address names the section", () => {
     expect(getRepositoryPath('acme/web')).toBe('/acme/web');
     expect(getRepositoryPath('acme/web', 'issues')).toBe('/acme/web/issues');
     expect(getRepositoryPath('acme/web', 'pullRequests')).toBe('/acme/web/pulls');
+    expect(getRepositoryPath('acme/web', 'commits')).toBe('/acme/web/commits');
     for (const section of REPOSITORY_SECTIONS) {
         const resolved = router.resolve(getRepositoryPath('acme/web', section));
         expect(getRepositorySection(resolved.params.section), section).toBe(section);
@@ -203,6 +209,7 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositoryPath('acme/web'), 'repository'],
         [getRepositoryPath('acme/web', 'issues'), 'repository'],
         [getRepositoryPath('acme/web', 'pullRequests'), 'repository'],
+        [getRepositoryPath('acme/web', 'commits'), 'repository'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 12 }), 'item-issue'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
