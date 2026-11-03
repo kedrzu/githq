@@ -274,25 +274,30 @@ decides it. The layout is a preference of the user, not of a view, so it travels
 
 ## D15
 
-**The branch and tag list sits to the right of the graph, always there on a wide window; below about 1,200 px it
-folds away and `B` opens it over the graph. The default branch is first, then branches, then tags, each newest
-first, with the pull request and CI of each branch's tip, the newest twenty of each drawn and the rest counted. `B` puts
-the cursor in its filter, typing narrows both groups, every letter typed, and `↑`/`↓` move through the matches.**
-(2026-11-02, design agent's proposal; CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03)
+**The branch and tag list sits on the left of the graph, in both layouts. In the tabs layout it is under the header,
+always there on a wide window; below about 1,200 px it folds away and `B` opens it over the graph from the left (CH47). In the
+column layout it is the column's lower part on Commits (CH6). The default branch is first, then branches, then tags, each
+newest first, with the pull request and CI of each branch's tip, the newest twenty of each drawn and the rest counted.
+`B` puts the cursor in its filter, typing narrows both groups, every letter typed, and `↑`/`↓` move through the matches.
+This left column and the repository's column are one column with one width: 280 px by default, dragged or moved with
+`←`/`→` on its edge from 200 to 480 px, on every section, kept on the device. The pane keeps 400 px on a small window, the
+column giving way down to 200 px; the width chosen comes back with the room (CH46).** (2026-11-02, design agent's proposal;
+CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03; the left, the one width and its resizing by the owner
+2026-11-03, the numbers the agent's)
 
-**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key; on the
-right it leaves the app's sidebar and the graph's left edge alone.
+**Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key. Two layouts
+placing the same list on opposite sides made one of them feel wrong to the owner, and the list is the same column in
+both, so it has one place and one width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
 
 > **Checked 2026-11-02:** GitHub's `RefOrderField` has only `TAG_COMMIT_DATE` (tags only) and `ALPHABETICAL`
 > (`gh api graphql`, `__type(name: "RefOrderField")`). "Newest first" for branches needs each tip's
 > `committedDate` in the refs request of [D9](#d9) and a local sort.
 
-In the column layout the list is the column's lower part on Commits (CH6), and a commit's details open on the right
-of the pane instead of in the list's place (CH42); below the same 1,200 px of window they open over the graph, one
-threshold in both layouts (owner, 2026-11-03).
-
 **Rejected.**
 
+- The list on the right of the graph in the tabs layout, the first version of this decision — leaves the app's sidebar
+  and the graph's left edge alone, but differs from the column layout (owner, 2026-11-03,
+  [history](history/DECISIONS.md#d15)).
 - `J`/`K` through the matches (the first CH30) — in a filter they are letters, and names like `jan/x` or `k8s` must stay
   typable (owner, 2026-11-03).
 - Building the list on `FilterList` — it always highlights its first row, has one message per list and a plain heading;
@@ -304,11 +309,14 @@ threshold in both layouts (owner, 2026-11-03).
 
 ## D16
 
-**A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page.
-`J` and `K` keep moving through the graph with the panel open and it follows; `P` goes to the first parent, `⇧P`
-to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub, `Esc`
-closes and the list comes back.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20,
-CH27–CH29)
+**A commit's details open only in a panel, on the right of the graph with the branch and tag list staying on its left, in
+both layouts, never as a modal or a page. `J` and `K` keep moving through the graph with the panel open and it follows;
+`P` goes to the first parent, `⇧P` to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O`
+opens it on GitHub, `Esc` closes. `B` goes to the list's filter and the panel stays. Below about 1,200 px of window, one
+threshold in both layouts, the panel opens over the graph from the right; in the tabs layout the list and the panel are
+then one at a time. On a wide window the panel is 440 px, giving up width where the graph would have under 240 px.**
+(2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29, CH42; on the right with
+the list staying by the owner 2026-11-03)
 
 **Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
 it, which a modal or a page would hide.
@@ -316,6 +324,9 @@ it, which a modal or a page would hide.
 **Rejected.**
 
 - The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
+- The details in the list's place, the first version of this decision and now on the left — gives the graph more width,
+  but moves it sideways at every open and close, and keeps the two layouts different (owner, 2026-11-03,
+  [history](history/DECISIONS.md#d16)).
 
 ## D17
 

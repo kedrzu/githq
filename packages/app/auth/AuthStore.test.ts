@@ -315,6 +315,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: url => {
             navigatedTo.push(url);
         },

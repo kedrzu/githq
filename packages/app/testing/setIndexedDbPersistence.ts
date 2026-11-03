@@ -7,6 +7,7 @@ import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import type { IndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
+import { LocalCopyVersion } from '@/store/LocalCopyVersion.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
 import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
@@ -26,5 +27,6 @@ export function setIndexedDbPersistence(
     container.set(ProjectPersistence, persistence);
     container.set(WorkflowPersistence, persistence);
     container.set(CommitPersistence, persistence);
+    container.set(LocalCopyVersion, persistence);
     return persistence;
 }

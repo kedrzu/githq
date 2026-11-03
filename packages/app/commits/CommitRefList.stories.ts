@@ -108,7 +108,7 @@ function longList(): CommitGraphTestOptions {
     };
 }
 
-/** The list over the real store and a GitHub holding `options`, at the sample's moment. */
+/** The list over the real store and a GitHub holding `options`, at the sample's moment, in a column of its default width. */
 function renderList(options: CommitGraphTestOptions) {
     return defineComponent({
         setup() {
@@ -126,7 +126,7 @@ function renderList(options: CommitGraphTestOptions) {
                 const refs = opened.value ? store.get(REPOSITORY)?.refs : null;
                 return h(
                     'div',
-                    { style: 'display: flex; height: 100vh' },
+                    { style: 'display: flex; width: 280px; height: 100vh' },
                     refs
                         ? [
                               h(CommitRefList, {

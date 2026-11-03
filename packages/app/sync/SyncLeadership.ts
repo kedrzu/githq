@@ -6,6 +6,8 @@ import { shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { Browser } from '@/services/Browser.js';
+import { LOCAL_DATABASE_VERSION } from '@/store/IndexedDbPersistence.js';
+import { LocalCopyVersion } from '@/store/LocalCopyVersion.js';
 
 /** This tab's bid for the lock of one account. */
 interface Claim {
@@ -15,10 +17,15 @@ interface Claim {
 }
 
 /**
- * Which of the app's tabs asks GitHub for changes (Q10): the one holding the Web Lock `githq-sync-<login>`, so
+ * Which of the app's tabs asks GitHub for changes (Q10): the one holding the Web Lock `githq-sync-<login>-v<N>`, so
  * that several tabs do not use the API allowance up several times as fast. The other tabs wait for the lock in
  * line and take in the syncing tab's changes (`TabChannel`); when it closes — or the browser freezes it, and it
  * gives the lock up — the next one in line takes over, from the local copy they share.
+ *
+ * `N` is the local copy's layout ({@link LOCAL_DATABASE_VERSION}), as in the channel's name: a tab of another layout
+ * shares neither the copy nor the channel with this one, so waiting for it would leave this tab with nothing, for as
+ * long as that tab stays open. A tab told of a newer layout gives the lock up and does not ask for it again: it can no
+ * longer keep what it would read (`OutdatedTabReload` brings it up to date).
  *
  * It follows the signed-in account: another one (or none) gives the lock of the one before up. Without Web Locks
  * (an old browser) every tab syncs, as if alone.
@@ -29,15 +36,21 @@ export const SyncLeadership = defineService({
     deps: {
         accounts: AccountSession,
         browser: Browser,
+        localCopyVersion: LocalCopyVersion,
         logger: Logger,
     },
-    setup({ accounts, browser, logger }) {
+    setup({ accounts, browser, localCopyVersion, logger }) {
         const leaderRef = shallowRef(false);
         let account: Account | null = null;
         let claim: Claim | null = null;
         let frozen = false;
+        let outdated = false;
 
         accounts.onChange(follow);
+        localCopyVersion.onNewerVersion(() => {
+            outdated = true;
+            resign();
+        });
         browser.onPageLifecycle(event => {
             switch (event) {
                 case 'freeze':
@@ -69,11 +82,11 @@ export const SyncLeadership = defineService({
 
         function campaign() {
             const current = account;
-            if (!current || frozen || claim) {
+            if (!current || frozen || outdated || claim) {
                 return;
             }
 
-            const name = `githq-sync-${current.login}`;
+            const name = `githq-sync-${current.login}-v${LOCAL_DATABASE_VERSION}`;
             const thisClaim: Claim = { account: current, release: () => {} };
             claim = thisClaim;
             const release = browser.requestLock(name, () => {

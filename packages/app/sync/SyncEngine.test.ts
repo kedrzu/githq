@@ -752,6 +752,7 @@ async function setup(github: FakeGitHub, login: string) {
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: () => {},
         replaceLocation: () => {},
         openInNewTab: () => {},
