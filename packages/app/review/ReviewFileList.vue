@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -41,6 +41,8 @@ const props = defineProps<{
   filterInvalid: boolean;
   /** The files selected together. */
   selected: ReadonlySet<string>;
+  /** The files GitHub took the viewed mark off since the last visit (D35). */
+  lostViewed?: ReadonlySet<string>;
 }>();
 
 const emit = defineEmits<{
@@ -132,11 +134,15 @@ function onFilterKeydown(event: KeyboardEvent) {
         hasMore ? t(l.moreThanListed, { listed: numbers.format(listed) }) : numbers.format(listed)
       }}</span>
       <span :class="css.reviewFileList_spacer" />
-      <span :class="css.reviewFileList_count">{{
-        matched === null
-          ? t(l.viewed, { viewed: numbers.format(viewed), total: numbers.format(listed) })
-          : t(l.matching, { matched: numbers.format(matched), total: numbers.format(listed) })
-      }}</span>
+      <span
+        v-if="listed > 0 || matched !== null"
+        :class="css.reviewFileList_count"
+        >{{
+          matched === null
+            ? t(l.viewed, { viewed: numbers.format(viewed), total: numbers.format(listed) })
+            : t(l.matching, { matched: numbers.format(matched), total: numbers.format(listed) })
+        }}</span
+      >
       <div :class="css.reviewFileList_tools">
         <SearchField
           ref="filterField"
@@ -213,19 +219,29 @@ function onFilterKeydown(event: KeyboardEvent) {
                 :indented="group.folder !== null"
                 :selected="selected.has(file.path)"
                 :show-folder="flat"
+                :changed-since="lostViewed?.has(file.path)"
                 @select="onRowClick(file.path, $event)"
               />
             </li>
           </ul>
         </li>
       </ul>
-      <p
-        v-if="hasMore && listComplete"
-        :class="css.reviewFileList_foot"
-      >
-        {{ t(l.listedOnly, { listed: numbers.format(listed), total: numbers.format(changedFiles ?? 0) }) }}
-      </p>
     </div>
+    <footer
+      v-if="hasMore && listComplete"
+      :class="css.reviewFileList_capped"
+    >
+      <p :class="css.reviewFileList_cappedTitle">{{ t(l.listedOnly, { listed: numbers.format(listed) }) }}</p>
+      <p :class="css.reviewFileList_cappedDetail">
+        {{
+          t(l.listedOnlyDetail, {
+            listed: numbers.format(listed),
+            total: numbers.format(changedFiles ?? 0),
+            rest: numbers.format((changedFiles ?? 0) - listed),
+          })
+        }}
+      </p>
+    </footer>
     <footer
       v-if="selected.size > 0"
       :class="css.reviewFileList_selection"
@@ -372,6 +388,30 @@ function onFilterKeydown(event: KeyboardEvent) {
   font-size: $font-size-2xs;
   color: $color-fg-dim;
 }
+
+.reviewFileList_capped {
+  flex: none;
+  padding: $spacing-10 $spacing-12;
+  border-top: 1px solid $color-border;
+}
+
+.reviewFileList_cappedTitle,
+.reviewFileList_cappedDetail {
+  margin: 0;
+}
+
+.reviewFileList_cappedTitle {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-amber;
+}
+
+.reviewFileList_cappedDetail {
+  margin-top: $spacing-4;
+  font-size: $font-size-2xs;
+  color: $color-fg-2;
+}
+
 .reviewFileList_selection {
   display: flex;
   flex: none;

@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps them). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps them). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -39,6 +39,7 @@ import { getProjectPath, getRepositorySection } from '@/tracking/trackingRoutes.
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
 import UntrackToast from '@/tracking/UntrackToast.vue';
+import { ReviewScreenFreshness } from '@/review/ReviewScreenFreshness.js';
 import ReviewViewedToast from '@/review/ReviewViewedToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
@@ -68,6 +69,7 @@ const settingsSync = useService(SettingsSync);
 const workflows = useService(WorkflowStore);
 const repositoryTabs = useService(LastRepositoryTab);
 const commitGraphs = useService(CommitGraphStore);
+const reviewFreshness = useService(ReviewScreenFreshness);
 const route = useRoute();
 
 const collapsed = preferences.sidebarCollapsed;
@@ -114,10 +116,14 @@ const tracked = computed((): SidebarTracked => ({
 // The entry "Broken workflows" (actions W1): only while something is known broken, or on its own screen.
 const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
 
-// How fresh the screen is (D15): a repository's commit graph its refs as last read, tracked or not (git-client D9); a
+// How fresh the screen is (D15): a review how far its files are (code review D35); a repository's commit graph its refs as last read, tracked or not (git-client D9); a
 // tracked repository's or project's own poll — a saved view GitHub answers says so (K6); the broken workflows their
 // own poll; anything else shows what "my work" holds.
 const screenFreshness = computed((): Freshness => {
+  if (reviewFreshness.current) {
+    return reviewFreshness.current;
+  }
+
   if (route.name === 'workflows') {
     return sync.getWorkflowsFreshness();
   }

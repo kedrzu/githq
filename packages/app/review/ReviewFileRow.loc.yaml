@@ -8,6 +8,10 @@ loading:
   en: Loading
 failed:
   en: Couldn't fetch this file
+paused:
+  en: Waiting for GitHub's API allowance
+changedSince:
+  en: changed since
 lockFile:
   en: lock file
 generated:

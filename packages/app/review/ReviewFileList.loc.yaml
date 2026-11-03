@@ -5,7 +5,9 @@ viewed:
 moreThanListed:
   en: '{listed}+'
 listedOnly:
-  en: GitHub lists the first {listed} of {total} files; the rest are on github.com.
+  en: GitHub lists only the first {listed} files
+listedOnlyDetail:
+  en: "{total} files changed, and GitHub's API returns the first {listed}. The other {rest} can only be read on github.com."
 hideViewed:
   en: Hide viewed files
 matching:

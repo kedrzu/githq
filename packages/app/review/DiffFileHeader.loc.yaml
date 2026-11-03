@@ -6,6 +6,8 @@ expand:
   en: Expand file
 viewed:
   en: Viewed
+changedSince:
+  en: Changed since your last visit
 lockFile:
   en: lock file
 generated:

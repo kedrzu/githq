@@ -292,6 +292,71 @@ test("a file that fails says GitHub's words in place and marks its row, the othe
     await expect(review.diff.getByText("Couldn't fetch this file")).toHaveCount(0);
 });
 
+test('the allowance running out pauses the missing files, saying when, while a viewed mark goes through; they come by themselves at the reset, without a reload', async ({
+    page,
+    github,
+}) => {
+    const review = new ReviewScreenHarness(page);
+    await page.clock.install();
+    let answered: AnsweredReview | undefined;
+    await openPullRequest(page, github, sample => {
+        answered = sample;
+    });
+    const resetAt = new Date(Date.now() + 3_600_000);
+    github.rateLimit = { limit: 5000, remaining: 50, resetAt };
+
+    await page.keyboard.press('d');
+    await expect(review.diff.getByText("Waiting for GitHub's API allowance").first()).toBeVisible();
+    await expect(
+        review.fileRow('client.ts').getByRole('img', { name: "Waiting for GitHub's API allowance" }),
+    ).toBeVisible();
+    const status = page.getByRole('contentinfo', { name: 'Status' });
+    await expect(status).toContainText('API allowance used up · 5 files wait until');
+    await expect(status).toContainText('edits still go through');
+
+    await review.fileRow('client.ts').click();
+    await page.keyboard.press('v');
+    await expect(review.fileRow('client.ts').getByRole('img', { name: 'Viewed' })).toBeVisible();
+    await expect.poll(() => answered?.marked).toEqual([CLIENT]);
+
+    github.rateLimit = { limit: 5000, remaining: 4000, resetAt: new Date(resetAt.getTime() + 3_600_000) };
+    await page.clock.fastForward('01:00:01');
+
+    await expect(review.code('export const client = 2;')).toBeVisible();
+    await expect(status).not.toContainText('API allowance used up');
+});
+
+test('a push since the last visit names the files that lost their viewed mark, tags them, and the line goes when dismissed; the rest of the marks stay', async ({
+    page,
+    github,
+}) => {
+    const review = new ReviewScreenHarness(page);
+    await openPullRequest(page, github);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.fileRow('README.md').getByRole('img', { name: 'Viewed' })).toBeVisible();
+    // The list is written to disk behind what shows.
+    await page.waitForTimeout(300);
+
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: FILES.map(file => (file.path === README ? { ...file, viewed: 'DISMISSED' } : file)),
+    });
+    await page.reload();
+
+    const line = page.getByRole('status').filter({ hasText: 'lost its viewed mark' });
+    await expect(line).toContainText('README.md');
+    await expect(review.fileRow('README.md')).toContainText('changed since');
+    await expect(review.fileRow('client.ts')).not.toContainText('changed since');
+
+    await line.getByRole('button', { name: 'Show only this one' }).click();
+    await expect(review.fileRow('client.ts')).toHaveCount(0);
+
+    await line.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(line).toHaveCount(0);
+    await expect(review.fileRow('README.md')).toContainText('changed since');
+});
+
 test('a pull request with no changes says so', async ({ page, github }) => {
     await openPullRequest(page, github);
     answerReview(github, { repository: 'acme/web', number: 15, files: [] });
@@ -299,7 +364,7 @@ test('a pull request with no changes says so', async ({ page, github }) => {
 
     await page.goto(REVIEW_ADDRESS);
     await expect(page.getByRole('heading', { name: 'No changes' })).toBeVisible();
-    await expect(review.fileList).toContainText('0 of 0 viewed');
+    await expect(review.fileList).not.toContainText('viewed');
 });
 
 test('D leaves the keyboard in the diff: PageDown scrolls it at once', async ({ page, github }) => {

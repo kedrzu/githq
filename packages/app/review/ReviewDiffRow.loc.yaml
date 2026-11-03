@@ -5,14 +5,30 @@ hiddenLines:
     many: '{formatted} lines'
 binary:
   en: Binary file, nothing to diff
+binarySized:
+  en: Binary file, nothing to diff · {size}
+binaryNew:
+  en: Binary file, nothing to diff · {size}, new
+binaryDeleted:
+  en: Binary file, nothing to diff · {size}, deleted
 tooLarge:
   en: Too large to diff here
 tooLargeDetail:
-  en: githq diffs files up to 1 MB.
+  en: '{size}. githq diffs files up to 1 MB.'
 empty:
   en: The file is empty, nothing to diff
 failed:
   en: Couldn't fetch this file
+fetchingFirst:
+  en: Fetching {path} first…
+paused:
+  en: Waiting for GitHub's API allowance
+pausedDetail:
+  plural: count
+  en:
+    zero: It resets at {time}. This file will load then, without you doing anything.
+    one: It resets at {time}. This file and 1 other will load then, without you doing anything.
+    many: It resets at {time}. This file and {formatted} others will load then, without you doing anything.
 tryAgain:
   en: Try again
 openOnGitHub:

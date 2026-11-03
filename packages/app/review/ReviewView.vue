@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9); with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). ⌘B hides the file list (D26). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9); with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). ⌘B hides the file list (D26). GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -13,16 +13,17 @@ import {
   ArrowUpToLine,
   CircleAlert,
   CircleCheck,
+  Equal,
   Eye,
-  FileCheck,
   FileSearch,
   FoldVertical,
   ListChecks,
   ListFilter,
   PanelLeft,
+  Pause,
   UnfoldVertical,
 } from 'lucide-vue-next';
-import { computed, nextTick, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
@@ -33,6 +34,7 @@ import { formatItemReference, getItemPagePath } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
+import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
@@ -49,13 +51,17 @@ import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import ReviewFileList from './ReviewFileList.vue';
+import ReviewLostViewedBar from './ReviewLostViewedBar.vue';
 import { ReviewFiles } from './ReviewFiles.js';
+import { ReviewScreenFreshness } from './ReviewScreenFreshness.js';
 import type { PullRequestFiles, ReviewFileState } from './ReviewFiles.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
 import { useReviewRows } from './useReviewRows.js';
 import { createFileFilter } from './utils/createFileFilter.js';
 import type { FileFilter, FileFilterInput } from './utils/createFileFilter.js';
+import { getFailureText } from './utils/getFailureText.js';
+import { getReviewFreshness } from './utils/getReviewFreshness.js';
 
 const props = defineProps<{
   reference: ItemReference;
@@ -63,11 +69,13 @@ const props = defineProps<{
 
 const WAITING: ReviewFileState = { kind: 'waiting' };
 const NO_FILTER: FileFilterInput = { pattern: '', regex: false };
+const NO_FILES: ReadonlySet<string> = new Set();
 
 const t = useTranslate();
 const accounts = useService(AccountSession);
 const reviewFiles = useService(ReviewFiles);
 const preferences = useService(LocalPreferences);
+const screenFreshness = useService(ReviewScreenFreshness);
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
@@ -123,6 +131,11 @@ const githubUrl = computed(() => {
 });
 const currentFile = computed(() => ordered.value.find(file => file.path === currentPath.value) ?? null);
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
+const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
+/** What the line about a push names, in the list's order. */
+const lostViewedPaths = computed(() =>
+  files.value?.lostViewedNotice ? allPaths.value.filter(path => lostViewed.value.has(path)) : [],
+);
 
 const openedAt = performance.now();
 let firstRowMeasured = false;
@@ -165,12 +178,19 @@ watch(
   { immediate: true },
 );
 
-// What's in view is fetched next, however the user got there (D35).
-watch(currentPath, path => {
+// What's in view is fetched next, however the user got there (D35). Moving on from a file that lost its viewed mark has
+// read the first of them, and the line naming them has done its work.
+watch(currentPath, (path, previous) => {
   if (path !== null) {
     files.value?.prioritize(path);
   }
+
+  if (previous !== null && lostViewed.value.has(previous)) {
+    files.value?.dismissLostViewedNotice();
+  }
 });
+
+onScopeDispose(screenFreshness.show(() => (files.value ? getReviewFreshness(files.value) : { kind: 'partial' })));
 
 // Runs before the list gets the rows, when `anchor` is still the row being read: if that row goes with them, its
 // counterpart takes its place once they are in.
@@ -455,6 +475,13 @@ function returnKeysToDiff() {
   void nextTick(() => list.value?.focus());
 }
 
+/** "Show only these": through the filter, which says what is on and which Esc clears. */
+function showOnlyLostViewed() {
+  filterRegex.value = false;
+  filterPattern.value = lostViewedPaths.value.join(', ');
+  fileListHidden.value = false;
+}
+
 function isPinned(row: ReviewRow) {
   return row.kind === 'header';
 }
@@ -479,6 +506,12 @@ function readAgain() {
       :github-url="githubUrl"
       @back="back"
     />
+    <ReviewLostViewedBar
+      v-if="lostViewedPaths.length > 0"
+      :paths="lostViewedPaths"
+      @show-only="showOnlyLostViewed"
+      @dismiss="files?.dismissLostViewedNotice()"
+    />
     <div :class="css.reviewView_body">
       <div
         v-if="!fileListHidden"
@@ -500,6 +533,7 @@ function readAgain() {
           :matched="filterOn ? matchedFiles.length : null"
           :filter-invalid="typedFilter.kind === 'invalid'"
           :selected="selected"
+          :lost-viewed="lostViewed"
           @select="selectFile"
           @select-range="selectRange"
           @toggle-selected="toggleSelected"
@@ -521,6 +555,7 @@ function readAgain() {
             <ReviewDiffRow
               :row="row"
               :github-url="githubUrl"
+              :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
               @expand="expandGap"
               @retry="path => files?.retry(path)"
               @toggle-collapsed="toggleCollapsed"
@@ -537,7 +572,7 @@ function readAgain() {
             v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
             :icon="CircleAlert"
             :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
-            :detail="files.list.kind === 'gone' ? t(l.goneDetail) : files.list.error.message"
+            :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
           >
             <template #action>
               <div :class="css.reviewView_actions">
@@ -556,6 +591,23 @@ function readAgain() {
                   {{ t(l.openOnGitHub) }}
                 </Button>
               </div>
+            </template>
+          </EmptyState>
+          <EmptyState
+            v-else-if="files?.list.kind === 'paused'"
+            :icon="Pause"
+            :title="t(l.paused)"
+            :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+          >
+            <template #action>
+              <Button
+                size="sm"
+                :link="githubUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ t(l.openOnGitHub) }}
+              </Button>
             </template>
           </EmptyState>
           <EmptyState
@@ -590,7 +642,7 @@ function readAgain() {
           </EmptyState>
           <EmptyState
             v-else-if="files?.list.kind === 'ready'"
-            :icon="FileCheck"
+            :icon="Equal"
             :title="t(l.noChanges)"
             :detail="
               branches

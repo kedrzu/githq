@@ -4,7 +4,7 @@ import { buildDiffRows } from './diff/buildDiffRows.js';
 import type { DiffLayout, DiffLineRange, DiffSplitRow, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { DiffRange, FileDiff } from './diff/computeFileDiff.js';
 import { findEnclosing } from './diff/findEnclosing.js';
-import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileCollapseReason, ReviewFileSizes } from './ReviewFiles.js';
 
 /** How many unchanged lines show around a change. */
 const CONTEXT_LINES = 3;
@@ -14,6 +14,8 @@ const KEY_SEPARATOR = '\0';
 const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
 const LINE_HEIGHT = 20;
+/** The line above the bars of a file fetched ahead of the rest. */
+const FETCHING_FIRST_HEIGHT = 40;
 
 /** The pinned head of a file's block (D24). */
 export interface ReviewHeaderRow {
@@ -55,6 +57,8 @@ export interface ReviewPlaceholderRow {
     readonly kind: 'placeholder';
     readonly key: string;
     readonly file: ReviewFile;
+    /** A jump is fetching it ahead of the rest, and it says so (CR61). */
+    readonly first: boolean;
 }
 
 /** A file with nothing to show as a diff, saying why. */
@@ -63,6 +67,8 @@ export interface ReviewNoticeRow {
     readonly key: string;
     readonly file: ReviewFile;
     readonly notice: 'binary' | 'empty' | 'tooLarge';
+    /** Nothing of either side for `empty`. */
+    readonly sizes: ReviewFileSizes;
 }
 
 /** A file that could not be read, in place (D35): GitHub's words, and it can be tried again. */
@@ -71,6 +77,17 @@ export interface ReviewFailedRow {
     readonly key: string;
     readonly file: ReviewFile;
     readonly error: Error;
+}
+
+/** A file waiting for GitHub's allowance, in place (D35). */
+export interface ReviewPausedRow {
+    readonly kind: 'paused';
+    readonly key: string;
+    readonly file: ReviewFile;
+    /** When it comes, epoch ms. */
+    readonly until: number;
+    /** How many others wait with it, said by the first of them only (CR68); `null` for those after it. */
+    readonly others: number | null;
 }
 
 /** The bottom edge of a file's block, and the space under it. */
@@ -95,16 +112,18 @@ export type ReviewRow =
     | ReviewHeaderRow
     | ReviewLineRow
     | ReviewNoticeRow
+    | ReviewPausedRow
     | ReviewPlaceholderRow
     | ReviewTailRow;
 
 /** What shows under a file's header. */
 export type ReviewFileContent =
-    | { readonly kind: 'placeholder' }
+    | { readonly kind: 'placeholder'; readonly first?: boolean }
     | { readonly kind: 'collapsed' }
-    | { readonly kind: 'binary' }
-    | { readonly kind: 'tooLarge' }
+    | ({ readonly kind: 'binary' } & ReviewFileSizes)
+    | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
     | { readonly kind: 'failed'; readonly error: Error }
+    | { readonly kind: 'paused'; readonly until: number }
     | { readonly kind: 'lines'; readonly rows: readonly ReviewRow[] };
 
 export interface BuildReviewRowsParams {
@@ -122,8 +141,11 @@ export interface BuildReviewRowsParams {
  */
 export function buildReviewRows({ files, getContent, getCollapseReason }: BuildReviewRowsParams): ReviewRow[] {
     const rows: ReviewRow[] = [];
-    for (const file of files) {
-        const content = getContent(file);
+    const contents = files.map(getContent);
+    const paused = contents.filter(content => content.kind === 'paused').length;
+    let saidOthers = false;
+    for (const [index, file] of files.entries()) {
+        const content = contents[index] ?? getContent(file);
         const { path } = file;
         const collapsed = content.kind === 'collapsed';
         const collapseReason = getCollapseReason?.(file) ?? null;
@@ -132,18 +154,45 @@ export function buildReviewRows({ files, getContent, getCollapseReason }: BuildR
             case 'collapsed':
                 break;
             case 'placeholder':
-                rows.push({ kind: 'placeholder', key: path + KEY_SEPARATOR + 'placeholder', file });
+                rows.push({
+                    kind: 'placeholder',
+                    key: path + KEY_SEPARATOR + 'placeholder',
+                    file,
+                    first: content.first === true,
+                });
                 break;
             case 'binary':
             case 'tooLarge':
-                rows.push({ kind: 'notice', key: path + KEY_SEPARATOR + 'notice', file, notice: content.kind });
+                rows.push({
+                    kind: 'notice',
+                    key: path + KEY_SEPARATOR + 'notice',
+                    file,
+                    notice: content.kind,
+                    sizes: { before: content.before, after: content.after },
+                });
+                break;
+            case 'paused':
+                rows.push({
+                    kind: 'paused',
+                    key: path + KEY_SEPARATOR + 'paused',
+                    file,
+                    until: content.until,
+                    others: saidOthers ? null : paused - 1,
+                });
+                saidOthers = true;
                 break;
             case 'failed':
                 rows.push({ kind: 'failed', key: path + KEY_SEPARATOR + 'failed', file, error: content.error });
                 break;
             case 'lines':
                 if (content.rows.length === 0) {
-                    rows.push({ kind: 'notice', key: path + KEY_SEPARATOR + 'notice', file, notice: 'empty' });
+                    rows.push({
+                        kind: 'notice',
+                        key: path + KEY_SEPARATOR + 'notice',
+                        file,
+                        notice: 'empty',
+                        sizes: { before: null, after: null },
+                    });
                 }
 
                 for (const row of content.rows) {
@@ -249,9 +298,10 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'gap':
             return 28;
         case 'placeholder':
-            return getPlaceholderHeight(row.file);
+            return getPlaceholderHeight(row.file) + (row.first ? FETCHING_FIRST_HEIGHT : 0);
         case 'notice':
         case 'failed':
+        case 'paused':
             return 58;
         case 'end':
             return row.collapsed ? 12 : 16;
@@ -294,8 +344,8 @@ export interface ReviewRowReplacement {
  * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
  * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
- * for a placeholder: how far into it the reader was says nothing about what replaced it, often much shorter, so its
- * file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
+ * for a placeholder or a file waiting for the allowance: how far into it the reader was says nothing about what replaced
+ * it, often much shorter, so its file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
  *
  * A file gone from the rows, marked viewed with those hidden or filtered away, gives way to the next file still there, or
  * the last before it when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the
@@ -322,7 +372,12 @@ export function findReplacementRow({
         return findNextFileHeader({ key, offset, previous, next, order });
     }
 
-    if (held?.kind === 'placeholder' || held?.kind === 'end' || next[start + 1]?.kind === 'end') {
+    if (
+        held?.kind === 'placeholder' ||
+        held?.kind === 'paused' ||
+        held?.kind === 'end' ||
+        next[start + 1]?.kind === 'end'
+    ) {
         return { row: header, offset: 0 };
     }
 

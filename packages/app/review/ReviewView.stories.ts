@@ -51,7 +51,7 @@ export const Files: Story = {
             { kind: 'ready' },
             {
                 'src/sync/queue.ts': { kind: 'ready', before: 'one\ntwo\nthree\n', after: 'one\nTWO\nthree\n' },
-                'public/hero.png': { kind: 'binary' },
+                'public/hero.png': { kind: 'binary', before: 12_000, after: 14_000 },
             },
         ),
 };
@@ -79,11 +79,27 @@ export const Collapsed: Story = {
         ),
 };
 
+/** CR62: a push since the last visit: the quiet line over the view, the file tagged in the list and at its header. */
+export const LostViewed: Story = {
+    render: () =>
+        renderView(
+            { kind: 'ready' },
+            { 'src/sync/queue.ts': { kind: 'ready', before: 'one\n', after: 'two\n' } },
+            { lostViewed: new Set(['src/sync/queue.ts']) },
+        ),
+};
+
+/** The allowance ran out before the list could be read: it comes by itself. */
+export const ListPaused: Story = {
+    render: () => renderView({ kind: 'paused', until: new Date('2026-10-30T14:32:00').getTime() }),
+};
+
 /** What {@link renderView} can have the files be. */
 interface RenderOptions {
     readonly viewed?: ReviewFile['viewed'];
     readonly hideViewed?: boolean;
     readonly collapsed?: Readonly<Record<string, ReviewFileCollapse>>;
+    readonly lostViewed?: ReadonlySet<string>;
 }
 
 /** The view over a real session, whose GitHub answers nothing, reading what is given. */
@@ -109,7 +125,7 @@ function renderView(
 function createFiles(
     list: ReviewFileListState,
     states: Readonly<Record<string, ReviewFileState>>,
-    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {} }: RenderOptions,
+    { viewed = 'UNVIEWED', hideViewed = false, collapsed = {}, lostViewed = new Set() }: RenderOptions,
 ): PullRequestFiles {
     const files = Object.keys(states).map((path): ReviewFile => ({
         path,
@@ -127,6 +143,14 @@ function createFiles(
         id: 'PR_1202',
         headRefOid: 'head',
         changedFiles: files.length,
+        progress: { here: files.length, total: files.length },
+        fetchingFirst: null,
+        pausedUntil: null,
+        checkedAt: 0,
+        listFailing: false,
+        lostViewed,
+        lostViewedNotice: lostViewed.size > 0,
+        dismissLostViewedNotice: () => {},
         version: 0,
         getState: path => states[path] ?? { kind: 'waiting' },
         prioritize: () => {},

@@ -7,7 +7,9 @@ import { waitUntil } from '@nzyme/utils/waitUntil.js';
 import { expect, test } from 'bun:test';
 import { computed } from 'vue';
 
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { EDIT_RESERVE } from '@/sync/getAllowancePause.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -87,9 +89,9 @@ test('a binary, a too large and a submodule file are no errors, and neither of t
     await settled(model);
 
     expectStates(model, {
-        'image.png': { kind: 'binary' },
-        'huge.ts': { kind: 'tooLarge' },
-        nzyme: { kind: 'binary' },
+        'image.png': { kind: 'binary', before: 9, after: 3 },
+        'huge.ts': { kind: 'tooLarge', before: 5, after: 1_000_001 },
+        nzyme: { kind: 'binary', before: null, after: null },
         'plain.ts': { kind: 'ready', before: null, after: 'plain' },
     });
     expect(textsAsked(session)).toEqual([oidOf('plain')]);
@@ -430,7 +432,7 @@ test('many files arriving tell of it once a frame, not once a file', async () =>
     expect(firstState.value).toBe('ready');
 });
 
-test('a rate-limit refusal fails what is waiting instead of asking on; a retry asks again', async () => {
+test('a rate-limit refusal pauses what is missing instead of failing it; nothing is asked until GitHub said, then it carries on by itself', async () => {
     const github = createGitHub({ pageSize: 100 });
     for (let index = 0; index < 1000; index++) {
         github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
@@ -441,17 +443,203 @@ test('a rate-limit refusal fails what is waiting instead of asking on; a retry a
 
     await settled(model);
 
-    expect(model.files.every(file => model.getState(file.path).kind === 'failed')).toBe(true);
+    const until = model.pausedUntil;
+    expect(until).toBe(session.clock.now() + 60_000);
+    expect(model.files.every(file => model.getState(file.path).kind === 'paused')).toBe(true);
+    expect(model.getState('file-999.ts')).toEqual({ kind: 'paused', until: until ?? 0 });
     // Only what was on its way when the first refusal came; all of them would take 20.
-    const asked = textQueries(session).length;
-    expect(asked).toBeLessThan(8);
+    const asked = session.operations().length;
+    expect(textQueries(session).length).toBeLessThan(8);
 
     github.rateLimit(null);
-    model.retry('file-999.ts');
+    model.prioritize('file-999.ts');
+    await session.clock.advance(59_000);
+    expect(session.operations()).toHaveLength(asked);
+
+    await session.clock.advance(1000);
     await settled(model);
 
+    expect(model.pausedUntil).toBeNull();
     expect(model.getState('file-999.ts')).toEqual({ kind: 'ready', before: null, after: 'text 999' });
-    expect(textQueries(session)).toHaveLength(asked + 1);
+    expect(model.getState('file-0.ts')).toEqual({ kind: 'ready', before: null, after: 'text 0' });
+});
+
+test("GraphQL down to what's kept for edits pauses reading until its reset, without a refusal: viewed marks go through, nothing else is asked, and no reload is needed", async () => {
+    const github = createGitHub({ pageSize: 100 });
+    for (let index = 0; index < 100; index++) {
+        github.file({ path: `file-${index}.ts`, changeType: 'ADDED', after: `text ${index}` });
+    }
+
+    let release = () => {};
+    const heldList = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const { model, session } = open(uniqueLogin(), github, request =>
+        request.operation === 'PullRequestReviewFiles' ? heldList : null,
+    );
+    await waitUntil(() => reviewOperations(session).length === 1, { timeoutMs: 2000 });
+    // The list's answer says only the reserve is left: no file is to be asked for.
+    session.github.graphqlRemaining = EDIT_RESERVE;
+    session.github.holdIf = null;
+    release();
+    await waitUntil(() => model.pausedUntil !== null && model.listComplete, { timeoutMs: 2000 });
+    await session.clock.advance(0);
+
+    expect(model.pausedUntil).toBe(session.clock.now() + 3_600_000);
+    expect(model.files.map(file => model.getState(file.path).kind)).toEqual(model.files.map(() => 'paused'));
+    expect(reviewOperations(session)).toEqual(['PullRequestReviewFiles']);
+    const asked = reviewOperations(session).length;
+
+    // A jump and opening it again ask nothing...
+    model.prioritize('file-99.ts');
+    expect(session.container.resolve(ReviewFiles).open(REFERENCE)).toBe(model);
+    await session.clock.advance(1000);
+    expect(reviewOperations(session)).toHaveLength(asked);
+
+    // ...but the edit goes straight through, and tells of no refusal.
+    model.setViewed(['file-0.ts'], true);
+    await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
+    expect(session.container.resolve(ReviewViewedFailures).latest).toBeNull();
+    expect(viewedOf(model, 'file-0.ts')).toBe('VIEWED');
+    await session.clock.advance(1000);
+    expect(reviewOperations(session).filter(operation => operation !== 'MarkFilesViewed')).toHaveLength(asked);
+
+    session.github.graphqlRemaining = 5000;
+    // Each answer says a reset a little later, as GitHub's own do: past the last of them.
+    await session.clock.advance(3_600_000);
+    await settled(model);
+
+    expect(model.pausedUntil).toBeNull();
+    expect(model.getState('file-99.ts')).toEqual({ kind: 'ready', before: null, after: 'text 99' });
+    expect(model.getState('file-1.ts')).toEqual({ kind: 'ready', before: null, after: 'text 1' });
+    // And the list asked for while paused is read after all.
+    expect(session.operations().filter(operation => operation === 'PullRequestReviewFiles')).toHaveLength(2);
+});
+
+test('REST, its own bucket, used up pauses reading too; what the disk holds comes all the same, and what it lacks at the reset', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'kept.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntilKept(login, oidOf('b'));
+    await first.session.clock.advance(100);
+
+    // A new file on GitHub, next to the one read before.
+    github.file({ path: 'new.ts', changeType: 'MODIFIED', before: 'c', after: 'd' });
+    const { model, session } = open(login, github);
+    session.container.resolve(GitHubRateLimitStore).update({
+        resource: 'core',
+        limit: 5000,
+        remaining: 0,
+        resetAt: new Date(session.clock.now() + 600_000),
+    });
+
+    await waitUntil(() => model.getState('kept.ts').kind === 'ready', { timeoutMs: 2000 });
+    expect(reviewOperations(session)).toEqual([]);
+
+    await session.clock.advance(600_000);
+    await settled(model);
+
+    expect(model.pausedUntil).toBeNull();
+    expect(model.getState('new.ts')).toEqual({ kind: 'ready', before: 'c', after: 'd' });
+});
+
+test("a list that can't be read for the allowance says it is paused, and reads itself at the reset", async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.rateLimit('PullRequestReviewFiles');
+    const { model, session } = open(uniqueLogin(), github);
+
+    await waitUntil(() => model.list.kind === 'paused', { timeoutMs: 2000 });
+    github.rateLimit(null);
+    const asked = session.operations().length;
+    await session.clock.advance(59_000);
+    expect(session.operations()).toHaveLength(asked);
+
+    await session.clock.advance(1000);
+    await settled(model);
+
+    expect(model.list).toEqual({ kind: 'ready' });
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+});
+
+test('a viewed mark GitHub dropped since the last visit is named, from what the disk kept, until it is marked again or a new read says otherwise; the rest are not', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'pushed.ts', changeType: 'ADDED', after: 'one' });
+    github.file({ path: 'other.ts', changeType: 'ADDED', after: 'two' });
+    github.file({ path: 'never.ts', changeType: 'ADDED', after: 'three' });
+    github.setViewed('pushed.ts', 'VIEWED');
+    github.setViewed('other.ts', 'VIEWED');
+    const first = open(login, github);
+    await settled(first.model);
+    expect(first.model.lostViewed.size).toBe(0);
+    await waitUntil(
+        async () => (await ReviewBlobStore.create().readFileList(login, LIST_KEY))?.files[0]?.viewed === 'VIEWED',
+        { timeoutMs: 2000 },
+    );
+
+    // A push: GitHub drops the mark of a file it changed, and of one never viewed there is nothing to say.
+    github.moveHead('head-2');
+    github.setViewed('pushed.ts', 'DISMISSED');
+    github.setViewed('never.ts', 'DISMISSED');
+    const { model, session } = open(login, github);
+    await settled(model);
+
+    expect([...model.lostViewed]).toEqual(['pushed.ts']);
+    expect(model.lostViewedNotice).toBe(true);
+
+    model.dismissLostViewedNotice();
+    expect(model.lostViewedNotice).toBe(false);
+    expect([...model.lostViewed]).toEqual(['pushed.ts']);
+
+    model.setViewed(['pushed.ts'], true);
+    expect(model.lostViewed.size).toBe(0);
+    await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
+    expect(session.operations()).toContain('MarkFilesViewed');
+});
+
+test('a push seen by opening the same model again names the marks it dropped too', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'one' });
+    github.setViewed('a.ts', 'VIEWED');
+    const { model, files } = open(uniqueLogin(), github);
+    await settled(model);
+
+    github.moveHead('head-2');
+    github.setViewed('a.ts', 'DISMISSED');
+    files.open(REFERENCE);
+    await waitUntil(() => model.lostViewed.size === 1, { timeoutMs: 2000 });
+
+    expect([...model.lostViewed]).toEqual(['a.ts']);
+});
+
+test('how far the files are counts those that show content; a jump is named until its file arrives', async () => {
+    const github = createGitHub();
+    github.file({ path: 'bun.lock', changeType: 'MODIFIED', before: 'x', after: 'y' });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    let release = () => {};
+    const heldTexts = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    const { model, session } = open(uniqueLogin(), github, request =>
+        request.operation === 'ReviewBlobTexts' ? heldTexts : null,
+    );
+
+    await waitUntil(() => textQueries(session).length > 0, { timeoutMs: 2000 });
+    await session.clock.advance(20);
+    model.prioritize('b.ts');
+    await session.clock.advance(20);
+    expect(model.progress).toEqual({ here: 0, total: 2 });
+    expect(model.fetchingFirst).toBe('b.ts');
+
+    release();
+    await settled(model);
+
+    expect(model.progress).toEqual({ here: 2, total: 2 });
+    expect(model.fetchingFirst).toBeNull();
 });
 
 test('the list shows from its first page, what is known is fetched right away and the rest appends in order, nothing started over', async () => {
@@ -562,7 +750,7 @@ test('a pull request read before draws its list and code from the disk with GitH
     expectStates(reloaded.model, {
         'a.ts': { kind: 'ready', before: 'before', after: 'after' },
         'moved.ts': { kind: 'ready', before: 'was', after: 'is' },
-        'huge.ts': { kind: 'tooLarge' },
+        'huge.ts': { kind: 'tooLarge', before: 5, after: 1_000_001 },
     });
     // Only the list's check behind it, which GitHub has not answered.
     expect(reviewOperations(reloaded.session)).toEqual(['PullRequestReviewFiles']);
@@ -922,7 +1110,7 @@ test('viewed marks show at once and go to GitHub together, however many; a faile
     // Back to what GitHub said last, and the list read again in case any of the request did go through.
     expect(viewedOf(model, 'a.ts')).toBe('VIEWED');
     expect(viewedOf(model, 'b.ts')).toBe('VIEWED');
-    expect(failures.latest?.message).toContain('502');
+    expect(failures.latest?.message).toBe('Server Error');
 });
 
 test('a failed mark goes back to what GitHub last said, a dismissed one too', async () => {

@@ -1,5 +1,6 @@
+import { GitHubApiError } from '@githq/github/GitHubApiError.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, waitFor } from 'storybook/test';
 
 import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
@@ -35,12 +36,15 @@ import { replayQueue } from './queue'`,
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 
 const FILE = file('src/sync/engine.ts', 6, 3);
+const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
+/** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
+const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
 
 const meta = {
     component: ReviewDiffRow,
     args: {
         row: { kind: 'end', key: 'end', collapsed: false },
-        githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files',
+        githubUrl: FILES_URL,
         onRetry: fn(),
     },
 } satisfies Meta<typeof ReviewDiffRow>;
@@ -89,16 +93,92 @@ export const Viewed: Story = {
 /** CR60: on its way, quiet bars. */
 export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder' })) };
 
-/** CR67: failed, in place. */
-export const Failed: Story = {
-    render: () => renderRows(fileRows(FILE, { kind: 'failed', error: new Error('GitHub answered 502.') })),
+/** CR61: a jump's target, fetched ahead of the rest. */
+export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
+
+/** CR62: GitHub took its viewed mark off since the last visit. */
+export const ChangedSince: Story = {
+    render: () => ({
+        components: { ReviewDiffRow },
+        setup: () => ({ rows: fileRows(FILE, { kind: 'lines', rows: lines('split') }), url: FILES_URL }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="url" changed-since /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Changed since your last visit')).toBeVisible();
+    },
 };
 
-/** CR67: too large. */
-export const TooLarge: Story = { render: () => renderRows(fileRows(FILE, { kind: 'tooLarge' })) };
+/** CR67: failed, in place: GitHub's words, without the requester's own, and a link to the very file. */
+export const Failed: Story = {
+    render: () =>
+        renderRows(
+            fileRows(FILE, {
+                kind: 'failed',
+                error: new GitHubApiError({
+                    status: 200,
+                    message: 'GitHub GraphQL error: Something went wrong',
+                    errors: [{ message: 'Something went wrong' }],
+                }),
+            }),
+        ),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Something went wrong')).toBeVisible();
+        await expect(canvas.queryByText(/GitHub GraphQL error/u)).toBeNull();
+        await waitFor(() =>
+            expect(canvas.getByText('Open on GitHub').closest('a')).toHaveAttribute(
+                'href',
+                `${FILES_URL}#diff-${ENGINE_SHA256}`,
+            ),
+        );
+    },
+};
 
-/** CR65: binary. */
-export const Binary: Story = { render: () => renderRows(fileRows(FILE, { kind: 'binary' })) };
+/** CR67: too large, saying how large. */
+export const TooLarge: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'tooLarge', before: 120, after: 4_200_000 })),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/^4\.2 MB\./u)).toBeVisible();
+    },
+};
+
+/** CR65: binary, its sizes before and after. */
+export const Binary: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'binary', before: 12_000, after: 14_000 })),
+};
+
+/** CR65: a new binary file. */
+export const BinaryNew: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('public/hero.png', 0, 0, { changeType: 'ADDED' }), {
+                kind: 'binary',
+                before: null,
+                after: 48_000,
+            }),
+        ),
+};
+
+/** CR65: a submodule, which has no size. */
+export const BinaryNoSize: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'binary', before: null, after: null })),
+};
+
+/** CR68: waiting for the allowance: the first of them says when and how many; the others only that they wait. */
+export const Paused: Story = {
+    render: () => {
+        const until = new Date('2026-10-30T14:32:00').getTime();
+        return renderRows(
+            buildReviewRows({
+                files: [FILE, file('src/styles/sync.css', 29, 0), file('src/sync/queue.ts', 9, 0)],
+                getContent: () => ({ kind: 'paused', until }),
+            }).filter(row => row.kind !== 'tail'),
+        );
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/This file and 2 others will load then/u)).toHaveTextContent('14:32');
+        await expect(canvas.getAllByText("Waiting for GitHub's API allowance")).toHaveLength(3);
+    },
+};
 
 /** A new file with nothing in it. */
 export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
@@ -123,7 +203,7 @@ function fileRows(
 function renderRows(rows: readonly ReviewRow[]) {
     return {
         components: { ReviewDiffRow },
-        setup: () => ({ rows, githubUrl: 'https://github.com/fitloop/webapp/pull/1202/files' }),
+        setup: () => ({ rows, githubUrl: FILES_URL }),
         template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
     };
 }

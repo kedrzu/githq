@@ -12,6 +12,10 @@ gone:
   en: GitHub doesn't show this pull request
 goneDetail:
   en: It may have been deleted, or you may have lost access to its repository. Its code read earlier stays in this browser until you sign out.
+paused:
+  en: Waiting for GitHub's API allowance
+pausedDetail:
+  en: It resets at {time}. The files will load then, without you doing anything.
 tryAgain:
   en: Try again
 openOnGitHub:

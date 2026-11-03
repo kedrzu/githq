@@ -37,6 +37,7 @@ const COMPUTE_TURN_MS = 6;
 const REBUILD_EVERY_MS = 32;
 
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
+const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
 const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
 
 /**
@@ -103,11 +104,16 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     }
 
     function getContent(file: ReviewFile): ReviewFileContent {
+        const state = getState(file);
+        // Only ever a file that may yet turn out generated, or an open one: it says why it isn't here, which flips nothing.
+        if (state?.kind === 'paused') {
+            return state;
+        }
+
         if (isCollapsed(file)) {
             return COLLAPSED;
         }
 
-        const state = getState(file);
         if (!state) {
             return PLACEHOLDER;
         }
@@ -115,7 +121,7 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         switch (state.kind) {
             case 'waiting':
             case 'loading':
-                return PLACEHOLDER;
+                return toValue(options.files)?.fetchingFirst === file.path ? PLACEHOLDER_FIRST : PLACEHOLDER;
             case 'ready': {
                 const diff = getDiffs().get(state);
                 return diff ? getLinesContent(file, diff) : PLACEHOLDER;

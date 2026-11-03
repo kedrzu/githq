@@ -29,7 +29,11 @@ import type { ItemReference } from '@/item/itemRoutes.js';
 import { Clock } from '@/services/Clock.js';
 import { GitHubRequesterFactory } from '@/services/GitHubRequesterFactory.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
-import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
+import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
+import { getAllowancePause } from '@/sync/getAllowancePause.js';
+import { getRefusalPause } from '@/sync/getRefusalPause.js';
+import { SyncPausedError } from '@/sync/SyncPausedError.js';
+import type { SyncPause } from '@/sync/SyncPausedError.js';
 
 import { addDiffLineRange } from './diff/buildDiffRows.js';
 import type { DiffLineRange } from './diff/buildDiffRows.js';
@@ -37,6 +41,7 @@ import { ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
+import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
 
@@ -52,16 +57,24 @@ export interface ReviewFile {
     readonly viewed: FileViewedState;
 }
 
+/** How large a file's two sides are in bytes; `null` for the side it doesn't exist on, or whose size GitHub doesn't give. */
+export interface ReviewFileSizes {
+    readonly before: number | null;
+    readonly after: number | null;
+}
+
 /** How far a file's content is. Only `failed` is an error, and only it can be retried. */
 export type ReviewFileState =
     | { readonly kind: 'waiting' }
     | { readonly kind: 'loading' }
     /** The merge base's text and the head's; `null` for the side the file doesn't exist on. */
     | { readonly kind: 'ready'; readonly before: string | null; readonly after: string | null }
-    | { readonly kind: 'binary' }
+    | ({ readonly kind: 'binary' } & ReviewFileSizes)
     /** Above {@link MAX_FILE_BYTES} on either side: not fetched. */
-    | { readonly kind: 'tooLarge' }
-    | { readonly kind: 'failed'; readonly error: Error };
+    | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
+    | { readonly kind: 'failed'; readonly error: Error }
+    /** GitHub's allowance ran out: it comes by itself at `until`, epoch ms (D35). */
+    | { readonly kind: 'paused'; readonly until: number };
 
 /** Why a file starts collapsed (D8). */
 export type ReviewFileCollapseReason = 'lockFile' | 'generated' | 'large';
@@ -78,6 +91,8 @@ export type ReviewFileListState =
     | { readonly kind: 'ready' }
     /** Opening the pull request again ({@link ReviewFiles.open}) tries it again. */
     | { readonly kind: 'failed'; readonly error: Error }
+    /** GitHub's allowance ran out before the list could be read: it is read by itself at `until`, epoch ms (D35). */
+    | { readonly kind: 'paused'; readonly until: number }
     /** GitHub says it doesn't exist, to this user at least: what was kept of it is not shown. Opening it again asks anew. */
     | { readonly kind: 'gone' };
 
@@ -97,6 +112,21 @@ export interface PullRequestFiles {
     readonly headRefOid: string | null;
     /** How many files the pull request really has: GitHub lists at most 3000. */
     readonly changedFiles: number | null;
+    /** Of the files that show their content, how many have got as far as they can (`here`), of `total`. */
+    readonly progress: ReviewFilesProgress;
+    /** The file a jump is fetching ahead of the rest, until it arrives (D35). */
+    readonly fetchingFirst: string | null;
+    /** Until when nothing is read from GitHub (D35), epoch ms: viewed marks still go through. Carries on by itself. */
+    readonly pausedUntil: number | null;
+    /** When GitHub last answered the whole list, epoch ms; `null` for what has only been read from disk so far. */
+    readonly checkedAt: number | null;
+    /** The last read of the list failed, leaving what was read before. */
+    readonly listFailing: boolean;
+    /** The files GitHub took the viewed mark off since it was last known (D35), until they are marked again. */
+    readonly lostViewed: ReadonlySet<string>;
+    /** Whether {@link lostViewed} still has to be said: until the reader went through one, or dismissed it. */
+    readonly lostViewedNotice: boolean;
+    dismissLostViewedNotice(): void;
     /**
      * Moves on at most once per {@link UPDATE_EVERY_MS} while file states change, so that 225 files arriving at once
      * redraw once. {@link getState} depends on it.
@@ -134,6 +164,12 @@ export interface PullRequestFiles {
     expandLines(path: string, lines: DiffLineRange): void;
 }
 
+/** How far the files' contents are: see {@link PullRequestFiles.progress}. */
+export interface ReviewFilesProgress {
+    readonly here: number;
+    readonly total: number;
+}
+
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
 const MAX_FILE_BYTES = 1_000_000;
 /** From here on a file starts collapsed (D8), near where GitHub's own patches give up. */
@@ -168,6 +204,8 @@ const MAX_QUERIES_AT_ONCE = 3;
 /** About a frame. */
 const UPDATE_EVERY_MS = 16;
 
+type PausedState = Extract<ReviewFileState, { kind: 'paused' }>;
+
 const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
 const NO_LINES: readonly DiffLineRange[] = [];
@@ -195,6 +233,8 @@ interface FileEntry {
     sides: FileSides | null;
     /** Its oids are being read. */
     resolving: boolean;
+    /** What the disk knows of its oids was looked at: all that can be done while paused. */
+    diskRead: boolean;
     /** Decided once and kept: the rows ask of every file every frame while files arrive. */
     collapseReason: ReviewFileCollapseReason | null;
 }
@@ -222,10 +262,10 @@ interface FileRun {
     readonly renamesReader: SingleRunnerState<void>;
     /** Whether the merge base was asked for ahead of the first query needing it. */
     mergeBaseAsked: boolean;
-    /** GitHub refused for the rate: files listed from now on fail with it, until a retry. */
-    refusal: Error | null;
     /** What the head's `.gitattributes` says; `null` until it is read, when no file can be fetched yet. */
     isGenerated: ((path: string) => boolean) | null;
+    /** A pause stopped reading `.gitattributes`: it is read when the pause ends. */
+    attributesHeld: boolean;
 }
 
 /** A file's viewed mark as the user set it, which a list read before they did must not undo. */
@@ -248,6 +288,8 @@ interface Session {
     readonly models: Map<string, Model>;
     /** By {@link ReviewBlobStore}'s key, `<repository>:<base>...<head>`, which never changes its answer. */
     readonly mergeBases: Map<string, Promise<string>>;
+    /** GitHub refused for the rate: nothing is asked until then, epoch ms, whichever pull request asks. */
+    refusedUntil: number;
 }
 
 interface Model {
@@ -278,10 +320,11 @@ export const ReviewFiles = defineService({
         viewedFailures: ReviewViewedFailures,
         createRequester: GitHubRequesterFactory,
         createRest: GitHubRestFactory,
+        rateLimits: GitHubRateLimitStore,
         clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, blobs, viewedFailures, createRequester, createRest, clock, logger }) {
+    setup({ accounts, blobs, viewedFailures, createRequester, createRest, rateLimits, clock, logger }) {
         let session: Session | null = null;
 
         accounts.onChange(follow);
@@ -321,6 +364,7 @@ export const ReviewFiles = defineService({
                 rest: createRest(() => account.token),
                 models: new Map(),
                 mergeBases: new Map(),
+                refusedUntil: 0,
             };
         }
 
@@ -335,6 +379,11 @@ export const ReviewFiles = defineService({
             const filesRef = shallowRef<readonly ReviewFile[]>([]);
             const listCompleteRef = shallowRef(false);
             const versionRef = shallowRef(0);
+            const pausedRef = shallowRef<PausedState | null>(null);
+            const checkedAtRef = shallowRef<number | null>(null);
+            const listFailingRef = shallowRef(false);
+            const lostViewedRef = shallowRef<ReadonlySet<string>>(new Set());
+            const lostViewedNoticeRef = shallowRef(false);
             const hideViewedRef = shallowRef(false);
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
@@ -348,6 +397,11 @@ export const ReviewFiles = defineService({
             let dropped = false;
             let cancelUpdate: (() => void) | null = null;
             let jumpedTo: string | null = null;
+            let cancelResume: (() => void) | null = null;
+            /** A pause stopped reading the list: it is read when the pause ends. */
+            let listHeld = false;
+            /** The files marked viewed when the list was last whole, on disk or in memory. */
+            let viewedBefore: ReadonlySet<string> = new Set();
 
             const listReader = createSingleRunner({ handler: readList });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
@@ -373,6 +427,30 @@ export const ReviewFiles = defineService({
                     },
                     get changedFiles() {
                         return runRef.value?.changedFiles ?? null;
+                    },
+                    get progress() {
+                        return readProgress();
+                    },
+                    get fetchingFirst() {
+                        return readFetchingFirst();
+                    },
+                    get pausedUntil() {
+                        return pausedRef.value?.until ?? null;
+                    },
+                    get checkedAt() {
+                        return checkedAtRef.value;
+                    },
+                    get listFailing() {
+                        return listFailingRef.value;
+                    },
+                    get lostViewed() {
+                        return lostViewedRef.value;
+                    },
+                    get lostViewedNotice() {
+                        return lostViewedNoticeRef.value;
+                    },
+                    dismissLostViewedNotice() {
+                        lostViewedNoticeRef.value = false;
                     },
                     get version() {
                         return versionRef.value;
@@ -409,12 +487,56 @@ export const ReviewFiles = defineService({
             function getState(path: string): ReviewFileState {
                 // The states change without a reactive write: this is what tells of them.
                 void versionRef.value;
-                return runRef.value?.states.get(path) ?? WAITING;
+                const run = runRef.value;
+                const state = run?.states.get(path) ?? WAITING;
+                const paused = pausedRef.value;
+                const entry = run?.entries.get(path);
+                return paused && run && entry && isOnHold(run, entry, state) ? paused : state;
+            }
+
+            /** Whether the file is missing and nothing is on its way for it, with GitHub not to be asked. */
+            function isOnHold(run: FileRun, entry: FileEntry, state: ReviewFileState) {
+                return (
+                    isMissing(state) &&
+                    isFetchable(run, entry) &&
+                    !entry.resolving &&
+                    !getBlobs(entry.sides).some(blob => run.fetching.has(blob.oid)) &&
+                    (entry.sides !== null || entry.diskRead || run.isGenerated === null || isHeldForRenames(run, entry))
+                );
+            }
+
+            function readProgress(): ReviewFilesProgress {
+                void versionRef.value;
+                const run = runRef.value;
+                let here = 0;
+                let total = 0;
+                for (const entry of run?.entries.values() ?? []) {
+                    if (run && isFetchable(run, entry)) {
+                        total++;
+                        here += isMissing(run.states.get(entry.file.path) ?? WAITING) ? 0 : 1;
+                    }
+                }
+
+                return { here, total };
+            }
+
+            function readFetchingFirst() {
+                void versionRef.value;
+                const run = runRef.value;
+                const entry = jumpedTo === null ? undefined : run?.entries.get(jumpedTo);
+                return run &&
+                    entry &&
+                    !pausedRef.value &&
+                    readCollapse(run, entry) === null &&
+                    isMissing(run.states.get(entry.file.path) ?? WAITING)
+                    ? entry.file.path
+                    : null;
             }
 
             function prioritize(path: string) {
                 // Also for a file not listed yet, or that a new head lists later.
                 jumpedTo = path;
+                scheduleUpdate();
                 const run = runRef.value;
                 if (run && moveToFront(run, path)) {
                     pump(run);
@@ -439,7 +561,6 @@ export const ReviewFiles = defineService({
                 if (run && entry && run.states.get(path)?.kind === 'failed') {
                     setState(run, path, WAITING);
                     run.queue.unshift(entry);
-                    run.refusal = null;
                     if (isHeldForRenames(run, entry)) {
                         void run.renamesReader.execute();
                     }
@@ -514,11 +635,6 @@ export const ReviewFiles = defineService({
                     return;
                 }
 
-                if (run.refusal) {
-                    endEntry(run, entry, { kind: 'failed', error: run.refusal });
-                    return;
-                }
-
                 if (!run.queue.includes(entry)) {
                     run.queue.unshift(entry);
                 }
@@ -538,6 +654,7 @@ export const ReviewFiles = defineService({
                 }
 
                 const wanted = viewed ? 'VIEWED' : 'UNVIEWED';
+                forgetLostViewed(paths);
                 for (const path of paths) {
                     const entry = run.entries.get(path);
                     if (!entry || entry.file.viewed === wanted) {
@@ -621,7 +738,7 @@ export const ReviewFiles = defineService({
                 if (failure) {
                     viewedFailures.report(
                         sent.map(mark => mark.path),
-                        failure.message,
+                        getFailureText(failure),
                     );
                     // Others of the request may have gone through: GitHub says which.
                     void listReader.execute();
@@ -645,6 +762,7 @@ export const ReviewFiles = defineService({
                         void listReader.execute();
                         break;
                     case 'loading':
+                    case 'paused':
                         break;
                     default:
                         assertNever(list);
@@ -659,6 +777,11 @@ export const ReviewFiles = defineService({
                 collapseChoices.clear();
                 cancelUpdate?.();
                 cancelUpdate = null;
+                cancelResume?.();
+                cancelResume = null;
+                pausedRef.value = null;
+                lostViewedRef.value = new Set();
+                viewedBefore = new Set();
                 runRef.value = null;
                 filesRef.value = [];
                 listCompleteRef.value = false;
@@ -688,16 +811,31 @@ export const ReviewFiles = defineService({
 
             /** Reads the list from GitHub into what is shown; with something to show, failing only leaves that as it is. */
             async function readList() {
+                if (listCompleteRef.value) {
+                    viewedBefore = new Set(
+                        filesRef.value.filter(file => file.viewed === 'VIEWED').map(file => file.path),
+                    );
+                }
+
                 try {
                     await readPages();
+                    listFailingRef.value = false;
+                    checkedAtRef.value = clock.now();
                 } catch (error) {
                     if (dropped) {
                         return;
                     }
 
-                    if (isPullRequestGone(error)) {
+                    const pause = readPauseOf(error);
+                    if (pause) {
+                        listHeld = true;
+                        if (!runRef.value) {
+                            listRef.value = { kind: 'paused', until: pause.until };
+                        }
+                    } else if (isPullRequestGone(error)) {
                         forget();
                     } else if (runRef.value) {
+                        listFailingRef.value = true;
                         logger.warn("Could not read a pull request's list of files", { error });
                     } else {
                         listRef.value = { kind: 'failed', error: toError(error) };
@@ -752,6 +890,8 @@ export const ReviewFiles = defineService({
                         listed.add(file.path);
                     }
 
+                    noteLostViewed(files);
+
                     addFiles(run, files);
                     after = page.files?.pageInfo.hasNextPage ? (page.files.pageInfo.endCursor ?? null) : null;
                 } while (after !== null);
@@ -759,7 +899,36 @@ export const ReviewFiles = defineService({
                 endList(run, listed);
             }
 
+            /** Page by page, so that what GitHub took off is named even if a later page never comes. */
+            function noteLostViewed(files: readonly ReviewFile[]) {
+                const lost = new Set(lostViewedRef.value);
+                for (const file of files) {
+                    if (file.viewed !== 'DISMISSED') {
+                        lost.delete(file.path);
+                    } else if (viewedBefore.has(file.path) && !lost.has(file.path)) {
+                        lost.add(file.path);
+                        lostViewedNoticeRef.value = true;
+                    }
+                }
+
+                if (lost.size !== lostViewedRef.value.size) {
+                    lostViewedRef.value = lost;
+                }
+            }
+
+            function forgetLostViewed(paths: readonly string[]) {
+                if (paths.some(path => lostViewedRef.value.has(path))) {
+                    const lost = new Set(lostViewedRef.value);
+                    for (const path of paths) {
+                        lost.delete(path);
+                    }
+
+                    lostViewedRef.value = lost;
+                }
+            }
+
             async function readListPage(after: string | null) {
+                assertMayAsk();
                 const { repository: answered } = await current.account.sdk.PullRequestReviewFiles({
                     ...repository,
                     number: reference.number,
@@ -814,8 +983,8 @@ export const ReviewFiles = defineService({
                     renames: null,
                     renamesReader: createSingleRunner({ handler: () => readRenames(run) }),
                     mergeBaseAsked: false,
-                    refusal: null,
                     isGenerated: null,
+                    attributesHeld: false,
                 };
 
                 runRef.value = run;
@@ -846,14 +1015,12 @@ export const ReviewFiles = defineService({
                         file: { ...file, previousPath },
                         sides: null,
                         resolving: false,
+                        diskRead: false,
                         collapseReason: getCollapseReason(file, run.isGenerated),
                     };
                     run.entries.set(file.path, added);
                     if (isFetchable(run, added)) {
                         run.queue.push(added);
-                        if (run.refusal) {
-                            endEntry(run, added, { kind: 'failed', error: run.refusal });
-                        }
                     }
                 }
 
@@ -899,7 +1066,8 @@ export const ReviewFiles = defineService({
 
             /**
              * Reads what collapses generated files once per head, as it would any blob: its answer and text are kept. A
-             * failure leaves nothing marked generated: the files must not wait on it, and GitHub's own rate says why.
+             * failure leaves nothing marked generated, as the files must not wait on it; a pause does not, as they wait anyway
+             * and it is read when the pause ends.
              */
             async function readGitAttributes(run: FileRun) {
                 let isGenerated = (_: string) => false;
@@ -909,10 +1077,12 @@ export const ReviewFiles = defineService({
                         isGenerated = parseLinguistGenerated(text);
                     }
                 } catch (error) {
-                    logger.warn('Could not read .gitattributes', { error });
-                    if (isLive(run)) {
-                        stopOnRateLimit(run, toError(error));
+                    if (readPauseOf(error)) {
+                        run.attributesHeld = true;
+                        return;
                     }
+
+                    logger.warn('Could not read .gitattributes', { error });
                 }
 
                 if (!isLive(run)) {
@@ -933,6 +1103,7 @@ export const ReviewFiles = defineService({
                 const expression = `${run.headRefOid}:.gitattributes`;
                 const answers = await readKeptAnswers([expression]);
                 if (!answers.has(expression)) {
+                    assertMayAsk();
                     const answered = await readReviewBlobOids({
                         requester: current.requester,
                         repository,
@@ -959,10 +1130,15 @@ export const ReviewFiles = defineService({
             }
 
             async function fetchGitAttributesText(run: FileRun, oid: string) {
+                assertMayAsk();
                 const answers = await readReviewBlobTexts({ requester: current.requester, repository, oids: [oid] });
                 const answer = answers.get(oid);
                 if (answer?.kind === 'failed') {
                     throw answer.error;
+                }
+
+                if (answer?.kind === 'truncated') {
+                    assertMayAsk();
                 }
 
                 const text =
@@ -1028,6 +1204,7 @@ export const ReviewFiles = defineService({
              */
             async function readRenames(run: FileRun) {
                 try {
+                    assertMayAsk();
                     const renames = await listPullRequestRenames(current.rest, {
                         nameWithOwner,
                         number: reference.number,
@@ -1060,8 +1237,9 @@ export const ReviewFiles = defineService({
 
             /** Starts as many queries as may run, each for what is next in the queue. */
             function pump(run: FileRun) {
+                const paused = checkPause();
                 while (isLive(run) && run.running < MAX_QUERIES_AT_ONCE) {
-                    const work = takeWork(run);
+                    const work = takeWork(run, paused);
                     if (!work) {
                         return;
                     }
@@ -1074,8 +1252,8 @@ export const ReviewFiles = defineService({
                 }
             }
 
-            /** The next query: whichever the first file with something to fetch needs. */
-            function takeWork(run: FileRun) {
+            /** The next query: whichever the first file with something to fetch needs. While paused, only what looks on disk. */
+            function takeWork(run: FileRun, paused: boolean) {
                 if (run.isGenerated === null) {
                     return null;
                 }
@@ -1086,11 +1264,15 @@ export const ReviewFiles = defineService({
                     }
 
                     if (entry.sides === null) {
-                        const entries = takeForOids(run);
+                        if (paused && entry.diskRead) {
+                            continue;
+                        }
+
+                        const entries = takeForOids(run, paused);
                         return () => resolveOids(run, entries);
                     }
 
-                    if (getBlobsToFetch(run, entry.sides).length > 0) {
+                    if (!paused && getBlobsToFetch(run, entry.sides).length > 0) {
                         const wanted = takeForTexts(run);
                         return () => fetchTexts(run, wanted);
                     }
@@ -1099,11 +1281,16 @@ export const ReviewFiles = defineService({
                 return null;
             }
 
-            function takeForOids(run: FileRun) {
+            function takeForOids(run: FileRun, paused: boolean) {
                 const entries: FileEntry[] = [];
                 let expressions = 0;
                 for (const entry of run.queue) {
-                    if (entry.sides !== null || entry.resolving || isHeldForRenames(run, entry)) {
+                    if (
+                        entry.sides !== null ||
+                        entry.resolving ||
+                        isHeldForRenames(run, entry) ||
+                        (paused && entry.diskRead)
+                    ) {
                         continue;
                     }
 
@@ -1114,6 +1301,7 @@ export const ReviewFiles = defineService({
                     }
 
                     entry.resolving = true;
+                    entry.diskRead = true;
                     setState(run, entry.file.path, LOADING);
                     entries.push(entry);
                 }
@@ -1172,6 +1360,10 @@ export const ReviewFiles = defineService({
 
                 for (const entry of entries) {
                     entry.resolving = false;
+                    // Paused, and the disk doesn't know it.
+                    if (entry.sides === null && !ended.has(entry)) {
+                        setState(run, entry.file.path, WAITING);
+                    }
                 }
 
                 if (failure) {
@@ -1179,9 +1371,10 @@ export const ReviewFiles = defineService({
                 }
 
                 for (const [entry, state] of ended) {
-                    endEntry(run, entry, state);
                     if (state.kind === 'failed') {
-                        stopOnRateLimit(run, state.error);
+                        failEntries(run, [entry], state.error);
+                    } else {
+                        endEntry(run, entry, state);
                     }
                 }
 
@@ -1211,6 +1404,7 @@ export const ReviewFiles = defineService({
                     throw new Error('Signed out');
                 }
 
+                assertMayAsk();
                 const mergeBase = await getMergeBase(current.rest, { nameWithOwner, baseOid, headOid });
                 keepOnDisk(() => blobs.writeMergeBase(login, key, mergeBase));
                 return mergeBase;
@@ -1261,7 +1455,8 @@ export const ReviewFiles = defineService({
                 }
 
                 const unknown = asked.filter(expression => !answers.has(expression));
-                if (unknown.length > 0) {
+                const paused = findPause() !== null;
+                if (unknown.length > 0 && !paused) {
                     const answered = await readReviewBlobOids({
                         requester: current.requester,
                         repository,
@@ -1274,6 +1469,10 @@ export const ReviewFiles = defineService({
                 }
 
                 for (const [entry, sides] of expressions) {
+                    if (paused && [sides.before, sides.after].some(side => side !== null && !answers.has(side))) {
+                        continue;
+                    }
+
                     const outcome = readOutcome(sides, answers);
                     if ('kind' in outcome) {
                         ended.set(entry, outcome);
@@ -1368,6 +1567,7 @@ export const ReviewFiles = defineService({
                                     break;
                                 case 'truncated':
                                     try {
+                                        assertMayAsk();
                                         texts.set(oid, await getGitBlobText(current.rest, { nameWithOwner, oid }));
                                     } catch (error) {
                                         failed.set(oid, toError(error));
@@ -1407,14 +1607,14 @@ export const ReviewFiles = defineService({
                     const entryBlobs = getBlobs(entry.sides);
                     const failure = entryBlobs.map(blob => failed.get(blob.oid)).find(error => error !== undefined);
                     if (entryBlobs.some(blob => binary.has(blob.oid))) {
-                        endEntry(run, entry, { kind: 'binary' });
+                        endEntry(run, entry, {
+                            kind: 'binary',
+                            before: entry.sides?.before?.byteSize ?? null,
+                            after: entry.sides?.after?.byteSize ?? null,
+                        });
                     } else if (failure) {
-                        endEntry(run, entry, { kind: 'failed', error: failure });
+                        failEntries(run, [entry], failure);
                     }
-                }
-
-                for (const error of failed.values()) {
-                    stopOnRateLimit(run, error);
                 }
 
                 takeReady(run);
@@ -1427,23 +1627,110 @@ export const ReviewFiles = defineService({
                 }
             }
 
+            /** They end with the error, unless it is the allowance: then they stay in the queue and come when the pause ends. */
             function failEntries(run: FileRun, entries: readonly FileEntry[], error: Error) {
+                const paused = readPauseOf(error) !== null;
                 for (const entry of entries) {
-                    endEntry(run, entry, { kind: 'failed', error });
+                    if (paused) {
+                        setState(run, entry.file.path, WAITING);
+                    } else {
+                        endEntry(run, entry, { kind: 'failed', error });
+                    }
                 }
-
-                stopOnRateLimit(run, error);
             }
 
-            /** GitHub refused for the rate: asking on for the rest only makes it worse, so they fail with it. */
-            function stopOnRateLimit(run: FileRun, error: Error) {
-                if (error instanceof GitHubApiError && isRateLimitRefusal(error)) {
-                    run.refusal = error;
-                    for (const entry of run.queue) {
-                        if (!entry.resolving) {
-                            endEntry(run, entry, { kind: 'failed', error });
-                        }
+            /** What GitHub's allowance says of asking now (D35): GraphQL down to what is kept for edits, REST used up, or a refusal to wait out. */
+            function findPause(): SyncPause | null {
+                const now = clock.now();
+                const pauses = [
+                    getAllowancePause(rateLimits.get('graphql'), now),
+                    getAllowancePause(rateLimits.get('core'), now),
+                    current.refusedUntil > now ? { until: current.refusedUntil, bucket: null } : null,
+                ].filter(pause => pause !== null);
+                return pauses.toSorted((a, b) => b.until - a.until)[0] ?? null;
+            }
+
+            /** Every read from GitHub goes through here; what the disk holds never needs to. */
+            function assertMayAsk() {
+                const pause = findPause();
+                if (pause) {
+                    throw new SyncPausedError(pause);
+                }
+            }
+
+            /** The pause a failure means, shown; `null` for any other failure. */
+            function readPauseOf(error: unknown) {
+                if (error instanceof SyncPausedError) {
+                    showPause(error.pause);
+                    return error.pause;
+                }
+
+                const limits = [rateLimits.get('graphql'), rateLimits.get('core')];
+                const refusal = getRefusalPause({ error, limits, now: clock.now() });
+                if (refusal) {
+                    current.refusedUntil = Math.max(current.refusedUntil, refusal.until);
+                    showPause(refusal);
+                }
+
+                return refusal;
+            }
+
+            /** Whether GitHub is not to be asked now; a pause over carries on what it held. */
+            function checkPause() {
+                const pause = findPause();
+                if (pause) {
+                    showPause(pause);
+                } else if (pausedRef.value) {
+                    endPause();
+                }
+
+                return pause !== null;
+            }
+
+            function showPause({ until }: SyncPause) {
+                if (dropped || (pausedRef.value?.until === until && cancelResume)) {
+                    return;
+                }
+
+                pausedRef.value = { kind: 'paused', until };
+                if (listRef.value.kind === 'paused') {
+                    listRef.value = pausedRef.value;
+                }
+
+                versionRef.value++;
+                cancelResume?.();
+                cancelResume = clock.schedule(() => {
+                    cancelResume = null;
+                    checkPause();
+                }, until - clock.now());
+            }
+
+            function endPause() {
+                pausedRef.value = null;
+                cancelResume?.();
+                cancelResume = null;
+                versionRef.value++;
+                if (listHeld) {
+                    listHeld = false;
+                    if (listRef.value.kind === 'paused') {
+                        listRef.value = LOADING;
                     }
+
+                    void listReader.execute();
+                }
+
+                const run = runRef.value;
+                if (run) {
+                    if (run.attributesHeld) {
+                        run.attributesHeld = false;
+                        void readGitAttributes(run);
+                    }
+
+                    if ([...run.entries.values()].some(entry => isHeldForRenames(run, entry))) {
+                        void run.renamesReader.execute();
+                    }
+
+                    pump(run);
                 }
             }
 
@@ -1466,6 +1753,10 @@ export const ReviewFiles = defineService({
 
             function setState(run: FileRun, path: string, state: ReviewFileState) {
                 run.states.set(path, state);
+                scheduleUpdate();
+            }
+
+            function scheduleUpdate() {
                 cancelUpdate ??= clock.schedule(() => {
                     cancelUpdate = null;
                     versionRef.value++;
@@ -1474,6 +1765,10 @@ export const ReviewFiles = defineService({
         }
     },
 });
+
+function isMissing({ kind }: ReviewFileState) {
+    return kind === 'waiting' || kind === 'loading';
+}
 
 function toReviewFile(node: FileListNode): ReviewFile {
     return {
@@ -1550,6 +1845,10 @@ function readOutcome(
 
     // A side that can't be shown settles it, whatever the other says. GitHub listed the file at these commits, so a side
     // answering nothing is a submodule, which is how GitHub answers a gitlink: a pointer with no text, like a directory.
+    const sizes = {
+        before: readBlobSide(before, answers)?.byteSize ?? null,
+        after: readBlobSide(after, answers)?.byteSize ?? null,
+    };
     if (
         found.some(
             answer =>
@@ -1558,11 +1857,11 @@ function readOutcome(
                 (answer?.kind === 'blob' && answer.isBinary),
         )
     ) {
-        return { kind: 'binary' };
+        return { kind: 'binary', ...sizes };
     }
 
     if (found.some(answer => answer?.kind === 'blob' && answer.byteSize > MAX_FILE_BYTES)) {
-        return { kind: 'tooLarge' };
+        return { kind: 'tooLarge', ...sizes };
     }
 
     for (const answer of found) {

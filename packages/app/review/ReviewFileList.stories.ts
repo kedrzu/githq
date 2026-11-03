@@ -20,8 +20,8 @@ const FILES: readonly ReviewFile[] = [
 
 const READY: ReviewFileState = { kind: 'ready', before: '', after: '' };
 const STATES: Readonly<Record<string, ReviewFileState>> = {
-    'public/images/offline-hero.png': { kind: 'binary' },
-    'src/api/generated/schema.json': { kind: 'tooLarge' },
+    'public/images/offline-hero.png': { kind: 'binary', before: null, after: 48_000 },
+    'src/api/generated/schema.json': { kind: 'tooLarge', before: 80, after: 4_200_000 },
     'src/api/client.ts': { kind: 'failed', error: new Error('GitHub answered 502') },
     'docs/sync.md': { kind: 'loading' },
 };
@@ -75,8 +75,37 @@ export const HidingViewed: Story = {
     args: { groups: groupReviewFiles(FILES.filter(({ viewed }) => viewed !== 'VIEWED')), hideViewed: true },
 };
 
-/** D35: GitHub lists 3000 at most: "3,000+" and a note at the foot. */
-export const MoreThanListed: Story = { args: { changedFiles: 4210 } };
+/** CR66: GitHub lists 3000 at most: "3,000+", and a note pinned at the foot under rows that scroll. */
+export const MoreThanListed: Story = {
+    args: { changedFiles: 4812 },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('The other 4,802 can only be read', { exact: false })).toBeVisible();
+    },
+};
+
+/** CR64: no files: no count of viewed ones either. */
+export const NoFiles: Story = {
+    args: { groups: [], files: [], currentPath: null, changedFiles: 0 },
+    play: async ({ canvas }) => {
+        await expect(canvas.queryByText(/viewed/u)).toBeNull();
+    },
+};
+
+/** CR68: files waiting for the allowance carry the amber pause. */
+export const Paused: Story = {
+    args: { getState: () => ({ kind: 'paused', until: Date.UTC(2026, 9, 30, 14, 32) }), getCollapse: () => null },
+    play: async ({ canvas }) => {
+        await expect(canvas.getAllByRole('img', { name: "Waiting for GitHub's API allowance" })).toHaveLength(10);
+    },
+};
+
+/** CR62: a file that lost its viewed mark is tagged. */
+export const ChangedSince: Story = {
+    args: { lostViewed: new Set(['src/api/client.ts']) },
+    play: async ({ canvas }) => {
+        await expect(canvas.getAllByText('changed since')).toHaveLength(1);
+    },
+};
 
 /** The list still arriving page by page: "10+", and no note at the foot, as the rest is on its way. */
 export const StillArriving: Story = { args: { changedFiles: 238, listComplete: false } };

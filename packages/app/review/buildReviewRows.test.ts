@@ -18,12 +18,13 @@ const B = sampleFile('src/b.ts');
 const BEFORE = lines(40);
 const AFTER = BEFORE.replace('line 20\n', 'line 20 changed\nline 20b\n');
 const NO_IGNORE = { ignoreWhitespace: false };
+const BINARY = { kind: 'binary', before: null, after: null } as const;
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ...NO_IGNORE });
 
 test('each file is its header, what shows under it and its end; the last is followed by room to land on', () => {
     const rows = buildReviewRows({
         files: [A, B],
-        getContent: file => (file === A ? { kind: 'placeholder' } : { kind: 'binary' }),
+        getContent: file => (file === A ? { kind: 'placeholder' } : BINARY),
     });
 
     expect(rows.map(row => [row.kind, getReviewRowPath(row.key)])).toEqual([
@@ -34,6 +35,19 @@ test('each file is its header, what shows under it and its end; the last is foll
         ['notice', B.path],
         ['end', B.path],
         ['tail', B.path],
+    ]);
+});
+
+test('of the files waiting for the allowance only the first says how many others wait with it', () => {
+    const c = sampleFile('src/c.ts');
+    const rows = buildReviewRows({
+        files: [A, B, c],
+        getContent: file => (file === A ? BINARY : { kind: 'paused', until: 1000 }),
+    });
+
+    expect(rows.flatMap(row => (row.kind === 'paused' ? [[row.file.path, row.others]] : []))).toEqual([
+        [B.path, 1],
+        [c.path, null],
     ]);
 });
 
@@ -157,7 +171,7 @@ test('a placeholder held gives way to the top of its file, whatever it arrived a
 
     const arrivals: ReviewFileContent[] = [
         { kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) },
-        { kind: 'binary' },
+        BINARY,
         { kind: 'failed', error: new Error('Refused') },
     ];
     for (const content of arrivals) {
@@ -170,8 +184,8 @@ test('a placeholder held gives way to the top of its file, whatever it arrived a
 });
 
 test('the room under what was the last file gives way to what now follows that file, as more of the list arrives', () => {
-    const previous = buildReviewRows({ files: [A], getContent: () => ({ kind: 'binary' }) });
-    const next = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'binary' }) });
+    const previous = buildReviewRows({ files: [A], getContent: () => BINARY });
+    const next = buildReviewRows({ files: [A, B], getContent: () => BINARY });
     const tail = previous.at(-1);
     expect(tail?.kind).toBe('tail');
 
@@ -329,8 +343,8 @@ test('a gap at the end of the file shows from its top, none being below it', () 
 
 test('a file filtered away gives way to the next left in the whole order, one the rows held before not shown (D7)', () => {
     const c = sampleFile('src/c.ts');
-    const previous = buildReviewRows({ files: [A], getContent: () => ({ kind: 'binary' }) });
-    const next = buildReviewRows({ files: [c], getContent: () => ({ kind: 'binary' }) });
+    const previous = buildReviewRows({ files: [A], getContent: () => BINARY });
+    const next = buildReviewRows({ files: [c], getContent: () => BINARY });
 
     const replacement = findReplacementRow({
         key: getReviewHeaderKey(A.path),

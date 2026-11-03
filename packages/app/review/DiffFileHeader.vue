@@ -1,4 +1,4 @@
-<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, its size, if it has lines to count, and its viewed mark (`V`). A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
+<!-- A file's head in the diff (D24), pinned while the file is in view: how it changed, its folder and name, where a renamed file came from, why it starts collapsed, that GitHub took its viewed mark off since the last visit (D35), its size, if it has lines to count, and its viewed mark (`V`). A click anywhere on it, or Space, collapses the file or opens it (D8); the chevron is that for the keyboard and for screen readers. Its own edge closes the block when nothing shows under it. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -25,6 +25,8 @@ const props = defineProps<{
   collapsed: boolean;
   /** Why it starts collapsed, also once opened. */
   collapseReason: ReviewFileCollapseReason | null;
+  /** GitHub took its viewed mark off since the last visit. */
+  changedSince?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -76,6 +78,11 @@ function onClick(event: MouseEvent) {
       v-if="collapseReason"
       :class="css.diffFileHeader_why"
       >{{ t(l[collapseReason]) }}</span
+    >
+    <span
+      v-if="changedSince"
+      :class="[css.diffFileHeader_why, css.diffFileHeader_why_changed]"
+      >{{ t(l.changedSince) }}</span
     >
     <span :class="css.diffFileHeader_spacer" />
     <template v-if="file.additions + file.deletions > 0">
@@ -145,6 +152,10 @@ function onClick(event: MouseEvent) {
   white-space: nowrap;
   border: 1px solid $color-border-2;
   border-radius: 4px;
+}
+
+.diffFileHeader_why_changed {
+  color: $color-accent;
 }
 
 .diffFileHeader_from {

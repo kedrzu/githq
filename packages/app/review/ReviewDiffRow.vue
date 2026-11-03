@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, quiet bars while the file is on its way, or what the file says in place of a diff (D35): binary, too large or empty with a link to github.com, failed with GitHub's words and Try again, which touches no other file. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, the lines left out with what shows them (D29) and what they are in, quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -7,9 +7,12 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, FileDiff, UnfoldVertical } from 'lucide-vue-next';
+import { CircleAlert, FileDiff, LoaderCircle, Pause, UnfoldVertical } from 'lucide-vue-next';
+import { computed, shallowRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
+import { formatBytes } from '@/utils/formatBytes.js';
+import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight } from './buildReviewRows.js';
 import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
@@ -17,11 +20,17 @@ import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
+import type { ReviewFileSizes } from './ReviewFiles.js';
+import { formatFileSizes } from './utils/formatFileSizes.js';
+import { getFailureText } from './utils/getFailureText.js';
+import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
 
-defineProps<{
+const props = defineProps<{
   row: ReviewRow;
   /** Where the pull request's files are on github.com. */
   githubUrl: string;
+  /** GitHub took the file's viewed mark off since the last visit (D35). */
+  changedSince?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -36,6 +45,45 @@ const t = useTranslate();
 
 /** What "Show 20" shows; with no more than that hidden, "Show all" says the same. */
 const EXPAND_STEP = 20;
+
+/** The file a row links to, on the rows that offer the link. */
+const linkedPath = computed(() => {
+  const { row } = props;
+  return row.kind === 'failed' || row.kind === 'paused' || (row.kind === 'notice' && row.notice !== 'empty')
+    ? row.file.path
+    : null;
+});
+const fileUrl = shallowRef(props.githubUrl);
+
+watch(
+  [linkedPath, () => props.githubUrl],
+  async ([path, filesUrl]) => {
+    fileUrl.value = filesUrl;
+    if (path !== null) {
+      const url = await getGitHubFileUrl(filesUrl, path);
+      if (linkedPath.value === path) {
+        fileUrl.value = url;
+      }
+    }
+  },
+  { immediate: true },
+);
+
+function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
+  const size = formatFileSizes(sizes);
+  if (size === null) {
+    return t(l.binary);
+  }
+
+  switch (changeType) {
+    case 'ADDED':
+      return t(l.binaryNew, { size });
+    case 'DELETED':
+      return t(l.binaryDeleted, { size });
+    default:
+      return t(l.binarySized, { size });
+  }
+}
 </script>
 
 <template>
@@ -52,6 +100,7 @@ const EXPAND_STEP = 20;
       :file="row.file"
       :collapsed="row.collapsed"
       :collapse-reason="row.collapseReason"
+      :changed-since="changedSince"
       @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
       @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
@@ -105,11 +154,22 @@ const EXPAND_STEP = 20;
           >{{ row.enclosing }}</span
         >
       </div>
-      <div
-        v-else-if="row.kind === 'placeholder'"
-        :class="css.reviewDiffRow_placeholder"
-        :style="{ height: `${getPlaceholderHeight(row.file)}px` }"
-      />
+      <template v-else-if="row.kind === 'placeholder'">
+        <div
+          v-if="row.first"
+          :class="css.reviewDiffRow_first"
+        >
+          <LoaderCircle
+            :class="css.reviewDiffRow_firstIcon"
+            aria-hidden="true"
+          />
+          {{ t(l.fetchingFirst, { path: row.file.path }) }}
+        </div>
+        <div
+          :class="css.reviewDiffRow_placeholder"
+          :style="{ height: `${getPlaceholderHeight(row.file)}px` }"
+        />
+      </template>
       <div
         v-else-if="row.kind === 'notice'"
         :class="css.reviewDiffRow_notice"
@@ -119,19 +179,54 @@ const EXPAND_STEP = 20;
           aria-hidden="true"
         />
         <div :class="css.reviewDiffRow_noticeText">
-          <p :class="css.reviewDiffRow_noticeTitle">{{ t(l[row.notice]) }}</p>
+          <p :class="css.reviewDiffRow_noticeTitle">
+            {{ row.notice === 'binary' ? getBinaryText(row.sizes, row.file.changeType) : t(l[row.notice]) }}
+          </p>
           <p
             v-if="row.notice === 'tooLarge'"
             :class="css.reviewDiffRow_noticeDetail"
           >
-            {{ t(l.tooLargeDetail) }}
+            {{ t(l.tooLargeDetail, { size: formatBytes(Math.max(row.sizes.before ?? 0, row.sizes.after ?? 0)) }) }}
           </p>
         </div>
         <Button
           v-if="row.notice !== 'empty'"
           size="sm"
           variant="outline"
-          :link="githubUrl"
+          :link="fileUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t(l.openOnGitHub) }}
+        </Button>
+      </div>
+      <div
+        v-else-if="row.kind === 'paused'"
+        :class="css.reviewDiffRow_notice"
+      >
+        <Pause
+          :class="[css.reviewDiffRow_noticeIcon, css.reviewDiffRow_noticeIcon_paused]"
+          aria-hidden="true"
+        />
+        <div :class="css.reviewDiffRow_noticeText">
+          <p :class="[css.reviewDiffRow_noticeTitle, css.reviewDiffRow_noticeTitle_paused]">{{ t(l.paused) }}</p>
+          <p
+            v-if="row.others !== null"
+            :class="css.reviewDiffRow_noticeDetail"
+          >
+            {{
+              t(l.pausedDetail, {
+                count: row.others,
+                formatted: numbers.format(row.others),
+                time: formatTime(row.until),
+              })
+            }}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          :link="fileUrl"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -148,7 +243,7 @@ const EXPAND_STEP = 20;
         />
         <div :class="css.reviewDiffRow_noticeText">
           <p :class="[css.reviewDiffRow_noticeTitle, css.reviewDiffRow_noticeTitle_failed]">{{ t(l.failed) }}</p>
-          <p :class="css.reviewDiffRow_noticeDetail">{{ row.error.message }}</p>
+          <p :class="css.reviewDiffRow_noticeDetail">{{ getFailureText(row.error) }}</p>
         </div>
         <Button
           size="sm"
@@ -160,7 +255,7 @@ const EXPAND_STEP = 20;
         <Button
           size="sm"
           variant="outline"
-          :link="githubUrl"
+          :link="fileUrl"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -249,14 +344,43 @@ const EXPAND_STEP = 20;
   white-space: nowrap;
 }
 
-// Quiet bars, one per line the file will about take.
+.reviewDiffRow_first {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+  height: 40px;
+  padding: 0 $spacing-14;
+  font-size: 12.5px;
+  color: $color-fg-2;
+}
+
+.reviewDiffRow_firstIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-fg-3;
+}
+
+// Quiet bars of six lengths over and over, as tall as the file will about take.
 .reviewDiffRow_placeholder {
-  background-image: linear-gradient($color-bg-3, $color-bg-3);
+  $bar: linear-gradient(to bottom, $color-bg-3 8px, transparent 8px);
+
+  background-image: $bar, $bar, $bar, $bar, $bar, $bar;
   background-repeat: repeat-y;
-  background-position: 48px 6px;
-  background-size: 40% 20px;
-  mask-image: repeating-linear-gradient(to bottom, #000 0, #000 8px, transparent 8px, transparent 20px);
-  mask-position: 0 6px;
+  background-position:
+    60px 12px,
+    60px 29px,
+    60px 46px,
+    60px 63px,
+    60px 80px,
+    60px 97px;
+  background-size:
+    420px 102px,
+    300px 102px,
+    520px 102px,
+    8px 102px,
+    360px 102px,
+    460px 102px;
 }
 
 .reviewDiffRow_notice {
@@ -279,6 +403,10 @@ const EXPAND_STEP = 20;
   color: $color-red;
 }
 
+.reviewDiffRow_noticeIcon_paused {
+  color: $color-amber;
+}
+
 .reviewDiffRow_noticeText {
   flex: 1;
   min-width: 0;
@@ -297,6 +425,10 @@ const EXPAND_STEP = 20;
 
 .reviewDiffRow_noticeTitle_failed {
   color: $color-red;
+}
+
+.reviewDiffRow_noticeTitle_paused {
+  color: $color-amber;
 }
 
 .reviewDiffRow_noticeDetail {
