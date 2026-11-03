@@ -61,5 +61,8 @@ export function samplePullRequest(id: string): PullRequestItem {
         latestReviews: [],
         stack: null,
         behindBase: false,
+        isMergeQueueEnabled: false,
+        mergeQueueEntry: null,
+        autoMerge: null,
     };
 }

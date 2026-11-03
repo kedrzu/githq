@@ -27,8 +27,8 @@ export interface MergeOptions {
     /** The viewer may merge past unmet requirements. */
     readonly viewerCanMergeAsAdmin: boolean;
     readonly viewerCanEnableAutoMerge: boolean;
-    /** Merges into the base branch go through GitHub's merge queue. */
-    readonly isMergeQueueEnabled: boolean;
+    /** The method the base branch's merge queue merges with, by its ruleset; `null` when no ruleset says. */
+    readonly mergeQueueMethod: PullRequestMergeMethod | null;
     /** The checks of the head commit; empty when nothing runs. */
     readonly checks: readonly MergeCheck[];
     /** The head commit as it is said when a merge was refused for naming an older one (PM27); `null` when unread. */

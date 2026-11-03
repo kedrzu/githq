@@ -1159,7 +1159,6 @@ export class GitHubWorld {
                     squashBody: texts.SQUASH.body,
                     viewerCanMergeAsAdmin: false,
                     viewerCanEnableAutoMerge: false,
-                    isMergeQueueEnabled: false,
                     // The commit pushed last, else the head as the author's, under the pull request's title.
                     headCommit: {
                         nodes: [
@@ -2172,6 +2171,9 @@ export class GitHubWorld {
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
             baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : (pullRequest.rebasedOn ?? BASE_OID),
+            isMergeQueueEnabled: false,
+            mergeQueueEntry: null,
+            autoMergeRequest: null,
             baseRef: { target: { oid: below ? toHeadRefOid(below.item) : BASE_OID } },
             additions: 12 * item.number,
             deletions: 3 * item.number,

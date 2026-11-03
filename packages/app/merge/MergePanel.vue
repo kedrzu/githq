@@ -221,7 +221,15 @@ const counts = computed(() => (props.options ? countMergeChecks(props.options.ch
 const standing = usePullRequestVerdict(shownPr, counts);
 const prConditions = usePullRequestConditions(shownPr);
 
-const offered = computed(() => (props.settings ? getMergeMethods(props.settings, props.options) : null));
+const offered = computed(() =>
+  props.settings
+    ? getMergeMethods({
+        settings: props.settings,
+        rules: props.options,
+        isMergeQueueEnabled: props.pr.isMergeQueueEnabled,
+      })
+    : null,
+);
 const methods = computed(() => offered.value?.methods ?? []);
 const methodOptions = computed((): SegmentedTabsOption<PullRequestMergeMethod>[] =>
   methods.value.map((choice, index) => ({ value: choice, label: methodName(choice), keyshortcuts: String(index + 1) })),

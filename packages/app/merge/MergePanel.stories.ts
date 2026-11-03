@@ -59,7 +59,7 @@ const OPTIONS: MergeOptions = {
     requiresLinearHistory: false,
     viewerCanMergeAsAdmin: false,
     viewerCanEnableAutoMerge: false,
-    isMergeQueueEnabled: false,
+    mergeQueueMethod: null,
     checks: SAMPLE_PASSED_CHECKS,
     headCommit: { oid: PR.headRefOid, headline: 'Retry Stripe webhook delivery on 5xx', author: 'kedrzu' },
 };

@@ -3,6 +3,7 @@ import type {
     IssueStateReason,
     IssueTypeColor,
     MergeableState,
+    MergeQueueEntryState,
     MergeStateStatus,
     ProjectV2SingleSelectFieldOptionColor,
     PullRequestMergeMethod,
@@ -117,6 +118,34 @@ export interface PullRequestStatus {
      * (checked live, 2026-11-01). `false` when the base branch is gone.
      */
     readonly behindBase: boolean;
+    /** Merges into its base branch go through GitHub's merge queue. */
+    readonly isMergeQueueEnabled: boolean;
+    /** Its place in the merge queue; `null` outside it. */
+    readonly mergeQueueEntry: PullRequestQueueEntry | null;
+    /** The auto-merge turned on for it, merging once the requirements are met; `null` when off. */
+    readonly autoMerge: PullRequestAutoMerge | null;
+}
+
+/** A pull request's place in the merge queue, as GitHub holds it. */
+export interface PullRequestQueueEntry {
+    readonly position: number;
+    readonly state: MergeQueueEntryState;
+    /** Seconds; `null` while GitHub has no estimate. */
+    readonly estimatedTimeToMerge: number | null;
+    readonly enqueuedAt: string;
+    /** Login of who added it. */
+    readonly enqueuer: string;
+    /** Added at the front of the queue. */
+    readonly jump: boolean;
+}
+
+/** A pull request's auto-merge, as GitHub holds it. */
+export interface PullRequestAutoMerge {
+    readonly mergeMethod: PullRequestMergeMethod;
+    readonly enabledAt: string | null;
+    /** Login of who turned it on. */
+    readonly enabledBy: string | null;
+    readonly commitHeadline: string | null;
 }
 
 /** Where a pull request sits in a GitHub stack. */

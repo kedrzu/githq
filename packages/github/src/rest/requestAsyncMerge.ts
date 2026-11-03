@@ -10,13 +10,16 @@ export interface RequestAsyncMergeParams {
     readonly name: string;
     /** The pull request's number. */
     readonly number: number;
-    readonly mergeMethod: 'merge' | 'squash' | 'rebase';
+    /** Not given for a merge queue: GitHub refuses one naming a method (`failed`), for the queue has its own. */
+    readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
     /** The head commit the merge was decided on: GitHub refuses it (`failed`) when the head moved since. */
     readonly sha: string;
     /** The commit's title; GitHub's default when not given. */
     readonly commitTitle?: string;
     /** The commit's message; GitHub's default when not given. */
     readonly commitMessage?: string;
+    /** Merges past the requirements not met, for a viewer allowed to. */
+    readonly bypassRules?: boolean;
 }
 
 /**
@@ -29,15 +32,16 @@ export function requestAsyncMerge(
     rest: GitHubRestRequester,
     params: RequestAsyncMergeParams,
 ): Promise<AsyncMergeAnswer> {
-    const { owner, name, number, mergeMethod, sha, commitTitle, commitMessage } = params;
+    const { owner, name, number, mergeMethod, sha, commitTitle, commitMessage, bypassRules } = params;
     return sendAsyncMergeRequest(rest, {
         method: 'PUT',
         url: `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/pulls/${number}/merge-async`,
         body: {
-            merge_method: mergeMethod,
+            ...(mergeMethod === undefined ? {} : { merge_method: mergeMethod }),
             sha,
             ...(commitTitle === undefined ? {} : { commit_title: commitTitle }),
             ...(commitMessage === undefined ? {} : { commit_message: commitMessage }),
+            ...(bypassRules ? { bypass_rules: true } : {}),
         },
     });
 }

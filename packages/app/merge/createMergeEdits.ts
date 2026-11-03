@@ -1,3 +1,4 @@
+import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
 import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { readAsyncMerge } from '@githq/github/rest/readAsyncMerge.js';
@@ -13,6 +14,8 @@ import { getItemReference } from '@/item/itemRoutes.js';
 import type { ClockShape } from '@/services/Clock.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import type { Item, PullRequestItem, PullRequestMergedAs } from '@/store/ItemTypes.js';
+import { toPullRequestStatus } from '@/store/toItem.js';
+import { isPresent } from '@/utils/isPresent.js';
 import { pause } from '@/utils/pause.js';
 
 import type { MergeAnswer, MergeLateEnd, MergeRequest } from './MergeTypes.js';
@@ -115,9 +118,12 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
         };
     }
 
-    /** Merged as the merge was: without a commit of its own to say, as GitHub's answer names only the top's. */
+    /**
+     * Merged as the merge was: without a commit of its own to say, as GitHub's answer names only the top's. A top put
+     * in a merge queue is confirmed with nothing merged: nor is any of these.
+     */
     function toMemberVerdict(verdict: EditVerdict): EditVerdict {
-        if (verdict.kind !== 'confirmed') {
+        if (verdict.kind !== 'confirmed' || !isMerged(verdict.layer.item(params.item))) {
             return { kind: 'unknown' };
         }
 
@@ -128,10 +134,12 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
 /**
  * The merge of the pull request itself as an edit (merging D3, D5, D6). It draws the pull request as being merged
  * (`merging`) and nothing else: never merged until GitHub says so. It asks GitHub's asynchronous merge with the
- * head commit the user saw, and the commit's title and message only when the user edited them. GitHub's `merged`
- * confirms it; a refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is
- * a failed edit otherwise; put in a merge queue (`enqueued`), with no answer in time, or with the request itself
- * unanswered, the layer goes without a word and the next sync shows what GitHub holds.
+ * head commit the user saw, and the commit's title and message only when the user edited them. On a merge queue's
+ * branch the head commit goes alone: GitHub refuses a method or a text there, the queue has its own. GitHub's `merged`
+ * confirms it, and so does `enqueued`, with the pull request as GitHub then holds it: in the queue, not merged. A
+ * refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is a failed edit
+ * otherwise; with no answer in time, or with the request itself unanswered, the layer goes without a word and the next
+ * sync shows what GitHub holds.
  */
 function createMergeEdit(params: CreateMergeEditsParams): Edit {
     const { item, request, clock, onAnswer, onLateEnd, shown } = params;
@@ -142,16 +150,21 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         reference: `${item.repository.nameWithOwner}#${item.number}`,
         subject: { kind: 'merged' },
         optimistic: getBeingMergedLayer(request.method),
-        send: async ({ rest }) => {
+        send: async ({ rest, sdk }) => {
             let answer: AsyncMergeAnswer;
             try {
-                answer = await requestAsyncMerge(rest, {
-                    ...target,
-                    mergeMethod: toRestMergeMethod(request.method),
-                    sha: item.headRefOid,
-                    ...(request.title === undefined ? {} : { commitTitle: request.title }),
-                    ...(request.body === undefined ? {} : { commitMessage: request.body }),
-                });
+                answer = await requestAsyncMerge(
+                    rest,
+                    item.isMergeQueueEnabled
+                        ? { ...target, sha: item.headRefOid }
+                        : {
+                              ...target,
+                              mergeMethod: toRestMergeMethod(request.method),
+                              sha: item.headRefOid,
+                              ...(request.title === undefined ? {} : { commitTitle: request.title }),
+                              ...(request.body === undefined ? {} : { commitMessage: request.body }),
+                          },
+                );
             } catch (error) {
                 const reason = toEditFailureReason(error);
                 onAnswer({ kind: 'refused', reason });
@@ -172,10 +185,10 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
                     return merged(answer.sha);
                 case 'enqueued':
                     onAnswer({ kind: 'accepted' });
-                    return { kind: 'unknown' };
+                    return await readEnqueued(sdk);
                 case 'pending':
                     onAnswer({ kind: 'accepted' });
-                    return { kind: 'following', follow: () => follow(rest, answer.uuid) };
+                    return { kind: 'following', follow: () => follow(rest, sdk, answer.uuid) };
                 default:
                     return assertNever(answer);
             }
@@ -186,7 +199,7 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
      * Asks how the merge GitHub accepted ended, with growing waits, until it says or the time limit passes. A
      * request that fails meanwhile (offline, a 5xx) is asked again: the merge runs on GitHub regardless.
      */
-    async function follow(rest: GitHubRestRequester, uuid: string): Promise<EditVerdict> {
+    async function follow(rest: GitHubRestRequester, sdk: GitHubSdk, uuid: string): Promise<EditVerdict> {
         const deadline = clock.now() + MERGE_TIME_LIMIT_MS;
         let delay = FIRST_POLL_MS;
         while (clock.now() < deadline) {
@@ -210,7 +223,7 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
                     return { kind: 'rejected', reason, quiet: shown() };
                 }
                 case 'enqueued':
-                    return { kind: 'unknown' };
+                    return await readEnqueued(sdk);
                 case 'pending':
                     break;
                 default:
@@ -220,6 +233,35 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
 
         onLateEnd({ kind: 'unknown' });
         return { kind: 'unknown' };
+    }
+
+    /**
+     * GitHub put it in the merge queue: the row confirmed with the status GitHub holds now, its place in the queue
+     * among it. Left to the next sync when that could not be read.
+     */
+    async function readEnqueued(sdk: GitHubSdk): Promise<EditVerdict> {
+        let nodes;
+        try {
+            ({ nodes } = await sdk.PullRequestStatuses({ ids: [item.id] }));
+        } catch {
+            return { kind: 'unknown' };
+        }
+
+        const node = nodes[0] ?? null;
+        if (!isPresent(node)) {
+            return { kind: 'unknown' };
+        }
+
+        const status = toPullRequestStatus(node);
+        const { updatedAt } = node;
+        return {
+            kind: 'confirmed',
+            layer: {
+                item: current => (current.kind === 'pullRequest' ? { ...current, ...status } : current),
+                supersededBy: stored => stored.updatedAt > updatedAt,
+                confirmedAt: updatedAt,
+            },
+        };
     }
 
     /**

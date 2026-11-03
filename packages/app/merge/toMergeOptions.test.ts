@@ -61,7 +61,7 @@ test('reads the status, the proposed texts, what the viewer may do and the check
         requiresLinearHistory: false,
         viewerCanMergeAsAdmin: true,
         viewerCanEnableAutoMerge: false,
-        isMergeQueueEnabled: false,
+        mergeQueueMethod: null,
         checks: [
             {
                 id: 'CR_1',
@@ -144,6 +144,18 @@ test.each<[string, Partial<BaseRefParams>, boolean]>([
     expect(toMergeOptions(node)?.requiresLinearHistory).toBe(required);
 });
 
+test.each<[string, (Rule | null)[] | null, MergeOptions['mergeQueueMethod']]>([
+    [
+        'a merge queue ruleset names the method',
+        [{ type: 'MERGE_QUEUE', parameters: { mergeMethod: 'SQUASH' } }],
+        'SQUASH',
+    ],
+    ['other rules name none', [pullRequestRule(['MERGE'])], null],
+    ['no rules read', null, null],
+])("the merge queue's method: %s", (_, rules, expected) => {
+    expect(toMergeOptions({ ...mergeNode(), baseRef: baseRef({ rules }) })?.mergeQueueMethod).toBe(expected);
+});
+
 test('a node that is no pull request, or none, has no merge options', () => {
     expect(toMergeOptions({})).toBeNull();
     expect(toMergeOptions(null)).toBeNull();
@@ -158,7 +170,6 @@ function mergeNode(): MergeNode {
         squashBody: '* Fix it\n\n* Test it',
         viewerCanMergeAsAdmin: true,
         viewerCanEnableAutoMerge: false,
-        isMergeQueueEnabled: false,
         headCommit: {
             nodes: [
                 {

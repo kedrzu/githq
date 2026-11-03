@@ -62,6 +62,36 @@ test('sends the commit title and message when given', async () => {
     });
 });
 
+test('a merge queue: no method given, the sha goes alone', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const rest = restAnswering(() => Response.json(ENQUEUED, { status: 202 }), requests);
+
+    await requestAsyncMerge(rest, { owner: 'nzymejs', name: 'githq-merge-sandbox', number: 7, sha: 'f66a' });
+
+    const [, init] = requests[0] ?? [];
+    expect(JSON.parse(typeof init?.body === 'string' ? init.body : '')).toEqual({ sha: 'f66a' });
+});
+
+test('bypasses the rules only when asked to', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const rest = restAnswering(() => Response.json(ENQUEUED, { status: 202 }), requests);
+
+    await requestAsyncMerge(rest, { ...PARAMS, bypassRules: true });
+    await requestAsyncMerge(rest, { ...PARAMS, bypassRules: false });
+
+    const [, bypassing] = requests[0] ?? [];
+    expect(JSON.parse(typeof bypassing?.body === 'string' ? bypassing.body : '')).toEqual({
+        merge_method: 'squash',
+        sha: 'f66a',
+        bypass_rules: true,
+    });
+    const [, plain] = requests[1] ?? [];
+    expect(JSON.parse(typeof plain?.body === 'string' ? plain.body : '')).toEqual({
+        merge_method: 'squash',
+        sha: 'f66a',
+    });
+});
+
 test("a merge GitHub refuses with a failed answer comes back failed, in GitHub's words", async () => {
     const rest = restAnswering(() =>
         Response.json(

@@ -75,6 +75,9 @@ export function samplePullRequestNode(id: string, params: SampleRowNodeParams): 
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',
+        isMergeQueueEnabled: false,
+        mergeQueueEntry: null,
+        autoMergeRequest: null,
         baseRef: { target: { oid: 'base-oid' } },
     };
 }

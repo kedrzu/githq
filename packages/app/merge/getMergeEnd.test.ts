@@ -20,7 +20,7 @@ const OPTIONS: MergeOptions = {
     requiresLinearHistory: false,
     viewerCanMergeAsAdmin: false,
     viewerCanEnableAutoMerge: false,
-    isMergeQueueEnabled: false,
+    mergeQueueMethod: null,
     checks: [],
     headCommit: { oid: 'new-head', headline: 'Handle an empty answer', author: 'dkim' },
 };

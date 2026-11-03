@@ -1,0 +1,10 @@
+# Adds to the merge queue (merging D5): GraphQL because only it can jump the queue, which `merge-async` cannot.
+mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $jump: Boolean) {
+    enqueuePullRequest(input: { pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: $jump }) {
+        mergeQueueEntry {
+            pullRequest {
+                ...PullRequestStatusFields
+            }
+        }
+    }
+}

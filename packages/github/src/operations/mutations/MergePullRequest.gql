@@ -1,0 +1,28 @@
+# Merges with a chosen commit email (merging D5): `merge-async` has no email, and every other merge goes through it.
+# Answers at once, and cannot merge a stack.
+mutation MergePullRequest(
+    $pullRequestId: ID!
+    $expectedHeadOid: GitObjectID!
+    $mergeMethod: PullRequestMergeMethod!
+    $commitHeadline: String
+    $commitBody: String
+    $authorEmail: String
+) {
+    mergePullRequest(
+        input: {
+            pullRequestId: $pullRequestId
+            expectedHeadOid: $expectedHeadOid
+            mergeMethod: $mergeMethod
+            commitHeadline: $commitHeadline
+            commitBody: $commitBody
+            authorEmail: $authorEmail
+        }
+    ) {
+        pullRequest {
+            ...PullRequestStatusFields
+            mergeCommit {
+                oid
+            }
+        }
+    }
+}

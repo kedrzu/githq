@@ -127,6 +127,21 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
         mergeable: 'CONFLICTING',
         mergeStateStatus: 'DIRTY',
         headRefOid: 'head-oid-40',
+        isMergeQueueEnabled: true,
+        mergeQueueEntry: {
+            position: 2,
+            state: 'AWAITING_CHECKS',
+            estimatedTimeToMerge: null,
+            enqueuedAt: '2026-10-21T09:00:00Z',
+            enqueuer: { login: 'monalisa' },
+            jump: false,
+        },
+        autoMergeRequest: {
+            mergeMethod: 'SQUASH',
+            enabledAt: '2026-10-21T08:00:00Z',
+            enabledBy: null,
+            commitHeadline: 'Fix the login loop (#42)',
+        },
         createdAt: '2026-10-02T10:00:00Z',
         updatedAt: '2026-10-21T10:00:00Z',
         closedAt: null,
@@ -222,6 +237,21 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
         ],
         stack: null,
         behindBase: false,
+        isMergeQueueEnabled: true,
+        mergeQueueEntry: {
+            position: 2,
+            state: 'AWAITING_CHECKS',
+            estimatedTimeToMerge: null,
+            enqueuedAt: '2026-10-21T09:00:00Z',
+            enqueuer: 'monalisa',
+            jump: false,
+        },
+        autoMerge: {
+            mergeMethod: 'SQUASH',
+            enabledAt: '2026-10-21T08:00:00Z',
+            enabledBy: null,
+            commitHeadline: 'Fix the login loop (#42)',
+        },
     };
     expect(toItem(node)).toEqual(expected);
 });

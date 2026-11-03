@@ -38,7 +38,7 @@ export function toMergeOptions(node: MergeOptionsNode): MergeOptions | null {
         requiresLinearHistory: toRequiresLinearHistory(node.baseRef),
         viewerCanMergeAsAdmin: node.viewerCanMergeAsAdmin,
         viewerCanEnableAutoMerge: node.viewerCanEnableAutoMerge,
-        isMergeQueueEnabled: node.isMergeQueueEnabled,
+        mergeQueueMethod: toMergeQueueMethod(node.baseRef),
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], check => check && toMergeCheck(check)),
         headCommit: toHeadCommit(node.headCommit),
     };
@@ -71,6 +71,16 @@ function toAllowedMergeMethods(baseRef: BaseRef | null): PullRequestMergeMethod[
     }
 
     return allowed;
+}
+
+function toMergeQueueMethod(baseRef: BaseRef | null): PullRequestMergeMethod | null {
+    for (const rule of baseRef?.rules?.nodes ?? []) {
+        if (rule?.type === 'MERGE_QUEUE' && rule.parameters && 'mergeMethod' in rule.parameters) {
+            return rule.parameters.mergeMethod;
+        }
+    }
+
+    return null;
 }
 
 function toRequiresLinearHistory(baseRef: BaseRef | null) {

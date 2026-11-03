@@ -116,7 +116,7 @@ const Harness = defineComponent({
                       requiresLinearHistory: false,
                       viewerCanMergeAsAdmin: false,
                       viewerCanEnableAutoMerge: false,
-                      isMergeQueueEnabled: false,
+                      mergeQueueMethod: null,
                       checks: [],
                       headCommit: null,
                   }

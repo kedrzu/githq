@@ -12,7 +12,6 @@ query PullRequestMergeOptions($id: ID!) {
             squashBody: viewerMergeBodyText(mergeType: SQUASH)
             viewerCanMergeAsAdmin
             viewerCanEnableAutoMerge
-            isMergeQueueEnabled
             headCommit: commits(last: 1) {
                 nodes {
                     commit {
@@ -34,6 +33,9 @@ query PullRequestMergeOptions($id: ID!) {
                         parameters {
                             ... on PullRequestParameters {
                                 allowedMergeMethods
+                            }
+                            ... on MergeQueueParameters {
+                                mergeMethod
                             }
                         }
                     }

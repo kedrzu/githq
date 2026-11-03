@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
 
-import type { PullRequestMergeOptionsQuery } from '@githq/github/generated.gen.js';
+import type { PullRequestFieldsFragment, PullRequestMergeOptionsQuery } from '@githq/github/generated.gen.js';
 
 import { EditQueue } from '@/edits/EditQueue.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -217,25 +217,85 @@ test.each([
     ['as it is asked', { put: ENQUEUED, read: STILL_PENDING }],
     ['while it runs', { put: PENDING, read: { status: 200, body: { status: 'enqueued', details: {} } } }],
 ])(
-    'put in the merge queue %s: accepted, being merged goes with no failure, and the sync shows the queue',
+    'put in the merge queue %s: accepted and confirmed with GitHub’s state — in the queue, never merged, no failure',
     async (_, answers) => {
         const { merger, items, queue, session, rest } = await setup();
+        statusNode = queuedNode();
         rest.answers.put = answers.put;
         rest.answers.read = answers.read;
 
-        const answering = merger.merge({ item: open(), request: { method: 'SQUASH' }, shown, onLateEnd });
+        const answering = merger.merge({ item: onQueue(), request: { method: 'SQUASH' }, shown, onLateEnd });
         await session.clock.advance(0);
         expect(await answering).toEqual({ kind: 'accepted' });
 
         await session.clock.advance(1000);
 
-        expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN' });
+        const entry = { position: 3, state: 'QUEUED', enqueuer: 'monalisa' };
+        expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN', mergeQueueEntry: entry });
         expect(items.get('PR_1')).not.toHaveProperty('merging');
+        expect(items.getStored('PR_1')).toMatchObject({ merged: false, state: 'OPEN', mergeQueueEntry: entry });
+        expect(lateEnds).toEqual([]);
         expect(queue.pending).toEqual([]);
         expect(queue.failures).toEqual([]);
         expect(queue.undone.size).toBe(0);
     },
 );
+
+test('put in the merge queue, its state not read: being merged goes with no failure, and the sync shows the queue', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    rest.answers.put = ENQUEUED;
+
+    const answering = merger.merge({ item: onQueue(), request: { method: 'SQUASH' }, shown, onLateEnd });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+    await session.clock.advance(1000);
+
+    expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN', mergeQueueEntry: null });
+    expect(items.get('PR_1')).not.toHaveProperty('merging');
+    expect(lateEnds).toEqual([]);
+    expect(queue.failures).toEqual([]);
+});
+
+test('on a merge queue’s branch the head commit goes alone: no method, no text, even edited', async () => {
+    const { merger, session, rest } = await setup();
+    statusNode = queuedNode();
+    rest.answers.put = ENQUEUED;
+
+    const answering = merger.merge({
+        item: onQueue(),
+        request: { method: 'SQUASH', title: 'Edited title', body: 'Edited body' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    await answering;
+
+    expect(rest.puts()).toEqual([{ sha: 'head-oid' }]);
+});
+
+test('a stack put in the merge queue: the ones below it never read merged', async () => {
+    const { merger, items, queue, session, rest } = await setup();
+    statusNode = queuedNode();
+    items.upsertMany([earlier()]);
+    rest.answers.put = ENQUEUED;
+
+    const answering = merger.merge({
+        item: onQueue(),
+        members: [earlier()],
+        request: { method: 'SQUASH' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+    expect(await answering).toEqual({ kind: 'accepted' });
+    await session.clock.advance(1000);
+
+    expect(items.get('PR_0')).toMatchObject({ merged: false, state: 'OPEN' });
+    expect(items.get('PR_0')).not.toHaveProperty('merging');
+    expect(items.get('PR_1')).toMatchObject({ merged: false, state: 'OPEN' });
+    expect(queue.pending).toEqual([]);
+    expect(queue.failures).toEqual([]);
+});
 
 test('no answer within the time limit: being merged goes, with no failure, and nothing is asked after', async () => {
     const { merger, items, queue, session, rest } = await setup();
@@ -429,6 +489,7 @@ async function setup() {
     lateEnds.length = 0;
     stackTotalCount = 2;
     stackAnswered = true;
+    statusNode = null;
 
     return { merger, items, queue, session, rest };
 
@@ -459,6 +520,10 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
         };
     }
 
+    if (request.operation === 'PullRequestStatuses') {
+        return statusNode ? { data: { nodes: [statusNode] } } : undefined;
+    }
+
     if (request.operation !== 'PullRequestMergeOptions') {
         return undefined;
     }
@@ -473,7 +538,6 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
             squashBody: 'Fix it',
             viewerCanMergeAsAdmin: false,
             viewerCanEnableAutoMerge: false,
-            isMergeQueueEnabled: false,
             headCommit: {
                 nodes: [
                     {
@@ -512,6 +576,9 @@ let stackTotalCount = 2;
 /** Whether the fake GitHub answers reading the stack again. */
 let stackAnswered = true;
 
+/** What the fake GitHub answers re-reading a pull request's status; a 502 when `null`. */
+let statusNode: PullRequestFieldsFragment | null = null;
+
 /** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];
 
@@ -521,6 +588,27 @@ function onLateEnd(end: MergeLateEnd) {
 
 function open(): PullRequestItem {
     return samplePullRequest('PR_1');
+}
+
+/** {@link open} on a branch that merges through a merge queue. */
+function onQueue(): PullRequestItem {
+    return { ...open(), isMergeQueueEnabled: true };
+}
+
+/** {@link onQueue} as GitHub answers once it is in the queue. */
+function queuedNode(): PullRequestFieldsFragment {
+    return {
+        ...samplePullRequestNode('PR_1', { repository: 'acme/web', number: 2, updatedAt: '2026-10-30T13:00:00Z' }),
+        isMergeQueueEnabled: true,
+        mergeQueueEntry: {
+            position: 3,
+            state: 'QUEUED',
+            estimatedTimeToMerge: null,
+            enqueuedAt: '2026-10-30T13:00:00Z',
+            enqueuer: { login: 'monalisa' },
+            jump: false,
+        },
+    };
 }
 
 /** The pull request before {@link open} in its stack. */

@@ -22,6 +22,25 @@ fragment PullRequestStatusFields on PullRequest {
     # The commit a merge names (`sha`), so GitHub refuses it when the head moved since.
     headRefOid
     baseRefOid
+    isMergeQueueEnabled
+    mergeQueueEntry {
+        position
+        state
+        estimatedTimeToMerge
+        enqueuedAt
+        enqueuer {
+            login
+        }
+        jump
+    }
+    autoMergeRequest {
+        mergeMethod
+        enabledAt
+        enabledBy {
+            login
+        }
+        commitHeadline
+    }
     baseRef {
         target {
             oid
