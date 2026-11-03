@@ -497,7 +497,7 @@ command menu: the same chooser both times, for repositories (T18) and projects (
 Undo** (owner, 2026-11-02; T20): the row leaves the list and a toast offers Undo (⌘Z) for 10 seconds; the copy in this
 browser is deleted only when the toast goes. No confirmation on the row.
 
-### D26
+### D27
 
 The first sync reads **a few things at once** (owner, 2026-11-03, 2 at once for closed items): four repositories for
 their open items, two for their closed ones, the four "my work" searches together and three of a group's item batches.
@@ -525,7 +525,7 @@ closed pull requests (2.5 s to 1.4 s a page, measured on `healedcare/healed`): r
 
 ## Open questions
 
-### D27
+### D26
 
 Settings is **a column of sections**, as the repository's column layout, rather than tabs along the top (owner,
 2026-11-03): Repositories, Projects, Display, Code review, Sync settings, Account, on `1`–`6`, the rows roomy enough to click
