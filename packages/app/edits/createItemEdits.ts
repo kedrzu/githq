@@ -1,6 +1,8 @@
 import type { PullRequestBranchUpdateMethod, PullRequestStatusFieldsFragment } from '@githq/github/generated.gen.js';
+import { rerunFailedJobs } from '@githq/github/rest/rerunFailedJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
+import { toMergeOptions } from '@/merge/toMergeOptions.js';
 import { describeProjectFieldValue } from '@/projects/describeProjectFieldValue.js';
 import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import type { RepositoryMetadata, ViewerProject } from '@/repos/RepositoryTypes.js';
@@ -23,6 +25,7 @@ import type {
 } from '@/store/ItemTypes.js';
 import { toItemLabels, toItemProject, toItemReviewRequests, toItemUsers, toPullRequestStatus } from '@/store/toItem.js';
 import { toDetailProject, toDetailReviewRequests, toItemComment } from '@/store/toItemDetail.js';
+import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import type { CloseReason, Edit, EditRequest, EditSubject, EditVerdict, ItemEditRequest } from './EditTypes.js';
 import { getProjectItemValueLayer, sendProjectFieldValue, toFieldValue, withValue } from './projectFieldValues.js';
@@ -130,6 +133,16 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 : [];
         case 'dequeue':
             return item.kind === 'pullRequest' && item.mergeQueueEntry ? [createDequeueEdit(item)] : [];
+        case 'deleteBranch':
+            return item.kind === 'pullRequest' && item.headRefId !== null
+                ? [createDeleteBranchEdit(item, item.headRefId)]
+                : [];
+        case 'restoreBranch':
+            return item.kind === 'pullRequest' && item.headRefId === null && item.headRepositoryId !== null
+                ? [createRestoreBranchEdit(item, item.headRepositoryId)]
+                : [];
+        case 'rerunFailedChecks':
+            return item.kind === 'pullRequest' ? [createRerunChecksEdit(item)] : [];
         default:
             return assertNever(request);
     }
@@ -684,6 +697,90 @@ function createDequeueEdit(item: PullRequestItem): Edit {
                         stored.mergeQueueEntry.enqueuedAt !== item.mergeQueueEntry?.enqueuedAt,
                 },
             };
+        },
+    };
+}
+
+/**
+ * Deletes its branch, showing gone at once. GitHub answers nothing of the pull request, so whoever asked reads it again;
+ * until then the branch stays drawn gone, unless the read holds another (restored by someone since).
+ */
+function createDeleteBranchEdit(item: PullRequestItem, refId: string): Edit {
+    return {
+        ...base(item, { kind: 'branchDeleted' }),
+        optimistic: { item: withoutHeadRef },
+        send: async ({ sdk }) => {
+            await sdk.DeleteRef({ refId });
+            return {
+                kind: 'confirmed',
+                layer: {
+                    item: withoutHeadRef,
+                    supersededBy: stored =>
+                        stored.kind === 'pullRequest' && stored.headRefId !== null && stored.headRefId !== refId,
+                },
+            };
+        },
+    };
+}
+
+function withoutHeadRef(item: Item): Item {
+    return item.kind === 'pullRequest' ? { ...item, headRefId: null, viewerCanDeleteHeadRef: false } : item;
+}
+
+/** Creates its branch again at its last head commit; it shows once GitHub made it, with the new branch's id. */
+function createRestoreBranchEdit(item: PullRequestItem, repositoryId: string): Edit {
+    return {
+        ...base(item, { kind: 'branchRestored' }),
+        optimistic: UNCHANGED,
+        send: async ({ sdk }) => {
+            const ref = (
+                await sdk.CreateRef({
+                    repositoryId,
+                    name: `refs/heads/${item.headRefName}`,
+                    oid: item.headRefOid,
+                })
+            ).createRef?.ref;
+            if (!ref) {
+                return dropped();
+            }
+
+            return {
+                kind: 'confirmed',
+                layer: {
+                    item: current => (current.kind === 'pullRequest' ? { ...current, headRefId: ref.id } : current),
+                },
+            };
+        },
+    };
+}
+
+/**
+ * Re-runs the workflow runs of its checks that failed, as read now: rows don't hold them, and a run re-run since must not
+ * be asked for again. Nothing is drawn: whoever asked reads it again. With no such run — checks from outside Actions —
+ * nothing is sent, and the failure says so.
+ */
+function createRerunChecksEdit(item: PullRequestItem): Edit {
+    return {
+        ...base(item, { kind: 'checksRerun' }),
+        optimistic: UNCHANGED,
+        send: async ({ sdk, rest }) => {
+            // The protection of the base branch is not readable without admin rights: the checks are.
+            const { node } = await sdk.PullRequestMergeOptions({ id: item.id }, { onPartialErrors: () => undefined });
+            const runs = new Set(
+                (toMergeOptions(node)?.checks ?? []).flatMap(check =>
+                    check.state === 'failing' && check.workflowRunId !== null ? [check.workflowRunId] : [],
+                ),
+            );
+            if (runs.size === 0) {
+                return { kind: 'rejected', reason: { kind: 'notActions' } };
+            }
+
+            const repository = parseRepositoryName(item.repository.nameWithOwner);
+            for (const runId of runs) {
+                await rerunFailedJobs(rest, { ...repository, runId });
+            }
+
+            return { kind: 'confirmed', layer: UNCHANGED };
         },
     };
 }

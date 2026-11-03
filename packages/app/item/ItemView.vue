@@ -394,6 +394,8 @@ function getEditCommands(): Command[] {
     merge: () => emit('merge'),
     mergeChecks: checkCounts.value,
     viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
+    pullRequestCommands: merging,
+    checks: props.mergeChecks,
     setField: (place, field, value) =>
       emit('edit', { kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value }),
     inline: {
@@ -707,7 +709,9 @@ function getProjectOptions(): CommandOption[] {
               :checks="checkCounts"
               :auto-merge-allowed="autoMergeAllowed"
               :record="merging?.getRecord(pr.id) ?? null"
+              :commands="merging?.getCommands(pr.id)"
               @merge="emit('merge')"
+              @command="merging?.run(pr.id, $event)"
             />
 
             <!-- One column: everything in reading order. -->

@@ -225,3 +225,27 @@ fieldAutoMerge:
   en: Auto-merge
 fieldQueue:
   en: Merge queue
+failedBranchDeleted:
+  en: "The branch of {reference} wasn't deleted"
+failedBranchRestored:
+  en: "The branch of {reference} wasn't restored"
+failedChecksRerun:
+  en: "The checks of {reference} weren't re-run"
+failedReverted:
+  en: "{reference} wasn't reverted"
+changeBranchDeleted:
+  en: deleting the branch
+changeBranchRestored:
+  en: restoring the branch
+changeChecksRerun:
+  en: re-running the checks
+changeReverted:
+  en: reverting
+fieldChecks:
+  en: Checks
+fieldRevert:
+  en: Revert
+reasonNotActions:
+  en: "None of the checks that failed runs on GitHub Actions: re-run them where they run."
+shortNotActions:
+  en: not on GitHub Actions

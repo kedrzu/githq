@@ -42,3 +42,21 @@ reRequest:
   en: re-request
 together:
   en: '{count} of {total}'
+updateBranch:
+  en: Update branch
+byMerge:
+  en: by merge
+updateBranchByRebase:
+  en: Update branch by rebase
+rerunChecks:
+  en: Re-run failed checks
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch
+revert:
+  en: Revert…
+revertDetail:
+  en: creates a new pull request
+takeOutOfQueue:
+  en: Take out of queue

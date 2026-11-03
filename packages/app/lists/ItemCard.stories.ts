@@ -33,7 +33,13 @@ function withMergeRecord(record: MergeRecord): Decorator {
     return story =>
         defineComponent({
             setup() {
-                provideContext(MergeContext, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+                provideContext(MergeContext, {
+                    canOpen: () => true,
+                    open: () => undefined,
+                    getRecord: () => record,
+                    getCommands: () => [],
+                    run: () => undefined,
+                });
                 return () => h(story());
             },
         });

@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`; a stack leaves whole, through its first one, its later ones then read again) — read the pull request again once done. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, updating its branch, turning auto-merge on or off, jumping or leaving the queue (`ItemEditor`; a stack leaves whole, through its first one, its later ones then read again) — and, merged, deleting or restoring its branch, read the pull request again once done; reverting leaves for the toast leading to the new one (`PullRequestCommands`). Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -9,18 +9,18 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
-import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
-import { pause } from '@/utils/pause.js';
 
 import MergePanel from './MergePanel.vue';
 import { getConflictEditorUrl } from './getConflictEditorUrl.js';
 import { MergePanelStore } from './MergePanelStore.js';
+import { getPullRequestCommands } from './getPullRequestCommands.js';
+import { PullRequestCommands } from './PullRequestCommands.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
 import type { MergeStep, MergeSubmission } from './MergeTypes.js';
 import { getStackMerge } from './stack/getStackMerge.js';
@@ -31,10 +31,6 @@ import { useMergeOptions } from './useMergeOptions.js';
 
 /** How often a running check's time moves on. */
 const TICK_MS = 1000;
-/** The first wait before reading again whether an update of the branch landed; each next one doubles. */
-const FIRST_UPDATE_READ_MS = 1000;
-/** How long the panel waits for an update of the branch to land before it shows what GitHub says. */
-const UPDATE_TIME_LIMIT_MS = 30_000;
 
 /** A step towards the merge the panel takes, and the edit it is. */
 interface AdvanceParams {
@@ -51,7 +47,7 @@ const auth = useService(AuthStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
 const browser = useService(Browser);
-const clock = useService(Clock);
+const pullRequestCommands = useService(PullRequestCommands);
 
 const opened = computed(() => {
   const id = store.itemId;
@@ -220,6 +216,10 @@ async function merge(submission: MergeSubmission) {
   if (store.opening === opening) {
     sending.value = false;
     alreadyMerged.value = answer.kind === 'merged';
+    // Merged: what its branch's follow-ups go by is GitHub's only now (PM26, PM26b).
+    if (answer.kind === 'merged') {
+      await read.refresh();
+    }
   }
 }
 
@@ -240,7 +240,25 @@ async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
     return;
   }
 
+  if (step === 'revert') {
+    await revert(item);
+    return;
+  }
+
   await advance({ item, step, request: toStepRequest(step) });
+}
+
+/** "Revert…" (PM26): the panel has said all it can of the merge, and leaves for the toast leading to the new one. */
+async function revert(item: PullRequestItem) {
+  const opening = store.opening;
+  advancing.value = 'revert';
+  const reverted = await pullRequestCommands.run(item, { kind: 'revert' });
+  if (store.opening === opening) {
+    advancing.value = null;
+    if (reverted) {
+      store.close();
+    }
+  }
 }
 
 /** PM10: auto-merge on, with the method and the text the panel shows. An edit like the steps. */
@@ -254,12 +272,18 @@ async function enableAutoMerge(submission: MergeSubmission) {
   }
 }
 
-function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConflicts'>): EditRequest {
+function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConflicts' | 'revert'>): EditRequest {
   switch (step) {
     case 'markReady':
       return { kind: 'draft', draft: false };
     case 'updateBranch':
       return { kind: 'updateBranch', method: 'MERGE' };
+    case 'updateBranchByRebase':
+      return { kind: 'updateBranch', method: 'REBASE' };
+    case 'deleteBranch':
+      return { kind: 'deleteBranch' };
+    case 'restoreBranch':
+      return { kind: 'restoreBranch' };
     case 'disableAutoMerge':
       return { kind: 'disableAutoMerge' };
     case 'jumpQueue':
@@ -286,8 +310,14 @@ async function advance({ item, step, request }: AdvanceParams) {
     await merger.readStack(stackId, size);
   }
 
-  if (step === 'updateBranch' && outcome.failed.length === 0) {
-    await waitForNewHead(item.id, opening, head);
+  if ((step === 'updateBranch' || step === 'updateBranchByRebase') && outcome.failed.length === 0) {
+    // The panel stays updating until the head moved, or it is opened anew: merging the old head would be refused.
+    await merger.readUntilNewHead({
+      itemId: item.id,
+      head,
+      read: () => read.refresh(),
+      goingOn: () => store.opening === opening && pr.value?.id === item.id,
+    });
   }
 
   // Opened anew meanwhile: that panel is not this one's to answer.
@@ -313,30 +343,6 @@ function moveLine(direction: 'earlier' | 'later') {
     movedEnd.value = moveStackMergeEnd(range, direction);
   }
 }
-
-/**
- * GitHub answers an update of the branch before it is made: the old head, its mergeability unknown (live,
- * 2026-11-02). Merging that head would be refused as a new commit, so the panel stays updating and reads the pull
- * request again, waiting longer each time, until the head moved — or the panel is opened anew, or the time is up:
- * then what GitHub says goes.
- */
-async function waitForNewHead(itemId: string, opening: number, head: string) {
-  const deadline = clock.now() + UPDATE_TIME_LIMIT_MS;
-  let delay = FIRST_UPDATE_READ_MS;
-  while (isShown() && pr.value?.headRefOid === head && clock.now() < deadline) {
-    await pause(clock, Math.min(delay, deadline - clock.now()));
-    delay *= 2;
-    if (!isShown()) {
-      return;
-    }
-
-    await read.refresh();
-  }
-
-  function isShown() {
-    return store.opening === opening && pr.value?.id === itemId;
-  }
-}
 </script>
 
 <template>
@@ -359,6 +365,7 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :now="now"
     :stack="stackView"
     :viewer-login="auth.viewer?.login ?? null"
+    :commands="getPullRequestCommands(pr, editor.getPermissions(pr))"
     @merge="merge"
     @bypass="merge"
     @move="moveLine"

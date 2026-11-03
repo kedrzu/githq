@@ -478,8 +478,17 @@ test('PM38: not met where auto-merge may wait for it, "Auto-merge…" leads to t
     await expect.element(page.getByRole('button', { name: 'Auto-merge…' })).toBeVisible();
 });
 
-test("PM38: before the merge options are read, the row's failing check holds the standing", async () => {
+test('PM38: before the merge options are read, GitHub saying only checks not required fail reads ready', async () => {
     await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, mergeChecks: null } });
+
+    await expect.element(page.getByRole('heading', { name: /^Ready to merge/ })).toBeVisible();
+});
+
+test('PM38: before the merge options are read, a failing check GitHub holds it for holds the standing', async () => {
+    const { args } = PullRequestOptionalFailing;
+    await PullRequestOptionalFailing.run({
+        args: { ...args, mergeChecks: null, item: { ...args.item, mergeStateStatus: 'BLOCKED' } as typeof args.item },
+    });
 
     await expect
         .element(page.getByRole('heading', { name: /^Can't merge yet/ }))

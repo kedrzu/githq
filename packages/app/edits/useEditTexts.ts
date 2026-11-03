@@ -185,6 +185,14 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedQueueJumped, { reference });
             case 'dequeued':
                 return t(l.failedDequeued, { reference });
+            case 'branchDeleted':
+                return t(l.failedBranchDeleted, { reference });
+            case 'branchRestored':
+                return t(l.failedBranchRestored, { reference });
+            case 'checksRerun':
+                return t(l.failedChecksRerun, { reference });
+            case 'reverted':
+                return t(l.failedReverted, { reference });
             case 'merged':
                 return t(l.failedMerged, { reference });
             default:
@@ -234,6 +242,14 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeQueueJumped);
             case 'dequeued':
                 return t(l.changeDequeued);
+            case 'branchDeleted':
+                return t(l.changeBranchDeleted);
+            case 'branchRestored':
+                return t(l.changeBranchRestored);
+            case 'checksRerun':
+                return t(l.changeChecksRerun);
+            case 'reverted':
+                return t(l.changeReverted);
             case 'merged':
                 return t(l.changeMerged);
             default:
@@ -286,7 +302,13 @@ export function useEditTexts(): EditTexts {
             case 'draft':
                 return t(l.fieldDraft);
             case 'branchUpdated':
+            case 'branchDeleted':
+            case 'branchRestored':
                 return t(l.fieldBranch);
+            case 'checksRerun':
+                return t(l.fieldChecks);
+            case 'reverted':
+                return t(l.fieldRevert);
             case 'autoMerge':
                 return t(l.fieldAutoMerge);
             case 'queueJumped':
@@ -327,6 +349,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonRulesNotConfirmed);
             case 'notReached':
                 return t(l.reasonNotReached);
+            case 'notActions':
+                return t(l.reasonNotActions);
             default:
                 return assertNever(failure);
         }
@@ -349,6 +373,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.shortRefused);
             case 'rulesNotConfirmed':
                 return t(l.shortRulesNotConfirmed);
+            case 'notActions':
+                return t(l.shortNotActions);
             default:
                 return assertNever(failure);
         }

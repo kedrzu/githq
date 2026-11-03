@@ -6,7 +6,10 @@ import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { allowsMergeMethod } from './allowsMergeMethod.js';
 import type { MergeOptions } from './MergeTypes.js';
 
-/** The repository's settings the merge panel starts from: {@link getMergeMethods}, and the addresses to commit with. */
+/**
+ * The repository's settings the merge panel starts from: {@link getMergeMethods}, the addresses to commit with, and
+ * whether GitHub deletes a merged pull request's branch by itself (PM26b).
+ */
 export type MergeSettings = Pick<
     RepositoryMetadata,
     | 'mergeCommitAllowed'
@@ -14,6 +17,7 @@ export type MergeSettings = Pick<
     | 'rebaseMergeAllowed'
     | 'viewerDefaultMergeMethod'
     | 'autoMergeAllowed'
+    | 'deleteBranchOnMerge'
     | 'viewerDefaultCommitEmail'
     | 'viewerPossibleCommitEmails'
 >;

@@ -39,3 +39,7 @@ nextRefreshSettles:
   en: The next refresh settles it
 backToMerge:
   en: Back to the merge
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch

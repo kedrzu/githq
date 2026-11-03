@@ -10,7 +10,14 @@ import { SAMPLE_PASSED_CHECKS } from '@/testing/sampleMergeChecks.js';
 
 import type { MergeSettings } from './getMergeMethods.js';
 import MergePanel from './MergePanel.vue';
-import type { MergeOptions, MergeRecord, MergeStep, MergeSubmission, SentMerge } from './MergeTypes.js';
+import type {
+    MergeOptions,
+    MergeRecord,
+    MergeStep,
+    MergeSubmission,
+    PullRequestCommand,
+    SentMerge,
+} from './MergeTypes.js';
 
 /** When the stories happen: a running check's time is counted to it. */
 const NOW = Date.UTC(2026, 10, 2, 12, 0, 0);
@@ -33,6 +40,7 @@ const ALL_METHODS: MergeSettings = {
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
     autoMergeAllowed: false,
+    deleteBranchOnMerge: false,
     viewerDefaultCommitEmail: null,
     viewerPossibleCommitEmails: [],
 };
@@ -131,6 +139,8 @@ const Harness = defineComponent({
         /** A step asked for before, still on its way. */
         advancing: { type: String as PropType<MergeStep | null>, default: null },
         viewerLogin: { type: String as PropType<string | null>, default: null },
+        /** Its ordinary commands that apply. */
+        commands: { type: Array as PropType<readonly PullRequestCommand[]>, default: () => [] },
     },
     setup(props) {
         const open = ref(true);
@@ -192,6 +202,7 @@ const Harness = defineComponent({
                     advancing: advancing.value,
                     now: NOW,
                     viewerLogin: props.viewerLogin,
+                    commands: props.commands,
                     onBypass: (submission: MergeSubmission) => {
                         sent.value = `Bypass: ${JSON.stringify(submission.request)}`;
                         const merge: SentMerge = { ...submission, head: current.value.headRefOid };
@@ -514,7 +525,7 @@ export const NotReached: Story = {
 /** PM30: sent for a pull request merged already — GitHub says merged at once; the panel stays and says so. */
 export const AlreadyMerged: Story = { args: { answer: 'merged' } };
 
-/** PM26: merged from here a moment ago — how it landed, nothing else to do. */
+/** PM26: merged from here a moment ago — how it landed, and its follow-ups: delete its branch (`⇧D`), revert (`⇧Z`). */
 export const Merged: Story = {
     args: {
         pr: {
@@ -524,7 +535,22 @@ export const Merged: Story = {
             closedAt: '2026-11-02T11:59:40Z',
             mergedAs: { method: 'SQUASH', sha: MERGE_SHA },
         },
+        commands: [{ kind: 'deleteBranch' }, { kind: 'revert' }],
     },
+};
+
+/** PM26b: the repository deleted its branch — the same key restores it. */
+export const MergedBranchDeleted: Story = {
+    args: {
+        pr: { ...Merged.args?.pr, ...PR, state: 'MERGED', merged: true, headRefId: null },
+        settings: { ...ALL_METHODS, deleteBranchOnMerge: true },
+        commands: [{ kind: 'restoreBranch' }, { kind: 'revert' }],
+    },
+};
+
+/** Merged, for someone who can't push and with a fork's branch: what became of it, and nothing to take. */
+export const MergedNothingToTake: Story = {
+    args: { pr: { ...PR, state: 'MERGED', merged: true, headRefId: null, isCrossRepository: true } },
 };
 
 /**
@@ -584,6 +610,10 @@ export const Behind: Story = {
         pr: { ...PR, mergeStateStatus: 'BEHIND' },
         settings: SQUASH_ONLY,
         stepped: { ...PR, headRefOid: 'updated-head-oid', mergeStateStatus: 'CLEAN' },
+        commands: [
+            { kind: 'updateBranch', method: 'MERGE' },
+            { kind: 'updateBranch', method: 'REBASE' },
+        ],
     },
 };
 

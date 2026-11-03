@@ -110,3 +110,19 @@ function permissions(item: Item, permission: RepositoryPermission | null) {
 function mine<T extends Item>(item: T): T {
     return { ...item, author: { login: VIEWER, avatarUrl: '' } };
 }
+
+test('merged, WRITE reverts; deleting its branch goes by what GitHub says, restoring by WRITE, never for a fork', () => {
+    const merged = {
+        ...samplePullRequest('PR_1'),
+        state: 'MERGED',
+        merged: true,
+        headRefId: 'REF_1',
+        viewerCanDeleteHeadRef: true,
+    } as const;
+
+    expect(permissions(merged, 'WRITE')).toMatchObject({ revert: true, deleteBranch: true, restoreBranch: false });
+    expect(permissions(merged, 'READ')).toMatchObject({ revert: false, deleteBranch: true, restoreBranch: false });
+    const deleted = { ...merged, headRefId: null, viewerCanDeleteHeadRef: false };
+    expect(permissions(deleted, 'WRITE')).toMatchObject({ deleteBranch: false, restoreBranch: true });
+    expect(permissions({ ...deleted, isCrossRepository: true }, 'ADMIN')).toMatchObject({ restoreBranch: false });
+});

@@ -10,3 +10,15 @@ merged:
   en: '{reference} merged into {base}'
 mergedStack:
   en: '{repository} · {count} pull requests merged into {base}'
+mergedBranchCommand:
+  en: Delete or restore the merged branch
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch
+revert:
+  en: Revert…
+reverted:
+  en: '{reference} reverted by #{number}'
+openRevert:
+  en: Open

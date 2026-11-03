@@ -23,6 +23,7 @@ const SQUASH_FIRST: MergeSettings = {
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'SQUASH',
     autoMergeAllowed: false,
+    deleteBranchOnMerge: false,
     viewerDefaultCommitEmail: null,
     viewerPossibleCommitEmails: [],
 };

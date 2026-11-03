@@ -19,7 +19,13 @@ const openMerge = fn<MergeContext['open']>();
 const withMerging: Decorator = story =>
     defineComponent({
         setup() {
-            provideContext(MergeContext, { canOpen: () => true, open: openMerge, getRecord: () => null });
+            provideContext(MergeContext, {
+                canOpen: () => true,
+                open: openMerge,
+                getRecord: () => null,
+                getCommands: () => [],
+                run: () => undefined,
+            });
             return () => h(story());
         },
     });

@@ -150,6 +150,7 @@ function getEditCommands(): Command[] {
     stateTitle: getStateTitle(),
     edit,
     merge: merging ? pr => merging.open(pr.id) : undefined,
+    pullRequestCommands: merging,
     setField: (place, field, value) =>
       one.value
         ? edit({ kind: 'projectField', projectItemId: place.itemId, fieldId: field.id, value })

@@ -55,7 +55,12 @@ export type EditRequest =
     | { readonly kind: 'disableAutoMerge' }
     /** To the front of the merge queue (PM14); adding it the usual way is a merge (`createMergeEdits`). */
     | { readonly kind: 'jumpQueue' }
-    | { readonly kind: 'dequeue' };
+    | { readonly kind: 'dequeue' }
+    /** A closed or merged pull request's branch (merging D16). */
+    | { readonly kind: 'deleteBranch' }
+    | { readonly kind: 'restoreBranch' }
+    /** Its checks that failed, those GitHub Actions runs (merging D16). */
+    | { readonly kind: 'rerunFailedChecks' };
 
 /** A request as one item's edits are made of it: a project's field already resolved to the item's place there. */
 export type ItemEditRequest = Exclude<EditRequest, { readonly kind: 'projectFieldInProject' }>;
@@ -92,6 +97,11 @@ export type EditSubject =
     | { readonly kind: 'autoMerge'; readonly enabled: boolean }
     | { readonly kind: 'queueJumped' }
     | { readonly kind: 'dequeued' }
+    | { readonly kind: 'branchDeleted' }
+    | { readonly kind: 'branchRestored' }
+    | { readonly kind: 'checksRerun' }
+    /** A pull request reverted by a new one (`PullRequestMerger`). */
+    | { readonly kind: 'reverted' }
     /** A pull request merged (`PullRequestMerger`). */
     | { readonly kind: 'merged' };
 
@@ -120,6 +130,8 @@ export type EditFailureReason =
      * where the request may have got there, nothing can land.
      */
     | { readonly kind: 'notReached' }
+    /** Never sent: none of the checks that failed runs on GitHub Actions, and only those re-run from here (merging D16). */
+    | { readonly kind: 'notActions' }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 

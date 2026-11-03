@@ -1,4 +1,4 @@
-<!-- A check in the merge panel's list (PM4a, merging D13): its state, name, time and log, a required one that failed on grey. One that isn't required and failed or still runs is grey and says it doesn't stop the merge; `tagged` marks a required one "Required" where nothing else says it. -->
+<!-- A check in the merge panel's list (PM4a, merging D13): its state, name, time and log, a required one that failed on grey; failed outside GitHub Actions, its link is where it re-runs. One that isn't required and failed or still runs is grey and says it doesn't stop the merge; `tagged` marks a required one "Required" where nothing else says it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight } from 'lucide-vue-next';
@@ -27,6 +27,8 @@ const checkTexts = useCheckTexts();
 const notStopping = computed(
   () => !props.check.isRequired && (props.check.state === 'failing' || props.check.state === 'pending'),
 );
+/** It failed outside GitHub Actions: githq can't re-run it, so its link is the way to (the brief's hand-off). */
+const rerunsThere = computed(() => props.check.state === 'failing' && props.check.workflowRunId === null);
 const name = computed(() => checkTexts.name(props.check));
 const detail = computed(() => {
   const text = checkTexts.describe(props.check, props.now);
@@ -52,9 +54,9 @@ const detail = computed(() => {
       :link="check.url"
       target="_blank"
       rel="noopener noreferrer"
-      :aria-label="t(l.logOf, { name })"
+      :aria-label="rerunsThere ? t(l.rerunThereOf, { name }) : t(l.logOf, { name })"
     >
-      {{ t(l.log) }}
+      {{ rerunsThere ? t(l.rerunThere) : t(l.log) }}
     </Button>
   </li>
 </template>

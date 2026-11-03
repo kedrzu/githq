@@ -361,3 +361,17 @@ emailMore:
   en: '{count} more'
 changeEmail:
   en: Change
+updateByRebase:
+  en: Update by rebase
+branchStillThere:
+  en: '{branch} is still there'
+branchDeletedByRepository:
+  en: '{branch} deleted by the repository'
+branchDeleted:
+  en: '{branch} deleted'
+deleteBranch:
+  en: Delete branch
+restoreBranch:
+  en: Restore branch
+revert:
+  en: Revert…

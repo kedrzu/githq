@@ -18,6 +18,9 @@ const {
     AdminReady,
     BypassAlone,
     BypassBehind,
+    MergedBranchDeleted,
+    MergedNothingToTake,
+    UpdatingBranch,
     BypassBehindSending,
     BypassBesideAutoMerge,
     BypassBlockedUnnamed,
@@ -928,3 +931,58 @@ function measureRows() {
         footer: { top: footer.top, left: footer.left, width: footer.width },
     };
 }
+
+test('PM20: `U` updates the branch by a merge as ⌘↵ does, and `⇧U` beside "Behind" by a rebase', async () => {
+    await Behind.run();
+
+    await expect.element(page.getByRole('button', { name: /^Update by rebase/u })).toBeVisible();
+    await userEvent.keyboard('{Shift>}u{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranchByRebase');
+});
+
+test('PM20: `U` is the step of updating, too', async () => {
+    await Behind.run();
+
+    await userEvent.keyboard('u');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: updateBranch');
+});
+
+test('PM40: while it updates, "Update by rebase" is gone', async () => {
+    await UpdatingBranch.run();
+
+    await expect.element(page.getByRole('button', { name: /^Update by rebase/u })).not.toBeInTheDocument();
+});
+
+test('PM26: merged, its branch is still there — `⇧D` deletes it, and `⇧Z` reverts', async () => {
+    await Merged.run();
+
+    await expect.element(panel()).toHaveTextContent('still there');
+    await expect.element(page.getByRole('button', { name: /^Delete branch/u })).toBeVisible();
+    await userEvent.keyboard('{Shift>}d{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: deleteBranch');
+});
+
+test('PM26: `⇧Z` is "Revert…"', async () => {
+    await Merged.run();
+
+    await expect.element(page.getByRole('button', { name: /^Revert…/u })).toBeVisible();
+    await userEvent.keyboard('{Shift>}z{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: revert');
+});
+
+test('PM26b: deleted by the repository, it says so, and the same key restores it', async () => {
+    await MergedBranchDeleted.run();
+
+    await expect.element(panel()).toHaveTextContent('deleted by the repository');
+    await userEvent.keyboard('{Shift>}d{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: restoreBranch');
+});
+
+test('merged, with nothing it may take, it offers nothing destructive: a key does nothing', async () => {
+    await MergedNothingToTake.run();
+
+    await expect.element(page.getByRole('button', { name: /^Restore branch/u })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Revert…/u })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}z{/Shift}');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+});

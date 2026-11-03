@@ -10,7 +10,7 @@ import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
-import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { EDIT_KEYS, usePullRequestCommands } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
@@ -213,6 +213,7 @@ const menuOpenId = ref<string | null>(null);
 const menuMerge = shallowRef<Command | null>(null);
 /** Merging, where the screen offers it (merging D9). */
 const merging = injectContext(MergeContext, { optional: true });
+const pullRequestCommands = usePullRequestCommands();
 // Where the screen merges, the app's local copy is there: ⇧M's title reads the pull request's way forward from it.
 const items = merging ? useService(ItemStore) : null;
 const getVerdict = usePullRequestVerdicts();
@@ -306,12 +307,14 @@ if (merging) {
     canOpen: id => merging.canOpen(id),
     open: (id, options) => mergeFromList({ id, entry: options?.wholeStack ? findStackEntry(id) : null }),
     getRecord: id => merging.getRecord(id),
+    getCommands: id => merging.getCommands(id),
+    run: (id, command) => merging.run(id, command),
   });
 }
 
 // The list's keys are its own — handled below, before an opened item's — and listed in the help sheet; "Merge…" of
 // the selected row first, as the command menu offers it (PM39).
-useCommands(() => [...getMergeCommands(), ...getKeyCommands()]);
+useCommands(() => [...getMergeCommands(), ...getOrdinaryCommands(), ...getKeyCommands()]);
 
 onWindowEvent('keydown', event => {
   if (!isScreenKey(event)) {
@@ -426,6 +429,33 @@ function getMergeCommands(): Command[] {
       },
     },
   ];
+}
+
+/**
+ * The ordinary commands of the selected row (merging D16), while nothing is checked and no item is open over the list,
+ * whose own they then are; on a stack's entry only `⇧Q`, which takes the stack out whole through its first one (D11).
+ */
+function getOrdinaryCommands(): Command[] {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  if (!merging || !current || checkedIds.value.length > 0 || props.openedId != null) {
+    return [];
+  }
+
+  const members = current.ids.flatMap(id => {
+    const item = items?.get(id);
+    return item?.kind === 'pullRequest' ? [item] : [];
+  });
+  if (!current.stack && members.length === 1 && members[0]) {
+    return pullRequestCommands({ section: 'view', pr: members[0], source: merging });
+  }
+
+  const queued = current.stack ? members.find(pr => pr.mergeQueueEntry) : undefined;
+  return queued
+    ? pullRequestCommands({ section: 'view', pr: queued, source: merging }).filter(
+        command => command.key === EDIT_KEYS.dequeue,
+      )
+    : [];
 }
 
 /**

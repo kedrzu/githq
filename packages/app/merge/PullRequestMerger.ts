@@ -12,10 +12,28 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import { readStacksWhole } from '@/sync/readStacksWhole.js';
+import { pause } from '@/utils/pause.js';
 
 import { createMergeEdits } from './createMergeEdits.js';
-import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest } from './MergeTypes.js';
+import { createRevertEdit } from './createRevertEdit.js';
+import type { MergeAnswer, MergeLateEnd, MergeOptions, MergeRequest, RevertedPullRequest } from './MergeTypes.js';
 import { toMergeOptions } from './toMergeOptions.js';
+
+/** The first wait before reading again whether an update of the branch landed; each next one doubles. */
+const FIRST_UPDATE_READ_MS = 1000;
+/** How long an update of the branch is waited for before what GitHub says goes. */
+const UPDATE_TIME_LIMIT_MS = 30_000;
+
+/** What {@link PullRequestMerger}'s `readUntilNewHead` waits for. */
+export interface ReadUntilNewHeadParams {
+    readonly itemId: string;
+    /** The head commit the update was asked for. */
+    readonly head: string;
+    /** Reads the pull request: its merge options unless whoever waits has its own read to keep current. */
+    readonly read?: () => Promise<unknown>;
+    /** Whoever waits still cares; it stops when not. */
+    readonly goingOn?: () => boolean;
+}
 
 /** A merge {@link PullRequestMerger} sends. */
 export interface MergeParams {
@@ -51,7 +69,55 @@ export const PullRequestMerger = defineService({
         logger: Logger,
     },
     setup({ accounts, editor, items, details, queue, clock, logger }) {
-        return { readOptions, merge, readStack };
+        return { readOptions, merge, readStack, readUntilNewHead, revert };
+
+        /**
+         * GitHub answers an update of the branch before it is made: the old head, its mergeability unknown (live,
+         * 2026-11-02). Merging that head would be refused as a new commit, so the pull request is read again, waiting longer
+         * each time, until the head moved — or whoever waits stops caring, or the time is up: then what GitHub says goes.
+         */
+        async function readUntilNewHead(params: ReadUntilNewHeadParams) {
+            const { itemId, head, read = () => readOptions(itemId), goingOn = () => true } = params;
+            const deadline = clock.now() + UPDATE_TIME_LIMIT_MS;
+            let delay = FIRST_UPDATE_READ_MS;
+            while (goingOn() && getHead(itemId) === head && clock.now() < deadline) {
+                await pause(clock, Math.min(delay, deadline - clock.now()));
+                delay *= 2;
+                if (!goingOn()) {
+                    return;
+                }
+
+                await read();
+            }
+        }
+
+        function getHead(itemId: string) {
+            const item = details.getItem(itemId);
+            return item?.kind === 'pullRequest' ? item.headRefOid : undefined;
+        }
+
+        /**
+         * Opens the pull request reverting a merged one, as an edit with its failure toast: nothing shows until GitHub made
+         * it. Resolves with it; `null` when it wasn't made, or the user may not.
+         */
+        async function revert(item: PullRequestItem): Promise<RevertedPullRequest | null> {
+            const account = accounts.current;
+            if (!account || !editor.getPermissions(item).revert) {
+                return null;
+            }
+
+            let opened: RevertedPullRequest | null = null;
+            await queue.submit({
+                edits: [
+                    createRevertEdit(item, pr => {
+                        opened = pr;
+                    }),
+                ],
+                account,
+                itemCount: 1,
+            });
+            return opened;
+        }
 
         /**
          * Reads the merge options of a pull request fresh (`PullRequestMergeOptions`), and writes the status read

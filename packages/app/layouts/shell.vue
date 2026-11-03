@@ -17,9 +17,11 @@ import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import OpenedItem from '@/item/OpenedItem.vue';
+import { getPullRequestCommands } from '@/merge/getPullRequestCommands.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { MergePanelStore } from '@/merge/MergePanelStore.js';
 import MergeToasts from '@/merge/MergeToasts.vue';
+import { PullRequestCommands } from '@/merge/PullRequestCommands.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
@@ -75,6 +77,7 @@ const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
+const pullRequestCommands = useService(PullRequestCommands);
 
 // Merging from the screens' lists (merging D9): the rows and keys of a pull request the viewer may merge offer it.
 provideContext(MergeContext, {
@@ -84,6 +87,16 @@ provideContext(MergeContext, {
   },
   open: (id, options) => mergePanel.open(id, options),
   getRecord: id => mergePanel.getRecord(id),
+  getCommands: id => {
+    const item = details.getItem(id);
+    return item?.kind === 'pullRequest' ? getPullRequestCommands(item, editor.getPermissions(item)) : [];
+  },
+  run: (id, command) => {
+    const item = details.getItem(id);
+    if (item?.kind === 'pullRequest') {
+      void pullRequestCommands.run(item, command);
+    }
+  },
 });
 
 const collapsed = preferences.sidebarCollapsed;

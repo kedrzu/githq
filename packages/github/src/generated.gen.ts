@@ -740,6 +740,8 @@ export type ItemDetailQuery = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               reactionGroups: Array<{
                   content: ReactionContent;
@@ -765,7 +767,7 @@ export type ItemDetailQuery = {
                   } | null> | null;
               };
               commits: { totalCount: number };
-              headRepository: { nameWithOwner: string } | null;
+              headRepository: { nameWithOwner: string; id: string } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contextPage: {
@@ -958,6 +960,7 @@ export type ItemDetailQuery = {
               };
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -1249,6 +1252,8 @@ export type ItemDetailsQuery = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               reactionGroups: Array<{
                   content: ReactionContent;
@@ -1274,7 +1279,7 @@ export type ItemDetailsQuery = {
                   } | null> | null;
               };
               commits: { totalCount: number };
-              headRepository: { nameWithOwner: string } | null;
+              headRepository: { nameWithOwner: string; id: string } | null;
               statusCheckRollup: {
                   state: StatusState;
                   contextPage: {
@@ -1467,6 +1472,7 @@ export type ItemDetailsQuery = {
               };
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -1585,6 +1591,8 @@ export type ItemsByIdsQuery = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               author:
                   | { login: string; avatarUrl: string }
@@ -1622,6 +1630,8 @@ export type ItemsByIdsQuery = {
               } | null;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -1996,6 +2006,8 @@ export type ProjectFullQuery = {
                                 mergeStateStatus: MergeStateStatus;
                                 headRefOid: string;
                                 baseRefOid: string;
+                                isCrossRepository: boolean;
+                                viewerCanDeleteHeadRef: boolean;
                                 isMergeQueueEnabled: boolean;
                                 author:
                                     | { login: string; avatarUrl: string }
@@ -2033,6 +2045,8 @@ export type ProjectFullQuery = {
                                 } | null;
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
+                                headRef: { id: string } | null;
+                                headRepository: { id: string } | null;
                                 mergeQueueEntry: {
                                     position: number;
                                     state: MergeQueueEntryState;
@@ -2257,6 +2271,8 @@ export type ProjectItemsQuery = {
                                 mergeStateStatus: MergeStateStatus;
                                 headRefOid: string;
                                 baseRefOid: string;
+                                isCrossRepository: boolean;
+                                viewerCanDeleteHeadRef: boolean;
                                 isMergeQueueEnabled: boolean;
                                 author:
                                     | { login: string; avatarUrl: string }
@@ -2294,6 +2310,8 @@ export type ProjectItemsQuery = {
                                 } | null;
                                 stack: { id: string; number: number; size: number } | null;
                                 stackEntry: { position: number } | null;
+                                headRef: { id: string } | null;
+                                headRepository: { id: string } | null;
                                 mergeQueueEntry: {
                                     position: number;
                                     state: MergeQueueEntryState;
@@ -2549,6 +2567,8 @@ export type PullRequestMergeOptionsQuery = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               mergeHeadline: string;
               mergeBody: string;
@@ -2616,6 +2636,8 @@ export type PullRequestMergeOptionsQuery = {
               } | null;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -2700,6 +2722,8 @@ export type PullRequestStacksQuery = {
                           mergeStateStatus: MergeStateStatus;
                           headRefOid: string;
                           baseRefOid: string;
+                          isCrossRepository: boolean;
+                          viewerCanDeleteHeadRef: boolean;
                           isMergeQueueEnabled: boolean;
                           author:
                               | { login: string; avatarUrl: string }
@@ -2737,6 +2761,8 @@ export type PullRequestStacksQuery = {
                           } | null;
                           stack: { id: string; number: number; size: number } | null;
                           stackEntry: { position: number } | null;
+                          headRef: { id: string } | null;
+                          headRepository: { id: string } | null;
                           mergeQueueEntry: {
                               position: number;
                               state: MergeQueueEntryState;
@@ -2819,9 +2845,13 @@ export type PullRequestStatusesQuery = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -3113,6 +3143,8 @@ export type RepositoryPullRequestsQuery = {
                 mergeStateStatus: MergeStateStatus;
                 headRefOid: string;
                 baseRefOid: string;
+                isCrossRepository: boolean;
+                viewerCanDeleteHeadRef: boolean;
                 isMergeQueueEnabled: boolean;
                 author:
                     | { login: string; avatarUrl: string }
@@ -3150,6 +3182,8 @@ export type RepositoryPullRequestsQuery = {
                 } | null;
                 stack: { id: string; number: number; size: number } | null;
                 stackEntry: { position: number } | null;
+                headRef: { id: string } | null;
+                headRepository: { id: string } | null;
                 mergeQueueEntry: {
                     position: number;
                     state: MergeQueueEntryState;
@@ -4145,6 +4179,8 @@ export type ProjectItemPageFieldsFragment = {
                   mergeStateStatus: MergeStateStatus;
                   headRefOid: string;
                   baseRefOid: string;
+                  isCrossRepository: boolean;
+                  viewerCanDeleteHeadRef: boolean;
                   isMergeQueueEnabled: boolean;
                   author:
                       | { login: string; avatarUrl: string }
@@ -4182,6 +4218,8 @@ export type ProjectItemPageFieldsFragment = {
                   } | null;
                   stack: { id: string; number: number; size: number } | null;
                   stackEntry: { position: number } | null;
+                  headRef: { id: string } | null;
+                  headRepository: { id: string } | null;
                   mergeQueueEntry: {
                       position: number;
                       state: MergeQueueEntryState;
@@ -4380,6 +4418,8 @@ export type ProjectItemRowFieldsFragment = {
               mergeStateStatus: MergeStateStatus;
               headRefOid: string;
               baseRefOid: string;
+              isCrossRepository: boolean;
+              viewerCanDeleteHeadRef: boolean;
               isMergeQueueEnabled: boolean;
               author:
                   | { login: string; avatarUrl: string }
@@ -4417,6 +4457,8 @@ export type ProjectItemRowFieldsFragment = {
               } | null;
               stack: { id: string; number: number; size: number } | null;
               stackEntry: { position: number } | null;
+              headRef: { id: string } | null;
+              headRepository: { id: string } | null;
               mergeQueueEntry: {
                   position: number;
                   state: MergeQueueEntryState;
@@ -4669,6 +4711,8 @@ export type PullRequestDetailFieldsFragment = {
     mergeStateStatus: MergeStateStatus;
     headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
     isMergeQueueEnabled: boolean;
     reactionGroups: Array<{
         content: ReactionContent;
@@ -4694,7 +4738,7 @@ export type PullRequestDetailFieldsFragment = {
         } | null> | null;
     };
     commits: { totalCount: number };
-    headRepository: { nameWithOwner: string } | null;
+    headRepository: { nameWithOwner: string; id: string } | null;
     statusCheckRollup: {
         state: StatusState;
         contextPage: {
@@ -4878,6 +4922,7 @@ export type PullRequestDetailFieldsFragment = {
     };
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
     mergeQueueEntry: {
         position: number;
         state: MergeQueueEntryState;
@@ -4934,6 +4979,8 @@ export type PullRequestFieldsFragment = {
     mergeStateStatus: MergeStateStatus;
     headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
     isMergeQueueEnabled: boolean;
     author:
         | { login: string; avatarUrl: string }
@@ -4967,6 +5014,8 @@ export type PullRequestFieldsFragment = {
     } | null;
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
+    headRepository: { id: string } | null;
     mergeQueueEntry: {
         position: number;
         state: MergeQueueEntryState;
@@ -5033,9 +5082,13 @@ export type PullRequestStatusFieldsFragment = {
     mergeStateStatus: MergeStateStatus;
     headRefOid: string;
     baseRefOid: string;
+    isCrossRepository: boolean;
+    viewerCanDeleteHeadRef: boolean;
     isMergeQueueEnabled: boolean;
     stack: { id: string; number: number; size: number } | null;
     stackEntry: { position: number } | null;
+    headRef: { id: string } | null;
+    headRepository: { id: string } | null;
     mergeQueueEntry: {
         position: number;
         state: MergeQueueEntryState;
@@ -5287,6 +5340,8 @@ export type AddDraftIssueMutation = {
                       mergeStateStatus: MergeStateStatus;
                       headRefOid: string;
                       baseRefOid: string;
+                      isCrossRepository: boolean;
+                      viewerCanDeleteHeadRef: boolean;
                       isMergeQueueEnabled: boolean;
                       author:
                           | { login: string; avatarUrl: string }
@@ -5324,6 +5379,8 @@ export type AddDraftIssueMutation = {
                       } | null;
                       stack: { id: string; number: number; size: number } | null;
                       stackEntry: { position: number } | null;
+                      headRef: { id: string } | null;
+                      headRepository: { id: string } | null;
                       mergeQueueEntry: {
                           position: number;
                           state: MergeQueueEntryState;
@@ -5748,6 +5805,20 @@ export type CreateIssueMutation = {
     } | null;
 };
 
+export type CreateRefMutationVariables = Exact<{
+    repositoryId: string;
+    name: string;
+    oid: string;
+}>;
+
+export type CreateRefMutation = { createRef: { ref: { id: string } | null } | null };
+
+export type DeleteRefMutationVariables = Exact<{
+    refId: string;
+}>;
+
+export type DeleteRefMutation = { deleteRef: { clientMutationId: string | null } | null };
+
 export type DequeuePullRequestMutationVariables = Exact<{
     id: string;
 }>;
@@ -5772,9 +5843,13 @@ export type DisablePullRequestAutoMergeMutation = {
             mergeStateStatus: MergeStateStatus;
             headRefOid: string;
             baseRefOid: string;
+            isCrossRepository: boolean;
+            viewerCanDeleteHeadRef: boolean;
             isMergeQueueEnabled: boolean;
             stack: { id: string; number: number; size: number } | null;
             stackEntry: { position: number } | null;
+            headRef: { id: string } | null;
+            headRepository: { id: string } | null;
             mergeQueueEntry: {
                 position: number;
                 state: MergeQueueEntryState;
@@ -5854,9 +5929,13 @@ export type EnablePullRequestAutoMergeMutation = {
             mergeStateStatus: MergeStateStatus;
             headRefOid: string;
             baseRefOid: string;
+            isCrossRepository: boolean;
+            viewerCanDeleteHeadRef: boolean;
             isMergeQueueEnabled: boolean;
             stack: { id: string; number: number; size: number } | null;
             stackEntry: { position: number } | null;
+            headRef: { id: string } | null;
+            headRepository: { id: string } | null;
             mergeQueueEntry: {
                 position: number;
                 state: MergeQueueEntryState;
@@ -6055,6 +6134,14 @@ export type RequestReviewsMutation = {
             } | null;
         } | null;
     } | null;
+};
+
+export type RevertPullRequestMutationVariables = Exact<{
+    pullRequestId: string;
+}>;
+
+export type RevertPullRequestMutation = {
+    revertPullRequest: { revertPullRequest: { number: number; url: string } | null } | null;
 };
 
 export type SetProjectFieldValueMutationVariables = Exact<{
@@ -7101,6 +7188,14 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -7259,6 +7354,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -7586,6 +7689,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -7900,6 +8011,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -8348,6 +8467,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -8966,6 +9093,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -9444,6 +9579,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -9666,6 +9809,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -10192,6 +10343,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -10512,6 +10671,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -10803,6 +10970,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -10972,6 +11147,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -11058,6 +11241,14 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -11511,6 +11702,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -12074,6 +12273,14 @@ fragment PullRequestStatusFields on PullRequest {
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -12501,6 +12708,22 @@ fragment ItemRepositoryFields on Repository {
     login
   }
 }`);
+export const CreateRefDocument = new TypedDocumentString(`
+    mutation CreateRef($repositoryId: ID!, $name: String!, $oid: GitObjectID!) {
+  createRef(input: {repositoryId: $repositoryId, name: $name, oid: $oid}) {
+    ref {
+      id
+    }
+  }
+}
+    `);
+export const DeleteRefDocument = new TypedDocumentString(`
+    mutation DeleteRef($refId: ID!) {
+  deleteRef(input: {refId: $refId}) {
+    clientMutationId
+  }
+}
+    `);
 export const DequeuePullRequestDocument = new TypedDocumentString(`
     mutation DequeuePullRequest($id: ID!) {
   dequeuePullRequest(input: {id: $id}) {
@@ -12536,6 +12759,14 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -12624,6 +12855,14 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
   }
   headRefOid
   baseRefOid
+  headRef {
+    id
+  }
+  headRepository {
+    id
+  }
+  isCrossRepository
+  viewerCanDeleteHeadRef
   isMergeQueueEnabled
   mergeQueueEntry {
     position
@@ -12835,6 +13074,16 @@ export const RequestReviewsDocument = new TypedDocumentString(`
           }
         }
       }
+    }
+  }
+}
+    `);
+export const RevertPullRequestDocument = new TypedDocumentString(`
+    mutation RevertPullRequest($pullRequestId: ID!) {
+  revertPullRequest(input: {pullRequestId: $pullRequestId}) {
+    revertPullRequest {
+      number
+      url
     }
   }
 }
@@ -13284,6 +13533,20 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CreateIssueMutation>;
         },
+        CreateRef(variables: CreateRefMutationVariables, options?: C): Promise<CreateRefMutation> {
+            return requester<CreateRefMutation, CreateRefMutationVariables>(
+                CreateRefDocument,
+                variables,
+                options,
+            ) as Promise<CreateRefMutation>;
+        },
+        DeleteRef(variables: DeleteRefMutationVariables, options?: C): Promise<DeleteRefMutation> {
+            return requester<DeleteRefMutation, DeleteRefMutationVariables>(
+                DeleteRefDocument,
+                variables,
+                options,
+            ) as Promise<DeleteRefMutation>;
+        },
         DequeuePullRequest(
             variables: DequeuePullRequestMutationVariables,
             options?: C,
@@ -13378,6 +13641,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RequestReviewsMutation>;
+        },
+        RevertPullRequest(
+            variables: RevertPullRequestMutationVariables,
+            options?: C,
+        ): Promise<RevertPullRequestMutation> {
+            return requester<RevertPullRequestMutation, RevertPullRequestMutationVariables>(
+                RevertPullRequestDocument,
+                variables,
+                options,
+            ) as Promise<RevertPullRequestMutation>;
         },
         SetProjectFieldValue(
             variables: SetProjectFieldValueMutationVariables,

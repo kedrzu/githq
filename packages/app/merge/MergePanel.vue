@@ -35,6 +35,7 @@ import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import Button from '@/components/Button.vue';
 import Dialog from '@/components/Dialog.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -84,6 +85,7 @@ import type {
   MergeRecord,
   MergeStep,
   MergeSubmission,
+  PullRequestCommand,
   SentMerge,
 } from './MergeTypes.js';
 import { getStackMergeRows } from './stack/getStackMergeRows.js';
@@ -127,6 +129,8 @@ const props = defineProps<{
   sent: SentMerge | null;
   /** GitHub said at once the merge sent from this panel merged: it was merged already (PM30). */
   alreadyMerged: boolean;
+  /** Its ordinary commands that apply now (merging D16): those of the moment show beside their reason (PM20, PM26). */
+  commands?: readonly PullRequestCommand[];
   /**
    * The step towards the merge asked for from the panel — marking it ready, updating its branch — until GitHub
    * answered and the panel's read came back: the primary stays that step's, busy, meanwhile.
@@ -175,6 +179,8 @@ interface PanelVerdict extends PullRequestVerdict {
 /** A condition of the merge shown above the checks, where it holds the merge or is not known (PM13, PM19–PM22). */
 interface ConditionLine extends PullRequestCondition {
   readonly label: string;
+  /** The line of a branch behind, where updating by rebase is offered (PM20). */
+  readonly updates?: boolean;
 }
 
 /** How the primary looks when it takes a step towards the merge in the panel. */
@@ -503,7 +509,7 @@ const verdict = computed((): PanelVerdict => {
   }
 
   // The panel stays, and merging comes back when GitHub says so (PM20).
-  if (props.advancing === 'updateBranch') {
+  if (props.advancing === 'updateBranch' || props.advancing === 'updateBranchByRebase') {
     const aside = t(l.updatingDetail, { base: props.pr.baseRefName });
     return { kind: 'ready', tone: 'warning', icon: RefreshCw, text: t(l.updating), aside };
   }
@@ -534,7 +540,7 @@ const conditions = computed((): ConditionLine[] => {
 
   if (pr.mergeStateStatus === 'BEHIND') {
     const text = t(l.behind, { base });
-    shown.push({ label: t(l.branch), tone: 'warning', icon: GitBranch, text, aside: null });
+    shown.push({ label: t(l.branch), tone: 'warning', icon: GitBranch, text, aside: null, updates: true });
   }
 
   return shown;
@@ -606,6 +612,10 @@ const stepButton = computed((): StepButton | null => {
     case 'disableAutoMerge':
     case 'jumpQueue':
     case 'dequeue':
+    case 'updateBranchByRebase':
+    case 'deleteBranch':
+    case 'restoreBranch':
+    case 'revert':
     case null:
       return null;
     default:
@@ -613,6 +623,35 @@ const stepButton = computed((): StepButton | null => {
   }
 });
 const conflictsUrl = computed(() => getConflictEditorUrl(props.pr));
+/** Behind and nothing on its way, `⇧U` updates by rebase beside the reason, and `U` as `⌘↵` does (PM20, PM40). */
+const canUpdate = computed(
+  () =>
+    step.value === 'updateBranch' &&
+    props.allowed &&
+    props.advancing === null &&
+    !props.sending &&
+    (props.commands ?? []).some(command => command.kind === 'updateBranch'),
+);
+/** Merged: what became of its branch, and deleting or restoring it (PM26, PM26b); a fork's it may only tell of. */
+const mergedBranch = computed(() => {
+  const { pr, stack, settings } = props;
+  if (!pr.merged || stack) {
+    return null;
+  }
+
+  const branch = pr.headRefName;
+  if (pr.headRefId !== null) {
+    return { text: t(l.branchStillThere, { branch }), step: stepIfOffered('deleteBranch'), label: t(l.deleteBranch) };
+  }
+
+  return {
+    text: settings?.deleteBranchOnMerge ? t(l.branchDeletedByRepository, { branch }) : t(l.branchDeleted, { branch }),
+    step: stepIfOffered('restoreBranch'),
+    label: t(l.restoreBranch),
+  };
+});
+/** "Revert…" of one merged pull request (PM26). */
+const canRevert = computed(() => !props.stack && (props.commands ?? []).some(command => command.kind === 'revert'));
 /** PM15: where it is in the queue, and GitHub's state with who put it there. */
 const queueLines = computed((): ConditionLine[] => {
   const entry = queueEntry.value;
@@ -1214,6 +1253,7 @@ function refusalBand(reason: EditFailureReason): Band {
     case 'offline':
     case 'dropped':
     case 'missing':
+    case 'notActions': // Re-running checks' alone: a merge never meets it.
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonOther), text: null, link: null };
     default:
       return assertNever(reason);
@@ -1400,6 +1440,31 @@ function jump() {
   }
 }
 
+function stepIfOffered(kind: 'deleteBranch' | 'restoreBranch') {
+  return (props.commands ?? []).some(command => command.kind === kind) ? kind : null;
+}
+
+/** `U` and `⇧U` beside "Behind" (PM20). */
+function update(next: 'updateBranch' | 'updateBranchByRebase') {
+  if (canUpdate.value) {
+    emit('step', next);
+  }
+}
+
+/** `⇧D` beside what became of its branch (PM26, PM26b). */
+function takeBranchStep() {
+  const next = mergedBranch.value?.step;
+  if (next && props.advancing === null) {
+    emit('step', next);
+  }
+}
+
+function revert() {
+  if (canRevert.value && props.advancing === null) {
+    emit('step', 'revert');
+  }
+}
+
 function takeOutOfQueue() {
   if (props.allowed && props.advancing === null) {
     emit('step', 'dequeue');
@@ -1508,9 +1573,21 @@ function onKeydown(event: KeyboardEvent) {
   } else if (stackDraft.value !== null && props.allowed && !props.advancing && matchesCommandKey(event, 'Mod+K')) {
     event.preventDefault();
     emit('step', 'markReady');
-  } else if (canTakeOut.value && matchesCommandKey(event, 'Shift+Q')) {
+  } else if (canTakeOut.value && matchesCommandKey(event, EDIT_KEYS.dequeue)) {
     event.preventDefault();
     takeOutOfQueue();
+  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranch)) {
+    event.preventDefault();
+    update('updateBranch');
+  } else if (canUpdate.value && matchesCommandKey(event, EDIT_KEYS.updateBranchByRebase)) {
+    event.preventDefault();
+    update('updateBranchByRebase');
+  } else if (mergedBranch.value?.step && matchesCommandKey(event, EDIT_KEYS.branch)) {
+    event.preventDefault();
+    takeBranchStep();
+  } else if (canRevert.value && matchesCommandKey(event, EDIT_KEYS.revert)) {
+    event.preventDefault();
+    revert();
   } else if (commitEmails.value && matchesCommandKey(event, 'Y')) {
     event.preventDefault();
     nextEmail();
@@ -1674,7 +1751,17 @@ function onOpenFocus(event: Event) {
             :label="condition.label"
             :text="condition.text"
             :aside="condition.aside"
-          />
+          >
+            <Button
+              v-if="condition.updates && canUpdate"
+              variant="ghost"
+              size="sm"
+              :kbd="EDIT_KEYS.updateBranchByRebase"
+              :aria-keyshortcuts="EDIT_KEYS.updateBranchByRebase"
+              @click="update('updateBranchByRebase')"
+              >{{ t(l.updateByRebase) }}</Button
+            >
+          </MergeCondition>
           <MergeChecks
             :checks="options?.checks ?? null"
             :summary="pr.checks"
@@ -1684,6 +1771,28 @@ function onOpenFocus(event: Event) {
             :reading="reading"
             @toggle="checksOpen = !checksOpen"
           />
+        </div>
+
+        <div
+          v-if="mergedBranch"
+          :class="css.mergePanel_checks"
+        >
+          <MergeCondition
+            :icon="GitBranch"
+            tone="muted"
+            :label="t(l.branch)"
+            :text="mergedBranch.text"
+          >
+            <Button
+              v-if="mergedBranch.step"
+              size="sm"
+              :kbd="EDIT_KEYS.branch"
+              :aria-keyshortcuts="EDIT_KEYS.branch"
+              :busy="advancing === mergedBranch.step"
+              @click="takeBranchStep()"
+              >{{ mergedBranch.label }}</Button
+            >
+          </MergeCondition>
         </div>
 
         <div
@@ -2034,8 +2143,8 @@ function onOpenFocus(event: Event) {
         <template v-if="canTakeOut">
           <Button
             v-if="allowed"
-            kbd="Shift+Q"
-            aria-keyshortcuts="Shift+Q"
+            :kbd="EDIT_KEYS.dequeue"
+            :aria-keyshortcuts="EDIT_KEYS.dequeue"
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
             >{{ t(l.takeOutOfQueue) }}</Button
@@ -2049,7 +2158,18 @@ function onOpenFocus(event: Event) {
             >{{ t(l.hintClose) }}</Button
           >
         </template>
-        <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'merged' && verdict.kind !== 'unknown'">
+        <template v-else-if="verdict.kind === 'merged'">
+          <Button
+            v-if="canRevert"
+            variant="ghost"
+            :kbd="EDIT_KEYS.revert"
+            :aria-keyshortcuts="EDIT_KEYS.revert"
+            :busy="advancing === 'revert'"
+            @click="revert()"
+            >{{ t(l.revert) }}</Button
+          >
+        </template>
+        <template v-else-if="verdict.kind !== 'merging' && verdict.kind !== 'unknown'">
           <Button
             v-if="canJump"
             variant="ghost"

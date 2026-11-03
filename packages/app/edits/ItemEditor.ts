@@ -442,6 +442,9 @@ function needsMetadata(request: EditRequest) {
         case 'disableAutoMerge':
         case 'jumpQueue':
         case 'dequeue':
+        case 'deleteBranch':
+        case 'restoreBranch':
+        case 'rerunFailedChecks':
             return false;
         default:
             return assertNever(request);
@@ -509,6 +512,12 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
         case 'jumpQueue':
         case 'dequeue':
             return permissions.merge;
+        case 'deleteBranch':
+            return permissions.deleteBranch;
+        case 'restoreBranch':
+            return permissions.restoreBranch;
+        case 'rerunFailedChecks':
+            return permissions.rerunChecks;
         default:
             return assertNever(request);
     }

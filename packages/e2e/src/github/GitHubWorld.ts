@@ -68,6 +68,9 @@ export type GitHubWorldMutation =
     | 'EnqueuePullRequest'
     | 'DequeuePullRequest'
     | 'MergePullRequest'
+    | 'DeleteRef'
+    | 'CreateRef'
+    | 'RevertPullRequest'
     | 'CreateIssue';
 
 const MY_WORK_SEARCHES: readonly MyWorkSearch[] = ['reviewRequested', 'authored', 'assigned', 'mentioned'];
@@ -136,6 +139,11 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     readonly failingChecks?: number;
     /** It conflicts with its base branch. */
     readonly conflicts?: boolean;
+    /**
+     * Its failing checks that GitHub Actions ran, by their workflow runs' ids; listed by the merge options, none by
+     * default — the failing ones then count, and run outside Actions.
+     */
+    readonly failedRuns?: readonly number[];
     /** Whose review it asks for (logins). */
     readonly reviewRequests?: readonly string[];
     /**
@@ -212,6 +220,8 @@ export interface GitHubWorldRepositoryParams {
     readonly autoMergeAllowed?: boolean;
     /** The viewer may merge past the rules (`viewerCanMergeAsAdmin`). */
     readonly viewerCanMergeAsAdmin?: boolean;
+    /** GitHub deletes a pull request's branch once merged (`deleteBranchOnMerge`). */
+    readonly deleteBranchOnMerge?: boolean;
     /** The addresses the viewer may commit a merge with, their default first; none by default. */
     readonly commitEmails?: readonly string[];
 }
@@ -373,6 +383,7 @@ interface WorldRepository {
     readonly queue: WorldStackEntry[];
     autoMergeAllowed: boolean;
     viewerCanMergeAsAdmin: boolean;
+    deleteBranchOnMerge: boolean;
     commitEmails: readonly string[];
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
@@ -415,6 +426,9 @@ interface WorldComment {
 }
 
 interface WorldPullRequest {
+    /** Its branch was deleted (`headRef` reads `null`). */
+    branchDeleted: boolean;
+    readonly failedRuns: readonly number[];
     isDraft: boolean;
     reviewDecision: PullRequestReviewDecision | null;
     readonly failingChecks: number;
@@ -667,6 +681,7 @@ export class GitHubWorld {
         repository.mergeQueueMethod = params.mergeQueueMethod ?? repository.mergeQueueMethod;
         repository.autoMergeAllowed = params.autoMergeAllowed ?? repository.autoMergeAllowed;
         repository.viewerCanMergeAsAdmin = params.viewerCanMergeAsAdmin ?? repository.viewerCanMergeAsAdmin;
+        repository.deleteBranchOnMerge = params.deleteBranchOnMerge ?? repository.deleteBranchOnMerge;
         repository.commitEmails = params.commitEmails ?? repository.commitEmails;
     }
 
@@ -1033,7 +1048,7 @@ export class GitHubWorld {
                     rebaseMergeAllowed: repository.mergeMethods.includes('REBASE'),
                     viewerDefaultMergeMethod: repository.defaultMergeMethod,
                     autoMergeAllowed: repository.autoMergeAllowed,
-                    deleteBranchOnMerge: false,
+                    deleteBranchOnMerge: repository.deleteBranchOnMerge,
                     viewerDefaultCommitEmail: repository.commitEmails[0] ?? null,
                     viewerPossibleCommitEmails: [...repository.commitEmails],
                     labels: {
@@ -1280,7 +1295,7 @@ export class GitHubWorld {
                     },
                     statusCheckRollup: node.statusCheckRollup && {
                         ...node.statusCheckRollup,
-                        contextPage: { nodes: [] },
+                        contextPage: { nodes: item.pullRequest.failedRuns.map(toFailedCheckRun) },
                     },
                 },
             };
@@ -1797,6 +1812,58 @@ export class GitHubWorld {
             answer: () => ({ dequeuePullRequest: { clientMutationId: null } }),
             refused: { dequeuePullRequest: null },
         });
+        // Its branch: deleted, and restored at its last head (live, #56). The answers say nothing of the pull request.
+        this.mutation(github, 'DeleteRef', {
+            findItem: variables => this.findByHeadRefId(String(variables.refId)),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.branchDeleted = true;
+                }
+            },
+            keepsUpdatedAt: true,
+            answer: () => ({ deleteRef: { clientMutationId: null } }),
+            refused: { deleteRef: null },
+        });
+        this.mutation(github, 'CreateRef', {
+            findItem: variables =>
+                [...this.items.values()].find(
+                    item =>
+                        `R_${slug(item.repository)}` === variables.repositoryId &&
+                        item.pullRequest !== null &&
+                        `refs/heads/${toHeadRefName(item)}` === variables.name &&
+                        toHeadRefOid(item) === variables.oid,
+                ),
+            apply: item => {
+                if (item.pullRequest) {
+                    item.pullRequest.branchDeleted = false;
+                }
+            },
+            keepsUpdatedAt: true,
+            answer: item => ({ createRef: { ref: { id: toHeadRefId(item) } } }),
+            refused: { createRef: null },
+        });
+        // A new open pull request at once, on a branch of its own (live, #59).
+        this.mutation(github, 'RevertPullRequest', {
+            findItem: byItemId('pullRequestId'),
+            apply: () => undefined,
+            keepsUpdatedAt: true,
+            answer: item => {
+                const number = Math.max(...[...this.items.values()].map(other => other.number)) + 1;
+                this.pullRequest({
+                    repository: item.repository,
+                    number,
+                    title: `Revert "${item.title}"`,
+                    foundBy: ['authored'],
+                    minutesAgo: 0,
+                });
+                return {
+                    revertPullRequest: {
+                        revertPullRequest: { number, url: `https://github.com/${item.repository}/pull/${number}` },
+                    },
+                };
+            },
+            refused: { revertPullRequest: null },
+        });
         // A merge with a chosen commit email: it answers at once, and doesn't take a stack (merging D5).
         this.mutation(github, 'MergePullRequest', {
             findItem: byItemId('pullRequestId'),
@@ -2110,6 +2177,13 @@ export class GitHubWorld {
      * who isn't {@link GitHubWorldRepositoryParams.viewerCanMergeAsAdmin}.
      */
     private answerMerge(github: GitHubMock, item: WorldItem) {
+        for (const runId of item.pullRequest?.failedRuns ?? []) {
+            github.rest('POST', `/repos/${item.repository}/actions/runs/${runId}/rerun-failed-jobs`, () => ({
+                status: 201,
+                json: {},
+            }));
+        }
+
         const { pullRequest } = item;
         if (!pullRequest) {
             return;
@@ -2192,6 +2266,8 @@ export class GitHubWorld {
 
     private createPullRequest(params: GitHubWorldPullRequestParams, stack: WorldStackPlace | null): WorldStackEntry {
         const pullRequest: WorldPullRequest = {
+            branchDeleted: false,
+            failedRuns: params.failedRuns ?? [],
             isDraft: params.isDraft ?? false,
             reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
             failingChecks: params.failingChecks ?? 0,
@@ -2283,6 +2359,7 @@ export class GitHubWorld {
                 queue: [],
                 autoMergeAllowed: false,
                 viewerCanMergeAsAdmin: false,
+                deleteBranchOnMerge: false,
                 commitEmails: [],
                 workflows: [],
                 runs: [],
@@ -2352,7 +2429,7 @@ export class GitHubWorld {
             ...node,
             ...details,
             commits: { totalCount: 1 },
-            headRepository: { nameWithOwner: item.repository },
+            headRepository: { id: `R_${slug(item.repository)}`, nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
                 contextPage: { totalCount: 0, nodes: [] },
@@ -2421,6 +2498,11 @@ export class GitHubWorld {
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
+            headRef: pullRequest.branchDeleted ? null : { id: toHeadRefId(item) },
+            headRepository: { id: `R_${slug(item.repository)}` },
+            isCrossRepository: false,
+            // Only once its pull request closed (live, #56): false again once it is gone.
+            viewerCanDeleteHeadRef: item.state !== 'OPEN' && !pullRequest.branchDeleted,
             baseRefOid: pullRequest.behindBase ? STALE_BASE_OID : (pullRequest.rebasedOn ?? BASE_OID),
             // A stack's later one is based on another member's branch, which has no queue.
             isMergeQueueEnabled: repository.mergeQueueMethod !== null && !below,
@@ -2447,6 +2529,10 @@ export class GitHubWorld {
         };
     }
 
+    private findByHeadRefId(refId: string) {
+        return [...this.items.values()].find(item => item.pullRequest !== null && toHeadRefId(item) === refId);
+    }
+
     /** The pull request `item` as a mutation answers with it. */
     private toPullRequestAnswer(item: WorldItem): PullRequestFieldsFragment {
         if (!item.pullRequest) {
@@ -2471,6 +2557,7 @@ export class GitHubWorld {
             const now = new Date().toISOString();
             pullRequest.merged = true;
             pullRequest.queued = null;
+            pullRequest.branchDeleted = this.getRepository(item.repository).deleteBranchOnMerge;
             item.state = 'CLOSED';
             item.closedAt = now;
             item.updatedAt = now;
@@ -2944,6 +3031,26 @@ function parseCursor(value: unknown): number | undefined {
 }
 
 /** The branch a pull request of the world is opened from. */
+function toHeadRefId(item: WorldItem) {
+    return `REF_${item.id}`;
+}
+
+/** A failed check of the merge options, of a GitHub Actions run. */
+function toFailedCheckRun(runId: number) {
+    return {
+        __typename: 'CheckRun' as const,
+        id: `CR_${runId}`,
+        name: `ci / run ${runId}`,
+        status: 'COMPLETED' as const,
+        conclusion: 'FAILURE' as const,
+        detailsUrl: `https://github.com/actions/runs/${runId}`,
+        startedAt: null,
+        completedAt: null,
+        isRequired: false,
+        checkSuite: { app: { slug: 'github-actions' }, workflowRun: { databaseId: runId, workflow: { name: 'ci' } } },
+    };
+}
+
 function toHeadRefName(item: WorldItem) {
     return `change-${item.number}`;
 }

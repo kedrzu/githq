@@ -24,7 +24,13 @@ const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: REA
 
 test('ready to merge, a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel', async () => {
     const opened: string[] = [];
-    mount(READY, { canOpen: id => id === READY.id, open: id => opened.push(id), getRecord: () => null });
+    mount(READY, {
+        canOpen: id => id === READY.id,
+        open: id => opened.push(id),
+        getRecord: () => null,
+        getCommands: () => [],
+        run: () => undefined,
+    });
 
     const merge = page.getByRole('button', { name: /^Merge/ });
     await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
@@ -35,20 +41,41 @@ test('ready to merge, a pull request the viewer may merge is followed by "Merge 
 
 test('ready to merge on a merge queue\'s branch, the row says what it does: "Add to queue ⇧M"', async () => {
     const queueBranch = { ...READY, isMergeQueueEnabled: true };
-    mount(queueBranch, { canOpen: id => id === READY.id, open: () => undefined, getRecord: () => null });
+    mount(queueBranch, {
+        canOpen: id => id === READY.id,
+        open: () => undefined,
+        getRecord: () => null,
+        getCommands: () => [],
+        run: () => undefined,
+    });
 
     await expect.element(page.getByRole('button', { name: /^Add to queue/ })).toBeVisible();
 });
 
 test('ready to merge, one the viewer may not merge is followed by "Open on GitHub O"', async () => {
-    mount(READY, { canOpen: () => false, open: () => undefined, getRecord: () => null });
+    mount(READY, {
+        canOpen: () => false,
+        open: () => undefined,
+        getRecord: () => null,
+        getCommands: () => [],
+        run: () => undefined,
+    });
 
     await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toHaveAttribute('aria-keyshortcuts', 'O');
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
 test('PM37: being merged, the row says so where the status sits and keeps the open icon — never merged until GitHub says so', async () => {
-    mount({ ...READY, merging: 'SQUASH' }, { canOpen: () => false, open: () => undefined, getRecord: () => null });
+    mount(
+        { ...READY, merging: 'SQUASH' },
+        {
+            canOpen: () => false,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
 
     await expect.element(page.getByText('Being merged · not merged yet')).toBeVisible();
     await expect.element(page.getByRole('img', { name: 'Open pull request' })).toBeVisible();
@@ -66,7 +93,13 @@ test('PM37: a merge refused says so on line two, followed by "Back to the merge 
     const opened: string[] = [];
     const reason = { kind: 'refused', message: 'Rules.' } as const;
     const record: MergeRecord = { kind: 'refused', sent: SENT, reason, at: SAMPLE_NOW };
-    mount(READY, { canOpen: () => true, open: id => opened.push(id), getRecord: () => record });
+    mount(READY, {
+        canOpen: () => true,
+        open: id => opened.push(id),
+        getRecord: () => record,
+        getCommands: () => [],
+        run: () => undefined,
+    });
 
     await expect.element(page.getByText('Merge refused')).toBeVisible();
     await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
@@ -81,7 +114,13 @@ test('PM37: refused, with its head no longer the one the merge named, the row sa
     const record: MergeRecord = { kind: 'refused', sent: SENT, reason, at: SAMPLE_NOW };
     mount(
         { ...READY, headRefOid: 'new-head' },
-        { canOpen: () => true, open: () => undefined, getRecord: () => record },
+        {
+            canOpen: () => true,
+            open: () => undefined,
+            getRecord: () => record,
+            getCommands: () => [],
+            run: () => undefined,
+        },
     );
 
     await expect.element(page.getByText('Not merged · new commit')).toBeVisible();
@@ -91,7 +130,13 @@ test('PM37: refused, with its head no longer the one the merge named, the row sa
 
 test('PM36, PM37: no answer in time, the row is grey — neither merged nor refused — with nothing to send again', async () => {
     const record: MergeRecord = { kind: 'unknown', sent: SENT, at: SAMPLE_NOW, accepted: true };
-    mount(READY, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+    mount(READY, {
+        canOpen: () => true,
+        open: () => undefined,
+        getRecord: () => record,
+        getCommands: () => [],
+        run: () => undefined,
+    });
 
     await expect.element(page.getByText('Merge sent · outcome not known yet')).toBeVisible();
     await expect.element(page.getByRole('img', { name: 'Open pull request' })).toBeVisible();
@@ -107,7 +152,16 @@ test('PM37: in a merge queue, the row says where and how long, and offers no mer
         enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
         enqueuer: 'mlaine',
     } as const;
-    mount({ ...READY, mergeQueueEntry }, { canOpen: () => true, open: () => undefined, getRecord: () => null });
+    mount(
+        { ...READY, mergeQueueEntry },
+        {
+            canOpen: () => true,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
 
     await expect.element(page.getByText('in queue · 3rd · about 12 min')).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
@@ -131,7 +185,13 @@ test('PM37: under auto-merge, the row says how and what it waits for, and offers
     const running = { state: 'PENDING', passing: 1, failing: 0, pending: 1 } as const;
     mount(
         { ...READY, autoMerge, checks: running },
-        { canOpen: () => true, open: () => undefined, getRecord: () => null },
+        {
+            canOpen: () => true,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
     );
 
     await expect.element(page.getByText('auto-merge on · squash · waiting for checks')).toBeVisible();

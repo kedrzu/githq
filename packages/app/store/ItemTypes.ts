@@ -104,6 +104,14 @@ export interface PullRequestStatus {
     readonly mergeStateStatus: MergeStateStatus;
     /** The head commit: a merge names it, so GitHub refuses the merge once the branch moved since. */
     readonly headRefOid: string;
+    /** The branch's node id, which deleting it names; `null` once it is deleted. */
+    readonly headRefId: string | null;
+    /** The repository the branch is in, which restoring it names; `null` once a fork is gone. */
+    readonly headRepositoryId: string | null;
+    /** The branch is a fork's: it can't be restored from here (merging D16). */
+    readonly isCrossRepository: boolean;
+    /** GitHub lets the viewer delete the branch: nothing else tells, as protected branches stay. */
+    readonly viewerCanDeleteHeadRef: boolean;
     /** `null` when nothing runs on the head commit. */
     readonly checks: ItemChecks | null;
     readonly reviewRequests: readonly ItemReviewRequest[];

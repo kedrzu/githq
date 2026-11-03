@@ -1,4 +1,4 @@
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
+import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
 import type { EditFailureReason } from '@/edits/EditTypes.js';
 import type { PullRequestWayForward } from '@/item/usePullRequestVerdict.js';
@@ -174,4 +174,29 @@ export type MergeAnswer =
  * merge: mark the draft ready for review, bring the base branch in, resolve the conflicts in GitHub's editor, turn
  * auto-merge on or off. Off to the side, each with a key of its own: jump the queue, take it out of the queue (PM14, PM15).
  */
-export type MergeStep = Exclude<PullRequestWayForward, 'enqueue' | 'merge'> | 'dequeue' | 'jumpQueue';
+export type MergeStep =
+    | Exclude<PullRequestWayForward, 'enqueue' | 'merge'>
+    | 'dequeue'
+    | 'jumpQueue'
+    | 'updateBranchByRebase'
+    | 'deleteBranch'
+    | 'restoreBranch'
+    | 'revert';
+
+/**
+ * An ordinary command of one pull request (merging D10, D16): not the merge panel's job, offered from the opened item, a
+ * list's selected row, the palette and the menus where it applies ({@link getPullRequestCommands}), each an edit.
+ */
+export type PullRequestCommand =
+    | { readonly kind: 'updateBranch'; readonly method: PullRequestBranchUpdateMethod }
+    | { readonly kind: 'rerunFailedChecks' }
+    | { readonly kind: 'deleteBranch' }
+    | { readonly kind: 'restoreBranch' }
+    | { readonly kind: 'revert' }
+    | { readonly kind: 'dequeue' };
+
+/** The new pull request a revert opened. */
+export interface RevertedPullRequest {
+    readonly number: number;
+    readonly url: string;
+}

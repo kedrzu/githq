@@ -12,6 +12,7 @@ const ALL: MergeSettings = {
     rebaseMergeAllowed: true,
     viewerDefaultMergeMethod: 'MERGE',
     autoMergeAllowed: false,
+    deleteBranchOnMerge: false,
 };
 
 test('before the rules arrive, the settings alone, listed squash, merge commit, rebase', () => {

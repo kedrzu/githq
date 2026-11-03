@@ -1,0 +1,8 @@
+# Restores a pull request's deleted branch at its last head commit (merging D16).
+mutation CreateRef($repositoryId: ID!, $name: String!, $oid: GitObjectID!) {
+    createRef(input: { repositoryId: $repositoryId, name: $name, oid: $oid }) {
+        ref {
+            id
+        }
+    }
+}

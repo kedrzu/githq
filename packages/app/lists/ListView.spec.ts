@@ -452,6 +452,8 @@ function sampleMerging(allowed: readonly string[]) {
         canOpen: id => allowed.includes(id),
         open: (id, options) => panels.push({ id, options }),
         getRecord: () => null,
+        getCommands: () => [],
+        run: () => undefined,
     };
     return { context, panels };
 }

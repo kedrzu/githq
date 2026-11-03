@@ -1,8 +1,8 @@
-<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. -->
+<!-- Where an opened pull request stands (F1–F4, PM38): the verdict in one line — "Can't merge yet", "Ready to merge", "Being merged" — then which condition holds it back (checks, reviews, conflicts), its branches and size, and the ways on: "Merge…" (`⇧M`, the merge panel; lit when it is ready) where the viewer may merge it, its label the way forward the panel leads to ("Update branch", "Resolve on GitHub", "Mark ready…", "Queue…", "Auto-merge…") — without write access "You can't merge in this repository" in its place (K1b) — GitHub and the changed files. Being merged, the conditions fold and it waits for GitHub (PM33): nothing reads merged until GitHub says so (merging D3). Read from the row's status summary (`getPullRequestStanding`, the same as "my work"), so it shows before the detail arrives; once the merge options are read, its verdict weighs only the required checks — the same verdict as the merge panel's (`usePullRequestVerdict`). The conditions fold for a draft, as for a pull request merged or being merged. A merge this session sent that did not end merged (`MergeRecord`) speaks instead of the verdict: refused, or a new commit, says nothing merged and "Merge…" reads "Back to the merge"; no answer in time is grey, "Outcome not known yet", until the next refresh settles it. The ordinary commands of the moment stand beside their reason (merging D16): behind, "Update branch" updates by `U`, with no panel; closed or merged, "Delete branch" or "Restore branch" by `⇧D`. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowRight, FileDiff, GitBranch, GitMerge, Github } from 'lucide-vue-next';
+import { ArrowRight, FileDiff, GitBranch, GitMerge, GitPullRequestArrow, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
@@ -13,7 +13,7 @@ import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { getReasonTitle } from '@/merge/getReasonTitle.js';
-import type { MergeRecord } from '@/merge/MergeTypes.js';
+import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -42,11 +42,15 @@ const props = defineProps<{
   record?: MergeRecord | null;
   /** Auto-merge may wait for what is not met (`isAutoMergeAllowed`): the verdict's way forward says so, as the panel's does. */
   autoMergeAllowed?: boolean;
+  /** Its ordinary commands that apply now (merging D16): those of the moment show here, beside the reason (PM38). */
+  commands?: readonly PullRequestCommand[];
 }>();
 
 const emit = defineEmits<{
   /** "Merge…": the merge panel is wanted. */
   merge: [];
+  /** One of its ordinary commands, from its button. */
+  command: [command: PullRequestCommand];
 }>();
 
 const t = useTranslate();
@@ -114,6 +118,17 @@ const mergeLabel = computed(() => {
 
   return mergeVerdict.forwardTitle;
 });
+
+/** Behind, updating is the way forward, by its own key: no panel needed (PM38). */
+const updateForward = computed(() =>
+  !ended.value && mergeVerdict.forward === 'updateBranch'
+    ? (props.commands?.find(command => command.kind === 'updateBranch' && command.method === 'MERGE') ?? null)
+    : null,
+);
+/** What deleting or restoring its branch offers, once its pull request closed (PM26, PM26b). */
+const branchCommand = computed(() =>
+  props.commands?.find(command => command.kind === 'deleteBranch' || command.kind === 'restoreBranch'),
+);
 
 const conditions = computed(() => [
   { label: t(l.checks), line: lines.checks },
@@ -202,7 +217,29 @@ function refusedAside(reason: EditFailureReason) {
     </p>
     <div :class="css.pullRequestMerge_actions">
       <Button
-        v-if="canMerge && !merging"
+        v-if="branchCommand"
+        variant="secondary"
+        size="sm"
+        :icon="GitBranch"
+        :kbd="EDIT_KEYS.branch"
+        :aria-keyshortcuts="EDIT_KEYS.branch"
+        @click="emit('command', branchCommand)"
+      >
+        {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
+      </Button>
+      <Button
+        v-if="updateForward"
+        variant="secondary"
+        size="sm"
+        :icon="GitPullRequestArrow"
+        :kbd="EDIT_KEYS.updateBranch"
+        :aria-keyshortcuts="EDIT_KEYS.updateBranch"
+        @click="emit('command', updateForward)"
+      >
+        {{ mergeLabel }}
+      </Button>
+      <Button
+        v-else-if="canMerge && !merging"
         :variant="mergeVerdict.mergeable ? 'primary' : 'secondary'"
         size="sm"
         :icon="GitMerge"

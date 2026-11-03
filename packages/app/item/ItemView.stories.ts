@@ -1,11 +1,11 @@
 import { assertValue } from '@nzyme/utils/assert.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { defineComponent, h } from 'vue';
 
 import { MergeContext } from '@/merge/MergeContext.js';
-import type { MergeRecord } from '@/merge/MergeTypes.js';
+import type { MergeRecord, PullRequestCommand } from '@/merge/MergeTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
 import {
@@ -212,12 +212,74 @@ export const PullRequestDraft: Story = {
     args: { ...PullRequestReady.args, item: { ...F3_PULL_REQUEST, isDraft: true, mergeStateStatus: 'DRAFT' } },
 };
 
+/** What the standing's buttons of the stories below ran. */
+const commandRan = fn();
+
+/** Under a screen whose pull request takes `commands` (merging D16). */
+function withCommands(commands: readonly PullRequestCommand[]): Decorator {
+    return story =>
+        defineComponent({
+            setup() {
+                provideContext(MergeContext, {
+                    canOpen: () => true,
+                    open: () => undefined,
+                    getRecord: () => null,
+                    getCommands: () => commands,
+                    run: (_id, command) => commandRan(command),
+                });
+                return () => h(story());
+            },
+        });
+}
+
+/** The standing's button `name` runs `command`, on its own: no panel opens. */
+async function expectButtonRuns(name: RegExp, command: PullRequestCommand) {
+    commandRan.mockClear();
+    await userEvent.click(await within(document.body).findByRole('button', { name }));
+    await expect(commandRan).toHaveBeenCalledWith(command);
+}
+
+/** PM38: behind — "Update branch" by its own key, `U`, with no panel. */
+export const PullRequestBehindUpdates: Story = {
+    ...PullRequestBehind,
+    decorators: [
+        withCommands([
+            { kind: 'updateBranch', method: 'MERGE' },
+            { kind: 'updateBranch', method: 'REBASE' },
+        ]),
+    ],
+    play: () => expectButtonRuns(/^Update branch/u, { kind: 'updateBranch', method: 'MERGE' }),
+};
+
+/** PM26, PM38: merged — "Delete branch" in place of "Merge…". */
+export const PullRequestMergedDeletes: Story = {
+    args: {
+        ...PullRequestReady.args,
+        item: { ...F3_PULL_REQUEST, state: 'MERGED', merged: true, closedAt: F3_PULL_REQUEST.updatedAt },
+    },
+    decorators: [withCommands([{ kind: 'deleteBranch' }, { kind: 'revert' }])],
+    play: () => expectButtonRuns(/^Delete branch/u, { kind: 'deleteBranch' }),
+};
+
+/** PM26b: its branch deleted — "Restore branch", by the same key. */
+export const PullRequestMergedRestores: Story = {
+    ...PullRequestMergedDeletes,
+    decorators: [withCommands([{ kind: 'restoreBranch' }, { kind: 'revert' }])],
+    play: () => expectButtonRuns(/^Restore branch/u, { kind: 'restoreBranch' }),
+};
+
 /** Under a screen that knows how the pull request's last merge ended (merging D15). */
 function withMergeRecord(record: MergeRecord): Decorator {
     return story =>
         defineComponent({
             setup() {
-                provideContext(MergeContext, { canOpen: () => true, open: () => undefined, getRecord: () => record });
+                provideContext(MergeContext, {
+                    canOpen: () => true,
+                    open: () => undefined,
+                    getRecord: () => record,
+                    getCommands: () => [],
+                    run: () => undefined,
+                });
                 return () => h(story());
             },
         });

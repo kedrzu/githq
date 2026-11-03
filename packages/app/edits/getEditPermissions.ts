@@ -31,6 +31,14 @@ export interface EditPermissions {
      * or off, jump the merge queue or leave it.
      */
     readonly merge: boolean;
+    /** Delete a closed or merged pull request's branch: GitHub says who may ({@link PullRequestStatus.viewerCanDeleteHeadRef}). */
+    readonly deleteBranch: boolean;
+    /** Create a closed or merged pull request's deleted branch again: pushing, in its own repository, not a fork. */
+    readonly restoreBranch: boolean;
+    /** Open a pull request reverting a merged one. */
+    readonly revert: boolean;
+    /** Re-run an open pull request's GitHub Actions checks. */
+    readonly rerunChecks: boolean;
 }
 
 /** What {@link getEditPermissions} decides from. */
@@ -58,6 +66,10 @@ export const NO_EDITS: EditPermissions = {
     addToProject: false,
     mergePanel: false,
     merge: false,
+    deleteBranch: false,
+    restoreBranch: false,
+    revert: false,
+    rerunChecks: false,
 };
 
 /**
@@ -73,7 +85,8 @@ export const NO_EDITS: EditPermissions = {
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
- * A merged pull request can no longer be closed, reopened or made a draft.
+ * A merged pull request can no longer be closed, reopened or made a draft. Deleting a branch while its pull request is
+ * open would close it, so that is not offered; a fork's deleted branch can't be restored here (merging D16).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -88,6 +101,7 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
     const author = item.author?.login === viewerLogin;
     const merged = item.kind === 'pullRequest' && item.merged;
     const pullRequest = item.kind === 'pullRequest';
+    const pr = item.kind === 'pullRequest' ? item : null;
     const mergePanel = item.kind === 'pullRequest' && isOpenPullRequest(item) && write;
     const merging = item.kind === 'pullRequest' && item.merging !== undefined;
 
@@ -104,6 +118,16 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
         addToProject: true,
         mergePanel,
         merge: mergePanel && !merging,
+        deleteBranch: pr !== null && pr.state !== 'OPEN' && pr.headRefId !== null && pr.viewerCanDeleteHeadRef,
+        restoreBranch:
+            write &&
+            pr !== null &&
+            pr.state !== 'OPEN' &&
+            pr.headRefId === null &&
+            !pr.isCrossRepository &&
+            pr.headRepositoryId !== null,
+        revert: write && merged,
+        rerunChecks: write && pr !== null && pr.state === 'OPEN',
     };
 }
 

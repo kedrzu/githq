@@ -18,6 +18,7 @@ import type {
     MergeRecord,
     MergeRefusedRecord,
     MergeSubmission,
+    RevertedPullRequest,
     SentMerge,
 } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
@@ -87,6 +88,14 @@ export interface MergeConfirmationStack {
     readonly count: number;
 }
 
+/** A pull request a revert opened, for its toast. */
+export interface MergeRevert {
+    readonly id: number;
+    /** The reverted pull request's `owner/name#number`. */
+    readonly reference: string;
+    readonly opened: RevertedPullRequest;
+}
+
 /**
  * The merge panel (merging D7, D11): the one pull request it is open for, over any screen, and the merges sent
  * from it. Opening it again, for the same pull request or another, starts a fresh panel. What the session knows of
@@ -96,7 +105,7 @@ export interface MergeConfirmationStack {
  * since arrives — its detail read again, or a round of the regular sync — which says what GitHub holds (D3, PM36);
  * the panel's own reads don't (PM29). The method and text it was sent with stay for the session, for the panel to
  * start on again (D15). A merge confirmed while the panel did not show it is listed for its toast until the toast
- * goes (PM34). Open for a pull request in a stack, the panel is the stack's (stacked PRs D11): a merge of two or more
+ * goes (PM34), as is the pull request a revert opened. Open for a pull request in a stack, the panel is the stack's (stacked PRs D11): a merge of two or more
  * is recorded as any merge, under the top of the range, with every one going ({@link SentMerge.going}) — refused, the
  * stack is read again whole, what landed being what the copy then holds, and until that read succeeds it is not known;
  * the top's head commit is read with it, to name a push to it (PM27). The method it was sent with stays under every
@@ -119,6 +128,7 @@ export const MergePanelStore = defineService({
         const recordsRef = shallowRef<ReadonlyMap<string, MergeRecord>>(new Map());
         const sentRef = shallowRef<ReadonlyMap<string, SentMerge>>(new Map());
         const confirmationsRef = shallowRef<readonly MergeConfirmation[]>([]);
+        const revertsRef = shallowRef<readonly MergeRevert[]>([]);
         let onSent: (() => void) | undefined;
         let nextConfirmationId = 1;
 
@@ -126,6 +136,7 @@ export const MergePanelStore = defineService({
             recordsRef.value = new Map();
             sentRef.value = new Map();
             confirmationsRef.value = [];
+            revertsRef.value = [];
         });
 
         // A copy read since the answer says what GitHub holds: the record no longer speaks for the pull request. Ended
@@ -153,6 +164,10 @@ export const MergePanelStore = defineService({
             get confirmations() {
                 return confirmationsRef.value;
             },
+            /** The pull requests reverts opened, oldest first, until dismissed. Reactive. */
+            get reverts() {
+                return revertsRef.value;
+            },
             /** The pull requests whose last merge GitHub has not said the end of, oldest first. Reactive. */
             get unanswered(): readonly string[] {
                 return [...recordsRef.value.keys()].filter(isUnanswered);
@@ -166,6 +181,8 @@ export const MergePanelStore = defineService({
             noteHeadCommit,
             forget,
             dismissConfirmation,
+            noteRevert,
+            dismissRevert,
         };
 
         /** Opens the panel for a pull request — or its stack — in place of whatever it was open for. */
@@ -245,6 +262,15 @@ export const MergePanelStore = defineService({
             confirmationsRef.value = confirmationsRef.value.filter(confirmation => confirmation.id !== id);
         }
 
+        /** A pull request a revert opened: said in a toast leading to it. */
+        function noteRevert(revert: Omit<MergeRevert, 'id'>) {
+            revertsRef.value = [...revertsRef.value, { ...revert, id: nextConfirmationId++ }];
+        }
+
+        function dismissRevert(id: number) {
+            revertsRef.value = revertsRef.value.filter(revert => revert.id !== id);
+        }
+
         function isUnanswered(itemId: string) {
             const pr = details.getItem(itemId);
             const end = pr?.kind === 'pullRequest' ? getMergeEnd(getRecord(itemId), pr, null) : null;
@@ -301,6 +327,8 @@ export const MergePanelStore = defineService({
                     switch (end.kind) {
                         case 'merged':
                             confirm();
+                            // What the follow-ups go by: GitHub lets the branch go only now, or deleted it itself (PM26b).
+                            void merger.readOptions(item.id);
                             return;
                         case 'unknown':
                             keep({ kind: 'unknown', sent, at: clock.now(), accepted: true });

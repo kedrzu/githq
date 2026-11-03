@@ -256,6 +256,165 @@ function toEntry(): PullRequestQueueEntry {
     return { ...QUEUE_ENTRY, enqueuer: 'mlaine' };
 }
 
+describe('its branch and checks (merging D16)', () => {
+    const MERGED: PullRequestItem = {
+        ...samplePullRequest('PR_1'),
+        state: 'MERGED',
+        merged: true,
+        headRefId: 'REF_1',
+        viewerCanDeleteHeadRef: true,
+    };
+
+    /** The pull request as `item` is; GitHub answers a mutation with `answers[operation]`. */
+    async function setupWith(item: PullRequestItem, answers: Record<string, TestGraphQLAnswer>) {
+        const session = createTestSession({
+            login: `user-${crypto.randomUUID()}`,
+            answer: request => answers[request.operation],
+            answerRest: request =>
+                request.operation.endsWith('/rerun-failed-jobs') ? { status: 201, body: {} } : undefined,
+        });
+        setIndexedDbPersistence(session.container);
+        const items = session.container.resolve(ItemStore);
+        await items.ready();
+        items.upsertMany([item]);
+        return { editor: session.container.resolve(ItemEditor), items, session };
+    }
+
+    test('deleting names the branch, and it shows gone at once; the same key restores it', async () => {
+        const { editor, items, session } = await setupWith(MERGED, {
+            DeleteRef: { data: { deleteRef: { clientMutationId: null } } },
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'deleteBranch' });
+
+        expect(outcome.failed).toEqual([]);
+        expect(requests(session, 'DeleteRef')).toEqual([{ refId: 'REF_1' }]);
+        expect(items.get('PR_1')).toMatchObject({ headRefId: null, viewerCanDeleteHeadRef: false });
+    });
+
+    test('a delete GitHub refuses is a failed edit, and the branch shows again', async () => {
+        const { editor, items } = await setupWith(MERGED, {
+            DeleteRef: { data: { deleteRef: null }, errors: [{ type: 'FORBIDDEN', message: 'Protected.' }] },
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'deleteBranch' });
+
+        expect(outcome.failed.map(({ edit, reason }) => [edit.subject.kind, reason.kind])).toEqual([
+            ['branchDeleted', 'refused'],
+        ]);
+        expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_1' });
+    });
+
+    test('restoring creates the branch at its last head, showing once GitHub made it', async () => {
+        const deleted: PullRequestItem = {
+            ...MERGED,
+            headRefId: null,
+            viewerCanDeleteHeadRef: false,
+            headRefOid: 'last-head',
+            headRefName: 'retry-stripe',
+        };
+        const { editor, items, session } = await setupWith(deleted, {
+            CreateRef: { data: { createRef: { ref: { id: 'REF_NEW' } } } },
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'restoreBranch' });
+
+        expect(outcome.failed).toEqual([]);
+        expect(requests(session, 'CreateRef')).toEqual([
+            { repositoryId: 'R_1', name: 'refs/heads/retry-stripe', oid: 'last-head' },
+        ]);
+        expect(items.get('PR_1')).toMatchObject({ headRefId: 'REF_NEW' });
+    });
+
+    test("nothing is sent where it wouldn't work: a delete of a branch gone, a restore of one there", async () => {
+        const { editor, session } = await setupWith({ ...MERGED, headRefId: null }, {});
+
+        await editor.edit(['PR_1'], { kind: 'deleteBranch' });
+
+        expect(requests(session, 'DeleteRef')).toEqual([]);
+    });
+
+    test("a viewer who can't is told, and nothing is sent", async () => {
+        const { editor, session } = await setupWith({ ...MERGED, viewerCanDeleteHeadRef: false }, {});
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'deleteBranch' });
+
+        expect(outcome.failed.map(({ reason }) => reason.kind)).toEqual(['notAllowed']);
+        expect(requests(session, 'DeleteRef')).toEqual([]);
+    });
+
+    function optionsWith(contexts: readonly object[]): TestGraphQLAnswer {
+        const node = sampleRowNode('PR_1', { repository: 'acme/web', number: 1, updatedAt: '2026-01-01T00:00:00Z' });
+        return {
+            data: {
+                node: {
+                    ...node,
+                    mergeHeadline: '',
+                    mergeBody: '',
+                    squashHeadline: '',
+                    squashBody: '',
+                    viewerCanMergeAsAdmin: false,
+                    viewerCanEnableAutoMerge: false,
+                    autoMergeBody: null,
+                    headCommit: { nodes: [] },
+                    baseRef: { target: null, rules: { nodes: [] }, branchProtectionRule: null },
+                    statusCheckRollup: {
+                        state: 'FAILURE',
+                        contexts: { checkRunCountsByState: [], statusContextCountsByState: [] },
+                        contextPage: { nodes: contexts },
+                    },
+                },
+            },
+        };
+    }
+
+    function failedRun(id: string, runId: number | null) {
+        return {
+            __typename: 'CheckRun',
+            id,
+            name: id,
+            status: 'COMPLETED',
+            conclusion: 'FAILURE',
+            detailsUrl: null,
+            startedAt: null,
+            completedAt: null,
+            isRequired: false,
+            checkSuite: {
+                app: { slug: runId === null ? 'other' : 'github-actions' },
+                workflowRun: runId === null ? null : { databaseId: runId, workflow: { name: 'ci' } },
+            },
+        };
+    }
+
+    test('re-running asks once for each failed run, as read now', async () => {
+        const open = samplePullRequest('PR_1');
+        const { editor, session } = await setupWith(open, {
+            PullRequestMergeOptions: optionsWith([failedRun('a', 7), failedRun('b', 7), failedRun('c', 8)]),
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(outcome.failed).toEqual([]);
+        expect(
+            session.github.requests.map(request => request.operation).filter(name => name.startsWith('POST')),
+        ).toEqual([
+            'POST /repos/acme/web/actions/runs/7/rerun-failed-jobs',
+            'POST /repos/acme/web/actions/runs/8/rerun-failed-jobs',
+        ]);
+    });
+
+    test('checks outside GitHub Actions: nothing is sent, and it says why', async () => {
+        const { editor, session } = await setupWith(samplePullRequest('PR_1'), {
+            PullRequestMergeOptions: optionsWith([failedRun('vercel', null)]),
+        });
+
+        const outcome = await editor.edit(['PR_1'], { kind: 'rerunFailedChecks' });
+
+        expect(outcome.failed.map(({ reason }) => reason)).toEqual([{ kind: 'notActions' }]);
+        expect(session.github.requests.some(request => request.operation.startsWith('POST'))).toBe(false);
+    });
+});
+
 /** The status fields GitHub answers, its update time the row's: neither the queue nor checks move it (live). */
 function statusUnmoved(fields: Record<string, unknown>) {
     const updatedAt = samplePullRequest('PR_1').updatedAt;

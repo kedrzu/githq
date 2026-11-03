@@ -3,7 +3,7 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
-import { expect, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
 import Toaster from '@/components/Toaster.vue';
@@ -16,7 +16,8 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 
 import { MergeContext } from './MergeContext.js';
-import type { MergeConfirmation } from './MergePanelStore.js';
+import type { MergeConfirmation, MergeRevert } from './MergePanelStore.js';
+import type { PullRequestCommand } from './MergeTypes.js';
 import { MergePanelStore } from './MergePanelStore.js';
 import MergeToasts from './MergeToasts.vue';
 
@@ -27,6 +28,8 @@ const PR: PullRequestItem = {
     repository: { nameWithOwner: 'fitloop/api', owner: 'fitloop', isPrivate: true, viewerPermission: 'WRITE' },
 };
 const REFERENCE = 'fitloop/api#477';
+/** What a pull request merged just now may take. */
+const FOLLOW_UPS: readonly PullRequestCommand[] = [{ kind: 'deleteBranch' }, { kind: 'revert' }];
 
 /** The merge of {@link PR}, as the edit queue lists it once it failed. */
 const MERGE_EDIT: Edit = {
@@ -69,16 +72,30 @@ const CONFIRMED_STACK: MergeConfirmation = {
     stack: { repository: 'fitloop/api', count: 3 },
 };
 
+/** What else {@link withMerges} sets up. */
+interface WithMergesOptions {
+    readonly reverts?: readonly MergeRevert[];
+    /** What the pull request of a merge confirmed may take. */
+    readonly commands?: readonly PullRequestCommand[];
+    /** Filled with what the toasts run. */
+    readonly ran?: { itemId: string; command: PullRequestCommand }[];
+}
+
 /**
  * The toasts over a screen whose edit queue lists `failures` and whose merge panel store lists `confirmations`: the
  * stores the toasts read are replaced by ones holding just that, and the screen may open the merge panel (`⌥M`).
  */
-function withMerges(failures: readonly EditFailure[], confirmations: readonly MergeConfirmation[]): Decorator {
+function withMerges(
+    failures: readonly EditFailure[],
+    confirmations: readonly MergeConfirmation[],
+    { reverts = [], commands = [], ran = [] }: WithMergesOptions = {},
+): Decorator {
     return story =>
         defineComponent({
             setup() {
                 const failuresRef = shallowRef(failures);
                 const confirmationsRef = shallowRef(confirmations);
+                const revertsRef = shallowRef(reverts);
                 const container = createContainer();
                 container.set(LanguageContext, () => APP_LANGUAGE);
                 container.set(EditQueue, {
@@ -115,6 +132,11 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                         (confirmationsRef.value = confirmationsRef.value.filter(
                             confirmation => confirmation.id !== id,
                         )),
+                    get reverts() {
+                        return revertsRef.value;
+                    },
+                    noteRevert: () => undefined,
+                    dismissRevert: id => (revertsRef.value = revertsRef.value.filter(revert => revert.id !== id)),
                 });
                 container.set(ItemDetailStore, {
                     ready: () => Promise.resolve(),
@@ -129,7 +151,13 @@ function withMerges(failures: readonly EditFailure[], confirmations: readonly Me
                     update: () => undefined,
                 });
                 provideContainer(container);
-                provideContext(MergeContext, { canOpen: () => true, open: () => undefined, getRecord: () => null });
+                provideContext(MergeContext, {
+                    canOpen: () => true,
+                    open: () => undefined,
+                    getRecord: () => null,
+                    getCommands: () => commands,
+                    run: (itemId, command) => ran.push({ itemId, command }),
+                });
                 return () => h(story());
             },
         });
@@ -180,4 +208,36 @@ export const ConfirmedStack: Story = {
         await expect(await body.findByText('fitloop/api · 3 pull requests merged into main')).toBeVisible();
         await expect(body.queryByText('fitloop/api#477')).toBeNull();
     },
+};
+
+/** What the toasts of {@link ConfirmedWithFollowUps} ran: on the pull request merged, whatever is selected. */
+const followUpsRan: { itemId: string; command: PullRequestCommand }[] = [];
+
+/** PM34: merged, it offers deleting its branch (`⌥D`) and reverting it — of the pull request merged, not a row selected. */
+export const ConfirmedWithFollowUps: Story = {
+    decorators: [withMerges([], [CONFIRMED], { commands: FOLLOW_UPS, ran: followUpsRan })],
+    // Here rather than in a spec: it is gone by itself, sooner than a whole story's run may take.
+    play: async () => {
+        followUpsRan.length = 0;
+        const body = within(document.body);
+        await expect(await body.findByRole('button', { name: /Revert…/u })).toBeVisible();
+        await userEvent.keyboard('{Alt>}d{/Alt}');
+        await expect(followUpsRan).toEqual([{ itemId: PR.id, command: { kind: 'deleteBranch' } }]);
+        await expect(body.queryByText('fitloop/api#477 merged into main')).toBeNull();
+    },
+};
+
+/** What GitHub opened for a revert: said, and a way to it, in githq or on GitHub. */
+export const Reverted: Story = {
+    decorators: [
+        withMerges([], [], {
+            reverts: [
+                {
+                    id: 1,
+                    reference: REFERENCE,
+                    opened: { number: 480, url: 'https://github.com/fitloop/api/pull/480' },
+                },
+            ],
+        }),
+    ],
 };

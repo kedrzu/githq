@@ -76,6 +76,9 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',
+        headRef: { id: 'REF_1' },
+        isCrossRepository: false,
+        viewerCanDeleteHeadRef: false,
         isMergeQueueEnabled: false,
         mergeQueueEntry: null,
         autoMergeRequest: null,
@@ -85,7 +88,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
         commits: { totalCount: 1 },
-        headRepository: { nameWithOwner: 'acme/web' },
+        headRepository: { id: 'R_1', nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },
         projectItems: { nodes: [] },
     };

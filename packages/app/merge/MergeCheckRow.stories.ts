@@ -34,6 +34,17 @@ export const RequiredFailed: Story = {
     },
 };
 
+/** Failed outside GitHub Actions: githq can't re-run it, so its link says where. */
+export const FailedOutsideActions: Story = {
+    args: {
+        check: sampleMergeCheck('Vercel / preview', {
+            state: 'failing',
+            workflowRunId: null,
+            url: 'https://vercel.com/acme/web/deployments/1',
+        }),
+    },
+};
+
 /** One that isn't required, still running: grey, and it doesn't stop the merge. */
 export const OptionalRunning: Story = {
     args: {
