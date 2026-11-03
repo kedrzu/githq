@@ -36,11 +36,11 @@
     "search.followSymlinks": true,
     "npm.packageManager": "bun",
     "npm.scriptExplorerAction": "run",
-    // ESLint covers Vue, package.json and Markdown; oxlint (via the oxc extension) covers everything else.
+    // ESLint covers Vue rules only; oxlint (via the oxc extension) covers everything else.
     "eslint.useFlatConfig": true,
     "eslint.ignoreUntitled": true,
     "eslint.codeAction.showDocumentation": { "enable": true },
-    "eslint.validate": ["vue", "json", "markdown"],
+    "eslint.validate": ["vue"],
     "eslint.runtime": "bun",
     "eslint.execArgv": ["--bun"],
     "oxc.enable": true,

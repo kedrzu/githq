@@ -50,4 +50,6 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **Markdown is formatted by ESLint.** `lint` and `lint:check` cover it through the `markdown()` preset; `format:md` runs only that part, and `format` includes it.
 - **There is no separate UI package.** One app uses the components, so they live in `packages/app`.
 - **Pull requests do not run component tests or e2e.** They are the slow part of the checks, and they run before each deploy.
+- **Stories are checked against WCAG 2.1 AA; target size is deferred.** Adding `wcag22aa` fails 35 tests, and larger targets affect the dense lists, so it needs a design decision first: [#119](https://github.com/kedrzu/githq/issues/119).
+- **Development credentials stay in `.env` for now.** Moving them to Bitwarden and removing the files are planned: [#117](https://github.com/kedrzu/githq/issues/117), [#118](https://github.com/kedrzu/githq/issues/118).
 - **Prerendering is hybrid, not `ssr: true` everywhere.** Only the landing page is public and needs search engines to see it.
