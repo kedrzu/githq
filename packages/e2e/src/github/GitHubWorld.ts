@@ -867,6 +867,16 @@ export class GitHubWorld {
     }
 
     /** Renames an item, which moves its `updated_at` to now. */
+    /** The approval it had no longer counts, as after a dismissed review: it needs one again. */
+    withdrawApproval(id: string): void {
+        const pullRequest = this.get(id).pullRequest;
+        if (!pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        pullRequest.reviewDecision = 'REVIEW_REQUIRED';
+    }
+
     retitle(id: string, title: string): void {
         const item = this.get(id);
         item.title = title;
@@ -1208,6 +1218,18 @@ export class GitHubWorld {
                 { node: node ?? null },
                 node ? [] : [notFoundError(id, ['node'])],
             );
+        });
+        github.graphql('PullRequestMergeGuard', ({ variables }) => {
+            const item = this.readItem(String(variables.id));
+            return {
+                node: item?.pullRequest
+                    ? {
+                          mergeable: getMergeable(item.pullRequest),
+                          mergeStateStatus: getMergeStateStatus(item.pullRequest, this.getRepository(item.repository)),
+                          viewerCanMergeAsAdmin: this.getRepository(item.repository).viewerCanMergeAsAdmin,
+                      }
+                    : null,
+            };
         });
         // Read by the merge panel, and by the opened item of a pull request with failing checks for which are required:
         // the texts GitHub proposes, the base branch's ruleset if its repository has one, and no check listed, as

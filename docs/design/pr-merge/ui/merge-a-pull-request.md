@@ -141,6 +141,8 @@ Open with the owner, and not settled by the screens:
 
 - **Stacks** have moved to [their own design](../../stacked-prs/ui/work-through-a-stack.md), which also settles `⌘Enter` before
   the read and the commit text.
+- **A chosen commit email when the rules stopped being met** (settled 2026-11-03, D12, PM43). For someone who may bypass, nothing is
+  sent, the panel says GitHub doesn't confirm the rules are met, and the bypass line appears once the pull request is read again.
 - **The commit email when bypassing** (settled 2026-11-02, D12). It needs GraphQL and bypass needs REST (D5), so a
   bypass commits with the user's default email, and PM12a says which one in the bypass line.
 - **What bypass really skips** (settled 2026-11-02, D12). `viewerCanMergeAsAdmin` is one boolean, so "Skips" lists what

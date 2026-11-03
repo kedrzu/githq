@@ -110,6 +110,11 @@ export type EditFailureReason =
      * repositories, but refuses every change there.
      */
     | { readonly kind: 'organizationRestricted'; readonly organization: string }
+    /**
+     * Never sent: GitHub would have merged a chosen email's merge past the rules, unasked, as the user may bypass them,
+     * and it doesn't confirm they are met (merging D12).
+     */
+    | { readonly kind: 'rulesNotConfirmed' }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 

@@ -99,6 +99,30 @@ export const InQueue: Story = {
     },
 };
 
+/** SP54: GitHub says it won't merge: as a single pull request's row says it (PM37), in red. */
+export const InQueueWontMerge: Story = {
+    decorators: [withMerging],
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) => ({
+                ...pr,
+                mergeQueueEntry: {
+                    position: index + 2,
+                    state: 'UNMERGEABLE' as const,
+                    estimatedTimeToMerge: null,
+                    enqueuedAt: '2026-11-03T00:00:00Z',
+                    enqueuer: 'mlaine',
+                },
+            })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByText(matchText("In queue as one group, won't merge · 2nd")),
+        ).toBeVisible();
+    },
+};
+
 /** SP14 "Partly merged": the first landed — a purple pip — and the next one's checks run again. */
 export const PartlyMerged: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.partlyMerged) } };
 

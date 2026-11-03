@@ -52,3 +52,38 @@ test('D5: the default stays on REST, with no address sent', async ({ page, githu
     expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: sample.world.headOf(sample.first) }]);
     expect(getOperationCalls(github, 'MergePullRequest')).toEqual([]);
 });
+
+test('D12, PM43: a chosen address is not sent once the rules stop being met for an admin, and ⌥⌘↵ merges past them with the default', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork({
+        repository: { commitEmails: [DEFAULT_EMAIL, OTHER_EMAIL], viewerCanMergeAsAdmin: true },
+    });
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST_TITLE);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.line('Email')).toContainText(DEFAULT_EMAIL);
+    await page.keyboard.press('Y');
+    await expect(panel.line('Email')).toContainText(OTHER_EMAIL);
+
+    sample.world.withdrawApproval(sample.first);
+    await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(panel.refusal).toContainText("GitHub doesn't confirm the rules are met");
+    await expect(panel.bypassButton).toBeVisible();
+    expect(getOperationCalls(github, 'MergePullRequest')).toEqual([]);
+    expect(getMergeRequests(github)).toEqual([]);
+    expect(sample.world.stateOf(sample.first).merged).toBe(false);
+
+    await page.keyboard.press('Alt+ControlOrMeta+Enter');
+
+    await expect(panel.root).toBeHidden();
+    expect(getOperationCalls(github, 'MergePullRequest')).toEqual([]);
+    expect(getMergeRequests(github)).toEqual([
+        { merge_method: 'merge', sha: sample.world.headOf(sample.first), bypass_rules: true },
+    ]);
+    await expect.poll(() => sample.world.stateOf(sample.first).merged).toBe(true);
+});

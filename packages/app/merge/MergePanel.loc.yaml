@@ -124,6 +124,12 @@ reasonMore:
   en: '“{more}”'
 reasonNotAllowed:
   en: You can't merge this pull request
+notSent:
+  en: Not sent
+reasonRulesNotConfirmed:
+  en: GitHub doesn't confirm the rules are met
+reasonRulesNotConfirmedDetail:
+  en: Something changed since this opened.
 organizationRestricted:
   en: "{organization} hasn't approved githq"
 organizationRestrictedDetail:

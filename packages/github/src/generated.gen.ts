@@ -2518,6 +2518,17 @@ export type ProjectUpdatedAtQueryVariables = Exact<{
 
 export type ProjectUpdatedAtQuery = { node: { updatedAt: string } | Record<PropertyKey, never> | null };
 
+export type PullRequestMergeGuardQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type PullRequestMergeGuardQuery = {
+    node:
+        | { mergeable: MergeableState; mergeStateStatus: MergeStateStatus; viewerCanMergeAsAdmin: boolean }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type PullRequestMergeOptionsQueryVariables = Exact<{
     id: string;
 }>;
@@ -10736,6 +10747,17 @@ export const ProjectUpdatedAtDocument = new TypedDocumentString(`
   }
 }
     `);
+export const PullRequestMergeGuardDocument = new TypedDocumentString(`
+    query PullRequestMergeGuard($id: ID!) {
+  node(id: $id) {
+    ... on PullRequest {
+      mergeable
+      mergeStateStatus
+      viewerCanMergeAsAdmin
+    }
+  }
+}
+    `);
 export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
     query PullRequestMergeOptions($id: ID!) {
   node(id: $id) {
@@ -13181,6 +13203,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ProjectUpdatedAtQuery>;
+        },
+        PullRequestMergeGuard(
+            variables: PullRequestMergeGuardQueryVariables,
+            options?: C,
+        ): Promise<PullRequestMergeGuardQuery> {
+            return requester<PullRequestMergeGuardQuery, PullRequestMergeGuardQueryVariables>(
+                PullRequestMergeGuardDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestMergeGuardQuery>;
         },
         PullRequestMergeOptions(
             variables: PullRequestMergeOptionsQueryVariables,

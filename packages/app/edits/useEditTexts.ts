@@ -323,6 +323,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.reasonRefused, { message: failure.message.replace(/\.$/u, '') });
+            case 'rulesNotConfirmed':
+                return t(l.reasonRulesNotConfirmed);
             default:
                 return assertNever(failure);
         }
@@ -342,6 +344,8 @@ export function useEditTexts(): EditTexts {
                 return t(l.shortOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.shortRefused);
+            case 'rulesNotConfirmed':
+                return t(l.shortRulesNotConfirmed);
             default:
                 return assertNever(failure);
         }

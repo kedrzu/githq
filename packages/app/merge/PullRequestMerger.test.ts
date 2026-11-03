@@ -553,6 +553,53 @@ test('D5: a chosen email goes through GraphQL with the head, never REST: accepte
     expect(queue.failures).toEqual([]);
 });
 
+test.each([
+    ['a required check failed or is pending, or a review is missing', 'MERGEABLE', 'BLOCKED'],
+    ['the branch is behind', 'MERGEABLE', 'BEHIND'],
+    ['GitHub is still working it out', 'UNKNOWN', 'UNKNOWN'],
+])(
+    'D12: a chosen email is never sent for someone who may bypass when %s: GitHub would merge past the rules unasked',
+    async (_case, mergeable, mergeStateStatus) => {
+        const { merger, items, queue, session, rest } = await setup();
+        mergeGuard = { mergeable, mergeStateStatus, viewerCanMergeAsAdmin: true };
+
+        const answering = merger.merge({
+            item: open(),
+            request: { method: 'SQUASH', authorEmail: 'other@acme.dev' },
+            shown,
+            onLateEnd,
+        });
+        await session.clock.advance(0);
+
+        expect(await answering).toEqual({ kind: 'refused', reason: { kind: 'rulesNotConfirmed' } });
+        expect(session.operations()).not.toContain('MergePullRequest');
+        expect(rest.puts()).toEqual([]);
+        expect(items.get('PR_1')).not.toHaveProperty('merging');
+        expect(queue.failures).toEqual([]);
+    },
+);
+
+test.each([
+    ['may bypass, and the rules are met', 'MERGEABLE', 'CLEAN', true],
+    ['may bypass, and only checks not required fail', 'MERGEABLE', 'UNSTABLE', true],
+    ['may not bypass: GitHub enforces the rules itself', 'MERGEABLE', 'BLOCKED', false],
+])('D12: a chosen email is sent for someone who %s', async (_case, mergeable, mergeStateStatus, admin) => {
+    const { merger, session } = await setup();
+    mergeGuard = { mergeable, mergeStateStatus, viewerCanMergeAsAdmin: admin };
+    mergeMutation = { data: { mergePullRequest: { pullRequest: { mergeCommit: { oid: 'email-sha' } } } } };
+
+    const answering = merger.merge({
+        item: open(),
+        request: { method: 'SQUASH', authorEmail: 'other@acme.dev' },
+        shown,
+        onLateEnd,
+    });
+    await session.clock.advance(0);
+
+    expect(await answering).toEqual({ kind: 'accepted' });
+    expect(session.operations()).toContain('MergePullRequest');
+});
+
 test("D5: GitHub's error on a chosen email is the refusal the panel shows, in GitHub's words; nothing reads merged", async () => {
     const { merger, items, queue, session } = await setup();
     mergeMutation = { data: null, errors: [{ type: 'UNPROCESSABLE', message: 'Head branch was modified.' }] };
@@ -635,6 +682,7 @@ async function setup() {
     optionsFields = null;
     onOptionsRead = null;
     mergeMutation = undefined;
+    mergeGuard = { mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN', viewerCanMergeAsAdmin: false };
 
     return { merger, items, queue, session, rest };
 
@@ -675,6 +723,10 @@ function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
 
     if (request.operation === 'MergePullRequest') {
         return mergeMutation;
+    }
+
+    if (request.operation === 'PullRequestMergeGuard') {
+        return { data: { node: mergeGuard } };
     }
 
     if (request.operation !== 'PullRequestMergeOptions') {
@@ -744,6 +796,7 @@ let optionsFields: PullRequestFieldsFragment | null = null;
 let onOptionsRead: (() => void) | null = null;
 /** What the fake GitHub answers `MergePullRequest`; a 502 when `undefined`. */
 let mergeMutation: TestGraphQLAnswer | undefined;
+let mergeGuard: { mergeable: string; mergeStateStatus: string; viewerCanMergeAsAdmin: boolean };
 
 /** How the merges GitHub accepted ended. */
 const lateEnds: MergeLateEnd[] = [];

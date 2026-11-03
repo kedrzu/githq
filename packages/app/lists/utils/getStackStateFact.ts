@@ -72,7 +72,11 @@ export function getStackStateFact(params: GetStackStateFactParams): StackStateFa
                 text: translateToString(l.merging, lang, { count: state.goingCount }),
             };
         case 'queued':
-            return { icon: ListOrdered, tone: 'accent', text: getQueuedText(state) };
+            return {
+                icon: ListOrdered,
+                tone: state.entry.state === 'UNMERGEABLE' ? 'danger' : 'accent',
+                text: getQueuedText(state),
+            };
         case 'reviewRequested':
             return {
                 icon: Eye,

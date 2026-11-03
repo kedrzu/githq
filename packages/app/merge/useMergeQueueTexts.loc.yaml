@@ -24,3 +24,5 @@ aboutHours:
   en: about {count} h
 inGroup:
   en: In queue as one group · {where}
+inGroupWontMerge:
+  en: In queue as one group, won't merge · {place}

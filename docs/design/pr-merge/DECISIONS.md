@@ -247,8 +247,24 @@ may bypass (`viewerCanMergeAsAdmin`), not which rules; a rule they may not bypas
 (PM25). Bypass goes through REST, which takes no commit email, so it commits with the user's default email and the line
 names it. (owner, 2026-11-02)
 
+> **Checked 2026-11-03 (live, `nzymejs/githq-merge-sandbox`):** GraphQL's `mergePullRequest`, the only way to send a chosen commit
+> email (D5), has no bypass input and merges past the rules for anyone GitHub lets bypass them: a required check that failed, under
+> classic protection with `enforce_admins: false` and `viewerCanMergeAsAdmin` true (#46). With `enforce_admins: true` (#48, and #55
+> with a real address) or a ruleset with no bypass list (#49), `viewerCanMergeAsAdmin` is false and GitHub refuses. For an admin who
+> may bypass, a required check still running and a missing required review both read `MERGEABLE` and `BLOCKED` (#54).
+>
+> **Decided 2026-11-03 (owner):** so `⌘Enter` keeps its promise, a chosen email's merge reads `mergeable`, `mergeStateStatus` and
+> `viewerCanMergeAsAdmin` just before it is sent. With the flag false it goes, and GitHub enforces the rules. With it true it goes only
+> at `MERGEABLE` and `CLEAN`, `HAS_HOOKS` or `UNSTABLE`; otherwise nothing is sent, the panel says so (PM43) and reads the pull request
+> again, which brings the bypass line. A moment remains between the read and the send, which GitHub offers no way to close. Bypass
+> never carries the chosen email: it goes through REST and needs no second confirmation, as `⌥⌘Enter` and the line above it are that.
+
 **Rejected.**
 
+- A second press of `⌥⌘Enter`, or a dialog, to confirm a bypass — an extra step on an action that already has its own chord and says
+  what it skips. (owner, 2026-11-03)
+- Hiding the commit email choice from admins, or dropping the choice altogether — the first loses it for everyone who administers
+  their own repositories, the second reverses "all the options are there" (D4). (owner, 2026-11-03)
 - Bypass armed with a key, B, after which `⌘Enter` bypasses (PM12b) — the one state where the habit key does the costly
   thing.
 - A red zone below the footer (PM12a's first draft) — it outshone the usual action.
@@ -266,6 +282,8 @@ required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 **Rejected.**
 
 - Two lines always, Required and Others (PM4b) — more to read when everything is green.
+- How long a check usually takes, beside one that runs — GitHub doesn't give it, and reading a check's history costs a query per panel
+  opened. (owner, 2026-11-02)
 
 ## D14
 

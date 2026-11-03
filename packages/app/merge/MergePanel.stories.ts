@@ -385,6 +385,17 @@ export const NotAllowed: Story = { args: { allowed: false } };
 /** PM25: refused at once — GitHub's reason in place; the panel and its text stay, ⌘↵ tries again. */
 export const Refused: Story = { args: { answer: 'refused' } };
 
+/**
+ * PM43 (D12): with a chosen address and the rules no longer met for someone who may bypass them, nothing was sent; the
+ * bypass line, which commits with the default address, is the way past them.
+ */
+export const RulesNotConfirmed: Story = {
+    args: {
+        settings: SQUASH_ONLY,
+        record: { kind: 'refused', sent: SENT_EDITED, reason: { kind: 'rulesNotConfirmed' }, at: NOW },
+    },
+};
+
 /** PM25, reopened (D15): refused earlier this session — the reason, and the text it was sent with, given back. */
 export const RefusedReopened: Story = {
     args: {

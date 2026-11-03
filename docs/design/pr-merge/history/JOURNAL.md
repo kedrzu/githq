@@ -12,3 +12,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-01 — Stacks moved to `docs/design/stacked-prs/`; its D7 and D11 settle `⌘Enter` before the read and commit text in a stack.
 - 2026-11-02 — Build M1 checkpoint: owner accepted PM24 without the commit text → D14.
 - 2026-11-02 — Live: merging a change to `.github/workflows` needs no `workflow` scope (D1). An organisation restricting OAuth apps refuses every write; the brief's possible permission failure becomes that one (PM42).
+- 2026-11-03 — Live: `mergePullRequest` merges past the rules only for someone GitHub lets bypass them, not with `enforce_admins` on or a ruleset with no bypass list. Owner asked whether REST could carry the email instead: neither REST merge endpoint takes one. Decided: read just before sending, for those who may bypass send only when the rules are met, else PM43 and the bypass line; `⌥⌘Enter` needs no second press.

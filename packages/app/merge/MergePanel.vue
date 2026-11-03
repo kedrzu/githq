@@ -843,6 +843,11 @@ function endVerdict(): PanelVerdict | null {
   const look = getMergeEndLook(record.kind);
   switch (record.kind) {
     case 'refused': {
+      // Never sent, so not GitHub's refusal (D12, PM43).
+      if (record.reason.kind === 'rulesNotConfirmed') {
+        return { kind: 'refused', ...look, text: t(l.notSent), aside: t(l.nothingMerged) };
+      }
+
       const text = record.sent.going ? t(l.stackRefused) : t(l.refused);
       return { kind: 'refused', ...look, text, aside: t(l.nothingMerged) };
     }
@@ -1178,6 +1183,14 @@ function refusalBand(reason: EditFailureReason): Band {
     }
     case 'notAllowed':
       return { tone: 'danger', icon: MessageSquareWarning, title: t(l.reasonNotAllowed), text: null, link: null };
+    case 'rulesNotConfirmed':
+      return {
+        tone: 'danger',
+        icon: MessageSquareWarning,
+        title: t(l.reasonRulesNotConfirmed),
+        text: t(l.reasonRulesNotConfirmedDetail),
+        link: null,
+      };
     // G5: GitHub lets githq read the organisation's public repositories, and refuses every change there.
     case 'organizationRestricted':
       return {
@@ -1354,7 +1367,11 @@ function bypass() {
   }
 
   bypassing.value = true;
-  const { request, edited: text } = toSubmission(method.value);
+  // It goes through REST, which takes no address, and the line says it commits with the default (D5, D12).
+  const {
+    request: { authorEmail: _, ...request },
+    edited: text,
+  } = toSubmission(method.value);
   emit('bypass', { request: { ...request, bypassRules: true }, edited: text });
 }
 

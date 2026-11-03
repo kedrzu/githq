@@ -112,6 +112,10 @@ shortNotAllowed:
   en: no permission
 shortMissing:
   en: no longer exists
+reasonRulesNotConfirmed:
+  en: GitHub doesn't confirm the rules are met any more, so nothing was merged. Open it to see why.
+shortRulesNotConfirmed:
+  en: rules not met
 shortOffline:
   en: GitHub unreachable
 shortRefused:

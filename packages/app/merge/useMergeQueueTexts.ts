@@ -16,7 +16,10 @@ export interface MergeQueueTexts {
     estimate(entry: PullRequestQueueEntry): string | null;
     /** "3rd · waiting for checks · about 12 min" (PM15, PM16). */
     summary(entry: PullRequestQueueEntry): string;
-    /** A stack's, from its first one's entry: "In queue as one group · 2nd · about 12 min" (SP14). */
+    /**
+     * A stack's, from its first one's entry: "In queue as one group · 2nd · about 12 min" (SP14), or "In queue as one group,
+     * won't merge · 2nd" (PM37).
+     */
     group(entry: PullRequestQueueEntry): string;
 }
 
@@ -36,6 +39,10 @@ export function useMergeQueueTexts(): MergeQueueTexts {
     }
 
     function group(entry: PullRequestQueueEntry) {
+        if (entry.state === 'UNMERGEABLE') {
+            return t(l.inGroupWontMerge, { place: place(entry) });
+        }
+
         const about = estimate(entry);
         const where = about === null ? place(entry) : `${place(entry)} · ${about}`;
         return t(l.inGroup, { where });

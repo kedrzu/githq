@@ -330,8 +330,10 @@ function describeRejection(reason: EditFailureReason, repository: string) {
       return t(l.rejectedOrganizationRestricted, { organization: reason.organization });
     case 'missing':
       return t(l.rejectedMissing, { repository });
+    // `rulesNotConfirmed` is a merge's alone: a new issue never meets it.
     case 'notAllowed':
     case 'dropped':
+    case 'rulesNotConfirmed':
       return t(l.rejectedNotAllowed, { repository });
     default:
       return assertNever(reason);

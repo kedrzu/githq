@@ -1,5 +1,5 @@
 import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
-import type { PullRequestMergeMethod } from '@githq/github/generated.gen.js';
+import type { PullRequestMergeGuardQuery, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { readAsyncMerge } from '@githq/github/rest/readAsyncMerge.js';
 import { requestAsyncMerge } from '@githq/github/rest/requestAsyncMerge.js';
@@ -24,6 +24,15 @@ interface MergedWithEmail {
     readonly status: 'mergedWithEmail';
     readonly sha: string | null;
 }
+
+/** A chosen email's merge wasn't sent: what was read just before it says no, or couldn't be read. */
+interface NotSentWithEmail {
+    readonly status: 'notSent';
+    readonly reason: EditFailureReason;
+}
+
+/** The states GitHub merges in without anyone bypassing a rule: `UNSTABLE` only has checks that aren't required failing. */
+const MERGES_WITHIN_RULES: ReadonlySet<string> = new Set(['CLEAN', 'HAS_HOOKS', 'UNSTABLE']);
 
 /** What {@link createMergeEdits} makes the merge of. */
 export interface CreateMergeEditsParams {
@@ -149,7 +158,9 @@ export function createMergeEdits(params: CreateMergeEditsParams): Edit[] {
  * branch the head commit goes alone: GitHub refuses a method or a text there, the queue has its own. A stack's top has
  * another member's branch for its base, so whether a queue takes it is told by the first going, whose base is the
  * stack's. Bypass names itself, and on a queue's branch asks to merge directly, as GitHub would queue it otherwise. A
- * chosen commit email goes through GraphQL (D5), which answers at once: accepted and merged, or refused. GitHub's
+ * chosen commit email goes through GraphQL (D5), which answers at once: accepted and merged, or refused, and merges past
+ * the rules for anyone allowed to bypass them, so for them it is sent only once GitHub confirms the rules are met (D12).
+ * GitHub's
  * `merged` confirms it, and so does `enqueued`, drawing nothing: it stays being merged until the pull requests are read
  * into the stores, in the queue, not merged, and each next read says where they are then. A
  * refusal is left to the merge panel to show (`quiet`) while the panel shows the pull request, and is a failed edit
@@ -167,7 +178,7 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         subject: { kind: 'merged' },
         optimistic: getBeingMergedLayer(request.method),
         send: async ({ rest, sdk }) => {
-            let answer: AsyncMergeAnswer | MergedWithEmail;
+            let answer: AsyncMergeAnswer | MergedWithEmail | NotSentWithEmail;
             try {
                 answer =
                     request.authorEmail === undefined
@@ -187,6 +198,9 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
                     onAnswer({ kind: 'refused', reason });
                     return { kind: 'rejected', reason, quiet: shown() };
                 }
+                case 'notSent':
+                    onAnswer({ kind: 'refused', reason: answer.reason });
+                    return { kind: 'rejected', reason: answer.reason, quiet: shown() };
                 // Merged at once: GitHub answers so only for a pull request merged already (PM30).
                 case 'merged':
                     onAnswer({ kind: 'merged' });
@@ -231,7 +245,20 @@ function createMergeEdit(params: CreateMergeEditsParams): Edit {
         };
     }
 
-    async function mergeWithEmail(sdk: GitHubSdk, authorEmail: string): Promise<MergedWithEmail> {
+    async function mergeWithEmail(sdk: GitHubSdk, authorEmail: string): Promise<MergedWithEmail | NotSentWithEmail> {
+        let guard: PullRequestMergeGuardQuery['node'];
+        try {
+            guard = (await sdk.PullRequestMergeGuard({ id: item.id })).node;
+        } catch (error) {
+            return { status: 'notSent', reason: toEditFailureReason(error) };
+        }
+
+        if (guard && 'viewerCanMergeAsAdmin' in guard && guard.viewerCanMergeAsAdmin) {
+            if (guard.mergeable !== 'MERGEABLE' || !MERGES_WITHIN_RULES.has(guard.mergeStateStatus)) {
+                return { status: 'notSent', reason: { kind: 'rulesNotConfirmed' } };
+            }
+        }
+
         const { mergePullRequest } = await sdk.MergePullRequest({
             pullRequestId: item.id,
             expectedHeadOid: item.headRefOid,
