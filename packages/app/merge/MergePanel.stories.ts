@@ -295,6 +295,14 @@ export const Rebase: Story = { args: { settings: { ...ALL_METHODS, viewerDefault
  */
 export const BeingRead: Story = { args: { readLater: true } };
 
+/** PM8: being read, GitHub's status saying only checks not required are in the way: it would merge it now (owner, 2026-11-03). */
+export const BeingReadOptionalFailed: Story = {
+    args: {
+        readLater: true,
+        pr: { ...PR, mergeStateStatus: 'UNSTABLE', checks: { state: 'FAILURE', passing: 8, failing: 1, pending: 0 } },
+    },
+};
+
 /** PM8: being read, and the proposal brings no message — the loader goes and nothing opens. */
 export const BeingReadNoMessage: Story = {
     args: {

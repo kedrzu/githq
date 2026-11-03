@@ -221,7 +221,7 @@ export function usePullRequestVerdicts(): (params: PullRequestVerdictParams) => 
             return notMet({ tone: 'danger', icon: CircleX, text: t(l.cannotMerge), aside });
         }
 
-        if (now.needsAuthor) {
+        if (now.needsAuthor && !onlyOptionalHold(current, now, counts)) {
             return notMet({ tone: 'danger', icon: CircleX, text: t(l.cannotMerge), aside: sentence(authorParts(now)) });
         }
 
@@ -252,7 +252,9 @@ export function usePullRequestVerdicts(): (params: PullRequestVerdictParams) => 
                 ? readyAside(current, counts)
                 : now.readyToMerge
                   ? t(l.readyDetail)
-                  : t(l.readyNoReview);
+                  : current.reviewDecision === null
+                    ? t(l.readyNoReview)
+                    : t(l.readyNoConflicts);
             const text = current.isMergeQueueEnabled ? t(l.readyForQueue) : t(l.ready);
             return { verdict: { tone: 'success', icon: CircleCheck, text, aside }, forward: merges };
         }
@@ -394,8 +396,18 @@ function isMergeable(pr: PullRequestItem, now: PullRequestStanding, counts: Merg
     const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
     return (
         pr.state === 'OPEN' &&
-        (now.readyToMerge || (clean && !pr.isDraft && pr.reviewDecision === null && !now.needsAuthor))
+        (now.readyToMerge ||
+            (clean && !pr.isDraft && pr.reviewDecision === null && !now.needsAuthor) ||
+            onlyOptionalHold(pr, now, counts))
     );
+}
+
+/**
+ * Before the checks are counted, GitHub's status says the checks in the way aren't required: it would merge it now, so
+ * `⌘↵` merges rather than wait (owner, 2026-11-03). One required reads `BLOCKED` (live, #54).
+ */
+function onlyOptionalHold(pr: PullRequestItem, now: PullRequestStanding, counts: MergeCheckCounts | null) {
+    return !counts && pr.mergeStateStatus === 'UNSTABLE' && !pr.isDraft && !now.changesRequested;
 }
 
 /** A verdict with no way forward. */

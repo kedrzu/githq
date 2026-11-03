@@ -45,6 +45,7 @@ const {
     BeingMerged,
     BeingRead,
     BeingReadNoMessage,
+    BeingReadOptionalFailed,
     Conflicts,
     Draft,
     HeadMoved,
@@ -78,6 +79,15 @@ test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub
 
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
     await expect.element(panel()).not.toBeInTheDocument();
+});
+
+test('PM8: before the read, ⌘↵ merges when only a check not required failed — not auto-merge', async () => {
+    await BeingReadOptionalFailed.run();
+
+    await expect.element(panel()).toHaveTextContent('Ready to merge');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
 });
 
 test('PM8: the read arriving moves nothing above the commit — the method chips, the checks with their chevron and C are in place before it; the message opens below the title', async () => {

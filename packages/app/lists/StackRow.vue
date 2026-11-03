@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import { Check, GitBranch, GitMerge, Layers, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
+import { Check, GitBranch, GitMerge, Layers, ListPlus, Milestone, Minus, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
@@ -72,6 +72,21 @@ const mergeId = computed(() => {
   }
 
   return props.stack.pullRequests.find(pr => merging?.canOpen(pr.id))?.id ?? null;
+});
+const entersQueue = computed(() => props.stack.pullRequests.find(pr => pr.id === mergeId.value)?.isMergeQueueEnabled);
+const mergeIcon = computed(() => {
+  if (description.value.state.kind === 'needsRebase') {
+    return GitBranch;
+  }
+
+  return entersQueue.value ? ListPlus : GitMerge;
+});
+const mergeLabel = computed(() => {
+  if (description.value.state.kind === 'needsRebase') {
+    return t(l.rebaseOnGitHub);
+  }
+
+  return entersQueue.value ? t(l.addToQueue) : t(l.merge);
 });
 const nameWithOwner = computed(() => {
   const name = props.stack.pullRequests[0]?.repository.nameWithOwner ?? null;
@@ -143,12 +158,12 @@ const nameWithOwner = computed(() => {
           v-if="mergeId"
           variant="link"
           size="sm"
-          :icon="description.state.kind === 'needsRebase' ? GitBranch : GitMerge"
+          :icon="mergeIcon"
           :kbd="EDIT_KEYS.merge"
           :aria-keyshortcuts="EDIT_KEYS.merge"
           @click.stop="merging?.open(mergeId, { wholeStack: true })"
         >
-          {{ description.state.kind === 'needsRebase' ? t(l.rebaseOnGitHub) : t(l.merge) }}
+          {{ mergeLabel }}
         </Button>
         <span
           v-if="shown.has('size')"

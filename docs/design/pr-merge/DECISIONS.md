@@ -265,6 +265,8 @@ names it. (owner, 2026-11-02)
   what it skips. (owner, 2026-11-03)
 - Hiding the commit email choice from admins, or dropping the choice altogether — the first loses it for everyone who administers
   their own repositories, the second reverses "all the options are there" (D4). (owner, 2026-11-03)
+- The queue's size in the panel, "4 ahead in main's queue", "3rd of 5" and "rebuilds the 4 in progress" (PM14, PM15 as first drawn) —
+  another read for what the position and the estimate already say, on repositories that rarely have a queue. (owner, 2026-11-03)
 - Bypass armed with a key, B, after which `⌘Enter` bypasses (PM12b) — the one state where the habit key does the costly
   thing.
 - A red zone below the footer (PM12a's first draft) — it outshone the usual action.
@@ -282,6 +284,8 @@ required first. (2026-11-01, design agent; chosen by the owner 2026-11-02)
 **Rejected.**
 
 - Two lines always, Required and Others (PM4b) — more to read when everything is green.
+- `⌘Enter` waiting for the read, or enabling auto-merge, when `UNSTABLE` says only optional checks are in the way — GitHub would merge it
+  now, and `⌘Enter` already works during the read. (owner, 2026-11-03)
 - How long a check usually takes, beside one that runs — GitHub doesn't give it, and reading a check's history costs a query per panel
   opened. (owner, 2026-11-02)
 

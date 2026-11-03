@@ -33,6 +33,13 @@ test('ready to merge, a pull request the viewer may merge is followed by "Merge 
     expect(opened).toEqual([READY.id]);
 });
 
+test('ready to merge on a merge queue\'s branch, the row says what it does: "Add to queue ⇧M"', async () => {
+    const queueBranch = { ...READY, isMergeQueueEnabled: true };
+    mount(queueBranch, { canOpen: id => id === READY.id, open: () => undefined, getRecord: () => null });
+
+    await expect.element(page.getByRole('button', { name: /^Add to queue/ })).toBeVisible();
+});
+
 test('ready to merge, one the viewer may not merge is followed by "Open on GitHub O"', async () => {
     mount(READY, { canOpen: () => false, open: () => undefined, getRecord: () => null });
 

@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
-import { ArrowUpRight, Check, GitMerge, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
+import { ArrowUpRight, Check, GitMerge, ListPlus, Milestone, SquareKanban, Undo2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
@@ -83,6 +83,7 @@ const facts = useItemFacts({
 const shown = computed(() => new Set(props.properties));
 /** The viewer may merge it: when it is ready, "Merge" follows instead of "Open on GitHub". */
 const mergeable = computed(() => merging?.canOpen(props.item.id) === true);
+const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.item.isMergeQueueEnabled);
 </script>
 
 <template>
@@ -160,12 +161,12 @@ const mergeable = computed(() => merging?.canOpen(props.item.id) === true);
           v-else-if="facts.status?.readyToMerge && shown.has('status') && mergeable"
           variant="link"
           size="sm"
-          :icon="GitMerge"
+          :icon="onQueueBranch ? ListPlus : GitMerge"
           :kbd="EDIT_KEYS.merge"
           :aria-keyshortcuts="EDIT_KEYS.merge"
           @click.stop="merging?.open(item.id)"
         >
-          {{ t(l.merge) }}
+          {{ onQueueBranch ? t(l.addToQueue) : t(l.merge) }}
         </Button>
         <Button
           v-else-if="facts.status?.readyToMerge && shown.has('status')"

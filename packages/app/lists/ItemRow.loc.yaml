@@ -4,5 +4,7 @@ inSelection:
   en: Selected
 merge:
   en: Merge
+addToQueue:
+  en: Add to queue
 backToMerge:
   en: Back to the merge
