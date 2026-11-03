@@ -1,0 +1,16 @@
+pullRequestOpen:
+  en: Open pull request
+pullRequestDraft:
+  en: Draft pull request
+pullRequestMerged:
+  en: Merged pull request
+pullRequestClosed:
+  en: Closed pull request
+checksPassing:
+  en: Checks passing
+checksFailing:
+  en: Checks failing
+checksRunning:
+  en: Checks running
+notKnownYet:
+  en: Pull request and checks not known yet

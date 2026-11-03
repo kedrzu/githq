@@ -155,8 +155,8 @@ Still open, not settled by the screens:
 - **Settings sync's D7** lists only what is tracked as synced; the repository layout is the first other synced setting, and that
   design's decisions should say so.
 - **Data the screens need that [D8](../DECISIONS.md#d8) and [D9](../DECISIONS.md#d9) don't fetch yet:**
-  - the pull request and CI of each branch's tip in the list (CH3): the rows on screen in the list need the same
-    `nodes(ids:)` request as the graph's rows, or a tracked repository's pull requests by head branch;
+  - the pull request and CI of each branch's tip in the list (CH3): the rows drawn in the list, a few dozen at most, ask
+    with the same `nodes(ids:)` request as the graph's rows;
   - "newest first" for branches: GitHub orders refs only by name (tags alone by date), so the refs request needs each
     tip's `committedDate` and a local sort (D15);
   - the commit's details show CI as the rollup only (CH18); naming the failing checks would need

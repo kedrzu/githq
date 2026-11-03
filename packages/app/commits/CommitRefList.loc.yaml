@@ -1,0 +1,32 @@
+title:
+  en: Branches and tags
+filterLabel:
+  en: Filter branches and tags
+filterPlaceholder:
+  en: Branch or tag…
+defaultGroup:
+  en: Default branch
+defaultBadge:
+  en: default
+branches:
+  en: Branches
+tags:
+  en: Tags
+newestFirst:
+  en: newest first
+moreBranches:
+  plural: count
+  en:
+    one: '{count} more branch · type to find one'
+    many: '{count} more branches · type to find one'
+moreTags:
+  plural: count
+  en:
+    one: '{count} more tag · type to find one'
+    many: '{count} more tags · type to find one'
+moreMatches:
+  en: '{count} more · keep typing'
+noBranchMatches:
+  en: No branch matches "{query}".
+noTagMatches:
+  en: No tag matches "{query}".

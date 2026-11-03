@@ -100,6 +100,105 @@ test('git-client D11, D20, CH37: an untracked repository shows Commits in full a
     );
 });
 
+test('git-client D17, CH45: the divider dragged with the mouse: as far as two lanes and every lane, the label up meanwhile, kept across a reload, and a double-click resets it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    // Five branches side by side off one commit, their tips newest.
+    sample.world.history(SAMPLE_REPOSITORY, {
+        commits: [
+            ...['a', 'b', 'c', 'd', 'e'].map((oid, index) => ({
+                oid,
+                headline: `Commit ${oid}`,
+                author: 'monalisa',
+                minutesAgo: 10 + index,
+                parents: ['root'],
+            })),
+            { oid: 'root', headline: 'Initial commit', author: 'monalisa', minutesAgo: 100, parents: [] },
+        ],
+        branches: { main: 'a', 'b/x': 'b', 'c/x': 'c', 'd/x': 'd', 'e/x': 'e' },
+    });
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.rows).toHaveCount(6);
+    const every = await graph.divider.getAttribute('aria-valuemax');
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
+
+    await graph.dragDivider(-400, async () => {
+        await expect(graph.divider).toHaveText(`2 of ${every} lanes`);
+    });
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
+    await expect(graph.divider).not.toContainText('lanes');
+    await page.reload();
+    await expect(graph.rows).toHaveCount(6);
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
+
+    // Past every lane it goes no further.
+    const before = await graph.divider.boundingBox();
+    await graph.dragDivider(600);
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
+    const after = await graph.divider.boundingBox();
+    expect((after?.x ?? 0) - (before?.x ?? 0)).toBe((Number(every) - 2) * 12);
+
+    await graph.dragDivider(-400);
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
+    await graph.divider.dblclick({ position: { x: 4, y: 10 } });
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
+    await page.reload();
+    await expect(graph.rows).toHaveCount(6);
+    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
+});
+
+test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed letters stay in the field, Enter goes to the commit and Esc back to the graph', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.rows).toHaveCount(6);
+
+    // The default branch first, then branches and tags newest first, each with its tip's pull request and CI.
+    await expect(graph.refList.getByRole('option')).toHaveText([
+        /main\s*default/,
+        /feat\/login\s*#5/,
+        /release\/1\.0\s*#4/,
+        /v1\.0\.0/,
+    ]);
+    await expect(graph.mark(graph.refRow('feat/login'), 'Checks failing')).toBeVisible();
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+
+    await page.keyboard.press('b');
+    await expect(graph.refFilter).toBeFocused();
+    await page.keyboard.type('rel');
+    // Letters a graph would take are typed, and the cursor stays.
+    await expect(graph.refList.getByRole('option')).toHaveText([/release\/1\.0/]);
+    await expect(graph.selectedRef).toContainText('release/1.0');
+    await expect(graph.refList).toContainText('No tag matches "rel".');
+    await page.keyboard.press('j');
+    await expect(graph.refFilter).toHaveValue('relj');
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+    await page.keyboard.press('Backspace');
+
+    await page.keyboard.press('Enter');
+    // CH26: back in the graph, the filter clear and nothing selected in the list.
+    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+    await expect(graph.refFilter).toHaveValue('');
+    await expect(graph.root).toBeFocused();
+    await expect(graph.root).toHaveCSS('outline-style', 'none');
+    await expect(graph.selectedRef).toHaveCount(0);
+    await page.keyboard.press('j');
+    await expect(graph.cursorRow).toContainText('docs: describe the setup');
+
+    // The header's tool does as B does.
+    await graph.refListTool.click();
+    await expect(graph.refFilter).toBeFocused();
+});
+
 test('CH38: an empty repository says it has no commits yet', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     await openTrackedWork(page, github, sample.world);
