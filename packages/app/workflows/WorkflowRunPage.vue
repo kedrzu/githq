@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. An address with `#step:N:L` puts the log's cursor on that line. The job the address names is selected, else the first failed; selecting one replaces the address. Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
+<!-- `/owner/name/actions/runs/123` and `…/job/456`: a run of a tracked repository's workflow (actions W4a), at GitHub's addresses of it, full page; a repository not tracked hands off to GitHub (`middleware/auth.global.ts`, D4). What the local copy knows shows at once, the run, its jobs and the selected job's log are read on demand (`WorkflowRunStore`, D12), and asked again on opening, for what changed since (304s are free). While the run goes it is asked again every 30 seconds, which is also how a running job's log opens by itself once it finishes (W4j); so is a job's log GitHub has no answer for in the first minutes after the job finished. A log GitHub had no answer for is asked for again on coming back to its job, as it may have landed meanwhile. An address with `#step:N:L` puts the log's cursor on that line. The job the address names is selected, else the first failed; selecting one replaces the address. The status bar says what the log's state is about (`WorkflowRunStore.pageFreshness`). Esc goes back where the run was opened from — the row kept (`WorkflowTabPlaces`) —, with no history to the repository's Workflows tab. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { useNow } from '@/services/useNow.js';
+import type { Freshness } from '@/sync/Freshness.js';
 import {
   getGitHubUrl,
   getRepositoryPath,
@@ -63,6 +64,21 @@ const logPane = computed(() =>
   }),
 );
 const logNotThereYet = computed(() => logPane.value.kind === 'loading' && logPane.value.notThereYet === true);
+const pageFreshness = computed((): Freshness | null => {
+  const pane = logPane.value;
+  switch (pane.kind) {
+    case 'loading':
+      return pane.job ? { kind: 'readingLog', job: pane.job.name } : null;
+    case 'failed':
+      return { kind: 'logFailed', job: pane.job.name };
+    case 'running': {
+      const { checkedAt } = store.getJobs(nameWithOwner, runId);
+      return checkedAt === null ? null : { kind: 'statusChecked', checkedAt };
+    }
+    default:
+      return null;
+  }
+});
 const lineAddress = computed(() => (route.name === 'workflow-run-job' ? parseLogLineHash(route.hash) : null));
 const stored = computed(() => workflows.get(nameWithOwner));
 const gitRef = computed((): WorkflowRowRef | null => {
@@ -97,17 +113,27 @@ watch(
   },
   { immediate: true },
 );
-// The status bar says which log is being read.
 watch(
-  logPane,
-  pane => {
-    store.readingLogOf.value = pane.kind === 'loading' && pane.job ? pane.job.name : null;
+  pageFreshness,
+  freshness => {
+    store.pageFreshness.value = freshness;
+  },
+  { immediate: true },
+);
+// Coming back to a job, or to the page: what GitHub had no log for then may have landed, with nothing asking meanwhile.
+watch(
+  () => logPane.value.job?.id,
+  () => {
+    const pane = logPane.value;
+    if (pane.job && (pane.kind === 'gone' || logNotThereYet.value)) {
+      store.retry({ nameWithOwner, jobId: pane.job.id, steps: pane.job.steps });
+    }
   },
   { immediate: true },
 );
 onScopeDispose(() => {
   cancelRefresh?.();
-  store.readingLogOf.value = null;
+  store.pageFreshness.value = null;
 });
 onMounted(() => store.refresh(nameWithOwner, runId));
 
@@ -137,7 +163,7 @@ function retry() {
 }
 
 function openOnGitHub() {
-  browser.openInNewTab(getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId })));
+  browser.openInNewTab(getGitHubUrl(getWorkflowRunPath({ nameWithOwner, runId, jobId: model.value.selectedJob?.id })));
 }
 
 function close() {

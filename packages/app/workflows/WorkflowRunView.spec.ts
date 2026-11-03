@@ -61,7 +61,8 @@ test('W4a: the summary says what the run is, at once', async () => {
 
 test('W4j: past the first attempt the summary says which', async () => {
     await SecondAttempt.run();
-    await expect.element(page.getByTestId('workflow-run-summary')).toHaveTextContent('· attempt 2');
+    // With the event, as the pen draws it, not at the end of the row.
+    await expect.element(page.getByTestId('workflow-run-summary')).toHaveTextContent(/push · attempt 2\s*4f1c9e2/u);
 
     await Failed.run();
     await expect.element(page.getByTestId('workflow-run-summary')).not.toHaveTextContent('attempt');
@@ -240,10 +241,20 @@ test('a run not started yet says it waits for a runner', async () => {
     await expect.element(page.getByRole('heading', { name: 'No job has started yet' })).toBeVisible();
 });
 
-test('the toolbar’s GitHub link opens the run in a new tab', async () => {
+test('the toolbar’s GitHub link opens the selected job in a new tab, the run with no job selected', async () => {
     await Failed.run();
 
     const link = page.getByRole('link', { name: 'Open on GitHub' }).element();
-    expect(link.getAttribute('href')).toBe('https://github.com/fitloop/webapp/actions/runs/4821');
+    expect(link.getAttribute('href')).toBe('https://github.com/fitloop/webapp/actions/runs/4821/job/103');
     expect(link.getAttribute('target')).toBe('_blank');
+
+    await OtherJob.run();
+    expect(page.getByRole('link', { name: 'Open on GitHub' }).element().getAttribute('href')).toBe(
+        'https://github.com/fitloop/webapp/actions/runs/4821/job/104',
+    );
+
+    await InvalidFile.run();
+    expect(page.getByRole('link', { name: 'Open on GitHub' }).element().getAttribute('href')).toBe(
+        'https://github.com/fitloop/webapp/actions/runs/4821',
+    );
 });

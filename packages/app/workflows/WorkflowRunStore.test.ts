@@ -75,9 +75,58 @@ test('a run GitHub does not have is gone, one it fails on says how, and refreshi
 
     world.repository(REPO).refusal = null;
     store.refresh(REPO, RUN);
-    expect(store.getRun(REPO, RUN)).toMatchObject({ status: 'loading', httpStatus: null });
     await session.clock.advance(0);
     expect(store.getRun(REPO, RUN)).toMatchObject({ status: 'ready', run: { id: RUN } });
+});
+
+test('asking again says what it said until GitHub answers: the page has nothing to blink', async () => {
+    const world = worldWithRun();
+    const { session, store } = setup(world);
+
+    store.getRun(REPO, 999);
+    store.getJobs(REPO, 999);
+    await session.clock.advance(0);
+    store.refresh(REPO, 999);
+    expect(store.getRun(REPO, 999)).toMatchObject({ status: 'gone', run: null });
+    expect(store.getJobs(REPO, 999)).toMatchObject({ status: 'gone', jobs: [] });
+    await session.clock.advance(0);
+
+    world.repository(REPO).refusal = 500;
+    store.getJobs(REPO, RUN);
+    await session.clock.advance(0);
+    store.refresh(REPO, RUN);
+    expect(store.getJobs(REPO, RUN)).toMatchObject({ status: 'failed', httpStatus: 500 });
+    await session.clock.advance(0);
+    expect(store.getJobs(REPO, RUN)).toMatchObject({ status: 'failed', httpStatus: 500 });
+
+    world.repository(REPO).refusal = null;
+    store.refresh(REPO, RUN);
+    expect(store.getJobs(REPO, RUN)).toMatchObject({ status: 'failed', httpStatus: 500 });
+    await session.clock.advance(0);
+    expect(store.getJobs(REPO, RUN).status).toBe('ready');
+});
+
+test('the jobs say when GitHub last answered for them: a 304 counts, a failure does not', async () => {
+    const world = worldWithRun();
+    const { session, store } = setup(world);
+
+    expect(store.getJobs(REPO, RUN).checkedAt).toBeNull();
+    await session.clock.advance(0);
+    const first = session.clock.now();
+    expect(store.getJobs(REPO, RUN).checkedAt).toBe(first);
+
+    await session.clock.advance(30_000);
+    store.refresh(REPO, RUN);
+    await session.clock.advance(0);
+    const second = session.clock.now();
+    expect(second).toBeGreaterThan(first);
+    expect(store.getJobs(REPO, RUN).checkedAt).toBe(second);
+
+    world.repository(REPO).refusal = 500;
+    await session.clock.advance(30_000);
+    store.refresh(REPO, RUN);
+    await session.clock.advance(0);
+    expect(store.getJobs(REPO, RUN).checkedAt).toBe(second);
 });
 
 test('jobs are read once, refreshed conditionally: a 304 keeps them, a change is told, a failure says nothing', async () => {
@@ -86,7 +135,7 @@ test('jobs are read once, refreshed conditionally: a 304 keeps them, a change is
 
     store.getJobs(REPO, RUN);
     store.getJobs(REPO, RUN);
-    expect(store.getJobs(REPO, RUN)).toEqual({ jobs: [], status: 'loading', httpStatus: null });
+    expect(store.getJobs(REPO, RUN)).toEqual({ jobs: [], status: 'loading', httpStatus: null, checkedAt: null });
     await session.clock.advance(0);
     expect(store.getJobs(REPO, RUN).status).toBe('ready');
     expect(store.getJobs(REPO, RUN).jobs.map(entry => entry.id)).toEqual([JOB]);

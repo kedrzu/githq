@@ -79,7 +79,7 @@ test('reads a job with its steps, a step’s missing times and a step number’s
     });
 });
 
-test('follows the `Link` through every page, keeping the first page’s ETag', async () => {
+test('follows the `Link` through every page, and keeps no ETag: the first page’s says nothing of a job on another', async () => {
     const requests: Parameters<Fetch>[] = [];
     const rest = restAnswering(
         [
@@ -97,7 +97,7 @@ test('follows the `Link` through every page, keeping the first page’s ETag', a
 
     const result = await listRunJobs(rest, PARAMS);
 
-    expect(result).toMatchObject({ status: 200, etag: '"first"' });
+    expect(result).toMatchObject({ status: 200, etag: undefined });
     expect(result.status === 200 && result.jobs.map(job => [job.id, job.steps.length])).toEqual([
         [125_492_293_728, 2],
         [2, 0],

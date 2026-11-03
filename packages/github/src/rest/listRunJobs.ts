@@ -42,16 +42,19 @@ export interface ListRunJobsParams {
     /** `owner/name`. */
     nameWithOwner: string;
     runId: number;
-    /** The ETag the last 200 of the first page returned. */
+    /** The ETag of the last 200, if it had one: only an answer of one page has. */
     etag?: string;
 }
 
-/** The first page did not change since the ETag (free), the jobs, or GitHub no longer has the run. */
+/** The jobs did not change since the ETag (free), the jobs, or GitHub no longer has the run. */
 export type ListRunJobsResult =
     | { status: 304 }
     | {
           status: 200;
-          /** The first page's; `undefined` when GitHub sent none — the next call cannot be conditional. */
+          /**
+           * `undefined` when GitHub sent none, or there was a next page: a 304 on the first page says nothing of a job
+           * on another, which would stay "running" for good (W4j). The next call is then not conditional.
+           */
           etag: string | undefined;
           /** Of every page. Empty for a run whose workflow file is invalid (actions D3). */
           jobs: GitHubWorkflowJob[];
@@ -59,8 +62,8 @@ export type ListRunJobsResult =
     | { status: 'gone' };
 
 /**
- * Lists a run's jobs and their steps (`GET /repos/{o}/{r}/actions/runs/{id}/jobs`), every page, with `If-None-Match` on
- * the first: a 304 there is free of quota.
+ * Lists a run's jobs and their steps (`GET /repos/{o}/{r}/actions/runs/{id}/jobs`), every page. With an ETag it asks
+ * `If-None-Match`: a 304 is free of quota. Only a run whose jobs fit one page gets one to ask with.
  *
  * Throws {@link GitHubApiError} when GitHub refuses other than with "gone", or the answer is not a list of jobs.
  */
@@ -77,14 +80,19 @@ export async function listRunJobs(rest: GitHubRestRequester, params: ListRunJobs
         }
 
         const jobs = readJobs(first.status, first.payload);
-        let nextPageUrl = readNextPageUrl(first.headers);
+        const firstNextPageUrl = readNextPageUrl(first.headers);
+        let nextPageUrl = firstNextPageUrl;
         while (nextPageUrl !== undefined) {
             const page = await rest({ url: nextPageUrl });
             jobs.push(...readJobs(page.status, page.payload));
             nextPageUrl = readNextPageUrl(page.headers);
         }
 
-        return { status: 200, etag: first.headers.get('etag') ?? undefined, jobs };
+        return {
+            status: 200,
+            etag: firstNextPageUrl === undefined ? (first.headers.get('etag') ?? undefined) : undefined,
+            jobs,
+        };
     } catch (error) {
         if (isGitHubGone(error)) {
             return { status: 'gone' };

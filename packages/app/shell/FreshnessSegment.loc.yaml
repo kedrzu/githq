@@ -4,6 +4,10 @@ checking:
   en: Checking…
 readingLog:
   en: 'Reading the log of {job}…'
+logFailed:
+  en: "The log of {job} didn't load"
+statusChecked:
+  en: 'Status checked {age} ago'
 readingRuns:
   en: Reading runs · {read} of {total} workflows
 asOf:

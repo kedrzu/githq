@@ -69,7 +69,9 @@ test('a failed run with no jobs is an invalid workflow file; one that did not fa
 });
 
 test('while the jobs load, or no run is known to judge them by, the columns wait in place', () => {
-    expect(build({ jobs: { jobs: [], status: 'loading', httpStatus: null } }).body).toEqual({ kind: 'loading' });
+    expect(build({ jobs: { jobs: [], status: 'loading', httpStatus: null, checkedAt: null } }).body).toEqual({
+        kind: 'loading',
+    });
     expect(build({ jobs: ready(), run: { run: null, status: 'loading', httpStatus: null } }).body).toEqual({
         kind: 'loading',
     });
@@ -77,7 +79,9 @@ test('while the jobs load, or no run is known to judge them by, the columns wait
 
 test('a run or its jobs GitHub no longer has is gone, even with a stored copy', () => {
     expect(build({ run: { run: RUN, status: 'gone', httpStatus: null } }).body).toEqual({ kind: 'gone' });
-    expect(build({ jobs: { jobs: [], status: 'gone', httpStatus: null } }).body).toEqual({ kind: 'gone' });
+    expect(build({ jobs: { jobs: [], status: 'gone', httpStatus: null, checkedAt: null } }).body).toEqual({
+        kind: 'gone',
+    });
 });
 
 test('a failed read says so only where nothing stands in for it', () => {
@@ -85,7 +89,7 @@ test('a failed read says so only where nothing stands in for it', () => {
         kind: 'runFailed',
         httpStatus: 502,
     });
-    expect(build({ jobs: { jobs: [], status: 'failed', httpStatus: 500 } }).body).toEqual({
+    expect(build({ jobs: { jobs: [], status: 'failed', httpStatus: 500, checkedAt: null } }).body).toEqual({
         kind: 'jobsFailed',
         httpStatus: 500,
     });
@@ -102,6 +106,12 @@ test('it goes on while the run has not finished, or a job known has not: the job
     expect(build({ jobs: passed, run: known({ status: 'in_progress', conclusion: null }) }).going).toBe(true);
     expect(build({ jobs: ready(job(1, 'build', null)) }).going).toBe(true);
     expect(build({ jobs: passed, run: { run: null, status: 'loading', httpStatus: null } }).going).toBe(false);
+    // What GitHub no longer shows is not going, whatever the last copy of it says: asking again only spends allowance.
+    const running = known({ status: 'in_progress', conclusion: null });
+    expect(build({ run: { ...running, status: 'gone' }, jobs: passed }).going).toBe(false);
+    expect(build({ run: running, jobs: { jobs: [], status: 'gone', httpStatus: null, checkedAt: null } }).going).toBe(
+        false,
+    );
 });
 
 test('a job’s and a step’s mark: running, waiting, then by the conclusion', () => {
@@ -179,7 +189,7 @@ function known(change: Partial<GitHubWorkflowRunDetail>): WorkflowRunState {
 }
 
 function ready(...jobs: GitHubWorkflowJob[]): WorkflowJobsState {
-    return { jobs, status: 'ready', httpStatus: null };
+    return { jobs, status: 'ready', httpStatus: null, checkedAt: null };
 }
 
 function job(

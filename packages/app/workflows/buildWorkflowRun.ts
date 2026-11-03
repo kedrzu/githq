@@ -38,7 +38,10 @@ export interface WorkflowRunModel {
     /** The job asked for by the address when the run has it, else the first of {@link jobs}: its first failed one. */
     readonly selectedJob: GitHubWorkflowJob | null;
     readonly body: WorkflowRunBody;
-    /** More may change: the run has not finished, or a job known has not. The page keeps asking GitHub meanwhile (W4j). */
+    /**
+     * More may change: GitHub still shows the run, and it has not finished, or a job known has not. The page keeps asking
+     * GitHub meanwhile (W4j).
+     */
     readonly going: boolean;
 }
 
@@ -110,13 +113,16 @@ export function buildWorkflowRun(params: BuildWorkflowRunParams): WorkflowRunMod
         counts[getJobMark(job)] += 1;
     }
 
+    const body = getBody(runState, jobsState);
     return {
         run,
         jobs,
         counts,
         selectedJob: jobs.find(job => job.id === jobId) ?? jobs[0] ?? null,
-        body: getBody(runState, jobsState),
-        going: (run !== null && run.status !== 'completed') || jobs.some(job => job.status !== 'completed'),
+        body,
+        going:
+            body.kind !== 'gone' &&
+            ((run !== null && run.status !== 'completed') || jobs.some(job => job.status !== 'completed')),
     };
 }
 

@@ -1,4 +1,4 @@
-<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the run on GitHub, also in ⌘K. The log's own keys are `WorkflowJobLog`'s. No key or command for re-running yet. -->
+<!-- A workflow's run on a page of its own (actions W4a): the toolbar — the repository, the workflow and the run's number, GitHub (`O`) and back (`Esc`) —, what the run is (`WorkflowRunSummary`), then its jobs (`WorkflowRunJobs`) beside the selected job's log (`WorkflowRunLogPane`). What is known shows at once; the jobs, then the log, load in place, and nothing else waits for them (W4e). With no columns to show the page says why: an invalid workflow file (W4f), a run GitHub won't show, a read that failed, or a run with no jobs. Keys while it is shown, never from a field — it takes the focus as it opens: ⌥J/⌥K move between the jobs, Enter tries a failed read again, O opens the selected job on GitHub, the run with none selected, also in ⌘K. The log's own keys are `WorkflowJobLog`'s. No key or command for re-running yet. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowJob } from '@githq/github/rest/listRunJobs.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -48,7 +48,7 @@ const emit = defineEmits<{
   selectJob: [job: GitHubWorkflowJob];
   /** Enter or "Try again": the caller reads again what failed. */
   retry: [];
-  /** O or a way to GitHub: the caller opens the run there. */
+  /** O or a way to GitHub: the caller opens the selected job there, the run with none selected. */
   openOnGitHub: [];
   /** Esc or the toolbar's close. */
   close: [];
@@ -80,7 +80,13 @@ const title = computed(() => {
 });
 const mark = computed(() => (props.model.run ? describeWorkflowRun(props.model.run, props.now).mark : 'none'));
 const gitHubUrl = computed(() =>
-  getGitHubUrl(getWorkflowRunPath({ nameWithOwner: props.nameWithOwner, runId: props.runId })),
+  getGitHubUrl(
+    getWorkflowRunPath({
+      nameWithOwner: props.nameWithOwner,
+      runId: props.runId,
+      jobId: props.model.selectedJob?.id,
+    }),
+  ),
 );
 const showsColumns = computed(() => props.model.body.kind === 'jobs' || props.model.body.kind === 'loading');
 const message = computed((): RunMessage | null => {

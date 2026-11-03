@@ -86,7 +86,9 @@ export const OtherJob: Story = {
 
 /** W4e: what is known is there; the jobs and the log wait in place. */
 export const JobsLoading: Story = {
-    args: viewOf({ jobs: { jobs: [], status: 'loading', httpStatus: null } }, () => ({ status: 'loading' })),
+    args: viewOf({ jobs: { jobs: [], status: 'loading', httpStatus: null, checkedAt: null } }, () => ({
+        status: 'loading',
+    })),
 };
 
 /** W4e, a moment later: the jobs are in, the log still on its way. */
@@ -97,7 +99,7 @@ export const NothingKnown: Story = {
     args: viewOf(
         {
             run: { run: null, status: 'loading', httpStatus: null },
-            jobs: { jobs: [], status: 'loading', httpStatus: null },
+            jobs: { jobs: [], status: 'loading', httpStatus: null, checkedAt: null },
         },
         () => ({ status: 'loading' }),
     ),
@@ -106,7 +108,9 @@ export const NothingKnown: Story = {
 /** W4f: a failed run with no jobs. */
 export const InvalidFile: Story = {
     args: {
-        ...viewOf({ jobs: { jobs: [], status: 'ready', httpStatus: null } }, () => ({ status: 'loading' })),
+        ...viewOf({ jobs: { jobs: [], status: 'ready', httpStatus: null, checkedAt: null } }, () => ({
+            status: 'loading',
+        })),
         workflowPath: '.github/workflows/deploy.yml',
     },
 };
@@ -138,6 +142,7 @@ export const Running: Story = {
                     ],
                     status: 'ready',
                     httpStatus: null,
+                    checkedAt: null,
                 },
             },
             () => ({ status: 'loading' }),
@@ -159,7 +164,7 @@ export const Passed: Story = {
     args: viewOf(
         {
             run: { run: { ...RUN, conclusion: 'success' }, status: 'ready', httpStatus: null },
-            jobs: { jobs: [job(101, 'lint', 'success')], status: 'ready', httpStatus: null },
+            jobs: { jobs: [job(101, 'lint', 'success')], status: 'ready', httpStatus: null, checkedAt: null },
         },
         () => ({ status: 'ready', log: parseJobLog('2026-11-02T11:46:01.0000000Z All good', []) }),
     ),
@@ -180,7 +185,9 @@ export const RunFailed: Story = {
 
 /** The jobs failed to read; what is known of the run stays. */
 export const JobsFailed: Story = {
-    args: viewOf({ jobs: { jobs: [], status: 'failed', httpStatus: 503 } }, () => ({ status: 'loading' })),
+    args: viewOf({ jobs: { jobs: [], status: 'failed', httpStatus: 503, checkedAt: null } }, () => ({
+        status: 'loading',
+    })),
 };
 
 /** The run going, no job started yet. */
@@ -188,7 +195,7 @@ export const NoJobYet: Story = {
     args: viewOf(
         {
             run: { run: { ...RUNNING_RUN, status: 'queued' }, status: 'ready', httpStatus: null },
-            jobs: { jobs: [], status: 'ready', httpStatus: null },
+            jobs: { jobs: [], status: 'ready', httpStatus: null, checkedAt: null },
         },
         () => ({ status: 'loading' }),
     ),
@@ -197,7 +204,7 @@ export const NoJobYet: Story = {
 function viewOf(params: Partial<BuildWorkflowRunParams>, readLog: () => WorkflowLogState) {
     const model = buildWorkflowRun({
         run: { run: RUN, status: 'ready', httpStatus: null },
-        jobs: { jobs: JOBS, status: 'ready', httpStatus: null },
+        jobs: { jobs: JOBS, status: 'ready', httpStatus: null, checkedAt: null },
         jobId: null,
         ...params,
     });

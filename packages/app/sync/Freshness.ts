@@ -12,6 +12,9 @@
  * - `partial`: nothing was ever downloaded for it and the first download is under way;
  * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
  * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
+ * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
+ * - `statusChecked`: a run's page is showing a job still running, whose jobs GitHub last answered for at `checkedAt`
+ *   (actions W4j);
  * - `answered`: a saved view whose filter githq can't evaluate, answered by GitHub instead (K6) and refreshed more
  *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered.
  *
@@ -30,6 +33,8 @@ export type Freshness =
     | { readonly kind: 'partial' }
     | { readonly kind: 'reading'; readonly read: number; readonly total: number }
     | { readonly kind: 'readingLog'; readonly job: string }
+    | { readonly kind: 'logFailed'; readonly job: string }
+    | { readonly kind: 'statusChecked'; readonly checkedAt: number }
     | { readonly kind: 'answered'; readonly term: string; readonly checkedAt: number | null };
 
 /** What a surface's freshness is told from: its poll and the browser now. */

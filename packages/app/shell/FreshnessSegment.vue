@@ -1,4 +1,4 @@
-<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, amber with since when and why when it is not. Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again. -->
+<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, or on a run's page what its log is doing (W4e, W4i, W4j); amber with since when and why when it is not. Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -45,7 +45,7 @@ interface SegmentLook {
 const TICK_MS = 1000;
 
 const t = useTranslate();
-const now = useNow(TICK_MS, () => props.freshness.kind === 'fresh');
+const now = useNow(TICK_MS, () => props.freshness.kind === 'fresh' || props.freshness.kind === 'statusChecked');
 
 const look = computed((): SegmentLook => {
   const { freshness, edits } = props;
@@ -70,6 +70,14 @@ const look = computed((): SegmentLook => {
       };
     case 'readingLog':
       return { icon: LoaderCircle, tone: 'muted', text: t(l.readingLog, { job: freshness.job }) };
+    case 'logFailed':
+      return { icon: TriangleAlert, tone: 'warning', text: t(l.logFailed, { job: freshness.job }) };
+    case 'statusChecked':
+      return {
+        icon: Check,
+        tone: 'dim',
+        text: t(l.statusChecked, { age: formatCheckedAge(freshness.checkedAt, now.value) }),
+      };
     case 'answered':
       return {
         icon: Cloud,

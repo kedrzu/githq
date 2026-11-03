@@ -16,6 +16,7 @@ import type { Account } from '@/auth/AccountSession.js';
 import { Clock } from '@/services/Clock.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
+import type { Freshness } from '@/sync/Freshness.js';
 import { getAllowancePause } from '@/sync/getAllowancePause.js';
 
 import { parseJobLog } from './utils/parseJobLog.js';
@@ -47,6 +48,8 @@ export interface WorkflowJobsState {
     readonly status: WorkflowReadStatus;
     /** The status GitHub refused with, when `failed`; `null` for no answer, or nothing asked with the allowance used up. */
     readonly httpStatus: number | null;
+    /** When GitHub last answered for them, a 304 too (epoch ms); `null` until it has. */
+    readonly checkedAt: number | null;
 }
 
 /** A job's log and how reading it went. */
@@ -69,6 +72,7 @@ interface ConditionalRead<T> {
         readonly value: T | null;
         readonly status: WorkflowReadStatus;
         readonly httpStatus: number | null;
+        readonly checkedAt: number | null;
     }>;
     etag: string | undefined;
     reading: boolean;
@@ -151,8 +155,8 @@ export const WorkflowRunStore = defineService({
         });
 
         return {
-            /** The name of the job whose log the page shown is waiting for, as the status bar says it (W4e). */
-            readingLogOf: shallowRef<string | null>(null),
+            /** What the run's page shown says in the status bar instead of the workflows' poll (W4e, W4i, W4j); `null` if nothing. */
+            pageFreshness: shallowRef<Freshness | null>(null),
             getRun,
             getJobs,
             refresh,
@@ -176,16 +180,16 @@ export const WorkflowRunStore = defineService({
         function getJobs(nameWithOwner: string, runId: number): WorkflowJobsState {
             const current = sessionRef.value;
             if (!current) {
-                return { jobs: [], status: 'loading', httpStatus: null };
+                return { jobs: [], status: 'loading', httpStatus: null, checkedAt: null };
             }
 
-            const { value, status, httpStatus } = openJobs({ current, nameWithOwner, runId }).state.value;
-            return { jobs: value ?? [], status, httpStatus };
+            const { value, status, httpStatus, checkedAt } = openJobs({ current, nameWithOwner, runId }).state.value;
+            return { jobs: value ?? [], status, httpStatus, checkedAt };
         }
 
         /**
          * Asks whether the run and its jobs changed, for a run still going or one that failed to read: 304s are free,
-         * and what is known stays meanwhile, and if the asking fails.
+         * and what is known and what was said stay meanwhile, and if the asking fails.
          */
         function refresh(nameWithOwner: string, runId: number) {
             const current = sessionRef.value;
@@ -268,7 +272,7 @@ export const WorkflowRunStore = defineService({
             }
 
             const read: ConditionalRead<T> = {
-                state: shallowRef({ value: null, status: 'loading', httpStatus: null }),
+                state: shallowRef({ value: null, status: 'loading', httpStatus: null, checkedAt: null }),
                 etag: undefined,
                 reading: false,
                 load,
@@ -289,11 +293,6 @@ export const WorkflowRunStore = defineService({
             }
 
             read.reading = true;
-            const { value, status } = read.state.value;
-            if (value === null && status !== 'loading') {
-                read.state.value = { value, status: 'loading', httpStatus: null };
-            }
-
             void readConditional(current, read);
         }
 
@@ -306,11 +305,21 @@ export const WorkflowRunStore = defineService({
 
                 switch (answer.status) {
                     case 304:
-                        read.state.value = { ...read.state.value, status: 'ready', httpStatus: null };
+                        read.state.value = {
+                            ...read.state.value,
+                            status: 'ready',
+                            httpStatus: null,
+                            checkedAt: clock.now(),
+                        };
                         break;
                     case 200:
                         read.etag = answer.etag;
-                        read.state.value = { value: answer.value, status: 'ready', httpStatus: null };
+                        read.state.value = {
+                            value: answer.value,
+                            status: 'ready',
+                            httpStatus: null,
+                            checkedAt: clock.now(),
+                        };
                         break;
                     case 'gone':
                         read.etag = undefined;
@@ -365,7 +374,7 @@ export const WorkflowRunStore = defineService({
 function putNotRead<T>(read: ConditionalRead<T>, httpStatus: number | null) {
     const { value, status } = read.state.value;
     if (value === null || status !== 'ready') {
-        read.state.value = { value, status: 'failed', httpStatus };
+        read.state.value = { ...read.state.value, status: 'failed', httpStatus };
     }
 }
 
