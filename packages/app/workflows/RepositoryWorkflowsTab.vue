@@ -1,4 +1,4 @@
-<!-- `/owner/name/actions` (actions W3a): a tracked repository's Workflows tab, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A broken workflow opens its latest failed run; any other unfolds in place (W3b): its kept runs at once, more — on any ref, or on the ref filtered by — read on demand a page at a time, the first anew at each unfold (`WorkflowRunHistory`, D12), never kept. A run opens on GitHub, in a new tab, until githq has a run page of its own. P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there comes back here, to the same row, unfolded as it was (`WorkflowTabPlaces`, W13). -->
+<!-- `/owner/name/actions` (actions W3a): a tracked repository's Workflows tab, as the repository's page builds it from the local copy (`buildRepositoryWorkflows`). Opening it polls the workflows at once, and while it is shown every poll reads the repository's runs on any ref too (D2, `useAnyRefRead`), which the tab lists though they may raise no alert. A broken workflow opens its latest failed run; any other unfolds in place (W3b): its kept runs at once, more — on any ref, or on the ref filtered by — read on demand a page at a time, the first anew at each unfold (`WorkflowRunHistory`, D12), never kept. A run opens on its page in githq (W4a). P opens the repository's settings on Workflow alerts — on its add field from a workflow failing only where nothing raises alerts —, and Esc there comes back here, to the same row, unfolded as it was (`WorkflowTabPlaces`, W13). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';
@@ -101,7 +101,7 @@ function openSettings(addPattern: boolean) {
     :list="list"
     :now="now"
     :unfolded="unfolded"
-    @open-run="openRun"
+    @open-run="openRun(nameWithOwner, $event)"
     @unfold="unfoldedKey = $event"
     @filter="refFilter = $event"
     @read-more="readMore"

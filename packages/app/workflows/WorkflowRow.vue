@@ -19,6 +19,8 @@ import type { WorkflowRowRef, WorkflowRowStanding, WorkflowState } from './Workf
 const props = withDefaults(
   defineProps<{
     workflow: WorkflowState;
+    /** `owner/name`, whose runs its strip's ticks open. */
+    nameWithOwner: string;
     /** Epoch ms the ages are counted to. */
     now: number;
     /** The ref or pattern the row names; `null` names none. */
@@ -231,6 +233,7 @@ function withRunning(status: string) {
     </span>
     <RunStrip
       :class="css.workflowRow_strip"
+      :name-with-owner="nameWithOwner"
       :runs="runs"
       :new-since="newSince"
     />

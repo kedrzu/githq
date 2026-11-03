@@ -1,0 +1,63 @@
+reading:
+  en: Reading…
+lines:
+  plural: count
+  en:
+    one: '{count} line'
+    many: '{count} lines'
+stillRunning:
+  en: still running
+logDeleted:
+  en: log deleted
+notLoaded:
+  en: not loaded
+skipped:
+  en: skipped
+job:
+  en: Job
+gitHub:
+  en: GitHub
+allKeys:
+  en: All keys
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
+watchOnGitHub:
+  en: Watch on GitHub
+runningTitle:
+  en: '{job} is still running'
+waitingTitle:
+  en: "{job} hasn't started yet"
+runningText:
+  en: "GitHub doesn't stream a running job's log to githq. It lands here the moment the job finishes; until then, watch it live on GitHub."
+runningDetail:
+  en: 'status: {status} · {duration}'
+waitingDetail:
+  en: 'status: {status}'
+goneTitle:
+  en: This log was garbage-collected
+goneFailedAt:
+  en: 'It failed at {step}.'
+goneOld:
+  en: 'GitHub keeps logs for 90 days by default and this run is {days} days old. The next failed run brings a fresh one.'
+goneYoung:
+  en: 'GitHub has no log for this job, though it keeps logs for 90 days by default; a repository can keep them for less. The next failed run brings a fresh one.'
+goneDetail:
+  en: 'retention 90d · run age {days}d'
+failedTitle:
+  en: "The log of {job} didn't load"
+failedText:
+  en: "GitHub answered {status}, which happens to the best of servers. Other jobs' logs still open with ⌥J and ⌥K."
+failedNoAnswerText:
+  en: "GitHub didn't answer, or githq has used up its allowance for now. Other jobs' logs still open with ⌥J and ⌥K."
+failedDetail:
+  en: 'GET …/jobs/{id}/logs → {status}'
+failedNoAnswerDetail:
+  en: 'GET …/jobs/{id}/logs → no answer'
+skippedTitle:
+  en: '{job} was skipped'
+skippedText:
+  en: "It never ran, so there's no log to read."
+skippedDetail:
+  en: 'conclusion: skipped'

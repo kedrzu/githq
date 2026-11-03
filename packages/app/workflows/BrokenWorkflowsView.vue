@@ -28,6 +28,9 @@ const emit = defineEmits<{
   open: [entry: BrokenWorkflowEntry];
 }>();
 
+/** The selected row's key; `null` until the user moves, the first row being selected. */
+const selected = defineModel<string | null>('selected', { default: null });
+
 const t = useTranslate();
 const root = useTemplateRef('root');
 
@@ -39,6 +42,7 @@ const selection = useRowSelection({
   root,
   keyAttribute: 'data-workflow-key',
   selectFirst: true,
+  chosenKey: selected,
   open: row => emit('open', row),
 });
 /** "New" and "Ongoing", each while it has rows. */
@@ -86,7 +90,13 @@ useCommands(() => [
 ]);
 
 // Arrived from the sidebar or the command menu, the keys are the screen's: Enter no longer follows the link pressed.
-onMounted(() => root.value?.focus({ preventScroll: true }));
+onMounted(() => {
+  root.value?.focus({ preventScroll: true });
+  // Back on a row the user had moved to: it is in sight again.
+  if (selected.value !== null) {
+    selection.reveal();
+  }
+});
 
 function openRow(row: BrokenWorkflowEntry) {
   selection.select(row.key);
@@ -170,6 +180,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           :now="now"
           :git-ref="row.gitRef"
           :more-ref-count="row.moreRefCount"
+          :name-with-owner="row.nameWithOwner"
           :repository="row.nameWithOwner"
           :selected="row.key === selection.selectedKey"
           @open="openRow(row)"
@@ -196,6 +207,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ repository }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
+            :name-with-owner="repository"
             :runs="[]"
             :new-since="null"
           />
@@ -225,6 +237,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ entry.nameWithOwner }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
+            :name-with-owner="entry.nameWithOwner"
             :runs="[]"
             :new-since="null"
           />

@@ -1,19 +1,18 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
-import { useService } from '@nzyme/vue-ioc/useService.js';
+import { useRouter } from 'vue-router';
 
-import { Browser } from '@/services/Browser.js';
+import { getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 
 /**
- * Opening a workflow's run when it is pressed: on GitHub, in a new tab, for now — the one place that changes once
- * githq has a run page of its own, apart from `RunStrip`'s ticks, which are links to the run.
+ * Opening a workflow's run when it is pressed: on its page in githq, Back returning to where it was opened.
  * @util
  */
 export function useOpenWorkflowRun() {
-    const browser = useService(Browser);
+    const router = useRouter();
 
     return openWorkflowRun;
 
-    function openWorkflowRun(run: GitHubWorkflowRun) {
-        browser.openInNewTab(run.htmlUrl);
+    function openWorkflowRun(nameWithOwner: string, run: GitHubWorkflowRun) {
+        void router.push(getWorkflowRunPath(nameWithOwner, run.id));
     }
 }

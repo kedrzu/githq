@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows tab how far the first read of its runs is), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows tab and a run's page how far the first read of its runs is), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), and the toast of an untrack that can still be undone (above the route, so moving between screens keeps it). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -34,7 +34,12 @@ import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
-import { getProjectPath, getRepositoryTab } from '@/tracking/trackingRoutes.js';
+import {
+  getProjectPath,
+  getRepositoryTab,
+  getRouteNameWithOwner,
+  isWorkflowRunRoute,
+} from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
 import UntrackToast from '@/tracking/UntrackToast.vue';
@@ -120,6 +125,10 @@ const screenFreshness = computed((): Freshness => {
   }
 
   const { owner, name, number } = route.params;
+  if (isWorkflowRunRoute(route)) {
+    return sync.getRepositoryWorkflowsFreshness(getRouteNameWithOwner(route));
+  }
+
   if (route.name === 'repository' && typeof owner === 'string' && typeof name === 'string') {
     const nameWithOwner = `${owner}/${name}`;
     if (tracking.isTracked({ kind: 'repository', nameWithOwner })) {

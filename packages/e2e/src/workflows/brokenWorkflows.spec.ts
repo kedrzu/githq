@@ -3,10 +3,11 @@ import { BrokenWorkflowsScreenHarness } from '../harnesses/BrokenWorkflowsScreen
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen.harness.js';
+import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test('a workflow failing on the default branch: the sidebar counts it and marks the repository; its screen lists it under New, Enter opens the failed run on GitHub', async ({
+test('a workflow failing on the default branch: the sidebar counts it and marks the repository; its screen lists it under New, Enter opens the failed run in githq and Esc comes back to its row', async ({
     page,
     github,
 }) => {
@@ -34,11 +35,36 @@ test('a workflow failing on the default branch: the sidebar counts it and marks 
     await expect(screen.workflow('Probe')).toHaveCount(0);
 
     // The world numbers runs as it records them: Deploy's failure is the second.
-    const failedRun = `/${SAMPLE_REPOSITORY}/actions/runs/2`;
-    github.web(failedRun, () => ({ status: 200, body: '<title>Run</title>' }));
-    const popup = page.waitForEvent('popup');
     await page.keyboard.press('Enter');
-    expect((await popup).url()).toBe(`https://github.com${failedRun}`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/2`);
+    await expect(new WorkflowRunScreenHarness(page).heading('Deploy #2')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL('/dashboard/workflows');
+    await expect(screen.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+});
+
+test('back from a run, the row moved to is still the selected one', async ({ page, github }) => {
+    const { world } = createSampleTrackedWork();
+    for (const [name, minutesAgo] of [
+        ['Deploy', 30],
+        ['Release', 20],
+    ] as const) {
+        world.workflow({ repository: SAMPLE_REPOSITORY, name, runs: [{ conclusion: 'failure', minutesAgo }] });
+    }
+
+    const shell = await openTrackedWork(page, github, world);
+    await shell.brokenWorkflows.click();
+    const screen = new BrokenWorkflowsScreenHarness(page);
+    await expect(screen.workflow('Release')).toHaveAttribute('aria-current', 'true');
+    await page.keyboard.press('j');
+    await expect(screen.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+
+    await page.keyboard.press('Enter');
+    await expect(new WorkflowRunScreenHarness(page).heading('Deploy #1')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await expect(screen.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
 });
 
 test('with nothing broken the sidebar has no entry; ⌘K "Broken workflows" opens the screen, all green', async ({

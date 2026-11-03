@@ -1,0 +1,20 @@
+jobs:
+  en: Jobs
+reading:
+  en: Reading…
+failed:
+  en: '{count} failed'
+running:
+  en: '{count} running'
+waiting:
+  en: '{count} waiting'
+skipped:
+  en: '{count} skipped'
+passed:
+  en: '{count} passed'
+other:
+  en: '{count} other'
+skippedTime:
+  en: skipped
+stepFailed:
+  en: 'Failed step:'

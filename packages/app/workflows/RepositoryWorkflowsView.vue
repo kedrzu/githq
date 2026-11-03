@@ -351,6 +351,7 @@ function describeGroup(group: RepositoryWorkflowGroup) {
           <WorkflowRow
             :data-workflow-key="row.key"
             :workflow="row.workflow"
+            :name-with-owner="nameWithOwner"
             :now="now"
             :git-ref="row.gitRef"
             :more-ref-count="row.moreRefCount"

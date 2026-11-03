@@ -13,10 +13,20 @@ export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
 /**
  * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`), its lists of
  * issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`) and its workflows (`/owner/name/actions`,
- * actions D6), all in one route. Its runs' pages under `actions/` are still handed off to GitHub, and so is the
- * workflows' address of a repository not tracked (`middleware/auth.global.ts`, actions D4).
+ * actions D6), all in one route. The workflows' address of a repository not tracked is handed off to GitHub
+ * (`middleware/auth.global.ts`, actions D4).
  */
 export const REPOSITORY_PATH = '/:owner/:name/:kind(issues|pulls|actions)?';
+
+/**
+ * The route path of a workflow's run of a tracked repository (actions W4a), at GitHub's address of it. Everything else
+ * under `actions/` (`attempts/…`, `workflows/…`, `runs/1/usage`) is GitHub's page, and so is this address of a
+ * repository not tracked (`middleware/auth.global.ts`, actions D4).
+ */
+export const WORKFLOW_RUN_PATH = '/:owner/:name/actions/runs/:run(\\d+)';
+
+/** The route path of a run with one of its jobs selected, at GitHub's address of the job. */
+export const WORKFLOW_RUN_JOB_PATH = `${WORKFLOW_RUN_PATH}/job/:job(\\d+)`;
 
 /**
  * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
@@ -136,6 +146,17 @@ export function getRepositoryPath(nameWithOwner: string, tab: RepositoryTab = 'a
 }
 
 /**
+ * The address of a workflow's run, as on GitHub (`/owner/name/actions/runs/123`), or of one of its jobs
+ * (`/owner/name/actions/runs/123/job/456`).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getWorkflowRunPath(nameWithOwner: string, runId: number, jobId?: number) {
+    const path = `/${nameWithOwner}/actions/runs/${runId}`;
+    return jobId === undefined ? path : `${path}/job/${jobId}`;
+}
+
+/**
  * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`), or of one of its
  * sections (`/owner/name/settings#workflow-alerts`), which the page brings into view.
  *
@@ -144,6 +165,15 @@ export function getRepositoryPath(nameWithOwner: string, tab: RepositoryTab = 'a
 export function getRepositorySettingsPath(nameWithOwner: string, section?: RepositorySettingsSection) {
     const path = `/${nameWithOwner}/settings`;
     return section ? `${path}#${REPOSITORY_SETTINGS_SECTIONS[section]}` : path;
+}
+
+/**
+ * Whether a route shows a run of a repository's workflows.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isWorkflowRunRoute(route: { readonly name?: unknown }) {
+    return route.name === 'workflow-run' || route.name === 'workflow-run-job';
 }
 
 /**

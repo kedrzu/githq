@@ -591,6 +591,18 @@ export class GitHubWorld {
         return id;
     }
 
+    /** The run finishes, as GitHub records it between two reads. */
+    finishRun(nameWithOwner: string, runId: number, conclusion: string): void {
+        const { runs } = this.getRepository(nameWithOwner);
+        const index = runs.findIndex(candidate => candidate.id === runId);
+        const run = runs[index];
+        if (!run) {
+            throw new Error(`No run ${runId} in ${nameWithOwner}`);
+        }
+
+        runs[index] = { ...run, status: 'completed', conclusion };
+    }
+
     /**
      * Gives a run of the repository these jobs, in place of those it had; a run without any answers an empty list.
      * Returns the jobs' ids, for {@link jobLog}.

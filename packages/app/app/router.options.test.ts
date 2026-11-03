@@ -17,6 +17,7 @@ import {
     getRepositoryTab,
     getRepositoryPath,
     getRepositorySettingsPath,
+    getWorkflowRunPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
 
@@ -82,7 +83,19 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme', 'github'],
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
-    ['/acme/web/actions/runs/123', 'github'],
+    // A run and its job, at GitHub's addresses; everything else under `actions/` is GitHub's page.
+    ['/acme/web/actions/runs/123', 'workflow-run'],
+    ['/my-org/web.js/actions/runs/123', 'workflow-run'],
+    ['/acme/web/actions/runs/123/job/456', 'workflow-run-job'],
+    ['/acme/web/actions/runs/abc', 'github'],
+    ['/acme/web/actions/runs/123/job', 'github'],
+    ['/acme/web/actions/runs/123/job/abc', 'github'],
+    ['/acme/web/actions/runs/123/attempts/2', 'github'],
+    ['/acme/web/actions/runs/123/usage', 'github'],
+    ['/acme/web/actions/runs/123/workflow', 'github'],
+    ['/acme/web/actions/runs', 'github'],
+    ['/acme/web/actions/workflows/ci.yml', 'github'],
+    ['/orgs/web/actions/runs/123', 'github-orgs'],
     ['/acme/web/issues/new', 'github'],
     ['/acme/web/settings/branches', 'github'],
     ['/orgs/acme/projects/3/views/2/settings', 'github-orgs'],
@@ -99,6 +112,20 @@ test('every GitHub address opens the matching screen, or hands off to github.com
     for (const [address, name] of ADDRESSES) {
         expect(router.resolve(address).name, address).toBe(name);
     }
+});
+
+test("a run's page is one instance for its jobs, another for another run", () => {
+    const key = (address: string) => {
+        const resolved = router.resolve(address);
+        const { key: routeKey } = resolved.meta;
+        return typeof routeKey === 'function' ? routeKey({ ...resolved, name: resolved.name ?? 'unnamed' }) : routeKey;
+    };
+
+    expect(key('/acme/web/actions/runs/1/job/2')).toBe(key('/acme/web/actions/runs/1'));
+    expect(key('/acme/web/actions/runs/2')).not.toBe(key('/acme/web/actions/runs/1'));
+    expect(key('/acme/other/actions/runs/1')).not.toBe(key('/acme/web/actions/runs/1'));
+    expect(getWorkflowRunPath('acme/web', 1)).toBe('/acme/web/actions/runs/1');
+    expect(getWorkflowRunPath('acme/web', 1, 2)).toBe('/acme/web/actions/runs/1/job/2');
 });
 
 test("an item's sub-addresses settle on the item's own, keeping the query and the fragment", () => {

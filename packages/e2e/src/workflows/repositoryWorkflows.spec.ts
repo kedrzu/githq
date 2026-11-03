@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
 import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
@@ -62,11 +63,14 @@ test("a repository's Workflows tab lists every workflow — runs on any ref read
     await repository.kind('Workflows').click();
     // The tab takes the keys as it opens, on its first row.
     await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
-    const failedRun = `/${SAMPLE_REPOSITORY}/actions/runs/2`;
-    github.web(failedRun, () => ({ status: 200, body: '<title>Run</title>' }));
-    const popup = page.waitForEvent('popup');
     await page.keyboard.press('Enter');
-    expect((await popup).url()).toBe(`https://github.com${failedRun}`);
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/2`);
+    await expect(new WorkflowRunScreenHarness(page).root).toBeVisible();
+
+    // Back in the tab, on the same row.
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
 });
 
 test('Enter unfolds a workflow in place — the kept runs at once, older ones read on demand, a pull request’s among them —, F narrows them to a ref, Enter opens one, ← folds', async ({
@@ -108,14 +112,14 @@ test('Enter unfolds a workflow in place — the kept runs at once, older ones re
     await expect(repository.runLines('Probe')).toHaveCount(2);
 
     const run = `/${SAMPLE_REPOSITORY}/actions/runs/24`;
-    github.web(run, () => ({ status: 200, body: '<title>Run</title>' }));
     await page.keyboard.press('j');
-    const popup = page.waitForEvent('popup');
     await page.keyboard.press('Enter');
-    expect((await popup).url()).toBe(`https://github.com${run}`);
+    await expect(page).toHaveURL(run);
 
-    // Esc shows every ref again, then folds.
-    await page.bringToFront();
+    // Back from the run, unfolded and filtered as it was; Esc shows every ref again, then folds.
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
+    await expect(repository.runLines('Probe')).toHaveCount(2);
     await page.keyboard.press('Escape');
     await expect(repository.runLines('Probe')).toHaveCount(24);
     await page.keyboard.press('ArrowLeft');

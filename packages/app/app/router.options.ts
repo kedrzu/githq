@@ -18,6 +18,8 @@ import {
     PROJECT_SETTINGS_PATHS,
     REPOSITORY_PATH,
     REPOSITORY_SETTINGS_PATH,
+    WORKFLOW_RUN_JOB_PATH,
+    WORKFLOW_RUN_PATH,
     getRouteNameWithOwner,
 } from '@/tracking/trackingRoutes.js';
 
@@ -116,6 +118,19 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         component: () => import('@/workflows/BrokenWorkflowsPage.vue'),
         meta: { auth: 'signedIn', layout: 'shell' },
     };
+    // A workflow's run, at GitHub's addresses of it and of its jobs; one page instance for both (`key`), so moving
+    // between the jobs keeps the page. Static segments outrank the repository's other pages' hand-off to github.com.
+    for (const [name, path] of [
+        ['workflow-run', WORKFLOW_RUN_PATH],
+        ['workflow-run-job', WORKFLOW_RUN_JOB_PATH],
+    ] as const) {
+        yield {
+            path,
+            name,
+            component: () => import('@/workflows/WorkflowRunPage.vue'),
+            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey },
+        };
+    }
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
     // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.
     yield {
@@ -176,6 +191,10 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         name: 'github',
         component: () => import('@/shell/GitHubHandOffPage.vue'),
     };
+}
+
+function getWorkflowRunKey(to: RouteLocation) {
+    return `workflow-run:${getRouteNameWithOwner(to)}:${String(to.params.run)}`;
 }
 
 function getSignInRedirect(to: RouteLocation): RouteLocationRaw {
