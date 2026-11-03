@@ -16,3 +16,12 @@ next:
   en: Next commit
 previous:
   en: Previous commit
+findRef:
+  en: Find a branch or tag
+resizeGraph:
+  en: Resize the commit graph
+lanesFit:
+  plural: total
+  en:
+    one: '{fit} of {total} lane'
+    many: '{fit} of {total} lanes'

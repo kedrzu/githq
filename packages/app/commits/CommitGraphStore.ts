@@ -320,7 +320,7 @@ export const CommitGraphStore = defineService({
                 pausedUntil: null,
                 joining: false,
                 more: null,
-                shown: { commits: [], layout: { rows: [], maxWidth: 0 }, frontier: null },
+                shown: { commits: [], layout: { rows: [], maxWidth: 0, hasMainLane: false }, frontier: null },
             };
         }
 
@@ -834,7 +834,9 @@ function toShownGraph(graph: RepositoryGraph): ShownGraph {
     }
 
     const commits = orderCommits([...reachable.values()]);
-    return { commits, layout: layoutCommitGraph(commits), frontier };
+    const main = graph.refs?.branches.find(branch => branch.name === graph.refs?.defaultBranch);
+    const mainTip = main && (graph.commits.has(main.oid) ? main.oid : graph.drawnTips.get(main.name));
+    return { commits, layout: layoutCommitGraph(commits, mainTip), frontier };
 }
 
 /** The branches read so far, with the default branch while its own page has not come yet. */

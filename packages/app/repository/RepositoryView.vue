@@ -1,10 +1,11 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, are tabs beside the title on `1`, `2` and `3`, the first two with their count of open items while tracked. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs and the way to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). -->
+<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, are tabs beside the title on `1`, `2` and `3`, the first two with their count of open items while tracked. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). -->
 <script lang="ts" setup>
 import Translate from '@nzyme/vue-i18n/Translate.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowRight,
   ArrowUpRight,
+  GitBranch,
   Github,
   Ban,
   BookMarked,
@@ -113,6 +114,8 @@ const emit = defineEmits<{
   move: [move: ListMove];
   /** The view options back to their defaults. */
   reset: [];
+  /** On Commits, the header's tool: to the list of branches and tags beside the graph. */
+  openRefList: [];
 }>();
 
 const state = defineModel<RepositoryState>('state', { default: 'open' });
@@ -265,6 +268,16 @@ useCommands(() =>
           :options="sectionOptions"
         />
         <span :class="css.repositoryView_spacer" />
+        <Button
+          variant="ghost"
+          size="sm"
+          :icon="GitBranch"
+          kbd="B"
+          aria-keyshortcuts="B"
+          @click="emit('openRefList')"
+        >
+          {{ t(l.branchesAndTags) }}
+        </Button>
         <IconButton
           :icon="Github"
           :label="t(l.openOnGitHub)"

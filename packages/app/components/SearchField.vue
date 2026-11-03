@@ -13,7 +13,15 @@ export const SearchFieldProps = {
   kbd: defineProp<string>(),
   /** `md` (30px) a page's filter, `sm` (26px) a header's; `md` when not given. */
   size: defineProp<'md' | 'sm'>(),
+  /** The list the field narrows, whose keys it takes: it is then a combobox, the focus staying in it (`activeId`: the row selected). */
+  listbox: defineProp<SearchFieldListbox>(),
 };
+
+/** The list a field narrows and the row selected in it, by their element ids. */
+export interface SearchFieldListbox {
+  readonly id: string;
+  readonly activeId: string | undefined;
+}
 </script>
 
 <script lang="ts" setup>
@@ -46,6 +54,11 @@ defineExpose({
     <TextInput
       :class="css.searchField_input"
       :aria-keyshortcuts="kbd ?? undefined"
+      :role="listbox ? 'combobox' : undefined"
+      :aria-expanded="listbox ? true : undefined"
+      :aria-autocomplete="listbox ? 'list' : undefined"
+      :aria-controls="listbox?.id"
+      :aria-activedescendant="listbox?.activeId"
     />
     <Kbd
       v-if="kbd"
@@ -61,7 +74,7 @@ defineExpose({
   gap: $spacing-8;
   align-items: center;
   min-width: 0;
-  background: $color-bg;
+  background: var(--search-field-background, #{$color-bg});
   border: 1px solid $color-border-2;
   border-radius: 7px;
 

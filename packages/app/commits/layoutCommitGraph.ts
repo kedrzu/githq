@@ -17,6 +17,8 @@ export interface CommitGraphLayout {
     readonly rows: readonly CommitGraphRow[];
     /** How many lanes the whole graph needs: one more than the highest lane among any row's dot and lines. */
     readonly maxWidth: number;
+    /** The first lane is the default branch's, drawn lighter than the rest (CH12). */
+    readonly hasMainLane: boolean;
 }
 
 /** One commit's row. */
@@ -59,12 +61,18 @@ export type CommitGraphLineHalf = 'top' | 'bottom' | 'full';
  * takes the first free one. A freed lane is reused by the next lane that starts, so the graph doesn't widen forever,
  * and no other lane moves when one ends.
  *
+ * The default branch runs in the first lane (`mainTip`, git-client D17: folding keeps it apart to the last): that lane
+ * stays free above its tip, however many newer branches go past it.
+ *
  * Expects every loaded parent below its children; a parent above or not loaded keeps its lane open to the last row.
  * @__NO_SIDE_EFFECTS__
  */
-export function layoutCommitGraph(ordered: readonly KeptCommit[]): CommitGraphLayout {
+export function layoutCommitGraph(ordered: readonly KeptCommit[], mainTip?: string): CommitGraphLayout {
+    /** The first lane is kept for the default branch, until its tip is reached. */
+    const hasMainLane = ordered.some(commit => commit.oid === mainTip);
+    let keepFirst = hasMainLane;
     /** The oid each lane waits for, `null` for a free lane. */
-    const lanes: (string | null)[] = [];
+    const lanes: (string | null)[] = keepFirst ? [null] : [];
     const rows: CommitGraphRow[] = [];
     let maxWidth = 0;
 
@@ -86,8 +94,11 @@ export function layoutCommitGraph(ordered: readonly KeptCommit[]): CommitGraphLa
                 column = lane;
             }
         }
-        if (column === -1) {
-            column = takeFreeLane(lanes);
+        if (commit.oid === mainTip) {
+            column = 0;
+            keepFirst = false;
+        } else if (column === -1) {
+            column = takeFreeLane(lanes, keepFirst);
         }
 
         const parentOids = new Set(commit.parents.map(parent => parent.oid));
@@ -99,14 +110,14 @@ export function layoutCommitGraph(ordered: readonly KeptCommit[]): CommitGraphLa
             } else {
                 lane = lanes.indexOf(parentOid);
                 if (lane === -1) {
-                    lane = takeFreeLane(lanes);
+                    lane = takeFreeLane(lanes, keepFirst);
                 }
             }
             lanes[lane] = parentOid;
             lines.push({ half: 'bottom', lane });
         }
 
-        while (lanes.length > 0 && lanes[lanes.length - 1] === null) {
+        while (lanes.length > (keepFirst ? 1 : 0) && lanes[lanes.length - 1] === null) {
             lanes.pop();
         }
 
@@ -119,11 +130,11 @@ export function layoutCommitGraph(ordered: readonly KeptCommit[]): CommitGraphLa
         rows.push({ oid: commit.oid, column, isMerge: commit.parents.length > 1, lines });
     }
 
-    return { rows, maxWidth };
+    return { rows, maxWidth, hasMainLane };
 }
 
-/** The first free lane — a new one at the right edge when none is free. */
-function takeFreeLane(lanes: (string | null)[]): number {
-    const free = lanes.indexOf(null);
+/** The first free lane — a new one at the right edge when none is free; never the first one while it is kept. */
+function takeFreeLane(lanes: (string | null)[], keepFirst: boolean): number {
+    const free = lanes.indexOf(null, keepFirst ? 1 : 0);
     return free === -1 ? lanes.length : free;
 }

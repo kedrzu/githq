@@ -40,6 +40,9 @@ $color-fg-3: #646b75;
 // Dim text: counts, section headers, the status bar, footers, details. The closest step up from
 // `$color-fg-3` that passes AA (4.5:1) on every surface it sits on, up to `$color-sel` (a selected row).
 $color-fg-dim: #838992;
+// The lines of a commit graph; the default branch's stands out from the rest.
+$color-graph-line: #4a505a;
+$color-graph-line-main: #7a818c;
 // Text on the light button ("Sign in with GitHub") and on the accent.
 $color-on-light: #0e1013;
 
@@ -111,6 +114,9 @@ $radius-sm: 4px;
 $radius-md: 6px;
 $radius-lg: 8px;
 $radius-xl: 10px;
+
+// A box floating over the page: a menu, a popover, a list opened over the graph.
+$shadow-popover: 0 8px 24px rgb(0 0 0 / 40%);
 
 // Widths of the surfaces; the status bar's segments follow them. The sidebar and the item panel are resized by the
 // user: these are the widths until they are (`AppShell` keeps the current ones in `--sidebar-width` and

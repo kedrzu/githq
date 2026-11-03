@@ -3,7 +3,7 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
@@ -54,6 +54,7 @@ const t = useTranslate();
 const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
+const graphView = useTemplateRef<InstanceType<typeof CommitGraphView>>('graphView');
 
 /** Each section's state, kept while the page is. */
 const states = ref<Record<RepositoryItemSection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
@@ -300,6 +301,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     @open="list.open"
     @listed="list.setListed"
     @move="move"
+    @open-ref-list="graphView?.openRefList()"
   >
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />
@@ -318,7 +320,10 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
       />
     </template>
     <template #commits>
-      <CommitGraphView :name-with-owner="nameWithOwner" />
+      <CommitGraphView
+        ref="graphView"
+        :name-with-owner="nameWithOwner"
+      />
     </template>
   </RepositoryView>
 </template>

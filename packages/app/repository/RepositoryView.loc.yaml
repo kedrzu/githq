@@ -104,3 +104,5 @@ openOnGitHub:
   en: Open on GitHub
 commitsNeedNoTracking:
   en: "Its commits don't need tracking: 3 opens them in full."
+branchesAndTags:
+  en: Branches and tags

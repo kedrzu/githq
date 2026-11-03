@@ -58,7 +58,7 @@ const open = defineModel<boolean>('open', { default: false });
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
   outline: none;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+  box-shadow: $shadow-popover;
 }
 
 .popover_flush {

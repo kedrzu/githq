@@ -66,3 +66,11 @@ a first open shows rows after one request of about a second.
   (21 points and 3 s for 100 branches) for branches that mostly share the default branch's history.
 - Drawing commits as they arrive regardless of other branches' depth — rows would jump as later branches
   load.
+
+## D17
+
+Retired 2026-11-03 in part: the narrowest graph is two lanes, not one, see [D17](../DECISIONS.md#d17).
+
+**A divider between the graph and the rows can be dragged. By default the graph takes a tenth of the pane's width;
+dragged, it can go from one lane (the default branch alone) to every lane. Lanes that don't fit fold into one thicker
+line at the graph's right edge, and their commits sit on it.** (2026-11-02, owner)

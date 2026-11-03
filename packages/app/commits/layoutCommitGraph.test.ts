@@ -216,8 +216,37 @@ test('large random histories keep every lane continuous and every edge leading t
     }
 });
 
+test('the default branch runs in the first lane, under newer branches that go past it', () => {
+    const commits = orderCommits([
+        sampleCommit('f2', 50, ['f1']),
+        sampleCommit('g1', 45, ['m2']),
+        sampleCommit('f1', 40, ['m1']),
+        sampleCommit('m2', 30, ['m1']),
+        sampleCommit('m1', 20, ['m0']),
+        sampleCommit('m0', 10),
+    ]);
+    const layout = layoutCommitGraph(commits, 'm2');
+
+    expectConsistentLayout(commits, layout, 'm2');
+    const column = (oid: string) => layout.rows.find(row => row.oid === oid)?.column;
+    expect(column('f2')).toBe(1);
+    expect(column('g1')).toBe(2);
+    expect(column('m2')).toBe(0);
+    expect(column('m1')).toBe(0);
+    expect(column('m0')).toBe(0);
+    // Nothing is drawn in the first lane above its tip.
+    expect(layout.rows[0]?.lines.some(line => line.lane === 0)).toBe(false);
+    expect(layout.hasMainLane).toBe(true);
+});
+
+test('a default branch whose tip is not among the commits keeps nothing free', () => {
+    const commits = orderCommits([sampleCommit('a', 20, ['b']), sampleCommit('b', 10)]);
+    expect(layoutCommitGraph(commits, 'gone').rows.map(row => row.column)).toEqual([0, 0]);
+    expect(layoutCommitGraph(commits, 'gone').hasMainLane).toBe(false);
+});
+
 test('no commits, no rows', () => {
-    expect(layoutCommitGraph([])).toEqual({ rows: [], maxWidth: 0 });
+    expect(layoutCommitGraph([])).toEqual({ rows: [], maxWidth: 0, hasMainLane: false });
 });
 
 function lay(commits: readonly KeptCommit[]) {
@@ -284,7 +313,7 @@ function traceEdges(layout: CommitGraphLayout, oid: string): (string | null)[] {
  * - each `bottom` line leads, through `full` lines, to the top of the row of one of the commit's parents, one per
  *   distinct parent; a parent that isn't loaded is the one edge allowed to run past the last row.
  */
-function expectConsistentLayout(ordered: readonly KeptCommit[], layout: CommitGraphLayout) {
+function expectConsistentLayout(ordered: readonly KeptCommit[], layout: CommitGraphLayout, mainTip?: string) {
     expect(layout.rows.map(row => row.oid)).toEqual(ordered.map(commit => commit.oid));
     const loaded = new Set(ordered.map(commit => commit.oid));
 
@@ -307,7 +336,8 @@ function expectConsistentLayout(ordered: readonly KeptCommit[], layout: CommitGr
         for (const lane of tops) {
             expect(fulls.has(lane)).toBe(false);
         }
-        if (tops.size > 0) {
+        // The default branch's tip takes the first lane, whichever lanes its children come down in.
+        if (tops.size > 0 && row.oid !== mainTip) {
             expect(tops.has(row.column)).toBe(true);
         }
         expect(row.lines).toHaveLength(new Set(row.lines.map(line => `${line.half}${line.lane}`)).size);

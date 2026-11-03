@@ -2,6 +2,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
+import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
+
 const props = defineProps<{
   /** What it resizes, for screen readers ("Resize window"). */
   label: string;
@@ -50,6 +52,10 @@ function onPointerUp() {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (!isSingleKeyShortcut(event)) {
+    return;
+  }
+
   const outwards = props.side === 'right' ? 'ArrowRight' : 'ArrowLeft';
   const inwards = props.side === 'right' ? 'ArrowLeft' : 'ArrowRight';
   if (event.key !== outwards && event.key !== inwards) {
