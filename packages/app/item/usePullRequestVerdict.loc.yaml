@@ -1,0 +1,93 @@
+merged:
+  en: Merged
+closedUnmerged:
+  en: Closed without merging
+draft:
+  en: Draft
+draftDetail:
+  en: Mark it ready for review first
+cannotMerge:
+  en: Can't merge yet
+conflicted:
+  en: Can't merge
+conflictsWith:
+  en: conflicts with {base}
+unknown:
+  en: Not known yet
+unknownDetail:
+  en: GitHub is still checking for conflicts
+ready:
+  en: Ready to merge
+readyDetail:
+  en: Approved · checks passed · no conflicts
+readyNoReview:
+  en: No review required · no conflicts
+notReady:
+  en: Not ready yet
+checksFailing:
+  plural: count
+  en:
+    one: '{count} check failing'
+    many: '{count} checks failing'
+checksFailingUncounted:
+  en: checks failing
+changesRequested:
+  en: changes requested
+checksRunning:
+  en: checks running
+waitingForReview:
+  en: waiting for review
+behind:
+  en: Behind {base}
+behindDetail:
+  en: '{base} requires being up to date'
+blocked:
+  en: blocked by a rule
+beingMerged:
+  en: Being merged
+beingMergedDetail:
+  en: Sent to GitHub · not merged yet
+readyRequiredPassed:
+  en: Approved · required checks passed
+readyNoConflicts:
+  en: No conflicts
+requiredFailed:
+  plural: count
+  en:
+    one: a required check failed
+    many: '{count} required checks failed'
+requiredRunning:
+  plural: count
+  en:
+    one: '{count} required check running'
+    many: '{count} required checks running'
+approved:
+  en: approved
+merge:
+  en: Merge…
+resolveConflicts:
+  en: Resolve on GitHub
+updateBranch:
+  en: Update branch
+markReady:
+  en: Mark ready…
+queue:
+  en: Queue…
+autoMerge:
+  en: Auto-merge…
+readyForQueue:
+  en: Ready for the queue
+reviewRequired:
+  en: review required
+inQueue:
+  en: In the queue
+inQueueWontMerge:
+  en: In the queue, won't merge
+autoMergeOn:
+  en: Auto-merge is on
+enabledByAgo:
+  en: enabled by {login} {ago}
+enabledBy:
+  en: enabled by {login}
+enabledAgo:
+  en: enabled {ago}

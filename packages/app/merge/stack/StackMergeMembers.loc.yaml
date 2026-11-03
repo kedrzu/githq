@@ -1,0 +1,21 @@
+listLabel:
+  en: Pull requests in the stack, first to last
+stopsHere:
+  en: Stops here
+canGoUpToHere:
+  en: Can go up to here
+lands:
+  en: lands
+missing:
+  plural: count
+  en:
+    one: 1 more not in githq yet
+    many: '{count} more not in githq yet'
+staysOpen:
+  en: Stays open
+blocked:
+  en: Blocked
+heldBy:
+  en: 'Green itself, held by #{number}'
+freshChecks:
+  en: Fresh checks running

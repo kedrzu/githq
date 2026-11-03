@@ -326,10 +326,17 @@ function describeRejection(reason: EditFailureReason, repository: string) {
       return t(l.rejectedRefused, { message: reason.message.replace(/\.$/u, '') });
     case 'offline':
       return t(l.rejectedOffline);
+    case 'organizationRestricted':
+      return t(l.rejectedOrganizationRestricted, { organization: reason.organization });
     case 'missing':
       return t(l.rejectedMissing, { repository });
+    // `rulesNotConfirmed`, `notReached`, `notActions` and `nothingFailed` are a pull request's alone: a new issue never meets them.
     case 'notAllowed':
     case 'dropped':
+    case 'rulesNotConfirmed':
+    case 'notReached':
+    case 'notActions':
+    case 'nothingFailed':
       return t(l.rejectedNotAllowed, { repository });
     default:
       return assertNever(reason);

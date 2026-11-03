@@ -1,0 +1,21 @@
+# The pull request and CI state of the commits on screen, read apart from the kept commits because they change
+# (git-client D8).
+query CommitStates($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on Commit {
+            id
+            associatedPullRequests(first: 1) {
+                nodes {
+                    number
+                    state
+                    title
+                    url
+                    isDraft
+                }
+            }
+            statusCheckRollup {
+                state
+            }
+        }
+    }
+}

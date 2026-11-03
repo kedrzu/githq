@@ -18,6 +18,7 @@ import { Clock } from '@/services/Clock.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { isRateLimitRefusal } from '@/sync/isRateLimitRefusal.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { pause } from '@/utils/pause.js';
 
 import { mergeSettings } from './mergeSettings.js';
 import { EMPTY_SETTINGS_DOCUMENT, parseSettings, serializeSettings } from './SettingsDocument.js';
@@ -81,7 +82,7 @@ type Failure = { readonly kind: 'transient' } | { readonly kind: 'stop'; readonl
  * Every sync is the three-way merge of D11 between this device's settings, the file now, and the file as this
  * device last saw it (kept in `saving`, the settings' slot, through {@link TrackingStore}): it takes the file's
  * changes in, and writes what is new here. It runs once the user's settings are in memory, when the tab is shown
- * again or its window focused, and right after the user changes what is tracked in this tab; one at a time, a
+ * again or its window focused, and right after the user changes their settings in this tab; one at a time, a
  * trigger during one running once after it. GitHub out of reach or the allowance spent leave it on, for the next
  * trigger.
  *
@@ -445,7 +446,7 @@ export const SettingsSync = defineService({
                 }
 
                 if (sha === null) {
-                    await pause(NEW_REPOSITORY_PAUSE_MS);
+                    await pause(clock, NEW_REPOSITORY_PAUSE_MS);
                 }
 
                 saving = tracking.readSaving();
@@ -472,12 +473,6 @@ export const SettingsSync = defineService({
             if (repository) {
                 stop(repository.exists ? { kind: 'foreign' } : { kind: 'deleted' });
             }
-        }
-
-        function pause(ms: number) {
-            return new Promise<void>(resolve => {
-                clock.schedule(resolve, ms);
-            });
         }
 
         /**

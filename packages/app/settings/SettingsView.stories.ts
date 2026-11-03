@@ -29,6 +29,9 @@ export const Repositories: Story = {};
 /** G8: on Projects. */
 export const Projects: Story = { args: { section: 'projects' } };
 
+/** D22: on Display. */
+export const Display: Story = { args: { section: 'display' } };
+
 /** T4: on a section with no count. */
 export const SyncSettings: Story = { args: { section: 'sync' } };
 

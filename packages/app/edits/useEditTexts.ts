@@ -1,6 +1,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
+import { capitalize } from '@/utils/capitalize.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import type { EditFailure, FailedEdit } from './EditQueue.js';
@@ -13,12 +14,20 @@ export interface EditTexts {
     failureTitle(failure: EditFailure): string;
     /** What happened, for its toast. */
     failureDetail(failure: EditFailure): string;
-    /** The status bar while edits are on their way: "Sending 2 changes · portal#1187". */
+    /**
+     * The status bar while edits are on their way: "Sending 2 changes · portal#1187", "Merge on the way ·
+     * fitloop/api#477" — a stack's, "Merge on the way · mlaine/tasklet, 3 pull requests" (stacked PRs SP7).
+     */
     sending(edits: readonly Edit[]): string;
-    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority". */
+    /** The status bar of an item while its edits are on their way: "Sending 2 changes: Status, Priority", "Merge on the way". */
     sendingFields(edits: readonly Edit[]): string;
-    /** The status bar after a failure: "1 change failed · label “regression” no longer exists". */
+    /** The status bar after a failure: "1 change failed · label “regression” no longer exists", "Merge refused · fitloop/api#477". */
     failed(failure: EditFailure): string;
+    /**
+     * The status bar while GitHub has not said how a merge ended (merging PM36): "fitloop/api#477 · GitHub hasn't
+     * answered · the next refresh will settle it"; without the pull request, an item's own.
+     */
+    unanswered(reference: string | null): string;
     /** A row's note on its edit undone: "“regression” label undone". */
     undone(subject: EditSubject): string;
 }
@@ -33,6 +42,7 @@ export function useEditTexts(): EditTexts {
         sending,
         sendingFields,
         failed,
+        unanswered,
         undone,
     };
 
@@ -69,12 +79,30 @@ export function useEditTexts(): EditTexts {
     function sending(edits: readonly Edit[]) {
         const items = new Set(edits.map(edit => edit.itemId));
         const [first] = edits;
+        if (first && edits.length === 1 && first.subject.kind === 'merged') {
+            return t(l.mergingTo, { target: first.reference });
+        }
+
+        const repositories = new Set(edits.map(edit => edit.reference.slice(0, edit.reference.lastIndexOf('#'))));
+        const [repository] = repositories;
+        if (
+            repository !== undefined &&
+            repositories.size === 1 &&
+            edits.every(edit => edit.subject.kind === 'merged')
+        ) {
+            return t(l.mergingSeveral, { repository, count: items.size });
+        }
+
         const target =
             items.size === 1 && first ? shortReference(first.reference) : t(l.itemCount, { count: items.size });
         return t(l.sendingTo, { count: edits.length, target });
     }
 
     function sendingFields(edits: readonly Edit[]) {
+        if (edits.length === 1 && edits[0]?.subject.kind === 'merged') {
+            return t(l.merging);
+        }
+
         const fields = [...new Set(edits.map(edit => fieldName(edit.subject)))];
         return t(l.sendingFields, { count: edits.length, fields: fields.join(', ') });
     }
@@ -83,6 +111,13 @@ export function useEditTexts(): EditTexts {
         const [first] = failure.failed;
         if (!first) {
             return '';
+        }
+
+        if (first.edit.subject.kind === 'merged') {
+            const { reference } = first.edit;
+            return first.reason.kind === 'organizationRestricted'
+                ? t(l.failedMergeRestricted, { reference, organization: first.reason.organization })
+                : t(l.failedMerge, { reference });
         }
 
         if (failure.editCount <= 1) {
@@ -95,6 +130,10 @@ export function useEditTexts(): EditTexts {
             total: failure.editCount,
             target: references.join(', '),
         });
+    }
+
+    function unanswered(reference: string | null) {
+        return reference === null ? t(l.unanswered) : t(l.unansweredOf, { reference });
     }
 
     function undone(subject: EditSubject) {
@@ -138,6 +177,24 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedReviewRequested, { login: subject.login, reference });
             case 'draft':
                 return subject.draft ? t(l.failedDraft, { reference }) : t(l.failedReady, { reference });
+            case 'branchUpdated':
+                return t(l.failedBranchUpdated, { reference });
+            case 'autoMerge':
+                return subject.enabled ? t(l.failedAutoMergeOn, { reference }) : t(l.failedAutoMergeOff, { reference });
+            case 'queueJumped':
+                return t(l.failedQueueJumped, { reference });
+            case 'dequeued':
+                return t(l.failedDequeued, { reference });
+            case 'branchDeleted':
+                return t(l.failedBranchDeleted, { reference });
+            case 'branchRestored':
+                return t(l.failedBranchRestored, { reference });
+            case 'checksRerun':
+                return t(l.failedChecksRerun, { reference });
+            case 'reverted':
+                return t(l.failedReverted, { reference });
+            case 'merged':
+                return t(l.failedMerged, { reference });
             default:
                 return assertNever(subject);
         }
@@ -177,6 +234,24 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeReviewRequested, { login: subject.login });
             case 'draft':
                 return subject.draft ? t(l.changeDraft) : t(l.changeReady);
+            case 'branchUpdated':
+                return t(l.changeBranchUpdated);
+            case 'autoMerge':
+                return subject.enabled ? t(l.changeAutoMergeOn) : t(l.changeAutoMergeOff);
+            case 'queueJumped':
+                return t(l.changeQueueJumped);
+            case 'dequeued':
+                return t(l.changeDequeued);
+            case 'branchDeleted':
+                return t(l.changeBranchDeleted);
+            case 'branchRestored':
+                return t(l.changeBranchRestored);
+            case 'checksRerun':
+                return t(l.changeChecksRerun);
+            case 'reverted':
+                return t(l.changeReverted);
+            case 'merged':
+                return t(l.changeMerged);
             default:
                 return assertNever(subject);
         }
@@ -226,12 +301,32 @@ export function useEditTexts(): EditTexts {
                 return t(l.fieldReviewers);
             case 'draft':
                 return t(l.fieldDraft);
+            case 'branchUpdated':
+            case 'branchDeleted':
+            case 'branchRestored':
+                return t(l.fieldBranch);
+            case 'checksRerun':
+                return t(l.fieldChecks);
+            case 'reverted':
+                return t(l.fieldRevert);
+            case 'autoMerge':
+                return t(l.fieldAutoMerge);
+            case 'queueJumped':
+            case 'dequeued':
+                return t(l.fieldQueue);
+            case 'merged':
+                return t(l.fieldMerge);
             default:
                 return assertNever(subject);
         }
     }
 
     function reason(entry: FailedEdit) {
+        // A merge refused undoes nothing: nothing changed on GitHub (merging PM35).
+        if (entry.edit.subject.kind === 'merged' && entry.reason.kind === 'refused') {
+            return t(l.reasonMergeRefused, { message: entry.reason.message.trim() });
+        }
+
         const repository = entry.edit.reference.split('#')[0] ?? '';
         return reasonText(entry.reason, repository);
     }
@@ -246,8 +341,18 @@ export function useEditTexts(): EditTexts {
                 return t(l.reasonMissing, { repository });
             case 'offline':
                 return t(l.reasonOffline);
+            case 'organizationRestricted':
+                return t(l.reasonOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.reasonRefused, { message: failure.message.replace(/\.$/u, '') });
+            case 'rulesNotConfirmed':
+                return t(l.reasonRulesNotConfirmed);
+            case 'notReached':
+                return t(l.reasonNotReached);
+            case 'notActions':
+                return t(l.reasonNotActions);
+            case 'nothingFailed':
+                return t(l.reasonNothingFailed);
             default:
                 return assertNever(failure);
         }
@@ -262,9 +367,18 @@ export function useEditTexts(): EditTexts {
             case 'missing':
                 return t(l.shortMissing);
             case 'offline':
+            case 'notReached':
                 return t(l.shortOffline);
+            case 'organizationRestricted':
+                return t(l.shortOrganizationRestricted, { organization: failure.organization });
             case 'refused':
                 return t(l.shortRefused);
+            case 'rulesNotConfirmed':
+                return t(l.shortRulesNotConfirmed);
+            case 'notActions':
+                return t(l.shortNotActions);
+            case 'nothingFailed':
+                return t(l.shortNothingFailed);
             default:
                 return assertNever(failure);
         }
@@ -274,8 +388,4 @@ export function useEditTexts(): EditTexts {
 /** `skyline-labs/portal#1187` → `portal#1187`, as the status bar names an item. */
 function shortReference(reference: string) {
     return parseRepositoryName(reference).name;
-}
-
-function capitalize(text: string) {
-    return text.charAt(0).toUpperCase() + text.slice(1);
 }

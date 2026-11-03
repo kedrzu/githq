@@ -108,6 +108,18 @@ export function getItemReference(item: Item): ItemReference {
 }
 
 /**
+ * The item a github.com address names (a pull request's `url`), or `null` when it names none. The address says its
+ * repository, which may not be the one it was read from: a fork's commit answers with its upstream's pull request.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function parseItemUrl(url: string): ItemReference | null {
+    const [, owner, name, number] =
+        /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/(?:issues|pull)\/(\d+)\/?$/u.exec(url) ?? [];
+    return owner && name ? toReference(owner, name, number) : null;
+}
+
+/**
  * `name#number`, how an item is named where its owner goes without saying (the command menu's chip and results, a
  * parent); `name#…` for an issue GitHub has not numbered yet.
  *

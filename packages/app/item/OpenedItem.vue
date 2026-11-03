@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7); a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -16,15 +16,16 @@ import { usePanelWidth } from '@/components/usePanelWidth.js';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { MergePanelStore } from '@/merge/MergePanelStore.js';
+import { useMergeOptions } from '@/merge/useMergeOptions.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { describeStack } from '@/store/stacks/describeStack.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
-import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -52,6 +53,7 @@ const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
 const auth = useService(AuthStore);
 const drafts = useService(CommentDrafts);
+const mergePanel = useService(MergePanelStore);
 const route = useRoute();
 const router = useRouter();
 
@@ -60,8 +62,29 @@ const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
 const now = useNow(TICK_MS);
+// Which checks are required only the merge options say (merging D13): read for an open pull request with checks
+// failing or running — what the standing then weighs, as the merge panel does — and again when the row's counts move.
+const mergeOptions = useMergeOptions({
+  itemId: () => {
+    const { item } = opened;
+    const checks = item?.kind === 'pullRequest' && item.state === 'OPEN' ? item.checks : null;
+    return checks && checks.failing + checks.pending > 0 ? opened.id : null;
+  },
+  readAgainOn: () => {
+    const { item } = opened;
+    return item?.kind === 'pullRequest' && item.checks ? `${item.checks.failing}/${item.checks.pending}` : null;
+  },
+});
 
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
+/** What shows until the item does. */
+const waitingTitle = computed(() => {
+  if (opened.missing) {
+    return t(l.missing);
+  }
+
+  return opened.failed ? t(l.unreachable) : t(l.opening, { reference: referenceText.value });
+});
 const listIndex = computed(() => {
   const ids = navigation.list?.ids ?? [];
   return opened.id === null ? -1 : ids.indexOf(opened.id);
@@ -85,20 +108,14 @@ const stack = computed((): StackDescription | null => {
     return null;
   }
 
-  const stackId = item.stack.id;
-  const others = items.all.filter(
-    other => other.kind === 'pullRequest' && other.stack?.id === stackId && other.id !== item.id,
-  );
-  const found = groupStacks([...others, item]).get(stackId);
-  if (!found || found.members.length < 2) {
-    return null;
-  }
-
-  return describeStack({
-    stack: found,
+  const description = describeStackInCopy({
+    stackId: item.stack.id,
+    item,
+    items: items.all,
     viewerLogin: auth.viewer?.login ?? '',
     getItem: id => details.getItem(id),
   });
+  return description && description.held >= 2 ? description : null;
 });
 const closes = computed((): Item[] => {
   const { item } = opened;
@@ -175,6 +192,12 @@ watch(
   },
   { immediate: true },
 );
+
+function merge() {
+  if (opened.id !== null) {
+    mergePanel.open(opened.id);
+  }
+}
 
 function step(delta: 1 | -1) {
   const target = delta === 1 ? neighbours.value.next : neighbours.value.previous;
@@ -291,7 +314,10 @@ async function loadAllComments() {
       :editing="editing"
       :stack="stack"
       :neighbours="neighbours"
+      :merge-checks="mergeOptions.options?.checks ?? null"
+      :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
       @edit="edit"
+      @merge="merge"
       @need-projects="loadViewerProjects"
       @close="close"
       @previous="step(-1)"
@@ -303,9 +329,21 @@ async function loadAllComments() {
     <EmptyState
       v-else
       :icon="SearchX"
-      :title="opened.missing ? t(l.missing) : t(l.opening, { reference: referenceText })"
+      :title="waitingTitle"
       :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
-    />
+    >
+      <template
+        v-if="opened.failed"
+        #action
+      >
+        <Button
+          size="sm"
+          @click="opened.tryAgain()"
+        >
+          {{ t(l.tryAgain) }}
+        </Button>
+      </template>
+    </EmptyState>
   </Dialog>
   <ItemView
     v-else-if="opened.item"
@@ -321,7 +359,10 @@ async function loadAllComments() {
     :editing="editing"
     :stack="stack"
     :neighbours="neighbours"
+    :merge-checks="mergeOptions.options?.checks ?? null"
+    :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
     @edit="edit"
+    @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"
     @previous="step(-1)"
@@ -336,7 +377,7 @@ async function loadAllComments() {
   >
     <EmptyState
       :icon="SearchX"
-      :title="opened.missing ? t(l.missing) : t(l.opening, { reference: referenceText })"
+      :title="waitingTitle"
       :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
     >
       <template
@@ -348,6 +389,17 @@ async function loadAllComments() {
           @click="close"
         >
           {{ t(l.backToList) }}
+        </Button>
+      </template>
+      <template
+        v-else-if="opened.failed"
+        #action
+      >
+        <Button
+          size="sm"
+          @click="opened.tryAgain()"
+        >
+          {{ t(l.tryAgain) }}
         </Button>
       </template>
     </EmptyState>

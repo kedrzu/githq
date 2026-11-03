@@ -2,6 +2,7 @@
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleCheckBig, CircleSlash, Milestone, Tag, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -18,6 +19,7 @@ import Picker from '@/components/Picker.vue';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import type { EditPermissions } from '@/edits/getEditPermissions.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
+import { MergeContext } from '@/merge/MergeContext.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
@@ -48,6 +50,7 @@ const auth = useService(AuthStore);
 const items = useService(ItemStore);
 const repositories = useService(RepositoryStore);
 const editor = useService(ItemEditor);
+const merging = injectContext(MergeContext, { optional: true });
 const options = usePickerOptions();
 const editCommands = useEditCommands();
 const clock = useService(Clock);
@@ -121,6 +124,7 @@ useCommands(
       loading: metadata.value.length < repositoryNames.value.length,
       viewerLogin: auth.viewer?.login ?? '',
       getPermissions: item => editor.getPermissions(item),
+      pullRequestCommands: merging,
       places: places.value,
       now: clock.now(),
       stateOptions: canClose.value

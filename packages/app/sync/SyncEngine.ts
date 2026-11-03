@@ -7,6 +7,7 @@ import { searchIssues } from '@githq/github/rest/searchIssues.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import { forEachParalell } from '@nzyme/utils/array/forEachParalell.js';
 import { splitIntoChunks } from '@nzyme/utils/array/splitIntoChunks.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { computed, shallowRef, watch } from 'vue';
@@ -23,8 +24,8 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS, SYNC_LOOPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup, SyncLoop } from '@/store/ItemStoreTypes.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
-import { toItem, toPullRequestStatus } from '@/store/toItem.js';
+import type { PullRequestItem } from '@/store/ItemTypes.js';
+import { toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
@@ -34,8 +35,9 @@ import { WorkflowSync } from '@/workflows/WorkflowSync.js';
 import type { Freshness } from './Freshness.js';
 import { FRESH_SLACK_MS, getFreshness } from './Freshness.js';
 import { getAllowancePause } from './getAllowancePause.js';
-import { isRateLimitRefusal } from './isRateLimitRefusal.js';
+import { getRefusalPause } from './getRefusalPause.js';
 import { readItemsByIds } from './readItemsByIds.js';
+import { readStacksWhole } from './readStacksWhole.js';
 import { SyncLeadership } from './SyncLeadership.js';
 import { SyncPausedError } from './SyncPausedError.js';
 import type { SyncPause } from './SyncPausedError.js';
@@ -43,8 +45,6 @@ import { TabChannel } from './TabChannel.js';
 import type { TabMessage } from './TabChannel.js';
 import { PROJECT_PROBE_INTERVAL_MS, TrackingSync } from './TrackingSync.js';
 import type { TrackingSyncContext } from './TrackingSync.js';
-import { groupNodeErrors } from './utils/groupNodeErrors.js';
-import { isNodeGone } from './utils/isNodeGone.js';
 
 /**
  * What the status bar's sidebar segment says for the whole app, rather than for one surface: the browser is
@@ -79,10 +79,10 @@ const MY_WORK_SEARCHES: Readonly<Record<MyWorkGroup, string>> = {
 const SEARCH_PAGE_SIZE = 100;
 /** How many node ids one `ItemsByIds` / `PullRequestStatuses` / `PullRequestStacks` asks for. */
 const NODES_BATCH_SIZE = 50;
-/** The most pull requests a GitHub stack holds, and the most `PullRequestStacks` asks of one. */
-const STACK_MAX_SIZE = 100;
-/** How long to wait on a rate-limit refusal that says neither when to retry nor which bucket ran out. */
-const UNKNOWN_PAUSE_MS = 60_000;
+/** How many of "my work"'s items one `ItemsByIds` asks for: its time grows with them, 50 pull requests take 6 seconds. */
+const MY_WORK_BATCH_SIZE = 20;
+/** How many of those are read at once (D27). */
+const MY_WORK_READS = 3;
 
 /** The signed-in user the loops poll for, captured when they started. */
 interface Session {
@@ -141,13 +141,14 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   and their first download ({@link TrackingSync}), which starts once "my work" has arrived and runs again
  *   when the user tracks more;
  * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
- *   every 3 minutes (actions D2), after the first download and once more when one finishes, and at once when a
- *   screen showing them opens ({@link pollWorkflowsNow}).
+ *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
+ *   and at once when a screen showing them opens ({@link pollWorkflowsNow}).
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
  * overlaps itself. Before every request it checks the allowance of the bucket it draws on, and waits for the
- * reset while one is used up — as it waits out GitHub's `retry-after`.
+ * reset while one is used up. GitHub asking to slow down (`retry-after`, or a refusal naming no used-up bucket) is
+ * about the user rather than a bucket, so every loop waits that out.
  *
  * Polling runs while a user is signed in, their kept copy is loaded and this tab is the one that syncs
  * ({@link SyncLeadership}), and stops when they sign out, another account takes over (here or in another tab) or
@@ -239,6 +240,8 @@ export const SyncEngine = defineService({
 
         let session: Session | null = null;
         let cancelTouch: (() => void) | null = null;
+        /** Until when GitHub asked to slow down (epoch ms): no loop asks it anything before then. */
+        let slowDownUntil = 0;
         /** The account whose copy is loaded. */
         let followed: Account | null = null;
         /**
@@ -266,6 +269,16 @@ export const SyncEngine = defineService({
             work => {
                 if (session && work) {
                     void run(session, 'download');
+                }
+            },
+        );
+
+        // The open items are in: the workflows' read that waited for them goes.
+        watch(
+            () => trackingSync.hasOpenItemsToDownload(),
+            waiting => {
+                if (session && !waiting) {
+                    void run(session, 'workflows');
                 }
             },
         );
@@ -344,7 +357,7 @@ export const SyncEngine = defineService({
          */
         function pollWorkflowsNow() {
             if (session) {
-                void run(session, 'workflows');
+                void run(session, 'workflows', true);
             } else if (followed) {
                 tabs.publish({ kind: 'pollWorkflows' });
             }
@@ -414,7 +427,7 @@ export const SyncEngine = defineService({
                     break;
                 case 'pollWorkflows':
                     if (session) {
-                        void run(session, 'workflows');
+                        void run(session, 'workflows', true);
                     }
 
                     break;
@@ -443,16 +456,19 @@ export const SyncEngine = defineService({
                 },
             };
             session = current;
+            slowDownUntil = 0;
             statusRef.value = resume ? withoutRunning(statusRef.value) : IDLE_LOOPS;
             logger.debug('Sync started', { resume });
 
-            // One after another (GitHub asks for serial requests), "my work" first: it is what the user waits for.
-            // Statuses come right after the first search: the items it re-read carry theirs already.
+            // One after another, "my work" first: it is what the user waits for. Statuses come right after the first
+            // search: the items it re-read carry theirs already. Nothing waits for a download, which takes minutes.
             void (async () => {
                 for (const loop of SYNC_LOOPS) {
                     if (resume && !isDue(loop)) {
                         current.loops[loop].lastRunEndedAt = items.getSyncState(loop).lastAttemptAt;
                         arm(current, loop);
+                    } else if (loop === 'download') {
+                        void run(current, loop);
                     } else {
                         await run(current, loop);
                     }
@@ -486,8 +502,11 @@ export const SyncEngine = defineService({
             return session === current && accounts.isCurrent(current.account);
         }
 
-        /** Polls `loop` now, unless it is already polling, then sets its next poll. */
-        async function run(current: Session, loop: SyncLoop) {
+        /**
+         * Polls `loop` now, unless it is already polling, then sets its next poll. `asked`: a screen needs it now, so
+         * it does not wait for what it otherwise would.
+         */
+        async function run(current: Session, loop: SyncLoop, asked = false) {
             const state = current.loops[loop];
             if (!isCurrent(current) || state.running) {
                 return;
@@ -498,8 +517,13 @@ export const SyncEngine = defineService({
 
             const status = statusRef.value[loop];
             const startedAt = clock.now();
-            if (!onlineRef.value || (status.pausedUntil !== null && status.pausedUntil > startedAt)) {
-                // Skipped: the connection coming back or the pause ending runs it, else the next interval does.
+            if (
+                !onlineRef.value ||
+                (status.pausedUntil !== null && status.pausedUntil > startedAt) ||
+                (loop === 'workflows' && !asked && isDownloadingOpenItems())
+            ) {
+                // Skipped: the connection coming back, the pause or the open items' download ending runs it, else the
+                // next interval does.
                 state.lastRunEndedAt = startedAt;
                 arm(current, loop);
                 return;
@@ -547,6 +571,9 @@ export const SyncEngine = defineService({
                         pausedUntil: pause.until,
                         pausedBucket: pause.bucket,
                     });
+                    if (pause.bucket === null) {
+                        pauseOtherLoops(current, loop, pause.until);
+                    }
                 } else {
                     logger.warn('Sync loop failed; retrying at the next interval', { loop, error });
                     if (error instanceof GitHubApiError && error.status === 401) {
@@ -561,6 +588,34 @@ export const SyncEngine = defineService({
                 if (session === current) {
                     state.lastRunEndedAt = clock.now();
                     arm(current, loop);
+                }
+            }
+        }
+
+        /**
+         * Whether the open items of the first download are on their way — which the workflows' read, the heaviest and
+         * no one's first need, waits for. Not while the download fails or is paused: that may last.
+         */
+        function isDownloadingOpenItems() {
+            const { failing, pausedUntil } = statusRef.value.download;
+            return !failing && pausedUntil === null && trackingSync.hasOpenItemsToDownload();
+        }
+
+        /**
+         * GitHub asked to slow down, which holds for all the user asks: the other loops wait until `until` too. One
+         * polling now stops at its next request, by {@link checkAllowance}.
+         */
+        function pauseOtherLoops(current: Session, loop: SyncLoop, until: number) {
+            slowDownUntil = Math.max(slowDownUntil, until);
+            for (const other of SYNC_LOOPS) {
+                const status = statusRef.value[other];
+                if (other === loop || (status.pausedUntil !== null && status.pausedUntil >= until)) {
+                    continue;
+                }
+
+                setStatus(other, { ...status, pausedUntil: until, pausedBucket: null });
+                if (!current.loops[other].running) {
+                    arm(current, other);
                 }
             }
         }
@@ -611,11 +666,8 @@ export const SyncEngine = defineService({
                     const downloaded = trackingSync.hasDownloadWork();
                     await trackingSync.download(toContext(current));
                     if (downloaded && !trackingSync.hasDownloadWork()) {
-                        // Polled at once, so what changed during the download is in, and the surfaces read fresh; a
-                        // repository just tracked has its workflows read too.
-                        void run(current, 'repositories')
-                            .then(() => run(current, 'projects'))
-                            .then(() => run(current, 'workflows'));
+                        // Polled at once, so what changed during the download is in, and the surfaces read fresh.
+                        void run(current, 'repositories').then(() => run(current, 'projects'));
                     }
 
                     return { incomplete: false };
@@ -626,10 +678,10 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * The four searches, one after another (GitHub asks for serial requests). As each answers, its items whose
-         * `updated_at` moved — or that are new — are read again, the ones GitHub no longer returns removed, and
-         * its group set to what it found: on the first download the groups arrive one by one. Then an item no
-         * search found leaves "my work" and the store.
+         * The four searches at once, as "my work" is what the user waits for (D27). As each answers, its items whose
+         * `updated_at` moved — or that are new — are read again, the ones GitHub no longer returns removed, and its
+         * group set to what it found: on the first download the groups arrive one by one, and one failing leaves the
+         * others in place. Once all have answered, an item no search found leaves "my work" and the store.
          */
         async function pollMyWork(current: Session) {
             let incomplete = false;
@@ -637,7 +689,33 @@ export const SyncEngine = defineService({
             const read = new Set<string>();
             const gone = new Set<string>();
 
+            const answers = await Promise.allSettled(MY_WORK_GROUPS.map(pollGroup));
+            for (const answer of answers) {
+                if (answer.status === 'rejected') {
+                    throw answer.reason;
+                }
+            }
+
+            if (!isCurrent(current)) {
+                return { incomplete };
+            }
+
+            // A group that answered first may hold an item another group's read found gone.
             for (const group of MY_WORK_GROUPS) {
+                const ids = [...(items.membership[group] ?? [])];
+                if (ids.some(id => gone.has(id))) {
+                    items.setMembership(
+                        group,
+                        ids.filter(id => !gone.has(id)),
+                    );
+                }
+            }
+
+            const left = removeItemsOutsideMyWork();
+            logger.debug('My work polled', { reread: read.size, removed: gone.size, left: left.length });
+            return { incomplete };
+
+            async function pollGroup(group: MyWorkGroup) {
                 checkAllowance('search');
                 const result = await searchIssues(current.rest, {
                     q: MY_WORK_SEARCHES[group],
@@ -645,7 +723,7 @@ export const SyncEngine = defineService({
                     sort: 'updated',
                 });
                 if (!isCurrent(current)) {
-                    return { incomplete };
+                    return;
                 }
 
                 incomplete ||= result.incompleteResults || result.totalCount > result.items.length;
@@ -657,15 +735,19 @@ export const SyncEngine = defineService({
                     }
                 }
 
-                for (const ids of splitIntoChunks(changed, NODES_BATCH_SIZE)) {
-                    const batchGone = await readItems(current, ids);
-                    if (!batchGone) {
-                        return { incomplete };
-                    }
+                await forEachParalell(splitIntoChunks(changed, MY_WORK_BATCH_SIZE), {
+                    concurrency: MY_WORK_READS,
+                    async callback(batch) {
+                        const batchGone = await readItems(current, batch);
+                        for (const id of batchGone ?? []) {
+                            gone.add(id);
+                        }
 
-                    for (const id of batchGone) {
-                        gone.add(id);
-                    }
+                        return batchGone !== null;
+                    },
+                });
+                if (!isCurrent(current)) {
+                    return;
                 }
 
                 const ids: string[] = [];
@@ -677,10 +759,6 @@ export const SyncEngine = defineService({
 
                 items.setMembership(group, ids);
             }
-
-            const left = removeItemsOutsideMyWork();
-            logger.debug('My work polled', { reread: read.size, removed: gone.size, left: left.length });
-            return { incomplete };
         }
 
         /** Re-reads `ids` (one batch) into the store and removes the gone ones; returns those, or `null` when the session ended. */
@@ -781,9 +859,8 @@ export const SyncEngine = defineService({
         /**
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
          * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7), and those it
-         * holds too many of. Once the copy holds them all, one at each place, nothing is asked. The answer is what the stack holds: a held pull request it does not list
-         * has left the stack — all of them when the stack is gone — which moves no `updated_at`, so nothing else
-         * would tell a closed one.
+         * holds too many of ({@link readStacksWhole}). Once the copy holds them all, one at each place, nothing is
+         * asked.
          */
         async function readIncompleteStacks(current: Session) {
             const held = new Map<string, { size: number; members: number; positions: Set<number> }>();
@@ -806,49 +883,14 @@ export const SyncEngine = defineService({
             );
             for (const batch of splitIntoChunks(incomplete, NODES_BATCH_SIZE)) {
                 checkAllowance('graphql');
-                const errors: GitHubGraphQLErrorEntry[] = [];
-                const { nodes } = await current.account.sdk.PullRequestStacks(
-                    {
-                        ids: batch.map(([id]) => id),
-                        // The batch's largest stack: GitHub charges for the entries asked, not those found.
-                        first: Math.min(STACK_MAX_SIZE, Math.max(...batch.map(([, stack]) => stack.size))),
-                    },
-                    { onPartialErrors: found => errors.push(...found) },
-                );
+                const read = await readStacksWhole({
+                    sdk: current.account.sdk,
+                    stacks: batch.map(([id, stack]) => ({ id, size: stack.size })),
+                    items,
+                    logger,
+                });
                 if (!isCurrent(current)) {
                     return;
-                }
-
-                if (errors.length > 0) {
-                    logger.warn('Pull request stacks read in part', { errors });
-                }
-
-                const errorsByNode = groupNodeErrors(errors);
-                const read: Item[] = [];
-                for (const [index, [id]] of batch.entries()) {
-                    const node = nodes[index] ?? null;
-                    const nodeErrors = errorsByNode.get(index) ?? [];
-                    if (node === null || !('entries' in node)) {
-                        if (isNodeGone(nodeErrors)) {
-                            read.push(...leaveStack(id, new Set()));
-                        }
-
-                        continue;
-                    }
-
-                    const listed = new Set<string>();
-                    for (const entry of node.entries.nodes ?? []) {
-                        const item = toItem(entry?.pullRequest ?? null);
-                        if (item) {
-                            read.push(item);
-                            listed.add(item.id);
-                        }
-                    }
-
-                    // Only a whole answer tells who left: not one cut by `first`, or with an entry GitHub refused.
-                    if (nodeErrors.length === 0 && listed.size === node.entries.totalCount) {
-                        read.push(...leaveStack(id, listed));
-                    }
                 }
 
                 items.upsertMany(read);
@@ -857,24 +899,16 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * The held pull requests of stack `id` but those `listed`, out of it — as stored, so a change of the user's
-         * still on its way does not become part of them.
+         * Throws a pause instead of asking GitHub while it asked to slow down, or while `bucket` is used up — but for
+         * what is kept for edits.
          */
-        function leaveStack(id: string, listed: ReadonlySet<string>) {
-            const left: PullRequestItem[] = [];
-            for (const { id: itemId } of items.all) {
-                const item = items.getStored(itemId);
-                if (item?.kind === 'pullRequest' && item.stack?.id === id && !listed.has(itemId)) {
-                    left.push({ ...item, stack: null });
-                }
+        function checkAllowance(bucket: string) {
+            const now = clock.now();
+            if (slowDownUntil > now) {
+                throw new SyncPausedError({ until: slowDownUntil, bucket: null });
             }
 
-            return left;
-        }
-
-        /** Throws a pause instead of asking GitHub while `bucket` is used up — but for what is kept for edits. */
-        function checkAllowance(bucket: string) {
-            const pause = getAllowancePause(rateLimits.get(bucket), clock.now());
+            const pause = getAllowancePause(rateLimits.get(bucket), now);
             if (pause) {
                 throw new SyncPausedError(pause);
             }
@@ -886,23 +920,11 @@ export const SyncEngine = defineService({
                 return error.pause;
             }
 
-            if (!(error instanceof GitHubApiError) || !isRateLimitRefusal(error)) {
-                return null;
-            }
-
-            const now = clock.now();
-            if (error.retryAfter != null) {
-                return { until: now + error.retryAfter * 1000, bucket: null };
-            }
-
-            for (const bucket of LOOP_BUCKETS[loop]) {
-                const limit = rateLimits.get(bucket);
-                if (limit && limit.remaining === 0 && limit.resetAt.getTime() > now) {
-                    return { until: limit.resetAt.getTime(), bucket };
-                }
-            }
-
-            return { until: now + UNKNOWN_PAUSE_MS, bucket: null };
+            return getRefusalPause({
+                error,
+                limits: LOOP_BUCKETS[loop].map(bucket => rateLimits.get(bucket)),
+                now: clock.now(),
+            });
         }
 
         function followVisibility() {

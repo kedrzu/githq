@@ -52,6 +52,7 @@ export function samplePullRequestNode(id: string, params: SampleRowNodeParams): 
         reviewDecision: null,
         mergeable: 'MERGEABLE',
         mergeStateStatus: 'CLEAN',
+        headRefOid: 'head-oid',
         createdAt: '2026-10-01T10:00:00Z',
         updatedAt,
         closedAt: open ? null : updatedAt,
@@ -74,6 +75,12 @@ export function samplePullRequestNode(id: string, params: SampleRowNodeParams): 
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',
+        headRef: { id: 'REF_1' },
+        isCrossRepository: false,
+        viewerCanDeleteHeadRef: false,
+        isMergeQueueEnabled: false,
+        mergeQueueEntry: null,
+        autoMergeRequest: null,
         baseRef: { target: { oid: 'base-oid' } },
     };
 }

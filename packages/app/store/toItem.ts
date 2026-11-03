@@ -76,6 +76,10 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
         reviewDecision: node.reviewDecision,
         mergeable: node.mergeable,
         mergeStateStatus: node.mergeStateStatus,
+        headRefOid: node.headRefOid,
+        headRefId: node.headRef?.id ?? null,
+        isCrossRepository: node.isCrossRepository,
+        viewerCanDeleteHeadRef: node.viewerCanDeleteHeadRef,
         checks: node.statusCheckRollup ? toChecks(node.statusCheckRollup) : null,
         reviewRequests: toItemReviewRequests(node.reviewRequests),
         latestReviews: mapNotNull(
@@ -92,6 +96,20 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
                   }
                 : null,
         behindBase: node.baseRef?.target != null && node.baseRef.target.oid !== node.baseRefOid,
+        isMergeQueueEnabled: node.isMergeQueueEnabled,
+        mergeQueueEntry: node.mergeQueueEntry && {
+            position: node.mergeQueueEntry.position,
+            state: node.mergeQueueEntry.state,
+            estimatedTimeToMerge: node.mergeQueueEntry.estimatedTimeToMerge,
+            enqueuedAt: node.mergeQueueEntry.enqueuedAt,
+            enqueuer: node.mergeQueueEntry.enqueuer.login,
+        },
+        autoMerge: node.autoMergeRequest && {
+            mergeMethod: node.autoMergeRequest.mergeMethod,
+            enabledAt: node.autoMergeRequest.enabledAt,
+            enabledBy: node.autoMergeRequest.enabledBy?.login ?? null,
+            commitHeadline: node.autoMergeRequest.commitHeadline,
+        },
     };
 }
 

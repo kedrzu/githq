@@ -1,0 +1,6 @@
+draft:
+  en: '#{number} is a draft'
+checks:
+  en: '#{number} checks running'
+review:
+  en: '#{number} waiting for review'

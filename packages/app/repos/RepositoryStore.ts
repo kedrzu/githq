@@ -2,6 +2,7 @@ import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import type {
     RepositoryLabelFieldsFragment,
     RepositoryMetadataQuery,
+    RepositoryOpenCountsQuery,
     RepositoryUserFieldsFragment,
     ViewerProjectsQuery,
 } from '@githq/github/generated.gen.js';
@@ -28,12 +29,13 @@ import type {
     RepositoryLabel,
     RepositoryMetadata,
     RepositoryMilestone,
+    RepositoryOpenCounts,
     RepositoryUser,
     ViewerProject,
     ViewerProjects,
 } from './RepositoryTypes.js';
 
-/** How long repository metadata and the viewer's projects are used without reading them again. */
+/** How long repository metadata, open counts and the viewer's projects are used without reading them again. */
 const METADATA_TTL_MS = 10 * 60_000;
 /**
  * How many pages of 100 labels or assignable users are read at most. Past them the pickers do not offer the rest,
@@ -64,6 +66,8 @@ interface Session {
     readonly repositories: ExpiringReads<string, RepositoryMetadata>;
     /** The viewer's projects, under one key. */
     readonly viewerProjects: ExpiringReads<typeof VIEWER_PROJECTS, ViewerProjects>;
+    /** The open counts, by `owner/name`. */
+    readonly openCounts: ExpiringReads<string, RepositoryOpenCounts>;
 }
 
 /** The key the viewer's projects are read under. */
@@ -71,9 +75,10 @@ const VIEWER_PROJECTS = 'viewerProjects';
 
 /**
  * What the pickers offer and what the viewer may do, per repository (D14) — labels, open milestones, assignable
- * users, issue types, the viewer's permission — and the projects the viewer can add items to. Read lazily, when
- * a picker or an item of the repository opens ({@link ensure}), used for 10 minutes, and kept in the
- * signed-in user's local copy.
+ * users, issue types, the viewer's permission — the projects the viewer can add items to, and how many issues and
+ * pull requests an untracked repository has open on GitHub (J3, CH37). Read lazily, when a picker or an item of the
+ * repository opens ({@link ensure}) or an untracked repository's view needs its counts ({@link ensureOpenCounts}),
+ * used for 10 minutes, and kept in the signed-in user's local copy.
  *
  * It follows the signed-in user like the item store: their metadata leaves memory when they sign out (the item
  * store deletes the copy holding it), and an answer arriving for a session that ended is dropped.
@@ -92,6 +97,7 @@ export const RepositoryStore = defineService({
     setup({ accounts, items, persistence, rateLimits, clock, logger }) {
         const repositoriesRef = shallowRef<ReadonlyMap<string, RepositoryMetadata>>(new Map());
         const viewerProjectsRef = shallowRef<ViewerProjects | null>(null);
+        const openCountsRef = shallowRef<ReadonlyMap<string, RepositoryOpenCounts>>(new Map());
 
         let session: Session | null = null;
 
@@ -102,12 +108,17 @@ export const RepositoryStore = defineService({
             get(nameWithOwner: string) {
                 return repositoriesRef.value.get(nameWithOwner);
             },
+            /** How many issues and pull requests `owner/name` has open on GitHub, as last read, or `undefined`; reactive. */
+            getOpenCounts(nameWithOwner: string) {
+                return openCountsRef.value.get(nameWithOwner);
+            },
             /** The projects the viewer can add items to, as last read, or `null`; reactive. */
             get viewerProjects(): readonly ViewerProject[] | null {
                 return viewerProjectsRef.value?.projects ?? null;
             },
             ensure,
             ensureViewerProjects,
+            ensureOpenCounts,
             complete,
         };
 
@@ -173,11 +184,28 @@ export const RepositoryStore = defineService({
             return projects?.projects ?? null;
         }
 
+        /**
+         * How many issues and pull requests `owner/name` has open on GitHub, as {@link ensure} reads metadata: `null`
+         * without a copy when GitHub cannot be asked, does not answer or does not show the repository.
+         */
+        async function ensureOpenCounts(nameWithOwner: string): Promise<RepositoryOpenCounts | null> {
+            const current = session;
+            if (!current) {
+                return null;
+            }
+
+            await current.ready;
+            return isCurrent(current)
+                ? current.openCounts.ensure(nameWithOwner)
+                : (openCountsRef.value.get(nameWithOwner) ?? null);
+        }
+
         /** Another account signed in, or none: the metadata of whoever was before leaves memory. */
         function follow(account: Account | null) {
             session = null;
             repositoriesRef.value = new Map();
             viewerProjectsRef.value = null;
+            openCountsRef.value = new Map();
             if (!account) {
                 return;
             }
@@ -197,6 +225,12 @@ export const RepositoryStore = defineService({
                     maxAgeMs: METADATA_TTL_MS,
                     getKept: () => viewerProjectsRef.value ?? undefined,
                     read: () => readViewerProjects(current),
+                }),
+                openCounts: createExpiringReads({
+                    now,
+                    maxAgeMs: METADATA_TTL_MS,
+                    getKept: nameWithOwner => openCountsRef.value.get(nameWithOwner),
+                    read: nameWithOwner => readOpenCounts(current, nameWithOwner),
                 }),
             };
             session = current;
@@ -227,8 +261,14 @@ export const RepositoryStore = defineService({
                 repositories.set(metadata.nameWithOwner, metadata);
             }
 
+            const openCounts = new Map<string, RepositoryOpenCounts>();
+            for (const counts of persisted.openCounts) {
+                openCounts.set(counts.nameWithOwner, counts);
+            }
+
             repositoriesRef.value = repositories;
             viewerProjectsRef.value = persisted.viewerProjects;
+            openCountsRef.value = openCounts;
         }
 
         /** `null` when GitHub cannot be asked, does not answer, or does not show the repository. */
@@ -283,6 +323,41 @@ export const RepositoryStore = defineService({
                 logger.warn('Could not keep repository metadata', { error });
             });
             return metadata;
+        }
+
+        /** `null` when GitHub cannot be asked, does not answer, or does not show the repository. */
+        async function readOpenCounts(current: Session, nameWithOwner: string) {
+            const { owner, name } = parseRepositoryName(nameWithOwner);
+            if (rateLimits.remaining('graphql') === 0) {
+                return null;
+            }
+
+            let answer: RepositoryOpenCountsQuery;
+            try {
+                answer = await current.account.sdk.RepositoryOpenCounts({ owner, name });
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('Repository open counts could not be read', { nameWithOwner, error });
+                }
+
+                return null;
+            }
+
+            if (!isCurrent(current) || !answer.repository) {
+                return null;
+            }
+
+            const counts: RepositoryOpenCounts = {
+                nameWithOwner,
+                issues: answer.repository.issues.totalCount,
+                pullRequests: answer.repository.pullRequests.totalCount,
+                fetchedAt: clock.now(),
+            };
+            openCountsRef.value = new Map(openCountsRef.value).set(nameWithOwner, counts);
+            persistence.saveOpenCounts(current.account.login, counts).catch((error: unknown) => {
+                logger.warn('Could not keep repository open counts', { error });
+            });
+            return counts;
         }
 
         /**
@@ -380,6 +455,14 @@ function toRepositoryMetadata(params: ToRepositoryMetadataParams): RepositoryMet
         viewerPermission: repository.viewerPermission,
         hasIssuesEnabled: repository.hasIssuesEnabled,
         isArchived: repository.isArchived,
+        mergeCommitAllowed: repository.mergeCommitAllowed,
+        squashMergeAllowed: repository.squashMergeAllowed,
+        rebaseMergeAllowed: repository.rebaseMergeAllowed,
+        viewerDefaultMergeMethod: repository.viewerDefaultMergeMethod,
+        autoMergeAllowed: repository.autoMergeAllowed,
+        deleteBranchOnMerge: repository.deleteBranchOnMerge,
+        viewerDefaultCommitEmail: repository.viewerDefaultCommitEmail,
+        viewerPossibleCommitEmails: repository.viewerPossibleCommitEmails ?? [],
         labels: params.labels.map(toLabel),
         milestones: mapNotNull(
             repository.milestones?.nodes ?? [],

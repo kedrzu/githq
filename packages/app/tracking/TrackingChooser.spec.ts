@@ -282,7 +282,7 @@ test('the saving choice sits above the footer; ticked, the footer says "Track th
     const onTrack = vi.fn();
     await SavingTicked.run({ args: { ...SavingTicked.args, onTrack } });
 
-    await expect.element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: 'Save my settings to my GitHub account' })).toBeChecked();
     await expect.element(page.getByText('then creates mlaine/githq-settings', { exact: false })).toBeVisible();
     await expect.element(page.getByText('You can change this any time in Settings.', { exact: false })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Track these' }));
@@ -293,7 +293,7 @@ test('with nothing to pick, the saving choice sits above "Continue to My work"; 
     await NothingToPickWithSaving.run();
 
     await expect
-        .element(page.getByRole('checkbox', { name: 'Save what I track to my GitHub account' }))
+        .element(page.getByRole('checkbox', { name: 'Save my settings to my GitHub account' }))
         .not.toBeChecked();
     await expect.element(page.getByText('then creates', { exact: false })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Continue to My work' })).toBeVisible();

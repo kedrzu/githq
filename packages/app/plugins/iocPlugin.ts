@@ -3,6 +3,7 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { defineNuxtPlugin } from 'nuxt/app';
 
+import { CommitPersistence } from '@/commits/CommitPersistence.js';
 import { installDesktop } from '@/desktop/installDesktop.js';
 import { AppLanguageContext } from '@/i18n/AppLanguageContext.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
@@ -13,7 +14,9 @@ import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { LocalCopyVersion } from '@/store/LocalCopyVersion.js';
 import { DetailPrefetch } from '@/sync/DetailPrefetch.js';
+import { OutdatedTabReload } from '@/sync/OutdatedTabReload.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
 import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
@@ -53,12 +56,16 @@ function startServices(container: Container) {
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);
     container.set(WorkflowPersistence, persistence);
+    container.set(CommitPersistence, persistence);
+    container.set(LocalCopyVersion, persistence);
     // Started now rather than by the first list: the signed-in user's copy starts loading at once, and it is
     // there to delete when they sign out from a screen that never showed it.
     container.resolve(ItemStore);
     // Polls GitHub while a user is signed in, their copy is loaded and this tab is the one syncing it; stops by
     // itself when they sign out or another tab takes over.
     container.resolve(SyncEngine);
+    // Brings this tab up to a newer githq that another tab opened, once that loses nothing.
+    container.resolve(OutdatedTabReload);
     // Reads ahead the details of "my work" after each poll.
     container.resolve(DetailPrefetch);
     // Answers the saved views GitHub filters, shown in this tab or — while it syncs — in another.

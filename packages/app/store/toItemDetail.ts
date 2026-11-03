@@ -12,10 +12,8 @@ import type {
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
-import { classifyCheckRun, classifyStatus } from './classifyChecks.js';
 import type {
     IssueDetail,
-    ItemCheck,
     ItemComment,
     ItemComments,
     ItemDetail,
@@ -32,6 +30,7 @@ import type {
 } from './ItemDetailTypes.js';
 import { toItem } from './toItem.js';
 import type { GitHubNodes, ReviewRequestNode } from './toItem.js';
+import { toItemCheck } from './toItemCheck.js';
 
 /** A node of `ItemDetail` or `ItemDetails`: an issue, a pull request, `{}` for another type, `null` when gone. */
 export type ItemDetailNode =
@@ -127,7 +126,7 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         kind: 'pullRequest',
         commitCount: node.commits.totalCount,
         headRepository: node.headRepository?.nameWithOwner ?? null,
-        checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], context => context && toCheck(context)),
+        checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], context => context && toItemCheck(context)),
         checkCount: node.statusCheckRollup?.contextPage.totalCount ?? 0,
         reviews,
         reviewRequests: toDetailReviewRequests(node.reviewRequests),
@@ -213,43 +212,6 @@ function toLinkedIssue(issue: LinkedIssueFieldsFragment): LinkedIssue {
         state: issue.state,
         stateReason: issue.stateReason,
     };
-}
-
-type CheckContext = NonNullable<
-    NonNullable<NonNullable<PullRequestDetailFieldsFragment['statusCheckRollup']>['contextPage']['nodes']>[number]
->;
-
-function toCheck(context: CheckContext): ItemCheck {
-    switch (context.__typename) {
-        case 'CheckRun':
-            return {
-                id: context.id,
-                kind: 'checkRun',
-                name: context.name,
-                workflow: context.checkSuite.workflowRun?.workflow.name ?? null,
-                // A run that has not completed is pending; a completed one is told by its conclusion.
-                state:
-                    context.status !== 'COMPLETED' || context.conclusion === null
-                        ? 'pending'
-                        : classifyCheckRun(context.conclusion),
-                url: context.detailsUrl,
-                startedAt: context.startedAt,
-                completedAt: context.completedAt,
-            };
-        case 'StatusContext':
-            return {
-                id: context.id,
-                kind: 'status',
-                name: context.context,
-                workflow: null,
-                state: classifyStatus(context.state),
-                url: context.targetUrl,
-                startedAt: context.createdAt,
-                completedAt: null,
-            };
-        default:
-            return assertNever(context);
-    }
 }
 
 /**

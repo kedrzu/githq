@@ -42,7 +42,7 @@ export function createDraftFieldEdit(params: CreateDraftFieldEditParams): Edit {
             item: current => current,
             ...getProjectItemValueLayer({ itemId: item.itemId, fieldId: field.id, value }),
         },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = await sendProjectFieldValue(sdk, {
                 projectId: project.id,
                 itemId: item.itemId,

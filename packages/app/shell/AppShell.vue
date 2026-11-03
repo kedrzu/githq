@@ -18,7 +18,7 @@ import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import * as l from './AppShell.loc.js';
 import FreshnessSegment from './FreshnessSegment.vue';
-import type { SegmentEdits } from './FreshnessSegment.vue';
+import type { SegmentEdits } from './SegmentEdits.js';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
 import type { SidebarBrokenWorkflows } from './SidebarTypes.js';

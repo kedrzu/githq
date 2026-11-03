@@ -32,6 +32,9 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** A first open's other branches arriving (git-client D19). */
+export const FillingIn: Story = { args: { freshness: { kind: 'filling', done: 3, total: 7 } } };
+
 /** Offline: amber, as of the last success. */
 export const Offline: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'offline' } } };
 
@@ -52,4 +55,19 @@ export const PausedWithEditsHint: Story = { args: { ...Paused.args, editsHint: t
 /** K6: a saved view githq can't evaluate, answered by GitHub — purple, expected, and why it is slower. */
 export const AnsweredByGitHub: Story = {
     args: { freshness: { kind: 'answered', term: 'no:linked-pull-requests', checkedAt: AT_14_06 } },
+};
+
+/** PM35: a merge GitHub refused after the user moved on — red, as any failed edit (K1), until dismissed. */
+export const MergeRefused: Story = {
+    args: { edits: { kind: 'failed', text: 'Merge refused · fitloop/api#477' } },
+};
+
+/** PM36: a merge GitHub has not said the end of — grey, neither failed nor done, until the next refresh. */
+export const MergeUnanswered: Story = {
+    args: {
+        edits: {
+            kind: 'unanswered',
+            text: "fitloop/api#477 · GitHub hasn't answered · the next refresh will settle it",
+        },
+    },
 };

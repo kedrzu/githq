@@ -32,6 +32,10 @@ failedDraft:
   en: "{reference} wasn't turned into a draft"
 failedReady:
   en: "{reference} wasn't marked ready for review"
+failedMerged:
+  en: "{reference} wasn't merged"
+failedBranchUpdated:
+  en: "{reference}'s branch wasn't updated"
 
 partlyLabelAdded:
   en: “{label}” added to {done} of {total} items
@@ -70,6 +74,10 @@ changeDraft:
   en: draft
 changeReady:
   en: ready for review
+changeMerged:
+  en: merge
+changeBranchUpdated:
+  en: branch update
 
 undoneLabel:
   en: “{label}” label undone
@@ -86,6 +94,10 @@ reasonOffline:
   en: githq couldn't reach GitHub, so it was undone. Try again once you're online.
 reasonRefused:
   en: 'GitHub refused it: {message}. It was undone.'
+reasonOrganizationRestricted:
+  en: "{organization} hasn't approved githq, so githq can read its public repositories but can't change anything there."
+reasonMergeRefused:
+  en: 'GitHub refused it: “{message}” Nothing changed on GitHub.'
 reasonOfItem:
   en: '{reference} failed: {reason}'
 moreFailed:
@@ -100,10 +112,18 @@ shortNotAllowed:
   en: no permission
 shortMissing:
   en: no longer exists
+reasonRulesNotConfirmed:
+  en: GitHub doesn't confirm the rules are met any more, so nothing was merged. Open it to see why.
+reasonNotReached:
+  en: GitHub couldn't be reached, so nothing was sent. Open it to try again.
+shortRulesNotConfirmed:
+  en: rules not met
 shortOffline:
   en: GitHub unreachable
 shortRefused:
   en: refused by GitHub
+shortOrganizationRestricted:
+  en: "refused · {organization} hasn't approved githq"
 
 sendingTo:
   plural: count
@@ -115,6 +135,12 @@ sendingFields:
   en:
     one: 'Sending 1 change: {fields}'
     many: 'Sending {count} changes: {fields}'
+mergingTo:
+  en: Merge on the way · {target}
+merging:
+  en: Merge on the way
+mergingSeveral:
+  en: Merge on the way · {repository}, {count} pull requests
 itemCount:
   plural: count
   en:
@@ -122,6 +148,14 @@ itemCount:
     many: '{count} items'
 failedOne:
   en: 1 change failed · {subject} {reason}
+failedMerge:
+  en: Merge refused · {reference}
+failedMergeRestricted:
+  en: "Merge refused · {reference} · {organization} hasn't approved githq"
+unanswered:
+  en: GitHub hasn't answered · the next refresh will settle it
+unansweredOf:
+  en: "{reference} · GitHub hasn't answered · the next refresh will settle it"
 failedSome:
   en: '{failed} of {total} changes failed · {target}'
 
@@ -147,6 +181,10 @@ fieldReviewers:
   en: Reviewers
 fieldDraft:
   en: Draft
+fieldMerge:
+  en: Merge
+fieldBranch:
+  en: Branch
 
 openLabels:
   en: Open labels on GitHub
@@ -154,6 +192,8 @@ openMilestones:
   en: Open milestones on GitHub
 openOnGitHub:
   en: Open on GitHub
+requestAccess:
+  en: Request access on GitHub
 restoreComment:
   en: Restore comment
 selectFailed:
@@ -165,3 +205,51 @@ subjectLabel:
   en: label “{label}”
 selectFailedCommand:
   en: Select the items that failed
+failedAutoMergeOn:
+  en: "Auto-merge wasn't turned on for {reference}"
+failedAutoMergeOff:
+  en: "Auto-merge wasn't turned off for {reference}"
+failedQueueJumped:
+  en: "{reference} didn't jump the queue"
+failedDequeued:
+  en: "{reference} wasn't taken out of the queue"
+changeAutoMergeOn:
+  en: auto-merge on
+changeAutoMergeOff:
+  en: auto-merge off
+changeQueueJumped:
+  en: jumping the queue
+changeDequeued:
+  en: taking out of the queue
+fieldAutoMerge:
+  en: Auto-merge
+fieldQueue:
+  en: Merge queue
+failedBranchDeleted:
+  en: "The branch of {reference} wasn't deleted"
+failedBranchRestored:
+  en: "The branch of {reference} wasn't restored"
+failedChecksRerun:
+  en: "The checks of {reference} weren't re-run"
+failedReverted:
+  en: "{reference} wasn't reverted"
+changeBranchDeleted:
+  en: deleting the branch
+changeBranchRestored:
+  en: restoring the branch
+changeChecksRerun:
+  en: re-running the checks
+changeReverted:
+  en: reverting
+fieldChecks:
+  en: Checks
+fieldRevert:
+  en: Revert
+reasonNotActions:
+  en: 'None of the checks that failed runs on GitHub Actions: re-run them where they run.'
+shortNotActions:
+  en: not on GitHub Actions
+reasonNothingFailed:
+  en: 'No check is failing any more: there is nothing to re-run.'
+shortNothingFailed:
+  en: nothing failing

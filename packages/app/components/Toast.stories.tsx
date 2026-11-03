@@ -92,6 +92,16 @@ export const PartlyFailed: Story = {
     }),
 };
 
+/** PM34: a merge GitHub confirmed after the user moved on — quiet, in the merged tone, and gone by itself. */
+export const MergeConfirmed: Story = {
+    args: { title: 'fitloop/api#477 merged into main', tone: 'done' },
+    render: args => ({
+        components: { Toast, Toaster },
+        setup: () => ({ args }),
+        template: `<Toaster><Toast v-bind="args" :duration="Infinity" /></Toaster>`,
+    }),
+};
+
 /** T20: nothing went wrong: what the user just did, with the way back. */
 export const Neutral: Story = {
     args: { title: 'Stopped tracking fitloop/api', tone: 'neutral', icon: EyeOff },

@@ -4,9 +4,18 @@ import { expect, test } from 'bun:test';
 import type { Item, ItemReviewRequest, PullRequestItem } from '@/store/ItemTypes.js';
 import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
 
-import type { StackDescription, StackPip } from './describeStack.js';
+import type { StackDescription, StackPip, StackPullRequestPip } from './describeStack.js';
 import { describeStack } from './describeStack.js';
+import { findStackHolder } from './findStackHolder.js';
 import { groupStacks } from './groupStacks.js';
+
+const QUEUE_ENTRY = {
+    position: 1,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: 720,
+    enqueuedAt: '2026-11-03T00:00:00Z',
+    enqueuer: 'mlaine',
+} as const;
 
 test('the name is the title of the first issue in the copy that the stack closes, by position then by order', () => {
     const issue = { ...sampleIssue('I_named'), title: 'Offline queue for booking edits' };
@@ -109,6 +118,18 @@ test('a draft blocks what comes after it, and the blocker says it is a draft', (
     expect(pipKinds(description)).toEqual(['ready', 'draft', 'ready']);
 });
 
+test('SP14: its first open pull request in a merge queue reads as the group’s place, past what landed, never ready', () => {
+    const first = { ...QUEUE_ENTRY, position: 2 };
+    const description = describeMembers([
+        pr(1, { state: 'MERGED', merged: true }),
+        pr(2, { mergeQueueEntry: first }),
+        pr(3, { mergeQueueEntry: { ...QUEUE_ENTRY, position: 3 } }),
+    ]);
+
+    expect(description.state).toEqual({ kind: 'queued', entry: first });
+    expect(description.landed).toBe(1);
+});
+
 test('a partly merged stack counts what landed and is ready from the lowest open one', () => {
     const description = describeMembers([
         pr(1, { state: 'MERGED', merged: true }),
@@ -159,9 +180,34 @@ test('an incomplete copy goes before needing a rebase or being merged', () => {
             size: 2,
         },
     );
-    expect(merged.state).toEqual({ kind: 'merged' });
+    expect(merged.state).toEqual({ kind: 'merged', count: 2 });
     expect(merged.landed).toBe(2);
     expect(pipKinds(merged)).toEqual(['merged', 'merged']);
+});
+
+test('pull requests being merged read being merged on their pips and the state, never merged (D3, SP7)', () => {
+    const description = describeMembers([pr(1, { merging: 'SQUASH' }), pr(2, { merging: 'SQUASH' }), pr(3)]);
+
+    expect(description.state).toEqual({ kind: 'merging', goingCount: 2 });
+    expect(pipKinds(description)).toEqual(['merging', 'merging', 'ready']);
+    expect(description.landed).toBe(0);
+});
+
+test('being merged goes before needing a rebase, and its pips stay being merged', () => {
+    const description = describeMembers([pr(1, { merging: 'MERGE' }), pr(2, { merging: 'MERGE', behindBase: true })], {
+        size: 2,
+    });
+
+    expect(description.state).toEqual({ kind: 'merging', goingCount: 2 });
+    expect(pipKinds(description)).toEqual(['merging', 'merging']);
+});
+
+test('once GitHub confirms, the pips are merged and the stack reads merged with how many landed (SP8)', () => {
+    const merged = { state: 'MERGED', merged: true } as const;
+    const description = describeMembers([pr(1, merged), pr(2, merged), pr(3, merged)]);
+
+    expect(description.state).toEqual({ kind: 'merged', count: 3 });
+    expect(pipKinds(description)).toEqual(['merged', 'merged', 'merged']);
 });
 
 test('an open one above the lowest open one behind its base needs a rebase, and every open pip is amber (D21)', () => {
@@ -197,6 +243,27 @@ test('a closed one at the top does not hold the open ones before it', () => {
     const description = describeMembers([pr(1), pr(2), pr(3, { state: 'CLOSED' })]);
 
     expect(description.state).toEqual({ kind: 'ready', openCount: 2 });
+});
+
+test('SK2: the entry and the merge panel read the same holder: a closed last one holds nothing, a closed one before open ones does, wherever it is', () => {
+    const held = (...members: PullRequestItem[]) => {
+        const { pips } = describeMembers(members);
+        return findStackHolder(pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'));
+    };
+
+    expect(held(pr(1), pr(2), pr(3, { state: 'CLOSED' }))).toEqual({ canLand: 2, holder: null });
+    expect(held(pr(1), pr(2, { state: 'CLOSED' }), pr(3))).toMatchObject({
+        canLand: 1,
+        holder: { kind: 'closed', pullRequest: { number: 102 } },
+    });
+    expect(held(pr(1, { state: 'CLOSED' }), pr(2), pr(3))).toMatchObject({
+        canLand: 0,
+        holder: { kind: 'closed', pullRequest: { number: 101 } },
+    });
+    expect(held(pr(1, { state: 'MERGED', merged: true }), pr(2, { isDraft: true }), pr(3))).toMatchObject({
+        canLand: 0,
+        holder: { kind: 'draft', pullRequest: { number: 102 } },
+    });
 });
 
 test('a stack with nothing open and not all merged reads closed', () => {

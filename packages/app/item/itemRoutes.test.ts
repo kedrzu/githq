@@ -6,7 +6,13 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { stringifyGitHubQuery } from '@/app/router.options.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 
-import { formatShortReference, getItemPagePath, getOpenedItemQuery, getOpenedItemRoute } from './itemRoutes.js';
+import {
+    formatShortReference,
+    getItemPagePath,
+    getOpenedItemQuery,
+    getOpenedItemRoute,
+    parseItemUrl,
+} from './itemRoutes.js';
 
 test("an item opened over a list lives in the query beside the list's own, as GitHub's project pane", () => {
     const query = getOpenedItemQuery({ filter: 'needs' }, { owner: 'acme', name: 'web', number: 12 });
@@ -51,6 +57,23 @@ test("an item's page is GitHub's address of it", () => {
     expect(
         getOpenedItemRoute(route('/acme/web/issues/12', {}, { owner: 'acme', name: 'web', number: '12' }, true)),
     ).toEqual({ reference: { owner: 'acme', name: 'web', number: 12 }, onPage: true });
+});
+
+test("a github.com address names its item, in the address's repository", () => {
+    expect(parseItemUrl('https://github.com/upstream/web.js/pull/15')).toEqual({
+        owner: 'upstream',
+        name: 'web.js',
+        number: 15,
+    });
+    expect(parseItemUrl('https://github.com/acme/web/issues/12')).toEqual({ owner: 'acme', name: 'web', number: 12 });
+    for (const url of [
+        'https://github.com/acme/web',
+        'https://github.com/acme/web/commit/12',
+        'https://github.com/acme/web/pull/0',
+        'https://example.com/acme/web/pull/12',
+    ]) {
+        expect(parseItemUrl(url)).toBeNull();
+    }
 });
 
 test('a malformed pane opens nothing', () => {

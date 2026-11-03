@@ -1,4 +1,4 @@
-<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub, and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,9 @@ import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { isMergeFailure } from '@/merge/isMergeFailure.js';
+import { Browser } from '@/services/Browser.js';
+import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
@@ -18,6 +21,7 @@ import * as l from './useEditTexts.loc.js';
 const queue = useService(EditQueue);
 const drafts = useService(CommentDrafts);
 const navigation = useService(ItemNavigation);
+const browser = useService(Browser);
 const texts = useEditTexts();
 const t = useTranslate();
 
@@ -69,12 +73,21 @@ function restoreComment(failure: EditFailure) {
   }
 }
 
-/** Where on GitHub what failed can be seen to or done by hand. */
+/**
+ * Where on GitHub what failed can be seen to or done by hand — or, refused by an organisation that has not approved
+ * githq, where the user requests its approval (G5).
+ */
 function getLink(failure: EditFailure) {
-  const edit = failure.failed[0]?.edit;
-  if (!edit) {
+  const [first] = failure.failed;
+  if (!first) {
     return null;
   }
+
+  if (first.reason.kind === 'organizationRestricted') {
+    return { url: getApprovalUrl(browser.origin), text: t(l.requestAccess) };
+  }
+
+  const { edit } = first;
 
   const [repository = '', number = ''] = edit.reference.split('#');
   switch (edit.subject.kind) {
@@ -96,7 +109,7 @@ function getLink(failure: EditFailure) {
     :key="failure.id"
   >
     <Toast
-      v-if="failure.toast"
+      v-if="failure.toast && !isMergeFailure(failure)"
       :title="texts.failureTitle(failure)"
       :tone="failure.failed.length < failure.editCount ? 'warning' : 'danger'"
       @update:open="queue.setToast(failure.id, $event)"

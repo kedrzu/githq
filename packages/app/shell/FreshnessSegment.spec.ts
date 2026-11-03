@@ -11,8 +11,10 @@ import { Clock } from '@/services/Clock.js';
 import type { Freshness } from '@/sync/Freshness.js';
 
 import FreshnessSegment from './FreshnessSegment.vue';
+import type { SegmentEdits } from './SegmentEdits.js';
 
 const NOW = Date.parse('2026-10-30T14:06:00Z');
+const FRESH: Freshness = { kind: 'fresh', checkedAt: NOW };
 
 // Mounted by hand rather than from a story: the test moves the clock the segment ticks by.
 
@@ -29,8 +31,19 @@ test('hovering "Up to date" tells how long ago it was checked, and the time move
     await expect.element(tooltip('Checked 1m ago')).toBeVisible();
 });
 
-/** Mounts the segment showing `freshness`, on a clock that moves only when told. */
-function mount(freshness: Freshness) {
+test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
+    const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
+    await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));
+    expect(refused.shown).toBe(1);
+
+    const text = "fitloop/api#477 · GitHub hasn't answered · the next refresh will settle it";
+    mount(FRESH, { kind: 'unanswered', text });
+    await expect.element(page.getByText(text)).toBeVisible();
+    await expect.element(page.getByRole('button', { name: text })).not.toBeInTheDocument();
+});
+
+/** Mounts the segment showing `freshness` — or the user's `edits` — on a clock that moves only when told. */
+function mount(freshness: Freshness, edits: SegmentEdits | null = null) {
     let now = NOW;
     let timers: { at: number; callback: () => void }[] = [];
     const clock: ClockShape = {
@@ -53,7 +66,10 @@ function mount(freshness: Freshness) {
     host.style.marginTop = '100px';
     document.body.append(host);
 
-    const app = createApp({ setup: () => () => h(FreshnessSegment, { freshness }) });
+    let shown = 0;
+    const app = createApp({
+        setup: () => () => h(FreshnessSegment, { freshness, edits, onShowFailure: () => shown++ }),
+    });
     app.use(IocPlugin, { container });
     app.mount(host);
     onTestFinished(() => {
@@ -62,6 +78,10 @@ function mount(freshness: Freshness) {
     });
 
     return {
+        /** How many times the failure's toast was asked for again. */
+        get shown() {
+            return shown;
+        },
         /** Moves the clock on by `ms`, running the timers that fall due on the way. */
         advance(ms: number) {
             const end = now + ms;

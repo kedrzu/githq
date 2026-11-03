@@ -1,5 +1,6 @@
-import type { GitHubSdk } from '@githq/github/createGitHubRequester.js';
+import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
 
+import type { Account } from '@/auth/AccountSession.js';
 import type { ViewerProject } from '@/repos/RepositoryTypes.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 
@@ -41,7 +42,25 @@ export type EditRequest =
       }
     | { readonly kind: 'addToProject'; readonly project: ViewerProject }
     | { readonly kind: 'requestReviewers'; readonly logins: readonly string[] }
-    | { readonly kind: 'draft'; readonly draft: boolean };
+    | { readonly kind: 'draft'; readonly draft: boolean }
+    /** Brings the base branch into a pull request's head, by a merge commit or a rebase (merging D12, PM20). */
+    | { readonly kind: 'updateBranch'; readonly method: PullRequestBranchUpdateMethod }
+    /** Merges by itself once the requirements are met; the commit's title and message only when the user edited them (PM10). */
+    | {
+          readonly kind: 'enableAutoMerge';
+          readonly method: PullRequestMergeMethod;
+          readonly title?: string;
+          readonly body?: string;
+      }
+    | { readonly kind: 'disableAutoMerge' }
+    /** To the front of the merge queue (PM14); adding it the usual way is a merge (`createMergeEdits`). */
+    | { readonly kind: 'jumpQueue' }
+    | { readonly kind: 'dequeue' }
+    /** A closed or merged pull request's branch (merging D16). */
+    | { readonly kind: 'deleteBranch' }
+    | { readonly kind: 'restoreBranch' }
+    /** Its checks that failed, those GitHub Actions runs (merging D16). */
+    | { readonly kind: 'rerunFailedChecks' };
 
 /** A request as one item's edits are made of it: a project's field already resolved to the item's place there. */
 export type ItemEditRequest = Exclude<EditRequest, { readonly kind: 'projectFieldInProject' }>;
@@ -73,7 +92,18 @@ export type EditSubject =
     /** Made a sub-issue of `parent` (`portal#1187`) as it was created. */
     | { readonly kind: 'subIssueOf'; readonly parent: string }
     | { readonly kind: 'reviewRequested'; readonly login: string }
-    | { readonly kind: 'draft'; readonly draft: boolean };
+    | { readonly kind: 'draft'; readonly draft: boolean }
+    | { readonly kind: 'branchUpdated' }
+    | { readonly kind: 'autoMerge'; readonly enabled: boolean }
+    | { readonly kind: 'queueJumped' }
+    | { readonly kind: 'dequeued' }
+    | { readonly kind: 'branchDeleted' }
+    | { readonly kind: 'branchRestored' }
+    | { readonly kind: 'checksRerun' }
+    /** A pull request reverted by a new one (`PullRequestMerger`). */
+    | { readonly kind: 'reverted' }
+    /** A pull request merged (`PullRequestMerger`). */
+    | { readonly kind: 'merged' };
 
 /** Why GitHub did not take an edit. */
 export type EditFailureReason =
@@ -85,6 +115,25 @@ export type EditFailureReason =
     | { readonly kind: 'missing' }
     /** GitHub could not be reached. */
     | { readonly kind: 'offline' }
+    /**
+     * The organisation restricts third-party apps and has not approved githq (G5): GitHub lets githq read its public
+     * repositories, but refuses every change there.
+     */
+    | { readonly kind: 'organizationRestricted'; readonly organization: string }
+    /**
+     * Never sent: GitHub would have merged a chosen email's merge past the rules, unasked, as the user may bypass them,
+     * and it doesn't confirm they are met (merging D12).
+     */
+    | { readonly kind: 'rulesNotConfirmed' }
+    /**
+     * Never sent: GitHub could not be reached for what a chosen email's merge reads first (merging D12). Unlike `offline`,
+     * where the request may have got there, nothing can land.
+     */
+    | { readonly kind: 'notReached' }
+    /** Never sent: none of the checks that failed runs on GitHub Actions, and only those re-run from here (merging D16). */
+    | { readonly kind: 'notActions' }
+    /** Never sent: none of its checks fails any more, whatever the row said, so there is nothing to re-run (merging D16). */
+    | { readonly kind: 'nothingFailed' }
     /** GitHub answered with an error. */
     | { readonly kind: 'refused'; readonly message: string };
 
@@ -103,7 +152,34 @@ export type EditVerdict =
            */
           readonly partial?: EditPartialFailure;
       }
-    | { readonly kind: 'rejected'; readonly reason: EditFailureReason };
+    | {
+          readonly kind: 'rejected';
+          readonly reason: EditFailureReason;
+          /**
+           * Whoever asked for the edit shows the refusal itself (a merge refused at once, in the merge panel still
+           * open): it is undone, but not listed as a failure nor named in its row.
+           */
+          readonly quiet?: boolean;
+      }
+    /**
+     * GitHub did not say in time how it ended (a merge still running): the optimistic layer goes, nothing is
+     * reported, and the next sync shows what GitHub holds.
+     */
+    | { readonly kind: 'unknown' };
+
+/**
+ * What sending an edit answers: GitHub's verdict, or that GitHub took it and works on (`EditFollowUp`).
+ */
+export type EditAnswer = EditVerdict | EditFollowUp;
+
+/**
+ * GitHub took the edit and goes on with it (a merge, for up to minutes). `follow` asks how it ended, outside the few
+ * edits sent at once: the rest of the app's edits do not wait for it, only the item's later ones (merging D3).
+ */
+export interface EditFollowUp {
+    readonly kind: 'following';
+    readonly follow: () => Promise<EditVerdict>;
+}
 
 /** The parts of a confirmed edit GitHub did not take. */
 export interface EditPartialFailure {
@@ -133,7 +209,7 @@ export interface Edit {
      * Sends it and reads GitHub's answer; rejects when GitHub could not be reached or answered with an error. Not
      * there for an edit that cannot be sent at all (`failure` says why).
      */
-    readonly send?: (sdk: GitHubSdk) => Promise<EditVerdict>;
+    readonly send?: (account: Account) => Promise<EditAnswer>;
     /** Why it fails without being sent. */
     readonly failure?: EditFailureReason;
 }

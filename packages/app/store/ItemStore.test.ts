@@ -5,6 +5,7 @@ import 'fake-indexeddb/auto';
 import { expect, test } from 'bun:test';
 
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
+import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -129,6 +130,36 @@ test('a write that fails leaves memory as it is, never throws, and is written wi
     expect(reloaded.items.membership.mentioned).toEqual(new Set(['I_1']));
 });
 
+test('a flush is done only when what was changed before it is on disk, whichever flush took it', async () => {
+    const persistence = recordingPersistence();
+    const { items } = setup(uniqueLogin(), persistence);
+    await items.ready();
+
+    const held = createPromise();
+    const { save } = persistence;
+    persistence.save = async (login, changes) => {
+        await held.promise;
+        await save(login, changes);
+    };
+
+    items.upsertMany([sampleIssue('I_1')]);
+    const first = items.flush();
+    items.upsertMany([sampleIssue('I_2')]);
+    let secondDone = false;
+    const second = (async () => {
+        await items.flush();
+        secondDone = true;
+    })();
+    await new Promise(resolve => {
+        setTimeout(resolve, 10);
+    });
+    expect(secondDone).toBe(false);
+
+    held.resolve();
+    await Promise.all([first, second]);
+    expect(persistence.saves.flatMap(saved => saved.upserted.map(item => item.id))).toEqual(['I_1', 'I_2']);
+});
+
 test('a copy that cannot be read leaves an empty, working store', async () => {
     const persistence = recordingPersistence();
     persistence.failLoads = true;
@@ -194,6 +225,7 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
         getRandomValues: bytes => {
             crypto.getRandomValues(bytes);
         },
+        reload: () => {},
         navigate: () => {},
         replaceLocation: () => {},
         openInNewTab: () => {},

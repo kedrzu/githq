@@ -81,7 +81,8 @@ differs:
 - **Draft inside a stack:** blocks whatever comes after it, like any unready pull request.
 - **Copy not complete yet:** fewer pull requests in githq than the stack's size. Must not read as ready.
 - **Being merged:** a stack takes longer than one pull request; the existing "being merged" state applies to every pull request going.
-- **In a merge queue:** the stack enters as one group. If a pull request is thrown out, the later ones go with it.
+- **In a merge queue:** the stack enters as one group and behaves like one pull request: with an entry it reads in the queue and can be taken out,
+  with none it is an ordinary stack that can be added again. GitHub's state doesn't say why an entry left, so neither does githq.
 - **Someone else's stack:** a colleague asked for review of two of four. The entry is whole, and what is asked of the user shows.
 - **A chain nobody linked:** pull requests based on each other that aren't a stack on GitHub stay ordinary rows. An opened one offers to link it.
 
@@ -147,6 +148,6 @@ chain: SP38. "No answer in time" and "reloaded" stay as PM29, PM30 and PM36, wit
 
 Still open, not settled by the screens:
 
-- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so);
-  whether a stack in a queue has one position (SP53, SP54). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
+- **What GitHub must supply, not found yet:** a field saying a stack needs rebasing, and why (SP46, SP47 tell the causes apart only if it says so).
+  A stack in a queue has no one position: each member has its own ([D11](../DECISIONS.md#d11)). The quoted refusals (SP59, SP61) are placeholders for GitHub's real wording.
 - **The merge brief's "Being merged" row (PM37)** is unchanged: a stack needed only the entry's own sentence.

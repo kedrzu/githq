@@ -10,6 +10,7 @@ import { Clock } from '@/services/Clock.js';
 
 import { createTestTabs } from './createTestTabs.js';
 import type { TestTabs } from './createTestTabs.js';
+import { fakeOnline } from './fakeOnline.js';
 
 /** A GraphQL operation as the fake GitHub received it. */
 export interface TestGraphQLRequest {
@@ -77,9 +78,11 @@ export function createTestSession(params: CreateTestSessionParams) {
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
     const focusListeners: (() => void)[] = [];
+    const online = fakeOnline();
     let visible = true;
     /** The pages opened in a new tab, in order. */
     const openedTabs: string[] = [];
+    let reloads = 0;
 
     const tab = (params.tabs ?? createTestTabs()).open();
 
@@ -112,6 +115,9 @@ export function createTestSession(params: CreateTestSessionParams) {
             crypto.getRandomValues(bytes);
         },
         navigate: () => {},
+        reload: () => {
+            reloads++;
+        },
         replaceLocation: () => {},
         openInNewTab: url => {
             openedTabs.push(url);
@@ -126,8 +132,8 @@ export function createTestSession(params: CreateTestSessionParams) {
         onFocus: listener => {
             focusListeners.push(listener);
         },
-        isOnline: () => true,
-        onOnlineChange: () => {},
+        isOnline: online.isOnline,
+        onOnlineChange: online.onOnlineChange,
         requestLock: tab.requestLock,
         openChannel: tab.openChannel,
         onPageLifecycle: tab.onPageLifecycle,
@@ -146,6 +152,9 @@ export function createTestSession(params: CreateTestSessionParams) {
         clock,
         github,
         openedTabs,
+        get reloads() {
+            return reloads;
+        },
         /** What this tab's `localStorage` holds, by key: give it to a later session to reload the tab. */
         localStorage: local,
         /** This tab: close it, or freeze it. */
@@ -153,6 +162,7 @@ export function createTestSession(params: CreateTestSessionParams) {
         /** The operations GitHub received, in order. */
         operations: () => github.requests.map(request => request.operation),
         setVisible,
+        setOnline: online.setOnline,
         focus,
         fromAnotherTab,
         clearFromAnotherTab,
