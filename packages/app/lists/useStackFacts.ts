@@ -8,12 +8,14 @@ import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 import type {
     StackBlocker,
     StackDescription,
     StackHeldState,
     StackPullRequestPipKind,
+    StackQueuedState,
 } from '@/store/stacks/describeStack.js';
 import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
@@ -45,7 +47,7 @@ export interface UseStackFactsOptions {
 /** An icon in a colour: the state in words (SP14), a pull request's own state inside an expanded card. */
 export interface StackLook {
     readonly icon: LucideIcon;
-    readonly tone: 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
+    readonly tone: 'accent' | 'danger' | 'dim' | 'done' | 'muted' | 'success' | 'warning';
 }
 
 /** The state in words, its icon and colour (SP14). */
@@ -112,6 +114,7 @@ const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
  */
 export function useStackFacts(options: UseStackFactsOptions): StackFactsViewModel {
     const t = useTranslate();
+    const queueTexts = useMergeQueueTexts();
     const numbers = new Intl.NumberFormat(APP_LANGUAGE);
     const fieldList = new Intl.ListFormat(APP_LANGUAGE);
 
@@ -242,7 +245,9 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
 
     function getStateFact(stack: StackDescription, share: StackShareState | null): StackStateFact {
         const { state } = stack;
-        const fact = share ? getShareStateFact(share) : getStackStateFact({ state, lang: APP_LANGUAGE, getHeldText });
+        const fact = share
+            ? getShareStateFact(share)
+            : getStackStateFact({ state, lang: APP_LANGUAGE, getHeldText, getQueuedText });
         const open = state.kind !== 'merged' && state.kind !== 'closed' && state.kind !== 'incomplete';
         return open && stack.landed > 0
             ? { ...fact, text: t(l.landed, { count: stack.landed, state: fact.text }) }
@@ -257,6 +262,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
                     state: { kind: 'ready', openCount: share.count },
                     lang: APP_LANGUAGE,
                     getHeldText,
+                    getQueuedText,
                 });
             case 'held':
                 return { ...getBlockerLook(share.blocker.kind), text: getShareHeldText(share.blocker) };
@@ -273,5 +279,9 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
     /** The held sentence names what holds the stack (SP14): "2 of 4 ready, #1216 checks running". */
     function getHeldText({ blocker, readyCount, openCount }: StackHeldState): string {
         return t(HELD_TEXTS[getHeldReason(blocker)], { ready: readyCount, open: openCount, number: blocker.number });
+    }
+
+    function getQueuedText(state: StackQueuedState): string {
+        return queueTexts.group(state.entry);
     }
 }

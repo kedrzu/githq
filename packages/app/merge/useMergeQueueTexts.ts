@@ -16,6 +16,8 @@ export interface MergeQueueTexts {
     estimate(entry: PullRequestQueueEntry): string | null;
     /** "3rd · waiting for checks · about 12 min" (PM15, PM16). */
     summary(entry: PullRequestQueueEntry): string;
+    /** A stack's, from its first one's entry: "In queue as one group · 2nd · about 12 min" (SP14). */
+    group(entry: PullRequestQueueEntry): string;
 }
 
 const MINUTE_S = 60;
@@ -26,11 +28,17 @@ export function useMergeQueueTexts(): MergeQueueTexts {
     const t = useTranslate();
     const ordinals = new Intl.PluralRules(APP_LANGUAGE, { type: 'ordinal' });
 
-    return { place, state, estimate, summary };
+    return { place, state, estimate, summary, group };
 
     function summary(entry: PullRequestQueueEntry) {
         const about = estimate(entry);
         return [place(entry), state(entry), ...(about === null ? [] : [about])].join(' · ');
+    }
+
+    function group(entry: PullRequestQueueEntry) {
+        const about = estimate(entry);
+        const where = about === null ? place(entry) : `${place(entry)} · ${about}`;
+        return t(l.inGroup, { where });
     }
 
     function place({ position }: PullRequestQueueEntry) {

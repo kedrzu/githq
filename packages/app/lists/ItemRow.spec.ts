@@ -99,7 +99,6 @@ test('PM37: in a merge queue, the row says where and how long, and offers no mer
         estimatedTimeToMerge: 12 * 60,
         enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
         enqueuer: 'mlaine',
-        jump: false,
     } as const;
     mount({ ...READY, mergeQueueEntry }, { canOpen: () => true, open: () => undefined, getRecord: () => null });
 
@@ -114,7 +113,6 @@ test("PM37: in a merge queue GitHub says won't merge, the row says so", async ()
         estimatedTimeToMerge: null,
         enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
         enqueuer: 'mlaine',
-        jump: false,
     } as const;
     mount({ ...READY, mergeQueueEntry }, null);
 

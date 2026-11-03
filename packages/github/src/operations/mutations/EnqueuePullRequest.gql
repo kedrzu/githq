@@ -2,9 +2,7 @@
 mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $jump: Boolean) {
     enqueuePullRequest(input: { pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: $jump }) {
         mergeQueueEntry {
-            pullRequest {
-                ...PullRequestStatusFields
-            }
+            position
         }
     }
 }

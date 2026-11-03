@@ -122,7 +122,7 @@ function describe(state: WordedState, pr: PullRequestItem): DrawnWords {
       return { text: t(l.blocked), tone: 'dim' };
     case 'heldBy':
       return { text: t(l.heldBy, { number: state.number }), tone: 'dim' };
-    // One position for the group: each row says it, as GitHub holds it.
+    // Each one has a position of its own, as GitHub holds it (stacked PRs D11).
     case 'queued':
       return { text: queueTexts.summary(state.entry), tone: 'dim' };
     case 'leftWithIt':

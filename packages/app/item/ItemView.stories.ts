@@ -114,7 +114,6 @@ export const PullRequestInQueue: Story = {
                 estimatedTimeToMerge: 12 * 60,
                 enqueuedAt: '2026-11-03T00:00:00Z',
                 enqueuer: 'mlaine',
-                jump: false,
             },
         },
     },

@@ -128,6 +128,7 @@ export const PullRequestMerger = defineService({
                 shown,
                 onAnswer: answered.resolve,
                 onLateEnd,
+                readQueued: () => readQueued(item),
             });
             // One merge is one thing that can fail, however many pull requests it lands (a stack's, D11).
             void queue.submit({ edits, account, itemCount: 1 }).finally(() => {
@@ -135,6 +136,11 @@ export const PullRequestMerger = defineService({
                 answered.resolve({ kind: 'refused', reason: { kind: 'notAllowed' } });
             });
             return await answered.promise;
+        }
+
+        /** What GitHub holds of a pull request it put in the merge queue, with its stack's when in one. */
+        async function readQueued(item: PullRequestItem): Promise<boolean> {
+            return item.stack ? await readStack(item.stack.id, item.stack.size) : (await readOptions(item.id)) !== null;
         }
 
         /**

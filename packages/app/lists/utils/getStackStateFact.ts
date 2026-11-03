@@ -8,10 +8,11 @@ import {
     GitCompareArrows,
     GitMerge,
     GitPullRequestClosed,
+    ListOrdered,
     Loader,
 } from 'lucide-vue-next';
 
-import type { StackHeldState, StackState } from '@/store/stacks/describeStack.js';
+import type { StackHeldState, StackQueuedState, StackState } from '@/store/stacks/describeStack.js';
 
 import type { StackStateFact } from '../useStackFacts.js';
 import { getBlockerLook } from './getBlockerLook.js';
@@ -26,6 +27,8 @@ export interface GetStackStateFactParams {
      * stops (SP30, SP31).
      */
     readonly getHeldText: (state: StackHeldState) => string;
+    /** Where it stands in the merge queue in words: the caller has the queue's words (`useMergeQueueTexts`). */
+    readonly getQueuedText: (state: StackQueuedState) => string;
 }
 
 /**
@@ -34,7 +37,8 @@ export interface GetStackStateFactParams {
  * @util
  * @__NO_SIDE_EFFECTS__
  */
-export function getStackStateFact({ state, lang, getHeldText }: GetStackStateFactParams): StackStateFact {
+export function getStackStateFact(params: GetStackStateFactParams): StackStateFact {
+    const { state, lang, getHeldText, getQueuedText } = params;
     switch (state.kind) {
         case 'ready':
             return {
@@ -67,6 +71,8 @@ export function getStackStateFact({ state, lang, getHeldText }: GetStackStateFac
                 tone: 'warning',
                 text: translateToString(l.merging, lang, { count: state.goingCount }),
             };
+        case 'queued':
+            return { icon: ListOrdered, tone: 'accent', text: getQueuedText(state) };
         case 'reviewRequested':
             return {
                 icon: Eye,

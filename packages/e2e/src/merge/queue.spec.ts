@@ -90,6 +90,31 @@ test('PM14: ⇧⌘↵ jumps to the front of the queue, with the head the user sa
     expect(sample.world.queuePositionOf(sample.second)).toBe(2);
 });
 
+test('PM16: while it waits, a status poll moves its place: the queue moves no updatedAt, and nothing it sent covers that', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the minute to the next poll of the statuses can be skipped.
+    await page.clock.install();
+    const sample = createQueueWork();
+    sample.world.enqueue(sample.second);
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST_TITLE);
+
+    await page.keyboard.press('Shift+M');
+    await expect(panel.primary).toHaveText('Add to queue');
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await expect(panel.root).toBeHidden();
+    const row = myWork.row(FIRST_TITLE);
+    await expect(row).toContainText('in queue · 2nd');
+
+    sample.world.dequeue(sample.second);
+    await page.clock.fastForward('01:00');
+
+    await expect(row).toContainText('in queue · 1st');
+});
+
 test('PM15: ⇧Q takes it out of the queue: the row stops saying so and it can be added again', async ({
     page,
     github,

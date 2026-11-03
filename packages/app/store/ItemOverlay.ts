@@ -24,6 +24,8 @@ export interface ItemOverlayLayer {
      * so that a copy read before it does not replace them in any tab.
      */
     readonly confirmedAt?: string;
+    /** How long a confirmed change is drawn, in ms, when not for as long as a confirmed edit usually is. */
+    readonly heldFor?: number;
     /** The item's place in a tracked project with the change (a field's value, a draft's title). */
     readonly projectItem?: (item: ProjectItem) => ProjectItem;
     /** Whether a project item as stored is newer than the change; without it the change applies to any. */

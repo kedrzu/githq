@@ -22,6 +22,7 @@ import type { MaybeRefOrGetter } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
+import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
@@ -105,6 +106,7 @@ export interface ItemFactsViewModel {
 export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
     const queueTexts = useMergeQueueTexts();
+    const getMethodName = useMergeMethodName();
     const numbers = new Intl.NumberFormat(APP_LANGUAGE);
     const projectList = new Intl.ListFormat(APP_LANGUAGE);
 
@@ -230,7 +232,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
 
     /** PM37: "Auto-merge on · squash · waiting for checks", or for whichever else it waits. */
     function getAutoMergeStatus(pr: PullRequestItem, autoMerge: PullRequestAutoMerge): ItemStatusFact {
-        const method = getMethodName(autoMerge);
+        const method = getMethodName(autoMerge.mergeMethod);
         const standing = getPullRequestStanding(pr);
         let text = t(l.autoMergeOn, { method });
         if (standing.checksRunning) {
@@ -240,19 +242,6 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         }
 
         return { icon: Timer, tone: 'accent', text, readyToMerge: false };
-    }
-
-    function getMethodName({ mergeMethod }: PullRequestAutoMerge) {
-        switch (mergeMethod) {
-            case 'SQUASH':
-                return t(l.methodSquash);
-            case 'MERGE':
-                return t(l.methodMerge);
-            case 'REBASE':
-                return t(l.methodRebase);
-            default:
-                return assertNever(mergeMethod);
-        }
     }
 
     function getStatus(pr: PullRequestItem): ItemStatusFact | null {

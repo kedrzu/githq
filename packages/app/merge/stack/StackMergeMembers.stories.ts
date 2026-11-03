@@ -19,6 +19,13 @@ const STACK = sampleStack({
     ],
 });
 
+const QUEUE_ENTRY = {
+    position: 2,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: 12 * 60,
+    enqueuedAt: '2026-11-03T00:00:00Z',
+    enqueuer: 'mlaine',
+} as const;
 const FAILING = { state: 'FAILURE', passing: 3, failing: 2, pending: 0 } as const;
 const RUNNING = { state: 'PENDING', passing: 3, failing: 0, pending: 1 } as const;
 
@@ -117,6 +124,27 @@ export const Missing: Story = {
     args: { rows: [own('waiting'), { kind: 'missing', count: 2 }] },
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByText('2 more not in githq yet')).toBeVisible();
+    },
+};
+
+/** SP54: in the merge queue, each with a position of its own, as GitHub holds it. */
+export const Queued: Story = {
+    args: {
+        rows: [
+            going(0, { kind: 'queued', entry: QUEUE_ENTRY }),
+            going(1, { kind: 'queued', entry: { ...QUEUE_ENTRY, position: 3 } }),
+        ],
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('2nd · waiting for checks · about 12 min')).toBeVisible();
+        await expect(within(canvasElement).getByText('3rd · waiting for checks · about 12 min')).toBeVisible();
+    },
+};
+
+/** SP54: the first thrown out of the merge queue, the later ones having left with it. */
+export const ThrownOut: Story = {
+    args: {
+        rows: [going(0, { kind: 'thrownOut' }), going(1, { kind: 'leftWithIt' }), going(2, { kind: 'leftWithIt' })],
     },
 };
 

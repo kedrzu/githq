@@ -463,8 +463,9 @@ function findStackEntry(id: string): Placed | null {
 
 /**
  * The way forward the panel leads to, before its read (PM38): the pull request's, as its standing says it; a stack's,
- * as the panel opening on it would — "Merge all 3", "Merge 2" up to the one holding the rest, "Rebase on GitHub",
- * "Mark #102 ready…" (stacked PRs D11, SP15, SP45–SP49).
+ * as the panel opening on it would — "Merge all 3", "Merge 2" up to the one holding the rest, "Queue…" on a merge
+ * queue's branch, "In the queue" once there, "Rebase on GitHub", "Mark #102 ready…" (stacked PRs D11, SP15, SP45–SP49,
+ * SP53, SP54).
  */
 function getMergeTitle(target: MergeTarget): string {
   const description = target.entry?.stack?.description;
@@ -478,18 +479,27 @@ function getMergeTitle(target: MergeTarget): string {
   }
 
   const autoMergeAllowed = isAutoMergeAllowed(repositories.get(pr.repository.nameWithOwner), null);
-  return getVerdict(pr, null, autoMergeAllowed).forwardTitle;
+  return getVerdict({ pr, checks: null, autoMergeAllowed }).forwardTitle;
 }
 
 function getStackMergeTitle(description: StackDescription): string {
-  if (description.state.kind === 'merging') {
-    return t(l.merge);
+  switch (description.state.kind) {
+    case 'merging':
+      return t(l.merge);
+    case 'queued':
+      return t(l.inQueue);
+    default:
+      break;
   }
 
   const end = getStackMergeEnd({ description, openedOn: null });
   const { block, going, holder, open } = getStackMerge({ description, end });
   switch (block?.kind) {
     case undefined:
+      if (open[0]?.isMergeQueueEnabled) {
+        return t(l.queue);
+      }
+
       if (going.length <= 1) {
         return t(l.merge);
       }

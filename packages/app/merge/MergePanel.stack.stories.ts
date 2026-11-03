@@ -503,7 +503,6 @@ const SEARCH_ENTRY: PullRequestQueueEntry = {
     estimatedTimeToMerge: 12 * 60,
     enqueuedAt: new Date(NOW - 9 * 60_000).toISOString(),
     enqueuer: 'mlaine',
-    jump: false,
 };
 
 /** {@link SEARCH} in the queue: each with an entry and a position of its own, as on GitHub (live, 2026-11-03). */

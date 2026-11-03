@@ -674,6 +674,7 @@ test('PM34: merged with a chosen email the panel leaves first, and the merge is 
 test('SP54: a stack seen in the queue is remembered per stack until its next merge, and forgotten with the account', async () => {
     const { panel, session, answers } = await setup();
     answers.put = ENQUEUED;
+    answers.stacks = undefined;
     panel.noteQueued('S_1', ['PR_0']);
     panel.noteQueued('S_1', ['PR_0', 'PR_1']);
     expect(panel.getQueued('S_1')).toEqual(['PR_0', 'PR_1']);
@@ -707,10 +708,24 @@ test('SP54: a stack the panel took out itself is forgotten, for that stack alone
 test('SP54: enqueued and read with its entry, the stack is noted as being there', async () => {
     const { panel, session, answers } = await setup();
     answers.put = ENQUEUED;
-    answers.statuses = {
+    answers.stacks = {
         data: {
             nodes: [
-                samplePullRequestNode('PR_1', { repository: 'acme/web', number: 2, updatedAt: '2026-10-30T13:00:00Z' }),
+                {
+                    id: 'S_1',
+                    entries: {
+                        totalCount: 2,
+                        nodes: [
+                            {
+                                pullRequest: samplePullRequestNode('PR_1', {
+                                    repository: 'acme/web',
+                                    number: 2,
+                                    updatedAt: '2026-10-30T13:00:00Z',
+                                }),
+                            },
+                        ],
+                    },
+                },
             ],
         },
     };
@@ -740,8 +755,6 @@ async function setup() {
         stacks: TestGraphQLAnswer | undefined;
         /** What `MergePullRequest` is answered: none is a failed request. */
         merged?: TestGraphQLAnswer;
-        /** What `PullRequestStatuses` is answered: none is a failed request. */
-        statuses?: TestGraphQLAnswer;
     } = {
         put: undefined,
         firstPut: undefined,
@@ -761,8 +774,6 @@ async function setup() {
                     return answers.stacks;
                 case 'MergePullRequest':
                     return answers.merged;
-                case 'PullRequestStatuses':
-                    return answers.statuses;
                 default:
                     return undefined;
             }

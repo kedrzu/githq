@@ -55,8 +55,17 @@ export interface CreateItemEditsParams {
     readonly stackMembers?: readonly PullRequestItem[];
 }
 
-/** Leaves the item as it is: an edit that will not be sent shows nothing. */
-const UNCHANGED: ItemOverlayLayer = { item: item => item };
+/**
+ * Leaves the item as it is: an edit that will not be sent shows nothing, or one whose result is what a read writes
+ * into the stores.
+ */
+export const UNCHANGED: ItemOverlayLayer = { item: item => item };
+
+/**
+ * How long a pull request taken out of the merge queue is drawn out of it: GitHub can still read the old state just
+ * after (live, 2026-11-03), and nothing tells such a read from what it holds next.
+ */
+const DEQUEUED_HOLD_MS = 30_000;
 
 /**
  * The edits a request makes of one item — one per label, user or field, each sent as one mutation and confirmed
@@ -127,7 +136,7 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
         case 'enableAutoMerge':
             // Never for a stacked pull request: GitHub refuses it (live, 2026-11-02).
             return item.kind === 'pullRequest' && item.state === 'OPEN' && !item.autoMerge && !item.stack
-                ? [createEnableAutoMergeEdit(params, item, request)]
+                ? [createEnableAutoMergeEdit({ item, request, viewer: params.viewer, now: params.now })]
                 : [];
         case 'disableAutoMerge':
             return item.kind === 'pullRequest' && item.autoMerge ? [createDisableAutoMergeEdit(item)] : [];
@@ -597,21 +606,28 @@ function createUpdateBranchEdit(item: PullRequestItem, method: PullRequestBranch
     };
 }
 
+/** What {@link createEnableAutoMergeEdit} makes the edit of. */
+interface CreateEnableAutoMergeEditParams {
+    readonly item: PullRequestItem;
+    readonly request: Extract<ItemEditRequest, { kind: 'enableAutoMerge' }>;
+    /** The signed-in user: it shows at once as turned on by them. */
+    readonly viewer: ItemUser;
+    /** ISO time: when it shows to have been turned on. */
+    readonly now: string;
+}
+
 /**
  * Turns auto-merge on for the head the user saw (`expectedHeadOid`): GitHub refuses it once the branch moved since. It
  * shows at once, as the viewer's, with the method chosen, and the text goes only when edited: GitHub writes its own
  * otherwise (merging D6).
  */
-function createEnableAutoMergeEdit(
-    params: CreateItemEditsParams,
-    item: PullRequestItem,
-    request: Extract<ItemEditRequest, { kind: 'enableAutoMerge' }>,
-): Edit {
-    const { method, title, body } = request;
+function createEnableAutoMergeEdit(params: CreateEnableAutoMergeEditParams): Edit {
+    const { item, viewer, now } = params;
+    const { method, title, body } = params.request;
     const autoMerge: PullRequestAutoMerge = {
         mergeMethod: method,
-        enabledAt: params.now,
-        enabledBy: params.viewer.login,
+        enabledAt: now,
+        enabledBy: viewer.login,
         commitHeadline: title ?? null,
     };
     return {
@@ -626,7 +642,7 @@ function createEnableAutoMergeEdit(
                 ...(body === undefined ? {} : { commitBody: body }),
             });
             const answer = enablePullRequestAutoMerge?.pullRequest;
-            return answer?.autoMergeRequest ? confirmedStatus(answer) : dropped();
+            return answer?.autoMergeRequest ? confirmedAutoMerge(answer) : dropped();
         },
     };
 }
@@ -638,14 +654,14 @@ function createDisableAutoMergeEdit(item: PullRequestItem): Edit {
         send: async ({ sdk }) => {
             const { disablePullRequestAutoMerge } = await sdk.DisablePullRequestAutoMerge({ pullRequestId: item.id });
             const answer = disablePullRequestAutoMerge?.pullRequest;
-            return answer && !answer.autoMergeRequest ? confirmedStatus(answer) : dropped();
+            return answer && !answer.autoMergeRequest ? confirmedAutoMerge(answer) : dropped();
         },
     };
 }
 
 /**
- * Puts it at the front of the merge queue, for the head the user saw. Its place is GitHub's to give, so nothing is drawn
- * until GitHub answered (merging D3); a pull request GitHub doesn't name in its answer is left to the next read.
+ * Puts it at the front of the merge queue, for the head the user saw. Its place is GitHub's to give, so nothing is
+ * drawn (merging D3): whoever asked reads the pull request again, and each next read says where it is now.
  */
 function createJumpQueueEdit(item: PullRequestItem): Edit {
     return {
@@ -657,8 +673,7 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
                 expectedHeadOid: item.headRefOid,
                 jump: true,
             });
-            const answer = enqueuePullRequest?.mergeQueueEntry?.pullRequest;
-            return answer ? confirmedStatus(answer) : { kind: 'unknown' };
+            return enqueuePullRequest?.mergeQueueEntry ? { kind: 'confirmed', layer: UNCHANGED } : { kind: 'unknown' };
         },
     };
 }
@@ -667,8 +682,9 @@ function createJumpQueueEdit(item: PullRequestItem): Edit {
  * Takes it out of the merge queue, with the rest of its stack. GitHub refuses this on a stack's later member and on the
  * first one takes every entry out at once (live, 2026-11-03), so it is sent once, to the first one queued, with an edit
  * of each one queued to draw it out. GitHub's answer can still hold the old state (same check): what it holds is read
- * again, and left to the next sync when that could not be read. A refusal is one failure, the first one's; the others'
- * layers go without a word.
+ * again, and left to the next sync when that could not be read. Read out, it is drawn out only of the queue and only
+ * for a moment, as the next read can still hold the entry; another entry, added since, shows through. A refusal is one
+ * failure, the first one's; the others' layers go without a word.
  */
 function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
     const queued = stackMembers
@@ -683,9 +699,7 @@ function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
 
     return queued.map((member): Edit => ({
         ...base(member, { kind: 'dequeued' }),
-        optimistic: {
-            item: current => (current.kind === 'pullRequest' ? { ...current, mergeQueueEntry: null } : current),
-        },
+        optimistic: { item: withoutQueueEntry },
         send: async ({ sdk }) => {
             leaving ??= leave(sdk, first.id);
             let nodes;
@@ -708,7 +722,17 @@ function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
                 return member === first ? dropped() : { kind: 'unknown' };
             }
 
-            return confirmedStatus(node);
+            return {
+                kind: 'confirmed',
+                layer: {
+                    item: withoutQueueEntry,
+                    supersededBy: stored =>
+                        stored.kind === 'pullRequest' &&
+                        stored.mergeQueueEntry !== null &&
+                        stored.mergeQueueEntry.enqueuedAt !== member.mergeQueueEntry?.enqueuedAt,
+                    heldFor: DEQUEUED_HOLD_MS,
+                },
+            };
         },
     }));
 
@@ -722,11 +746,18 @@ function createDequeueEdits(stackMembers: readonly PullRequestItem[]): Edit[] {
     }
 }
 
-/** A change of a pull request's status GitHub confirmed, with the status it answered. */
-function confirmedStatus(answer: PullRequestStatusFieldsFragment) {
-    const status = toPullRequestStatus(answer);
+function withoutQueueEntry(item: Item): Item {
+    return item.kind === 'pullRequest' ? { ...item, mergeQueueEntry: null } : item;
+}
+
+/**
+ * Auto-merge turned on or off as GitHub answered. Only that is drawn: checks completing and the like don't move
+ * `updatedAt` (live, 2026-11-03), so all the status answered would hide them for as long as the layer lasts.
+ */
+function confirmedAutoMerge(answer: PullRequestStatusFieldsFragment) {
+    const { autoMerge } = toPullRequestStatus(answer);
     return confirmed(answer.updatedAt, current =>
-        current.kind === 'pullRequest' ? { ...current, ...status } : current,
+        current.kind === 'pullRequest' ? { ...current, autoMerge } : current,
     );
 }
 

@@ -100,7 +100,6 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
             estimatedTimeToMerge: node.mergeQueueEntry.estimatedTimeToMerge,
             enqueuedAt: node.mergeQueueEntry.enqueuedAt,
             enqueuer: node.mergeQueueEntry.enqueuer.login,
-            jump: node.mergeQueueEntry.jump,
         },
         autoMerge: node.autoMergeRequest && {
             mergeMethod: node.autoMergeRequest.mergeMethod,

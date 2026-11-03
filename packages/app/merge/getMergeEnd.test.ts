@@ -105,7 +105,6 @@ test("a pull request in a merge queue or under auto-merge reads as that: GitHub'
         estimatedTimeToMerge: null,
         enqueuedAt: '2026-11-03T00:00:00Z',
         enqueuer: 'mlaine',
-        jump: false,
     } as const;
     const autoMerge = { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: null, commitHeadline: null } as const;
 

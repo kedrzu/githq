@@ -67,9 +67,3 @@ autoMergeWaitingForChecks:
   en: auto-merge on · {method} · waiting for checks
 autoMergeWaitingForReview:
   en: auto-merge on · {method} · waiting for review
-methodSquash:
-  en: squash
-methodMerge:
-  en: merge commit
-methodRebase:
-  en: rebase

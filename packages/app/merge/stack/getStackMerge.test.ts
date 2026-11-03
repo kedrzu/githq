@@ -32,7 +32,6 @@ test('SP54: in a queue when the first one holds an entry; none noted and none he
         estimatedTimeToMerge: null,
         enqueuedAt: '',
         enqueuer: 'a',
-        jump: false,
     } as const;
 
     expect(getStackMerge({ description: stackOf([{}, {}]), end: null }).queue).toBeNull();
@@ -51,7 +50,6 @@ test('SP54: thrown out: GitHub says UNMERGEABLE, or the entry is gone and it is 
         estimatedTimeToMerge: null,
         enqueuedAt: '',
         enqueuer: 'a',
-        jump: false,
     } as const;
     const unmergeable = { ...entry, state: 'UNMERGEABLE' } as const;
 

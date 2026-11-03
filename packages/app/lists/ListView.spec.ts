@@ -671,6 +671,21 @@ test("PM38, D11: ⇧M's title on a stack's entry is the way forward of the whole
     await expect.poll(title).toBe('Mark #10 ready…');
     view.columns.value = entry(blocked);
     await expect.poll(title).toBe('Merge…');
+    view.columns.value = entry(members.map(pr => ({ ...pr, isMergeQueueEnabled: true })));
+    await expect.poll(title).toBe('Queue…');
+    view.columns.value = entry(
+        members.map(pr => ({
+            ...pr,
+            mergeQueueEntry: {
+                position: 1,
+                state: 'QUEUED',
+                estimatedTimeToMerge: null,
+                enqueuedAt: '2026-11-03T00:00:00Z',
+                enqueuer: 'mlaine',
+            },
+        })),
+    );
+    await expect.poll(title).toMatch(matchText('In the queue'));
 });
 
 test("D11: a stack's entry's context menu merges its whole stack", async () => {

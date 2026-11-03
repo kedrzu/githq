@@ -91,9 +91,3 @@ enabledBy:
   en: enabled by {login}
 enabledAgo:
   en: enabled {ago}
-methodSquash:
-  en: Squash
-methodMerge:
-  en: Merge commit
-methodRebase:
-  en: Rebase

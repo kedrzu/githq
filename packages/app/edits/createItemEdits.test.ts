@@ -8,7 +8,7 @@ import type { UpdatePullRequestBranchMutation } from '@githq/github/generated.ge
 
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item, PullRequestQueueEntry } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
@@ -51,7 +51,6 @@ const QUEUE_ENTRY = {
     estimatedTimeToMerge: null,
     enqueuedAt: '2026-11-03T00:00:00Z',
     enqueuer: 'mlaine',
-    jump: true,
 } as const;
 
 test('PM10: auto-merge goes on with the method and the head the user saw, the text only when edited; it shows at once', async () => {
@@ -121,13 +120,9 @@ test('PM11: turning auto-merge off reads off at once and stays', async () => {
     expect(items.get('PR_1')).toMatchObject({ autoMerge: null });
 });
 
-test('PM14: jumping asks for it by jump: true with the head the user saw, and reads the place GitHub gives', async () => {
+test('PM14: jumping asks for it by jump: true with the head the user saw, and draws nothing: a read says the place', async () => {
     const { editor, items, session } = await setupMerge({
-        enqueuePullRequest: {
-            mergeQueueEntry: {
-                pullRequest: sampleStatus({ mergeQueueEntry: { ...QUEUE_ENTRY, enqueuer: { login: 'mlaine' } } }),
-            },
-        },
+        enqueuePullRequest: { mergeQueueEntry: { position: 1 } },
     });
 
     const outcome = await editor.edit(['PR_1'], { kind: 'jumpQueue' });
@@ -136,7 +131,78 @@ test('PM14: jumping asks for it by jump: true with the head the user saw, and re
     expect(requests(session, 'EnqueuePullRequest')).toEqual([
         { pullRequestId: 'PR_1', expectedHeadOid: 'seen-head', jump: true },
     ]);
-    expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1, jump: true } });
+    expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: null });
+    expectFreshStatusShows(items, { mergeQueueEntry: toEntry() });
+});
+
+test('PM10: auto-merge turned on draws only auto-merge: a fresh status with the same updatedAt shows through', async () => {
+    const { editor, items } = await setupMerge({
+        enablePullRequestAutoMerge: { pullRequest: statusUnmoved({ autoMergeRequest: AUTO_MERGE_ON }) },
+    });
+
+    await editor.edit(['PR_1'], { kind: 'enableAutoMerge', method: 'SQUASH' });
+
+    expectFreshStatusShows(items, { mergeStateStatus: 'UNSTABLE' });
+    expect(items.get('PR_1')).toMatchObject({ autoMerge: { mergeMethod: 'SQUASH' } });
+});
+
+test('PM11: auto-merge turned off draws only auto-merge: a fresh status with the same updatedAt shows through', async () => {
+    const { editor, items } = await setupMerge({
+        disablePullRequestAutoMerge: { pullRequest: statusUnmoved({ autoMergeRequest: null }) },
+    });
+    items.upsertMany([{ ...samplePullRequest('PR_1'), autoMerge: AUTO_MERGE_ON }]);
+
+    await editor.edit(['PR_1'], { kind: 'disableAutoMerge' });
+
+    expectFreshStatusShows(items, { mergeStateStatus: 'UNSTABLE' });
+    expect(items.get('PR_1')).toMatchObject({ autoMerge: null });
+});
+
+test('PM10: auto-merge turned on goes under a copy GitHub changed since', async () => {
+    const { editor, items } = await setupMerge({
+        enablePullRequestAutoMerge: { pullRequest: statusUnmoved({ autoMergeRequest: AUTO_MERGE_ON }) },
+    });
+
+    await editor.edit(['PR_1'], { kind: 'enableAutoMerge', method: 'SQUASH' });
+    items.upsertMany([{ ...samplePullRequest('PR_1'), updatedAt: '2030-01-01T00:00:00Z', autoMerge: null }]);
+
+    expect(items.get('PR_1')).toMatchObject({ autoMerge: null });
+});
+
+describe('out of the queue', () => {
+    async function takenOut() {
+        const merge = await setupMerge({ dequeuePullRequest: { clientMutationId: null } }, null, {
+            nodes: [statusUnmoved({ mergeQueueEntry: null })],
+        });
+        merge.items.upsertMany([{ ...samplePullRequest('PR_1'), mergeQueueEntry: toEntry() }]);
+        await merge.editor.edit(['PR_1'], { kind: 'dequeue' });
+        return merge;
+    }
+
+    test('PM15: a read still holding the entry shows out of the queue for a moment, then as GitHub says', async () => {
+        const { items, session } = await takenOut();
+
+        expectFreshStatusShows(
+            items,
+            { mergeStateStatus: 'UNSTABLE', mergeQueueEntry: toEntry() },
+            { mergeQueueEntry: null },
+        );
+        await session.clock.advance(30_000);
+
+        expect(items.get('PR_1')).toMatchObject({ mergeQueueEntry: { position: 1 } });
+    });
+
+    test('PM15: it leaves no mark keeping a copy read since out', async () => {
+        const { items } = await takenOut();
+
+        expect(items.getStored('PR_1')).not.toHaveProperty('confirmation');
+    });
+
+    test('PM15: added again meanwhile, the new entry shows through', async () => {
+        const { items } = await takenOut();
+
+        expectFreshStatusShows(items, { mergeQueueEntry: { ...toEntry(), enqueuedAt: '2026-11-03T01:00:00Z' } });
+    });
 });
 
 test('PM15: taking it out of the queue reads out of it at once, and stays as GitHub holds it read again — its answer may still say the old state', async () => {
@@ -221,6 +287,30 @@ describe('a stack in the queue', () => {
 
 function toEntry(): PullRequestQueueEntry {
     return { ...QUEUE_ENTRY, enqueuer: 'mlaine' };
+}
+
+/** The status fields GitHub answers, its update time the row's: neither the queue nor checks move it (live). */
+function statusUnmoved(fields: Record<string, unknown>) {
+    const updatedAt = samplePullRequest('PR_1').updatedAt;
+    return { ...sampleRowNode('PR_1', { repository: 'acme/web', number: 1, updatedAt }), ...fields };
+}
+
+/**
+ * A status poll with no change of `updatedAt` writes `fresh`: the row reads it, but for what `drawn` says the edit's
+ * layer still draws over it.
+ */
+function expectFreshStatusShows(
+    items: ItemStore,
+    fresh: Partial<PullRequestItem>,
+    drawn: Partial<PullRequestItem> = {},
+) {
+    const stored = items.getStored('PR_1');
+    if (stored?.kind !== 'pullRequest') {
+        throw new Error('PR_1 is not held');
+    }
+
+    items.upsertMany([{ ...stored, ...fresh }]);
+    expect(items.get('PR_1')).toMatchObject({ ...fresh, ...drawn });
 }
 
 /** The status fields GitHub answers, its update time later than the row's. */

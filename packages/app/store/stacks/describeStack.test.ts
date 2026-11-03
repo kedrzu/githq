@@ -9,6 +9,14 @@ import { describeStack } from './describeStack.js';
 import { findStackHolder } from './findStackHolder.js';
 import { groupStacks } from './groupStacks.js';
 
+const QUEUE_ENTRY = {
+    position: 1,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: 720,
+    enqueuedAt: '2026-11-03T00:00:00Z',
+    enqueuer: 'mlaine',
+} as const;
+
 test('the name is the title of the first issue in the copy that the stack closes, by position then by order', () => {
     const issue = { ...sampleIssue('I_named'), title: 'Offline queue for booking edits' };
     const later = { ...sampleIssue('I_later'), title: 'Later issue' };
@@ -108,6 +116,18 @@ test('a draft blocks what comes after it, and the blocker says it is a draft', (
         blocker: { number: 102, kind: 'draft', waitingForReview: false },
     });
     expect(pipKinds(description)).toEqual(['ready', 'draft', 'ready']);
+});
+
+test('SP14: its first open pull request in a merge queue reads as the group’s place, past what landed, never ready', () => {
+    const first = { ...QUEUE_ENTRY, position: 2 };
+    const description = describeMembers([
+        pr(1, { state: 'MERGED', merged: true }),
+        pr(2, { mergeQueueEntry: first }),
+        pr(3, { mergeQueueEntry: { ...QUEUE_ENTRY, position: 3 } }),
+    ]);
+
+    expect(description.state).toEqual({ kind: 'queued', entry: first });
+    expect(description.landed).toBe(1);
 });
 
 test('a partly merged stack counts what landed and is ready from the lowest open one', () => {

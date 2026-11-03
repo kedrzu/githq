@@ -135,8 +135,6 @@ export interface PullRequestQueueEntry {
     readonly enqueuedAt: string;
     /** Login of who added it. */
     readonly enqueuer: string;
-    /** Added at the front of the queue. */
-    readonly jump: boolean;
 }
 
 /** A pull request's auto-merge, as GitHub holds it. */

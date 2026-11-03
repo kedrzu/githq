@@ -963,7 +963,6 @@ export type ItemDetailQuery = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -1473,7 +1472,6 @@ export type ItemDetailsQuery = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -1629,7 +1627,6 @@ export type ItemsByIdsQuery = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -2041,7 +2038,6 @@ export type ProjectFullQuery = {
                                     state: MergeQueueEntryState;
                                     estimatedTimeToMerge: number | null;
                                     enqueuedAt: string;
-                                    jump: boolean;
                                     enqueuer:
                                         | { login: string }
                                         | { login: string }
@@ -2303,7 +2299,6 @@ export type ProjectItemsQuery = {
                                     state: MergeQueueEntryState;
                                     estimatedTimeToMerge: number | null;
                                     enqueuedAt: string;
-                                    jump: boolean;
                                     enqueuer:
                                         | { login: string }
                                         | { login: string }
@@ -2615,7 +2610,6 @@ export type PullRequestMergeOptionsQuery = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -2737,7 +2731,6 @@ export type PullRequestStacksQuery = {
                               state: MergeQueueEntryState;
                               estimatedTimeToMerge: number | null;
                               enqueuedAt: string;
-                              jump: boolean;
                               enqueuer:
                                   | { login: string }
                                   | { login: string }
@@ -2823,7 +2816,6 @@ export type PullRequestStatusesQuery = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -3152,7 +3144,6 @@ export type RepositoryPullRequestsQuery = {
                     state: MergeQueueEntryState;
                     estimatedTimeToMerge: number | null;
                     enqueuedAt: string;
-                    jump: boolean;
                     enqueuer:
                         | { login: string }
                         | { login: string }
@@ -4185,7 +4176,6 @@ export type ProjectItemPageFieldsFragment = {
                       state: MergeQueueEntryState;
                       estimatedTimeToMerge: number | null;
                       enqueuedAt: string;
-                      jump: boolean;
                       enqueuer:
                           | { login: string }
                           | { login: string }
@@ -4421,7 +4411,6 @@ export type ProjectItemRowFieldsFragment = {
                   state: MergeQueueEntryState;
                   estimatedTimeToMerge: number | null;
                   enqueuedAt: string;
-                  jump: boolean;
                   enqueuer:
                       | { login: string }
                       | { login: string }
@@ -4883,7 +4872,6 @@ export type PullRequestDetailFieldsFragment = {
         state: MergeQueueEntryState;
         estimatedTimeToMerge: number | null;
         enqueuedAt: string;
-        jump: boolean;
         enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
     } | null;
     autoMergeRequest: {
@@ -4973,7 +4961,6 @@ export type PullRequestFieldsFragment = {
         state: MergeQueueEntryState;
         estimatedTimeToMerge: number | null;
         enqueuedAt: string;
-        jump: boolean;
         enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
     } | null;
     autoMergeRequest: {
@@ -5043,7 +5030,6 @@ export type PullRequestStatusFieldsFragment = {
         state: MergeQueueEntryState;
         estimatedTimeToMerge: number | null;
         enqueuedAt: string;
-        jump: boolean;
         enqueuer: { login: string } | { login: string } | { login: string } | { login: string } | { login: string };
     } | null;
     autoMergeRequest: {
@@ -5332,7 +5318,6 @@ export type AddDraftIssueMutation = {
                           state: MergeQueueEntryState;
                           estimatedTimeToMerge: number | null;
                           enqueuedAt: string;
-                          jump: boolean;
                           enqueuer:
                               | { login: string }
                               | { login: string }
@@ -5784,7 +5769,6 @@ export type DisablePullRequestAutoMergeMutation = {
                 state: MergeQueueEntryState;
                 estimatedTimeToMerge: number | null;
                 enqueuedAt: string;
-                jump: boolean;
                 enqueuer:
                     | { login: string }
                     | { login: string }
@@ -5843,7 +5827,6 @@ export type EnablePullRequestAutoMergeMutationVariables = Exact<{
     commitHeadline?: string | null | undefined;
     commitBody?: string | null | undefined;
     expectedHeadOid: string;
-    authorEmail?: string | null | undefined;
 }>;
 
 export type EnablePullRequestAutoMergeMutation = {
@@ -5868,7 +5851,6 @@ export type EnablePullRequestAutoMergeMutation = {
                 state: MergeQueueEntryState;
                 estimatedTimeToMerge: number | null;
                 enqueuedAt: string;
-                jump: boolean;
                 enqueuer:
                     | { login: string }
                     | { login: string }
@@ -5928,82 +5910,7 @@ export type EnqueuePullRequestMutationVariables = Exact<{
 }>;
 
 export type EnqueuePullRequestMutation = {
-    enqueuePullRequest: {
-        mergeQueueEntry: {
-            pullRequest: {
-                __typename: 'PullRequest';
-                id: string;
-                updatedAt: string;
-                state: PullRequestState;
-                isDraft: boolean;
-                merged: boolean;
-                reviewDecision: PullRequestReviewDecision | null;
-                mergeable: MergeableState;
-                mergeStateStatus: MergeStateStatus;
-                headRefOid: string;
-                baseRefOid: string;
-                isMergeQueueEnabled: boolean;
-                stack: { id: string; number: number; size: number } | null;
-                stackEntry: { position: number } | null;
-                mergeQueueEntry: {
-                    position: number;
-                    state: MergeQueueEntryState;
-                    estimatedTimeToMerge: number | null;
-                    enqueuedAt: string;
-                    jump: boolean;
-                    enqueuer:
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string };
-                } | null;
-                autoMergeRequest: {
-                    mergeMethod: PullRequestMergeMethod;
-                    enabledAt: string | null;
-                    commitHeadline: string | null;
-                    enabledBy:
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | { login: string }
-                        | null;
-                } | null;
-                baseRef: {
-                    target: { oid: string } | { oid: string } | { oid: string } | { oid: string } | null;
-                } | null;
-                statusCheckRollup: {
-                    state: StatusState;
-                    contexts: {
-                        checkRunCountsByState: Array<{ state: CheckRunState; count: number }> | null;
-                        statusContextCountsByState: Array<{ state: StatusState; count: number }> | null;
-                    };
-                } | null;
-                reviewRequests: {
-                    nodes: Array<{
-                        requestedReviewer:
-                            | { slug: string; name: string }
-                            | { login: string }
-                            | Record<PropertyKey, never>
-                            | null;
-                    } | null> | null;
-                } | null;
-                latestOpinionatedReviews: {
-                    nodes: Array<{
-                        state: PullRequestReviewState;
-                        author:
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | { login: string }
-                            | null;
-                    } | null> | null;
-                } | null;
-            } | null;
-        } | null;
-    } | null;
+    enqueuePullRequest: { mergeQueueEntry: { position: number } | null } | null;
 };
 
 export type MarkReadyForReviewMutationVariables = Exact<{
@@ -6054,7 +5961,6 @@ export type MergePullRequestMutation = {
                 state: MergeQueueEntryState;
                 estimatedTimeToMerge: number | null;
                 enqueuedAt: string;
-                jump: boolean;
                 enqueuer:
                     | { login: string }
                     | { login: string }
@@ -7265,7 +7171,6 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -7424,7 +7329,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -7752,7 +7656,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -8067,7 +7970,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -8516,7 +8418,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -9135,7 +9036,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -9614,7 +9514,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -9837,7 +9736,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -10364,7 +10262,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -10685,7 +10582,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -10966,7 +10862,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -11136,7 +11031,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -11223,7 +11117,6 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -11677,7 +11570,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -12241,7 +12133,6 @@ fragment PullRequestStatusFields on PullRequest {
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -12704,7 +12595,6 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -12755,9 +12645,9 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
   }
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
-    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!, $authorEmail: String) {
+    mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
   enablePullRequestAutoMerge(
-    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, expectedHeadOid: $expectedHeadOid, authorEmail: $authorEmail}
+    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline, commitBody: $commitBody, expectedHeadOid: $expectedHeadOid}
   ) {
     pullRequest {
       ...PullRequestStatusFields
@@ -12793,7 +12683,6 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod
@@ -12849,91 +12738,11 @@ export const EnqueuePullRequestDocument = new TypedDocumentString(`
     input: {pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, jump: $jump}
   ) {
     mergeQueueEntry {
-      pullRequest {
-        ...PullRequestStatusFields
-      }
+      position
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
-  __typename
-  id
-  updatedAt
-  state
-  isDraft
-  merged
-  reviewDecision
-  mergeable
-  mergeStateStatus
-  stack {
-    id
-    number
-    size
-  }
-  stackEntry {
-    position
-  }
-  headRefOid
-  baseRefOid
-  isMergeQueueEnabled
-  mergeQueueEntry {
-    position
-    state
-    estimatedTimeToMerge
-    enqueuedAt
-    enqueuer {
-      login
-    }
-    jump
-  }
-  autoMergeRequest {
-    mergeMethod
-    enabledAt
-    enabledBy {
-      login
-    }
-    commitHeadline
-  }
-  baseRef {
-    target {
-      oid
-    }
-  }
-  statusCheckRollup {
-    state
-    contexts {
-      checkRunCountsByState {
-        state
-        count
-      }
-      statusContextCountsByState {
-        state
-        count
-      }
-    }
-  }
-  reviewRequests(first: 10) {
-    nodes {
-      requestedReviewer {
-        ... on User {
-          login
-        }
-        ... on Team {
-          slug
-          name
-        }
-      }
-    }
-  }
-  latestOpinionatedReviews(first: 10) {
-    nodes {
-      author {
-        login
-      }
-      state
-    }
-  }
-}`);
+    `);
 export const MarkReadyForReviewDocument = new TypedDocumentString(`
     mutation MarkReadyForReview($pullRequestId: ID!) {
   markPullRequestReadyForReview(input: {pullRequestId: $pullRequestId}) {
@@ -12991,7 +12800,6 @@ export const MergePullRequestDocument = new TypedDocumentString(`
     enqueuer {
       login
     }
-    jump
   }
   autoMergeRequest {
     mergeMethod

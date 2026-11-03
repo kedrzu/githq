@@ -649,7 +649,6 @@ const ENTRY: PullRequestQueueEntry = {
     estimatedTimeToMerge: 12 * 60,
     enqueuedAt: new Date(NOW - 9 * 60_000).toISOString(),
     enqueuer: 'mlaine',
-    jump: false,
 };
 
 function inQueue(entry: Partial<PullRequestQueueEntry>): PullRequestItem {

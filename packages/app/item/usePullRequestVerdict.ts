@@ -1,4 +1,4 @@
-import type { MergeStateStatus, PullRequestMergeMethod } from '@githq/github/generated.gen.js';
+import type { MergeStateStatus } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -23,6 +23,7 @@ import { computed, toValue } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
 import type { MergeCheckCounts } from '@/merge/countMergeChecks.js';
+import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import { Clock } from '@/services/Clock.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
@@ -90,19 +91,47 @@ interface Standing {
     readonly forward: PullRequestWayForward | null;
 }
 
+/** Which pull request {@link usePullRequestVerdict} gives the verdict on, and what it is weighed by. */
+export interface UsePullRequestVerdictOptions {
+    readonly pr: MaybeRefOrGetter<PullRequestItem>;
+    /** The checks counted by whether they are required; `null`, or none given, until they are read. */
+    readonly checks?: MaybeRefOrGetter<MergeCheckCounts | null>;
+    /** Auto-merge may wait for what is not met (`isAutoMergeAllowed`). */
+    readonly autoMergeAllowed?: MaybeRefOrGetter<boolean>;
+}
+
+/** What {@link usePullRequestVerdicts}' function gives a verdict from, read once. */
+export interface PullRequestVerdictParams {
+    readonly pr: PullRequestItem;
+    readonly checks: MergeCheckCounts | null;
+    readonly autoMergeAllowed: boolean;
+}
+
+/** What the standing of a pull request is decided from. */
+interface DecideParams {
+    readonly current: PullRequestItem;
+    readonly now: PullRequestStanding;
+    readonly counts: MergeCheckCounts | null;
+    readonly mergeable: boolean;
+    /** Auto-merge can wait for what is not met. */
+    readonly waits: boolean;
+}
+
 /**
  * The verdict on a pull request and its way forward — the opened item's merge standing and the merge panel say the
  * same (PM38). From the row's status summary (`getPullRequestStanding`, the same as "my work") until `checks` are
  * read; then by which checks are required (merging D13): one that isn't required, failing or running, does not stop
  * the merge. `autoMergeAllowed` (`isAutoMergeAllowed`): auto-merge may wait for what is not met.
  */
-export function usePullRequestVerdict(
-    pr: MaybeRefOrGetter<PullRequestItem>,
-    checks: MaybeRefOrGetter<MergeCheckCounts | null> = null,
-    autoMergeAllowed: MaybeRefOrGetter<boolean> = false,
-): PullRequestVerdictViewModel {
+export function usePullRequestVerdict(options: UsePullRequestVerdictOptions): PullRequestVerdictViewModel {
     const getVerdict = usePullRequestVerdicts();
-    const decided = computed(() => getVerdict(toValue(pr), toValue(checks), toValue(autoMergeAllowed)));
+    const decided = computed(() =>
+        getVerdict({
+            pr: toValue(options.pr),
+            checks: toValue(options.checks) ?? null,
+            autoMergeAllowed: toValue(options.autoMergeAllowed) ?? false,
+        }),
+    );
 
     return reactive<PullRequestVerdictViewModel>({
         verdict: computed(() => decided.value.verdict),
@@ -116,16 +145,13 @@ export function usePullRequestVerdict(
  * {@link usePullRequestVerdict} for any pull request, read once: what a command built for one (`⇧M`'s title) says,
  * the same as its standing.
  */
-export function usePullRequestVerdicts(): (
-    pr: PullRequestItem,
-    checks: MergeCheckCounts | null,
-    autoMergeAllowed: boolean,
-) => PullRequestVerdictViewModel {
+export function usePullRequestVerdicts(): (params: PullRequestVerdictParams) => PullRequestVerdictViewModel {
     const t = useTranslate();
     const clock = useService(Clock);
     const queueTexts = useMergeQueueTexts();
+    const getMethodName = useMergeMethodName();
 
-    return (pr, checks, autoMergeAllowed) => {
+    return ({ pr, checks, autoMergeAllowed }) => {
         // The checks counted, while they decide: open, not a draft, and no conflicts (which hold it whatever they say).
         const open = pr.state === 'OPEN' && !pr.isDraft;
         const counts = checks && open && !getPullRequestStanding(pr).conflicts ? checks : null;
@@ -133,17 +159,17 @@ export function usePullRequestVerdicts(): (
         const now = getPullRequestStanding(counts ? { ...pr, checks: null } : pr);
         const mergeable = !pr.mergeQueueEntry && !pr.autoMerge && isMergeable(pr, now, counts);
         // GitHub refuses auto-merge for a stacked pull request, though `viewerCanEnableAutoMerge` reads true (live, 2026-11-02).
-        const { verdict, forward } = decide(pr, now, counts, mergeable, autoMergeAllowed && !pr.stack);
+        const { verdict, forward } = decide({
+            current: pr,
+            now,
+            counts,
+            mergeable,
+            waits: autoMergeAllowed && !pr.stack,
+        });
         return { verdict, mergeable, forward, forwardTitle: getForwardTitle(pr, forward) };
     };
 
-    function decide(
-        current: PullRequestItem,
-        now: PullRequestStanding,
-        counts: MergeCheckCounts | null,
-        mergeable: boolean,
-        waits: boolean,
-    ): Standing {
+    function decide({ current, now, counts, mergeable, waits }: DecideParams): Standing {
         if (current.merged) {
             return held({ tone: 'done', icon: GitMerge, text: t(l.merged), aside: null });
         }
@@ -168,10 +194,6 @@ export function usePullRequestVerdicts(): (
         }
 
         const merges = current.isMergeQueueEnabled ? 'enqueue' : 'merge';
-        const notMet = (verdict: PullRequestVerdict): Standing => ({
-            verdict,
-            forward: waits ? 'enableAutoMerge' : null,
-        });
 
         // One step before anything else (PM21).
         if (current.isDraft) {
@@ -261,6 +283,10 @@ export function usePullRequestVerdicts(): (
 
         const text = waits ? t(l.cannotMerge) : t(l.notReady);
         return notMet({ tone: 'warning', icon: Hourglass, text, aside: sentence(parts) || null });
+
+        function notMet(verdict: PullRequestVerdict): Standing {
+            return { verdict, forward: waits ? 'enableAutoMerge' : null };
+        }
     }
 
     /** PM16: where it is in the queue, in GitHub's own state; "In the queue, won't merge" when GitHub says so. */
@@ -301,21 +327,8 @@ export function usePullRequestVerdicts(): (
             tone: 'accent',
             icon: Timer,
             text: t(l.autoMergeOn),
-            aside: enabled === null ? method : `${method} · ${enabled}`,
+            aside: sentence(enabled === null ? [method] : [method, enabled]),
         };
-    }
-
-    function getMethodName(method: PullRequestMergeMethod) {
-        switch (method) {
-            case 'SQUASH':
-                return t(l.methodSquash);
-            case 'MERGE':
-                return t(l.methodMerge);
-            case 'REBASE':
-                return t(l.methodRebase);
-            default:
-                return assertNever(method);
-        }
     }
 
     /** What `⇧M` says it leads to: "Merge…" with no way forward too, as it still opens the panel. */

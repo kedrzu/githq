@@ -36,6 +36,10 @@ mergeStack:
   en: Merge all {count}
 mergeStackPart:
   en: Merge {count}
+queue:
+  en: Queue…
+inQueue:
+  en: In the queue
 rebaseOnGitHub:
   en: Rebase on GitHub
 markReady:

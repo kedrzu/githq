@@ -52,11 +52,11 @@ const emit = defineEmits<{
 const t = useTranslate();
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
-const mergeVerdict = usePullRequestVerdict(
-  () => props.pr,
-  () => props.checks ?? null,
-  () => props.autoMergeAllowed,
-);
+const mergeVerdict = usePullRequestVerdict({
+  pr: () => props.pr,
+  checks: () => props.checks ?? null,
+  autoMergeAllowed: () => props.autoMergeAllowed,
+});
 const lines = usePullRequestConditions(() => props.pr);
 const open = computed(() => props.pr.state === 'OPEN');
 const merging = computed(() => props.pr.merging !== undefined);

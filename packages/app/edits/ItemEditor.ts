@@ -143,12 +143,6 @@ export const ItemEditor = defineService({
             return outcome;
         }
 
-        /**
-         * The item the edit is made of. An issue still being created (selected, or moved on the board, before GitHub
-         * answered) is waited for, and the edit made of the issue GitHub created — a field of its place in a project
-         * becomes that of the created issue's place — so it is never sent with the temporary id. `null` for an item
-         * not in memory, or an issue GitHub did not create (that failure is reported with the creation).
-         */
         /** The stack's pull requests the copy holds, the item as shown among them; `undefined` outside a stack. */
         function getStackMembers(item: Item): PullRequestItem[] | undefined {
             if (item.kind !== 'pullRequest' || !item.stack) {
@@ -163,6 +157,12 @@ export const ItemEditor = defineService({
             return [...others, item];
         }
 
+        /**
+         * The item the edit is made of. An issue still being created (selected, or moved on the board, before GitHub
+         * answered) is waited for, and the edit made of the issue GitHub created — a field of its place in a project
+         * becomes that of the created issue's place — so it is never sent with the temporary id. `null` for an item
+         * not in memory, or an issue GitHub did not create (that failure is reported with the creation).
+         */
         async function resolveItem(id: string, request: EditRequest): Promise<ResolvedItem | null> {
             const item = details.getItem(id);
             if (!item || !isPendingItem(item)) {

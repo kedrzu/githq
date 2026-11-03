@@ -338,7 +338,7 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
         const autoMergeAllowed = isAutoMergeAllowed(settings, params.viewerCanEnableAutoMerge);
         return {
             id: `${params.section}.merge`,
-            title: getVerdict(pr, params.mergeChecks ?? null, autoMergeAllowed).forwardTitle,
+            title: getVerdict({ pr, checks: params.mergeChecks ?? null, autoMergeAllowed }).forwardTitle,
             section: params.section,
             key: EDIT_KEYS.merge,
             icon: GitMerge,

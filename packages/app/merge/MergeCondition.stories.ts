@@ -1,5 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ChevronRight, CircleCheck, CircleDashed, CircleX, GitBranch, GitMerge, Hourglass } from 'lucide-vue-next';
+import {
+    ChevronRight,
+    CircleCheck,
+    CircleDashed,
+    CircleX,
+    GitBranch,
+    GitMerge,
+    Hourglass,
+    ListOrdered,
+} from 'lucide-vue-next';
 
 import MergeCondition from './MergeCondition.vue';
 
@@ -23,6 +32,11 @@ export const Danger: Story = {};
 
 /** PM20: what holds it until a step is taken, in amber. */
 export const Warning: Story = { args: { icon: GitBranch, tone: 'warning', label: 'Branch', text: 'Behind main' } };
+
+/** PM15: in the merge queue, its icon in the accent. */
+export const Accent: Story = {
+    args: { icon: ListOrdered, tone: 'accent', label: 'Queue', text: '2nd · waiting for checks' },
+};
 
 /** Met, in green. */
 export const Success: Story = {

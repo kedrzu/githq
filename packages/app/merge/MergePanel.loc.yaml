@@ -67,12 +67,6 @@ justNow:
   en: just now
 method:
   en: Method
-methodSquash:
-  en: Squash
-methodMerge:
-  en: Merge commit
-methodRebase:
-  en: Rebase
 methodsLabel:
   en: Merge method
 repositoryDefault:

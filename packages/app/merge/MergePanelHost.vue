@@ -36,6 +36,13 @@ const FIRST_UPDATE_READ_MS = 1000;
 /** How long the panel waits for an update of the branch to land before it shows what GitHub says. */
 const UPDATE_TIME_LIMIT_MS = 30_000;
 
+/** A step towards the merge the panel takes, and the edit it is. */
+interface AdvanceParams {
+  readonly item: PullRequestItem;
+  readonly step: MergeStep;
+  readonly request: EditRequest;
+}
+
 const store = useService(MergePanelStore);
 const merger = useService(PullRequestMerger);
 const details = useService(ItemDetailStore);
@@ -204,7 +211,7 @@ watch(repository, name => {
  * is told apart by (PM27, PM28). The head commit read is noted on the refusal, for the rows and the opened item to
  * name who pushed it (PM37); a stack's merge of two or more is recorded under its top, whose head the store reads.
  */
-async function merge(submission: MergeSubmission, firstAlone = false) {
+async function merge(submission: MergeSubmission) {
   const item = pr.value;
   if (!item) {
     return;
@@ -212,8 +219,8 @@ async function merge(submission: MergeSubmission, firstAlone = false) {
 
   const opening = store.opening;
   sending.value = true;
-  // Two or more of a stack: one merge of the top of the range lands them all (D11).
-  const going = firstAlone ? [] : (stackMerge.value?.going ?? []);
+  // Two or more of a stack: one merge of the top of the range lands them all (D11); past the rules, the first alone (SP55).
+  const going = submission.request.bypassRules ? [] : (stackMerge.value?.going ?? []);
   const top = going.at(-1);
   const stack = description.value;
   const stackId = store.stack?.id;
@@ -256,13 +263,17 @@ async function takeStep(step: Exclude<MergeStep, 'enableAutoMerge'>) {
     store.forgetQueued(store.stack.id);
   }
 
-  await advance(item, step, toStepRequest(step));
+  await advance({ item, step, request: toStepRequest(step) });
 }
 
 /** PM10: auto-merge on, with the method and the text the panel shows. An edit like the steps. */
 async function enableAutoMerge(submission: MergeSubmission) {
   if (pr.value) {
-    await advance(pr.value, 'enableAutoMerge', { kind: 'enableAutoMerge', ...submission.request });
+    await advance({
+      item: pr.value,
+      step: 'enableAutoMerge',
+      request: { kind: 'enableAutoMerge', ...submission.request },
+    });
   }
 }
 
@@ -283,7 +294,7 @@ function toStepRequest(step: Exclude<MergeStep, 'enableAutoMerge' | 'resolveConf
   }
 }
 
-async function advance(item: PullRequestItem, step: MergeStep, request: EditRequest) {
+async function advance({ item, step, request }: AdvanceParams) {
   const opening = store.opening;
   const head = item.headRefOid;
   advancing.value = step;
@@ -365,8 +376,8 @@ async function waitForNewHead(itemId: string, opening: number, head: string) {
     :stack="stackView"
     :emails="settings"
     :viewer-login="auth.viewer?.login ?? null"
-    @merge="submission => merge(submission)"
-    @bypass="submission => merge(submission, true)"
+    @merge="merge"
+    @bypass="merge"
     @move="moveLine"
     @step="takeStep"
     @enable-auto-merge="enableAutoMerge"

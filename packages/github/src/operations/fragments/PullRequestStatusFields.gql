@@ -31,7 +31,6 @@ fragment PullRequestStatusFields on PullRequest {
         enqueuer {
             login
         }
-        jump
     }
     autoMergeRequest {
         mergeMethod

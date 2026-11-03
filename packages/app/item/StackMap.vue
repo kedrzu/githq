@@ -22,6 +22,7 @@ import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
 import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
+import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
 import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
@@ -79,6 +80,7 @@ interface StackMapFold {
 }
 
 const t = useTranslate();
+const queueTexts = useMergeQueueTexts();
 const unitList = new Intl.ListFormat(APP_LANGUAGE, { type: 'unit', style: 'short' });
 
 const members = computed(() => props.stack.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'));
@@ -199,6 +201,7 @@ function getVerdict(stopsLater: typeof l.heldStopsLater): StackStateFact {
     state: getStopState(props.stack.state),
     lang: APP_LANGUAGE,
     getHeldText: state => getHeldText(state, stopsLater),
+    getQueuedText: ({ entry }) => queueTexts.group(entry),
   });
 }
 

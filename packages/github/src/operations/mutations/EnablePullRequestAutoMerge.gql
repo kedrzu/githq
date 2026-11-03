@@ -6,7 +6,6 @@ mutation EnablePullRequestAutoMerge(
     $commitHeadline: String
     $commitBody: String
     $expectedHeadOid: GitObjectID!
-    $authorEmail: String
 ) {
     enablePullRequestAutoMerge(
         input: {
@@ -15,7 +14,6 @@ mutation EnablePullRequestAutoMerge(
             commitHeadline: $commitHeadline
             commitBody: $commitBody
             expectedHeadOid: $expectedHeadOid
-            authorEmail: $authorEmail
         }
     ) {
         pullRequest {

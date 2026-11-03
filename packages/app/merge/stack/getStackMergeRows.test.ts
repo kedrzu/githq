@@ -27,7 +27,6 @@ test('SP54: in the queue each row says its entry, thrown out and left with it sa
         estimatedTimeToMerge: null,
         enqueuedAt: '',
         enqueuer: 'a',
-        jump: false,
     } as const;
     const members = sampleStack({
         id: 'S_q',

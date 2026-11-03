@@ -134,7 +134,6 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
             estimatedTimeToMerge: null,
             enqueuedAt: '2026-10-21T09:00:00Z',
             enqueuer: { login: 'monalisa' },
-            jump: false,
         },
         autoMergeRequest: {
             mergeMethod: 'SQUASH',
@@ -244,7 +243,6 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
             estimatedTimeToMerge: null,
             enqueuedAt: '2026-10-21T09:00:00Z',
             enqueuer: 'monalisa',
-            jump: false,
         },
         autoMerge: {
             mergeMethod: 'SQUASH',

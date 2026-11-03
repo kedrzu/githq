@@ -75,6 +75,30 @@ export const HeldByReview: Story = {
     },
 };
 
+/** SP14 "In the queue": the group's place is its first one's, with GitHub's estimate, and no "Merge" follows. */
+export const InQueue: Story = {
+    decorators: [withMerging],
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) => ({
+                ...pr,
+                mergeQueueEntry: {
+                    position: index + 2,
+                    state: 'AWAITING_CHECKS' as const,
+                    estimatedTimeToMerge: 12 * 60,
+                    enqueuedAt: '2026-11-03T00:00:00Z',
+                    enqueuer: 'mlaine',
+                },
+            })),
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(matchText('In queue as one group · 2nd · about 12 min'))).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /Merge/u })).toBeNull();
+    },
+};
+
 /** SP14 "Partly merged": the first landed — a purple pip — and the next one's checks run again. */
 export const PartlyMerged: Story = { args: { stack: sampleListStack(SAMPLE_STACKS.partlyMerged) } };
 

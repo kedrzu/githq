@@ -3,7 +3,7 @@ import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
 import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
 
 import { findStackHolder } from './findStackHolder.js';
 import type { PullRequestStack } from './groupStacks.js';
@@ -68,13 +68,14 @@ export type StackPullRequestPipKind =
     | 'merging';
 
 /**
- * How a stack stands, the first that applies in this order. A merge queue, auto-merge and a merge stopped partway
- * are not covered yet; partly merged reads as the state of the open ones, after how many landed.
+ * How a stack stands, the first that applies in this order. Auto-merge and a merge stopped partway are not covered
+ * yet; partly merged reads as the state of the open ones, after how many landed.
  */
 export type StackState =
     | StackMergedState
     | StackIncompleteState
     | StackMergingState
+    | StackQueuedState
     | StackNeedsRebaseState
     | StackClosedInsideState
     | StackClosedState
@@ -97,6 +98,13 @@ export interface StackMergingState {
     readonly kind: 'merging';
     /** How many are going with the merge. */
     readonly goingCount: number;
+}
+
+/** Its first open pull request is in a merge queue, and the rest with it as one group (SP14, SP54). */
+export interface StackQueuedState {
+    readonly kind: 'queued';
+    /** The first open one's: each has a position of its own, and the group's place is the first one's (D11). */
+    readonly entry: PullRequestQueueEntry;
 }
 
 /** The copy holds fewer pull requests than the stack's size — never reads as ready while it does (D7). */
@@ -225,6 +233,10 @@ export function describeStack(params: DescribeStackParams): StackDescription {
         const goingCount = open.filter(pr => pr.merging !== undefined).length;
         if (goingCount > 0) {
             return { kind: 'merging', goingCount };
+        }
+
+        if (lowestOpen?.mergeQueueEntry) {
+            return { kind: 'queued', entry: lowestOpen.mergeQueueEntry };
         }
 
         if (behind) {

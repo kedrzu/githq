@@ -450,7 +450,6 @@ interface WorldPullRequest {
 /** What a pull request's entry in a merge queue holds besides its place. */
 interface WorldQueueEntry {
     readonly enqueuedAt: string;
-    readonly jump: boolean;
 }
 
 /** Auto-merge turned on, with what it will merge with. */
@@ -539,6 +538,8 @@ interface WorldMutationHandler<TName extends GitHubWorldMutation> {
     readonly refuse?: (item: WorldItem, variables: Readonly<Record<string, unknown>>) => string | null;
     /** The answer's data when it fails with an error: its field `null`. */
     readonly refused: GitHubOperationData<TName>;
+    /** The change doesn't move the item's `updatedAt` on GitHub. */
+    readonly keepsUpdatedAt?: boolean;
 }
 
 /** How many checks a pull request of the world runs. */
@@ -1749,8 +1750,15 @@ export class GitHubWorld {
                     this.addToQueue([{ item, pullRequest: item.pullRequest }], variables.jump === true);
                 }
             },
+            keepsUpdatedAt: true,
             answer: item => ({
-                enqueuePullRequest: { mergeQueueEntry: { pullRequest: this.toPullRequestAnswer(item) } },
+                enqueuePullRequest: {
+                    mergeQueueEntry: {
+                        position: item.pullRequest
+                            ? toQueuePosition(this.getRepository(item.repository), item.pullRequest)
+                            : 0,
+                    },
+                },
             }),
             refused: { enqueuePullRequest: null },
         });
@@ -1762,6 +1770,7 @@ export class GitHubWorld {
                 return first?.item === item ? null : `No merge queue found for branch '${toHeadRefName(item)}'`;
             },
             apply: item => this.removeFromQueue(item),
+            keepsUpdatedAt: true,
             answer: () => ({ dequeuePullRequest: { clientMutationId: null } }),
             refused: { dequeuePullRequest: null },
         });
@@ -2027,7 +2036,7 @@ export class GitHubWorld {
 
     /**
      * Answers the mutation `name`: held while {@link holdEdits} holds, recorded, failed as {@link failEdit} said,
-     * else applied — the item's `updatedAt` moving to now — and answered with the item as it then is.
+     * else applied — the item's `updatedAt` moving to now, unless the handler keeps it — and answered with the item as it then is.
      */
     private mutation<TName extends GitHubWorldMutation>(
         github: GitHubMock,
@@ -2062,7 +2071,9 @@ export class GitHubWorld {
 
             if (failure?.kind !== 'drop') {
                 handler.apply(item, variables);
-                item.updatedAt = new Date().toISOString();
+                if (!handler.keepsUpdatedAt) {
+                    item.updatedAt = new Date().toISOString();
+                }
             }
 
             return handler.answer(item, variables);
@@ -2400,7 +2411,6 @@ export class GitHubWorld {
                 estimatedTimeToMerge: 13 * 60,
                 enqueuedAt: queued.enqueuedAt,
                 enqueuer: { login: this.viewer },
-                jump: queued.jump,
             },
             autoMergeRequest: autoMerge && {
                 mergeMethod: autoMerge.mergeMethod,
@@ -2448,13 +2458,15 @@ export class GitHubWorld {
         }
     }
 
-    /** Puts the pull requests in their repository's merge queue, in order: last, or at its front when they jump it. */
+    /**
+     * Puts the pull requests in their repository's merge queue, in order: last, or at its front when they jump it. Their
+     * `updatedAt` stays: the queue doesn't move it on GitHub (live, 2026-11-03).
+     */
     private addToQueue(entries: readonly WorldStackEntry[], jump: boolean) {
         const now = new Date().toISOString();
         const added = entries.filter(entry => !entry.pullRequest.queued);
         for (const entry of added) {
-            entry.pullRequest.queued = { enqueuedAt: now, jump };
-            entry.item.updatedAt = now;
+            entry.pullRequest.queued = { enqueuedAt: now };
         }
 
         const [first] = added;
@@ -2464,18 +2476,17 @@ export class GitHubWorld {
         }
     }
 
-    /** Takes the pull request and every other of its stack in the queue out of it, all at once. */
+    /** Takes the pull request and every other of its stack in the queue out of it, all at once; `updatedAt` stays. */
     private removeFromQueue(item: WorldItem) {
         if (!item.pullRequest) {
             return;
         }
 
-        const now = new Date().toISOString();
-        const { queue } = this.getRepository(item.repository);
+        const repository = this.getRepository(item.repository);
+        const { queue } = repository;
         for (const entry of getQueuedInStack({ item, pullRequest: item.pullRequest })) {
             entry.pullRequest.queued = null;
-            entry.item.updatedAt = now;
-            queue.splice(queue.indexOf(entry), 1);
+            queue.splice(toQueuePosition(repository, entry.pullRequest) - 1, 1);
         }
     }
 

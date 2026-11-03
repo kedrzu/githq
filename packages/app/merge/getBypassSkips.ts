@@ -1,6 +1,7 @@
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 
+import { isHoldingCheck } from './isHoldingCheck.js';
 import type { MergeCheck } from './MergeTypes.js';
 
 /** What a merge past the rules skips: GitHub says only whether the viewer may, so the panel lists it (merging D12). */
@@ -20,7 +21,7 @@ export interface BypassSkips {
  * @__NO_SIDE_EFFECTS__
  */
 export function getBypassSkips(pr: PullRequestItem, checks: readonly MergeCheck[]): BypassSkips {
-    const held = checks.filter(check => check.isRequired && (check.state === 'failing' || check.state === 'pending'));
+    const held = checks.filter(isHoldingCheck);
     const standing = getPullRequestStanding(pr);
     const behind = pr.mergeStateStatus === 'BEHIND';
     let review: BypassSkips['review'] = null;
