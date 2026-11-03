@@ -178,6 +178,9 @@ once, as every edit in githq.
 the extension, `docs/**/*.png` a folder and an extension. A toggle button with an icon, as in VS Code, switches the
 pattern to a regular expression. Next to it, the viewed filter of [D9](#d9).** (2026-11-02, owner)
 
+`{a,b}` expands as in VS Code, and commas outside it separate patterns. `[…]` stays literal, unlike VS Code, so `[id].vue`
+finds route files of Nuxt and Next. (2026-11-03, owner, on the agent's recommendation)
+
 **Why.** A familiar pattern; regular expressions are optional because not everyone is fluent in them (owner).
 
 **Rejected.**
@@ -574,3 +577,11 @@ unset. GitHub's wording in the failure screens (CR67, CR76) is a placeholder for
 agent's recommendation)
 
 **Why.** A review reads what is in the file; the mockups' JetBrains Mono ligatures draw something that isn't.
+
+## D37
+
+**Syntax colours are a muted palette of five: lavender keywords, sage strings, amber numbers and constants, blue functions
+and types, dimmed comments; the rest is the line's text colour.** (2026-11-03, owner, on the agent's proposal, seen on real
+code; the mockups draw code monochrome)
+
+**Why.** Calm, few colours (AGENTS.md); each is AA over the window and over a deleted or an added line.

@@ -61,3 +61,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
 - 2026-11-02 — Owner closed the design. Next on the owner's word: a UI brief for the design agent, then /dev:deliver.
 - 2026-11-02 — Owner asked for the UI brief and the merge: ui/review-a-pull-request.md and ui/design-agent-prompt.md written.
 - 2026-11-03 — Owner at milestone 1's checkpoint: public privacy statements say githq reads the code pull requests change and keeps it until sign-out; `NOT_FOUND` hides kept code → D19; the diff stays on the main thread, a worker is measured with highlighting → D20; keys confirmed → D32; no ligatures in a diff → D36.
+- 2026-11-03 — Owner at milestone 2's checkpoint: the syntax palette stays → D37; square brackets stay literal in the filter → D11.
