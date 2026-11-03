@@ -22,7 +22,7 @@ export interface GitHubRequest {
     method: 'GET' | 'POST' | 'PUT';
     headers: Record<string, string>;
     body?: string;
-    /** The browser's HTTP cache for this request; its default without. */
+    /** How the browser's HTTP cache may serve it; its default otherwise. */
     cache?: RequestInit['cache'];
 }
 
@@ -75,6 +75,7 @@ export async function sendGitHubRequest(
             githubMessage,
             errors: readGitHubErrors(payload),
             retryAfter,
+            body: payload,
         });
     }
 

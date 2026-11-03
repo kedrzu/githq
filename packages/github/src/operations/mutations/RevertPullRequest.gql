@@ -1,0 +1,9 @@
+# Opens a new pull request reverting a merged one (merging D16): GitHub makes it at once.
+mutation RevertPullRequest($pullRequestId: ID!) {
+    revertPullRequest(input: { pullRequestId: $pullRequestId }) {
+        revertPullRequest {
+            number
+            url
+        }
+    }
+}

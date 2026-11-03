@@ -1,16 +1,27 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub. `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's, and with an item open `j`/`k` walk a collapsed header's own item and then its pull requests, as a collapsed entry's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way says so (G7). Board: each group a column with its head and count, cards top to bottom. Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`); the list draws them, their selection and the keys. The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `⇧M` the merge panel for a pull request the viewer may merge, the selected one while nothing is checked or the one checked alone, never several (merging D9) — as its row's "Merge" and its context menu do — and once the merge is sent it is unchecked and the selection moves on to the next row (PM32a). `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and while an item is open over the list `j`/`k` walk the pull requests one by one, collapsed or not: a collapsed entry's member by member, entering it at its first from above and at its last from below, and an expanded one's rows, passing over the entry itself; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's, and with an item open `j`/`k` walk a collapsed header's own item and then its pull requests, as a collapsed entry's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), and with an item open `j`/`k` walk them member by member, expanded or not. The list hands over the items it shows as `listed` — a stack's pull requests one by one, collapsed or not, never the entry's own id — and an item opened inside a collapsed entry keeps the entry selected. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { injectContext, provideContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
-import { ChevronDown, ChevronRight, Loader } from 'lucide-vue-next';
+import { ChevronDown, ChevronRight, GitMerge, Loader } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
+import { EDIT_KEYS } from '@/commands/useEditCommands.js';
+import { usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
+import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
+import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
+import { MergeContext } from '@/merge/MergeContext.js';
+import { getStackMerge } from '@/merge/stack/getStackMerge.js';
+import { getStackMergeEnd } from '@/merge/stack/getStackMergeEnd.js';
 import { Browser } from '@/services/Browser.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { followSelection } from '@/utils/followSelection.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
@@ -83,6 +94,8 @@ interface ListSlotProps<TValue> {
   /** The entry it is nested under. */
   parent: ListEntry<TValue> | null;
   group: ListGroup<TValue>;
+  /** The list's selection is on it. */
+  selected: boolean;
   /** Among the items edited together; a stack's entry when all its pull requests are. */
   checked: boolean;
   /** A stack's entry some of whose pull requests are among the items edited together, not all (D20, SP28): a half mark. */
@@ -140,6 +153,12 @@ interface Placed {
   readonly moved: readonly ListEntry<T>[];
 }
 
+/** What `⇧M` merges: one pull request, or — `entry` set — that stack's entry's whole stack (stacked PRs D11). */
+interface MergeTarget {
+  readonly id: string;
+  readonly entry: Placed | null;
+}
+
 /** A top-level entry to place, in its group. */
 interface PlaceRowParams {
   readonly row: ListRow<T>;
@@ -191,6 +210,15 @@ const dropTarget = ref<string | null>(null);
 const menuIds = shallowRef<readonly string[]>([]);
 /** The item the context menu's "Open" opens; `null` when it is for several. */
 const menuOpenId = ref<string | null>(null);
+/** The context menu's merge of a stack's entry right-clicked, whole (stacked PRs D11); `null` otherwise. */
+const menuMerge = shallowRef<Command | null>(null);
+/** Merging, where the screen offers it (merging D9). */
+const merging = injectContext(MergeContext, { optional: true });
+const pullRequestCommands = usePullRequestCommands();
+// Where the screen merges, the app's local copy is there: ⇧M's title reads the pull request's way forward from it.
+const items = merging ? useService(ItemStore) : null;
+const getVerdict = usePullRequestVerdicts();
+const repositories = merging ? useService(RepositoryStore) : null;
 
 /** Each top-level entry and those shown nested under it, in order, by the entry's key. */
 const shownByRow = computed(() => {
@@ -273,8 +301,21 @@ watch(order, (next, previous) => {
 });
 watch(listedIds, ids => emit('listed', ids), { immediate: true });
 
-// The list's keys are its own — handled below, before an opened item's — and listed in the help sheet.
-useCommands(() => getKeyCommands());
+// The rows and the context menu merge through the list: their entry is selected, and once the merge is sent the list
+// moves on to the next row (PM32a) — past a stack's entry merged whole (SP7).
+if (merging) {
+  provideContext(MergeContext, {
+    canOpen: id => merging.canOpen(id),
+    open: (id, options) => mergeFromList({ id, entry: options?.wholeStack ? findStackEntry(id) : null }),
+    getRecord: id => merging.getRecord(id),
+    getCommands: id => merging.getCommands(id),
+    run: (id, command) => merging.run(id, command),
+  });
+}
+
+// The list's keys are its own — handled below, before an opened item's — and listed in the help sheet; "Merge…" of
+// the selected row first, as the command menu offers it (PM39).
+useCommands(() => [...getMergeCommands(), ...getOrdinaryCommands(), ...getKeyCommands()]);
 
 onWindowEvent('keydown', event => {
   if (!isScreenKey(event)) {
@@ -359,6 +400,190 @@ onWindowEvent('keydown', event => {
       }
   }
 });
+
+/**
+ * `⇧M` "Merge…" (merging D9): of the selected row while nothing is checked, or of one pull request checked alone — the
+ * selection's, ahead of an opened item's — never of several, which are never merged together; on a stack's entry, its
+ * whole stack (stacked PRs D11). The list owns both: once the merge is sent, the merged ones are unchecked and the
+ * selection moves past them (PM32a, SP7).
+ */
+function getMergeCommands(): Command[] {
+  if (!merging) {
+    return [];
+  }
+
+  const selection = checkedIds.value.length > 0;
+  const target = getMergeTarget();
+  return [
+    {
+      id: selection ? 'selection.merge' : 'list.merge',
+      title: target ? getMergeTitle(target) : t(l.merge),
+      section: selection ? 'selection' : 'view',
+      key: EDIT_KEYS.merge,
+      icon: GitMerge,
+      when: () => getMergeTarget() !== null,
+      run: () => {
+        const current = getMergeTarget();
+        if (current) {
+          mergeFromList(current);
+        }
+      },
+    },
+  ];
+}
+
+/**
+ * The ordinary commands of the selected row (merging D16), while nothing is checked and no item is open over the list,
+ * whose own they then are; on a stack's entry only `⇧Q`, which takes the stack out whole through its first one (D11).
+ */
+function getOrdinaryCommands(): Command[] {
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  if (!merging || !current || checkedIds.value.length > 0 || props.openedId != null) {
+    return [];
+  }
+
+  const members = current.ids.flatMap(id => {
+    const item = items?.get(id);
+    return item?.kind === 'pullRequest' ? [item] : [];
+  });
+  if (!current.stack && members.length === 1 && members[0]) {
+    return pullRequestCommands({ section: 'view', pr: members[0], source: merging });
+  }
+
+  const queued = current.stack ? members.find(pr => pr.mergeQueueEntry) : undefined;
+  return queued
+    ? pullRequestCommands({ section: 'view', pr: queued, source: merging }).filter(
+        command => command.key === EDIT_KEYS.dequeue,
+      )
+    : [];
+}
+
+/**
+ * What `⇧M` merges: the pull request checked alone, else — nothing checked — the selected row's; on a stack's entry
+ * its whole stack, unless one of its pull requests is open over the list: `⇧M` is then the opened one's, everything up
+ * to it (stacked PRs D11, SP6).
+ */
+function getMergeTarget(): MergeTarget | null {
+  const checked = checkedIds.value;
+  if (checked.length > 0) {
+    const [id] = checked;
+    return checked.length === 1 && id !== undefined && merging?.canOpen(id) ? { id, entry: null } : null;
+  }
+
+  const key = selectedKey.value;
+  const current = key === null ? undefined : placed.value.get(key);
+  if (current?.stack) {
+    return props.openedId != null && current.walked.includes(props.openedId) ? null : getStackTarget(current);
+  }
+
+  const [id] = current?.ids.length === 1 ? current.ids : [];
+  return id !== undefined && merging?.canOpen(id) ? { id, entry: null } : null;
+}
+
+/** The whole stack of a stack's entry, opened on the first of its pull requests the panel opens for. */
+function getStackTarget(entry: Placed): MergeTarget | null {
+  const id = entry.ids.find(candidate => merging?.canOpen(candidate));
+  return id === undefined ? null : { id, entry };
+}
+
+/** The stack's entry standing for the pull request, for its whole stack's merge; `null` when none lists it. */
+function findStackEntry(id: string): Placed | null {
+  return [...placed.value.values()].find(current => current.stack && current.walked.includes(id)) ?? null;
+}
+
+/**
+ * The way forward the panel leads to, before its read (PM38): the pull request's, as its standing says it; a stack's,
+ * as the panel opening on it would — "Merge all 3", "Merge 2" up to the one holding the rest, "Queue…" on a merge
+ * queue's branch, "In the queue" once there, "Rebase on GitHub", "Mark #102 ready…" (stacked PRs D11, SP15, SP45–SP49,
+ * SP53, SP54).
+ */
+function getMergeTitle(target: MergeTarget): string {
+  const description = target.entry?.stack?.description;
+  if (description) {
+    return getStackMergeTitle(description);
+  }
+
+  const pr = items?.get(target.id);
+  if (pr?.kind !== 'pullRequest') {
+    return t(l.merge);
+  }
+
+  const autoMergeAllowed = isAutoMergeAllowed(repositories?.get(pr.repository.nameWithOwner) ?? null, null);
+  return getVerdict({ pr, checks: null, autoMergeAllowed }).forwardTitle;
+}
+
+function getStackMergeTitle(description: StackDescription): string {
+  switch (description.state.kind) {
+    case 'merging':
+      return t(l.merge);
+    case 'queued':
+      return t(l.inQueue);
+    default:
+      break;
+  }
+
+  const end = getStackMergeEnd({ description, openedOn: null });
+  const { block, going, holder, open } = getStackMerge({ description, end });
+  switch (block?.kind) {
+    case undefined:
+      if (open[0]?.isMergeQueueEnabled) {
+        return t(l.queue);
+      }
+
+      if (going.length <= 1) {
+        return t(l.merge);
+      }
+
+      return going.length === open.length
+        ? t(l.mergeStack, { count: going.length })
+        : t(l.mergeStackPart, { count: going.length });
+    case 'needsRebase':
+      return t(l.rebaseOnGitHub);
+    case 'held':
+      return holder?.kind === 'draft' ? t(l.markReady, { number: holder.number }) : t(l.merge);
+    case 'incomplete':
+    case 'closed':
+      return t(l.merge);
+    default:
+      return assertNever(block);
+  }
+}
+
+/**
+ * Opens the merge panel for the pull request — or a stack's entry's whole stack — with its entry selected; once the
+ * merge is sent they leave the items edited together, and the list moves on to the next row: past a stack's entry and
+ * its rows (SP7).
+ */
+function mergeFromList({ id, entry }: MergeTarget) {
+  const key = entry ? entry.entry.key : findKey(order.value, id);
+  if (key !== null && key !== selectedKey.value) {
+    select(key);
+  }
+
+  const merged = entry ? entry.ids : [id];
+  merging?.open(id, {
+    wholeStack: entry !== null,
+    onSent: () => {
+      checkedIds.value = checkedIds.value.filter(other => !merged.includes(other));
+      if (entry?.stack) {
+        stepPast(entry.entry.key, entry.stack.id);
+      } else {
+        step(1);
+      }
+    },
+  });
+}
+
+/** To the entry after a stack's entry and its rows, expanded or not; it stays put when nothing follows it. */
+function stepPast(key: string, stackId: string) {
+  const keys = selectedColumnKeys() ?? order.value;
+  const index = keys.indexOf(key);
+  const next = keys.slice(index + 1).find(other => placed.value.get(other)?.memberOf?.id !== stackId);
+  if (index >= 0 && next !== undefined) {
+    go(next);
+  }
+}
 
 /** The list's keys as the help sheet lists them. */
 function getKeyCommands(): Command[] {
@@ -733,6 +958,7 @@ function getSlotProps({ current, row, group }: GetSlotPropsParams): ListSlotProp
     entry: current.entry,
     parent: current.parent,
     group,
+    selected: selectedKey.value === key,
     checked: isChecked(key),
     halfChecked: isHalfChecked(key),
     stack: current.stack,
@@ -930,12 +1156,31 @@ function prepareContextMenu(event: MouseEvent) {
   if (checked.length > 1 && current.ids.every(id => checked.includes(id))) {
     menuIds.value = checked;
     menuOpenId.value = null;
+    menuMerge.value = null;
     return;
   }
 
   menuIds.value = current.ids;
   menuOpenId.value = current.openId;
+  menuMerge.value = getMenuMerge(current);
   select(key);
+}
+
+/** "Merge all 3" on a stack's entry: its whole stack, as `⇧M` on it (D11). */
+function getMenuMerge(current: Placed): Command | null {
+  const target = current.stack && merging ? getStackTarget(current) : null;
+  if (!target) {
+    return null;
+  }
+
+  return {
+    id: 'menu.merge',
+    title: getMergeTitle(target),
+    section: 'selection',
+    key: EDIT_KEYS.merge,
+    icon: GitMerge,
+    run: () => mergeFromList(target),
+  };
 }
 
 function openFromMenu() {
@@ -1165,6 +1410,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
         name="contextMenu"
         :ids="menuIds"
         :open="openFromMenu"
+        :merge="menuMerge"
       />
     </template>
   </ContextMenu>

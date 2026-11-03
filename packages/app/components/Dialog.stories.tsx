@@ -98,3 +98,29 @@ export const TitleHidden: Story = {
             },
         }),
 };
+
+/** Centred on the window both ways (the merge panel), opened at once. */
+export const Centered: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const open = ref(true);
+
+                return () => (
+                    <StoryPage>
+                        <Dialog
+                            open={open.value}
+                            onUpdate:open={(value: boolean) => (open.value = value)}
+                            title="Merge fitloop/api#477"
+                            centered
+                        >
+                            {{
+                                trigger: () => <Button>Merge…</Button>,
+                                default: () => <p>Ready to merge · Approved · checks passed · no conflicts</p>,
+                            }}
+                        </Dialog>
+                    </StoryPage>
+                );
+            },
+        }),
+};

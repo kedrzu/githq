@@ -13,7 +13,10 @@ export interface GitHubRestRequest {
     etag?: string;
     /** Sent as JSON. */
     body?: unknown;
-    /** The browser's HTTP cache for this request; its default without. */
+    /**
+     * How the browser's HTTP cache may serve it. GitHub marks REST answers cacheable for a minute
+     * (`Cache-Control: private, max-age=60`), so a request polled for a change must say `no-store`.
+     */
     cache?: RequestInit['cache'];
 }
 

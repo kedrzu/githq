@@ -497,13 +497,14 @@ function getSectionCount(value: RepositorySection) {
             @listed="emit('listed', $event)"
             @move="emit('move', $event)"
           >
-            <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
+            <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker }">
               <StackRow
                 v-if="stack"
                 :stack="stack"
                 :properties="properties"
                 :repository="nameWithOwner"
                 :now="now"
+                :selected="selected"
                 :checked="checked"
                 :half-checked="halfChecked"
                 :opened-id="openedId"

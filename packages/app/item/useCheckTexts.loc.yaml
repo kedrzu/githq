@@ -1,0 +1,27 @@
+failedAfter:
+  en: failed after {duration}
+failed:
+  en: failed
+runningFor:
+  en: running for {duration}
+queued:
+  en: queued
+passedIn:
+  en: passed in {duration}
+passed:
+  en: passed
+skipped:
+  en: skipped
+noChecks:
+  en: None run
+allPassed:
+  plural: count
+  en:
+    one: Passed
+    many: All {count} passed
+failingCount:
+  en: '{count} failing'
+runningCount:
+  en: '{count} running'
+passedCount:
+  en: '{count} passed'

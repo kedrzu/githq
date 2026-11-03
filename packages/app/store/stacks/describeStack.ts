@@ -3,9 +3,12 @@ import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
 import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import { isReviewRequestedOf } from '@/store/isReviewRequestedOf.js';
-import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import type { Item, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemTypes.js';
+import { mergesWithinRules } from '@/store/mergesWithinRules.js';
 
+import { findStackHolder } from './findStackHolder.js';
 import type { PullRequestStack } from './groupStacks.js';
+import { toStackBlocker } from './toStackBlocker.js';
 
 /** What a stack's entry shows (D4, D5, D7, D14, D15): its name, count, pips and state, for the UI to put in words. */
 export interface StackDescription {
@@ -51,17 +54,29 @@ export interface StackMissingPip {
  * - `broken`: failing checks, conflicts or changes requested — something for its author;
  * - `moving`: checks running, or any open one of a stack that needs a rebase (D21);
  * - `waiting`: open and none of the others — waiting for a review, mostly; also every pip while the copy is
- *   incomplete (D7: pale, never ready).
+ *   incomplete (D7: pale, never ready);
+ * - `merging`: open, and a merge of it this session sent is on its way — never merged until GitHub says so
+ *   (merging D3, stacked PRs SP7).
  */
-export type StackPullRequestPipKind = 'merged' | 'closed' | 'draft' | 'ready' | 'broken' | 'moving' | 'waiting';
+export type StackPullRequestPipKind =
+    | 'merged'
+    | 'closed'
+    | 'draft'
+    | 'ready'
+    | 'broken'
+    | 'moving'
+    | 'waiting'
+    | 'merging';
 
 /**
- * How a stack stands, the first that applies in this order. Merging is not covered yet (being merged, queued,
- * auto-merge, a merge stopped partway).
+ * How a stack stands, the first that applies in this order. Auto-merge and a merge stopped partway are not covered
+ * yet; partly merged reads as the state of the open ones, after how many landed.
  */
 export type StackState =
     | StackMergedState
     | StackIncompleteState
+    | StackMergingState
+    | StackQueuedState
     | StackNeedsRebaseState
     | StackClosedInsideState
     | StackClosedState
@@ -72,6 +87,25 @@ export type StackState =
 /** Every pull request of the stack is merged. */
 export interface StackMergedState {
     readonly kind: 'merged';
+    /** How many pull requests landed: "Merged · all 3 landed" (SP8). */
+    readonly count: number;
+}
+
+/**
+ * Some of its open pull requests are being merged: nothing reads merged until GitHub says so (merging D3, stacked
+ * PRs SP7, SP14).
+ */
+export interface StackMergingState {
+    readonly kind: 'merging';
+    /** How many are going with the merge. */
+    readonly goingCount: number;
+}
+
+/** Its first open pull request is in a merge queue, and the rest with it as one group (SP14, SP54). */
+export interface StackQueuedState {
+    readonly kind: 'queued';
+    /** The first open one's: each has a position of its own, and the group's place is the first one's (D11). */
+    readonly entry: PullRequestQueueEntry;
 }
 
 /** The copy holds fewer pull requests than the stack's size — never reads as ready while it does (D7). */
@@ -194,7 +228,16 @@ export function describeStack(params: DescribeStackParams): StackDescription {
         }
 
         if (members.every(isMergedPullRequest)) {
-            return { kind: 'merged' };
+            return { kind: 'merged', count: members.length };
+        }
+
+        const goingCount = open.filter(pr => pr.merging !== undefined).length;
+        if (goingCount > 0) {
+            return { kind: 'merging', goingCount };
+        }
+
+        if (lowestOpen?.mergeQueueEntry) {
+            return { kind: 'queued', entry: lowestOpen.mergeQueueEntry };
         }
 
         if (behind) {
@@ -217,23 +260,10 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             return { kind: 'closed' };
         }
 
-        let readyCount = 0;
-        for (const pr of open) {
-            if (!canMerge(pr)) {
-                break;
-            }
-
-            readyCount++;
-        }
-
-        const firstStuck = open[readyCount];
-        const blocker: StackBlocker | null = firstStuck
-            ? {
-                  number: firstStuck.number,
-                  kind: getPipKind(firstStuck),
-                  waitingForReview: getPullRequestStanding(firstStuck).waitingForReview,
-              }
-            : null;
+        const { canLand: readyCount, holder } = findStackHolder(
+            pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'),
+        );
+        const blocker = holder ? toStackBlocker(holder) : null;
 
         const requestedCount = open.filter(pr => isReviewRequestedOf(pr, params.viewerLogin)).length;
         const viewerAuthors = members.some(pr => pr.author?.login === params.viewerLogin);
@@ -294,7 +324,9 @@ function getPips(stack: PullRequestStack, needsRebase: boolean): StackPip[] {
 
     if (needsRebase) {
         return pips.map((pip): StackPip =>
-            pip.kind !== 'missing' && isOpenPullRequest(pip.pullRequest) ? { ...pip, kind: 'moving' } : pip,
+            pip.kind !== 'missing' && pip.kind !== 'merging' && isOpenPullRequest(pip.pullRequest)
+                ? { ...pip, kind: 'moving' }
+                : pip,
         );
     }
 
@@ -309,6 +341,10 @@ function getPipKind(pr: PullRequestItem): StackPullRequestPipKind {
 
     if (isClosedPullRequest(pr)) {
         return 'closed';
+    }
+
+    if (pr.merging !== undefined) {
+        return 'merging';
     }
 
     if (pr.isDraft) {
@@ -337,12 +373,5 @@ function canMerge(pr: PullRequestItem): boolean {
         return false;
     }
 
-    switch (pr.mergeStateStatus) {
-        case 'CLEAN':
-        case 'HAS_HOOKS':
-        case 'UNSTABLE':
-            return true;
-        default:
-            return false;
-    }
+    return mergesWithinRules(pr.mergeStateStatus);
 }

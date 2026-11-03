@@ -273,7 +273,9 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"
     >
-      <template #row="{ entry, parent, group: listGroup, checked, halfChecked, stack, stackMarker, header, depth }">
+      <template
+        #row="{ entry, parent, group: listGroup, selected, checked, halfChecked, stack, stackMarker, header, depth }"
+      >
         <StackRow
           v-if="stack"
           :stack="stack"
@@ -283,6 +285,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           people="author"
           :viewer-login="viewerLogin"
           :now="now"
+          :selected="selected"
           :checked="checked"
           :half-checked="halfChecked"
           :opened-id="openedId"

@@ -23,6 +23,8 @@ export interface GitHubApiErrorOptions {
     errors?: readonly GitHubGraphQLErrorEntry[];
     /** The answer's `retry-after`, in seconds. */
     retryAfter?: number;
+    /** The parsed JSON body of the refusal; none when it had none. */
+    body?: unknown;
 }
 
 /**
@@ -43,6 +45,11 @@ export class GitHubApiError extends HttpError {
     readonly retryAfter: number | undefined;
     /** GitHub's own words for the refusal (its answer's `message`), to quote to the user; none when it gave none. */
     readonly githubMessage: string | undefined;
+    /**
+     * The parsed JSON body of the refusal, for an endpoint that answers a refusal in a shape of its own (the
+     * `failed` answer of `merge-async`); `undefined` when it had none or is not JSON.
+     */
+    readonly body: unknown;
 
     constructor(options: GitHubApiErrorOptions) {
         super(options.status, options.message);
@@ -50,5 +57,6 @@ export class GitHubApiError extends HttpError {
         this.errors = options.errors ?? [];
         this.retryAfter = options.retryAfter;
         this.githubMessage = options.githubMessage;
+        this.body = options.body;
     }
 }

@@ -14,6 +14,14 @@ closed:
 incomplete:
   en: Still reading this stack
 merged:
-  en: Merged
+  plural: count
+  en:
+    one: Merged
+    many: 'Merged · all {count} landed'
+merging:
+  plural: count
+  en:
+    one: 'Being merged · not merged yet'
+    many: 'Being merged · {count} going · not merged yet'
 reviewRequested:
   en: Your review on {requested} of {open} · {ready} ready

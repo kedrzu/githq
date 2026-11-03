@@ -55,7 +55,7 @@ export function createDraftIssueEdit(params: CreateDraftIssueEditParams): Edit {
         reference: project.title,
         subject: { kind: 'draftAdded', project: project.title, title },
         optimistic: { item: item => item, addedProjectItems: [pending] },
-        send: async sdk => {
+        send: async ({ sdk }) => {
             const answer = (await sdk.AddDraftIssue({ projectId: project.id, title, body })).addProjectV2DraftIssue
                 ?.projectItem;
             if (!answer || answer.content?.__typename !== 'DraftIssue') {

@@ -74,6 +74,8 @@ export async function listRunJobs(rest: GitHubRestRequester, params: ListRunJobs
             url: `${getRepositoryRestPath(nameWithOwner)}/actions/runs/${runId}/jobs`,
             query: { per_page: '100' },
             etag,
+            // Polled while a run goes: GitHub marks the answer cacheable for a minute, and with no ETag held the browser would serve it.
+            cache: 'no-store',
         });
         if (first.status === 304) {
             return { status: 304 };
@@ -83,7 +85,7 @@ export async function listRunJobs(rest: GitHubRestRequester, params: ListRunJobs
         const firstNextPageUrl = readNextPageUrl(first.headers);
         let nextPageUrl = firstNextPageUrl;
         while (nextPageUrl !== undefined) {
-            const page = await rest({ url: nextPageUrl });
+            const page = await rest({ url: nextPageUrl, cache: 'no-store' });
             jobs.push(...readJobs(page.status, page.payload));
             nextPageUrl = readNextPageUrl(page.headers);
         }

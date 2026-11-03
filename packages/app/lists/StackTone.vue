@@ -33,6 +33,10 @@ defineProps<{
   height: var(--stack-tone-icon-size, 12px);
 }
 
+.stackTone_accent {
+  color: $color-accent;
+}
+
 .stackTone_danger {
   color: $color-red;
 }

@@ -363,6 +363,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     <template #contextMenu="menu">
       <ItemContextMenu
         :ids="menu.ids"
+        :merge="menu.merge"
         @open="menu.open"
       />
     </template>

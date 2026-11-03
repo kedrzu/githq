@@ -105,6 +105,21 @@ test('follows the `Link` through every page, and keeps no ETag: the first pageâ€
     expect(requests[1]?.[0]).toBe(NEXT_URL);
 });
 
+test('every page stays out of the browserâ€™s HTTP cache: a running job would look unchanged for a minute', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const rest = restAnswering(
+        [
+            new Response(JSON.stringify({ jobs: [JOB] }), { headers: { link: `<${NEXT_URL}>; rel="next"` } }),
+            new Response(JSON.stringify({ jobs: [JOB] })),
+        ],
+        requests,
+    );
+
+    await listRunJobs(rest, PARAMS);
+
+    expect(requests.map(request => request[1]?.cache)).toEqual(['no-store', 'no-store']);
+});
+
 test('a run GitHub no longer has is gone, not a failure', async () => {
     const rest = restAnswering([Response.json({ message: 'Not Found' }, { status: 404 })]);
 

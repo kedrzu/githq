@@ -4,3 +4,9 @@ inSelection:
   en: Selected
 partlySelected:
   en: Partly selected
+merge:
+  en: Merge
+addToQueue:
+  en: Add to queue
+rebaseOnGitHub:
+  en: Rebase on GitHub

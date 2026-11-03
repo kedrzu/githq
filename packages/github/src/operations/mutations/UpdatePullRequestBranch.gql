@@ -1,0 +1,15 @@
+# Brings the base branch into the head (merging D12, PM20), only when the head is still the one the user saw:
+# GitHub refuses it once the branch moved since.
+mutation UpdatePullRequestBranch(
+    $pullRequestId: ID!
+    $expectedHeadOid: GitObjectID!
+    $updateMethod: PullRequestBranchUpdateMethod!
+) {
+    updatePullRequestBranch(
+        input: { pullRequestId: $pullRequestId, expectedHeadOid: $expectedHeadOid, updateMethod: $updateMethod }
+    ) {
+        pullRequest {
+            id
+        }
+    }
+}

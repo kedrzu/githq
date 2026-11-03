@@ -1,0 +1,36 @@
+checks:
+  en: Checks
+requiredFailed:
+  en: '{count} required failed'
+requiredRunning:
+  en: '{count} required running'
+otherFailed:
+  en: '{count} other failed'
+otherRunning:
+  en: '{count} other running'
+passed:
+  en: '{count} passed'
+skipped:
+  en: '{count} skipped'
+failedNotRequired:
+  plural: count
+  en:
+    one: "{count} failed that isn't required"
+    many: "{count} failed that aren't required"
+runningNotRequired:
+  plural: count
+  en:
+    one: "{count} running that isn't required"
+    many: "{count} running that aren't required"
+willRunAgain:
+  en: '{checks}, will run again'
+requiredCount:
+  en: '{count} required'
+requiredSection:
+  en: Required · {count}
+othersSection:
+  en: Others · {count}
+showAll:
+  en: Show all checks
+fold:
+  en: Fold the checks
