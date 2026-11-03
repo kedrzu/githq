@@ -1,4 +1,4 @@
-<!-- A commit's details, in the place of the list of branches and tags (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known. It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
+<!-- A commit's details, right of the graph (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known. It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
 <script lang="ts">
 /** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
 export const COMMIT_DETAILS_KEYS = {
@@ -350,12 +350,13 @@ function getParentKey(index: number) {
 </template>
 
 <style lang="scss" module="css">
-// D16: in the place of the list, wider than it (the graph keeps what is left).
+// D16: right of the graph, giving up width when the graph would have too little.
 .commitDetails {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
   flex-direction: column;
   width: 440px;
+  min-width: 0;
   min-height: 0;
   border-left: 1px solid $color-border;
 }

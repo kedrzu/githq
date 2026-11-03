@@ -1,4 +1,4 @@
-<!-- A repository's column in the column layout (git-client D14, CH4–CH6): its name opening its menu, whether it is private, the way to GitHub and "not tracked" when it is not (D20); its sections, each with its count and its key, which the caller handles; and under them what belongs to the section: the projects its listed items live in, or what the caller puts in (Commits' branches and tags). -->
+<!-- A repository's column in the column layout (git-client D14, CH4–CH6), filling the panel its holder gives it: its name opening its menu, whether it is private, the way to GitHub and "not tracked" when it is not (D20); its sections, each with its count and its key, which the caller handles; and under them what belongs to the section: the projects its listed items live in, or what the caller puts in (Commits' branches and tags). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -159,11 +159,10 @@ const sectionsWithIcons = computed(() =>
 <style lang="scss" module="css">
 .repositoryColumn {
   display: flex;
-  flex: none;
+  flex: 1;
   flex-direction: column;
-  width: 232px;
+  min-width: 0;
   min-height: 0;
-  border-right: 1px solid $color-border;
 }
 
 .repositoryColumn_head {

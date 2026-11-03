@@ -50,3 +50,5 @@ Append-only; one line per turn that settled something.
 - 2026-11-03 — Owner on the branch list: `↵` goes back to the graph (D12, CH15 redrawn), `↑`/`↓` through matches (D15, CH30),
   not on `FilterList`, all drawn tips ask for their state; the narrowest graph is two lanes (D17).
 - 2026-11-03 — Building the details: the body is read on opening (D13), no count of failing checks; CH16, CH18, CH20, CH27, CH40, CH41 follow.
+- 2026-11-03 — Owner: branches and tags always on the left, also in the tabs layout; the repository's column resizable and
+  one width with that list (D15, CH46); in the tabs layout the details on the right with the list staying (D16).

@@ -201,7 +201,7 @@ test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed le
     await expect(graph.refFilter).toBeFocused();
 });
 
-test("git-client D13, D16, CH18, CH27-CH29: Enter opens a commit's details in the list's place; J and P move through the graph with them, Shift+Enter opens its pull request over them, O opens GitHub and Esc closes in order", async ({
+test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens a commit's details right of it with the list staying; B goes to the filter and they stay; J and P move through the graph with them, Shift+Enter opens its pull request over them, O opens GitHub and Esc closes in order", async ({
     page,
     github,
 }) => {
@@ -212,12 +212,34 @@ test("git-client D13, D16, CH18, CH27-CH29: Enter opens a commit's details in th
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
     await expect(graph.rows).toHaveCount(6);
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+    await expect(graph.refList).toBeVisible();
 
     await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
-    await expect(graph.refList).toBeHidden();
     await expect(graph.details.getByRole('heading', { name: 'Parents' })).toBeVisible();
     await expect(graph.details).toContainText('Brings the release back.');
+
+    // List, graph, details, left to right.
+    await expect(graph.refList).toBeVisible();
+    const [list, rows, details] = await Promise.all([
+        graph.refList.boundingBox(),
+        graph.root.boundingBox(),
+        graph.details.boundingBox(),
+    ]);
+    if (!list || !rows || !details) {
+        throw new Error('The list, the graph and the details are not all on screen');
+    }
+
+    expect(list.x + list.width).toBeLessThanOrEqual(rows.x);
+    expect(rows.x + rows.width).toBeLessThanOrEqual(details.x);
+
+    // B: the filter, the details staying; Esc leaves the list first.
+    await page.keyboard.press('b');
+    await expect(graph.refFilter).toBeFocused();
+    await expect(graph.details).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(graph.root).toBeFocused();
+    await expect(graph.details).toBeVisible();
 
     // The second parent, selected in the graph.
     await page.keyboard.press('Shift+P');
@@ -252,6 +274,61 @@ test("git-client D13, D16, CH18, CH27-CH29: Enter opens a commit's details in th
     await expect(graph.details).toHaveCount(0);
     await expect(graph.refList).toBeVisible();
     await expect(graph.root).toBeFocused();
+});
+
+test('git-client D15, CH46: the left column is one width: dragged in tabs it is kept across a reload, and the column layout has it on every section; dragged there it is back in tabs, within 200 to 480 px', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1500, height: 800 });
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    const shell = await openTrackedWork(page, github, sample.world);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    const repository = new RepositoryScreenHarness(page);
+    await expect(graph.refList).toBeVisible();
+    const start = await graph.leftColumnEdgeX();
+
+    await graph.dragLeftColumnEdge(60);
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+
+    await page.reload();
+    await expect(graph.refList).toBeVisible();
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+
+    await page.goto('/settings?tab=display');
+    await new SettingsScreenHarness(page).repositoryLayout('Column').click();
+    // A repository opens on the section it was last on.
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    await expect(graph.refList).toBeVisible();
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+
+    await page.keyboard.press('1');
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 60);
+
+    // Past each limit it stops there: 280 + 60 less 400 is under the 200, and plus 400 is over the 480.
+    await graph.dragLeftColumnEdge(-400);
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start - 80);
+    await graph.dragLeftColumnEdge(600);
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(start + 200);
+
+    await graph.leftColumnEdge.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => graph.leftColumnEdgeX()).toBeLessThan(start + 200);
+    const byKey = await graph.leftColumnEdgeX();
+
+    await page.goto('/settings?tab=display');
+    await new SettingsScreenHarness(page).repositoryLayout('Tabs').click();
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('3');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    await expect(graph.refList).toBeVisible();
+    await expect.poll(() => graph.leftColumnEdgeX()).toBe(byKey);
 });
 
 test('CH38: an empty repository says it has no commits yet', async ({ page, github }) => {

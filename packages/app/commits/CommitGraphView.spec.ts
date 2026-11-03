@@ -357,7 +357,7 @@ test('D17, CH10: by default a tenth of the pane: the lanes past those that fit s
 
 test('D17: folded at any width the lanes stay continuous: each row ends where the next one starts', async () => {
     for (const share of [28 / 1200, 52 / 1200, 0.1]) {
-        const view = await mount({ commits: sampleHistory({ count: 400, seed: 7 }) }, String(share));
+        const view = await mount({ commits: sampleHistory({ count: 400, seed: 7 }) }, { keptShare: String(share) });
         const divider = page.getByRole('separator');
         await expect.poll(() => graphCells().length).toBeGreaterThan(15);
         expect(Number(divider.element().getAttribute('aria-valuenow'))).toBeLessThan(
@@ -427,7 +427,7 @@ test('D17: the arrows change the graph by a lane, as far as two lanes and every 
 });
 
 test('D17: a double-click on the divider forgets the share', async () => {
-    const view = await mount({ commits: parallelBranches(14) }, '0.05');
+    const view = await mount({ commits: parallelBranches(14) }, { keptShare: '0.05' });
     const divider = page.getByRole('separator', { name: 'Resize the commit graph' });
     await expect.element(divider).toHaveAttribute('aria-valuenow', '3');
 
@@ -446,14 +446,14 @@ test.each([
     ['a share of nothing', '0', '8'],
     ['more than the pane', '7', '8'],
 ])('D17: %s draws within range', async (_title, kept, lanes) => {
-    await mount({ commits: parallelBranches(14) }, kept);
+    await mount({ commits: parallelBranches(14) }, { keptShare: kept });
     await expect
         .element(page.getByRole('separator', { name: 'Resize the commit graph' }))
         .toHaveAttribute('aria-valuenow', lanes);
     expect(new Set(dotsX()).size).toBe(Number(lanes));
 });
 
-test("D15: below about 1,200 px of window the list is folded away; B opens it over the graph without taking the graph's width, Esc closes it and choosing does too", async () => {
+test("D15: below about 1,200 px of window the list is folded away; B opens it over the graph at the pane's left edge without taking the graph's width, Esc closes it and choosing does too, and so does opening a commit's details", async () => {
     await page.viewport(1100, 700);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(14) });
@@ -467,10 +467,21 @@ test("D15: below about 1,200 px of window the list is folded away; B opens it ov
     await expect.element(list).toBeVisible();
     await expect.element(filter()).toHaveFocus();
     expect(view.scroller().clientWidth).toBe(paneWidth);
+    const over = refList().element().getBoundingClientRect();
+    expect(over.left).toBe(view.scroller().getBoundingClientRect().left);
+    expect(over.width).toBe(280);
 
     await userEvent.keyboard('{Escape}');
     await expect.element(list).not.toBeInTheDocument();
     expect(document.activeElement).toBe(view.scroller());
+
+    await userEvent.keyboard('b');
+    filter().element().blur();
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    await expect.element(list).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
 
     await userEvent.keyboard('b');
     await userEvent.keyboard('branch-3{Enter}');
@@ -481,6 +492,152 @@ test("D15: below about 1,200 px of window the list is folded away; B opens it ov
     // Opened anew, without the filter it was left with.
     await userEvent.keyboard('b');
     await expect.element(filter()).toHaveValue('');
+});
+
+test('D15: on a wide window the list is left of the graph from the first draw, in a column of the default width', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({ commits: parallelBranches(4) });
+
+    await expect.element(refList()).toBeVisible();
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    const list = refList().element().getBoundingClientRect();
+    const graph = view.scroller().getBoundingClientRect();
+    expect(list.right).toBeLessThanOrEqual(graph.left);
+    expect(list.left).toBe(0);
+    expect(getComputedStyle(refList().element()).position).toBe('static');
+});
+
+test('D15: refs arriving on a first open bring the column and the list; a repository without any gives the graph the pane', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const answered = createPromise();
+    const view = await mount({
+        commits: parallelBranches(4),
+        firstOpen: true,
+        holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
+    });
+    await expect.element(page.getByText('Loading commits…')).toBeVisible();
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).not.toBeInTheDocument();
+    expect(view.scroller().clientWidth).toBe(1200);
+
+    answered.resolve();
+    await expect.element(refList()).toBeVisible();
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
+    expect(refList().element().getBoundingClientRect().right).toBeLessThanOrEqual(
+        view.scroller().getBoundingClientRect().left,
+    );
+});
+
+test('D15, D16: crossing 1,200 px moves one list, its filter kept, and leaves the graph as it was', async () => {
+    await page.viewport(1100, 700);
+    onTestFinished(() => page.viewport(414, 896));
+    const commits = Array.from({ length: 300 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    const view = await mount({
+        commits,
+        branches: [sampleCommitRef('main', 'c299'), sampleCommitRef('feat/a', 'c150')],
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+    const scroller = view.scroller();
+    await userEvent.keyboard('jjj');
+    scroller.scrollTop = 1000;
+
+    // Over the graph, narrow, with a filter typed: as wide, in the column, the same list with the same filter.
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('feat');
+    await expect.element(filter()).toHaveValue('feat');
+    const list = refList().element();
+    await page.viewport(1400, 800);
+    await expect.poll(() => getComputedStyle(refList().element()).position).toBe('static');
+    expect(refList().element()).toBe(list);
+    await expect.element(filter()).toHaveValue('feat');
+    expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(scroller.getBoundingClientRect().left);
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+
+    // The graph is the same element, with its scroll and cursor, and the keys on it stay there both ways.
+    expect(view.scroller()).toBe(scroller);
+    expect(scroller.scrollTop).toBe(1000);
+    scroller.focus();
+    await page.viewport(1100, 700);
+    await expect.element(refList()).not.toBeInTheDocument();
+    await expect.poll(() => scroller.clientWidth).toBe(1200);
+    expect(view.scroller()).toBe(scroller);
+    expect(scroller.scrollTop).toBe(1000);
+    expect(document.activeElement).toBe(scroller);
+
+    // Back again, the list is there, new.
+    await page.viewport(1400, 800);
+    await expect.element(refList()).toBeVisible();
+    await expect.element(filter()).toHaveValue('');
+    expect(refList().element().getBoundingClientRect().right).toBeLessThanOrEqual(
+        scroller.getBoundingClientRect().left,
+    );
+    expect(document.activeElement).toBe(scroller);
+    expect(scroller.scrollTop).toBe(1000);
+
+    // The cursor is where it was, its row drawn once in view.
+    scroller.scrollTop = 0;
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c296');
+});
+
+test('D15, D16: on a wide window Enter opens the details right of the graph with the list staying and the graph as it was; B focuses the filter and they stay; Esc leaves the list, the next closes them', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const commits = Array.from({ length: 300 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    const view = await mount({ commits, branches: [sampleCommitRef('main', 'c299')] });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+    const scroller = view.scroller();
+    const list = refList().element();
+    await userEvent.keyboard('jjj');
+    scroller.scrollTop = 1000;
+    scroller.focus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    await expect.poll(() => scroller.clientWidth).toBe(1200 - 280 - 440);
+    const panel = details().element().getBoundingClientRect();
+    expect(panel.left).toBeGreaterThanOrEqual(scroller.getBoundingClientRect().right);
+    expect(getComputedStyle(details().element()).position).toBe('static');
+    expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(scroller.getBoundingClientRect().left);
+    expect(view.scroller()).toBe(scroller);
+    expect(refList().element()).toBe(list);
+    expect(scroller.scrollTop).toBe(1000);
+    expect(document.activeElement).toBe(scroller);
+    await expect.element(details()).toHaveTextContent('Commit c296');
+
+    await userEvent.keyboard('b');
+    await expect.element(filter()).toHaveFocus();
+    await expect.element(details()).toBeVisible();
+
+    await userEvent.keyboard('ma{Escape}');
+    await expect.element(filter()).toHaveValue('');
+    expect(document.activeElement).toBe(scroller);
+    await expect.element(details()).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await expect.element(refList()).toBeVisible();
+    expect(document.activeElement).toBe(scroller);
+    expect(scroller.scrollTop).toBe(1000);
+});
+
+test('D15, D16: the kept width of 480 px on a 1,200 px window leaves the graph 240 px with the details open, the details giving up width', async () => {
+    await page.viewport(1200, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    // What a 1,200 px window leaves beside a 300 px sidebar: less than the column, the graph and the details want.
+    const view = await mount({ commits: parallelBranches(4) }, { keptColumnWidth: 480, width: 900 });
+    await expect.element(refList()).toBeVisible();
+    await expect.poll(() => refList().element().getBoundingClientRect().width).toBe(479);
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
+    await expect.poll(() => view.scroller().getBoundingClientRect().width).toBe(240);
+    expect(details().element().getBoundingClientRect().width).toBe(900 - 480 - 240);
+    expect(getComputedStyle(details().element()).position).toBe('static');
 });
 
 test("D17: the graph's share is of the pane without the list", async () => {
@@ -497,7 +654,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     await page.viewport(1500, 800);
     onTestFinished(() => page.viewport(414, 896));
     const target = columnTarget();
-    const view = await mount({ commits: parallelBranches(14) }, undefined, true);
+    const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: true });
     const list = target.querySelector.bind(target);
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
 
@@ -536,7 +693,7 @@ test('D15, CH42: with the list in the column, below 1,200 px of window the detai
     await page.viewport(1100, 800);
     onTestFinished(() => page.viewport(414, 896));
     const target = columnTarget();
-    const view = await mount({ commits: parallelBranches(14) }, undefined, true);
+    const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: true });
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
     const paneWidth = view.scroller().clientWidth;
 
@@ -553,17 +710,48 @@ test('D14: the layout changed while the graph is open, by another tab or device:
     onTestFinished(() => page.viewport(414, 896));
     const target = columnTarget();
     const inColumn = ref(false);
-    await mount({ commits: parallelBranches(14) }, undefined, inColumn);
+    const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: inColumn });
 
     await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
     expect(target.querySelector('[role="listbox"]')).toBeNull();
+    const list = refList().element();
 
     inColumn.value = true;
     await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(refList().element()).toBe(list);
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200);
 
     inColumn.value = false;
     await expect.poll(() => target.querySelector('[role="listbox"]')).toBeNull();
     await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+    expect(refList().element()).toBe(list);
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
+    expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(view.scroller().getBoundingClientRect().left);
+
+    // The column's panel is remounted between two visits: the list goes to the element there now.
+    target.remove();
+    const remounted = columnTarget();
+    inColumn.value = true;
+    await expect.poll(() => remounted.querySelector('[role="listbox"]')).not.toBeNull();
+});
+
+test('D14, D15: the layout changed with the list open over the graph: it moves to the column, the same list with its filter', async () => {
+    await page.viewport(1100, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const target = columnTarget();
+    const inColumn = ref(false);
+    await mount({ commits: parallelBranches(4) }, { refListInColumn: inColumn });
+    await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
+
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('branch');
+    const list = refList().element();
+
+    inColumn.value = true;
+    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(refList().element()).toBe(list);
+    expect(getComputedStyle(list).position).toBe('static');
+    await expect.element(filter()).toHaveValue('branch');
 });
 
 test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet, a third of the way down; Esc leaves cursor and scroll where they were', async () => {
@@ -601,7 +789,7 @@ test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet,
     expect(cursor()?.textContent).toContain('Commit c200');
 });
 
-test("D12, CH16: a ref whose commit is not loaded opens its details in the list's place, the graph staying and never taking the commit, with its pull request and CI; Esc lands on the graph, the list back cleared", async () => {
+test('D12, CH16: a ref whose commit is not loaded opens its details, the graph staying and never taking the commit, with its pull request and CI, and the list staying, cleared; Esc lands on the graph', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const old = sampleCommit('old', 1);
@@ -625,7 +813,8 @@ test("D12, CH16: a ref whose commit is not loaded opens its details in the list'
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
     await expect.element(details()).toHaveTextContent('Why it was released.');
     await expect.element(details().getByText('Passing')).toBeVisible();
-    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+    await expect.element(filter()).toHaveValue('');
     expect(cursor()?.textContent).toContain('Commit c2');
     expect(view.scroller().scrollTop).toBe(0);
     expect(document.activeElement).toBe(view.scroller());
@@ -635,7 +824,6 @@ test("D12, CH16: a ref whose commit is not loaded opens its details in the list'
     await expect.element(details()).not.toBeInTheDocument();
     expect(document.activeElement).toBe(view.scroller());
     expect(cursor()?.textContent).toContain('Commit c2');
-    await expect.element(filter()).toHaveValue('');
 });
 
 test("D12, CH42: in the column, with an unloaded tag's details open, choosing the ref on the cursor's commit brings the details to it and draws the cursor", async () => {
@@ -651,8 +839,7 @@ test("D12, CH42: in the column, with an unloaded tag's details open, choosing th
             kept: history,
             holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
         },
-        undefined,
-        true,
+        { refListInColumn: true },
     );
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
 
@@ -696,7 +883,7 @@ test("the commit that's open isn't read again by opening it again; a read that f
     await expect.poll(reads).toBe(4);
 });
 
-test("D16, CH18: Enter opens the details in the list's place at 440 px, the body arriving after; J and K follow, a click too; Esc brings the list back and focus to the graph", async () => {
+test('D16, CH18: Enter opens the details beside the list and the graph at 440 px, the body arriving after; J and K follow, a click too; Esc closes them and focus goes to the graph', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const answered = createPromise();
@@ -718,8 +905,9 @@ test("D16, CH18: Enter opens the details in the list's place at 440 px, the body
     // At once, from what the graph knows.
     await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
     await expect.element(details()).not.toHaveTextContent('The third, in detail.');
-    await expect.element(list).not.toBeInTheDocument();
-    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 440);
+    await expect.element(list).toBeVisible();
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280 - 440);
+    expect(details().element().getBoundingClientRect().width).toBe(440);
     answered.resolve();
     await expect.element(details()).toHaveTextContent('The third, in detail.');
 
@@ -1047,7 +1235,7 @@ test('CH41: the commit gone from the graph under open details stays readable and
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).not.toBeInTheDocument();
 });
 
-test('D15, D16: below about 1,200 px the details open over the graph, leaving its width alone, and Esc goes back to the graph', async () => {
+test("D15, D16: below about 1,200 px the details open over the graph at the pane's right edge, leaving its width alone, one over the graph at a time, and Esc goes back to the graph", async () => {
     await page.viewport(1100, 700);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(4) });
@@ -1057,7 +1245,17 @@ test('D15, D16: below about 1,200 px the details open over the graph, leaving it
     await userEvent.keyboard('{Enter}');
     await expect.element(details()).toBeVisible();
     expect(view.scroller().clientWidth).toBe(paneWidth);
+    expect(details().element().getBoundingClientRect().right).toBe(view.scroller().getBoundingClientRect().right);
 
+    // B closes them for the list; the keys off its filter, Esc is the list's and nothing is left under it.
+    await userEvent.keyboard('b');
+    await expect.element(filter()).toHaveFocus();
+    await expect.element(details()).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(filter()).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details()).toBeVisible();
     await userEvent.keyboard('{Escape}');
     await expect.element(details()).not.toBeInTheDocument();
     expect(document.activeElement).toBe(view.scroller());
@@ -1111,6 +1309,11 @@ function filter() {
     return page.getByRole('combobox', { name: 'Filter branches and tags' });
 }
 
+/** The list of branches and tags, wherever it renders. */
+function refList() {
+    return page.getByRole('region', { name: 'Branches and tags' });
+}
+
 /** The row under the cursor. */
 function cursor() {
     return document.querySelector('li[aria-current="true"]');
@@ -1153,28 +1356,44 @@ function parallelBranches(lanes: number) {
     return [...tips, sampleCommit('root', 1)];
 }
 
-/** The element a repository's column gives the list, 232 px wide as the column is. */
+/** The element a repository's column gives the list, 280 px wide as the column is by default. */
 function columnTarget() {
     const target = document.createElement('div');
     target.id = COMMIT_REF_LIST_TARGET_ID;
     target.style.display = 'flex';
     target.style.flexDirection = 'column';
-    target.style.width = '232px';
+    target.style.width = '280px';
     target.style.height = '600px';
     document.body.append(target);
     onTestFinished(() => target.remove());
     return target;
 }
 
-/**
- * Mounts the section over the real store and a GitHub holding `options`, 600 px tall, at the sample's moment, with
- * `keptShare` kept on this device as the graph's share of the pane.
- */
-async function mount(options: CommitGraphTestOptions, keptShare?: string, refListInColumn?: boolean | Ref<boolean>) {
+/** How `mount` places the section. */
+interface MountPlace {
+    /** Kept on this device as the graph's share of the pane. */
+    readonly keptShare?: string;
+    /** Kept on this device as the left column's width. */
+    readonly keptColumnWidth?: number;
+    /** A ref to change it while mounted. */
+    readonly refListInColumn?: boolean | Ref<boolean>;
+    /** What the section has of the window: 1,200 px when not given. */
+    readonly width?: number;
+}
+
+/** Mounts the section over the real store and a GitHub holding `options`, 600 px tall, at the sample's moment. */
+async function mount(
+    options: CommitGraphTestOptions,
+    { keptShare, keptColumnWidth, refListInColumn, width = 1200 }: MountPlace = {},
+) {
     const { container, store, github, setOnline, ready } = createCommitGraphTest(options);
     await ready;
     if (keptShare !== undefined) {
         container.resolve(Browser).localStorage.setItem(SHARE_KEY, keptShare);
+    }
+
+    if (keptColumnWidth !== undefined) {
+        container.resolve(LocalPreferences).getPanelWidth('repositoryColumn').value = keptColumnWidth;
     }
 
     const ensureStates = vi.spyOn(store, 'ensureStates');
@@ -1185,7 +1404,7 @@ async function mount(options: CommitGraphTestOptions, keptShare?: string, refLis
     });
     const host = document.createElement('div');
     host.style.display = 'flex';
-    host.style.width = '1200px';
+    host.style.width = `${width}px`;
     host.style.height = '600px';
     document.body.append(host);
 
