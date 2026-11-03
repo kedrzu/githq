@@ -1,0 +1,17 @@
+# A comment of a review thread. `bodyHTML` is what is shown: GitHub rendered and sanitized it, nothing here does.
+fragment ReviewThreadCommentFields on PullRequestReviewComment {
+    id
+    author {
+        login
+        avatarUrl
+    }
+    bodyHTML
+    createdAt
+    url
+    diffHunk
+    outdated
+    originalCommit {
+        oid
+        abbreviatedOid
+    }
+}

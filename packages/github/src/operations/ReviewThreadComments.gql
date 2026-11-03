@@ -1,0 +1,16 @@
+# The comments of a review thread after `$after`: those `PullRequestReviewThreads` leaves out of a long thread.
+query ReviewThreadComments($id: ID!, $after: String!) {
+    node(id: $id) {
+        ... on PullRequestReviewThread {
+            comments(first: 100, after: $after) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    ...ReviewThreadCommentFields
+                }
+            }
+        }
+    }
+}

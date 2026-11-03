@@ -3,11 +3,13 @@
 import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
+import { openDB } from 'idb';
 
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
 
 const FILE_LIST: ReviewKeptFileList = {
     id: 'PR_7',
@@ -26,6 +28,23 @@ const FILE_LIST: ReviewKeptFileList = {
     ],
 };
 
+const THREADS: readonly ReviewThread[] = [
+    {
+        id: 'T1',
+        path: 'secret.ts',
+        line: 1,
+        startLine: null,
+        originalLine: 1,
+        originalStartLine: null,
+        diffSide: 'RIGHT',
+        startDiffSide: null,
+        isOutdated: false,
+        isResolved: false,
+        subjectType: 'LINE',
+        comments: [],
+    },
+];
+
 test('what is written is read back by another tab; a login reads nothing of another login', async () => {
     const [alice, bob] = [uniqueLogin(), uniqueLogin()];
     const tab = ReviewBlobStore.create();
@@ -35,6 +54,23 @@ test('what is written is read back by another tab; a login reads nothing of anot
 
     expect(await ReviewBlobStore.create().read(alice, ['a1', 'a2'])).toEqual(new Map([['a1', 'secret']]));
     expect(await tab.read(bob, ['a1'])).toEqual(new Map());
+});
+
+test('a database of the layout before threads opens as an empty cache of the layout now', async () => {
+    const login = uniqueLogin();
+    const old = await openDB(getReviewBlobDatabaseName(login), 1, {
+        upgrade(db) {
+            db.createObjectStore('blobs', { keyPath: 'oid' });
+            db.createObjectStore('fileLists');
+        },
+    });
+    old.close();
+
+    const tab = ReviewBlobStore.create();
+
+    expect(await tab.readThreads(login, 'acme/web#7')).toBeUndefined();
+    await tab.writeThreads(login, 'acme/web#7', []);
+    expect(await tab.readThreads(login, 'acme/web#7')).toEqual([]);
 });
 
 test('deleting the local copy deletes the file contents with it, even while another tab holds them open — and no late write brings them back', async () => {
@@ -57,7 +93,7 @@ test('deleting the local copy deletes the file contents with it, even while anot
     expect(await tab.read(login, ['a1'])).toEqual(new Map());
 });
 
-test('file lists, resolutions and merge bases are per login, go with the local copy, and no late write brings them back', async () => {
+test('file lists, threads, resolutions and merge bases are per login, go with the local copy, and no late write brings them back', async () => {
     const [alice, bob] = [uniqueLogin(), uniqueLogin()];
     const tab = ReviewBlobStore.create();
     await tab.read(alice, []);
@@ -69,6 +105,7 @@ test('file lists, resolutions and merge bases are per login, go with the local c
     await tab.writeResolutions(alice, answers);
     await tab.writeMergeBase(alice, 'acme/web:b...h', 'fork');
     await tab.writeFileList(alice, 'acme/web/7', FILE_LIST);
+    await tab.writeThreads(alice, 'acme/web/7', THREADS);
 
     const another = ReviewBlobStore.create();
     expect(await another.readResolutions(alice, ['acme/web:c1:secret.ts', 'acme/web:c1:gone.ts', 'x'])).toEqual(
@@ -76,7 +113,9 @@ test('file lists, resolutions and merge bases are per login, go with the local c
     );
     expect(await another.readMergeBase(alice, 'acme/web:b...h')).toBe('fork');
     expect(await another.readFileList(alice, 'acme/web/7')).toEqual(FILE_LIST);
+    expect(await another.readThreads(alice, 'acme/web/7')).toEqual(THREADS);
     expect(await tab.readFileList(bob, 'acme/web/7')).toBeUndefined();
+    expect(await tab.readThreads(bob, 'acme/web/7')).toBeUndefined();
 
     await createIndexedDbPersistence().destroy(alice);
 
@@ -84,9 +123,11 @@ test('file lists, resolutions and merge bases are per login, go with the local c
     await expect(tab.writeResolutions(alice, answers)).rejects.toThrow();
     await expect(tab.writeMergeBase(alice, 'acme/web:b...h', 'fork')).rejects.toThrow();
     await expect(another.writeFileList(alice, 'acme/web/7', FILE_LIST)).rejects.toThrow();
+    await expect(another.writeThreads(alice, 'acme/web/7', THREADS)).rejects.toThrow();
     expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(alice));
 
     expect(await tab.readFileList(alice, 'acme/web/7')).toBeUndefined();
+    expect(await tab.readThreads(alice, 'acme/web/7')).toBeUndefined();
     expect(await tab.readMergeBase(alice, 'acme/web:b...h')).toBeUndefined();
     expect(await tab.readResolutions(alice, ['acme/web:c1:secret.ts'])).toEqual(new Map());
 });

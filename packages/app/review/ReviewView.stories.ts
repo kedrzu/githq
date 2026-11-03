@@ -139,6 +139,8 @@ function createFiles(
     return {
         list,
         files,
+        threads: [],
+        threadsState: { kind: 'ready' },
         listComplete: list.kind === 'ready',
         id: 'PR_1202',
         headRefOid: 'head',

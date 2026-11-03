@@ -8,7 +8,7 @@ import type { ReviewFile, ReviewFileCollapseReason, ReviewFileSizes } from './Re
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 
 /** How many unchanged lines show around a change. */
-const CONTEXT_LINES = 3;
+export const CONTEXT_LINES = 3;
 /** Nothing a path can hold, so a key's first part is always its file. */
 const KEY_SEPARATOR = '\0';
 /** A placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */

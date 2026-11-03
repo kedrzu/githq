@@ -41,6 +41,8 @@ import type { DiffLineRange } from './diff/buildDiffRows.js';
 import { ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
+import { readReviewThreads } from './threads/readReviewThreads.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
@@ -98,6 +100,17 @@ export type ReviewFileListState =
     /** GitHub says it doesn't exist, to this user at least: what was kept of it is not shown. Opening it again asks anew. */
     | { readonly kind: 'gone' };
 
+/** How far the reading of review threads is. Whatever it says, {@link PullRequestFiles.threads} holds what was last read. */
+export type ReviewThreadsState =
+    /** Nothing read yet, on disk or from GitHub. */
+    | { readonly kind: 'loading' }
+    /** Also what the disk held, while GitHub is being asked. */
+    | { readonly kind: 'ready' }
+    /** Opening the pull request again ({@link ReviewFiles.open}) tries it again. */
+    | { readonly kind: 'failed'; readonly error: Error }
+    /** GitHub's allowance ran out: they are read by themselves at `until`, epoch ms (D35). */
+    | { readonly kind: 'paused'; readonly until: number };
+
 /** A pull request's files for its review, and their contents as they arrive. Reactive, except for its methods. */
 export interface PullRequestFiles {
     readonly list: ReviewFileListState;
@@ -106,6 +119,12 @@ export interface PullRequestFiles {
      * until GitHub answers, then what it says. A failed reload leaves the list it had.
      */
     readonly files: readonly ReviewFile[];
+    /**
+     * Every review thread, in GitHub's order, replaced whole when read: a read never leaves some out. Read beside the
+     * list and not waited for: files don't wait for threads, nor threads for files.
+     */
+    readonly threads: readonly ReviewThread[];
+    readonly threadsState: ReviewThreadsState;
     /** Whether {@link files} is all GitHub lists. A failed read of a later page leaves it `false` and what came. */
     readonly listComplete: boolean;
     /** The pull request's node id, once the list is read. */
@@ -213,6 +232,7 @@ type PausedState = Extract<ReviewFileState, { kind: 'paused' }>;
 
 const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
+const THREADS_READY = { kind: 'ready' } as const;
 const NO_LINES: readonly DiffLineRange[] = [];
 
 /** Each side's blob: `null` for the side the file doesn't exist on. */
@@ -401,6 +421,8 @@ export const ReviewFiles = defineService({
             const lostViewedRef = shallowRef<ReadonlySet<string>>(new Set());
             const lostViewedNoticeRef = shallowRef(false);
             const hideViewedRef = shallowRef(false);
+            const threadsRef = shallowRef<readonly ReviewThread[]>([]);
+            const threadsStateRef = shallowRef<ReviewThreadsState>(LOADING);
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
@@ -416,6 +438,8 @@ export const ReviewFiles = defineService({
             let cancelResume: (() => void) | null = null;
             /** A pause stopped reading the list: it is read when the pause ends. */
             let listHeld = false;
+            /** A pause stopped reading the threads: they are read when the pause ends. */
+            let threadsHeld = false;
             /** A read under way has to be followed by one more: its pages were asked before what happened since. */
             let listAskedAgain = false;
             /** The files marked viewed when the list was last whole, on disk or in memory. */
@@ -423,6 +447,7 @@ export const ReviewFiles = defineService({
 
             const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
+            const threadsReader = createSingleRunner({ handler: readThreads });
 
             void load();
 
@@ -433,6 +458,12 @@ export const ReviewFiles = defineService({
                     },
                     get files() {
                         return filesRef.value;
+                    },
+                    get threads() {
+                        return threadsRef.value;
+                    },
+                    get threadsState() {
+                        return threadsStateRef.value;
                     },
                     get listComplete() {
                         return listCompleteRef.value;
@@ -839,6 +870,7 @@ export const ReviewFiles = defineService({
                         break;
                     case 'ready':
                         void listReader.execute();
+                        void threadsReader.execute();
                         break;
                     case 'loading':
                     case 'paused':
@@ -866,6 +898,9 @@ export const ReviewFiles = defineService({
                 filesRef.value = [];
                 listCompleteRef.value = false;
                 listRef.value = LOADING;
+                threadsHeld = false;
+                threadsRef.value = [];
+                threadsStateRef.value = LOADING;
                 versionRef.value++;
             }
 
@@ -875,6 +910,7 @@ export const ReviewFiles = defineService({
 
             async function load() {
                 listRef.value = LOADING;
+                void loadThreads();
                 const kept = await readFromDisk(() => blobs.readFileList(login, listKey));
                 if (dropped) {
                     return;
@@ -887,6 +923,66 @@ export const ReviewFiles = defineService({
                 }
 
                 await listReader.execute();
+            }
+
+            /** What the disk holds shows at once, what GitHub says follows. */
+            async function loadThreads() {
+                threadsStateRef.value = LOADING;
+                const kept = await readFromDisk(() => blobs.readThreads(login, listKey));
+                if (dropped) {
+                    return;
+                }
+
+                if (kept) {
+                    threadsRef.value = kept;
+                    threadsStateRef.value = THREADS_READY;
+                }
+
+                await threadsReader.execute();
+            }
+
+            async function readThreads() {
+                try {
+                    const threads = await readReviewThreads({
+                        ...repository,
+                        sdk: current.account.sdk,
+                        number: reference.number,
+                        assertMayAsk,
+                    });
+                    if (dropped) {
+                        return;
+                    }
+
+                    if (threads === null) {
+                        forgetThreads();
+                        return;
+                    }
+
+                    threadsRef.value = threads;
+                    threadsStateRef.value = THREADS_READY;
+                    keepOnDisk(() => blobs.writeThreads(login, listKey, threads));
+                } catch (error) {
+                    if (dropped) {
+                        return;
+                    }
+
+                    const pause = readPauseOf(error);
+                    if (pause) {
+                        threadsHeld = true;
+                        threadsStateRef.value = { kind: 'paused', until: pause.until };
+                    } else if (isPullRequestGone(error)) {
+                        forgetThreads();
+                    } else {
+                        logger.warn("Could not read a pull request's review threads", { error });
+                        threadsStateRef.value = { kind: 'failed', error: toError(error) };
+                    }
+                }
+            }
+
+            function forgetThreads() {
+                threadsRef.value = [];
+                threadsStateRef.value = THREADS_READY;
+                keepOnDisk(() => blobs.deleteThreads(login, listKey));
             }
 
             async function readListsAsked() {
@@ -942,6 +1038,7 @@ export const ReviewFiles = defineService({
                 listRef.value = { kind: 'gone' };
                 versionRef.value++;
                 keepOnDisk(() => blobs.deleteFileList(login, listKey));
+                forgetThreads();
             }
 
             /**
@@ -1833,6 +1930,10 @@ export const ReviewFiles = defineService({
                     listRef.value = pausedRef.value;
                 }
 
+                if (threadsStateRef.value.kind === 'paused') {
+                    threadsStateRef.value = pausedRef.value;
+                }
+
                 versionRef.value++;
                 cancelResume?.();
                 cancelResume = clock.schedule(() => {
@@ -1853,6 +1954,11 @@ export const ReviewFiles = defineService({
                     }
 
                     void listReader.execute();
+                }
+
+                if (threadsHeld) {
+                    threadsHeld = false;
+                    void threadsReader.execute();
                 }
 
                 const run = runRef.value;

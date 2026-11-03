@@ -7,12 +7,13 @@ import type { DBSchema } from 'idb';
 import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 
 import type { ReviewFile } from './ReviewFiles.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
 
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
-const REVIEW_BLOB_DATABASE_VERSION = 1;
+const REVIEW_BLOB_DATABASE_VERSION = 2;
 
 /**
- * The database of what `login`'s reviews keep: contents, file lists, paths and oids. `IndexedDbPersistence.destroy`
+ * The database of what `login`'s reviews keep: contents, file lists, review threads, paths and oids. `IndexedDbPersistence.destroy`
  * deletes it with the local copy, so whatever signs a user out — here, in another tab or by a token GitHub rejects —
  * takes their private files off the disk.
  */
@@ -51,6 +52,10 @@ export interface ReviewBlobStoreShape {
     readFileList(login: string, key: string): Promise<ReviewKeptFileList | undefined>;
     writeFileList(login: string, key: string, list: ReviewKeptFileList): Promise<void>;
     deleteFileList(login: string, key: string): Promise<void>;
+    /** A pull request's review threads as last read whole, by the same key as its list. */
+    readThreads(login: string, key: string): Promise<readonly ReviewThread[] | undefined>;
+    writeThreads(login: string, key: string, threads: readonly ReviewThread[]): Promise<void>;
+    deleteThreads(login: string, key: string): Promise<void>;
 }
 
 interface ReviewBlobDatabase extends DBSchema {
@@ -58,12 +63,13 @@ interface ReviewBlobDatabase extends DBSchema {
     resolutions: { key: string; value: ReviewKeptResolution };
     mergeBases: { key: string; value: string };
     fileLists: { key: string; value: ReviewKeptFileList };
+    threads: { key: string; value: readonly ReviewThread[] };
 }
 
 /**
  * What makes a review open without the network, on disk (D19) in a database per login: the contents of reviewed files
- * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files,
- * which does. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
+ * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files
+ * and review threads, which do. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
  * worth not downloading again. Nothing cleans it up yet but signing out.
  *
  * Only the `read` functions open the database, so they must be called only for the user signed in now. A connection
@@ -86,6 +92,9 @@ export const ReviewBlobStore = defineService({
             readFileList,
             writeFileList,
             deleteFileList,
+            readThreads,
+            writeThreads,
+            deleteThreads,
         };
 
         async function read(login: string, oids: readonly string[]) {
@@ -153,16 +162,37 @@ export const ReviewBlobStore = defineService({
             const db = await getOpen(login);
             await db.delete('fileLists', key);
         }
+
+        async function readThreads(login: string, key: string) {
+            const db = await connect(login);
+            return await db.get('threads', key);
+        }
+
+        async function writeThreads(login: string, key: string, threads: readonly ReviewThread[]) {
+            const db = await getOpen(login);
+            await db.put('threads', threads, key);
+        }
+
+        async function deleteThreads(login: string, key: string) {
+            const db = await getOpen(login);
+            await db.delete('threads', key);
+        }
     },
 });
 
 function openDatabase(login: string) {
     return openDB<ReviewBlobDatabase>(getReviewBlobDatabaseName(login), REVIEW_BLOB_DATABASE_VERSION, {
         upgrade(db) {
+            // Another layout: a cache, read again rather than carried over.
+            for (const store of db.objectStoreNames) {
+                db.deleteObjectStore(store);
+            }
+
             db.createObjectStore('blobs', { keyPath: 'oid' });
             db.createObjectStore('resolutions');
             db.createObjectStore('mergeBases');
             db.createObjectStore('fileLists');
+            db.createObjectStore('threads');
         },
     });
 }

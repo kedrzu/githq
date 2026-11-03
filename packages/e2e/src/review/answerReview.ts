@@ -50,7 +50,7 @@ const BASE_OID = 'base0000';
 const MERGE_BASE_OID = 'fork0000';
 
 /**
- * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), the merge base (the compare request),
+ * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), no review threads, the merge base (the compare request),
  * where renamed files came from, and the blobs (`ReviewBlobOids`, `ReviewBlobTexts`), an oid being made of its commit and
  * path. A file's failure is on its text alone, the query's other objects answered.
  */
@@ -99,6 +99,11 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             },
         };
     });
+    github.graphql('PullRequestReviewThreads', () => ({
+        repository: {
+            pullRequest: { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] } },
+        },
+    }));
     github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${HEAD_OID}`, () => ({
         status: 200,
         json: { merge_base_commit: { sha: MERGE_BASE_OID } },

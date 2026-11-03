@@ -124,7 +124,7 @@ const currentPath = computed(() => {
   const anchor = list.value?.anchor;
   return anchor ? getReviewRowPath(anchor.key) : (ordered.value[0]?.path ?? null);
 });
-const rows = useReviewRows({ files, ordered, layout, hideWhitespace, currentPath });
+const { rows } = useReviewRows({ files, ordered, layout, hideWhitespace, currentPath });
 const githubUrl = computed(() => {
   const { owner, name, number } = props.reference;
   return `https://github.com/${owner}/${name}/pull/${number}/files`;

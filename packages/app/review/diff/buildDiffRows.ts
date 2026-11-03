@@ -19,6 +19,16 @@ export interface DiffLineRange {
     readonly end: number;
 }
 
+/** Which version of a file a line number counts in. */
+export type DiffLineSide = keyof Pick<FileDiff, 'before' | 'after'>;
+
+/** A line of a file, on a side. */
+export interface DiffLine {
+    readonly side: DiffLineSide;
+    /** 1-based. */
+    readonly line: number;
+}
+
 /** One side of a split row. Its text is `FileDiff.before[line - 1]` on the left and `FileDiff.after[line - 1]` on the right. */
 export interface DiffCell {
     /** 1-based line number. */
@@ -192,6 +202,31 @@ export function addDiffLineRange(ranges: readonly DiffLineRange[], added: DiffLi
     }
 
     return merged;
+}
+
+/**
+ * The key of the row {@link buildDiffRows} shows a line in, in that layout, without building the rows: only a changed line's
+ * differs between the layouts, as split pairs it with its neighbour across. The line must be on a row, in no gap.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getDiffLineRowKey(diff: FileDiff, { side, line }: DiffLine, layout: DiffLayout): string {
+    const onBefore = side === 'before';
+    const block = diff.blocks.findLast(({ beforeStart, afterStart }) => (onBefore ? beforeStart : afterStart) < line);
+    const beforeStart = block?.beforeStart ?? 0;
+    const afterStart = block?.afterStart ?? 0;
+    const beforeEnd = block?.beforeEnd ?? 0;
+    const afterEnd = block?.afterEnd ?? 0;
+    if (block && line <= (onBefore ? beforeEnd : afterEnd)) {
+        const offset = line - 1 - (onBefore ? beforeStart : afterStart);
+        const paired = onBefore ? afterStart + offset : beforeStart + offset;
+        const across = layout === 'split' && paired < (onBefore ? afterEnd : beforeEnd) ? paired + 1 : null;
+        return onBefore ? getLineRowKey(line, across) : getLineRowKey(across, line);
+    }
+
+    return onBefore
+        ? getLineRowKey(line, line - beforeEnd + afterEnd)
+        : getLineRowKey(line - afterEnd + beforeEnd, line);
 }
 
 function createSplitRow(left: DiffCell | null, right: DiffCell | null): DiffSplitRow {

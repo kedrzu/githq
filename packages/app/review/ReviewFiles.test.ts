@@ -18,6 +18,7 @@ import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js
 import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
 const BASE_TIP = 'base-tip';
@@ -1539,6 +1540,126 @@ test('a refused request reads the list again after a read under way, whose pages
     expect(reads()).toBe(before + 2);
 });
 
+test('threads come through all their pages and every comment of a long thread, whatever the list is doing', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const threads = [threadOn('a.ts', 'T1', ['<p>one</p>', '<p>two</p>', '<p>three</p>']), threadOn('gone.ts', 'T2')];
+    github.setThreads(threads);
+    // The list and every blob stay unanswered: threads don't wait for them.
+    const hold = createSilentHold(
+        request => request.operation !== 'PullRequestReviewThreads' && request.operation !== 'ReviewThreadComments',
+    );
+    const { model } = open(uniqueLogin(), github, hold.hold);
+
+    await waitUntil(() => model.threads.length > 0, { timeoutMs: 2000 });
+
+    expect(model.threads).toEqual(threads);
+    expect(model.threadsState).toEqual({ kind: 'ready' });
+    expect(model.files).toEqual([]);
+    hold.release();
+});
+
+test('files do not wait for threads', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const hold = createSilentHold(request => request.operation === 'PullRequestReviewThreads');
+    const { model } = open(uniqueLogin(), github, hold.hold);
+
+    await settled(model);
+
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+    expect(model.threadsState).toEqual({ kind: 'loading' });
+    hold.release();
+});
+
+test('kept threads show at once on the next visit, GitHub then replacing them; a failed read leaves them, and opening again reads anew', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setThreads([threadOn('a.ts', 'T1')]);
+    const first = open(login, github);
+    await waitUntil(async () => (await ReviewBlobStore.create().readThreads(login, LIST_KEY)) !== undefined, {
+        timeoutMs: 2000,
+    });
+    expect(first.model.threads.map(thread => thread.id)).toEqual(['T1']);
+
+    github.setThreads([threadOn('a.ts', 'T2')]);
+    const hold = createSilentHold(request => request.operation === 'PullRequestReviewThreads');
+    const second = open(login, github, hold.hold);
+    await waitUntil(() => second.model.threads.length > 0, { timeoutMs: 2000 });
+    expect(second.model.threads.map(thread => thread.id)).toEqual(['T1']);
+    hold.release();
+    await waitUntil(() => second.model.threads[0]?.id === 'T2', { timeoutMs: 2000 });
+
+    await settled(second.model);
+    github.failNext('PullRequestReviewThreads');
+    github.setThreads([threadOn('a.ts', 'T3')]);
+    second.files.open(REFERENCE);
+    await waitUntil(() => second.model.threadsState.kind === 'failed', { timeoutMs: 2000 });
+    expect(second.model.threads.map(thread => thread.id)).toEqual(['T2']);
+
+    second.files.open(REFERENCE);
+    await waitUntil(() => second.model.threads[0]?.id === 'T3', { timeoutMs: 2000 });
+    expect(second.model.threadsState).toEqual({ kind: 'ready' });
+});
+
+test('with the allowance out threads are not asked for, and come by themselves when it is back', async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setThreads([threadOn('a.ts', 'T1')]);
+    github.rateLimit('PullRequestReviewThreads');
+    const { model, session } = open(uniqueLogin(), github);
+
+    await waitUntil(() => model.threadsState.kind === 'paused', { timeoutMs: 2000 });
+    expect(model.threads).toEqual([]);
+    const until = model.pausedUntil;
+    expect(until).not.toBeNull();
+    const asked = session.operations().filter(operation => operation === 'PullRequestReviewThreads').length;
+
+    github.rateLimit(null);
+    await session.clock.advance((until ?? 0) - session.clock.now());
+
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+    expect(model.threadsState).toEqual({ kind: 'ready' });
+    expect(session.operations().filter(operation => operation === 'PullRequestReviewThreads').length).toBe(asked + 1);
+});
+
+test('signing out empties the threads, and an answer arriving later neither shows nor reaches the disk', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.setThreads([threadOn('a.ts', 'T1')]);
+    const hold = createSilentHold(request => request.operation === 'PullRequestReviewThreads');
+    const { model, session } = open(login, github, hold.hold);
+    await waitUntil(() => session.operations().includes('PullRequestReviewThreads'), { timeoutMs: 2000 });
+
+    session.signOutFromAnotherTab();
+    hold.release();
+    await session.clock.advance(0);
+    await Promise.resolve();
+
+    expect(model.threads).toEqual([]);
+    expect(await ReviewBlobStore.create().readThreads(login, LIST_KEY)).toBeUndefined();
+});
+
+test('a pull request GitHub says is gone takes its kept threads with it', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setThreads([threadOn('a.ts', 'T1')]);
+    const { model, files } = open(login, github);
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+    await settled(model);
+
+    github.refuseNext('PullRequestReviewFiles', 'NOT_FOUND');
+    github.refuseNext('PullRequestReviewThreads', 'NOT_FOUND');
+    files.open(REFERENCE);
+
+    await waitUntil(() => model.list.kind === 'gone' && model.threads.length === 0, { timeoutMs: 2000 });
+    await waitUntil(async () => (await ReviewBlobStore.create().readThreads(login, LIST_KEY)) === undefined, {
+        timeoutMs: 2000,
+    });
+});
+
 interface TestFile {
     readonly path: string;
     readonly changeType: ReviewFile['changeType'];
@@ -1579,9 +1700,13 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     let head = HEAD;
     let base = BASE_TIP;
     let mergeBase = MERGE_BASE;
+    let threads: readonly TestThread[] = [];
 
     return {
         file,
+        setThreads: (next: readonly TestThread[]) => {
+            threads = next;
+        },
         blobAt,
         truncate: (text: string, cut: string) => truncated.set(oidOf(text), cut),
         failExpression: (expression: string | null) => {
@@ -1655,9 +1780,49 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
             case 'MarkFilesViewed':
                 markedViewed.push(request.variables);
                 return { data: {} };
+            case 'PullRequestReviewThreads':
+                return { data: answerThreads(request) };
+            case 'ReviewThreadComments':
+                return { data: answerThreadComments(request) };
             default:
                 return undefined;
         }
+    }
+
+    /** Pages of one thread, each thread's first page holding one comment. */
+    function answerThreads(request: TestGraphQLRequest) {
+        const start = Number(request.variables.after ?? 0);
+        const end = start + 1;
+        return {
+            repository: {
+                pullRequest: {
+                    reviewThreads: {
+                        pageInfo: { hasNextPage: end < threads.length, endCursor: String(end) },
+                        nodes: threads.slice(start, end).map(({ comments, ...thread }) => ({
+                            ...thread,
+                            comments: {
+                                pageInfo: { hasNextPage: comments.length > 1, endCursor: '1' },
+                                nodes: comments.slice(0, 1),
+                            },
+                        })),
+                    },
+                },
+            },
+        };
+    }
+
+    /** One comment a page. */
+    function answerThreadComments(request: TestGraphQLRequest) {
+        const start = Number(request.variables.after);
+        const comments = threads.find(thread => thread.id === request.variables.id)?.comments ?? [];
+        return {
+            node: {
+                comments: {
+                    pageInfo: { hasNextPage: start + 1 < comments.length, endCursor: String(start + 1) },
+                    nodes: comments.slice(start, start + 1),
+                },
+            },
+        };
     }
 
     function answerList(request: TestGraphQLRequest) {
@@ -1782,6 +1947,34 @@ function open(login: string, github: ReturnType<typeof createGitHub>, holdIf?: T
 type TestHold = (request: TestGraphQLRequest) => Promise<void> | null;
 type TestSession = ReturnType<typeof createTestSession>;
 
+type TestThread = ReviewThread;
+
+function threadOn(path: string, id: string, bodies: readonly string[] = ['<p>Why?</p>']): ReviewThread {
+    return {
+        id,
+        path,
+        line: 1,
+        startLine: null,
+        originalLine: 1,
+        originalStartLine: null,
+        diffSide: 'RIGHT',
+        startDiffSide: null,
+        isOutdated: false,
+        isResolved: false,
+        subjectType: 'LINE',
+        comments: bodies.map((bodyHTML, index) => ({
+            id: `${id}-${index}`,
+            author: { login: 'sofiab', avatarUrl: 'https://avatars.example/s' },
+            bodyHTML,
+            createdAt: '2026-11-02T10:00:00Z',
+            url: `https://github.com/acme/web/pull/7#${id}-${index}`,
+            diffHunk: '@@ -1 +1 @@\n+const a = 1;',
+            outdated: false,
+            originalCommit: { oid: 'c0ffee00', abbreviatedOid: 'c0ffee0' },
+        })),
+    };
+}
+
 function fileRow(path: string, changeType: ReviewFile['changeType']): ReviewFile {
     return { path, previousPath: null, changeType, additions: 1, deletions: 2, viewed: 'UNVIEWED' };
 }
@@ -1847,9 +2040,9 @@ function createSilentHold(applies: (request: TestGraphQLRequest) => boolean = ()
     };
 }
 
-/** What the review asked of GitHub: not who is signed in, which the session asks in its own time. */
+/** What the review asked of GitHub for its files: not who is signed in, which the session asks in its own time, nor threads, read beside them. */
 function reviewOperations(session: TestSession) {
-    return session.operations().filter(operation => operation !== 'Viewer');
+    return session.operations().filter(operation => operation !== 'Viewer' && operation !== 'PullRequestReviewThreads');
 }
 
 /** A query for the oids of a pull request's files, not of what collapses them. */

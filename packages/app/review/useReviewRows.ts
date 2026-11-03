@@ -12,6 +12,9 @@ import type { FileDiff } from './diff/computeFileDiff.js';
 import type { PullRequestFiles, ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import { createFileSyntax } from './syntax/createFileSyntax.js';
 import type { FileVersions } from './syntax/createFileSyntax.js';
+import { listGoneEntries, placeThreads } from './threads/placeThreads.js';
+import type { ThreadFileView, ThreadPlacement } from './threads/placeThreads.js';
+import type { ReviewThread } from './threads/ReviewThread.js';
 
 /** Options of {@link useReviewRows}. */
 export interface UseReviewRowsOptions {
@@ -24,6 +27,23 @@ export interface UseReviewRowsOptions {
     currentPath: MaybeRefOrGetter<string | null>;
 }
 
+/** Where the review threads show, as a new object whenever that changes. */
+export interface ReviewThreadPlacements {
+    /**
+     * Every thread of every file listed, shown or not, and of the files not listed once the list stops growing, by the path
+     * the thread names. In a file with no diff yet they are `inCollapsed`, until it has one.
+     */
+    readonly byFile: ReadonlyMap<string, readonly ThreadPlacement[]>;
+    /** The paths of `byFile` that are an entry of their own (D12). */
+    readonly goneEntries: readonly string[];
+}
+
+/** What {@link useReviewRows} returns. */
+export interface ReviewRows {
+    readonly rows: Readonly<ShallowRef<readonly ReviewRow[]>>;
+    readonly threadPlacements: Readonly<ShallowRef<ReviewThreadPlacements>>;
+}
+
 type ReadyState = Extract<ReviewFileState, { kind: 'ready' }>;
 type LinesContent = Extract<ReviewFileContent, { kind: 'lines' }>;
 
@@ -34,6 +54,13 @@ interface BuiltLines {
     readonly content: LinesContent;
 }
 
+/** A file's threads as placed on a diff, for as long as the same threads and lines expanded. */
+interface PlacedInDiff {
+    readonly threads: readonly ReviewThread[];
+    readonly expanded: readonly DiffLineRange[];
+    readonly placements: readonly ThreadPlacement[];
+}
+
 /** How long a turn of computing diffs may take before the browser gets to draw. */
 const COMPUTE_TURN_MS = 6;
 /** Rows are rebuilt at most this often while diffs are being computed: one rebuild is O(all the rows). */
@@ -42,6 +69,8 @@ const REBUILD_EVERY_MS = 32;
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
 const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
 const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
+const COLLAPSED_VIEW: ThreadFileView = { kind: 'collapsed' };
+const GONE_VIEW: ThreadFileView = { kind: 'gone' };
 
 /**
  * The review's flat rows, as a new plain array whenever what they show changes. Diffs are computed on the main thread a
@@ -49,8 +78,10 @@ const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
  * computed is a placeholder, like one not yet read. Each diff is kept by the file's content and the whitespace setting
  * and each file's rows by its diff, the layout and the lines expanded, so that a setting's second visit and a file's arrival compute only
  * what they must. Tokens are computed in a worker, in the same order: they change no row, only what a drawn one looks like.
+ * Threads are placed with each rebuild, like the rows it builds, and only of files that have threads, each kept by what it
+ * was placed on.
  */
-export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRef<readonly ReviewRow[]>> {
+export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     const clock = useService(Clock);
 
     const rows = shallowRef<readonly ReviewRow[]>([]);
@@ -59,15 +90,27 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
     const trimmedDiffs = new WeakMap<ReadyState, FileDiff>();
     const contents = new WeakMap<FileDiff, Partial<Record<DiffLayout, BuiltLines>>>();
     const syntax = createFileSyntax(findNextToTokenize);
+    const threadPlacements = shallowRef<ReviewThreadPlacements>({ byFile: new Map(), goneEntries: [] });
+    const placedInDiffs = new WeakMap<FileDiff, PlacedInDiff>();
+    const placedElsewhere = new WeakMap<readonly ReviewThread[], Map<ThreadFileView, readonly ThreadPlacement[]>>();
 
     let builtFrom: readonly ReviewFileContent[] = [];
     let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
     let builtFiles: readonly ReviewFile[] = [];
     let builtAt = Number.NEGATIVE_INFINITY;
     let cancelTurn: (() => void) | null = null;
+    let threadsByFile: { from: readonly ReviewThread[]; byFile: Map<string, ReviewThread[]> } | null = null;
 
     watch(
-        [() => toValue(options.files)?.version, () => toValue(options.ordered), () => toValue(options.layout)],
+        [
+            () => toValue(options.files)?.version,
+            () => toValue(options.ordered),
+            () => toValue(options.layout),
+            () => toValue(options.files)?.threads,
+            () => toValue(options.files)?.files,
+            () => toValue(options.files)?.listComplete,
+            () => toValue(options.files)?.listFailing,
+        ],
         () => {
             rebuild();
             scheduleTurn();
@@ -88,9 +131,10 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         syntax.dispose();
     });
 
-    return rows;
+    return { rows, threadPlacements };
 
     function rebuild() {
+        placeAllThreads();
         const files = toValue(options.ordered);
         const next = files.map(getContent);
         const reasons = files.map(getCollapseReason);
@@ -183,6 +227,83 @@ export function useReviewRows(options: UseReviewRowsOptions): Readonly<ShallowRe
         };
         byLayout[layout] = { expanded, expansionReset, content };
         return content;
+    }
+
+    function placeAllThreads() {
+        const files = toValue(options.files);
+        const threads = files?.threads ?? [];
+        if (threads.length === 0 && threadPlacements.value.byFile.size === 0) {
+            return;
+        }
+
+        if (threadsByFile?.from !== threads) {
+            const byPath = new Map<string, ReviewThread[]>();
+            for (const thread of threads) {
+                const fileThreads = byPath.get(thread.path);
+                if (fileThreads) {
+                    fileThreads.push(thread);
+                } else {
+                    byPath.set(thread.path, [thread]);
+                }
+            }
+
+            threadsByFile = { from: threads, byFile: byPath };
+        }
+
+        const listed = new Set(files?.files.map(file => file.path));
+        const listEnded = files != null && (files.listComplete || files.listFailing || files.pausedUntil !== null);
+        const byFile = new Map<string, readonly ThreadPlacement[]>();
+        for (const [path, fileThreads] of threadsByFile.byFile) {
+            // Not gone yet, while a later page may yet list it.
+            if (listed.has(path) || listEnded) {
+                byFile.set(path, placeFileThreads(path, fileThreads, listed.has(path)));
+            }
+        }
+
+        const published = threadPlacements.value.byFile;
+        if (byFile.size !== published.size || [...byFile].some(([path, placed]) => published.get(path) !== placed)) {
+            threadPlacements.value = { byFile, goneEntries: listGoneEntries(byFile) };
+        }
+    }
+
+    function placeFileThreads(path: string, threads: readonly ReviewThread[], listed: boolean) {
+        if (!listed) {
+            return placeElsewhere(GONE_VIEW, threads);
+        }
+
+        const state = toValue(options.files)?.getState(path);
+        const diff = state?.kind === 'ready' ? getDiffs().get(state) : undefined;
+        if (!diff || toValue(options.files)?.getCollapse(path) != null) {
+            return placeElsewhere(COLLAPSED_VIEW, threads);
+        }
+
+        const expanded = toValue(options.files)?.getExpandedLines(path) ?? [];
+        const held = placedInDiffs.get(diff);
+        if (held?.threads === threads && held.expanded === expanded) {
+            return held.placements;
+        }
+
+        const start = performance.now();
+        const placements = placeThreads({ kind: 'open', diff, expanded }, threads);
+        performance.measure(`review:threads ${path}`, { start, end: performance.now() });
+        placedInDiffs.set(diff, { threads, expanded, placements });
+        return placements;
+    }
+
+    function placeElsewhere(view: ThreadFileView, threads: readonly ReviewThread[]) {
+        let placed = placedElsewhere.get(threads);
+        if (!placed) {
+            placed = new Map();
+            placedElsewhere.set(threads, placed);
+        }
+
+        let placements = placed.get(view);
+        if (!placements) {
+            placements = placeThreads(view, threads);
+            placed.set(view, placements);
+        }
+
+        return placements;
     }
 
     function scheduleTurn() {
