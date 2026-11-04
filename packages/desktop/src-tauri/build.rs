@@ -9,6 +9,7 @@ fn main() {
             "device_start",
             "device_finish",
             "open_external",
+            "read_job_log",
             "update_status",
             "update_restart",
         ]),

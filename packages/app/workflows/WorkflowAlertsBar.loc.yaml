@@ -1,0 +1,8 @@
+alertsOn:
+  en: Alerts on
+nothing:
+  en: Nothing. Failures here never mark this repository broken.
+defaultBranch:
+  en: default branch
+settings:
+  en: Alert settings

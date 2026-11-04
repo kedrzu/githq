@@ -1,22 +1,27 @@
-<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m") and its last result ("failed 14m ago"). Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
+<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more; "pull requests" for one only pull requests ran), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m", "Failed on v0.1.0-rc.3, a tag without alerts", "1 of the last 5 failed") and its last result ("failed 14m ago"). A repository's Workflows tab gives the standing its state alone does not tell, and the runs to show. Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitBranch, Tag } from 'lucide-vue-next';
+import { CircleCheck, CircleDashed, CircleSlash, CircleX, GitPullRequest } from 'lucide-vue-next';
 import { computed, useId } from 'vue';
 
 import { formatAge } from '@/utils/formatAge.js';
-import { formatLocalDate } from '@/utils/formatLocalDate.js';
+import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
 import RunStrip from './RunStrip.vue';
-import { getRunVerdict } from './utils/getRunVerdict.js';
+import { useDescribeRunWhen } from './useDescribeRunWhen.js';
+import { getStandingVerdict } from './utils/getStandingVerdict.js';
+import WorkflowRefLabel from './WorkflowRefLabel.vue';
 import * as l from './WorkflowRow.loc.js';
-import type { WorkflowRowRef, WorkflowState } from './WorkflowTypes.js';
+import type { WorkflowRowRef, WorkflowRowStanding, WorkflowState } from './WorkflowTypes.js';
 
 const props = withDefaults(
   defineProps<{
     workflow: WorkflowState;
+    /** `owner/name`, whose runs its strip's ticks open. */
+    nameWithOwner: string;
     /** Epoch ms the ages are counted to. */
     now: number;
     /** The ref or pattern the row names; `null` names none. */
@@ -26,32 +31,44 @@ const props = withDefaults(
     /** `owner/name`, on the cross-repository screen; a repository's own tab names none. */
     repository?: string | null;
     selected?: boolean;
+    /** Where a repository's Workflows tab places it beyond its state; `null`: as its state says. */
+    standing?: WorkflowRowStanding | null;
+    /** The runs its strip shows, oldest first; `null`: those on the refs with alerts. */
+    runs?: readonly GitHubWorkflowRun[] | null;
+    /** Whether its runs are unfolded under it; `null` for a row that does not unfold. */
+    expanded?: boolean | null;
   }>(),
-  { moreRefCount: 0, repository: null, selected: false },
+  { moreRefCount: 0, repository: null, selected: false, standing: null, runs: null, expanded: null },
 );
 
 const emit = defineEmits<{
-  /** The row was clicked or its button pressed: the caller opens the workflow's latest failed run, or the workflow. */
+  /** The row was clicked or its button pressed: the caller opens the workflow's latest failed run, or its runs. */
   open: [];
 }>();
 
 interface RowLook {
   readonly icon: LucideIcon;
-  readonly tone: 'muted' | 'new' | 'passing' | 'quiet';
+  /** `aside`: a grey icon, the status in the row's own colour. */
+  readonly tone: 'aside' | 'muted' | 'new' | 'passing' | 'quiet';
   readonly status: string;
 }
 
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
-const WEEK = 7 * DAY;
 /** From three weeks on a break is counted in weeks: "Broken for 19 days", then "Broken for 3 weeks". */
 const WEEKS_FROM = 3;
 
 const t = useTranslate();
+const describeRunWhen = useDescribeRunWhen();
 const id = useId();
 
+const runs = computed(() => props.runs ?? props.workflow.lastRuns);
 const look = computed((): RowLook => {
-  const { workflow } = props;
+  const { workflow, standing } = props;
+  if (standing) {
+    return getStandingLook(standing);
+  }
+
   switch (workflow.state) {
     case 'broken':
       return {
@@ -72,21 +89,66 @@ const look = computed((): RowLook => {
 const lastResult = computed(() => {
   const { workflow } = props;
   if (workflow.state === 'broken' && workflow.latestFailedRun) {
-    return t(l.failedWhen, { when: describeWhen(workflow.latestFailedRun.createdAt) });
+    return t(l.failedWhen, { when: describeRunWhen(workflow.latestFailedRun.createdAt, props.now) });
   }
 
   const withVerdict =
-    workflow.state === 'disabled' ? null : workflow.lastRuns.findLast(run => getRunVerdict(run) !== null);
+    workflow.state === 'disabled' ? null : runs.value.findLast(run => getStandingVerdict(run) !== null);
   if (withVerdict) {
-    const when = describeWhen(withVerdict.createdAt);
-    return getRunVerdict(withVerdict) === 'failed' ? t(l.failedWhen, { when }) : t(l.passedWhen, { when });
+    const when = describeRunWhen(withVerdict.createdAt, props.now);
+    return getStandingVerdict(withVerdict) === 'failed' ? t(l.failedWhen, { when }) : t(l.passedWhen, { when });
   }
 
-  const latest = workflow.lastRuns.at(-1);
-  return latest ? t(l.lastRanWhen, { when: describeWhen(latest.createdAt) }) : null;
+  const latest = runs.value.at(-1);
+  return latest ? t(l.lastRanWhen, { when: describeRunWhen(latest.createdAt, props.now) }) : null;
 });
 // A break's failures are news for its first day; every other failure in the strip is quiet.
 const newSince = computed(() => (props.workflow.isNew ? props.workflow.breakStartedAt : null));
+/** The ref cell's label: the ref or pattern, or "pull requests" for one only pull requests ran. */
+const refCell = computed(() => {
+  if (props.standing?.kind === 'pullRequestsOnly') {
+    return { kind: 'pullRequests' as const, name: t(l.pullRequests), text: true };
+  }
+
+  const { gitRef } = props;
+  return gitRef ? { kind: gitRef.kind, name: gitRef.name, text: false } : null;
+});
+
+function getStandingLook(standing: WorkflowRowStanding): RowLook {
+  switch (standing.kind) {
+    case 'pullRequestsOnly':
+      return {
+        icon: GitPullRequest,
+        tone: 'muted',
+        status:
+          standing.failedCount > 0
+            ? t(l.pullRequestsFailed, { failed: standing.failedCount, count: runs.value.length })
+            : t(l.pullRequestsPassed, { count: runs.value.length }),
+      };
+    case 'noAlerts':
+      if (standing.alertsOff) {
+        return { icon: CircleDashed, tone: 'muted', status: t(l.failingAlertsOff) };
+      }
+
+      if (standing.ref === null) {
+        return { icon: CircleDashed, tone: 'muted', status: t(l.failingWithoutAlerts) };
+      }
+
+      return standing.ref.kind === 'tag'
+        ? { icon: CircleDashed, tone: 'aside', status: t(l.failedOnTag, { ref: standing.ref.name }) }
+        : { icon: CircleDashed, tone: 'muted', status: t(l.failingOnBranch) };
+    case 'passing':
+      return { icon: CircleCheck, tone: 'passing', status: withRunning(t(l.passing)) };
+    case 'notKnown':
+      return {
+        icon: CircleDashed,
+        tone: 'muted',
+        status: standing.reading ? t(l.reading) : withRunning(t(l.noVerdictYet)),
+      };
+    default:
+      return assertNever(standing);
+  }
+}
 
 function describeBreak() {
   const { breakStartedAt, breakStartKnown } = props.workflow;
@@ -95,22 +157,26 @@ function describeBreak() {
   }
 
   const elapsed = props.now - breakStartedAt;
+  if (breakStartKnown && elapsed < MINUTE) {
+    return t(l.brokenJustNow);
+  }
+
   if (elapsed < DAY) {
     const age = formatAge(breakStartedAt, props.now);
     return breakStartKnown ? t(l.brokenFor, { age }) : t(l.brokenForOrMore, { age });
   }
 
-  const weeks = Math.floor(elapsed / WEEK);
+  const weeks = getElapsedUnit(elapsed, ['week'])?.count ?? 0;
   if (weeks >= WEEKS_FROM) {
     return t(breakStartKnown ? l.brokenForWeeks : l.brokenForWeeksOrMore, { count: weeks });
   }
 
-  const days = Math.floor(elapsed / DAY);
+  const days = getElapsedUnit(elapsed, ['day'])?.count ?? 0;
   return t(breakStartKnown ? l.brokenForDays : l.brokenForDaysOrMore, { count: days });
 }
 
 function withRunning(status: string) {
-  const running = props.workflow.runningRun;
+  const running = runs.value.findLast(run => run.status !== 'completed');
   if (!running) {
     return status;
   }
@@ -120,11 +186,6 @@ function withRunning(status: string) {
     number: running.runNumber,
     age: formatAge(Date.parse(running.createdAt), props.now),
   });
-}
-
-function describeWhen(createdAt: string) {
-  const at = Date.parse(createdAt);
-  return props.now - at < DAY ? t(l.ago, { age: formatAge(at, props.now) }) : formatLocalDate(at);
 }
 </script>
 
@@ -140,6 +201,7 @@ function describeWhen(createdAt: string) {
         type="button"
         :class="[css.workflowRow_name, workflow.state === 'disabled' && css.workflowRow_name_muted]"
         :aria-current="selected ? 'true' : undefined"
+        :aria-expanded="expanded ?? undefined"
         :aria-describedby="`${id}-status ${id}-result`"
         @click="emit('open')"
       >
@@ -157,13 +219,12 @@ function describeWhen(createdAt: string) {
       >{{ repository }}</span
     >
     <span :class="css.workflowRow_refCell">
-      <template v-if="gitRef">
-        <component
-          :is="gitRef.kind === 'tag' ? Tag : GitBranch"
-          :class="css.workflowRow_refIcon"
-          aria-hidden="true"
+      <template v-if="refCell">
+        <WorkflowRefLabel
+          :name="refCell.name"
+          :kind="refCell.kind"
+          :text="refCell.text"
         />
-        <span :class="css.workflowRow_ref">{{ gitRef.name }}</span>
         <span
           v-if="moreRefCount > 0"
           :class="css.workflowRow_moreRefs"
@@ -173,7 +234,8 @@ function describeWhen(createdAt: string) {
     </span>
     <RunStrip
       :class="css.workflowRow_strip"
-      :runs="workflow.lastRuns"
+      :name-with-owner="nameWithOwner"
+      :runs="runs"
       :new-since="newSince"
     />
     <span
@@ -204,10 +266,8 @@ function describeWhen(createdAt: string) {
   }
 }
 
-.workflowRow_selected,
-.workflowRow_selected:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.workflowRow_selected {
+  @include row-selected;
 }
 
 .workflowRow_icon {
@@ -228,7 +288,8 @@ function describeWhen(createdAt: string) {
   color: $color-green;
 }
 
-.workflowRow_icon_muted {
+.workflowRow_icon_muted,
+.workflowRow_icon_aside {
   color: $color-fg-3;
 }
 
@@ -308,26 +369,10 @@ function describeWhen(createdAt: string) {
   min-width: 0;
 }
 
-.workflowRow_refIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  color: $color-fg-3;
-}
-
-.workflowRow_ref {
-  overflow: hidden;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .workflowRow_moreRefs {
   flex: none;
   font-family: $font-family-mono;
-  font-size: 11px;
+  font-size: $font-size-3xs;
   color: $color-fg-dim;
 }
 

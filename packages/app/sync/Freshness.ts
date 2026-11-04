@@ -5,10 +5,16 @@
  * - `checking`: a poll is running and the last success is no longer fresh (while fresh, a running poll still
  *   reads `fresh`: the marker stays quiet);
  * - `stale`: the last success is older than expected — offline, requests failing (retried every interval), or
- *   a poll simply overdue (`late`), or GitHub refusing to say what changed for a reason that lasts (`refused`);
+ *   a poll simply overdue (`late`), GitHub refusing to say what changed for a reason that lasts (`refused`), or a
+ *   repository's workflows GitHub no longer lists, the last known ones staying on screen (`workflowsUnavailable`);
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
  * - `partial`: nothing was ever downloaded for it and the first download is under way;
+ * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
+ * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
+ * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
+ * - `statusChecked`: a run's page is showing a job still running, whose jobs GitHub last answered for at `checkedAt`
+ *   (actions W4j);
  * - `filling`: a first open's branches are being read down to the loaded history, `done` of `total` (git-client D19);
  * - `answered`: a saved view whose filter githq can't evaluate, answered by GitHub instead (K6) and refreshed more
  *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered;
@@ -28,10 +34,18 @@
 export type Freshness =
     | { readonly kind: 'fresh'; readonly checkedAt: number }
     | { readonly kind: 'checking'; readonly since: number }
-    | { readonly kind: 'stale'; readonly since: number | null; readonly reason: 'offline' | 'failing' | 'refused' }
+    | {
+          readonly kind: 'stale';
+          readonly since: number | null;
+          readonly reason: 'offline' | 'failing' | 'refused' | 'workflowsUnavailable';
+      }
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
     | { readonly kind: 'partial' }
+    | { readonly kind: 'reading'; readonly read: number; readonly total: number }
+    | { readonly kind: 'readingLog'; readonly job: string }
+    | { readonly kind: 'logFailed'; readonly job: string }
+    | { readonly kind: 'statusChecked'; readonly checkedAt: number }
     | { readonly kind: 'filling'; readonly done: number; readonly total: number }
     | { readonly kind: 'answered'; readonly term: string; readonly checkedAt: number | null }
     | {

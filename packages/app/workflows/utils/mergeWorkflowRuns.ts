@@ -1,9 +1,10 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 
+import type { WorkflowRefGroup } from '../WorkflowTypes.js';
 import { getRunVerdict } from './getRunVerdict.js';
-import { isRunCounted } from './isRunCounted.js';
-import type { IsRunCountedParams } from './isRunCounted.js';
-import { sortRunsByCreation } from './sortRunsByCreation.js';
+import { getStandingVerdict } from './getStandingVerdict.js';
+import { isRunInGroup } from './isRunInGroup.js';
+import { mergeRunsById } from './mergeRunsById.js';
 
 /** How many runs a workflow keeps: a strip shows 5, and the break's start is told from the runs since the last pass. */
 export const WORKFLOW_RUNS_KEPT = 20;
@@ -14,28 +15,41 @@ export interface MergeWorkflowRunsParams {
     readonly stored: readonly GitHubWorkflowRun[];
     /** The runs just read; where a run is in both, this copy wins — its status may have moved. */
     readonly read: readonly GitHubWorkflowRun[];
-    /** The refs that count, so the run that decides the workflow (actions D1) is never cut off. */
-    readonly counted: IsRunCountedParams;
+    /** The counted groups, so the run that decides each (actions D1) is never cut off. */
+    readonly groups: readonly WorkflowRefGroup[];
 }
 
 /**
  * A workflow's runs after a read: the kept and the read ones merged by id, the newest first by creation time, cut to
- * the latest {@link WORKFLOW_RUNS_KEPT} — or further back, to the latest counted run with a verdict, so a row of
- * cancelled runs cannot cut off the failure that keeps the workflow broken (actions D1).
+ * the latest {@link WORKFLOW_RUNS_KEPT} plus each group's latest run with a verdict, so neither a row of cancelled runs
+ * nor a busy ref elsewhere can cut off the failure that keeps a group broken (actions D1). What lies between goes: a
+ * break whose start is cut off with it says so ("3h+"), and no group's state changes. A run re-run keeps its id, so its
+ * new copy says nothing of how it ended: what the kept copy concluded goes along until the run has a verdict of its own (actions W4j): a cancelled re-run changes
+ * nothing.
  * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function mergeWorkflowRuns(params: MergeWorkflowRunsParams): GitHubWorkflowRun[] {
-    const byId = new Map<number, GitHubWorkflowRun>();
-    for (const run of params.stored) {
-        byId.set(run.id, run);
+    const kept = new Map(params.stored.map(run => [run.id, run]));
+    const runs = mergeRunsById([params.stored, params.read]).map(run =>
+        withConclusionBeforeRerun(run, kept.get(run.id)),
+    );
+    const decidingIds = new Set<number>();
+    for (const group of params.groups) {
+        const deciding = runs.find(run => getStandingVerdict(run) !== null && isRunInGroup(run, group));
+        if (deciding) {
+            decidingIds.add(deciding.id);
+        }
     }
 
-    for (const run of params.read) {
-        byId.set(run.id, run);
+    return runs.filter((run, index) => index < WORKFLOW_RUNS_KEPT || decidingIds.has(run.id));
+}
+
+function withConclusionBeforeRerun(run: GitHubWorkflowRun, kept: GitHubWorkflowRun | undefined): GitHubWorkflowRun {
+    if (!kept || (run.status === 'completed' && getRunVerdict(run) !== null)) {
+        return run;
     }
 
-    const runs = sortRunsByCreation([...byId.values()]).toReversed();
-    const decisive = runs.findIndex(run => getRunVerdict(run) !== null && isRunCounted(run, params.counted));
-    return runs.slice(0, Math.max(WORKFLOW_RUNS_KEPT, decisive + 1));
+    const conclusion = getRunVerdict(kept) === null ? kept.conclusionBeforeRerun : kept.conclusion;
+    return conclusion == null ? run : { ...run, conclusionBeforeRerun: conclusion };
 }

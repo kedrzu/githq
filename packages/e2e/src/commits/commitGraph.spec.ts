@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
@@ -51,7 +53,8 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
 
     // None of the list's tools; GitHub's own history a click away; the status bar tells how fresh the graph is.
     await expect(repository.groupingButton).toHaveCount(0);
-    await expect(page.getByRole('main').getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute(
+    // The header's tool, before the details' own, which opens the commit.
+    await expect(page.getByRole('main').getByRole('link', { name: 'Open on GitHub' }).first()).toHaveAttribute(
         'href',
         `https://github.com/${SAMPLE_REPOSITORY}/commits`,
     );
@@ -125,6 +128,7 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
     await expect(graph.rows).toHaveCount(6);
+    await closeDetails(page, graph);
     const every = await graph.divider.getAttribute('aria-valuemax');
     await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
 
@@ -135,6 +139,7 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await expect(graph.divider).not.toContainText('lanes');
     await page.reload();
     await expect(graph.rows).toHaveCount(6);
+    await closeDetails(page, graph);
     await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
 
     // Past every lane it goes no further.
@@ -150,7 +155,37 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
     await page.reload();
     await expect(graph.rows).toHaveCount(6);
+    await closeDetails(page, graph);
     await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
+});
+
+test("git-client D16: the details' width is the user's: dragged by their left edge it is kept across a reload, on its own and not the left column's, and the graph keeps 240 px", async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1500, height: 800 });
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    await openTrackedWork(page, github, sample.world);
+
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.details).toBeVisible();
+    await expect(graph.detailsHandle).toBeVisible();
+    await expect.poll(() => graph.detailsWidth()).toBe(440);
+    const column = await graph.leftColumnEdgeX();
+
+    await graph.dragDetailsHandle(-100);
+    await expect.poll(() => graph.detailsWidth()).toBe(540);
+    await page.reload();
+    await expect(graph.details).toBeVisible();
+    await expect.poll(() => graph.detailsWidth()).toBe(540);
+    expect(await graph.leftColumnEdgeX()).toBe(column);
+
+    // As wide as the graph lets it be, not wider.
+    await graph.dragDetailsHandle(-1000);
+    const rows = await graph.root.boundingBox();
+    expect(rows?.width).toBeGreaterThanOrEqual(240);
 });
 
 test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed letters stay in the field, Enter goes to the commit and Esc back to the graph', async ({
@@ -387,7 +422,7 @@ test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column 
     await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
     await expect(graph.refList).toBeVisible();
-    await expect(graph.details).toHaveCSS('position', 'static');
+    await expect(graph.details).toHaveCSS('position', 'relative');
 
     await page.keyboard.press('j');
     await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
@@ -449,4 +484,11 @@ function giveHistory(world: GitHubWorld, repository: string) {
         branches: { main: 'm4', 'release/1.0': 'r1', 'feat/login': 'f1' },
         tags: { 'v1.0.0': 'r1' },
     });
+}
+
+/** The details open from the start take width beside the graph: Esc gives it back. */
+async function closeDetails(page: Page, graph: CommitGraphHarness) {
+    await expect(graph.details).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(graph.details).toHaveCount(0);
 }

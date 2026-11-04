@@ -1,0 +1,60 @@
+next:
+  en: Next workflow
+previous:
+  en: Previous workflow
+open:
+  en: Open workflow
+otherRuns:
+  en: Other runs
+fold:
+  en: Fold
+alertSettings:
+  en: Alert settings
+openOnGitHub:
+  en: Open on GitHub
+openActionsSettings:
+  en: Open Actions settings on GitHub
+broken:
+  en: Broken
+pullRequestsOnly:
+  en: Pull requests only
+pullRequestsOnlyNote:
+  en: never counts
+noAlerts:
+  en: No alerts
+noAlertsNote:
+  en: failing only on branches and tags without alerts · P to change that
+noAlertsOffNote:
+  en: workflow alerts are off for this repository
+passing:
+  en: Passing
+notKnown:
+  en: Not known yet
+disabled:
+  en: Disabled
+disabledNote:
+  en: doesn't count
+soFar:
+  en: so far
+notReadTitle:
+  en: Not read yet
+notReadText:
+  en: githq hasn't read the workflows of {name} yet. They show up here as soon as the first read finishes.
+noWorkflowsTitle:
+  en: No workflows here, yet
+noWorkflowsText:
+  en: "{name} has nothing for Actions to run, so there's nothing to watch. Push a workflow and it shows up here within 3 minutes."
+noWorkflowsDetail:
+  en: ls .github/workflows/ → empty
+actionsOffTitle:
+  en: Actions is switched off here
+actionsOffText:
+  en: "{name} has Actions turned off, so GitHub lists no workflows or runs and there's nothing to read. It isn't counted in the total."
+actionsOffDetail:
+  en: 'actions: disabled'
+refusedTitle:
+  en: GitHub refused to list its workflows ({status})
+refusedText:
+  en: GitHub wouldn't show githq the workflows of {name}, so there's nothing to read. It isn't counted in the total.
+refusedDetail:
+  en: GET …/actions/workflows → {status}

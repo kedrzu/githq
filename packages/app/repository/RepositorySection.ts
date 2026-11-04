@@ -4,15 +4,16 @@ import type { Item } from '@/store/ItemTypes.js';
 
 /**
  * A section of a repository's view (D14), on its own key and tab: its issues or its pull requests, each a list with
- * its own state, grouping, layout and display options, or its commits, drawn as a graph (git-client D10).
+ * its own state, grouping, layout and display options, its commits, drawn as a graph (git-client D10), or, while it is
+ * tracked, its workflows (actions D6).
  */
-export type RepositorySection = RepositoryItemSection | 'commits';
+export type RepositorySection = RepositoryItemSection | 'commits' | 'workflows';
 
 /** A section listing the repository's items: the list engine, its options and the tracking explanation apply. */
 export type RepositoryItemSection = 'issues' | 'pullRequests';
 
 /** The sections in the order the tabs show them; the first is on `1`, the next on `2`, and so on. */
-export const REPOSITORY_SECTIONS: readonly RepositorySection[] = ['issues', 'pullRequests', 'commits'];
+export const REPOSITORY_SECTIONS: readonly RepositorySection[] = ['issues', 'pullRequests', 'commits', 'workflows'];
 
 /**
  * Whether the section lists items, so the item list's code paths run for it.
@@ -24,6 +25,7 @@ export function isItemSection(section: RepositorySection): section is Repository
         case 'pullRequests':
             return true;
         case 'commits':
+        case 'workflows':
             return false;
         default:
             return assertNever(section);

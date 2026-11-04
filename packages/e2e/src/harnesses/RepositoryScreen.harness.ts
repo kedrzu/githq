@@ -1,10 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues` and
- * `/owner/name/pulls`, and `/owner/name` opening one): the title opening its menu, the section tabs, the toolbar's
- * grouping and layout, its groups — named regions, or a board's columns — and their rows; untracked, the lines saying
- * what githq has of it (J3). In the column layout the same sections and title are in the column.
+ * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues`,
+ * `/owner/name/pulls` and `/owner/name/actions`, and `/owner/name` opening one): the title opening its menu, the section
+ * tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups — named regions, or a board's
+ * columns — and their rows; untracked, the lines saying what githq has of it (J3). In the column layout the same
+ * sections and title are in the column.
  */
 export class RepositoryScreenHarness {
     readonly page: Page;
@@ -32,14 +33,14 @@ export class RepositoryScreenHarness {
     }
 
     /** The section tab `name`, a toggle button pressed while it is shown; tracked, its count of open items follows. */
-    section(name: 'Commits' | 'Issues' | 'Pull requests'): Locator {
+    section(name: 'Commits' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
         return this.root
             .getByRole('group', { name: 'Sections' })
             .getByRole('button', { name: new RegExp(`^${name}\\b`) });
     }
 
     /** The pane's title in the column layout: the section's name. */
-    sectionTitle(name: 'Commits' | 'Issues' | 'Pull requests'): Locator {
+    sectionTitle(name: 'Commits' | 'Issues' | 'Pull requests' | 'Workflows'): Locator {
         return this.root.getByRole('heading', { name, level: 1 });
     }
 
@@ -76,5 +77,25 @@ export class RepositoryScreenHarness {
     /** The row titled `title`, in any group. */
     row(title: string): Locator {
         return this.root.getByRole('listitem').filter({ hasText: title });
+    }
+
+    /** A workflow's row button in the Workflows tab, by the workflow's name. */
+    workflow(name: string): Locator {
+        return this.root.getByRole('button', { name, exact: true });
+    }
+
+    /** The runs of the workflow `name` unfolded under its row (actions W3b): its ref filter and a button per run. */
+    runsOf(name: string): Locator {
+        return this.root.getByRole('group', { name: `Runs of ${name}`, exact: true });
+    }
+
+    /** The lines of the runs of the workflow `name` unfolded under its row. */
+    runLines(name: string): Locator {
+        return this.runsOf(name).locator('button[data-mark]');
+    }
+
+    /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
+    get alertsBar(): Locator {
+        return this.root.getByTestId('workflow-alerts-bar');
     }
 }

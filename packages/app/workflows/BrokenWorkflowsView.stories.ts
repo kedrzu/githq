@@ -139,7 +139,7 @@ export const NothingBroken: Story = {
     },
 };
 
-/** Nothing broken, and GitHub refused one repository's workflows: it stays out of the green. */
+/** Nothing broken, and GitHub refused one repository's workflows: it stays out of the green, which says 1 of 2. */
 export const NothingBrokenOneRefused: Story = {
     args: {
         broken: buildBrokenWorkflows([

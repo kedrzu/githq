@@ -126,13 +126,16 @@ $spacing-8: 8px;
 $spacing-9: 9px;
 $spacing-10: 10px;
 $spacing-12: 12px;
-// The inset of a repository's column, lining its head up with its rows' icons.
+// Around and between what a settings card's footer holds; the inset of a repository's column, lining its head up with
+// its rows' icons.
 $spacing-14: 14px;
 $spacing-16: 16px;
 $spacing-20: 20px;
 $spacing-24: 24px;
-// Above and below a screen of Settings.
+// Around a screen's empty state; above and below a screen of Settings.
 $spacing-32: 32px;
+$spacing-48: 48px;
+$spacing-96: 96px;
 
 $radius-sm: 4px;
 $radius-md: 6px;
@@ -169,6 +172,11 @@ $workflow-name-width: 230px;
 $workflow-repository-width: 130px;
 $workflow-ref-width: 130px;
 $workflow-row-height: 34px;
+// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`).
+$workflow-run-line-height: 30px;
+// What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
+// icon and the gap after it.
+$workflow-run-indent: 41px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
@@ -258,6 +266,43 @@ $landing-reveal-stagger: 80ms;
         outline: 2px solid $color-focus;
         outline-offset: 1px;
     }
+}
+
+// The selected row of a list: on hover too, with the accent's edge.
+@mixin row-selected {
+    &,
+    &:hover {
+        background: $color-sel;
+        box-shadow: inset 2px 0 0 $color-accent;
+    }
+}
+
+// A line of an unfolded workflow that is its own button: the whole line lights up, the ring stays inside it.
+@mixin workflow-line-button {
+    &:hover {
+        background: $color-bg-3;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $color-focus;
+        outline-offset: -2px;
+    }
+}
+
+// The marker of something broken on a line (actions W1): a red dot, which a caller may turn quiet.
+@mixin workflow-broken-marker {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: $color-red;
+    border-radius: 50%;
+}
+
+// A bar standing in for text on its way.
+@mixin placeholder-bar {
+    height: 10px;
+    background: $color-bg-3;
+    border-radius: $radius-sm;
 }
 
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.

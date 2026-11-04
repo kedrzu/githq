@@ -89,6 +89,21 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     // GitHub shows no such repository: the lines say how many others there are without a number.
     await expect(repository.notTracked('my/assigned')).toContainText('its other open issues are on GitHub.');
     await expect(page).toHaveURL('/my/assigned');
+
+    // Only a tracked repository has a Workflows tab (actions D4): an untracked one's is GitHub's page.
+    const actions = answerGitHubPage(github, '/acme/web/actions');
+    await page.goto('/acme/web/actions');
+    expect((await actions).href).toBe('https://github.com/acme/web/actions');
+    await expect(page).toHaveURL('https://github.com/acme/web/actions');
+    // Nor runs' pages: an untracked repository's run and its job are GitHub's too.
+    const run = answerGitHubPage(github, '/acme/web/actions/runs/1');
+    await page.goto('/acme/web/actions/runs/1');
+    expect((await run).href).toBe('https://github.com/acme/web/actions/runs/1');
+    await expect(page).toHaveURL('https://github.com/acme/web/actions/runs/1');
+    const job = answerGitHubPage(github, '/acme/web/actions/runs/1/job/2');
+    await page.goto('/acme/web/actions/runs/1/job/2');
+    expect((await job).href).toBe('https://github.com/acme/web/actions/runs/1/job/2');
+    await expect(page).toHaveURL('https://github.com/acme/web/actions/runs/1/job/2');
 });
 
 test("a tracked repository and its lists, a project and its saved view, the account and tracking open at GitHub's addresses", async ({
@@ -227,6 +242,11 @@ test('an address githq does not show leaves for the same address on github.com, 
         '/orgs/acme',
         '/acme/web/tree/main/src?plain=1#L3',
         '/acme/web/actions',
+        '/acme/web/actions/runs/1',
+        '/acme/web/actions/runs/1/job/2',
+        '/acme/web/actions/runs/1/usage',
+        '/acme/web/actions/runs/1/attempts/2',
+        '/acme/web/actions/workflows/ci.yml',
         '/notifications?query=mentioned',
         '/issues/created',
         '/settings/profile',

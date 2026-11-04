@@ -1,0 +1,72 @@
+title:
+  en: Workflow alerts
+description:
+  en: 'A workflow that fails on one of these branches or tags marks {name} broken: a red marker in the sidebar and one more in the total. Runs started by a pull request never do. The Workflows tab shows every workflow and run either way.'
+defaultBranch:
+  en: Default branch
+asGitHubReports:
+  en: as GitHub reports it
+off:
+  en: · off
+runsOnIt:
+  plural: count
+  en:
+    one: '{names} runs on it'
+    many: '{names} run on it'
+noRunsSeen:
+  en: githq hasn't seen a run on it lately
+notReadYet:
+  en: Its runs haven't been read yet.
+offWithRuns:
+  plural: count
+  en:
+    one: 'Failures on {name} raise no alert. {names} runs on it.'
+    many: 'Failures on {name} raise no alert. {names} run on it.'
+offNoRuns:
+  en: Failures on {name} raise no alert.
+offNotRead:
+  en: Failures on the default branch raise no alert.
+brokenCount:
+  en: '{count} broken'
+editPattern:
+  en: Edit {pattern}
+removePattern:
+  en: Remove {pattern}
+nothingTitle:
+  en: No alerts from {name}
+nothingText:
+  en: No failure here marks it broken in the sidebar or adds to the total. Its workflows and their runs all stay in the Workflows tab, failing or not.
+otherHeading:
+  en: Other branches and tags with recent runs, no alerts
+otherFailed:
+  en: '{workflow} failed {when}'
+otherPassed:
+  en: '{workflow} passed {when}'
+otherRan:
+  en: '{workflow} ran {when}'
+notRead:
+  en: githq hasn't read this repository's runs yet, so it can't show what anything matches. The settings apply all the same.
+move:
+  en: Move
+switch:
+  en: Switch
+edit:
+  en: Edit
+remove:
+  en: Remove
+add:
+  en: Add
+next:
+  en: Next branch or pattern
+previous:
+  en: Previous branch or pattern
+switchDefault:
+  en: Switch the default branch's alerts
+editSelected:
+  en: Edit the pattern
+removeSelected:
+  en: Remove the pattern
+addPattern:
+  en: Add a branch or tag pattern
+matchesNote:
+  en: 'Matches: branches and tags githq has seen runs on'

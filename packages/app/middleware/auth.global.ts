@@ -4,6 +4,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { resolveRouteAccess } from '@/auth/routeAccess.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { getRepositorySection, getRouteNameWithOwner, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { isHydratingServerHtml } from '@/utils/isHydratingServerHtml.js';
 
@@ -29,6 +30,19 @@ export default defineNuxtRouteMiddleware(async to => {
     // A list renders what was kept from the last session at once, before anything comes from GitHub.
     await items.ready();
     await tracking.ready();
+
+    // Only a tracked repository has a Workflows tab and runs' pages (actions D4): any other's address is GitHub's page,
+    // signed out too.
+    if (
+        ((to.name === 'repository' && getRepositorySection(to.params.section) === 'workflows') ||
+            isWorkflowRunRoute(to)) &&
+        !tracking.isTracked({ kind: 'repository', nameWithOwner: getRouteNameWithOwner(to) })
+    ) {
+        return navigateTo(
+            { name: 'github', params: { path: to.path.split('/').filter(Boolean) }, query: to.query, hash: to.hash },
+            { replace: true },
+        );
+    }
 
     const redirect = resolveRouteAccess(to, {
         signedIn: auth.signedIn,

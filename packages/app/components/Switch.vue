@@ -1,57 +1,55 @@
-<!-- An on/off that applies at once (reka-ui's `Switch`): the view options of a code review. Space or a click flips it; wrap it in a `label` with its text, or give it `label`. -->
+<!-- An on/off switch (`Switch`, `Switch / on`): a `role="switch"` button bound by `v-model`, named by `label` for screen readers — the visible words sit beside it, in the caller's layout. A click or Space flips it. -->
 <script lang="ts" setup>
-import { SwitchRoot, SwitchThumb } from 'reka-ui';
-
 defineProps<{
-  /** Its accessible name. */
+  /** Its accessible name ("Default branch"). */
   label: string;
 }>();
 
-const model = defineModel<boolean>({ required: true });
+const on = defineModel<boolean>({ required: true });
 </script>
 
 <template>
-  <SwitchRoot
-    v-model="model"
-    :class="css.switch"
+  <button
+    type="button"
+    role="switch"
+    :class="[css.switch, on && css.switch_on]"
+    :aria-checked="on"
     :aria-label="label"
+    @click="on = !on"
   >
-    <SwitchThumb :class="css.switch_thumb" />
-  </SwitchRoot>
+    <span :class="css.switch_knob" />
+  </button>
 </template>
 
 <style lang="scss" module="css">
 .switch {
   @include focus-ring;
 
-  position: relative;
+  display: inline-flex;
   flex: none;
+  align-items: center;
   width: 28px;
   height: 16px;
-  padding: 0;
+  padding: $spacing-2;
   cursor: pointer;
   background: $color-border-2;
-  border: 0;
+  border: none;
   border-radius: $radius-lg;
-  transition: background-color 0.12s;
-
-  &[data-state='checked'] {
-    background: $color-accent;
-  }
 }
 
-.switch_thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  display: block;
+.switch_knob {
   width: 12px;
   height: 12px;
-  background: $color-fg;
+  background: $color-fg-2;
   border-radius: 50%;
-  transition: transform 0.12s;
+  transition: transform 0.12s ease;
+}
 
-  &[data-state='checked'] {
+.switch_on {
+  background: $color-accent;
+
+  .switch_knob {
+    background: $color-button-light;
     transform: translateX(12px);
   }
 }
