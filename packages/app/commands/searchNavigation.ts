@@ -30,7 +30,7 @@ export interface NavigationPlace {
 /** What the menu finds places and items in: the local copy, nothing read from GitHub (instant). */
 export interface NavigationData {
     readonly places: readonly NavigationPlace[];
-    /** The tracked repositories (`owner/name`): one typed that is not opens its own screen (J3). */
+    /** The tracked repositories (`owner/name`): one typed that is not opens its own screen (J5). */
     readonly trackedRepositories: readonly string[];
     readonly items: readonly Item[];
 }
@@ -45,7 +45,7 @@ export type NavigationResult =
           readonly match: CommandMenuMatch | null;
       }
     | { readonly kind: 'item'; readonly score: number; readonly item: Item; readonly match: CommandMenuMatch }
-    /** `owner/name` typed of a repository not tracked: its screen (J3). */
+    /** `owner/name` typed of a repository not tracked: its screen (J5). */
     | { readonly kind: 'repository'; readonly score: number; readonly nameWithOwner: string };
 
 /** How many items the menu lists at most. */

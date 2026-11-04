@@ -1,8 +1,7 @@
-<!-- The screen of a repository or project not tracked (J3, J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). `headerless` where the caller's screen has already said all the header would (a repository's column, git-client D14). -->
+<!-- The screen of a project not tracked (J4, CH37): what concerns the user, the only part of it githq has — its group shown even when empty, with its count — then quiet lines saying so: the summary, and the caller's lines on where the rest is, pointing to Settings, the only place tracking starts (D15). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight } from 'lucide-vue-next';
-import type { LucideIcon } from 'lucide-vue-next';
+import { ArrowUpRight, SquareKanban } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
@@ -20,11 +19,10 @@ import * as l from './UntrackedView.loc.js';
 
 const props = withDefaults(
   defineProps<{
-    icon: LucideIcon;
-    /** A repository's `owner/name`, a project's title. */
+    /** The project's title. */
     name: string;
     /** Dim text after the name. */
-    meta?: string;
+    meta: string;
     githubUrl: string;
     /** What concerns the user, as listed. */
     rows: readonly ListRow<Item>[];
@@ -39,11 +37,8 @@ const props = withDefaults(
     openedId?: string | null;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
-    /** Without its header: the caller's screen holds the name, the chip and the way to GitHub. */
-    headerless?: boolean;
   }>(),
   {
-    meta: '',
     openedId: null,
     undone: () => new Map(),
   },
@@ -60,8 +55,6 @@ const selectedId = defineModel<string | null>('selectedId', { default: null });
 const checkedIds = defineModel<readonly string[]>('checkedIds', { default: () => [] });
 
 defineSlots<{
-  /** Beside the title: what narrows the list. */
-  controls?(): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
   /** The lines after the summary: where the rest is, and a link to Settings to track it. */
@@ -79,23 +72,16 @@ const groups = computed((): ListGroup<Item>[] => [
 <template>
   <div :class="css.untrackedView">
     <header
-      v-if="!headerless"
       :class="css.untrackedView_header"
       v-bind="WINDOW_DRAG_REGION"
     >
-      <component
-        :is="icon"
+      <SquareKanban
         :class="css.untrackedView_headerIcon"
         aria-hidden="true"
       />
       <h1 :class="css.untrackedView_title">{{ name }}</h1>
-      <span
-        v-if="meta"
-        :class="css.untrackedView_meta"
-        >{{ meta }}</span
-      >
+      <span :class="css.untrackedView_meta">{{ meta }}</span>
       <NotTrackedChip />
-      <slot name="controls" />
       <span :class="css.untrackedView_spacer" />
       <Button
         variant="ghost"
@@ -229,7 +215,7 @@ const groups = computed((): ListGroup<Item>[] => [
   color: $color-fg-2;
 }
 
-// Over the `link` button's own colour: the one way on from here, as J3 draws it.
+// Over the `link` button's own colour: the one way on from here, as J4 draws it.
 .untrackedView_rest a {
   color: $color-accent;
 }

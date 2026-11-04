@@ -91,7 +91,8 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
             add(group, { kind: 'command', id: command.id, command, match: found.match }, found.score);
         }
 
-        if (command.options && typed.length >= 2) {
+        // A search's options are its answers: only its own submenu asks for them.
+        if (command.options && !command.search && typed.length >= 2) {
             for (const { option, score, ranges } of findOptions(typed, command)) {
                 const match: CommandMenuMatch = { field: 'title', text: option.label, ranges };
                 // Above the action itself: the value is what was typed.

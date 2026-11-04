@@ -5,8 +5,18 @@ import type { Locator } from 'vitest/browser';
 
 import * as stories from './CommandMenu.stories.jsx';
 
-const { OnOpenItem, OnOpenItemAsContributor, Typing, SeveralSelected, Closed, MatchInHiddenWord } =
-    composeStories(stories);
+const {
+    OnOpenItem,
+    OnOpenItemAsContributor,
+    Typing,
+    SeveralSelected,
+    Closed,
+    MatchInHiddenWord,
+    SearchBeforeTyping,
+    SearchResults,
+    SearchAsking,
+    SearchNothingFound,
+} = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
 function getMarks(row: Locator) {
@@ -228,4 +238,55 @@ test('E5: above 5 words a line is still found, unmarked', async () => {
     const row = page.getByRole('option', { name: /^Retry Stripe webhook delivery on 5xx/u });
     await expect.element(row).toBeInTheDocument();
     expect(getMarks(row)).toEqual([]);
+});
+
+test('E7: before typing the search says to type, not that nothing matches, and offers nothing to open', async () => {
+    await SearchBeforeTyping.run();
+
+    await expect.element(page.getByRole('textbox', { name: 'Search GitHub for a repository…' })).toHaveFocus();
+    await expect.element(page.getByText('Type at least two characters')).toBeInTheDocument();
+    await expect.element(page.getByText('Nothing matches')).not.toBeInTheDocument();
+    await expect.element(page.getByText('Repositories on GitHub')).not.toBeInTheDocument();
+
+    // One character is still too short.
+    await userEvent.keyboard('v');
+    await expect.element(page.getByText('Type at least two characters')).toBeInTheDocument();
+    await expect.element(page.getByText('Asking GitHub…')).not.toBeInTheDocument();
+});
+
+test('E8: what GitHub answered is listed unfiltered and unmarked, though the typed letters are not in it', async () => {
+    await SearchResults.run();
+
+    const billing = page.getByRole('option', { name: /fitloop\/vite-plugin-billing/u });
+    await expect.element(billing).toHaveTextContent(/Billing pages as a Vite plugin\s*private/u);
+    await expect.element(page.getByRole('group', { name: 'Repositories on GitHub' })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}{Backspace}{Backspace}{Backspace}org:vitejs');
+    await expect.element(page.getByText('Asking GitHub…')).toBeInTheDocument();
+    const answered = page.getByRole('option', { name: /^vitejs\/vite/u });
+    await expect.element(answered).toBeInTheDocument();
+    expect(page.getByRole('option').elements()).toHaveLength(3);
+    expect(document.querySelectorAll('mark')).toHaveLength(0);
+});
+
+test('E9: asking says so under the heading', async () => {
+    await SearchAsking.run();
+
+    await expect.element(page.getByText('Asking GitHub…')).toBeInTheDocument();
+    await expect.element(page.getByText('Repositories on GitHub')).toBeInTheDocument();
+});
+
+test('E10: nothing found says what was asked, not that nothing matches', async () => {
+    await SearchNothingFound.run();
+
+    await expect.element(page.getByText('Nothing on GitHub matches "vitee"')).toBeInTheDocument();
+    await expect.element(page.getByText('Nothing matches', { exact: true })).not.toBeInTheDocument();
+});
+
+test("another action's submenu still filters what it offers", async () => {
+    await OnOpenItem.run();
+
+    await userEvent.keyboard('set stat{Tab}zzzz');
+    await expect.element(page.getByText('Nothing matches')).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'In review' })).not.toBeInTheDocument();
 });

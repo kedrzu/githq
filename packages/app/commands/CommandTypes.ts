@@ -62,6 +62,12 @@ export interface Command {
     readonly options?: () => CommandOptions;
     /** Called as its submenu opens: what it offers may still have to be read. */
     readonly prepare?: () => void;
+    /**
+     * Receives what is typed in its submenu, `''` as the submenu opens and once it is left, and maybe the same text
+     * twice: `options` is then what it answered. They are not filtered again, and the menu's top level does not look
+     * through them, so nothing is asked of anyone until the submenu is open.
+     */
+    readonly search?: (text: string) => void;
 }
 
 /** A submenu: what an action offers to pick. */
@@ -73,6 +79,14 @@ export interface CommandOptions {
     readonly note?: string;
     /** Picking one leaves the submenu open, to pick several one after another (items added to a project). */
     readonly several?: boolean;
+    /** The field's text while empty, in place of "Filter options…". */
+    readonly placeholder?: string;
+    /** The heading over the options, there too while none is listed. */
+    readonly heading?: string;
+    /** The line said while no option is listed, in place of "Nothing matches". */
+    readonly message?: string;
+    /** Quiet text at the footer's end: where the options come from. */
+    readonly hint?: string;
 }
 
 /** One thing a submenu offers. */
@@ -81,6 +95,8 @@ export interface CommandOption {
     readonly value: string;
     readonly label: string;
     readonly detail?: string;
+    /** Dim text at the line's end (a repository's visibility). */
+    readonly aside?: string;
     /** A colour dot, hex without `#`. */
     readonly color?: string;
     readonly avatarUrl?: string;

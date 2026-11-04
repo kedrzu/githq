@@ -98,7 +98,7 @@ export function answerEmptyRepositories(
     });
 }
 
-/** Answers looking a repository up by name to track it (J3, G10), as GitHub has it. */
+/** Answers looking a repository up by name to track it (G10), as GitHub has it. */
 export function answerRepositoryLookup(github: GitHubMock, repository: TrackingRepositoryParams): void {
     github.graphql('RepositoryForTracking', { repository: toNode(repository) });
 }

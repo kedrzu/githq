@@ -41,8 +41,6 @@ test('a tracked repository opens on its issues grouped by milestone, as a board 
     await page.keyboard.press('1');
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
     await expect(repository.groupingButton).toHaveText('Group: Issue type');
-    // Tracked, GitHub's counts of its open items are never asked: githq has them all.
-    expect(github.graphqlCalls.filter(call => call.name === 'RepositoryOpenCounts')).toEqual([]);
 });
 
 test("a repository's link opens the section it was left on, and its own address shows that section without a redirect", async ({
@@ -98,7 +96,7 @@ test("in a repository the user may only read, a section's board moves nothing", 
     expect(sample.world.edits).toEqual([]);
 });
 
-test('J3, CH37: an untracked repository holds only what concerns the user, says how many others are open on GitHub and offers no tracking; tracked in Settings, the rest of its items arrive', async ({
+test('D31, CH37: an untracked repository lists all of its open items, read from GitHub, and offers no button to track it; tracked in Settings, it is counted and kept', async ({
     page,
     github,
 }) => {
@@ -124,24 +122,18 @@ test('J3, CH37: an untracked repository holds only what concerns the user, says 
 
     await page.goto('/hubot/tools');
     await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.notTracked('hubot/tools')).toContainText(
-        'githq only has what concerns you in hubot/tools: 1 issue.',
-    );
-    await expect(repository.notTracked('hubot/tools')).toContainText(
-        'githq has only the issues and pull requests of hubot/tools that concern you; its one other open issue is on GitHub. Track it in Settings to have them all here.',
-    );
+    await expect(repository.notTrackedChip).toBeVisible();
     await expect(repository.section('Issues')).toHaveText('Issues');
-    await expect(repository.rows('Concerns you')).toHaveText([/Lint the release notes/]);
+    await expect(repository.groupingButton).toHaveText('Group: Milestone');
+    await expect(repository.rows('No milestone')).toHaveText([/Lint the release notes/, /Cache the build/]);
     await expect(page.getByRole('button', { name: /^Track/ })).toHaveCount(0);
 
-    // Its pull requests: none concerns the user; their group is shown empty.
     await repository.section('Pull requests').click();
-    await expect(repository.notTracked('hubot/tools')).toContainText('No pull request in hubot/tools concerns you.');
-    await expect(repository.notTracked('hubot/tools')).toContainText('its one other open pull request is on GitHub.');
-    await expect(repository.group('Concerns you')).toContainText(/Concerns you\s*0/);
+    await expect(repository.rows('No milestone')).toHaveText([/Bump the toolchain/]);
     await repository.section('Issues').click();
+    await expect(repository.rows('No milestone')).toHaveText([/Lint the release notes/, /Cache the build/]);
 
-    await page.getByRole('link', { name: 'Settings' }).last().click();
+    await page.goto('/settings?q=hubot%2Ftools');
     const tracking = new TrackingScreenHarness(page);
     await tracking.track('hubot/tools');
     await shell.tracked('hubot/tools').click();
@@ -150,11 +142,7 @@ test('J3, CH37: an untracked repository holds only what concerns the user, says 
     await expect(repository.rows('No milestone')).toHaveText([/Lint the release notes/, /Cache the build/]);
     await expect(repository.section('Pull requests')).toHaveText(/Pull requests\s*1/);
     await expect(shell.trackedCount('hubot/tools')).toHaveText('3');
-    // Its counts were asked once, while it was not tracked, and of it alone.
-    expect(
-        github.graphqlCalls.filter(call => call.name === 'RepositoryOpenCounts').map(call => call.variables),
-    ).toEqual([{ owner: 'hubot', name: 'tools' }]);
-    await expect(page.getByText('open on GitHub')).toHaveCount(0);
+    await expect(repository.notTrackedChip).toHaveCount(0);
 });
 
 /** Selects the first card of the column `group` — `title` — with the board's keys, and presses ⇧→. */

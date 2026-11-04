@@ -17,8 +17,11 @@ import { Browser } from '@/services/Browser.js';
 import type { ClockShape } from '@/services/Clock.js';
 import { Clock } from '@/services/Clock.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
+import type { TestTabs } from '@/testing/createTestTabs.js';
 import { fakeOnline } from '@/testing/fakeOnline.js';
+import { sampleIssue, samplePullRequest } from '@/testing/sampleItems.js';
 import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
+import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import type { PersistedItems } from '@/store/ItemPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -226,6 +229,79 @@ test('a pull request copied for its stack stays while another of the stack is in
     expect(items.get('PR_3')).toBeUndefined();
 });
 
+test('a stack only browsed is asked about by no loop, while the stacks of my work still are', async () => {
+    const github = fakeGitHub();
+    const mine = stackedNode('PR_2', 2, 3);
+    github.found.authored = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock, holds } = await setup(github, 'alice');
+
+    holds.hold('octo/browsed');
+    const repository = { ...samplePullRequest('PR_browsed').repository, nameWithOwner: 'octo/browsed', owner: 'octo' };
+    // Open, one of three: as read by a screen, it would be polled and its stack read whole if it were synced.
+    items.upsertMany([
+        {
+            ...samplePullRequest('PR_browsed'),
+            repository,
+            stack: { id: 'ST_browsed', number: 7, position: 1, size: 3 },
+        },
+    ]);
+    github.requests.length = 0;
+
+    // A pull request stacked on top of mine: my stack is read again, the browsed one not.
+    const grown = [stackedNode('PR_1', 1, 4, 'MERGED'), stackedNode('PR_2', 2, 4), stackedNode('PR_3', 3, 4)];
+    github.stacks.set('ST_1', [...grown, stackedNode('PR_4', 4, 4)]);
+    for (const node of grown) {
+        github.statuses.set(node.id, node);
+    }
+
+    await clock.advance(60_000);
+
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_2', 'PR_3']]);
+    expect(github.graphql('PullRequestStacks')).toEqual([['ST_1']]);
+    expect(github.requests.filter(request => request.ids.includes('PR_browsed'))).toEqual([]);
+    expect(items.get('PR_browsed')).toMatchObject({ stack: { id: 'ST_browsed' } });
+});
+
+test("my work's clean-up leaves the rows another tab holds, and takes those nothing else keeps once it is gone", async () => {
+    const github = fakeGitHub();
+    github.found.authored = [pullRequestNode('PR_mine', MONDAY)];
+    const tabs = createTestTabs();
+    const syncing = await setup(github, 'alice', tabs);
+    const browsing = await setup(github, 'alice', tabs);
+
+    // In another case than the row's repository: GitHub does not care, and a typed address may not either.
+    browsing.holds.hold('ACME/Web');
+    browsing.items.upsertMany([sampleIssue('I_browsed')]);
+    await syncing.clock.advance(30_000);
+
+    expect(syncing.items.get('I_browsed')?.id).toBe('I_browsed');
+    expect(browsing.items.get('I_browsed')?.id).toBe('I_browsed');
+
+    browsing.tab.close();
+    await syncing.clock.advance(30_000);
+
+    expect(syncing.items.get('I_browsed')).toBeUndefined();
+    expect(syncing.items.get('PR_mine')?.id).toBe('PR_mine');
+});
+
+test("my work's clean-up takes a released repository's rows only when its hold is over, and those in my work stay", async () => {
+    const github = fakeGitHub();
+    github.found.authored = [pullRequestNode('PR_mine', MONDAY)];
+    const { items, clock, holds } = await setup(github, 'alice');
+
+    const release = holds.hold('acme/web');
+    items.upsertMany([sampleIssue('I_browsed')]);
+    release();
+    await clock.advance(599_000);
+    expect(items.get('I_browsed')?.id).toBe('I_browsed');
+
+    await clock.advance(31_000);
+    expect(items.get('I_browsed')).toBeUndefined();
+    expect(items.get('PR_mine')?.id).toBe('PR_mine');
+    expect(items.membership.authored).toEqual(new Set(['PR_mine']));
+});
+
 test('a held pull request a stack read no longer lists has left the stack, and the stack is not asked again', async () => {
     const github = fakeGitHub();
     const mine = stackedNode('PR_4', 4, 4);
@@ -294,13 +370,11 @@ test('a closed pull request the stack linked anew left is read out of it, though
 
 test('a stack gone is asked once, its pull requests out of it; one GitHub refuses keeps them', async () => {
     const github = fakeGitHub();
-    const mine = stackedNode('PR_2', 2, 3);
+    // The one that goes on saying it is in the stack is the one my work keeps, so the stack is still one the copy syncs.
+    const mine = stackedNode('PR_1', 1, 3, 'MERGED');
     github.found.reviewRequested = [mine];
-    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    github.stacks.set('ST_1', [mine, stackedNode('PR_2', 2, 3), stackedNode('PR_3', 3, 3)]);
     const { items, clock } = await setup(github, 'alice');
-    // "My work" held from here on, so nothing drops what the stack no longer keeps — as a tracked repository would
-    // keep its pull requests.
-    github.holdSearch = createPromise().promise;
 
     // Dissolved: the open ones' statuses say so, the merged one still says it is in the stack.
     github.stacks.delete('ST_1');
@@ -722,7 +796,7 @@ function rateLimitHeaders(resource: string, remaining: number, resetAt: number) 
 }
 
 /** Signs `login` in, with an empty kept copy, and waits for the first poll. */
-async function setup(github: FakeGitHub, login: string) {
+async function setup(github: FakeGitHub, login: string, tabs: TestTabs = createTestTabs()) {
     const local = new Map<string, string>([
         [TOKEN_KEY, `gho_${login}`],
         [VIEWER_KEY, JSON.stringify(viewerOf(login))],
@@ -731,6 +805,7 @@ async function setup(github: FakeGitHub, login: string) {
     const visibilityListeners: (() => void)[] = [];
     const online = fakeOnline();
     let visible = true;
+    const tab = tabs.open();
 
     const browser: BrowserShape = {
         fetch: (input, init) => github.fetch(input, init),
@@ -768,7 +843,7 @@ async function setup(github: FakeGitHub, login: string) {
         onOnlineChange: online.onOnlineChange,
         writeCookie: () => {},
         estimateStorage: () => Promise.resolve(null),
-        ...createTestTabs().open(),
+        ...tab,
     };
 
     const clock = fakeClock();
@@ -801,6 +876,7 @@ async function setup(github: FakeGitHub, login: string) {
     const auth = container.resolve(AuthStore);
     const items = container.resolve(ItemStore);
     const sync = container.resolve(SyncEngine);
+    const holds = container.resolve(RepositoryHolds);
     // The stored user's check with GitHub is not what these tests are about.
     github.requests.length = 0;
     await items.ready();
@@ -810,7 +886,9 @@ async function setup(github: FakeGitHub, login: string) {
         auth,
         items,
         sync,
+        holds,
         clock,
+        tab,
         browser: {
             hide: () => setVisible(false),
             show: () => setVisible(true),

@@ -4,6 +4,7 @@ import { Logger } from '@nzyme/logging/Logger.js';
 import { computed } from 'vue';
 
 import { ProjectStore } from '@/projects/ProjectStore.js';
+import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -22,8 +23,9 @@ export interface ProjectContents {
 /**
  * Which items the local copy keeps, and what each tracked repository and project holds: an item stays while
  * "my work" has it, its repository is tracked, or a tracked project holds it (D4) — and a pull request while
- * another of its stack stays for one of those (stacked PRs, D7). When the user stops tracking a repository or
- * project, its items go — those nothing else keeps.
+ * another of its stack stays for one of those (stacked PRs, D7); those the sync loops read again ({@link isSynced}). A
+ * row of a repository a tab holds (`RepositoryHolds`, D31) stays too, and nothing reads it in the background. When the
+ * user stops tracking a repository or project, its items go — those nothing else keeps.
  */
 export type TrackedItems = Resolved<typeof TrackedItems>;
 export const TrackedItems = defineService({
@@ -32,9 +34,10 @@ export const TrackedItems = defineService({
         items: ItemStore,
         tracking: TrackingStore,
         projects: ProjectStore,
+        holds: RepositoryHolds,
         logger: Logger,
     },
-    setup({ items, tracking, projects, logger }) {
+    setup({ items, tracking, projects, holds, logger }) {
         const openByRepository = computed(() => {
             const counts = new Map<string, number>();
             for (const item of items.all) {
@@ -79,13 +82,18 @@ export const TrackedItems = defineService({
 
         tracking.onUntrack(dropUntracked);
 
-        return { keeps, keepsForItself, evict, getOpenCount, getProjectContents, isPrivate, getActiveAt };
+        return { keeps, isSynced, keepsForItself, evict, getOpenCount, getProjectContents, isPrivate, getActiveAt };
+
+        /** Whether the local copy keeps the item: the sync loops read it, or a tab holds its repository; reactive. */
+        function keeps(item: Item) {
+            return isSynced(item) || holds.isHeld(item.repository.nameWithOwner);
+        }
 
         /**
-         * Whether the local copy keeps the item: "my work" has it, a tracked repository or project, or it is a pull
-         * request of a stack another of which one of those has; reactive.
+         * Whether the item is one the sync loops read: "my work" has it, a tracked repository or project, or it is a
+         * pull request of a stack another of which one of those has — not a row only browsed; reactive.
          */
-        function keeps(item: Item) {
+        function isSynced(item: Item) {
             return (
                 keepsForItself(item) ||
                 (item.kind === 'pullRequest' && item.stack !== null && keptStacks.value.has(item.stack.id))

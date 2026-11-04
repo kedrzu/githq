@@ -5,8 +5,7 @@ import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.j
 import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
-import { TrackingScreenHarness } from '../harnesses/TrackingScreen.harness.js';
-import { answerRepositoryLookup, answerTrackingCandidates } from '../tracking/answerTracking.js';
+import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 test('my work as a board: a column per group, ←/→ between them, Enter opens; the layout stays after a reload', async ({
     page,
@@ -39,7 +38,7 @@ test('my work as a board: a column per group, ←/→ between them, Enter opens;
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('J3: an untracked repository shows what concerns the user; Settings opens with its name searched', async ({
+test('D31: an untracked repository holding what concerns the user lists each of its items once, with its toolbar', async ({
     page,
     github,
 }) => {
@@ -47,23 +46,10 @@ test('J3: an untracked repository shows what concerns the user; Settings opens w
     const repository = new RepositoryScreenHarness(page);
 
     await page.goto('/acme/web');
-    await expect(repository.notTracked('acme/web')).toContainText(
-        'githq only has what concerns you in acme/web: 2 issues.',
-    );
-    await expect(repository.notTracked('acme/web')).toContainText(
-        'githq has only the issues and pull requests of acme/web that concern you; none of its other issues is open on GitHub.',
-    );
-    await expect(repository.group('Concerns you').getByRole('listitem')).toHaveCount(2);
-    await expect(repository.groupingButton).toHaveCount(0);
-
-    answerTrackingCandidates(github, { login: SAMPLE_VIEWER.viewer.login });
-    answerRepositoryLookup(github, { nameWithOwner: 'acme/web' });
-    await repository.notTracked('acme/web').getByRole('link', { name: 'Settings' }).click();
-
-    await expect(page).toHaveURL('/settings?q=acme%2Fweb');
-    const tracking = new TrackingScreenHarness(page);
-    await expect(tracking.search).toHaveValue('acme/web');
-    await expect(tracking.row('acme/web')).not.toBeChecked();
+    await expect(repository.notTrackedChip).toBeVisible();
+    await expect(repository.readCount).toHaveText('2 of 2');
+    await expect(repository.root.getByRole('listitem')).toHaveCount(2);
+    await expect(repository.groupingButton).toHaveText('Group: Milestone');
 });
 
 test('J4: an untracked project shows what concerns the user; Settings opens on Projects with its address, and offers it', async ({

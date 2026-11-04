@@ -27,6 +27,7 @@ import { PullRequestCommands } from '@/merge/PullRequestCommands.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
+import { BrowsedRepositories } from '@/repos/BrowsedRepositories.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
@@ -53,6 +54,7 @@ import {
 } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
+import TrackFailedToast from '@/tracking/TrackFailedToast.vue';
 import UntrackToast from '@/tracking/UntrackToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
@@ -74,6 +76,7 @@ const details = useService(ItemDetailStore);
 const resolver = useService(ItemResolver);
 const queue = useService(EditQueue);
 const tracking = useService(TrackingStore);
+const browsed = useService(BrowsedRepositories);
 const pendingUntracks = useService(PendingUntracks);
 const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
@@ -164,8 +167,9 @@ const tracked = computed((): SidebarTracked => ({
 const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
 
 // How fresh the screen is (D15): a repository's commit graph its refs as last read, tracked or not (git-client D9); a
-// tracked repository's or project's own poll — a saved view GitHub answers says so (K6); the broken workflows and a
-// repository's Workflows section their own poll; anything else shows what "my work" holds.
+// tracked repository's or project's own poll — a saved view GitHub answers says so (K6); an untracked repository's item
+// section the reads of the screen browsing it (D31); the broken workflows and a repository's Workflows section their own
+// poll; anything else shows what "my work" holds.
 const screenFreshness = computed((): Freshness => {
   if (route.name === 'workflows') {
     return sync.getWorkflowsFreshness();
@@ -187,6 +191,10 @@ const screenFreshness = computed((): Freshness => {
       return shown === 'workflows'
         ? sync.getRepositoryWorkflowsFreshness(nameWithOwner)
         : sync.getRepositoryFreshness(nameWithOwner);
+    }
+
+    if (shown !== 'workflows') {
+      return browsed.getFreshness(nameWithOwner, shown);
     }
   }
 
@@ -354,6 +362,7 @@ function showLastFailure() {
     <WorkflowRerunToast />
     <SyncStoppedToast :login="auth.viewer.login" />
     <UntrackToast />
+    <TrackFailedToast />
   </Toaster>
   <AppCommands v-if="auth.viewer" />
 </template>

@@ -10,6 +10,7 @@ import { openDB } from 'idb';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
+import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import {
     createIndexedDbPersistence,
@@ -26,6 +27,7 @@ import type { TestTabs } from '@/testing/createTestTabs.js';
 import { createTrackingWorld, worldProjectItem } from '@/testing/createTrackingWorld.js';
 import type { TrackingWorld } from '@/testing/createTrackingWorld.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
+import { sampleIssue } from '@/testing/sampleItems.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -289,6 +291,37 @@ test('tabs of different accounts share nothing; a tab signed into another accoun
     await advance([second, third], 30_000);
     expect(count(second, 'GET /search/issues') + count(third, 'GET /search/issues')).toBe(searches + 4);
     expect(second.session.github.requests.slice(asked).map(request => request.token)).not.toContain(`gho_${alice}`);
+});
+
+test('a row only browsed in one tab is asked about by none of the syncing tab, however long it stays', async () => {
+    const world = sampleWorld();
+    const browser = createTestTabs();
+    const login = uniqueLogin();
+    const syncing = openTab(world, browser, login);
+    const browsing = openTab(world, browser, login);
+    await advance([syncing, browsing], 0);
+    syncing.tracking.choose(TRACK_ALL);
+    await advance([syncing, browsing], 0);
+
+    browsing.container.resolve(RepositoryHolds).hold('octo/browsed');
+    const row = sampleIssue('I_browsed');
+    browsing.items.upsertMany([
+        { ...row, repository: { ...row.repository, nameWithOwner: 'octo/browsed', owner: 'octo' } },
+    ]);
+    await advance([syncing, browsing], 0);
+    expect(syncing.items.get('I_browsed')?.id).toBe('I_browsed');
+    syncing.session.github.requests.length = 0;
+
+    for (let minute = 0; minute < 5; minute++) {
+        await advance([syncing, browsing], 60_000);
+    }
+
+    // What runs meanwhile, change polls and prefetch of what is new among them: what proves the silence below.
+    expect(polls(syncing)).toContain('GET /search/issues');
+    const asked = syncing.session.github.requests.map(request => `${request.operation} ${JSON.stringify(request.variables)}`);
+    expect(asked.filter(request => /I_browsed|octo\/browsed/u.test(request))).toEqual([]);
+    // Held all the while: it is there still.
+    expect(syncing.items.get('I_browsed')?.id).toBe('I_browsed');
 });
 
 /** A GitHub with a few items: two of them in "my work", one in the tracked project. */

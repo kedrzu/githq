@@ -135,7 +135,7 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * - `myWork`: the four "my work" searches (REST, `search` bucket — no ETag, so no free 304s), then a re-read
  *   of only the items whose `updated_at` moved (`ItemsByIds`), and each group's members;
  * - `pullRequestStatuses`: checks, reviews, mergeability and stack of the open pull requests in "my work" and in
- *   the stacks the copy holds (`PullRequestStatuses`), which change without moving `updated_at`; then the
+ *   the stacks the copy syncs (`PullRequestStatuses`), which change without moving `updated_at`; then the
  *   stacks the copy holds only some pull requests of are read whole (`PullRequestStacks`, stacked PRs D7);
  * - `repositories`, `projects`, `download`: the tracked repositories' and projects' change polls (free 304s)
  *   and their first download ({@link TrackingSync}), which starts once "my work" has arrived and runs again
@@ -144,6 +144,9 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
  *   and at once when a screen showing them opens ({@link pollWorkflowsNow}). What a screen has on screen of a
  *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef}).
+ *
+ * A row only browsed (`RepositoryHolds`, D31) is asked about by none of them: it is read while a screen shows it, never
+ * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
@@ -845,7 +848,8 @@ export const SyncEngine = defineService({
 
         /**
          * Removes from the store the items no "my work" group holds any more, and returns their ids — but not the
-         * items of tracked repositories and projects: they stay, whatever "my work" says.
+         * items of tracked repositories and projects, or of a repository any tab holds: they stay, whatever "my work"
+         * says.
          */
         function removeItemsOutsideMyWork() {
             return trackedItems.evict(items.all.map(item => item.id));
@@ -872,9 +876,14 @@ export const SyncEngine = defineService({
                 }
             }
 
-            // Those copied for their stack only: nothing else re-reads them.
+            // Those copied for their stack only: nothing else re-reads them. Those only browsed nothing should.
             for (const item of items.all) {
-                if (item.kind === 'pullRequest' && isOpenPullRequest(item) && item.stack) {
+                if (
+                    item.kind === 'pullRequest' &&
+                    isOpenPullRequest(item) &&
+                    item.stack &&
+                    trackedItems.isSynced(item)
+                ) {
                     open.add(item.id);
                 }
             }
@@ -929,12 +938,12 @@ export const SyncEngine = defineService({
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
          * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7), and those it
          * holds too many of ({@link readStacksWhole}). Once the copy holds them all, one at each place, nothing is
-         * asked.
+         * asked; nor for a stack only browsed.
          */
         async function readIncompleteStacks(current: Session) {
             const held = new Map<string, { size: number; members: number; positions: Set<number> }>();
             for (const item of items.all) {
-                if (item.kind !== 'pullRequest' || !item.stack) {
+                if (item.kind !== 'pullRequest' || !item.stack || !trackedItems.isSynced(item)) {
                     continue;
                 }
 

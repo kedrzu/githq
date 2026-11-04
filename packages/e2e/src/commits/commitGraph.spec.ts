@@ -80,7 +80,7 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveAttribute('href', `/${SAMPLE_REPOSITORY}/commits`);
 });
 
-test('git-client D11, D20, CH37: an untracked repository shows Commits in full at its GitHub address, and its Issues say its commits need no tracking', async ({
+test('git-client D11, D20, CH37: an untracked repository shows Commits in full at its GitHub address, and its Issues are one key away', async ({
     page,
     github,
 }) => {
@@ -92,17 +92,20 @@ test('git-client D11, D20, CH37: an untracked repository shows Commits in full a
     const graph = new CommitGraphHarness(page, 'hubot/tools');
     await expect(graph.rows).toHaveCount(6);
     await expect(graph.mark(graph.row('feat: sign in with GitHub'), 'Checks failing')).toBeVisible();
-    await expect(page.getByRole('main').getByText('not tracked', { exact: true })).toBeVisible();
     const repository = new RepositoryScreenHarness(page);
-    await expect(repository.notTracked('hubot/tools')).toHaveCount(0);
+    await expect(repository.notTrackedChip).toBeVisible();
     // Nothing about its items is asked on Commits.
-    expect(github.graphqlCalls.filter(call => call.name === 'RepositoryOpenCounts')).toEqual([]);
+    expect(
+        github.graphqlCalls.filter(
+            call => /^Repository(Issues|PullRequests|Metadata)$/.test(call.name) && call.variables.name === 'tools',
+        ),
+    ).toEqual([]);
 
     await page.keyboard.press('1');
     await expect(page).toHaveURL('/hubot/tools/issues');
-    await expect(repository.notTracked('hubot/tools')).toContainText(
-        "Its commits don't need tracking: 3 opens them in full.",
-    );
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await expect(repository.notTrackedChip).toBeVisible();
+    await expect(repository.section('Commits')).toHaveAttribute('aria-pressed', 'false');
 });
 
 test('git-client D17, CH45: the divider dragged with the mouse: as far as two lanes and every lane, the label up meanwhile, kept across a reload, and a double-click resets it', async ({

@@ -601,7 +601,6 @@ function setRowField(fieldId: string | null) {
     v-if="!tracked && auth.viewer"
     v-model:selected-id="list.selectedId"
     v-model:checked-ids="list.checkedIds"
-    :icon="SquareKanban"
     :name="name"
     :meta="owner"
     :github-url="githubUrl"

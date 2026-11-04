@@ -1,6 +1,8 @@
+import type { RepositoryBrowseSearchQuery } from '@githq/github/generated.gen.js';
+import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { userEvent } from 'storybook/test';
+import { userEvent, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 
@@ -9,7 +11,9 @@ import { getEditPermissions } from '@/edits/getEditPermissions.js';
 import type { ItemEditing } from '@/item/ItemEditing.js';
 import ItemView from '@/item/ItemView.vue';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
+import { Browser } from '@/services/Browser.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
@@ -19,12 +23,14 @@ import {
     SAMPLE_PORTAL_METADATA,
 } from '@/testing/sampleRepositories.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
+import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import CommandMenu from './CommandMenu.vue';
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
 import type { NavigationData, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
+import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
 
 /** What the menu finds while nothing is opened (E3): projects, repositories, items of the local copy. */
 const NAVIGATION: NavigationData = {
@@ -100,6 +106,25 @@ const MOBILE_METADATA: RepositoryMetadata = {
     viewerPermission: 'READ',
 };
 
+/** What GitHub's search answers in E8. */
+const FOUND_REPOSITORIES: RepositoryBrowseSearchQuery = {
+    search: {
+        nodes: [
+            {
+                nameWithOwner: 'vitejs/vite',
+                description: "Next generation frontend tooling. It's fast!",
+                isPrivate: false,
+            },
+            {
+                nameWithOwner: 'fitloop/vite-plugin-billing',
+                description: 'Billing pages as a Vite plugin',
+                isPrivate: true,
+            },
+            { nameWithOwner: 'vitejs/no-description', description: null, isPrivate: false },
+        ],
+    },
+};
+
 /** E4: three issues in Platform Q4, one of them in a repository where the user only reads. */
 const SELECTED: readonly Item[] = [
     selectedIssue('I_455', 'skyline-labs/portal', 455, 'Document webhook retry policy', 'WRITE'),
@@ -117,8 +142,14 @@ const Harness = defineComponent({
         editing: { type: Object as PropType<ItemEditing>, default: () => SAMPLE_MAINTAINER_EDITING },
         startCommandId: { type: String as PropType<string | null>, default: null },
         startOpen: { type: Boolean, default: true },
+        /** "Search repositories…" as the app has it, with GitHub answering this; left out it is not offered. */
+        github: { type: Function as PropType<() => Promise<RepositoryBrowseSearchQuery>>, default: undefined },
     },
     setup(props) {
+        if (props.github) {
+            useRepositorySearchStory(props.github);
+        }
+
         const registry = useService(CommandRegistry);
         const editCommands = useEditCommands();
         const asked = ref('Nothing asked');
@@ -280,8 +311,69 @@ export const MatchInHiddenWord: Story = {
     },
 };
 
+/** E7: "Search repositories…" opened, before typing. */
+export const SearchBeforeTyping: Story = {
+    args: {
+        subject: 'none',
+        startCommandId: 'app.searchRepositories',
+        github: () => Promise.resolve(FOUND_REPOSITORIES),
+    },
+};
+
+/** E8: what GitHub found: each with its description and visibility. */
+export const SearchResults: Story = {
+    args: { ...SearchBeforeTyping.args },
+    play: async () => {
+        await userEvent.keyboard('vite');
+        // The menu is a dialog, outside the story's own element.
+        await within(document.body).findByText('vitejs/vite');
+    },
+};
+
+/** E9: GitHub has not answered yet. */
+export const SearchAsking: Story = {
+    args: { ...SearchBeforeTyping.args, github: () => new Promise(() => {}) },
+    play: async () => {
+        await userEvent.keyboard('vite');
+    },
+};
+
+/** E10: GitHub found nothing. */
+export const SearchNothingFound: Story = {
+    args: { ...SearchBeforeTyping.args, github: () => Promise.resolve({ search: { nodes: [] } }) },
+    play: async () => {
+        await userEvent.keyboard('vitee');
+        await within(document.body).findByText('Nothing on GitHub matches "vitee"');
+    },
+};
+
+/** GitHub did not answer. */
+export const SearchFailed: Story = {
+    args: { ...SearchBeforeTyping.args, github: () => Promise.reject(new Error('Bad gateway')) },
+    play: async () => {
+        await userEvent.keyboard('vite');
+        await within(document.body).findByText('GitHub did not answer. Change the search to try again.');
+    },
+};
+
 /** Closed: the keys open it (⌘K), or an action's submenu where nothing else runs it. */
 export const Closed: Story = { args: { subject: 'selection', startOpen: false } };
+
+/** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
+function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
+    const container = useContainer();
+    setIndexedDbPersistence(container);
+    container.set(
+        Browser,
+        createSignedInBrowser((_input, init) =>
+            typeof init?.body === 'string' && init.body.includes('query RepositoryBrowseSearch')
+                ? answer().then(data => Response.json({ data }))
+                : Promise.resolve(Response.json({ message: 'Server Error' }, { status: 502 })),
+        ),
+    );
+    const searchCommand = useRepositorySearchCommand();
+    useCommands(() => [searchCommand()]);
+}
 
 function selectedIssue(
     id: string,

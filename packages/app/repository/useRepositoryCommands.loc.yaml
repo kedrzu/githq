@@ -12,6 +12,10 @@ copyLink:
   en: Copy link
 settings:
   en: Settings
+track:
+  en: Track repository
+trackDetail:
+  en: Keep all of it here, in the background
 untrack:
   en: Stop tracking
 workflows:

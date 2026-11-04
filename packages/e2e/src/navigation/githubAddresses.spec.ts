@@ -75,19 +75,19 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     // An untracked repository's lists, and an old githq address shaped like a repository, which is one on GitHub.
     const repository = new RepositoryScreenHarness(page);
     await page.goto('/acme/web/pulls');
-    await expect(repository.notTracked('acme/web')).toBeVisible();
+    await expect(repository.notTrackedChip).toBeVisible();
     await expect(repository.section('Pull requests')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.rows('Concerns you')).toHaveText([/Redirect once after sign-in/, /Move the sidebar/]);
+    await expect(repository.rows('No milestone')).toHaveText([/Redirect once after sign-in/, /Move the sidebar/]);
     await expect(page).toHaveURL('/acme/web/pulls');
 
     await page.goto('/acme/web/issues');
     await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
-    await expect(repository.rows('Concerns you')).toHaveText([/Sign-in loops/, /Document the keyboard shortcuts/]);
+    await expect(repository.rows('No milestone')).toHaveText([/Sign-in loops/, /Document the keyboard shortcuts/]);
     await expect(page).toHaveURL('/acme/web/issues');
 
     await page.goto('/my/assigned');
-    // GitHub shows no such repository: the lines say how many others there are without a number.
-    await expect(repository.notTracked('my/assigned')).toContainText('its other open issues are on GitHub.');
+    // GitHub shows no such repository: the screen says so, at the address.
+    await expect(repository.notShown).toBeVisible();
     await expect(page).toHaveURL('/my/assigned');
 
     // Only a tracked repository has a Workflows section (actions D4): an untracked one's is GitHub's page.

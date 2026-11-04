@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test';
+import { expect, mock, test } from 'bun:test';
 
 import { sampleIssue } from '@/testing/sampleItems.js';
 
@@ -47,6 +47,28 @@ test('E4: a value of a submenu typed is offered directly, above its action; scat
 
     expect(ids(menu)).toEqual(['item.status:In progress']);
     expect(ids(buildCommandMenu({ query: 'ipg', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual([]);
+});
+
+test('a search is offered as an action, but its answers are not looked through or asked for from the top level', () => {
+    const search = mock(() => undefined);
+    const options = mock(() => ({
+        options: [{ value: 'vitejs/vite', label: 'vitejs/vite', pick: () => undefined }],
+    }));
+    const searching: Command = {
+        id: 'app.searchRepositories',
+        title: 'Search repositories…',
+        section: 'app',
+        options,
+        search,
+    };
+
+    const found = (query: string) =>
+        ids(buildCommandMenu({ query, commands: [searching], subject: null, navigation: NOTHING }));
+
+    expect(found('vitejs')).toEqual([]);
+    expect(found('search rep')).toEqual(['app.searchRepositories']);
+    expect(options).not.toHaveBeenCalled();
+    expect(search).not.toHaveBeenCalled();
 });
 
 test('E4: options are found from two letters on, at most 3 per action, the best first', () => {

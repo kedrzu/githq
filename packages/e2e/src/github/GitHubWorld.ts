@@ -209,6 +209,8 @@ export interface GitHubWorldRepositoryParams {
     readonly milestones?: readonly string[];
     /** Who may be assigned or asked for a review besides the viewer; `monalisa` and `hubot` by default. */
     readonly users?: readonly string[];
+    /** What its page says it is about, which the repository search finds too; none by default. */
+    readonly description?: string;
     /** Public by default. */
     readonly isPrivate?: boolean;
     /** Archived: read-only, it takes no issue. */
@@ -433,6 +435,7 @@ interface WorldRepository {
     labels: readonly GitHubWorldLabel[];
     milestones: readonly string[];
     users: readonly string[];
+    description: string | null;
     isPrivate: boolean;
     isArchived: boolean;
     issuesDisabled: boolean;
@@ -682,6 +685,9 @@ const PROJECT_FIELDS: readonly { name: GitHubWorldProjectFieldName; dataType: Pr
 /** The fields a saved view of the world shows. */
 const VIEW_FIELDS: readonly GitHubWorldProjectFieldName[] = ['Title', 'Assignees', 'Status'];
 
+/** How many issues a page of `RepositoryIssues` holds (`issues(first: 100)`); a pull request's page says its own. */
+const ISSUE_PAGE = 100;
+
 /** How many items `ProjectFull` reads with the project. */
 const PROJECT_FIRST_PAGE = 100;
 
@@ -692,11 +698,12 @@ const PROJECT_FIRST_PAGE = 100;
  * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
  * out, no rules on a base branch); `ItemByNumber`;
- * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
+ * `RepositoryMetadata`; `RepositoryBrowseSearch`; `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
  * their organisations' — one hiding its private data left out with an error), a lookup by name, a tracked
- * repository's download (`RepositoryIssues`, `RepositoryPullRequests`) and its change list
+ * repository's download or a browsed one's pages (`RepositoryIssues`, `RepositoryPullRequests`, by `first` and `after`,
+ * a repository found by its name in any case) and its change list
  * (`GET /repos/{o}/{r}/issues?since=`), a tracked project's download and re-reads (`ProjectFull`,
  * `ProjectSchema`, `ProjectItems` — `updated:>=` by day, any other query matched against the titles, as GitHub
  * answers a saved view's free text) and its change signal (`GET /users|orgs/{o}/projectsV2/{n}`). Both REST
@@ -749,6 +756,7 @@ export class GitHubWorld {
         repository.labels = params.labels ?? repository.labels;
         repository.milestones = params.milestones ?? repository.milestones;
         repository.users = params.users ?? repository.users;
+        repository.description = params.description ?? repository.description;
         repository.isPrivate = params.isPrivate ?? repository.isPrivate;
         repository.isArchived = params.isArchived ?? repository.isArchived;
         repository.issuesDisabled = params.issuesDisabled ?? repository.issuesDisabled;
@@ -1226,7 +1234,7 @@ export class GitHubWorld {
 
     private installReads(github: GitHubMock) {
         github.graphql('RepositoryMetadata', ({ variables }) => {
-            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const repository = this.findRepository(variables);
             if (!repository) {
                 return { repository: null };
             }
@@ -1270,17 +1278,6 @@ export class GitHubWorld {
                     },
                     issueTypes: null,
                 },
-            };
-        });
-        github.graphql('RepositoryOpenCounts', ({ variables }) => {
-            const open = this.readRepositoryItems(variables)?.filter(item => item.state === 'OPEN');
-            return {
-                repository: open
-                    ? {
-                          issues: { totalCount: open.filter(item => !item.pullRequest).length },
-                          pullRequests: { totalCount: open.filter(item => item.pullRequest).length },
-                      }
-                    : null,
             };
         });
         github.graphql('RepositoryCommitRefs', ({ variables }) => {
@@ -1410,6 +1407,31 @@ export class GitHubWorld {
                             hasIssuesEnabled: !repository.issuesDisabled,
                             viewerPermission: repository.viewerPermission,
                             pushedAt: new Date().toISOString(),
+                        })),
+                },
+            };
+        });
+        // Every repository of the world holding the words typed in its name or description, within `org:` when it says;
+        // GitHub's other qualifiers are left out of what it matches.
+        github.graphql('RepositoryBrowseSearch', ({ variables }) => {
+            const terms = String(variables.query).toLowerCase().split(/\s+/u).filter(Boolean);
+            const words = terms.filter(term => !term.includes(':'));
+            const owner = terms.find(term => term.startsWith('org:'))?.slice('org:'.length);
+            return {
+                search: {
+                    nodes: [...this.repositories.values()]
+                        .filter(repository => {
+                            const name = repository.nameWithOwner.toLowerCase();
+                            const text = `${name} ${repository.description ?? ''}`.toLowerCase();
+                            return (
+                                (owner === undefined || name.startsWith(`${owner}/`)) &&
+                                words.every(word => text.includes(word))
+                            );
+                        })
+                        .map(repository => ({
+                            nameWithOwner: repository.nameWithOwner,
+                            description: repository.description,
+                            isPrivate: repository.isPrivate,
                         })),
                 },
             };
@@ -1663,7 +1685,7 @@ export class GitHubWorld {
             );
         });
         github.graphql('RepositoryForTracking', ({ variables }) => {
-            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const repository = this.findRepository(variables);
             return repository
                 ? { repository: this.toCandidate(repository) }
                 : new GitHubPartialAnswer<'RepositoryForTracking'>({ repository: null }, [repositoryNotFound()]);
@@ -1677,20 +1699,33 @@ export class GitHubWorld {
 
         github.graphql('RepositoryIssues', ({ variables }) => {
             const states = readStrings(variables.states);
-            const nodes = this.readRepositoryItems(variables)
-                ?.filter(item => !item.pullRequest && states.includes(item.state))
-                .map(item => this.toIssueNode(item));
-            return nodes
-                ? { repository: { issues: { totalCount: nodes.length, pageInfo: LAST_PAGE, nodes } } }
+            const items = this.readRepositoryItems(variables)?.filter(
+                item => !item.pullRequest && states.includes(item.state),
+            );
+            return items
+                ? {
+                      repository: {
+                          issues: toItemPage(items, ISSUE_PAGE, variables.after, item => this.toIssueNode(item)),
+                      },
+                  }
                 : new GitHubPartialAnswer<'RepositoryIssues'>({ repository: null }, [repositoryNotFound()]);
         });
         github.graphql('RepositoryPullRequests', ({ variables }) => {
             const states = readStrings(variables.states);
-            const nodes = this.readRepositoryItems(variables)?.flatMap(item =>
-                item.pullRequest && states.includes(item.state) ? [this.toPullRequestNode(item, item.pullRequest)] : [],
+            const pullRequests = this.readRepositoryItems(variables)?.flatMap(item =>
+                item.pullRequest && states.includes(item.state) ? [{ item, pullRequest: item.pullRequest }] : [],
             );
-            return nodes
-                ? { repository: { pullRequests: { totalCount: nodes.length, pageInfo: LAST_PAGE, nodes } } }
+            return pullRequests
+                ? {
+                      repository: {
+                          pullRequests: toItemPage(
+                              pullRequests,
+                              Number(variables.first),
+                              variables.after,
+                              ({ item, pullRequest }) => this.toPullRequestNode(item, pullRequest),
+                          ),
+                      },
+                  }
                 : new GitHubPartialAnswer<'RepositoryPullRequests'>({ repository: null }, [repositoryNotFound()]);
         });
 
@@ -1798,14 +1833,20 @@ export class GitHubWorld {
 
     /** The items of the repository the variables name (`owner`, `name`); `undefined` for one GitHub does not have. */
     private readRepositoryItems(variables: Readonly<Record<string, unknown>>) {
-        const name = `${String(variables.owner)}/${String(variables.name)}`;
-        if (!this.repositories.has(name)) {
+        const repository = this.findRepository(variables);
+        if (!repository) {
             return undefined;
         }
 
         return [...this.items.values()]
-            .filter(item => !item.deleted && item.repository === name)
+            .filter(item => !item.deleted && item.repository === repository.nameWithOwner)
             .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    }
+
+    /** The repository the variables name (`owner`, `name`) in any case, as GitHub finds it; `undefined` with none. */
+    private findRepository(variables: Readonly<Record<string, unknown>>) {
+        const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
+        return [...this.repositories.values()].find(repository => repository.nameWithOwner.toLowerCase() === name);
     }
 
     /** The repositories of `owner` as the tracking screens list them; only the public ones when `publicOnly`. */
@@ -2657,6 +2698,7 @@ export class GitHubWorld {
                 labels: DEFAULT_LABELS,
                 milestones: ['v1.0'],
                 users: ['monalisa', 'hubot'],
+                description: null,
                 isPrivate: false,
                 isArchived: false,
                 issuesDisabled: false,
@@ -3406,6 +3448,22 @@ function readStrings(value: unknown): string[] {
 /** The logins of the users a mutation names by id. */
 function readLogins(value: unknown): string[] {
     return readStrings(value).map(id => id.replace(/^U_/, ''));
+}
+
+/** A page of a repository's items: `first` of them after the cursor, as a connection answers. */
+function toItemPage<TItem, TNode>(
+    items: readonly TItem[],
+    first: number,
+    after: unknown,
+    toNode: (item: TItem) => TNode,
+) {
+    const start = parseCursor(after) ?? 0;
+    const end = Math.min(items.length, start + first);
+    return {
+        totalCount: items.length,
+        pageInfo: { hasNextPage: end < items.length, endCursor: end > start ? `C${end}` : null },
+        nodes: items.slice(start, end).map(toNode),
+    };
 }
 
 /** The index a cursor of the world stands for: a comment page's first comment, or a project page's next item. */

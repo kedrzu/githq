@@ -3,6 +3,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import {
     ArrowRight,
     CircleDot,
+    CloudDownload,
     EyeOff,
     GitPullRequest,
     Github,
@@ -16,6 +17,7 @@ import { useRouter } from 'vue-router';
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
+import { RepositoryTracker } from '@/tracking/RepositoryTracker.js';
 import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -32,19 +34,22 @@ export interface RepositoryCommands {
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
     readonly settings: Command;
+    readonly track: Command;
     readonly untrack: Command;
 }
 
 /**
  * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests,
  * and its workflows only while it is tracked, actions D4), a new issue in it, its page on GitHub and the link to it, its
- * settings (T16) and no longer tracking it (both only while it is tracked). The sidebar's menu of a
- * repository offers them all; the repository's view offers its page on GitHub in the command menu.
+ * settings (T16) and no longer tracking it (both only while it is tracked), and tracking it (only while it is not). The
+ * sidebar's menu of a repository offers them all but tracking it; the repository's view offers its page on GitHub and
+ * tracking it or no longer tracking it in the command menu (D31).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
     const t = useTranslate();
     const router = useRouter();
     const tracking = useService(TrackingStore);
+    const tracker = useService(RepositoryTracker);
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
     const tabs = useService(LastRepositoryTab);
@@ -110,6 +115,15 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 icon: Settings,
                 when: () => tracking.isTracked({ kind: 'repository', nameWithOwner }),
                 run: () => void router.push(getRepositorySettingsPath(nameWithOwner)),
+            },
+            track: {
+                id: 'repository.track',
+                title: t(l.track),
+                detail: t(l.trackDetail),
+                section: 'view',
+                icon: CloudDownload,
+                when: () => !tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                run: () => void tracker.track(nameWithOwner),
             },
             untrack: {
                 id: 'repository.untrack',
