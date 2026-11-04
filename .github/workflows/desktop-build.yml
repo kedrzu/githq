@@ -1,0 +1,166 @@
+# Builds the desktop app (packages/desktop) into a draft release that already exists: the SPA once, then each platform,
+# which uploads its installers and signed updater bundles and adds itself to the release's `latest.json`. Called by
+# `release.yml` and `development.yml`.
+#
+# Secrets: `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` sign the updater bundles (the public half
+# is `plugins.updater.pubkey` in `tauri.conf.json`). The Apple ones (`APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`,
+# `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`) sign and notarize the macOS app; without them it
+# is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), which macOS opens as from an "unidentified developer".
+name: Desktop build
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to build
+        type: string
+        required: true
+      tag:
+        description: The release's tag, which names it in `latest.json`'s download URLs
+        type: string
+        required: true
+      version:
+        description: The version written into the app and its files
+        type: string
+        required: true
+      release-id:
+        description: The draft release to upload to
+        type: string
+        required: true
+      platforms:
+        description: JSON list of the platforms to build, each with its runner, target and tauri args
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The app the desktop window loads, built once for every platform: it is the same static files everywhere.
+  spa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Build
+        run: bash setup.build.sh
+
+      - name: Build the desktop app's SPA
+        run: bun --cwd packages/app build:desktop
+        env:
+          # The production OAuth App the desktop sign-in (Device Flow) uses.
+          GITHQ_ENV: prod
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-spa
+          path: packages/app/.output-desktop/public
+          if-no-files-found: error
+
+  bundle:
+    needs: spa
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.platforms) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-spa
+          path: packages/app/.output-desktop/public
+
+      # Tauri v2's Linux prerequisites (https://v2.tauri.app/start/prerequisites/#linux), patchelf for the AppImage.
+      - name: Install the Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev \
+            librsvg2-dev libdbus-1-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: packages/desktop/src-tauri -> target
+          key: ${{ matrix.target }}
+
+      # The version; the SPA is already built, so no `beforeBuildCommand`; and the signed updater bundles, left out of the
+      # committed config so a local build needs no signing key. The Tauri CLI is the version `packages/desktop` pins, run
+      # through npx: no `bun install` of the whole workspace for it.
+      - name: Configure the release build
+        id: configure
+        shell: bash
+        run: |
+          config=packages/desktop/src-tauri/tauri.conf.json
+          jq --arg version "$VERSION" \
+            '.version = $version | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = true' \
+            "$config" > "$RUNNER_TEMP/tauri.conf.json"
+          mv "$RUNNER_TEMP/tauri.conf.json" "$config"
+          echo "cli=$(jq -r '.devDependencies["@tauri-apps/cli"]' packages/desktop/package.json)" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ inputs.version }}
+
+      # Apple signing and notarization only with the secrets set: an empty `APPLE_CERTIFICATE` in the environment
+      # counts as present and fails the bundle (tauri-apps/tauri-action#234). The heredoc form keeps a multi-line
+      # value intact; values are never printed.
+      - name: Use the Apple signing secrets that are set
+        if: runner.os == 'macOS'
+        run: |
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              delimiter="EOF_$(openssl rand -hex 16)"
+              {
+                echo "$name<<$delimiter"
+                printf '%s\n' "$value"
+                echo "$delimiter"
+              } >> "$GITHUB_ENV"
+              echo "$name: set"
+            fi
+          done
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Picks the client ID compiled into the app (`build.rs`), as it does for the SPA.
+          GITHQ_ENV: prod
+          # aws-lc-sys (rustls, through reqwest) assembles with NASM on x86_64 Windows, which the runner lacks;
+          # this uses its prebuilt objects instead. Ignored on every other target.
+          AWS_LC_SYS_PREBUILT_NASM: 1
+        with:
+          projectPath: packages/desktop
+          tauriScript: npx --yes @tauri-apps/cli@${{ steps.configure.outputs.cli }}
+          args: ${{ matrix.args }}
+          releaseId: ${{ inputs.release-id }}
+          # Names the release in `latest.json`'s download URLs.
+          tagName: ${{ inputs.tag }}
+          releaseDraft: true
+          includeUpdaterJson: true
+          updaterJsonPreferNsis: true

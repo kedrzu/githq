@@ -1,28 +1,22 @@
 # Releases the desktop app (packages/desktop). A manually dispatched action, run from main, with a `mode`:
 # `preview` only prints the version and release notes the commits since the last stable tag would give and
-# releases nothing; `candidate` (`v0.2.0-rc.1`) and `stable` (`v0.2.0`) do. The version and the notes come from
-# the Conventional Commits since the last stable tag (`packages/app/scripts/release.ts`). A release creates the
-# tag on the commit it ran on and a draft GitHub release, builds macOS (Apple Silicon and Intel), Windows and
-# Linux, and uploads the installers, the signed updater bundles and the updater's `latest.json` to the draft.
-# Publishing the draft is done by hand; the installed apps look for updates at
-# `releases/latest/download/latest.json` (`tauri.conf.json`), so a release reaches them once it is published and
-# GitHub's "latest". A tag with a `-` is a prerelease, which GitHub never makes "latest": release candidates are
-# never offered as updates.
+# releases nothing; `stable` (`v0.2.0`) does. The version and the notes come from the Conventional Commits since the
+# last stable tag (`packages/app/scripts/release.ts`). A release creates the tag on the commit it ran on and a draft
+# GitHub release, builds macOS (Apple Silicon and Intel), Windows and Linux (`desktop-build.yml`), and uploads the
+# installers, the signed updater bundles and the updater's `latest.json` to the draft. Publishing the draft is done by
+# hand; apps on the Stable stream look for updates at `releases/latest/download/latest.json`, so a release reaches them
+# once it is published and GitHub's "latest". Builds from main are `development.yml`.
 #
-# Secrets: `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` sign the updater bundles (the
-# public half is `plugins.updater.pubkey` in `tauri.conf.json`). The Apple ones (`APPLE_CERTIFICATE`,
-# `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`) are
-# optional: without them the macOS app is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), which macOS opens
-# as from an "unidentified developer".
+# Secrets: `desktop-build.yml`.
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: preview only prints the version and notes; candidate and stable tag and build a draft release
+        description: preview only prints the version and notes; stable tags and builds a draft release
         type: choice
-        options: [preview, candidate, stable]
+        options: [preview, stable]
         default: preview
         required: true
 
@@ -44,6 +38,7 @@ jobs:
       contents: write
     outputs:
       tag: ${{ steps.plan.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
       release-id: ${{ steps.release.outputs.id }}
     steps:
       # A release is cut from main only. And never re-run as a whole: a second attempt would compute a new version
@@ -75,6 +70,13 @@ jobs:
         env:
           MODE: ${{ inputs.mode }}
 
+      - name: Name the version
+        id: version
+        if: steps.plan.outputs.tag != ''
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+
       # The tag first: tauri-action looks the release up by it. An existing tag fails the step.
       - name: Create the tag and the draft release
         id: release
@@ -88,161 +90,37 @@ jobs:
             -f name="githq $TAG" \
             -F body=@"$RUNNER_TEMP/notes.md" \
             -F draft=true \
-            -F prerelease="$PRERELEASE" \
             --jq .id)
           echo "id=$release_id" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.plan.outputs.tag }}
-          PRERELEASE: ${{ contains(steps.plan.outputs.tag, '-') }}
 
-  # The app the desktop window loads, built once for every platform: it is the same static files everywhere.
-  spa:
+  build:
     needs: prepare
     if: needs.prepare.outputs.tag != ''
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-
-      - name: Build
-        run: bash setup.build.sh
-
-      - name: Build the desktop app's SPA
-        run: bun --cwd packages/app build:desktop
-        env:
-          # The production OAuth App the desktop sign-in (Device Flow) uses.
-          GITHQ_ENV: prod
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: desktop-spa
-          path: packages/app/.output-desktop/public
-          if-no-files-found: error
-
-  bundle:
-    needs: [prepare, spa]
     permissions:
       contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: macos-latest
-            target: aarch64-apple-darwin
-            args: --target aarch64-apple-darwin
-          - platform: macos-latest
-            target: x86_64-apple-darwin
-            args: --target x86_64-apple-darwin
-          # NSIS only: WiX (.msi) takes no version with a non-numeric prerelease part (`0.1.0-rc.1`), and the
-          # updater replaces an NSIS install whatever its version.
-          - platform: windows-latest
-            target: x86_64-pc-windows-msvc
-            args: --bundles nsis
-          # No .rpm: it takes no `-` in a version (`0.1.0-rc.1`). The AppImage updates itself; the .deb does not.
-          - platform: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-            args: --bundles deb,appimage
-    runs-on: ${{ matrix.platform }}
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: desktop-spa
-          path: packages/app/.output-desktop/public
-
-      # Tauri v2's Linux prerequisites (https://v2.tauri.app/start/prerequisites/#linux), patchelf for the AppImage.
-      - name: Install the Linux build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev \
-            librsvg2-dev libdbus-1-dev patchelf
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: packages/desktop/src-tauri -> target
-          key: ${{ matrix.target }}
-
-      # The version from the tag; the SPA is already built, so no `beforeBuildCommand`; and the signed updater
-      # bundles, left out of the committed config so a local build needs no signing key. The Tauri CLI is the
-      # version `packages/desktop` pins, run through npx: no `bun install` of the whole workspace for it.
-      - name: Configure the release build
-        id: configure
-        shell: bash
-        run: |
-          config=packages/desktop/src-tauri/tauri.conf.json
-          jq --arg version "${TAG#v}" \
-            '.version = $version | del(.build.beforeBuildCommand) | .bundle.createUpdaterArtifacts = true' \
-            "$config" > "$RUNNER_TEMP/tauri.conf.json"
-          mv "$RUNNER_TEMP/tauri.conf.json" "$config"
-          echo "cli=$(jq -r '.devDependencies["@tauri-apps/cli"]' packages/desktop/package.json)" >> "$GITHUB_OUTPUT"
-        env:
-          TAG: ${{ needs.prepare.outputs.tag }}
-
-      # Apple signing and notarization only with the secrets set: an empty `APPLE_CERTIFICATE` in the environment
-      # counts as present and fails the bundle (tauri-apps/tauri-action#234). The heredoc form keeps a multi-line
-      # value intact; values are never printed.
-      - name: Use the Apple signing secrets that are set
-        if: runner.os == 'macOS'
-        run: |
-          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
-            value="${!name}"
-            if [ -n "$value" ]; then
-              delimiter="EOF_$(openssl rand -hex 16)"
-              {
-                echo "$name<<$delimiter"
-                printf '%s\n' "$value"
-                echo "$delimiter"
-              } >> "$GITHUB_ENV"
-              echo "$name: set"
-            fi
-          done
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Picks the client ID compiled into the app (`build.rs`), as it does for the SPA.
-          GITHQ_ENV: prod
-          # aws-lc-sys (rustls, through reqwest) assembles with NASM on x86_64 Windows, which the runner lacks;
-          # this uses its prebuilt objects instead. Ignored on every other target.
-          AWS_LC_SYS_PREBUILT_NASM: 1
-        with:
-          projectPath: packages/desktop
-          tauriScript: npx --yes @tauri-apps/cli@${{ steps.configure.outputs.cli }}
-          args: ${{ matrix.args }}
-          releaseId: ${{ needs.prepare.outputs.release-id }}
-          # Names the release in `latest.json`'s download URLs.
-          tagName: ${{ needs.prepare.outputs.tag }}
-          releaseDraft: true
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
+    uses: ./.github/workflows/desktop-build.yml
+    secrets: inherit
+    with:
+      ref: ${{ github.sha }}
+      tag: ${{ needs.prepare.outputs.tag }}
+      version: ${{ needs.prepare.outputs.version }}
+      release-id: ${{ needs.prepare.outputs.release-id }}
+      # NSIS only on Windows: the updater replaces an NSIS install whatever its version.
+      platforms: >-
+        [
+          {"runner": "macos-latest", "target": "aarch64-apple-darwin", "args": "--target aarch64-apple-darwin"},
+          {"runner": "macos-latest", "target": "x86_64-apple-darwin", "args": "--target x86_64-apple-darwin"},
+          {"runner": "windows-latest", "target": "x86_64-pc-windows-msvc", "args": "--bundles nsis"},
+          {"runner": "ubuntu-22.04", "target": "x86_64-unknown-linux-gnu", "args": "--bundles deb,appimage"}
+        ]
 
   # Each platform adds itself to the release's `latest.json`; two finishing at once could drop one. An app on a
   # platform missing there would never update, so the release fails instead.
   updater-json:
-    needs: [prepare, bundle]
+    needs: [prepare, build]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # Drafts are visible only with write access.
