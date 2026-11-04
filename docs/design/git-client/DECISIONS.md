@@ -309,23 +309,36 @@ both, so it has one place and one width. Panel widths are local ([settings-sync 
 
 ## D16
 
-**A commit's details open only in a panel, on the right of the graph with the branch and tag list staying on its left, in
-both layouts, never as a modal or a page. `J` and `K` keep moving through the graph with the panel open and it follows;
-`P` goes to the first parent, `⇧P` to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O`
-opens it on GitHub, `Esc` closes. `B` goes to the list's filter and the panel stays. Below about 1,200 px of window, one
-threshold in both layouts, the panel opens over the graph from the right; in the tabs layout the list and the panel are
-then one at a time. On a wide window the panel is 440 px, giving up width where the graph would have under 240 px.**
-(2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29, CH42; on the right with
-the list staying by the owner 2026-11-03)
+**A commit's details show in a panel, never as a modal or a page, and the selection shows them: the panel is open from the
+moment the section opens, on the selected commit, which starts as the newest commit of the default branch, or the top row
+when that one is not loaded. `J`, `K` and a click move through the graph and it follows; `P` goes to the first parent, `⇧P`
+to the second of a merge, `⇧↵` opens the commit's pull request as any item opens, `O` opens it on GitHub. `Esc` closes it and
+the next move shows it again, as does `↵`; a row disappearing is not a move. `B` goes to the list's filter and the panel
+stays. On a wide window the panel is on the right of the graph with the list staying on its left, in both layouts: 440 px by
+default, its left edge dragged or moved with `←`/`→` from 320 px to what leaves the graph 240 px, kept on the device under
+its own name, and giving up width where the graph would have under 240 px. Below about 1,200 px of window, one threshold in
+both layouts, it sits under the graph at the pane's full width and a fixed 45% of the height (CH48); the list over the graph
+covers the graph only.** (2026-11-02, design agent's proposal, owner picked the panel over the modal; CH18, CH20, CH27–CH29,
+CH42; on the right with the list staying by the owner 2026-11-03; following the selection, the default branch's start, `Esc`,
+the width and the place under the graph by the owner 2026-11-03, the numbers the agent's)
 
 **Why.** A commit is not an item: nothing in it is edited or commented, and it is read against the graph beside
-it, which a modal or a page would hide.
+it, which a modal or a page would hide. Selecting a commit is already asking about it, so a key to see it adds a step and
+nothing else. Over the graph on a narrow window it would hide the rows it follows for as long as it is open, which is now
+all the time, so it goes under them. The default branch is where a repository stands, while the top row may be any branch.
 
 **Rejected.**
 
 - The details as a modal — hides the graph that `J` and `K` move through (owner picked CH18; the modal was CH19, deleted).
 - The details in the list's place, the first version of this decision and now on the left — gives the graph more width,
   but moves it sideways at every open and close, and keeps the two layouts different (owner, 2026-11-03,
+  [history](history/DECISIONS.md#d16)).
+- The details opening only on `↵` (the first version of this decision) — a step between selecting a commit and reading it
+  (owner, 2026-11-03, [history](history/DECISIONS.md#d16)).
+- `Esc` keeping the details closed until `↵` — a way to walk the graph at full width, but the selection would then show them
+  only sometimes (owner, 2026-11-03).
+- On a narrow window, the details over the graph from the right, one at a time with the list, opening only on `↵` — the
+  graph's rows hidden, or a different behaviour under one threshold (owner, 2026-11-03,
   [history](history/DECISIONS.md#d16)).
 
 ## D17
@@ -353,14 +366,14 @@ graph is worth the width. Panel widths are local ([settings-sync D7](../settings
 ## D18
 
 **A row reads: graph, worktree markers (desktop), branches and tags, headline, then right after the headline the
-pull request's state and number and the CI mark; the author (16 px avatar and name) and the age are aligned at the
+pull request's state and number, the number a link to it that opens it as any item opens, and the CI mark; the author (16 px avatar and name) and the age are aligned at the
 right edge. Rows alternate with a very faint stripe. A failing commit is a red dot and a red ✕ after its pull request,
 and its text is never red; running is amber in both places. A merge is a hollow dot with a dimmed headline. Pull request
 and CI not known yet are an empty bar, never a blank. Where the rows are narrow (details open, the column layout) the
 headline is cut first and the author's name gives way to the avatar.** (2026-11-02, owner: pull request and checks to
 the right of the headline, "not somewhere far right in a separate column"; the author as avatar and name, the avatar a
 little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
-the narrow-row rule is the design agent's; CH12, CH34)
+the narrow-row rule is the design agent's; CH12, CH34; the link by the owner 2026-11-03)
 
 **Why.** Read with the headline, the pull request and CI belong to it; in a far column they are hard to tie to the
 right commit. The stripe carries the eye from a dot far to the left to its row in a wide graph.

@@ -225,7 +225,7 @@ export const Commits: Story = {
             },
         }),
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(await findGraphRow(canvasElement)).toBeVisible();
     },
 };
 
@@ -234,7 +234,7 @@ export const CommitsNotTracked: Story = {
     args: { ...Commits.args, tracked: false },
     render: Commits.render,
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(await findGraphRow(canvasElement)).toBeVisible();
     },
 };
 
@@ -270,7 +270,7 @@ export const ColumnCommits: Story = {
     render: Commits.render,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(await canvas.findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(await findGraphRow(canvasElement)).toBeVisible();
         await expect(await canvas.findByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
         await expect(canvas.getByRole('heading', { name: 'Commits', level: 1 })).toBeVisible();
     },
@@ -282,7 +282,7 @@ export const ColumnCommitsNotTracked: Story = {
     render: Commits.render,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(await canvas.findByText('chore: bump vite to 6.2')).toBeVisible();
+        await expect(await findGraphRow(canvasElement)).toBeVisible();
         await expect(canvas.getByText('not tracked')).toBeVisible();
     },
 };
@@ -304,7 +304,7 @@ export const ColumnCommitDetails: Story = {
     render: Commits.render,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('chore: bump vite to 6.2');
+        await findGraphRow(canvasElement);
         await userEvent.keyboard('{Enter}');
         await expect(await canvas.findByRole('region', { name: 'Commit details' })).toBeVisible();
         await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
@@ -331,4 +331,10 @@ function sampleStackedList(items: readonly Item[], grouping: RepositoryGrouping)
 
 function options(layout: ListLayout, grouping: RepositoryGrouping): ListViewOptions<RepositoryGrouping, ItemSort> {
     return { ...REPOSITORY_VIEW_DEFAULTS, layout, grouping };
+}
+
+/** A commit's headline in the graph: the open details name it too, when it is a parent of the selected commit. */
+async function findGraphRow(canvasElement: HTMLElement) {
+    const graph = await within(canvasElement).findByRole('region', { name: /^Commits of/ });
+    return within(graph).findByText('chore: bump vite to 6.2');
 }

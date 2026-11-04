@@ -180,6 +180,7 @@ async function mount(options: CommitGraphTestOptions, oid: string, refs: readonl
                 chosenRef: null,
                 url: `https://github.com/${REPOSITORY}/commit/${oid}`,
                 now: SAMPLE_COMMITS_NOW,
+                docked: 'side',
             }),
     });
     app.use(IocPlugin, { container });
