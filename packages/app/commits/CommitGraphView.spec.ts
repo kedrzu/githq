@@ -1753,6 +1753,19 @@ test("back from a run's page: the cursor on its commit in view, its details, kep
     await userEvent.keyboard('j');
     await expect.element(details().getByRole('heading', { name: 'Commit c99' })).toBeVisible();
 
+    // Somewhere else after the run's page, and the place is gone: only coming straight back finds it.
+    await view.router.push(RUN);
+    await view.router.push('/acme/web/pull/1');
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+    await userEvent.click(page.getByRole('row', { name: /v1/ }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c100' })).toBeVisible();
+    await view.router.push(RUN);
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c100');
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'Commit c99' })).toBeVisible();
+
     // Used once: another page next, and it starts at its start. Leaving for it keeps nothing, details open or not.
     await view.router.push('/acme/web/pull/1');
     await view.router.push(COMMITS);

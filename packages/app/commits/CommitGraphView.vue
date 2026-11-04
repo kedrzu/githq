@@ -6,7 +6,7 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { onWindowResize } from '@nzyme/vue-utils/onWindowResize.js';
 import { CloudOff, Flag, GitCommitHorizontal, LoaderCircle, MoveHorizontal } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import { useCommands } from '@/commands/useCommands.js';
@@ -19,7 +19,7 @@ import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
-import { isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
+import { getRepositoryPath, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
@@ -61,6 +61,7 @@ const accounts = useService(AccountSession);
 const browser = useService(Browser);
 const clock = useService(Clock);
 const route = useRoute();
+const router = useRouter();
 const openItemReference = useOpenItemReference();
 const t = useTranslate();
 const now = useNow(AGE_TICK_MS);
@@ -457,6 +458,17 @@ onBeforeUnmount(() => {
   // that repository's, which never go under this one's place.
   if (opened.value && isWorkflowRunRoute(route) && props.nameWithOwner === repositorySetUp) {
     store.setPlace(repositorySetUp, { cursorOid: cursor.selectedKey, opened: opened.value });
+    // Only coming straight back from a run's page finds the place: anywhere else first, and it is gone.
+    const stopFollowing = router.afterEach((to, _from, failure) => {
+      if (failure || isWorkflowRunRoute(to)) {
+        return;
+      }
+
+      stopFollowing();
+      if (to.path !== getRepositoryPath(repositorySetUp) && to.path !== getRepositoryPath(repositorySetUp, 'commits')) {
+        store.takePlace(repositorySetUp);
+      }
+    });
   }
 });
 
