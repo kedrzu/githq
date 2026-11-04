@@ -1,0 +1,8 @@
+closedOne:
+  en: Closed {reference}
+closedMany:
+  en: Closed {count} items
+undo:
+  en: Undo
+undoCommand:
+  en: Undo closing
