@@ -11,14 +11,17 @@ import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
+    BROKEN_WORKFLOWS_PATH,
     FIRST_DOWNLOAD_PATH,
     GITHUB_RESERVED_SEGMENTS,
     PROJECT_PATHS,
     PROJECT_SETTINGS_PATHS,
     REPOSITORY_PATH,
     REPOSITORY_SETTINGS_PATH,
+    WORKFLOW_RUN_JOB_PATH,
+    WORKFLOW_RUN_PATH,
+    getRouteNameWithOwner,
 } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 // The only place routes are declared. Routes Nuxt would scan from files are not used (`nuxt.config.ts` fails
 // the build if any exist). Who may open each one is its `meta.auth` (`auth/routeAccess.ts`); the app's screens
@@ -115,13 +118,26 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         component: () => import('@/workflows/BrokenWorkflowsPage.vue'),
         meta: { auth: 'signedIn', layout: 'shell' },
     };
+    // A workflow's run, at GitHub's addresses of it and of its jobs; one page instance for both (`key`), so moving
+    // between the jobs keeps the page. Static segments outrank the repository's other pages' hand-off to github.com.
+    for (const [name, path] of [
+        ['workflow-run', WORKFLOW_RUN_PATH],
+        ['workflow-run-job', WORKFLOW_RUN_JOB_PATH],
+    ] as const) {
+        yield {
+            path,
+            name,
+            component: () => import('@/workflows/WorkflowRunPage.vue'),
+            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey },
+        };
+    }
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
     // repository and its lists of issues and pull requests (`key`), so switching between them keeps the screen.
     yield {
         path: REPOSITORY_PATH,
         name: 'repository',
         component: () => import('@/repository/RepositoryPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: getRepositoryPageKey },
+        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner },
     };
     for (const [index, path] of PROJECT_PATHS.entries()) {
         yield {
@@ -177,6 +193,10 @@ function* getRoutes(): Generator<RouteRecordRaw> {
     };
 }
 
+function getWorkflowRunKey(to: RouteLocation) {
+    return `workflow-run:${getRouteNameWithOwner(to)}:${String(to.params.run)}`;
+}
+
 function getSignInRedirect(to: RouteLocation): RouteLocationRaw {
     const query: LocationQueryRaw = {};
     for (const key of ['next', 'return_to', 'failed']) {
@@ -192,8 +212,4 @@ function getSignInRedirect(to: RouteLocation): RouteLocationRaw {
 function getItemPageRedirect(to: RouteLocation, name: string): RouteLocationRaw {
     const { owner, name: repository, number } = to.params;
     return { name, params: { owner, name: repository, number }, query: to.query, hash: to.hash };
-}
-
-function getRepositoryPageKey(route: RouteLocation) {
-    return `${String(route.params.owner)}/${String(route.params.name)}`;
 }

@@ -50,7 +50,7 @@ test('broken workflows are grouped by how new the break is, not by repository, t
     expect(broken).toMatchObject({ brokenCount: 4, brokenRepositoryCount: 2, readCount: 2 });
 });
 
-test('a row names the ref its latest failure ran on and is keyed by repository and workflow', () => {
+test('a row names the group it broke in and is keyed by repository and workflow', () => {
     const [entry] = buildBrokenWorkflows([
         sampleRepositoryWorkflows({ nameWithOwner: WEBAPP, workflows: [brokenSince(2, 'Deploy', '3h')] }),
     ]).fresh;
@@ -61,6 +61,29 @@ test('a row names the ref its latest failure ran on and is keyed by repository a
         moreRefCount: 0,
     });
     expect(entry?.workflow.latestFailedRun?.htmlUrl).toBe(`https://github.com/${WEBAPP}/actions/runs/2002`);
+});
+
+test('a workflow broken in two groups is one row: it names the newest break — a pattern, with its ref’s kind — and "+1" for the other', () => {
+    const [entry] = buildBrokenWorkflows([
+        sampleRepositoryWorkflows({
+            nameWithOwner: WEBAPP,
+            workflows: [
+                {
+                    id: 2,
+                    name: 'Release',
+                    runs: [
+                        { conclusion: 'failure', ago: '2d' },
+                        { conclusion: 'success', ago: '30h', branch: 'v0.1.0' },
+                        // A pass on main hides nothing of the tags' failure.
+                        { conclusion: 'failure', ago: '3h', branch: 'v0.2.0' },
+                    ],
+                },
+            ],
+        }),
+    ]).fresh;
+
+    expect(entry).toMatchObject({ gitRef: { name: 'v*', kind: 'tag' }, moreRefCount: 1 });
+    expect(entry?.workflow.latestFailedRun?.headBranch).toBe('v0.2.0');
 });
 
 test('repositories not read yet are listed apart and claimed neither broken nor healthy', () => {

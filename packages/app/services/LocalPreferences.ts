@@ -11,12 +11,14 @@ import { Browser } from './Browser.js';
 
 const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
+const LOG_WRAP_KEY = 'githq.logWrap';
+const LOG_TIMES_KEY = 'githq.logTimes';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
 const PANEL_SHARE_KEY_PREFIX = 'githq.panelShare.';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed and the widths the user dragged the panels to, in pixels or as a share of what holds them. The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, and how job logs show. The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -39,13 +41,10 @@ export const LocalPreferences = defineService({
             serialize: value => value,
             deserialize: raw => ITEM_ARRANGEMENTS.find(candidate => candidate === raw) ?? 'panel',
         });
-        const sidebarCollapsed = storageRef<boolean>({
-            key: SIDEBAR_COLLAPSED_KEY,
-            storage,
-            default: () => false,
-            serialize: String,
-            deserialize: raw => raw === 'true',
-        });
+        const flags = new Map<string, StorageRef<boolean>>();
+        const sidebarCollapsed = getFlag(SIDEBAR_COLLAPSED_KEY);
+        const logWrap = getFlag(LOG_WRAP_KEY);
+        const logTimes = getFlag(LOG_TIMES_KEY);
         const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -56,8 +55,10 @@ export const LocalPreferences = defineService({
                 itemArrangement.reload();
             }
 
-            if (key === null || key === SIDEBAR_COLLAPSED_KEY) {
-                sidebarCollapsed.reload();
+            for (const [flagKey, flag] of flags) {
+                if (key === null || key === flagKey) {
+                    flag.reload();
+                }
             }
 
             for (const [panelKey, size] of panelSizes) {
@@ -72,9 +73,26 @@ export const LocalPreferences = defineService({
             itemArrangement,
             /** Whether the sidebar is collapsed to its icons. */
             sidebarCollapsed,
+            /** Whether a job's log wraps its long lines (actions W4d); off, so that lines stay scannable. */
+            logWrap,
+            /** Whether a job's log shows each line's own time (actions W4d). */
+            logTimes,
             getPanelWidth,
             getPanelShare,
         };
+
+        /** A yes or no kept under `key`, no by default. */
+        function getFlag(key: string) {
+            const flag = storageRef<boolean>({
+                key,
+                storage,
+                default: () => false,
+                serialize: String,
+                deserialize: raw => raw === 'true',
+            });
+            flags.set(key, flag);
+            return flag;
+        }
 
         /**
          * The width in pixels the user dragged the panel `panel` to (`githq.panelWidth.<panel>`); `null` while none is

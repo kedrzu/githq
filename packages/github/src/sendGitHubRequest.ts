@@ -33,6 +33,8 @@ export interface GitHubAnswer {
     headers: Headers;
     /** The parsed JSON body; `undefined` when empty (a 304) or not JSON. */
     payload: unknown;
+    /** The body as sent, for an answer that is not JSON (a job's log). */
+    text: string;
     /** The answer's `retry-after`, in seconds; for errors the caller raises from a 2xx answer. */
     retryAfter: number | undefined;
 }
@@ -77,7 +79,7 @@ export async function sendGitHubRequest(
         });
     }
 
-    return { status: response.status, headers: response.headers, payload, retryAfter };
+    return { status: response.status, headers: response.headers, payload, text: body, retryAfter };
 }
 
 function readRateLimit(headers: Headers): GitHubRateLimit | undefined {

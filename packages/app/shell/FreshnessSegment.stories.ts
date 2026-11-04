@@ -32,6 +32,11 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** A repository's workflows listed, the first read of their runs under way (actions W3c). */
+export const ReadingRuns: Story = { args: { freshness: { kind: 'reading', read: 2, total: 6 } } };
+
+/** A run's page is waiting for a log (actions W4e). */
+export const ReadingLog: Story = { args: { freshness: { kind: 'readingLog', job: 'build' } } };
 /** A first open's other branches arriving (git-client D19). */
 export const FillingIn: Story = { args: { freshness: { kind: 'filling', done: 3, total: 7 } } };
 
@@ -43,6 +48,11 @@ export const Failing: Story = { args: { freshness: { kind: 'stale', since: AT_14
 
 /** GitHub refusing a repository's changes (a 403): amber, asked again hourly. */
 export const Refused: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'refused' } } };
+
+/** W3e: GitHub no longer lists a repository's workflows; the rows below are the last known ones. */
+export const WorkflowsUnavailable: Story = {
+    args: { freshness: { kind: 'stale', since: null, reason: 'workflowsUnavailable' } },
+};
 
 /** Refresh paused by the allowance: since when the list has not been refreshed. */
 export const Paused: Story = {

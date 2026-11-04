@@ -1,4 +1,4 @@
-<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number) and its CI mark; the author (avatar and name) and the age at the right edge. A failure is the red dot and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
+<!-- A commit's row in the graph (git-client D18, CH12): its slice of the graph, the branches and tags pointing at it (up to three, then "+N"), its headline — dimmed for a merge — and right after it the pull request it came from (state and number, a link to it) and its CI mark; the author (avatar and name) and the age at the right edge. A failure is the red dot and a red ✕, never red text; running is amber in both. While the pull request and CI are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing there. Where the row is narrow the headline is cut first and the author's name gives way to the avatar. -->
 <script lang="ts">
 /** A row's height: the graph's lines span it, and the list places and sizes rows by it. */
 export const COMMIT_ROW_HEIGHT = 32;
@@ -16,6 +16,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import type { ItemReference } from '@/item/itemRoutes.js';
 import { classifyStatus } from '@/store/classifyChecks.js';
 import { formatAge } from '@/utils/formatAge.js';
 
@@ -42,6 +43,11 @@ const props = defineProps<{
   state: CommitState | undefined;
   /** Epoch ms its age is counted to. */
   now: number;
+}>();
+
+const emit = defineEmits<{
+  /** A click on its pull request's number. */
+  openPullRequest: [reference: ItemReference];
 }>();
 
 /** How many refs a row names before "+N". */
@@ -94,6 +100,8 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
       <CommitStateMarks
         :class="css.commitRow_marks"
         :state="state"
+        linked
+        @open-pull-request="emit('openPullRequest', $event)"
       />
     </div>
     <span :class="css.commitRow_spacer" />

@@ -1,7 +1,7 @@
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, nextTick, ref, toValue, watch } from 'vue';
-import type { MaybeRefOrGetter } from 'vue';
+import type { MaybeRefOrGetter, Ref } from 'vue';
 
 import { followSelection } from './followSelection.js';
 import { isActivatableTarget } from './isActivatableTarget.js';
@@ -15,6 +15,11 @@ interface RowSelectionListOptions<T> {
     getKey(row: T): string;
     /** Whether the first row is the selected one until the user moves; otherwise nothing is selected until then. */
     readonly selectFirst?: boolean;
+    /**
+     * The row the user moved to, for a screen that keeps it after it is gone; held here otherwise. One no longer listed
+     * selects as if the user had not moved.
+     */
+    readonly chosenKey?: Ref<string | null>;
     /** Enter on the selected row. */
     open(row: T): void;
     /** Whether the keys are the list's now; always when not given. Something opened over it may take them. */
@@ -42,11 +47,15 @@ export interface UseRowSelectionVirtualOptions<T> extends RowSelectionListOption
 export type UseRowSelectionOptions<T> = UseRowSelectionDrawnOptions<T> | UseRowSelectionVirtualOptions<T>;
 
 /** The selection of a list the keys move through. */
-export interface RowSelectionViewModel {
+export interface RowSelectionViewModel<T> {
     /** The selected row's key; `null` with nothing selected. */
     readonly selectedKey: string | null;
+    /** The selected row; `null` with nothing selected. */
+    readonly selectedRow: T | null;
     /** Selects a row, as the keys would (a click on it). */
     select(key: string): void;
+    /** Scrolls the selected row into sight. */
+    reveal(): void;
     /** Moves the selection by a row and brings it into sight, as the keys do (a button doing what they do). */
     step(by: 1 | -1): void;
 }
@@ -54,18 +63,23 @@ export interface RowSelectionViewModel {
 /**
  * The selection of a screen's list of rows: J/K and ↓/↑ move it — from nothing selected, either way to the first
  * row — and bring the selected row into sight, Enter opens the selected row (not from a button or a link, which do
- * what they say, nor with Shift, a screen's own), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
+ * what they say, nor with Shift, a screen's own; moving takes the focus off one, to the root if it can hold it), and a row gone moves it to its nearest neighbour ({@link followSelection}). Keys only while the
  * screen has them ({@link isScreenKey}).
  * @util
  */
-export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel {
+export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelectionViewModel<T> {
     /** The row the user moved to; `null` until they do. */
-    const chosenKey = ref<string | null>(null);
+    const chosenKey = options.chosenKey ?? ref<string | null>(null);
 
     const keys = computed(() => toValue(options.rows).map(row => options.getKey(row)));
-    const selectedKey = computed(() =>
-        options.selectFirst ? (chosenKey.value ?? keys.value[0] ?? null) : chosenKey.value,
-    );
+    const selectedKey = computed(() => {
+        const chosen = chosenKey.value;
+        if (!options.selectFirst) {
+            return chosen;
+        }
+
+        return chosen !== null && keys.value.includes(chosen) ? chosen : (keys.value[0] ?? null);
+    });
     const selectedRow = computed(
         () => toValue(options.rows).find(row => options.getKey(row) === selectedKey.value) ?? null,
     );
@@ -98,7 +112,7 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
     });
 
-    return reactive<RowSelectionViewModel>({ selectedKey, select, step });
+    return reactive<RowSelectionViewModel<T>>({ selectedKey, selectedRow, select, reveal, step });
 
     function select(key: string) {
         chosenKey.value = key;
@@ -113,16 +127,30 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
 
         chosenKey.value = next;
+        // A button clicked keeps the focus: moved off it, Enter is the selected row's again.
+        if (isActivatableTarget(document.activeElement)) {
+            toValue(options.root)?.focus({ preventScroll: true });
+        }
+
         if (options.reveal) {
             options.reveal(next);
+        } else {
+            void nextTick(reveal);
+        }
+    }
+
+    function reveal() {
+        const key = selectedKey.value;
+        if (key === null) {
             return;
         }
 
-        const { root, keyAttribute } = options;
-        void nextTick(() => {
-            toValue(root)
-                ?.querySelector(`[${keyAttribute}="${CSS.escape(next)}"]`)
+        if (options.reveal) {
+            options.reveal(key);
+        } else {
+            toValue(options.root)
+                ?.querySelector(`[${options.keyAttribute}="${CSS.escape(key)}"]`)
                 ?.scrollIntoView({ block: 'nearest' });
-        });
+        }
     }
 }

@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1–J3) at GitHub's addresses of its lists and its history, from the local copy, a section each (git-client D14), tracked or not; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1–J3) at GitHub's addresses of its lists and its history, from the local copy, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. An untracked repository shows what concerns the user and points to Settings (J3), saying how many of its other items are open on GitHub — read on demand for it alone, never for a tracked one (CH37). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -29,6 +29,11 @@ import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { getProjectPath, getRepositoryPath, getRepositorySection } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
+import { buildRepositoryWorkflows } from '@/workflows/buildRepositoryWorkflows.js';
+import RepositoryWorkflowsHints from '@/workflows/RepositoryWorkflowsHints.vue';
+import RepositoryWorkflowsTab from '@/workflows/RepositoryWorkflowsTab.vue';
+import { WorkflowStore } from '@/workflows/WorkflowStore.js';
+import { WorkflowTabPlaces } from '@/workflows/WorkflowTabPlaces.js';
 
 import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
@@ -47,6 +52,7 @@ const items = useService(ItemStore);
 const projects = useService(ProjectStore);
 const tracking = useService(TrackingStore);
 const repositories = useService(RepositoryStore);
+const workflows = useService(WorkflowStore);
 const editor = useService(ItemEditor);
 const route = useRoute();
 const router = useRouter();
@@ -54,6 +60,7 @@ const t = useTranslate();
 const list = useItemList();
 const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
+const workflowPlaces = useService(WorkflowTabPlaces);
 const graphView = useTemplateRef<InstanceType<typeof CommitGraphView>>('graphView');
 
 /** Each section's state, kept while the page is. */
@@ -84,6 +91,12 @@ const state = computed({
   set: (value: RepositoryState) => {
     states.value = { ...states.value, [listSection.value]: value };
   },
+});
+
+/** The workflow unfolded in the Workflows section (actions W3b), which the toolbar's key hints follow; `null` with none. */
+const unfoldedWorkflow = computed({
+  get: () => workflowPlaces.get(repositoryName).unfolded,
+  set: (unfolded: string | null) => workflowPlaces.update(repositoryName, { unfolded }),
 });
 
 // The section shown is remembered, so the links to this repository open it next time (`LastRepositoryTab.getPath`).
@@ -149,6 +162,14 @@ const shownList = computed(() => {
     }),
   };
 });
+/** Its Workflows section (actions W3a), and the tab's count. */
+const workflowList = computed(() =>
+  buildRepositoryWorkflows({
+    stored: workflows.get(nameWithOwner.value),
+    settings: workflows.getRefSettings(nameWithOwner.value),
+    now: list.now,
+  }),
+);
 /** How many open items each section holds, for its tab. */
 const openCounts = computed((): Record<RepositoryItemSection, number> => {
   const open = repositoryItems.value.filter(item => item.state === 'OPEN');
@@ -197,6 +218,16 @@ const projectLinks = computed(() => {
 
 // The repository's page on GitHub is in the command menu too, named, as the screen is about it.
 useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
+
+// No longer tracked, here or elsewhere, its Workflows section goes (actions D4): its other sections stay on screen.
+watch(
+  () => section.value === 'workflows' && nameWithOwner.value === repositoryName && tracking.loaded && !tracked.value,
+  leave => {
+    if (leave) {
+      section.value = 'issues';
+    }
+  },
+);
 
 // What the user may set here (labels, milestones, people) is read with the repository's permission; not tracked,
 // GitHub's counts of its open items, for the lines saying how many githq does not have. Neither on Commits, which asks
@@ -296,6 +327,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :opened-id="list.openedId"
     :undone="list.undone"
     :can-move="canMove"
+    :workflow-count="tracked ? workflowList.count : null"
     :layout="tracking.repositoryLayout"
     @update:options="view.set($event)"
     @reset="view.reset()"
@@ -304,6 +336,20 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     @move="move"
     @open-ref-list="graphView?.openRefList()"
   >
+    <template #workflows>
+      <RepositoryWorkflowsTab
+        v-model:unfolded="unfoldedWorkflow"
+        :name-with-owner="nameWithOwner"
+        :list="workflowList"
+        :now="list.now"
+      />
+    </template>
+    <template #workflowsHints>
+      <RepositoryWorkflowsHints
+        v-if="workflowList.groups.length > 0"
+        :unfolded="unfoldedWorkflow !== null"
+      />
+    </template>
     <template #menu>
       <RepositoryContextMenu :name-with-owner="nameWithOwner" />
     </template>

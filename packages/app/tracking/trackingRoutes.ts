@@ -5,11 +5,28 @@ import type { RepositorySection } from '@/repository/RepositorySection.js';
 export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
 
 /**
- * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`, which opens
- * the section it was left on), its lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`)
- * and its commits (`/owner/name/commits`), all in one route.
+ * The broken workflows of every tracked repository (actions W2), under a first segment GitHub reserves
+ * (`/dashboard`), so the address is never an owner's or a repository's.
  */
-export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls|commits)?';
+export const BROKEN_WORKFLOWS_PATH = '/dashboard/workflows';
+
+/**
+ * The route path of a repository's view, at GitHub's addresses of it: the repository (`/owner/name`, which opens
+ * the section it was left on), its lists of issues and of pull requests (`/owner/name/issues`, `/owner/name/pulls`),
+ * its commits (`/owner/name/commits`) and its workflows (`/owner/name/actions`, actions D6), all in one route. The
+ * workflows' address of a repository not tracked is handed off to GitHub (`middleware/auth.global.ts`, actions D4).
+ */
+export const REPOSITORY_PATH = '/:owner/:name/:section(issues|pulls|commits|actions)?';
+
+/**
+ * The route path of a workflow's run of a tracked repository (actions W4a), at GitHub's address of it. Everything else
+ * under `actions/` (`attempts/…`, `workflows/…`, `runs/1/usage`) is GitHub's page, and so is this address of a
+ * repository not tracked (`middleware/auth.global.ts`, actions D4).
+ */
+export const WORKFLOW_RUN_PATH = '/:owner/:name/actions/runs/:run(\\d+)';
+
+/** The route path of a run with one of its jobs selected, at GitHub's address of the job. */
+export const WORKFLOW_RUN_JOB_PATH = `${WORKFLOW_RUN_PATH}/job/:job(\\d+)`;
 
 /**
  * The route path of a tracked repository's settings (T16), at GitHub's own address of a repository's settings. Its
@@ -22,7 +39,35 @@ export const REPOSITORY_SECTION_SEGMENTS = {
     issues: 'issues',
     pullRequests: 'pulls',
     commits: 'commits',
+    workflows: 'actions',
 } as const satisfies Record<RepositorySection, string>;
+
+/**
+ * The places on a tracked repository's settings page an address can point to, by their element's id: the page
+ * focuses the one named.
+ */
+export const REPOSITORY_SETTINGS_SECTIONS = {
+    /** Which branches and tags raise workflow alerts (actions D5). */
+    workflowAlerts: 'workflow-alerts',
+    /** Workflow alerts' add field, for a failure without alerts: `v*` is two keys away (actions W13). */
+    workflowAlertsAdd: 'workflow-alerts-add',
+} as const;
+
+/** A section of a tracked repository's settings page. */
+export type RepositorySettingsSection = keyof typeof REPOSITORY_SETTINGS_SECTIONS;
+
+/** What {@link getRouteNameWithOwner} reads of a route. */
+export interface GetRouteNameWithOwnerParams {
+    readonly params: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * The `owner/name` a repository's route names.
+ * @util
+ */
+export function getRouteNameWithOwner(route: GetRouteNameWithOwnerParams) {
+    return `${String(route.params.owner)}/${String(route.params.name)}`;
+}
 
 /** The origin every address githq does not show is handed off to; fixed here, never taken from an address. */
 export const GITHUB_ORIGIN = 'https://github.com';
@@ -95,7 +140,7 @@ export interface ProjectAddress {
 
 /**
  * The address of a repository's view, as on GitHub (`/owner/name`, opening the section it was left on), or of one of
- * its sections (`/owner/name/issues`, `/owner/name/pulls`, `/owner/name/commits`).
+ * its sections (`/owner/name/issues`, `/owner/name/pulls`, `/owner/name/commits`, `/owner/name/actions`).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -103,13 +148,49 @@ export function getRepositoryPath(nameWithOwner: string, section?: RepositorySec
     return section === undefined ? `/${nameWithOwner}` : `/${nameWithOwner}/${REPOSITORY_SECTION_SEGMENTS[section]}`;
 }
 
+/** Which run's address, and of which of its jobs. */
+export interface GetWorkflowRunPathParams {
+    /** `owner/name`. */
+    readonly nameWithOwner: string;
+    readonly runId: number;
+    readonly jobId?: number;
+}
+
 /**
- * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`).
+ * The address of a workflow's run, as on GitHub (`/owner/name/actions/runs/123`), or of one of its jobs
+ * (`/owner/name/actions/runs/123/job/456`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getRepositorySettingsPath(nameWithOwner: string) {
-    return `/${nameWithOwner}/settings`;
+export function getWorkflowRunPath(params: GetWorkflowRunPathParams) {
+    const { nameWithOwner, runId, jobId } = params;
+    const path = `/${nameWithOwner}/actions/runs/${runId}`;
+    return jobId === undefined ? path : `${path}/job/${jobId}`;
+}
+
+/**
+ * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`), or of one of its
+ * sections (`/owner/name/settings#workflow-alerts`), which the page brings into view.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getRepositorySettingsPath(nameWithOwner: string, section?: RepositorySettingsSection) {
+    const path = `/${nameWithOwner}/settings`;
+    return section ? `${path}#${REPOSITORY_SETTINGS_SECTIONS[section]}` : path;
+}
+
+/** What {@link isWorkflowRunRoute} reads of a route. */
+export interface IsWorkflowRunRouteParams {
+    readonly name?: unknown;
+}
+
+/**
+ * Whether a route shows a run of a repository's workflows.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isWorkflowRunRoute(route: IsWorkflowRunRouteParams) {
+    return route.name === 'workflow-run' || route.name === 'workflow-run-job';
 }
 
 /**
@@ -126,6 +207,8 @@ export function getRepositorySection(segment: unknown): RepositorySection | null
             return 'pullRequests';
         case REPOSITORY_SECTION_SEGMENTS.commits:
             return 'commits';
+        case REPOSITORY_SECTION_SEGMENTS.workflows:
+            return 'workflows';
         default:
             return null;
     }

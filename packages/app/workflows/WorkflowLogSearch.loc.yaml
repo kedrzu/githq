@@ -1,0 +1,28 @@
+label:
+  en: Search this job's log
+placeholder:
+  en: Search log
+position:
+  en: '{position} of {total}'
+noMatches:
+  en: No matches
+inSteps:
+  plural: count
+  en:
+    one: 'in {count} step'
+    many: 'in {count} steps'
+matchingLines:
+  plural: count
+  en:
+    one: '{shown} line'
+    many: '{shown} lines'
+ofLines:
+  en: 'of {total}'
+next:
+  en: Next
+previous:
+  en: Previous
+onlyMatches:
+  en: Only matches
+close:
+  en: Close
