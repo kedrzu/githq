@@ -6,6 +6,7 @@ import { History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import type { ReviewThreadRow } from '../buildReviewRows.js';
+import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
 import { parseDiffHunk } from './parseDiffHunk.js';
 import ReviewRowInset from './ReviewRowInset.vue';
 import ReviewThreadBox from './ReviewThreadBox.vue';
@@ -17,10 +18,16 @@ const props = defineProps<{
   /** A resolved thread shows whole. */
   open?: boolean;
   focused?: boolean;
+  /** Its reply box is open under it. */
+  replying?: boolean;
+  /** Why resolving it or opening it again didn't go through. */
+  resolveFailure?: ReviewWriteFailure | null;
 }>();
 
 const emit = defineEmits<{
   toggle: [];
+  reply: [];
+  setResolved: [resolved: boolean];
 }>();
 
 const t = useTranslate();
@@ -106,7 +113,11 @@ const codeLabel = computed(() => {
       :outdated-note="outdatedNote"
       :open="open"
       :focused="focused"
+      :replying="replying"
+      :resolve-failure="resolveFailure"
       @toggle="emit('toggle')"
+      @reply="emit('reply')"
+      @set-resolved="emit('setResolved', $event)"
     />
   </ReviewRowInset>
 </template>

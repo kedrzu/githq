@@ -43,6 +43,9 @@ function threadOnLine(line: number, overrides: Partial<ReviewThread> = {}): Revi
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: [],
         ...overrides,
     };
@@ -704,7 +707,7 @@ test('a place inside a resolved thread lands at its top: it comes back as one li
 });
 
 function commentOn(line: number, side: 'before' | 'after' = 'after', startLine: number | null = null) {
-    return { id: `box${line}`, path: A.path, side, line, startLine };
+    return { id: `box${line}`, path: A.path, side, line, startLine, threadId: null };
 }
 
 function commentRow(rows: readonly ReviewRow[], id: string) {
@@ -728,6 +731,19 @@ test('a comment box sits under its line and what is under that, on its own half 
     expect(onRight.above?.kind).toBe('thread');
     expect(commentRow(unified, 'box19').row).toMatchObject({ kind: 'comment', inline: 'unified' });
     expect(commentRow(unified, 'box19').above).toMatchObject({ kind: 'line', line: { newLine: 19 } });
+});
+
+test('a reply sits right under its thread, on its half; with its thread not shown, first, for its text to stay in sight', () => {
+    const thread = threadOnLine(19);
+    const threads = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [thread]);
+    const reply = { ...commentOn(19), id: 'reply', threadId: thread.id };
+
+    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads, comments: [reply] });
+    expect(commentRow(rows, 'reply').row).toMatchObject({ inline: 'right' });
+    expect(commentRow(rows, 'reply').above?.kind).toBe('thread');
+
+    const alone = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [reply] });
+    expect(alone[0]).toMatchObject({ kind: 'comment', inline: null });
 });
 
 test("a comment box whose line isn't shown stays in sight at the top of its file, and under a collapsed file's header", () => {

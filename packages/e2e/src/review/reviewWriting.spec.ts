@@ -14,14 +14,24 @@ const ADDRESS = '/acme/web/pull/3/files';
 const ENGINE = 'src/engine.ts';
 const LINES = Array.from({ length: 300 }, (_, index) => `const unchanged${index + 1} = ${index + 1};`);
 const BEFORE = `${LINES.join('\n')}\n`;
-const AFTER = `${LINES.map((line, index) => (index === 19 ? 'const changed20 = 20;' : line)).join('\n')}\n`;
+const AFTER = `${LINES.map((line, index) => {
+    if (index === 19) {
+        return 'const changed20 = 20;';
+    }
+
+    return index === 20 ? '    const indented21 = 21;' : line;
+}).join('\n')}\n`;
 const CHANGED_LINE = 'const changed20 = 20;';
 const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 const FIRST_KEY = 'ControlOrMeta+Enter';
 const SECOND_KEY = 'ControlOrMeta+Shift+Enter';
 
 /** A review of one pull request on a GitHub that takes and refuses writes as the real one does. */
-async function openWriting(page: Page, github: GitHubMock, options: { readonly draft?: number } = {}) {
+async function openWriting(
+    page: Page,
+    github: GitHubMock,
+    options: { readonly draft?: number; readonly threads?: readonly SampleReviewThread[] } = {},
+) {
     const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
     const id = world.pullRequest({
         repository: 'acme/web',
@@ -34,7 +44,7 @@ async function openWriting(page: Page, github: GitHubMock, options: { readonly d
     world.setPendingReview(id, draft === null ? null : { comments: draft, minutesAgo: 60 });
     await openMyWork(page, github, world);
 
-    const threads: SampleReviewThread[] = [];
+    const threads: SampleReviewThread[] = [...(options.threads ?? [])];
     answerReview(github, {
         repository: 'acme/web',
         number: 3,
@@ -116,6 +126,68 @@ async function openWriting(page: Page, github: GitHubMock, options: { readonly d
         threads.splice(0, threads.length, ...threads.filter(thread => !thread.pending));
         return { data: { deletePullRequestReview: { pullRequestReview: { id: 'R' } } } };
     });
+
+    github.graphqlDocument('AddPullRequestReviewThreadReply', ({ variables }) => {
+        writes.push({ name: 'AddPullRequestReviewThreadReply', variables });
+        const message = refused.get('AddPullRequestReviewThreadReply');
+        if (message !== undefined) {
+            return refusal(message);
+        }
+
+        const joins = draft !== null;
+        const at = threads.findIndex(thread => thread.id === variables.pullRequestReviewThreadId);
+        const thread = threads[at];
+        if (thread) {
+            threads[at] = {
+                ...thread,
+                comments: [...thread.comments, `<p>${String(variables.body)}</p>`],
+                pending: joins || thread.pending,
+            };
+        }
+
+        if (joins) {
+            setDraft((draft ?? 0) + 1);
+        }
+
+        return {
+            data: {
+                addPullRequestReviewThreadReply: {
+                    comment: {
+                        pullRequestReview: { id: 'DRAFT', state: joins ? 'PENDING' : 'SUBMITTED' },
+                    },
+                },
+            },
+        };
+    });
+    github.graphqlDocument('StartPullRequestReview', ({ variables }) => {
+        writes.push({ name: 'StartPullRequestReview', variables });
+        setDraft(0);
+        return {
+            data: {
+                addPullRequestReview: {
+                    pullRequestReview: { id: 'DRAFT', createdAt: '2026-01-01T00:00:00Z' },
+                },
+            },
+        };
+    });
+    const answerResolve = (name: string, field: string, isResolved: boolean) =>
+        github.graphqlDocument(name, ({ variables }) => {
+            writes.push({ name, variables });
+            const message = refused.get(name);
+            if (message !== undefined) {
+                return refusal(message);
+            }
+
+            const at = threads.findIndex(thread => thread.id === variables.threadId);
+            const thread = threads[at];
+            if (thread) {
+                threads[at] = { ...thread, isResolved };
+            }
+
+            return { data: { [field]: { thread: { id: variables.threadId } } } };
+        });
+    answerResolve('ResolveReviewThread', 'resolveReviewThread', true);
+    answerResolve('UnresolveReviewThread', 'unresolveReviewThread', false);
 
     await page.goto(ADDRESS);
     const review = new ReviewScreenHarness(page);
@@ -396,4 +468,222 @@ test('a range: a drag on the numbers, on one side, stopping at what hides lines;
     expect(writes[0]?.variables).toMatchObject({
         thread: { line: 22, startLine: 19, startSide: 'RIGHT', side: 'RIGHT' },
     });
+});
+
+const OPEN_THREADS: readonly SampleReviewThread[] = [
+    { id: 'T1', path: ENGINE, line: 20, comments: ['<p>First thread here</p>'] },
+    { id: 'T2', path: ENGINE, line: 21, comments: ['<p>Second thread here</p>'] },
+];
+
+test('R on the thread N is at opens its reply box; with no draft the reply goes at once and says Reply', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github, { threads: OPEN_THREADS });
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    await page.keyboard.press('r');
+
+    const box = review.commentBox('Reply to sofiab');
+    const field = review.commentField('Reply to sofiab');
+    await expect(field).toBeFocused();
+    await expect(box.getByRole('button', { name: 'Reply' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Start a review' })).toBeVisible();
+
+    await page.keyboard.type('nrC Agreed');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.thread('First thread here')).toContainText('nrC Agreed');
+    await expect(box).toBeHidden();
+    expect(writes.map(write => write.name)).toEqual(['AddPullRequestReviewThreadReply']);
+    expect(writes[0]?.variables).toEqual({ pullRequestReviewThreadId: 'T1', body: 'nrC Agreed' });
+    await expect(review.pendingToolbar).toBeHidden();
+});
+
+test('a reply with a draft open joins it, and its button, its comment and the toolbar all say so', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github, { draft: 2, threads: OPEN_THREADS });
+
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    const box = review.commentBox('Reply to sofiab');
+    await expect(box.getByRole('button', { name: 'Add to draft' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Submit draft (3 comments)' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Reply', exact: true })).toBeHidden();
+
+    await page.keyboard.type('In the draft');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.thread('First thread here')).toContainText('In the draft');
+    await expect(review.thread('First thread here')).toContainText('Pending');
+    expect(writes[0]?.variables).toMatchObject({ pullRequestReviewId: expect.any(String) });
+    await expect(review.pendingToolbar).toContainText('3');
+});
+
+test('a reply labelled to go now, meeting a draft begun elsewhere, is not sent: the box says so and now joins', async ({
+    page,
+    github,
+}) => {
+    const { review, writes, setDraft } = await openWriting(page, github, { threads: OPEN_THREADS });
+
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    await page.keyboard.type('Keep me');
+    setDraft(4);
+    await page.keyboard.press(FIRST_KEY);
+
+    const box = review.commentBox('Reply to sofiab');
+    await expect(box.getByRole('alert')).toContainText('nothing was sent');
+    await expect(review.commentField('Reply to sofiab')).toHaveValue('Keep me');
+    await expect(box.getByRole('button', { name: 'Add to draft' })).toBeVisible();
+    expect(writes).toEqual([]);
+});
+
+test('a reply GitHub refuses comes back in its box, and after a reload it is still there on its thread', async ({
+    page,
+    github,
+}) => {
+    const { review, refused, writes } = await openWriting(page, github, { threads: OPEN_THREADS });
+    refused.set('AddPullRequestReviewThreadReply', 'The thread is locked');
+
+    await review.thread('First thread here').getByRole('button', { name: 'Reply…' }).click();
+    await page.keyboard.type('Keep me too');
+    await page.keyboard.press(FIRST_KEY);
+
+    const box = review.commentBox('Reply to sofiab');
+    await expect(box.getByRole('alert')).toContainText('The thread is locked');
+    await expect(review.commentField('Reply to sofiab')).toHaveValue('Keep me too');
+
+    refused.clear();
+    await page.reload();
+    await expect(review.commentField('Reply to sofiab')).toHaveValue('Keep me too');
+    await review.commentField('Reply to sofiab').click();
+    await page.keyboard.press(FIRST_KEY);
+    await expect(review.thread('First thread here')).toContainText('Keep me too');
+    expect(writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
+});
+
+test('Resolve folds the thread where it is, moving nothing above it, and N goes on to the open one', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github, { draft: 1, threads: OPEN_THREADS });
+    const reading = review.code(CHANGED_LINE);
+    await page.keyboard.press('n');
+    const before = await reading.boundingBox();
+
+    await review.thread('First thread here').getByRole('button', { name: 'Resolve' }).click();
+
+    const folded = review.thread('First thread here').getByRole('button', { name: /Resolved/ });
+    await expect(folded).toBeVisible();
+    expect(await reading.boundingBox()).toEqual(before);
+    expect(writes.map(write => write.name)).toEqual(['ResolveReviewThread']);
+    await expect(review.pendingToolbar).toContainText('1');
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('Second thread here');
+});
+
+test('a refused Resolve puts the thread back and says so on it, what is read staying put', async ({ page, github }) => {
+    const { review, refused } = await openWriting(page, github, { threads: OPEN_THREADS });
+    refused.set('ResolveReviewThread', 'Must have write access');
+    await page.keyboard.press('n');
+    const reading = review.code(CHANGED_LINE);
+    const before = await reading.boundingBox();
+
+    await review.thread('First thread here').getByRole('button', { name: 'Resolve' }).click();
+
+    const thread = review.thread('First thread here');
+    await expect(thread.getByRole('alert')).toContainText('Must have write access');
+    await expect(thread.getByRole('button', { name: 'Resolve' })).toBeVisible();
+    expect(await reading.boundingBox()).toEqual(before);
+});
+
+test('a suggestion from a range keeps its indentation; the older side offers none', async ({ page, github }) => {
+    const { review, writes } = await openWriting(page, github);
+
+    await review.lineNumber(20).click();
+    const single = review.commentBox('Comment on line 20');
+    await expect(single.getByRole('button', { name: /Suggest a change/ })).toBeVisible();
+
+    // ⇧↓ in the empty box takes in the next line, the keys staying in it.
+    await page.keyboard.press('Shift+ArrowDown');
+    const field = review.commentField('Comment on lines 20–21');
+    await expect(field).toBeFocused();
+
+    await page.keyboard.press('ControlOrMeta+g');
+    await expect(field).toHaveValue('```suggestion\nconst changed20 = 20;\n    const indented21 = 21;\n```');
+
+    await page.keyboard.press(FIRST_KEY);
+    await expect(review.commentBox()).toBeHidden();
+    expect(writes[0]?.variables).toMatchObject({
+        thread: {
+            startLine: 20,
+            line: 21,
+            body: '```suggestion\nconst changed20 = 20;\n    const indented21 = 21;\n```',
+        },
+    });
+});
+
+test('⇧↓ out of a box left with text takes the next line into it, and in a box it selects text', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Half');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(review.commentBox('Comment on line 20')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(review.commentBox('Comment on lines 20–21')).toBeVisible();
+    await expect(review.commentField('Comment on lines 20–21')).toHaveValue('Half');
+});
+
+test('a comment on the pull request with a draft open goes at once and joins nothing, and keys there stay there', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github, { draft: 2 });
+
+    await page.keyboard.press('Alt+ControlOrMeta+b');
+    const conversation = page.getByRole('region', { name: 'Conversation' });
+    const field = conversation.getByRole('textbox', { name: 'Comment', exact: true });
+    await expect(field).toHaveAttribute('placeholder', /go\sout\snow,\snot\sin\syour\sdraft/u);
+    await field.click();
+    await page.keyboard.type('Note for all rCS');
+    await expect(review.commentBox()).toBeHidden();
+    await expect(field).toHaveValue('Note for all rCS');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(conversation).toContainText('Note for all rCS');
+    await expect(field).toHaveValue('');
+    expect(writes).toEqual([]);
+    await expect(review.pendingToolbar).toContainText('2');
+});
+
+test('the keys sheet has what works here and nothing that does not; C is a comment, not a new issue', async ({
+    page,
+    github,
+}) => {
+    await openWriting(page, github, { threads: OPEN_THREADS });
+
+    await page.keyboard.press('?');
+    const sheet = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const writing = sheet.getByRole('region', { name: 'Writing' });
+    await expect(writing.getByText('Comment on the line')).toBeVisible();
+    await expect(writing.getByText('Suggest a change, in a comment box')).toBeVisible();
+    // With no thread focused R does nothing here.
+    await expect(sheet.getByText('Reply to the thread')).toBeHidden();
+    await expect(sheet.getByText('New issue')).toBeHidden();
+    await expect(sheet.getByRole('region', { name: 'Moving' }).getByText('Next file')).toBeVisible();
+    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter files')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await page.keyboard.press('n');
+    await page.keyboard.press('?');
+    await expect(sheet.getByText('Reply to the thread')).toBeVisible();
 });

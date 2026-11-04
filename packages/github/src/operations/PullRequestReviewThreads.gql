@@ -21,6 +21,9 @@ query PullRequestReviewThreads($owner: String!, $name: String!, $number: Int!, $
                     isOutdated
                     isResolved
                     subjectType
+                    viewerCanReply
+                    viewerCanResolve
+                    viewerCanUnresolve
                     comments(first: 50) {
                         pageInfo {
                             hasNextPage

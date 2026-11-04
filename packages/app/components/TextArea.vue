@@ -16,6 +16,12 @@ const { TextArea, field, input } = useTextArea();
 defineExpose({
   /** Puts the cursor in the field. */
   focus: (options?: FocusOptions) => input.value?.focus(options),
+  /** Where the cursor is, or what is selected. */
+  getSelection: () => {
+    const element = input.value;
+    return element ? { start: element.selectionStart, end: element.selectionEnd } : null;
+  },
+  setSelection: (start: number, end: number) => input.value?.setSelectionRange(start, end),
 });
 </script>
 

@@ -42,6 +42,8 @@ export interface Command {
     readonly key?: string;
     /** Other keys that do the same (`ArrowDown` beside `J`), listed beside `key` in the help sheet. */
     readonly otherKeys?: readonly string[];
+    /** Its heading in the help sheet, within its section, where the screen has more keys than one heading can hold (CR29). */
+    readonly keyGroup?: string;
     /** Dim text after the title: the current value ("In progress · Platform Q4"), "2 of 3 editable". */
     readonly detail?: string;
     readonly icon?: LucideIcon;

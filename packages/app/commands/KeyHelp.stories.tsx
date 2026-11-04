@@ -1,5 +1,6 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 
 import ItemView from '@/item/ItemView.vue';
@@ -8,6 +9,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import type { Command } from './CommandTypes.js';
 import KeyHelp from './KeyHelp.vue';
 import { useCommands } from './useCommands.js';
 
@@ -73,3 +75,34 @@ export const OverOpenItem: Story = {};
 
 /** Closed: `?` opens it. */
 export const Closed: Story = { args: { startOpen: false } };
+
+/** CR29: a screen's own headings, and of two actions on one key only the one that runs; a key its component handles is listed all the same. */
+export const ScreenGroups: StoryObj<typeof KeyHelp> = {
+    render: () => ({
+        components: { KeyHelp },
+        setup: () => ({
+            commands: [
+                {
+                    id: 'comment',
+                    title: 'Comment on the line',
+                    section: 'view',
+                    keyGroup: 'Writing',
+                    key: 'C',
+                    run: () => {},
+                },
+                { id: 'send', title: 'Send a comment', section: 'view', keyGroup: 'Writing', key: 'Mod+Enter' },
+                { id: 'files', title: 'Next file', section: 'view', keyGroup: 'Moving', key: ']', run: () => {} },
+                { id: 'newIssue', title: 'New issue', section: 'app', key: 'C', run: () => {} },
+                { id: 'help', title: 'Keyboard shortcuts', section: 'app', key: '?', run: () => {} },
+            ] satisfies Command[],
+        }),
+        template: `<KeyHelp :open="true" :commands="commands" />`,
+    }),
+    play: async () => {
+        const help = within(document.body);
+        await expect(help.getByRole('region', { name: 'Writing' })).toBeVisible();
+        await expect(help.getByRole('region', { name: 'Moving' })).toBeVisible();
+        await expect(help.queryByText('New issue')).toBeNull();
+        await expect(help.getByText('Send a comment')).toBeVisible();
+    },
+};

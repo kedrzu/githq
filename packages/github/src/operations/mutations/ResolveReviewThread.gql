@@ -1,0 +1,8 @@
+# Goes through at once whether or not a draft review is open: it never joins one (code review D17).
+mutation ResolveReviewThread($threadId: ID!) {
+    resolveReviewThread(input: { threadId: $threadId }) {
+        thread {
+            id
+        }
+    }
+}

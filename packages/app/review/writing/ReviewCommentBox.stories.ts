@@ -8,7 +8,7 @@ const TEXT = 'scheduleRetry needs a ceiling, or a dead token retries every 2 s f
 const meta = {
     component: ReviewCommentBox,
     args: {
-        target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null },
+        target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null, threadId: null },
         text: TEXT,
         draftOpen: false,
         draftCount: 0,
@@ -43,7 +43,33 @@ export const DraftOpen: Story = { args: { draftOpen: true, draftCount: 3 } };
 
 /** CR73: on a range. */
 export const OnRange: Story = {
-    args: { target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 47, startLine: 44 } },
+    args: { target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 47, startLine: 44, threadId: null } },
+};
+
+const SUGGESTION = '```suggestion\n    const left = max;\n\treturn left;\n```';
+
+/** CR73: a suggestion is on offer, and its block goes in with the lines as they are. */
+export const WithSuggestion: Story = {
+    args: { text: 'Bound it.', suggestion: SUGGESTION },
+};
+
+/** CR74: a reply says who it answers, and its button is a reply. */
+export const Reply: Story = {
+    args: {
+        target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null, threadId: 'T_1' },
+        replyTo: 'sofiab and claude[bot]',
+        text: 'Fine with keeping both. Please add the test before #1203 builds on it.',
+    },
+};
+
+/** A reply with the draft open can only join it, and says so like any comment. */
+export const ReplyDraftOpen: Story = {
+    args: { ...Reply.args, draftOpen: true, draftCount: 3 },
+};
+
+/** A reply meant to go now met a draft the screen didn't know of: nothing went out, and its keys join now. */
+export const ReplyDraftFound: Story = {
+    args: { ...Reply.args, draftOpen: true, draftCount: 3, failure: { kind: 'draftFound' } },
 };
 
 /** GitHub refused, in its words, and the text stays. */

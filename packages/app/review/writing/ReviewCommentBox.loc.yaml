@@ -2,10 +2,20 @@ onLine:
   en: Comment on line {line}
 onLines:
   en: Comment on lines {start}–{end}
+replyTo:
+  en: Reply to {who}
+replyInThread:
+  en: Reply in the thread
 placeholder:
   en: Leave a comment
 comment:
   en: Comment
+reply:
+  en: Reply
+replyNow:
+  en: Reply now
+suggest:
+  en: Suggest a change
 commentNow:
   en: Comment now
 startReview:
@@ -23,3 +33,5 @@ notReached:
   en: GitHub wasn't reached, so it may not have got there. Your text is kept.
 noDraft:
   en: Your draft isn't open anymore. Your text is kept.
+draftFound:
+  en: Your draft review is open, and a reply would have joined it, so nothing was sent. Your text is kept.

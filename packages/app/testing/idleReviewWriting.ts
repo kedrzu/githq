@@ -19,4 +19,6 @@ export const idleReviewWriting: ReviewWriting = {
     submit: () => {},
     discard: () => {},
     retry: () => {},
+    setResolved: () => {},
+    getResolveFailure: () => null,
 };

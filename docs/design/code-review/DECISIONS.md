@@ -304,6 +304,12 @@ experience: "not even an agent can do it through the API").
 > COMMENT` and `threads` posts a single comment in one request, and a reply goes out at once;
 > `addPullRequestReviewThread` always makes or joins a pending review. A submitted review can't be deleted.
 
+So a reply can't be refused the way a comment is: one meant to go out at once first reads the draft again and doesn't go if
+one is there, and what GitHub answers (`pullRequestReview.state`) says what happened in the moment between. A reply joining a
+draft names it, for a draft gone by then to refuse it rather than publish it, and one starting a draft is two requests, an empty
+`addPullRequestReview` and the reply, the empty draft deleted again if the reply is refused. (agent, 2026-11-04; the empty
+review and naming a gone draft are from the schema, not tried live)
+
 **Rejected.**
 
 - `Cmd+Shift+Enter` always posting a single comment ([history](history/DECISIONS.md#d17)) — impossible while a
@@ -548,7 +554,12 @@ which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
 submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
+⇧↓ is CR73's: from the diff it takes the next line into the last box written in; in a box only while the box is empty, for with text in it it is the text's own selection. ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
+
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
+
+Not built, so not on the sheet though CR29 draws them: Esc back to the pull request and O on GitHub, which a review has only as
+buttons; ↓ ↑ scroll as the browser does rather than by a line.
 
 ## D33
 

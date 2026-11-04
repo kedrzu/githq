@@ -35,6 +35,25 @@ type Story = StoryObj<typeof meta>;
 /** CR2: summaries and comments in one time order under the description. */
 export const Conversation: Story = {};
 
+/** With a draft open the composer says it isn't one of the draft's: a comment here goes out at once (D17). */
+export const ComposerWithDraftOpen: Story = {
+    args: { draftOpen: true, onComment: fn() },
+    play: async ({ args, canvas }) => {
+        const field = canvas.getByPlaceholderText('Comments here go out now, not in your draft…');
+        await userEvent.type(field, 'Thanks{Control>}{Enter}{/Control}');
+        await userEvent.type(field, '{Meta>}{Enter}{/Meta}');
+        await expect(args.onComment).toHaveBeenCalledWith('Thanks');
+    },
+};
+
+/** Without the right to comment it can't be written in. */
+export const ComposerDisabled: Story = {
+    args: { commentDisabled: true },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByPlaceholderText('Comment on the pull request…')).toHaveAttribute('readonly');
+    },
+};
+
 /** The detail on its way: quietly, no spinner. */
 export const Reading: Story = {
     args: { detail: null },

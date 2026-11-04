@@ -543,7 +543,7 @@ export const ReviewFiles = defineService({
                         return filesRef.value;
                     },
                     get threads() {
-                        return threadsRef.value;
+                        return writing.threads;
                     },
                     get threadsState() {
                         return threadsStateRef.value;

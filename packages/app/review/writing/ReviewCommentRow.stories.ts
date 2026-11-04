@@ -4,7 +4,14 @@ import ReviewCommentRow from './ReviewCommentRow.vue';
 
 const AUTHOR = { login: 'mlaine', avatarUrl: '' };
 const BODY = 'What happens when the same workout is edited twice offline?\nLooks like we push both edits.';
-const TARGET = { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null } as const;
+const TARGET = {
+    id: 'box',
+    path: 'src/sync/engine.ts',
+    side: 'after',
+    line: 50,
+    startLine: null,
+    threadId: null,
+} as const;
 
 const meta = {
     component: ReviewCommentRow,

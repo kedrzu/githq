@@ -39,6 +39,7 @@ const failureText = computed(() => {
     // No draft is no toolbar.
     case 'notReached':
     case 'noDraft':
+    case 'draftFound':
       return t(l.notReached);
     default:
       return assertNever(failure);

@@ -1,15 +1,19 @@
-<!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Nothing here writes: no reply, no Resolve. -->
+<!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Under the comments, what the viewer may do: Reply…, which `R` also does on the focused one, gives way while its box is open under the thread, and Resolve, or Unresolve on one opened (CR74). A change of state GitHub didn't take says so here, in the state it went back to. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronDown, ChevronUp, CircleCheck, History } from 'lucide-vue-next';
+import { assertNever } from '@nzyme/utils/assertNever.js';
+import { ChevronDown, ChevronUp, CircleAlert, CircleCheck, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import Button from '@/components/Button.vue';
+import Kbd from '@/components/Kbd.vue';
 
 import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
 import * as l from './ReviewThreadBox.loc.js';
 import ReviewThreadComment from './ReviewThreadComment.vue';
 import type { ReviewThread } from './ReviewThread.js';
+import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
 
 const props = defineProps<{
   thread: ReviewThread;
@@ -18,11 +22,17 @@ const props = defineProps<{
   /** A resolved thread shows whole. */
   open?: boolean;
   focused?: boolean;
+  /** Its reply box is open under it. */
+  replying?: boolean;
+  /** Why resolving it or opening it again didn't go through. */
+  resolveFailure?: ReviewWriteFailure | null;
 }>();
 
 const emit = defineEmits<{
   /** Its one line was clicked. */
   toggle: [];
+  reply: [];
+  setResolved: [resolved: boolean];
 }>();
 
 const t = useTranslate();
@@ -30,6 +40,22 @@ const t = useTranslate();
 const first = computed(() => props.thread.comments[0] ?? null);
 const who = computed(() => first.value?.author?.login ?? t(l.ghost));
 const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
+const failureText = computed(() => {
+  const failure = props.resolveFailure;
+  const reason = props.thread.isResolved ? l.unresolveFailed : l.resolveFailed;
+  switch (failure?.kind) {
+    case undefined:
+      return null;
+    case 'refused':
+      return t(reason, { reason: failure.message });
+    case 'notReached':
+    case 'noDraft':
+    case 'draftFound':
+      return t(reason, { reason: t(l.notReached) });
+    default:
+      return assertNever(failure);
+  }
+});
 </script>
 
 <template>
@@ -90,7 +116,51 @@ const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
         :key="comment.id"
         :comment="comment"
       />
+      <div
+        v-if="
+          (thread.viewerCanReply && !replying) ||
+          (thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve)
+        "
+        :class="css.reviewThreadBox_actions"
+      >
+        <button
+          v-if="thread.viewerCanReply && !replying"
+          type="button"
+          :class="css.reviewThreadBox_reply"
+          :aria-keyshortcuts="focused ? 'R' : undefined"
+          @click="emit('reply')"
+        >
+          {{ t(l.reply) }}
+          <Kbd
+            v-if="focused"
+            keys="R"
+          />
+        </button>
+        <span
+          v-else
+          :class="css.reviewThreadBox_spacer"
+        />
+        <Button
+          v-if="thread.isResolved ? thread.viewerCanUnresolve : thread.viewerCanResolve"
+          size="sm"
+          variant="outline"
+          @click="emit('setResolved', !thread.isResolved)"
+        >
+          {{ thread.isResolved ? t(l.unresolve) : t(l.resolve) }}
+        </Button>
+      </div>
     </div>
+    <p
+      v-if="failureText !== null"
+      :class="css.reviewThreadBox_failure"
+      role="alert"
+    >
+      <CircleAlert
+        :class="css.reviewThreadBox_failureIcon"
+        aria-hidden="true"
+      />
+      {{ failureText }}
+    </p>
   </div>
 </template>
 
@@ -176,6 +246,55 @@ const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
 
 .reviewThreadBox_resolved .reviewThreadBox_body {
   border-top: 1px solid $color-border;
+}
+
+.reviewThreadBox_actions {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+}
+
+.reviewThreadBox_reply {
+  @include focus-ring;
+
+  display: flex;
+  flex: 1;
+  gap: $spacing-8;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  height: 28px;
+  padding: 0 $spacing-8 0 $spacing-10;
+  font: inherit;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+  text-align: left;
+  cursor: text;
+  background: $color-bg;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.reviewThreadBox_spacer {
+  flex: 1;
+}
+
+.reviewThreadBox_failure {
+  display: flex;
+  gap: $spacing-6;
+  align-items: baseline;
+  margin: 0;
+  padding: 0 $spacing-14 $spacing-10;
+  font-size: $font-size-xs;
+  color: $color-red;
+  overflow-wrap: anywhere;
+}
+
+.reviewThreadBox_failureIcon {
+  flex: none;
+  align-self: center;
+  width: 13px;
+  height: 13px;
 }
 
 .reviewThreadBox_head {

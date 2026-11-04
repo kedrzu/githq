@@ -24,7 +24,9 @@ import type {
   ReviewFileEndRow,
   ReviewGapRow,
   ReviewRow,
+  ReviewThreadRow as ReviewThreadRowData,
 } from './buildReviewRows.js';
+import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
 import type { DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
@@ -48,6 +50,10 @@ const props = withDefaults(
     threadOpen?: boolean;
     /** The thread on this row is the one N and ⇧N are at. */
     threadFocused?: boolean;
+    /** The thread on this row has its reply box open under it. */
+    threadReplying?: boolean;
+    /** Why resolving the thread on this row or opening it again didn't go through. */
+    threadFailure?: ReviewWriteFailure | null;
     /** The lines of the file a comment is being written on. */
     commented?: CommentedLines;
   }>(),
@@ -69,6 +75,8 @@ const emit = defineEmits<{
   /** "Show it" of a file whose only changes are in hidden whitespace. */
   showWhitespace: [];
   toggleThread: [threadId: string];
+  replyInThread: [row: ReviewThreadRowData];
+  setThreadResolved: [row: ReviewThreadRowData, resolved: boolean];
   retry: [path: string];
   toggleCollapsed: [path: string];
   toggleViewed: [path: string];
@@ -177,7 +185,11 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         :row="row"
         :open="threadOpen"
         :focused="threadFocused"
+        :replying="threadReplying"
+        :resolve-failure="threadFailure"
         @toggle="emit('toggleThread', row.placement.thread.id)"
+        @reply="emit('replyInThread', row)"
+        @set-resolved="emit('setThreadResolved', row, $event)"
       />
       <ReviewDistanceRow
         v-else-if="row.kind === 'distance'"

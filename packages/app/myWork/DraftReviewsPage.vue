@@ -1,25 +1,54 @@
-<!-- `/pulls/drafts` (code review D28, CR34): the pull requests of the local copy with the viewer's draft review. The selection and the walk through them are every list's (`useItemList`); a row opens its review, the draft being on it. -->
+<!-- `/pulls/drafts` (code review D28, CR34): the pull requests of the local copy with the viewer's draft review. The selection and the walk through them are every list's (`useItemList`); a row opens its review, the draft being on it, and `⇧S` opens the selected one's at its submit dialog. -->
 <script lang="ts" setup>
+import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { Send } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
-import { getItemReference, getReviewPath } from '@/item/itemRoutes.js';
+import { useCommands } from '@/commands/useCommands.js';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { formatItemReference, getItemReference, getReviewPath } from '@/item/itemRoutes.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
 import { ItemStore } from '@/store/ItemStore.js';
 
 import DraftReviewsView from './DraftReviewsView.vue';
+import * as l from './DraftReviewsView.loc.js';
 import { getDraftReviews } from './getDraftReviews.js';
 
 const auth = useService(AuthStore);
 const items = useService(ItemStore);
 const router = useRouter();
 const list = useItemList();
+const navigation = useService(ItemNavigation);
+const t = useTranslate();
 
 const drafts = computed(() => getDraftReviews(items.all));
+
+useCommands(() => [
+  {
+    id: 'draftReviews.submit',
+    title: t(l.submit),
+    section: 'view',
+    key: 'Shift+S',
+    icon: Send,
+    actsOnRow: true,
+    when: () => list.selectedId !== null,
+    run: () => {
+      if (list.selectedId !== null) {
+        const item = items.get(list.selectedId);
+        if (item) {
+          navigation.noteReviewSubmit(formatItemReference(getItemReference(item)));
+        }
+
+        open(list.selectedId);
+      }
+    },
+  },
+]);
 
 function open(id: string) {
   const item = items.get(id);

@@ -18,12 +18,15 @@ defineProps<{
   draftCount: number;
   draftFirst: boolean;
   focused: boolean;
+  replyTo?: string | null;
+  suggestion?: string | null;
   /** Who it shows as written by once sent. */
   author: ItemUser | null;
 }>();
 
 const emit = defineEmits<{
   send: [way: ReviewCommentWay];
+  extend: [];
   leave: [];
   focus: [];
   blur: [];
@@ -70,7 +73,10 @@ const sentAt = new Date().toISOString();
       :draft-first="draftFirst"
       :failure="status.kind === 'failed' ? status.failure : null"
       :focused="focused"
+      :reply-to="replyTo"
+      :suggestion="suggestion"
       @send="emit('send', $event)"
+      @extend="emit('extend')"
       @leave="emit('leave')"
       @focus="emit('focus')"
       @blur="emit('blur')"

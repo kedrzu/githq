@@ -1,4 +1,4 @@
-<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for. It scrolls on its own, opening at the newest and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments and reviews not read yet come on asking, what is being read staying where it is. -->
+<!-- The pull request's own conversation beside the diff (D5, D24): comments on the pull request rather than on a line and review summaries in one time order under its description, which stays folded until asked for. It scrolls on its own, opening at the newest and following it while there, and nothing in the diff moves it. A summary's threads take the reader to the diff. Comments and reviews not read yet come on asking, what is being read staying where it is. At its foot a comment on the pull request itself, which goes out at once as it does on an opened item, draft review or not (D17), and which with a draft open says so where it is written. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { X } from 'lucide-vue-next';
@@ -9,6 +9,7 @@ import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import GitHubHtml from '@/item/GitHubHtml.vue';
+import ItemComposer from '@/item/ItemComposer.vue';
 import { useNow } from '@/services/useNow.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -32,12 +33,20 @@ const props = defineProps<{
   loadOlder: () => Promise<void>;
   /** Reads the reviews not read yet; resolves once all are in. */
   loadOlderReviews: () => Promise<void>;
+  /** A draft review is open: what is written here doesn't join it. */
+  draftOpen?: boolean;
+  /** The user may not comment here. */
+  commentDisabled?: boolean;
 }>();
 
 const emit = defineEmits<{
   close: [];
   jumpToThreads: [reviewId: string];
+  comment: [body: string];
 }>();
+
+/** What is typed in its composer. */
+const commentDraft = defineModel<string>('commentDraft', { default: '' });
 
 /** How often "12m" moves on. */
 const TICK_MS = 60_000;
@@ -121,6 +130,12 @@ function onScroll() {
 function showDescription() {
   atNewest = false;
   unfolded.value = true;
+}
+
+/** The newest again: the comment is what they just wrote. */
+function onComment(body: string) {
+  atNewest = true;
+  emit('comment', body);
 }
 
 async function showOlder(load: () => Promise<void>) {
@@ -249,6 +264,15 @@ async function showOlder(load: () => Promise<void>) {
         </ol>
       </div>
     </div>
+    <footer :class="css.reviewConversation_composer">
+      <ItemComposer
+        v-model:text="commentDraft"
+        :disabled="commentDisabled"
+        :placeholder="draftOpen ? t(l.composerWithDraft) : t(l.composer)"
+        :focus-key="null"
+        @submit="onComment"
+      />
+    </footer>
   </section>
 </template>
 
@@ -259,6 +283,12 @@ async function showOlder(load: () => Promise<void>) {
   height: 100%;
   min-height: 0;
   background: $color-bg;
+}
+
+.reviewConversation_composer {
+  flex: none;
+  padding: $spacing-10 $spacing-14;
+  border-top: 1px solid $color-border;
 }
 
 .reviewConversation_head {

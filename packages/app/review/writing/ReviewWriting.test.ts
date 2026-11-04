@@ -4,26 +4,35 @@ import 'fake-indexeddb/auto';
 
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 import { expect, test } from 'bun:test';
+import { watch } from 'vue';
 
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
+import { sampleThread } from '@/testing/sampleThreads.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { ReviewFiles } from '../ReviewFiles.js';
 import type { PullRequestFiles } from '../ReviewFiles.js';
+import type { ReviewThread } from '../threads/ReviewThread.js';
+import type { ReviewCommentStatus } from './ReviewWriting.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
 const PULL_REQUEST = 'PR_7';
 const HEAD = 'head-1';
-const LINE = { path: 'a.ts', side: 'after', line: 3, startLine: null } as const;
+const LINE = { path: 'a.ts', side: 'after', line: 3, startLine: null, threadId: null } as const;
 const WRITES = [
     'AddPullRequestReview',
     'AddPullRequestReviewThread',
     'SubmitPullRequestReview',
     'DeletePullRequestReview',
+    'AddPullRequestReviewThreadReply',
+    'StartPullRequestReview',
+    'ResolveReviewThread',
+    'UnresolveReviewThread',
 ];
+const REPLY = { path: 'a.ts', side: 'after', line: 3, startLine: null, threadId: 'T_1' } as const;
 const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 
 /** A GitHub holding one pull request and the viewer's draft, refusing as the real one does. */
@@ -31,6 +40,10 @@ function createGitHub() {
     let threadsRead = 0;
     const github = {
         draft: null as { id: string; comments: number } | null,
+        /** Threads as read. */
+        threads: [] as ReviewThread[],
+        /** A draft opened on GitHub after the reply's check: it joins it silently. */
+        replyJoins: false,
         refused: new Map<string, string>(),
         threadsRead: () => threadsRead,
         answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
@@ -60,7 +73,16 @@ function createGitHub() {
                         data: {
                             repository: {
                                 pullRequest: {
-                                    reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] },
+                                    reviewThreads: {
+                                        pageInfo: { hasNextPage: false, endCursor: null },
+                                        nodes: github.threads.map(thread => ({
+                                            ...thread,
+                                            comments: {
+                                                pageInfo: { hasNextPage: false, endCursor: null },
+                                                nodes: thread.comments,
+                                            },
+                                        })),
+                                    },
                                 },
                             },
                         },
@@ -86,6 +108,49 @@ function createGitHub() {
                     };
                 case 'AddPullRequestReview':
                     return answerAddReview(request);
+                case 'StartPullRequestReview':
+                    github.draft = { id: 'DRAFT', comments: 0 };
+                    return {
+                        data: {
+                            addPullRequestReview: {
+                                pullRequestReview: {
+                                    id: 'DRAFT',
+                                    createdAt: '2026-01-01T00:00:00Z',
+                                },
+                            },
+                        },
+                    };
+                case 'AddPullRequestReviewThreadReply': {
+                    // What GitHub does: a draft open, whichever way it knows of it, takes the reply in.
+                    const joins = github.draft !== null || github.replyJoins;
+                    if (github.draft) {
+                        github.draft.comments++;
+                    }
+
+                    return {
+                        data: {
+                            addPullRequestReviewThreadReply: {
+                                comment: {
+                                    pullRequestReview: { id: 'DRAFT', state: joins ? 'PENDING' : 'SUBMITTED' },
+                                },
+                            },
+                        },
+                    };
+                }
+                case 'ResolveReviewThread':
+                case 'UnresolveReviewThread': {
+                    const isResolved = request.operation === 'ResolveReviewThread';
+                    github.threads = github.threads.map(thread =>
+                        thread.id === request.variables.threadId ? { ...thread, isResolved } : thread,
+                    );
+                    return {
+                        data: {
+                            [isResolved ? 'resolveReviewThread' : 'unresolveReviewThread']: {
+                                thread: { id: request.variables.threadId },
+                            },
+                        },
+                    };
+                }
                 case 'AddPullRequestReviewThread':
                     if (github.draft) {
                         github.draft.comments++;
@@ -188,7 +253,7 @@ test('a single comment is one request with its commit and event, shows at once, 
 
 test('a range goes with where it starts, on its side', async () => {
     const { model, session } = await open(createGitHub());
-    const box = model.writing.open({ path: 'a.ts', side: 'before', line: 47, startLine: 44 });
+    const box = model.writing.open({ path: 'a.ts', side: 'before', line: 47, startLine: 44, threadId: null });
     model.writing.setText(box.id, 'All of these');
 
     model.writing.send(box.id, 'single');
@@ -372,3 +437,151 @@ function hold(session: ReturnType<typeof createTestSession>) {
     session.github.holdIf = request => (request.operation === 'AddPullRequestReview' ? held : null);
     return release;
 }
+
+function reply(model: PullRequestFiles, text: string) {
+    const box = model.writing.open(REPLY);
+    model.writing.setText(box.id, text);
+    return box.id;
+}
+
+test('a reply with no draft goes out at once, in one request, asked only after checking for a draft', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await open(github);
+    const id = reply(model, ' Agreed ');
+
+    model.writing.send(id, 'single');
+    expect(model.writing.getStatus(id)).toEqual({ kind: 'sending', way: 'single', body: 'Agreed' });
+    model.writing.send(id, 'single');
+
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+    expect(writes()).toEqual(['AddPullRequestReviewThreadReply']);
+    expect(
+        session.github.requests.find(request => request.operation === 'AddPullRequestReviewThreadReply')?.variables,
+    ).toEqual({ pullRequestReviewThreadId: 'T_1', body: 'Agreed' });
+    expect(model.writing.draftOpen).toBe(false);
+});
+
+test('a reply meant to go now, with a draft the model did not know of, is not sent: the box says why and its keys join now', async () => {
+    const github = createGitHub();
+    const { model, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    github.draft = { id: 'ELSEWHERE', comments: 2 };
+
+    model.writing.send(id, 'single');
+    await ended(model, id);
+
+    expect(writes()).toEqual([]);
+    expect(model.writing.getStatus(id)).toEqual({ kind: 'failed', failure: { kind: 'draftFound' } });
+    expect(model.writing.getText(id)).toBe('Agreed');
+    expect(model.writing.draftOpen).toBe(true);
+});
+
+test('a reply GitHub says joined a draft after all shows as in the draft, which the toolbar counts', async () => {
+    const github = createGitHub();
+    const { model } = await open(github);
+    const id = reply(model, 'Agreed');
+    github.replyJoins = true;
+
+    const seen: ReviewCommentStatus[] = [];
+    watch(
+        () => model.writing.getStatus(id),
+        status => seen.push(status),
+        { flush: 'sync' },
+    );
+
+    model.writing.send(id, 'single');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+
+    expect(seen).toContainEqual({ kind: 'sent', way: 'joinDraft', body: 'Agreed' });
+});
+
+test('a reply joining the open draft names it, so that a draft gone by then refuses it rather than publishing it', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 2 };
+    const { model, session } = await open(github);
+    const id = reply(model, 'Agreed');
+
+    model.writing.send(id, 'joinDraft');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+
+    expect(
+        session.github.requests.find(request => request.operation === 'AddPullRequestReviewThreadReply')?.variables,
+    ).toEqual({ pullRequestReviewThreadId: 'T_1', body: 'Agreed', pullRequestReviewId: 'DRAFT' });
+    expect(github.draft.comments).toBe(3);
+});
+
+test('a reply starting a draft takes two requests; refused, the empty draft goes and the text stays', async () => {
+    const github = createGitHub();
+    const { model, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    github.refused.set('AddPullRequestReviewThreadReply', 'Thread is locked');
+
+    model.writing.send(id, 'startDraft');
+    await ended(model, id);
+
+    expect(writes()).toEqual(['StartPullRequestReview', 'AddPullRequestReviewThreadReply', 'DeletePullRequestReview']);
+    expect(model.writing.getStatus(id)).toEqual({
+        kind: 'failed',
+        failure: { kind: 'refused', message: 'Thread is locked' },
+    });
+    expect(model.writing.getText(id)).toBe('Agreed');
+    expect(model.writing.draftOpen).toBe(false);
+
+    github.refused.clear();
+    model.writing.send(id, 'startDraft');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+    expect(github.draft).toEqual({ id: 'DRAFT', comments: 1 });
+});
+
+test('a reply box left with text comes back on its thread after a reload', async () => {
+    const github = createGitHub();
+    const { model, login } = await open(github);
+    reply(model, 'Half a thought');
+    await waitUntil(() => model.writing.hasText, { timeoutMs: 2000 });
+    // Written to disk behind the key press.
+    await Bun.sleep(50);
+
+    const { model: again } = await open(github, login);
+    await waitUntil(() => again.writing.targets.length > 0, { timeoutMs: 2000 });
+
+    expect(again.writing.targets[0]?.threadId).toBe('T_1');
+});
+
+test('resolving shows at once, goes at once beside an open draft, and a refusal puts the thread back and says so', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 2 };
+    github.threads = [sampleThread()];
+    const { model, writes } = await open(github);
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+    github.refused.set('ResolveReviewThread', 'Not allowed');
+
+    model.writing.setResolved('T_1', true);
+    expect(model.threads[0]?.isResolved).toBe(true);
+    await waitUntil(() => model.threads[0]?.isResolved === false, { timeoutMs: 2000 });
+    expect(model.writing.getResolveFailure('T_1')).toEqual({ kind: 'refused', message: 'Not allowed' });
+
+    github.refused.clear();
+    model.writing.setResolved('T_1', true);
+    expect(model.writing.getResolveFailure('T_1')).toBeNull();
+    await waitUntil(() => github.threads[0]?.isResolved === true, { timeoutMs: 2000 });
+    await waitUntil(() => writes().length === 2, { timeoutMs: 2000 });
+
+    expect(model.threads[0]?.isResolved).toBe(true);
+    expect(github.draft).toEqual({ id: 'DRAFT', comments: 2 });
+    expect(writes()).toEqual(['ResolveReviewThread', 'ResolveReviewThread']);
+});
+
+test('after signing out nothing more goes out, a reply or a resolve', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    session.signOutFromAnotherTab();
+
+    model.writing.send(id, 'single');
+    model.writing.setResolved('T_1', true);
+    await Bun.sleep(50);
+
+    expect(writes()).toEqual([]);
+    expect(model.writing.getText(id)).toBe('');
+});

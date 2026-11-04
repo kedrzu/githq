@@ -241,11 +241,7 @@ export function buildReviewRows({
             content.kind === 'lines' || (collapsed && !threadsInCollapsed)
                 ? []
                 : placements.map((placement): ReviewThreadRow => createThreadRow(path, placement, null));
-        const comments =
-            content.kind === 'lines'
-                ? []
-                : (getComments?.(file) ?? []).map(target => createCommentRow(path, target, null));
-        const under = [...threads, ...comments];
+        const under = content.kind === 'lines' ? [] : insertBoxesUnderThreads(threads, path, getComments?.(file) ?? []);
         rows.push({
             kind: 'header',
             key: getReviewHeaderKey(path),
@@ -534,10 +530,44 @@ interface InsertCommentRowsParams extends Pick<BuildFileLineRowsParams, 'path' |
     readonly comments: readonly ReviewCommentTarget[];
 }
 
-/** Each after its line and what already sits under it; with its line not shown, first, for its text to stay in sight. */
+/** A file with no text here has only threads and boxes under its header: a reply after its thread, the others last. */
+function insertBoxesUnderThreads(rows: readonly ReviewRow[], path: string, comments: readonly ReviewCommentTarget[]) {
+    const result = [...rows];
+    for (const target of comments) {
+        const thread = findReplyThread(result, path, target);
+        if (thread === -1) {
+            result.push(createCommentRow(path, target, null));
+        } else {
+            result.splice(thread + 1, 0, createCommentRow(path, target, null));
+        }
+    }
+
+    return result;
+}
+
+function findReplyThread(rows: readonly ReviewRow[], path: string, { threadId }: ReviewCommentTarget) {
+    return threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
+}
+
+/**
+ * Each after its line and what already sits under it, a reply right after its thread; with its line or its thread not shown,
+ * first, for its text to stay in sight.
+ */
 function insertCommentRows(rows: readonly ReviewRow[], { path, layout, comments }: InsertCommentRowsParams) {
     const result = [...rows];
     for (const target of comments) {
+        const thread = findReplyThread(result, path, target);
+        const threadRow = result[thread];
+        if (threadRow?.kind === 'thread') {
+            result.splice(thread + 1, 0, createCommentRow(path, target, threadRow.inline));
+            continue;
+        }
+
+        if (target.threadId !== null) {
+            result.unshift(createCommentRow(path, target, null));
+            continue;
+        }
+
         const shown = result.findLastIndex(
             row => row.kind === 'line' && getLineNumber(row.line, target.side) === target.line,
         );

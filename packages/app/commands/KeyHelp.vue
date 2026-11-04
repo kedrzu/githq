@@ -1,4 +1,4 @@
-<!-- The keyboard help (`?`): every action that has a key and can run here, by section — read from the same registry the keys and the command menu run from, so it never lists a key that does something else. -->
+<!-- The keyboard help (`?`): every action that has a key and can run here, by section and, where a screen groups its own, by its groups (CR29) — read from the same registry the keys and the command menu run from, so it never lists a key that does something else: of actions on one key only the one that runs shows. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { VisuallyHidden } from 'reka-ui';
@@ -22,10 +22,34 @@ const open = defineModel<boolean>('open', { default: false });
 const t = useTranslate();
 const id = useId();
 
+/** Actions that run by their key, on a key an earlier one has, never get it. Those only listed are their component's own. */
+const listed = computed(() => {
+  const taken = new Set<string>();
+  return COMMAND_SECTIONS.flatMap(section =>
+    props.commands.filter(command => {
+      if (command.section !== section || command.key === undefined) {
+        return false;
+      }
+
+      if (!command.run && !command.options) {
+        return true;
+      }
+
+      const free = !taken.has(command.key);
+      taken.add(command.key);
+      return free;
+    }),
+  );
+});
 const sections = computed(() =>
   COMMAND_SECTIONS.flatMap(section => {
-    const keyed = props.commands.filter(command => command.section === section && command.key !== undefined);
-    return keyed.length === 0 ? [] : [{ section, title: t(l[section]), commands: keyed }];
+    const inSection = listed.value.filter(command => command.section === section);
+    const groups = new Set(inSection.map(command => command.keyGroup ?? null));
+    return [...groups].map(group => ({
+      key: `${section}-${group ?? ''}`,
+      title: group ?? t(l[section]),
+      commands: inSection.filter(command => (command.keyGroup ?? null) === group),
+    }));
   }),
 );
 </script>
@@ -44,12 +68,12 @@ const sections = computed(() =>
     >
       <section
         v-for="entry in sections"
-        :key="entry.section"
+        :key="entry.key"
         :class="css.keyHelp_section"
-        :aria-labelledby="`${id}-${entry.section}`"
+        :aria-labelledby="`${id}-${entry.key}`"
       >
         <h3
-          :id="`${id}-${entry.section}`"
+          :id="`${id}-${entry.key}`"
           :class="css.keyHelp_heading"
         >
           {{ entry.title }}

@@ -248,6 +248,9 @@ function toThreadNode(thread: SampleReviewThread) {
         isOutdated: thread.isOutdated ?? false,
         isResolved: thread.isResolved ?? false,
         subjectType: thread.subjectType ?? 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: {
             pageInfo: { hasNextPage: false, endCursor: null },
             nodes: thread.comments.map((bodyHTML, index) => ({

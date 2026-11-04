@@ -82,3 +82,21 @@ submitReview:
   en: Submit review
 discardReview:
   en: Discard review
+keysMoving:
+  en: Moving
+keysFiles:
+  en: Files
+keysWriting:
+  en: Writing
+replyInThread:
+  en: Reply to the thread
+extendComment:
+  en: Take the next line into the comment
+sendComment:
+  en: Send a comment, your default or the other
+suggestChange:
+  en: Suggest a change, in a comment box
+leaveBox:
+  en: Leave the comment box
+scrollDiff:
+  en: Scroll the diff

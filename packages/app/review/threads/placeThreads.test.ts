@@ -42,6 +42,9 @@ function threadWith(overrides: Partial<ReviewThread> & { readonly diffHunk?: str
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: [
             {
                 id: 'C',
