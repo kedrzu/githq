@@ -229,7 +229,7 @@ test('a draft written in a column shows there at once, and stays once GitHub too
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddDraftIssue', 'SetProjectFieldValue']);
 });
 
-test('a draft is no step of an opened item: the position leaves it out and the button goes past it', async ({
+test('a draft is no step of an opened item: the position leaves it out, and the button and `J` go past it', async ({
     page,
     github,
 }) => {
@@ -259,6 +259,14 @@ test('a draft is no step of an opened item: the position leaves it out and the b
     await expect(item.position).toHaveText('4 / 4');
     await item.previousButton.click();
     await expect(item.title).toHaveText('Remember the sidebar width');
+
+    await page.keyboard.press('j');
+    await expect(item.title).toHaveText('Listed after the draft');
+    await expect(project.selectedRow).toContainText('Listed after the draft');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.keyboard.press('k');
+    await expect(item.title).toHaveText('Remember the sidebar width');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 /** Tracks the sample on the first sign-in, and opens its project from the sidebar. */

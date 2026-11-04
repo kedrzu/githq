@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { EditQueue } from '@/edits/EditQueue.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import type { ItemReturnRequest } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { getOpenedItemQuery, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
@@ -42,7 +43,8 @@ export interface ItemListViewModel {
  * What every list page does with items (my work, a repository, a project): an item opens in the arrangement
  * used last (`ItemNavigation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
  * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
- * request to select the items that failed (K2) selects those the list shows.
+ * request to select the items that failed (K2) selects those the list shows, and an Undo of a close (D29) brings the
+ * selection, and an item open, back to the undone item the list shows.
  */
 export function useItemList(): ItemListViewModel {
     const items = useService(ItemStore);
@@ -59,6 +61,8 @@ export function useItemList(): ItemListViewModel {
     const checkedIds = ref<readonly string[]>([]);
     const listed = shallowRef<ListedItems>({ all: [], steps: [], stepOf: new Map(), around: null });
     const now = useNow(AGE_TICK_MS);
+    /** The Undo of a close whose rows are still to come back; `null` once one is back or GitHub answered. */
+    let returning: ItemReturnRequest | null = null;
 
     const listPath = computed(
         () => router.resolve({ path: route.path, query: getOpenedItemQuery(route.query, null) }).fullPath,
@@ -98,6 +102,33 @@ export function useItemList(): ItemListViewModel {
             }
         },
     );
+
+    // An Undo of a close: taken as it is asked, as the list may hand over its row in the same flush as the layer lands.
+    watch(
+        () => navigation.returnRequest,
+        request => {
+            returning = request;
+            void request?.settled.finally(() => {
+                if (returning === request) {
+                    returning = null;
+                }
+            });
+        },
+        { flush: 'sync' },
+    );
+
+    // Decided only on what the list hands over once it caught up with the layer: the cursor goes to the first of the undone
+    // items in the list's order, the checked items untouched, and a list that doesn't show them moves nothing.
+    watch(listed, ({ all }) => {
+        const id = all.find(candidate => returning?.ids.includes(candidate));
+        if (id !== undefined) {
+            returning = null;
+            selectedId.value = id;
+            if (opened.value) {
+                open(id);
+            }
+        }
+    });
 
     // What an opened item steps through, and where closing it comes back to: on every move of the cursor.
     watch(

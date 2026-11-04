@@ -558,7 +558,7 @@ toast, and so does closing several items.
 
 **Undo reopens.** The close goes to GitHub at once, like every other edit (D8), and Undo sends a plain reopen, so it is
 visible on github.com as closed and reopened, and it can fail like any edit (a failed edit's toast says so). A close GitHub
-refused offers no Undo.
+refused offers no Undo. Undo returns the cursor, and an open panel or modal, to the undone item (owner, 2026-11-04).
 
 **Rejected.** Holding the close back until the toast goes, which would leave no trace on GitHub: the item would look closed
 here while it is open everywhere else, and closing the tab would have to send it or lose it. A confirmation step: slower on

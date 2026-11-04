@@ -132,7 +132,8 @@ export interface ListedItems {
     readonly all: readonly string[];
     /**
      * What an opened item steps through, each item once in the list's order: an entry's item, what `Enter` opens on a
-     * collapsed stack's entry and nothing of an expanded one's own, its rows being its pull requests.
+     * collapsed stack's entry and nothing of an expanded one's own, its rows being its pull requests; nothing of an entry
+     * that can't open over the list (a project's draft).
      */
     readonly steps: readonly string[];
     /** An item with no step of its own, a pull request of a collapsed entry: the item whose step stands for it. */

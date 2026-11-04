@@ -20,8 +20,7 @@ import { getItemComparator } from '@/lists/getItemComparator.js';
 import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
-import { filterListedItems } from '@/lists/filterListedItems.js';
-import type { ListChoice, ListedItems, ListEntry, ListMove } from '@/lists/ListTypes.js';
+import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
@@ -525,13 +524,6 @@ function open(id: string) {
   list.open(id);
 }
 
-function setListed(listed: ListedItems) {
-  // Draft issues are not opened through the item view: stepping through the list skips them. Comes on every move of the
-  // cursor, so looked up once. Only the drafts: a stack's pull request shown past the filter (D3) is an item of the list.
-  const drafts = new Set(selected.value?.filter(entry => !entry.content).map(getProjectEntryId));
-  list.setListed(filterListedItems(listed, id => !drafts.has(id)));
-}
-
 function setRowField(fieldId: string | null) {
   if (project.value) {
     projects.setRowField(project.value.id, fieldId);
@@ -566,7 +558,7 @@ function setRowField(fieldId: string | null) {
     @update:row-field-id="setRowField"
     @reset="options.reset()"
     @open="open"
-    @listed="setListed"
+    @listed="list.setListed"
     @move="move"
     @add-draft="addDraft"
     @new-issue="startNewIssue"

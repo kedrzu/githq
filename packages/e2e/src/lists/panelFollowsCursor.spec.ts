@@ -11,6 +11,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 const FIRST = 'Redirect once after sign-in';
 const SECOND = 'Cache response headers';
 const THIRD = 'Read the rate limit from the headers';
+const TO_REVIEW = 'Review the release notes';
 
 /** The viewer's three pull requests in acme/web, #15, #16 and #17, listed in that order. */
 function createWork() {
@@ -99,6 +100,153 @@ test('a pull request leaving through a sync: the panel and the chip stay on it w
     await page.keyboard.press('j');
     await expect(myWork.selectedRow).toContainText(THIRD);
     await expect(item.title).toHaveText(THIRD);
+});
+
+test('D29: ⌘Z brings the panel and the highlight back to the undone pull request, wherever the cursor walked on to', async ({
+    page,
+    github,
+}) => {
+    const work = createWork();
+    const { myWork, shell } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(FIRST).click();
+    await expect(item.title).toHaveText(FIRST);
+    await page.keyboard.press('Shift+X');
+    await expect(item.title).toHaveText(SECOND);
+    await page.keyboard.press('j');
+    await expect(item.title).toHaveText(THIRD);
+    await expect(shell.toasts).toContainText('Closed acme/web#15');
+
+    await page.keyboard.press('ControlOrMeta+z');
+
+    await expect(myWork.selectedRow).toContainText(FIRST);
+    await expect(item.title).toHaveText(FIRST);
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+});
+
+test('D29: in a modal, ⌘Z opens the undone pull request in the one open', async ({ page, github }) => {
+    const work = createWork();
+    const { myWork } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(FIRST).click();
+    await item.arrangement('Modal').click();
+    await expect(item.modal).toBeVisible();
+    await page.keyboard.press('Shift+X');
+    await expect(item.title).toHaveText(SECOND);
+
+    await page.keyboard.press('ControlOrMeta+z');
+
+    await expect(item.modal).toBeVisible();
+    await expect(item.title).toHaveText(FIRST);
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+});
+
+test('D29: with nothing open, Undo brings the highlight back to the row and opens nothing', async ({
+    page,
+    github,
+}) => {
+    const work = createWork();
+    const { myWork, shell } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await expect(myWork.root).toContainText(FIRST);
+    await page.keyboard.press('j');
+    await expect(myWork.selectedRow).toContainText(FIRST);
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Close pull');
+    await page.keyboard.press('Enter');
+    await expect(myWork.selectedRow).toContainText(SECOND);
+    await page.keyboard.press('j');
+    await expect(myWork.selectedRow).toContainText(THIRD);
+
+    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
+
+    await expect(myWork.selectedRow).toContainText(FIRST);
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+    await expect(item.root).toHaveCount(0);
+});
+
+test('D29: on a list that doesn’t show the undone pull request, Undo moves nothing and opens nothing', async ({
+    page,
+    github,
+}) => {
+    const work = createWork();
+    work.world.pullRequest({
+        repository: 'acme/web',
+        number: 18,
+        title: TO_REVIEW,
+        foundBy: ['reviewRequested'],
+        minutesAgo: 40,
+    });
+    const { myWork, shell } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(FIRST).click();
+    await expect(item.title).toHaveText(FIRST);
+    await page.keyboard.press('Shift+X');
+    await expect(item.title).toHaveText(SECOND);
+    await myWork.filter('Needs me').click();
+    await myWork.row(TO_REVIEW).click();
+    await expect(item.title).toHaveText(TO_REVIEW);
+
+    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
+
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+    await expect(myWork.row(FIRST)).toHaveCount(0);
+    await expect(myWork.selectedRow).toContainText(TO_REVIEW);
+    await expect(item.title).toHaveText(TO_REVIEW);
+});
+
+test('D29: an Undo GitHub refuses: the row leaves again, the panel stays on it with no row highlighted, and J goes on', async ({
+    page,
+    github,
+}) => {
+    const work = createWork();
+    work.world.failEdit(work.first, 'ReopenPullRequest', { kind: 'refuse', message: 'Something went wrong' });
+    const { myWork, shell } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(FIRST).click();
+    await expect(item.title).toHaveText(FIRST);
+    await page.keyboard.press('Shift+X');
+    await expect(item.title).toHaveText(SECOND);
+
+    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
+
+    await expect(shell.toasts).toContainText('GitHub refused it: Something went wrong');
+    await expect(myWork.row(FIRST)).toHaveCount(0);
+    await expect(item.title).toHaveText(FIRST);
+    await expect(myWork.selectedRow).toHaveCount(0);
+    await page.keyboard.press('j');
+    await expect(item.title).toHaveText(SECOND);
+    await expect(myWork.selectedRow).toContainText(SECOND);
+});
+
+test('D29: on its page, Undo shows the undone pull request when the user walked on, and changes nothing when it is shown', async ({
+    page,
+    github,
+}) => {
+    const work = createWork();
+    const { myWork, shell } = await openMyWork(page, github, work.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(FIRST).click();
+    await item.arrangement('Full page').click();
+    await expect(page).toHaveURL('/acme/web/pull/15');
+
+    await page.keyboard.press('Shift+X');
+    await expect(shell.toasts).toContainText('Closed acme/web#15');
+    await page.keyboard.press('j');
+    await expect(item.title).toHaveText(SECOND);
+
+    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
+    await expect(page).toHaveURL('/acme/web/pull/15');
+    await expect(item.title).toHaveText(FIRST);
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+
+    await page.keyboard.press('Shift+X');
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('CLOSED');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
+    await expect(page).toHaveURL('/acme/web/pull/15');
+    await expect(item.title).toHaveText(FIRST);
 });
 
 test('PM32a: a merge sent from a modal moves on at once', async ({ page, github }) => {

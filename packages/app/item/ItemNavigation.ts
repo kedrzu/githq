@@ -24,11 +24,19 @@ export interface ItemMoveOnRequest {
     readonly merged: readonly string[];
 }
 
+/** An Undo of a close, asking the cursor back to what it reopens (D29). */
+export interface ItemReturnRequest {
+    /** The items reopened, in the order they were closed in. */
+    readonly ids: readonly string[];
+    /** Done once GitHub answered: a row not back by then isn't coming, and the request lapses. */
+    readonly settled: Promise<unknown>;
+}
+
 /**
  * What opening items carries from one moment to the next, shared by the lists and the item view: the
  * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
  * independent switches) — the list they are opened from, the item opened last, which the list selects
- * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, and the item whose comment box takes the cursor
+ * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, an Undo of a close asking the cursor back, and the item whose comment box takes the cursor
  * once it opens ("Comment" in a list's context menu).
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
@@ -42,6 +50,7 @@ export const ItemNavigation = defineService({
         const lastOpenedRef = shallowRef<string | null>(null);
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
         const moveOnRequestRef = shallowRef<ItemMoveOnRequest | null>(null);
+        const returnRequestRef = shallowRef<ItemReturnRequest | null>(null);
         const commentRequestRef = shallowRef<string | null>(null);
 
         return {
@@ -72,6 +81,10 @@ export const ItemNavigation = defineService({
             get moveOnRequest() {
                 return moveOnRequestRef.value;
             },
+            /** The Undo of a close asking the cursor back last; a new object for every request. Reactive. */
+            get returnRequest() {
+                return returnRequestRef.value;
+            },
             /** The id of the item whose comment box takes the cursor once it opens; reactive. */
             get commentRequest() {
                 return commentRequestRef.value;
@@ -81,6 +94,7 @@ export const ItemNavigation = defineService({
             setLastOpened,
             requestSelection,
             requestMoveOn,
+            requestReturn,
             requestComment,
         };
 
@@ -102,6 +116,10 @@ export const ItemNavigation = defineService({
 
         function requestMoveOn(merged: readonly string[]) {
             moveOnRequestRef.value = { merged };
+        }
+
+        function requestReturn(request: ItemReturnRequest) {
+            returnRequestRef.value = request;
         }
 
         /** `null` once the item opened took it. */

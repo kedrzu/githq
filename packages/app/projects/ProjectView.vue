@@ -258,6 +258,11 @@ const sortSummary = computed(() => {
 function addDraft(title: string, group: string | null) {
   emit('addDraft', title, group);
 }
+
+/** A draft issue has its own dialog, not the item view: it is no step of an opened item. */
+function hasItemView(entry: ProjectEntry) {
+  return entry.content !== null;
+}
 </script>
 
 <template>
@@ -522,6 +527,7 @@ function addDraft(title: string, group: string | null) {
         :is-edited="isEdited"
         :get-url="entry => entry.content?.url ?? null"
         :can-move="canMove"
+        :can-open-over="hasItemView"
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"

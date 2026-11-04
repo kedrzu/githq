@@ -564,6 +564,16 @@ test('board: stepping scrolls to the pull request inside the card', async () => 
     await expect.poll(() => scroll.mock.contexts.at(-1)).toBe(page.getByRole('button', { name: '[p1]' }).element());
 });
 
+test('a selection given from outside is scrolled into sight', async () => {
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+    onTestFinished(() => scroll.mockRestore());
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list');
+
+    view.selectedId.value = 'a2';
+    await expect.poll(selectedCard).toBe('a2');
+    await expect.poll(() => scroll.mock.contexts.at(-1)).toBe(document.querySelector('[aria-current="true"]'));
+});
+
 test('an item opened inside a collapsed entry selects the entry; once expanded, its row', async () => {
     const view = mount(STACKED, 'list');
 
@@ -662,6 +672,8 @@ interface MountOptions {
     readonly edited?: ReadonlySet<string>;
     /** {@link mountRow}'s layout: the list when not given. */
     readonly layout?: ListLayout;
+    /** Which entries can open over the list; all of them when not given. */
+    readonly canOpenOver?: (value: string) => boolean;
 }
 
 /** A merge panel opened: for which item, and what it runs once the merge is sent. */
@@ -1590,6 +1602,117 @@ test('with an item open, another row leaving moves nothing', async () => {
     expect(view.opened).toEqual([]);
 });
 
+test('with an item open the keys pass over a draft, and the steps and neighbours leave it out; with nothing beyond it the cursor stays', async () => {
+    const view = await mountOpened([['todo', ['a1', 'd1', 'a2', 'd2']]], 'a1', { canOpenOver: isNoDraft });
+    expect(view.listed.at(-1)?.steps).toEqual(['a1', 'a2']);
+    expect(view.listed.at(-1)?.around).toEqual({ previous: null, next: 'a2' });
+
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a2');
+    expect(view.opened).toEqual(['a2']);
+    expect(view.listed.at(-1)?.around).toEqual({ previous: 'a1', next: null });
+
+    await userEvent.keyboard('{ArrowDown}');
+    await nextTick();
+    expect(selectedCard()).toBe('a2');
+    expect(view.opened).toEqual(['a2']);
+
+    await userEvent.keyboard('k');
+    await expect.poll(selectedCard).toBe('a1');
+    expect(view.opened).toEqual(['a2', 'a1']);
+});
+
+test('board: with an item open ←/→ pass over a column of drafts, and a draft within the column', async () => {
+    const view = mount(
+        [
+            ['todo', ['a1']],
+            ['drafts', ['d1']],
+            ['done', ['d2', 'b1']],
+        ],
+        'board',
+        { canOpenOver: isNoDraft, followOpened: true },
+    );
+    view.selectedId.value = 'a1';
+    view.openedId.value = 'a1';
+    await expect.poll(selectedCard).toBe('a1');
+
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.poll(selectedCard).toBe('b1');
+    expect(view.opened).toEqual(['b1']);
+});
+
+test('with nothing open a draft is an ordinary row: `j` reaches it and Enter opens it; with an item open a click still does', async () => {
+    const closed = mount([['todo', ['a1', 'd1']]], 'list', { canOpenOver: isNoDraft });
+    await userEvent.keyboard('jj');
+    await expect.poll(selectedCard).toBe('d1');
+    await userEvent.keyboard('{Enter}');
+    expect(closed.opened).toEqual(['d1']);
+    closed.unmount();
+
+    const opened = await mountOpened([['todo', ['a1', 'd1', 'a2']]], 'a1', { canOpenOver: isNoDraft });
+    await userEvent.click(page.getByText('d1'));
+    expect(opened.opened).toEqual(['d1']);
+});
+
+test('the opened item leaving through the user’s edit passes over a draft: to the next, else the previous, else it detaches', async () => {
+    const edited = new Set(['a1', 'a2', 'a3']);
+    const options = { canOpenOver: isNoDraft, edited };
+
+    const next = await mountOpened([['todo', ['a1', 'd1', 'a2']]], 'a1', options);
+    next.columns.value = [['todo', ['d1', 'a2']]];
+    await expect.poll(selectedCard).toBe('a2');
+    expect(next.opened).toEqual(['a2']);
+    next.unmount();
+
+    const previous = await mountOpened([['todo', ['a1', 'd1', 'a2', 'd2']]], 'a2', options);
+    previous.columns.value = [['todo', ['a1', 'd1', 'd2']]];
+    await expect.poll(selectedCard).toBe('a1');
+    expect(previous.opened).toEqual(['a1']);
+    previous.unmount();
+
+    const alone = await mountOpened([['todo', ['d1', 'a3', 'd2']]], 'a3', options);
+    alone.columns.value = [['todo', ['d1', 'd2']]];
+    await expect.poll(selectedCard).toBeNull();
+    expect(alone.selectedId.value).toBe('a3');
+    expect(alone.opened).toEqual([]);
+    await userEvent.keyboard('j');
+    await nextTick();
+    expect(selectedCard()).toBeNull();
+    expect(alone.opened).toEqual([]);
+});
+
+test('PM32a: a merge sent from the opened item moves on past a draft, the previous one when only drafts follow', async () => {
+    const options = { canOpenOver: isNoDraft, merge: sampleMerging([]).context };
+    const next = await mountOpened([['todo', ['a1', 'd1', 'a2']]], 'a1', options);
+    next.container.resolve(ItemNavigation).requestMoveOn(['a1']);
+    await expect.poll(selectedCard).toBe('a2');
+    expect(next.opened).toEqual(['a2']);
+    next.unmount();
+
+    const previous = await mountOpened([['todo', ['a1', 'd1', 'a2', 'd2']]], 'a2', options);
+    previous.container.resolve(ItemNavigation).requestMoveOn(['a2']);
+    await expect.poll(selectedCard).toBe('a1');
+    expect(previous.opened).toEqual(['a1']);
+});
+
+test('detached, the next step and closing the item pass over a draft', async () => {
+    const stepped = await mountOpened([['todo', ['a1', 'a2', 'd1', 'a3']]], 'a2', { canOpenOver: isNoDraft });
+    stepped.columns.value = [['todo', ['a1', 'd1', 'a3']]];
+    await expect.poll(selectedCard).toBeNull();
+    expect(stepped.listed.at(-1)?.around).toEqual({ previous: 'a1', next: 'a3' });
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a3');
+    expect(stepped.opened).toEqual(['a3']);
+    stepped.unmount();
+
+    const closed = await mountOpened([['todo', ['a1', 'a2', 'd1', 'a3']]], 'a2', { canOpenOver: isNoDraft });
+    closed.columns.value = [['todo', ['a1', 'd1', 'a3']]];
+    await expect.poll(selectedCard).toBeNull();
+    closed.openedId.value = null;
+    await expect.poll(selectedCard).toBe('a3');
+    expect(closed.opened).toEqual([]);
+});
+
 test('PM32a: a merge sent from the opened item moves on at once, and its later confirmation moves nothing again', async () => {
     const view = await mountOpened(THREE, 'a1', { merge: sampleMerging([]).context });
     view.checkedIds.value = ['a1', 'a3'];
@@ -1741,6 +1864,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 },
                 openedId: openedId.value,
                 isEdited: options.edited && ((id: string) => options.edited?.has(id) ?? false),
+                canOpenOver: options.canOpenOver,
                 onOpen: (id: string) => {
                     opened.push(id);
                     if (options.followOpened) {
@@ -1851,6 +1975,11 @@ function toRow(group: string, row: SampleStackEntry | string): ListRow<string> {
     return row.header
         ? { key: `${group}:${row.header}`, id: row.header, value: row.header, nested: [], stacks: [entry] }
         : entry;
+}
+
+/** The rows named "d…" stand for a project's drafts. */
+function isNoDraft(value: string) {
+    return !value.startsWith('d');
 }
 
 /** Presses `j` `times`, one key at a time; what is highlighted after each. */
