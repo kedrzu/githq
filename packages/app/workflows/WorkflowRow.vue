@@ -234,9 +234,9 @@ function withRunning(status: string) {
     </span>
     <RunStrip
       :class="css.workflowRow_strip"
-      :name-with-owner="nameWithOwner"
       :runs="runs"
       :new-since="newSince"
+      @click="emit('open')"
     />
     <span
       :id="`${id}-status`"
@@ -377,8 +377,10 @@ function withRunning(status: string) {
 }
 
 // Above the row's button, so a tick opens its run.
+// Over the name's button that covers the row, so its ticks can name their runs; a click still opens the row.
 .workflowRow_strip {
   z-index: 1;
+  cursor: pointer;
 }
 
 .workflowRow_status {

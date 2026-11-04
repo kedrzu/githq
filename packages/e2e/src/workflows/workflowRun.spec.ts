@@ -131,15 +131,16 @@ test('with no job to select, O opens the run on GitHub', async ({ page, github }
     await seen.close();
 });
 
-test('a tick of the strip is a link to the run in githq, and Esc comes back', async ({ page, github }) => {
+test('a click on a broken workflow’s strip is a click on its row: the failed run in githq, and Esc comes back', async ({
+    page,
+    github,
+}) => {
     const { world, runId, path } = createFailedRun();
     const [lintId] = world.runJobs(SAMPLE_REPOSITORY, runId, [LINT, BUILD]);
     await openTrackedWork(page, github, world);
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
 
-    const tick = page.getByRole('main').locator(`a[href="${path}"]`);
-    await expect(tick).toHaveCount(1);
-    await tick.click({ force: true });
+    await page.getByRole('main').getByTestId('run-strip').first().click();
     await expect(page).toHaveURL(path);
 
     await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
