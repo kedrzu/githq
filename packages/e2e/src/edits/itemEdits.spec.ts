@@ -105,7 +105,9 @@ test('⇧X closes a pull request at once, and Undo reopens it on GitHub', async 
     await shell.toasts.getByRole('button', { name: 'Undo' }).click();
 
     await expect.poll(() => sample.world.stateOf(sample.pullRequest)).toMatchObject({ state: 'OPEN' });
-    await expect(item.statePill('Open')).toBeVisible();
+    // It is back in the list; the panel stays on the row it moved on to.
+    await expect(myWork.row('Redirect once after sign-in')).toBeVisible();
+    await expect(item.title).not.toHaveText('Redirect once after sign-in');
     await expectConfirmed(shell);
 });
 

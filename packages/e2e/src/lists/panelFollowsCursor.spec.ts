@@ -1,5 +1,3 @@
-import type { Page } from '@playwright/test';
-
 import { expect, test } from '../fixtures.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
@@ -38,7 +36,7 @@ test('a pull request closed from the panel: the highlight, the panel, the chip a
     await myWork.row(FIRST).click();
     await expect(item.title).toHaveText(FIRST);
 
-    await closeOpened(page);
+    await page.keyboard.press('Shift+X');
     await expect.poll(() => work.world.stateOf(work.first).state).toBe('CLOSED');
 
     await expect(myWork.selectedRow).toContainText(SECOND);
@@ -67,7 +65,7 @@ test('the last pull request closed from the panel: the highlight and the panel g
     await myWork.row(THIRD).click();
     await expect(item.title).toHaveText(THIRD);
 
-    await closeOpened(page);
+    await page.keyboard.press('Shift+X');
     await expect.poll(() => work.world.stateOf(work.third).state).toBe('CLOSED');
 
     await expect(myWork.selectedRow).toContainText(SECOND);
@@ -199,12 +197,3 @@ test('in a modal, a pull request leaving through a sync stays open, and J opens 
     await page.keyboard.press('j');
     await expect(item.title).toHaveText(THIRD);
 });
-
-/** `⇧X` and the entry of the opened pull request's submenu. */
-async function closeOpened(page: Page) {
-    await page.keyboard.press('Shift+X');
-    await page
-        .getByRole('menu', { name: 'Close pull request' })
-        .getByRole('menuitem', { name: 'Close pull request' })
-        .click();
-}
