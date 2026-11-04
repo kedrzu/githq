@@ -18,7 +18,7 @@ And an update today says nothing. The status bar offers a restart, and after the
 ## What is different once it exists
 
 Someone downloads githq for Mac from the releases page and opens it without a warning. Weeks later the status bar offers
-a restart, and after it the app shows what changed: a few sentences in plain language about what matters most, and
+a restart, and after it the app can show what changed: a few sentences in plain language about what matters most, and
 below them the formal list of changes.
 
 The owner merges a pull request and goes back to work. Shortly after, the status bar on their Mac offers a restart,
@@ -63,14 +63,14 @@ signature arrives, those installs keep updating, because updates are verified wi
 
 ## What changed
 
-The app says it updated with a toast in a corner, and what changed opens from it. On Stable that is the descriptions of
-every release since the version you had, each with its plain-language summary and formal list, so skipping two versions
-loses nothing. The owner gets that summary from an agent they run on the draft release before publishing it.
+The app says it updated with a toast in a corner, and it leads to Changelog, a section of Settings. Every version has its own fold
+there, newest first, the first open: on Stable its plain-language summary and formal list, so skipping two versions loses nothing. The
+owner gets that summary from an agent they run on the draft release before publishing it.
 
-On Development there is no description to read, because the release is replaced by each build, so the app asks GitHub for
-the commits between its old build and its new one and lists what users would notice.
-[Both are read from GitHub when needed](DECISIONS.md#d10), because the owner corrects descriptions after the build, and a
-correction should still arrive. Offline, the list waits for the connection.
+On Development there is no description to read, because the release is replaced by each build, so the app asks GitHub for the commits
+and lists what users would notice. [Everything is read from GitHub when needed](DECISIONS.md#d10), because the owner corrects
+descriptions after the build, and a correction should still arrive. Offline, the list waits for the connection.
+[Why a section and not a range](DECISIONS.md#d17).
 
 [Every decision, with the evidence](DECISIONS.md).
 
